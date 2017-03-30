@@ -4,4 +4,4 @@ natsort
 python-dateutil
 six
 stringcase
-git+https://github.com/KarrLab/wc_utils#egg=wc_utils
+git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils

@@ -13,7 +13,7 @@ The `io` module provides methods to serialize and deserialize schema objects to/
 
 ## Installation
 ```
-pip install git+git://github.com/KarrLab/obj_model#egg=obj_model
+pip install git+git://github.com/KarrLab/obj_model.git#egg=obj_model
 ```
 
 ## Example usage
