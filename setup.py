@@ -51,7 +51,7 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Database :: Database Engines/Servers',
         'Topic :: Software Development :: Object Brokering',
-        'Topic :: Software Development :: Libraries :: Python Module',
+        'Topic :: Software Development :: Libraries :: Python Modules',
 
         'License :: OSI Approved :: MIT License',
 
