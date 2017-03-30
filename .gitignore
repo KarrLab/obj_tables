@@ -9,6 +9,8 @@ prof/
 
 # compiled files
 *.pyc
+build/
+dist/
 
 # pytest files
 __pycache__/
