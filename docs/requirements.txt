@@ -1,0 +1,10 @@
+enum34
+inflect
+natsort
+python-dateutil
+six
+Sphinx
+sphinx_rtd_theme
+stringcase
+robpol86-sphinxcontrib-googleanalytics
+git+https://github.com/KarrLab/wc_utils#egg=wc_utils

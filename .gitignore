@@ -1,0 +1,21 @@
+# IDE configuration
+.idea/
+
+# profiling data
+prof/
+
+# coverage files
+.coverage
+
+# compiled files
+*.pyc
+
+# pytest files
+__pycache__/
+
+# documentation files
+docs/source
+docs/_build
+
+# distributions
+*.egg-info

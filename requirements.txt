@@ -1,0 +1,7 @@
+enum34
+inflect
+natsort
+python-dateutil
+six
+stringcase
+git+https://github.com/KarrLab/wc_utils#egg=wc_utils

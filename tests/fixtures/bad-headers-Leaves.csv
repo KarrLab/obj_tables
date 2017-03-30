@@ -1,0 +1,7 @@
+Id,Nodes,Val1,Val2,Onetomany rows,Onetomany inlines
+leaf_0_0,node_0,7,8,"row_0_0, row_0_1","inline_0_0, inline_0_1"
+leaf_0_1,node_0,9,10,"row_1_0, row_1_1","inline_1_0, inline_1_1"
+leaf_1_0,node_1,11,12,"row_2_0, row_2_1","inline_2_0, inline_2_1"
+leaf_1_1,node_1,13,14,"row_3_0, row_3_1","inline_3_0, inline_3_1"
+leaf_2_0,node_2,15,16,"row_4_0, row_4_1","inline_4_0, inline_4_1"
+leaf_2_1,node_2,17,18,"row_5_0, row_5_1","inline_5_0, inline_5_1"
