@@ -1,25 +1,31 @@
 machine:
   python:
-    version: 2.7.13
-  post:
-    - pyenv global 2.7.13 3.5.2
+    version: 2.7.12
 dependencies:
   cache_directories:
-    - /home/ubuntu/virtualenvs/venv-2.7.13
-    - /opt/circleci/python/3.5.2
-    - /opt/circleci/.pyenv/shims
+    - ~/miniconda2
+    - ~/miniconda3
   override:
-    - pip2 install -e .
-    - pip3 install -e .
+    - >
+      if [ ! -d ~/miniconda2 ]; then
+        wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O ~/Miniconda2-latest-Linux-x86_64.sh
+        bash ~/Miniconda2-latest-Linux-x86_64.sh -b
+      fi
+    - ~/miniconda2/bin/pip install -U --ignore-installed -e git+https://github.com/KarrLab/Karr-Lab-build-utils.git#egg=Karr-Lab-build-utils
+    - ~/miniconda2/bin/karr-lab-build-utils install-requirements
+    - ~/miniconda2/bin/pip install -e .    
     
-    - pip2 install -U -e git+https://github.com/KarrLab/Karr-Lab-build-utils.git#egg=Karr-Lab-build-utils
-    - pip3 install -U -e git+https://github.com/KarrLab/Karr-Lab-build-utils.git#egg=Karr-Lab-build-utils
-    
-    - karr-lab-build-utils-2 install-requirements
-    - karr-lab-build-utils-3 install-requirements
+    - >
+      if [ ! -d ~/miniconda3 ]; then
+        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/Miniconda3-latest-Linux-x86_64.sh    
+        bash ~/Miniconda3-latest-Linux-x86_64.sh -b
+      fi
+    - ~/miniconda3/bin/pip install -U --ignore-installed -e git+https://github.com/KarrLab/Karr-Lab-build-utils.git#egg=Karr-Lab-build-utils
+    - ~/miniconda3/bin/karr-lab-build-utils install-requirements
+    - ~/miniconda3/bin/pip install -e .    
 test:
   override:
-    - karr-lab-build-utils-2 run-tests tests --with-xunit --with-coverage
-    - karr-lab-build-utils-3 run-tests tests --with-xunit --with-coverage
+    - ~/miniconda2/bin/karr-lab-build-utils run-tests tests --with-xunit --with-coverage
+    - ~/miniconda3/bin/karr-lab-build-utils run-tests tests --with-xunit --with-coverage
   post:
-    - karr-lab-build-utils make-and-archive-reports
+    - ~/miniconda2/bin/karr-lab-build-utils make-and-archive-reports
