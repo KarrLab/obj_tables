@@ -1293,27 +1293,28 @@ class Model(with_metaclass(ModelMeta, object)):
 
 
 class ModelSource(object):
-        """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
+    """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
 
-        Attributes:
+    Attributes:
+        path_name (:obj:`int`): row number of object in its source file
+        sheet_name (:obj:`int`): row number of object in its source file
+        attribute_seq (:obj:`int`): row number of object in its source file
+        row (:obj:`int`): row number of object in its source file
+
+    """
+
+    def __init__(self, path_name, sheet_name, attribute_seq, row):
+        """
+        Args:
             path_name (:obj:`int`): row number of object in its source file
             sheet_name (:obj:`int`): row number of object in its source file
             attribute_seq (:obj:`int`): row number of object in its source file
             row (:obj:`int`): row number of object in its source file
-
         """
-        def __init__(self, path_name, sheet_name, attribute_seq, row):            
-            """
-            Args:
-                path_name (:obj:`int`): row number of object in its source file
-                sheet_name (:obj:`int`): row number of object in its source file
-                attribute_seq (:obj:`int`): row number of object in its source file
-                row (:obj:`int`): row number of object in its source file
-            """
-            self.path_name = path_name
-            self.sheet_name = sheet_name
-            self.attribute_seq = attribute_seq
-            self.row = row
+        self.path_name = path_name
+        self.sheet_name = sheet_name
+        self.attribute_seq = attribute_seq
+        self.row = row
 
 
 class Attribute(object):
@@ -3756,9 +3757,8 @@ class RelatedManager(list):
         """ Get related object index by attribute/value pairs
 
         Args:
-            *args (:obj:`list` of `Model`): object to find
-            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
-                objects
+            *args (:obj:`list` of :obj:`Model`): object to find
+            **kwargs (:obj:`dict` of :obj:`str`, :obj:`object`): dictionary of attribute name/value pairs to find matching objects
 
         Returns:
             :obj:`int`: index of matching object

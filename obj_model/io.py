@@ -211,8 +211,8 @@ class Reader(object):
 
         Args:
             path (:obj:`str`): path to file(s)
-            models (:obj:`list` of :object:`Model`): list of models
-            ignore_other_sheets (:obj: `boolean`, optional): if true and all models found, ignore
+            models (:obj:`list` of :obj:`Model`): list of models
+            ignore_other_sheets (:obj:`boolean`, optional): if true and all models found, ignore
                 other worksheets or files
             ignore_missing_attributes (:obj:`boolean`, optional): if false, report an error if the worksheet/files
                 don't have all of attributes in the model
