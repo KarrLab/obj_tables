@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
-import re
-import os
 import obj_model
+import os
+import re
 
 # parse dependencies and their links from requirements.txt files
 install_requires = []
