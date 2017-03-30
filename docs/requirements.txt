@@ -1,3 +1,4 @@
+configparser
 enum34
 inflect
 natsort
