@@ -65,7 +65,7 @@ setup(
 
     # packages not prepared yet
     packages=find_packages(exclude=['tests', 'tests.*']),
-    package_data={},
+    include_package_data=True,
 
     install_requires=install_requires,
     tests_require=tests_require,
