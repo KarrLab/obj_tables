@@ -1690,3 +1690,44 @@ class TestCore(unittest.TestCase):
         self.assertEqual(node_0.children[0].children, [node_0_a_a, node_0_a_b, node_0_a_c])
         self.assertEqual(node_0.children[1].children, [node_0_b_a, node_0_b_b, node_0_b_c])
         self.assertEqual(node_0.children[2].children, [node_0_c_a, node_0_c_b, node_0_c_c])
+
+    def test_setter(self):
+        class Site(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class AddBond(core.Model):
+            sites = core.OneToManyAttribute(Site, related_name='operation')
+
+            @property
+            def targets(self):
+                """ Get targets
+
+                Returns:
+                    :obj:`list` of :obj:`Site`: list of targets
+                """
+                return self.sites
+
+            @targets.setter
+            def targets(self, value):
+                """ Set targets
+
+                Args:
+                    value (:obj:`list` of :obj:`Site`): list of targets
+                """
+                self.sites = value
+
+        s1 = Site(id='site1')
+        s2 = Site(id='site2')
+        self.assertEqual(s1.operation, None)
+        self.assertEqual(s2.operation, None)
+
+        add_bond1 = AddBond(sites=[s1, s2])
+        self.assertEqual(set(add_bond1.sites), set([s1, s2]))
+        self.assertEqual(set(add_bond1.targets), set([s1, s2]))
+
+        add_bond2 = AddBond()
+        add_bond2.targets = [s1, s2]
+        self.assertEqual(set(add_bond2.sites), set([s1, s2]))
+        self.assertEqual(set(add_bond2.targets), set([s1, s2]))
+
+        self.assertRaises(TypeError, "targets' is an invalid keyword argument for AddBond.__init__", AddBond, targets=[s1, s2])
