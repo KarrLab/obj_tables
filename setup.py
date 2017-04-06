@@ -1,6 +1,7 @@
 from setuptools import setup, find_packages
 import obj_model
 import os
+import pip
 import re
 
 # parse dependencies and their links from requirements.txt files
@@ -17,6 +18,7 @@ for line in open('requirements.txt'):
     else:
         pkg_id = pkg_src
     install_requires.append(pkg_id)
+    pip.main(['install', line])
 
 for line in open('tests/requirements.txt'):
     pkg_src = line.rstrip()
@@ -26,7 +28,7 @@ for line in open('tests/requirements.txt'):
         dependency_links.append(pkg_src)
     else:
         pkg_id = pkg_src
-    tests_require.append(pkg_id)
+    tests_require.append(pkg_id)    
 dependency_links = list(set(dependency_links))
 
 # install package
