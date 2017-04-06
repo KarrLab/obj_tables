@@ -1731,3 +1731,175 @@ class TestCore(unittest.TestCase):
         self.assertEqual(set(add_bond2.targets), set([s1, s2]))
 
         self.assertRaises(TypeError, "targets' is an invalid keyword argument for AddBond.__init__", AddBond, targets=[s1, s2])
+
+    def test_chaining_many_to_one(self):
+        class Mother(core.Model):
+            id = core.SlugAttribute()
+
+        class Daughter(core.Model):
+            id = core.SlugAttribute()
+            mother = core.ManyToOneAttribute(Mother, related_name='daughters')
+
+        m = Mother()
+        d1 = Daughter()
+        d2 = Daughter()
+        self.assertEqual(m.daughters.add(d1), m.daughters)
+        self.assertEqual(m.daughters.add(d2), m.daughters)
+        self.assertEqual(m.daughters.remove(d1), m.daughters)
+        self.assertEqual(m.daughters.extend([d1]), m.daughters)
+        self.assertEqual(m.daughters.discard(d2), m.daughters)
+        self.assertEqual(m.daughters.update([d2]), m.daughters)
+        self.assertEqual(m.daughters.clear(), m.daughters)
+        self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
+        self.assertEqual(m.daughters.intersection_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([d1]))
+        self.assertEqual(m.daughters.difference_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([]))
+        self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
+        self.assertEqual(m.daughters.symmetric_difference_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([d2]))
+
+        m = Mother()
+        d1 = Daughter()
+        d2 = Daughter()
+        m.daughters \
+            .add(d1) \
+            .add(d2) \
+            .remove(d1) \
+            .extend([d1]) \
+            .discard(d2) \
+            .update([d2]) \
+            .clear() \
+            .extend([d1, d2]) \
+            .intersection_update([d1]) \
+            .difference_update([d1]) \
+            .extend([d1, d2]) \
+            .symmetric_difference_update([d1])
+        self.assertEqual(set(m.daughters), set([d2]))
+
+    def test_chaining_one_to_many(self):
+        class Daughter(core.Model):
+            id = core.SlugAttribute()
+
+        class Mother(core.Model):
+            id = core.SlugAttribute()
+            daughters = core.OneToManyAttribute(Daughter, related_name='mother')
+
+        m = Mother()
+        d1 = Daughter()
+        d2 = Daughter()
+        self.assertEqual(m.daughters.add(d1), m.daughters)
+        self.assertEqual(m.daughters.add(d2), m.daughters)
+        self.assertEqual(m.daughters.remove(d1), m.daughters)
+        self.assertEqual(m.daughters.extend([d1]), m.daughters)
+        self.assertEqual(m.daughters.discard(d2), m.daughters)
+        self.assertEqual(m.daughters.update([d2]), m.daughters)
+        self.assertEqual(m.daughters.clear(), m.daughters)
+        self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
+        self.assertEqual(m.daughters.intersection_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([d1]))
+        self.assertEqual(m.daughters.difference_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([]))
+        self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
+        self.assertEqual(m.daughters.symmetric_difference_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([d2]))
+
+        m = Mother()
+        d1 = Daughter()
+        d2 = Daughter()
+        m.daughters \
+            .add(d1) \
+            .add(d2) \
+            .remove(d1) \
+            .extend([d1]) \
+            .discard(d2) \
+            .update([d2]) \
+            .clear() \
+            .extend([d1, d2]) \
+            .intersection_update([d1]) \
+            .difference_update([d1]) \
+            .extend([d1, d2]) \
+            .symmetric_difference_update([d1])
+        self.assertEqual(set(m.daughters), set([d2]))
+
+    def test_chaining_many_to_many(self):
+        class Mother(core.Model):
+            id = core.SlugAttribute()
+
+        class Daughter(core.Model):
+            id = core.SlugAttribute()
+            mothers = core.ManyToManyAttribute(Mother, related_name='daughters')
+
+        m = Mother()
+        d1 = Daughter()
+        d2 = Daughter()
+        self.assertEqual(m.daughters.add(d1), m.daughters)
+        self.assertEqual(m.daughters.add(d2), m.daughters)
+        self.assertEqual(m.daughters.remove(d1), m.daughters)
+        self.assertEqual(m.daughters.extend([d1]), m.daughters)
+        self.assertEqual(m.daughters.discard(d2), m.daughters)
+        self.assertEqual(m.daughters.update([d2]), m.daughters)
+        self.assertEqual(m.daughters.clear(), m.daughters)
+        self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
+        self.assertEqual(m.daughters.intersection_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([d1]))
+        self.assertEqual(m.daughters.difference_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([]))
+        self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
+        self.assertEqual(m.daughters.symmetric_difference_update([d1]), m.daughters)
+        self.assertEqual(set(m.daughters), set([d2]))
+
+        m = Mother()
+        d1 = Daughter()
+        d2 = Daughter()
+        m.daughters \
+            .add(d1) \
+            .add(d2) \
+            .remove(d1) \
+            .extend([d1]) \
+            .discard(d2) \
+            .update([d2]) \
+            .clear() \
+            .extend([d1, d2]) \
+            .intersection_update([d1]) \
+            .difference_update([d1]) \
+            .extend([d1, d2]) \
+            .symmetric_difference_update([d1])
+        self.assertEqual(set(m.daughters), set([d2]))
+
+        m1 = Mother()
+        m2 = Mother()
+        d = Daughter()
+        self.assertEqual(d.mothers.add(m1), d.mothers)
+        self.assertEqual(d.mothers.add(m2), d.mothers)
+        self.assertEqual(d.mothers.remove(m1), d.mothers)
+        self.assertEqual(d.mothers.extend([m1]), d.mothers)
+        self.assertEqual(d.mothers.discard(m2), d.mothers)
+        self.assertEqual(d.mothers.update([m2]), d.mothers)
+        self.assertEqual(d.mothers.clear(), d.mothers)
+        self.assertEqual(d.mothers.extend([m1, m2]), d.mothers)
+        self.assertEqual(d.mothers.intersection_update([m1]), d.mothers)
+        self.assertEqual(set(d.mothers), set([m1]))
+        self.assertEqual(d.mothers.difference_update([m1]), d.mothers)
+        self.assertEqual(set(d.mothers), set([]))
+        self.assertEqual(d.mothers.extend([m1, m2]), d.mothers)
+        self.assertEqual(d.mothers.symmetric_difference_update([m1]), d.mothers)
+        self.assertEqual(set(d.mothers), set([m2]))
+
+        m1 = Mother()
+        m2 = Mother()
+        d = Daughter()
+        d.mothers \
+            .add(m1) \
+            .add(m2) \
+            .remove(m1) \
+            .extend([m1]) \
+            .discard(m2) \
+            .update([m2]) \
+            .clear() \
+            .extend([m1, m2]) \
+            .intersection_update([m1]) \
+            .difference_update([m1]) \
+            .extend([m1, m2]) \
+            .symmetric_difference_update([m1])
+        self.assertEqual(set(d.mothers), set([m2]))

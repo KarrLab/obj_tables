@@ -3626,84 +3626,129 @@ class RelatedManager(list):
 
         Args:
             value (:obj:`object`): value
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         self.append(value, **kwargs)
+
+        return self
 
     def discard(self, value):
         """ Remove value from list if value in list
 
         Args:
             value (:obj:`object`): value
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         if value in self:
             self.remove(value)
 
+        return self
+
     def clear(self):
-        """ Remove all elements from list """
+        """ Remove all elements from list 
+
+        Returns:
+            :obj:`RelatedManager': self
+        """
         for value in reversed(self):
             self.remove(value)
+
+        return self
 
     def pop(self, i=-1):
         """ Remove an arbitrary element from the list 
 
         Args:
             i (:obj:`int`, optional): index of element to remove
+
+        Returns:
+            :obj:`object': removed element
         """
         value = super(RelatedManager, self).pop(i)
         self.remove(value, update_list=False)
+
+        return value
 
     def update(self, values):
         """ Add values to list
 
         Args:
             values (:obj:`list`): values to add to list
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         self.extend(values)
+
+        return self
 
     def extend(self, values):
         """ Add values to list
 
         Args:
             values (:obj:`list`): values to add to list
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         for value in values:
             self.append(value)
+
+        return self
 
     def intersection_update(self, values):
         """ Retain only intersection of list and `values`
 
         Args:
             values (:obj:`list`): values to intersect with list
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         for value in reversed(self):
             if value not in values:
                 self.remove(value)
+
+        return self
 
     def difference_update(self, values):
         """ Retain only values of list not in `values`
 
         Args:
             values (:obj:`list`): values to difference with list
+
+        Returns:
+            :obj:`RelatedManager': self
         """
-        for value in reversed(values):
+        for value in values:
             if value in self:
                 self.remove(value)
+
+        return self
 
     def symmetric_difference_update(self, values):
         """ Retain values in only one of list and `values`
 
         Args:
             values (:obj:`list`): values to difference with list
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         self_copy = make_copy(self)
         values_copy = make_copy(values)
 
-        for value in chain(self_copy, values_copy):
+        for value in values_copy:
             if value in self_copy:
-                if value in values_copy:
-                    self.remove(value)
+                self.remove(value)
             else:
-                self.append(value)
+                self.add(value)
+
+        return self
 
     def get(self, **kwargs):
         """ Get related objects by attribute/value pairs
@@ -3818,13 +3863,18 @@ class ManyToOneRelatedManager(RelatedManager):
         Args:
             value (:obj:`object`): value
             propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         if value in self:
-            return
+            return self
 
         super(ManyToOneRelatedManager, self).append(value)
         if propagate:
             value.__setattr__(self.attribute.name, self.object, propagate=True)
+
+        return self
 
     def remove(self, value, update_list=True, propagate=True):
         """ Remove value from list
@@ -3832,11 +3882,16 @@ class ManyToOneRelatedManager(RelatedManager):
         Args:
             value (:obj:`object`): value
             propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         if update_list:
             super(ManyToOneRelatedManager, self).remove(value)
         if propagate:
             value.__setattr__(self.attribute.name, None, propagate=False)
+
+        return self
 
 
 class OneToManyRelatedManager(RelatedManager):
@@ -3856,13 +3911,18 @@ class OneToManyRelatedManager(RelatedManager):
         Args:
             value (:obj:`object`): value
             propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         if value in self:
-            return
+            return self
 
         super(OneToManyRelatedManager, self).append(value)
         if propagate:
             value.__setattr__(self.attribute.related_name, self.object, propagate=True)
+
+        return self
 
     def remove(self, value, update_list=True, propagate=True):
         """ Remove value from list
@@ -3870,11 +3930,16 @@ class OneToManyRelatedManager(RelatedManager):
         Args:
             value (:obj:`object`): value
             propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         if update_list:
             super(OneToManyRelatedManager, self).remove(value)
         if propagate:
             value.__setattr__(self.attribute.related_name, None, propagate=False)
+
+        return self
 
 
 class ManyToManyRelatedManager(RelatedManager):
@@ -3886,9 +3951,12 @@ class ManyToManyRelatedManager(RelatedManager):
         Args:
             value (:obj:`object`): value
             propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         if value in self:
-            return
+            return self
 
         super(ManyToManyRelatedManager, self).append(value)
         if propagate:
@@ -3897,6 +3965,8 @@ class ManyToManyRelatedManager(RelatedManager):
             else:
                 getattr(value, self.attribute.related_name).append(self.object, propagate=False)
 
+        return self
+
     def remove(self, value, update_list=True, propagate=True):
         """ Remove value from list
 
@@ -3904,6 +3974,9 @@ class ManyToManyRelatedManager(RelatedManager):
             value (:obj:`object`): value
             update_list (:obj:`bool`, optional): update list
             propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager': self
         """
         if update_list:
             super(ManyToManyRelatedManager, self).remove(value)
@@ -3912,6 +3985,8 @@ class ManyToManyRelatedManager(RelatedManager):
                 getattr(value, self.attribute.name).remove(self.object, propagate=False)
             else:
                 getattr(value, self.attribute.related_name).remove(self.object, propagate=False)
+
+        return self
 
 
 class InvalidObjectSet(object):
