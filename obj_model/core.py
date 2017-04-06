@@ -3621,6 +3621,19 @@ class RelatedManager(list):
 
         return obj
 
+    def append(self, value, **kwargs):
+        """ Add value to list
+
+        Args:
+            value (:obj:`object`): value
+
+        Returns:
+            :obj:`RelatedManager': self
+        """
+        super(RelatedManager, self).append(value, **kwargs)
+
+        return self
+
     def add(self, value, **kwargs):
         """ Add value to list
 
