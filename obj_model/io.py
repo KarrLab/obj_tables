@@ -72,6 +72,11 @@ class Writer(object):
             if obj not in grouped_objects[obj.__class__]:
                 grouped_objects[obj.__class__].append(obj)
 
+        # check that models are serializble
+        for cls in grouped_objects.keys():
+            if not cls.is_serializable():
+                raise ValueError('Class {}.{} cannot be serialized'.format(cls.__module__, cls.__name__))
+
         # get neglected models
         unordered_models = natsorted(set(grouped_objects.keys()).difference(set(models)),
                                      lambda model: model.Meta.verbose_name, alg=ns.IGNORECASE)
@@ -258,6 +263,11 @@ class Reader(object):
         if extra_sheet_names and not ignore_other_sheets:
             raise ValueError("No matching models for worksheets/files {} / {}".format(
                 basename(path), "', '".join(sorted(extra_sheet_names))))
+
+        # check that models are serializble
+        for model in models:
+            if not model.is_serializable():
+                raise ValueError('Class {}.{} cannot be serialized'.format(model.__module__, model.__name__))
 
         # read objects
         attributes = {}

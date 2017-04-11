@@ -281,29 +281,6 @@ class ModelMeta(type):
                         isinstance(attr.related_class, type) and issubclass(attr.related_class, Model):
                     related_classes = chain([attr.related_class], get_subclasses(attr.related_class))
                     for related_class in related_classes:
-                        # check that related class has primary attributes
-
-                        if isinstance(attr, (OneToManyAttribute, ManyToManyAttribute)) and \
-                                attr.__class__ is not OneToManyAttribute and \
-                                attr.__class__ is not ManyToManyAttribute and \
-                                'serialize' in attr.__class__.__dict__ and \
-                                'deserialize' in attr.__class__.__dict__:
-                            pass
-                        elif not related_class.Meta.primary_attribute:
-                            if related_class.Meta.tabular_orientation == TabularOrientation.inline:
-                                warnings.warn('Primary class: {}: Related class {} must have a primary attribute'.format(
-                                    attr.primary_class.__name__, related_class.__name__), SchemaWarning)
-                            else:
-                                raise ValueError('Related class {} must have a primary attribute'.format(
-                                    related_class.__name__))
-                        elif not related_class.Meta.primary_attribute.unique:
-                            if related_class.Meta.tabular_orientation == TabularOrientation.inline:
-                                warnings.warn('Primary attribute {} of related class {} must be unique'.format(
-                                    related_class.Meta.primary_attribute.name, related_class.__name__), SchemaWarning)
-                            else:
-                                raise ValueError('Primary attribute {} of related class {} must be unique'.format(
-                                    related_class.Meta.primary_attribute.name, related_class.__name__))
-
                         # check that name doesn't conflict with another attribute
                         if attr.related_name in related_class.Meta.attributes:
                             other_attr = related_class.Meta.attributes[attr.related_name]
@@ -325,7 +302,7 @@ class ModelMeta(type):
                         # add attribute to dictionary of related attributes
                         related_class.Meta.related_attributes[attr.related_name] = attr
                         related_class.Meta.related_attributes = OrderedDict(
-                            sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))
+                            sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))    
 
     def init_primary_attribute(cls):
         """ Initialize the primary attribute of a model
@@ -1290,6 +1267,69 @@ class Model(with_metaclass(ModelMeta, object)):
                     raise ValueError('Invalid related attribute value')
 
             setattr(copy, attr.name, copy_val)
+
+    @classmethod
+    def is_serializable(cls):
+        """ Determine if the class (and its related classes) can be serialized
+
+        Raises:
+            :obj:`bool`: `True` if the class can be serialized
+        """
+        classes_to_check = [cls]
+        checked_classes = []
+        while classes_to_check:
+            cls = classes_to_check.pop()
+            if cls not in checked_classes:
+                checked_classes.append(cls)
+
+                if not cls.are_related_attributes_serializable():
+                    return False
+
+                for attr in cls.Meta.attributes.values():
+                    if isinstance(attr, RelatedAttribute):
+                        classes_to_check.append(attr.related_class)
+
+                for attr in cls.Meta.related_attributes.values():
+                    if isinstance(attr, RelatedAttribute):
+                        classes_to_check.append(attr.primary_class)
+
+        return True
+
+    @classmethod
+    def are_related_attributes_serializable(cls):
+        """ Determine if the immediate related attributes of the class can be serialized
+
+        Raises:
+            :obj:`bool`: `True` if the related attributes can be serialized
+        """
+        for attr in cls.Meta.attributes.values():
+            if isinstance(attr, RelatedAttribute):
+
+                # setup related attributes on related classes
+                if attr.name in cls.__dict__ and attr.related_name and \
+                        isinstance(attr.related_class, type) and issubclass(attr.related_class, Model):
+                    related_classes = chain([attr.related_class], get_subclasses(attr.related_class))
+                    for related_class in related_classes:
+                        # check that related class has primary attributes
+                        if isinstance(attr, (OneToManyAttribute, ManyToManyAttribute)) and \
+                                attr.__class__ is not OneToManyAttribute and \
+                                attr.__class__ is not ManyToManyAttribute and \
+                                'serialize' in attr.__class__.__dict__ and \
+                                'deserialize' in attr.__class__.__dict__:
+                            pass
+                        elif not related_class.Meta.primary_attribute:
+                            if related_class.Meta.tabular_orientation == TabularOrientation.inline:
+                                warnings.warn('Primary class: {}: Related class {} must have a primary attribute'.format(
+                                    attr.primary_class.__name__, related_class.__name__), SchemaWarning)
+                            else:
+                                return False
+                        elif not related_class.Meta.primary_attribute.unique:
+                            if related_class.Meta.tabular_orientation == TabularOrientation.inline:
+                                warnings.warn('Primary attribute {} of related class {} must be unique'.format(
+                                    related_class.Meta.primary_attribute.name, related_class.__name__), SchemaWarning)
+                            else:
+                                return False
+        return True
 
 
 class ModelSource(object):
