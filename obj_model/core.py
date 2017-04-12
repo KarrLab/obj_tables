@@ -768,9 +768,10 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Set metadata about source of the file, worksheet, columns, and row where the object was defined
 
         Args:
-            path_name (:obj:`int`): row number of object in its source file
-            sheet_name (:obj:`int`): row number of object in its source file
-            attribute_seq (:obj:`int`): row number of object in its source file
+            path_name (:obj:`str`): pathname of source file for object
+            sheet_name (:obj:`str`): name of spreadsheet containing source data for object
+            attribute_seq (:obj:`list`): sequence of attribute names in source file; blank values
+                indicate attributes that were ignored
             row (:obj:`int`): row number of object in its source file
         """
         self._source = ModelSource(path_name, sheet_name, attribute_seq, row)
@@ -1336,19 +1337,20 @@ class ModelSource(object):
     """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
 
     Attributes:
-        path_name (:obj:`int`): row number of object in its source file
-        sheet_name (:obj:`int`): row number of object in its source file
-        attribute_seq (:obj:`int`): row number of object in its source file
+        path_name (:obj:`str`): pathname of source file for object
+        sheet_name (:obj:`str`): name of spreadsheet containing source data for object
+        attribute_seq (:obj:`list`): sequence of attribute names in source file; blank values
+            indicate attributes that were ignored
         row (:obj:`int`): row number of object in its source file
-
     """
 
     def __init__(self, path_name, sheet_name, attribute_seq, row):
         """
         Args:
-            path_name (:obj:`int`): row number of object in its source file
-            sheet_name (:obj:`int`): row number of object in its source file
-            attribute_seq (:obj:`int`): row number of object in its source file
+            path_name (:obj:`str`): pathname of source file for object
+            sheet_name (:obj:`str`): name of spreadsheet containing source data for object
+            attribute_seq (:obj:`list`): sequence of attribute names in source file; blank values
+                indicate attributes that were ignored
             row (:obj:`int`): row number of object in its source file
         """
         self.path_name = path_name
