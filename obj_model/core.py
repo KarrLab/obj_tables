@@ -68,7 +68,7 @@ of :obj:`set`. Thus, their values can also be edited with set methods such as `a
 
 * `create`: `object.related_objects.create(**kwargs)` is syntatic sugar for `object.attribute.add(RelatedObject(**kwargs))`
 * `get`: this returns a related object with attribute values equal to the supplies keyward argments
-* `filter`: this returns the subset of the related objects with attribute values equal to the supplies keyward argments
+* `filter`: this returns the subset of the related objects with attribute values equal to the supplied keyword argments
 
 =====================================
 Meta information
@@ -376,20 +376,20 @@ class ModelMeta(type):
                 raise ValueError("'{}' not found in attributes of {}: {}".format(attr_name,
                                                                                  cls.__name__, set(cls.Meta.attributes.keys())))
 
-        # `unique_together` is a tuple of tuple of attribute names
+        # `unique_together` is a tuple of tuples of attribute names
         if not isinstance(cls.Meta.unique_together, tuple):
-            raise ValueError('`unique_together` must be a tuple of tuple of attribute names')
+            raise ValueError('`unique_together` must be a tuple of tuples of attribute names')
 
         for unique_together in cls.Meta.unique_together:
             if not isinstance(unique_together, tuple):
-                raise ValueError('`unique_together` must be a tuple of tuple of attribute names')
+                raise ValueError('`unique_together` must be a tuple of tuples of attribute names')
 
             for attr_name in unique_together:
                 if not isinstance(attr_name, str):
-                    raise ValueError('`unique_together` must be a tuple of tuple of attribute names')
+                    raise ValueError('`unique_together` must be a tuple of tuples of attribute names')
 
                 if attr_name not in cls.Meta.attributes and attr_name not in cls.Meta.related_attributes:
-                    raise ValueError('`unique_together` must be a tuple of tuple of attribute names')
+                    raise ValueError('`unique_together` must be a tuple of tuples of attribute names')
 
             if len(set(unique_together)) < len(unique_together):
                 raise ValueError('`unique_together` cannot contain repeated attribute names with each tuple')
@@ -421,8 +421,8 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Meta data for :class:`Model`
 
         Attributes:
-            attributes (:obj:`set` of `Attribute`): attributes
-            related_attributes(:obj:`set` of `Attribute`): attributes declared in related objects
+            attributes (:obj:`OrderedDict` of `Attribute`): attributes
+            related_attributes (:obj:`set` of `Attribute`): attributes declared in related objects
             primary_attribute (:obj:`Attribute`): attribute with `primary`=`True`
             unique_together (obj:`tuple` of attribute names): controls what tuples of attribute values must be unique
             attribute_order (:obj:`tuple` of `str`): tuple of attribute names, in the order in which they should be displayed
@@ -1210,6 +1210,88 @@ class Model(with_metaclass(ModelMeta, object)):
             return InvalidModel(cls, errors)
         return None
 
+    DEFAULT_MAX_DEPTH=2
+    DEFAULT_INDENT=3
+    def pprint(self, max_depth=DEFAULT_MAX_DEPTH, indent=DEFAULT_INDENT):
+        """ Return a printable string representation of this `Model`.
+
+            Follows the graph of related `Model`s up to a depth of `max_depth`. This may print
+            an object repeatedly. `Model`s that are too deep are represented by '...'.
+            Attributes that are related or iterable are indented.
+
+        Args:
+            max_depth (:obj:`int`): the maximum depth to which related `Model`s should be printed
+            indent (:obj:`int`): number of spaces to indent
+
+        Returns:
+            :obj:str: readable string representation of this `Model`
+        """
+        return indent_forest(self._pprint(depth=0, max_depth=max_depth), indentation=indent)
+
+    def _pprint(self, depth, max_depth):
+        """ Obtain a nested list of string representations of this Model.
+
+            Follows the graph of related `Model`s up to a depth of `max_depth`, which may print
+            an object repeatedly. Called recursively.
+
+        Args:
+            depth (:obj:`int`): the depth at which this `Model` is being `_pprint`'ed
+            max_depth (:obj:`int`): the maximum depth to which related `Model`s should be printed
+
+        Returns:
+            :obj:`list` of `list`: a nested list of string representations of this Model
+
+        Raises:
+            :obj:`ValuerError`: if an attribute cannot be represented as a string, or a
+            related attribute value is not `None`, a `Model`, or an Iterable
+        """
+        # get class
+        cls = self.__class__
+
+        # check depth
+        if max_depth<depth:
+            return ["{}: {}".format(cls.__name__, '...')]
+
+        # get attribute names and their string values
+        attrs = [(cls.__name__, '')]
+        for name,attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
+            val = getattr(self, name)
+
+            if isinstance(attr, RelatedAttribute):
+                if val is None:
+                    attrs.append((name, val))
+                elif isinstance(val, Model):
+                    attrs.append(val._pprint(depth+1, max_depth))
+                elif isinstance(val, (set, list, tuple)):
+                    iter_attr = []
+                    for v in val:
+                        iter_attr.append(v._pprint(depth+1, max_depth))
+                    attrs.append(iter_attr)
+                else:
+                    raise ValueError("Related attribute '{}' has invalid value".format(name))
+
+            elif isinstance(attr, Attribute):
+                if val is None:
+                    attrs.append((name, val))
+                elif isinstance(val, (string_types, bool, integer_types, float, Enum)):
+                    attrs.append((name, str(val)))
+                elif hasattr(attr, 'serialize'):
+                    attrs.append((name, attr.serialize(val)))
+                else:
+                    raise ValueError("Attribute '{}' has invalid value '{}'".format(name, str(val)))
+
+            else:
+                raise ValueError("Attribute '{}' is not Attribute or RelatedAttribute".format(name))
+
+        rv = []
+        for item in attrs:
+            if isinstance(item, (tuple)):
+                name, val = item
+                rv.append("{}: {}".format(name, val))
+            else:
+                rv.append(item)
+        return rv
+
     def copy(self):
         """ Create a copy
 
@@ -1265,7 +1347,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 elif isinstance(val, (string_types, bool, integer_types, float, Enum, )):
                     copy_val = make_copy(val)
                 else:
-                    raise ValueError('Invalid related attribute value')
+                    raise ValueError('Invalid attribute value')
 
             setattr(copy, attr.name, copy_val)
 
@@ -2233,7 +2315,7 @@ class DateAttribute(Attribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `date`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple`: (`date`, `None`), or (`None`, `InvalidAttribute`) reporting error
         """
         if value is None:
             return (value, None)
