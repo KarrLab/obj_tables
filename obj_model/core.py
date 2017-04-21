@@ -1215,26 +1215,27 @@ class Model(with_metaclass(ModelMeta, object)):
     def pprint(self, max_depth=DEFAULT_MAX_DEPTH, indent=DEFAULT_INDENT):
         """ Return a printable string representation of this `Model`.
 
-            Follows the graph of related `Model`s up to a depth of `max_depth`. This may print
-            an object repeatedly. `Model`s that are too deep are represented by '...'.
-            Attributes that are related or iterable are indented.
+            Follows the graph of related `Model`s up to a depth of `max_depth`. `Model`s at depth
+            `max_depth+1` are represented by '<class name>: ...', while deeper `Model`s are not
+            traversed or printed. Attributes that are related or iterable are indented.
 
         Args:
-            max_depth (:obj:`int`): the maximum depth to which related `Model`s should be printed
-            indent (:obj:`int`): number of spaces to indent
+            max_depth (:obj:`int`, optional): the maximum depth to which related `Model`s should be printed
+            indent (:obj:`int`, optional): number of spaces to indent
 
         Returns:
             :obj:str: readable string representation of this `Model`
         """
-        return indent_forest(self._pprint(depth=0, max_depth=max_depth), indentation=indent)
+        printed_objs = set()
+        return indent_forest(self._pprint(printed_objs, depth=0, max_depth=max_depth), indentation=indent)
 
-    def _pprint(self, depth, max_depth):
+    def _pprint(self, printed_objs, depth, max_depth):
         """ Obtain a nested list of string representations of this Model.
 
-            Follows the graph of related `Model`s up to a depth of `max_depth`, which may print
-            an object repeatedly. Called recursively.
+            Follows the graph of related `Model`s up to a depth of `max_depth`. Called recursively.
 
         Args:
+            printed_objs (:obj:`set`): objects that have already been `_pprint`'ed
             depth (:obj:`int`): the depth at which this `Model` is being `_pprint`'ed
             max_depth (:obj:`int`): the maximum depth to which related `Model`s should be printed
 
@@ -1245,6 +1246,8 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`ValuerError`: if an attribute cannot be represented as a string, or a
             related attribute value is not `None`, a `Model`, or an Iterable
         """
+        printed_objs.add(self)
+
         # get class
         cls = self.__class__
 
@@ -1261,11 +1264,13 @@ class Model(with_metaclass(ModelMeta, object)):
                 if val is None:
                     attrs.append((name, val))
                 elif isinstance(val, Model):
-                    attrs.append(val._pprint(depth+1, max_depth))
+                    if not val in printed_objs:
+                        attrs.append(val._pprint(printed_objs, depth+1, max_depth))
                 elif isinstance(val, (set, list, tuple)):
                     iter_attr = []
                     for v in val:
-                        iter_attr.append(v._pprint(depth+1, max_depth))
+                        if not v in printed_objs:
+                            iter_attr.append(v._pprint(printed_objs, depth+1, max_depth))
                     attrs.append(iter_attr)
                 else:
                     raise ValueError("Related attribute '{}' has invalid value".format(name))
@@ -1281,11 +1286,11 @@ class Model(with_metaclass(ModelMeta, object)):
                     raise ValueError("Attribute '{}' has invalid value '{}'".format(name, str(val)))
 
             else:
-                raise ValueError("Attribute '{}' is not Attribute or RelatedAttribute".format(name))
+                raise ValueError("Attribute '{}' is not an Attribute or RelatedAttribute".format(name))
 
         rv = []
         for item in attrs:
-            if isinstance(item, (tuple)):
+            if isinstance(item, tuple):
                 name, val = item
                 rv.append("{}: {}".format(name, val))
             else:

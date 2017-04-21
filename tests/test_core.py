@@ -1375,21 +1375,22 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute()
             root = core.ManyToOneAttribute(Root2, related_name='nodes')
 
-        default_depth_plus_1 = core.Model.DEFAULT_MAX_DEPTH+1
-        NUM = 2
-        roots = [Root1(label='root_{}'.format(i)) for i in range(NUM)]
-        node1 = Node1(id='node1', roots=roots)
-        root2 = Root2(label='test-root2')
-        node2s = [Node2(id='node2_{}'.format(i), root=root2) for i in range(NUM)]
-        self.assertIn(node1.pprint(indent=0), roots[0].pprint(indent=0, max_depth=default_depth_plus_1))
+        NUM = 3
+        roots1 = [Root1(label='root_{}'.format(i)) for i in range(NUM)]
+        node1 = Node1(id='node1', roots=roots1)
+        expected = '''Root1: 
+label: root_0
+   Node1: 
+   id: node1
+         Root1: 
+         label: root_1
+         Root1: 
+         label: root_2'''
+        self.assertEqual(expected, roots1[0].pprint())
 
-        expected = '''Node2: 
-id: node2_0
-   Root2: 
-   label: test-root2
-         Node2: ...
-         Node2: ...'''
-        self.assertEqual(expected, node2s[0].pprint(max_depth=1))
+        expected = ['Root1: ', 'label: root_0', ['Node1: ', 'id: node1',
+            [['Root1: ', 'label: root_1'], ['Root1: ', 'label: root_2']]]]
+        self.assertEqual(expected, roots1[0]._pprint(set(), 0, core.Model.DEFAULT_MAX_DEPTH))
 
         class Root3(core.Model):
             label = core.StringAttribute()
@@ -1399,11 +1400,12 @@ id: node2_0
         root3s = [Root3(label='root3_{}'.format(i)) for i in range(NUM)]
         node3s = [Node3(id='node3_{}'.format(i), roots=root3s) for i in range(NUM)]
 
-        # a pprint of root3s[0] appears in a deeper pprint of node3s, with 2 indents removed
-        root3_tree = root3s[0].pprint()
-        deeper_node3_tree = node3s[0].pprint(max_depth=default_depth_plus_1)
-        p = re.compile('\n'+' '*2*core.Model.DEFAULT_INDENT)
-        self.assertIn(root3_tree, p.sub('\n', deeper_node3_tree))
+        # the lines in root3_tree are all in node3_tree
+        default_depth_plus_3 = core.Model.DEFAULT_MAX_DEPTH+3
+        root3_tree = root3s[0].pprint(max_depth=default_depth_plus_3)
+        node3_tree = node3s[0].pprint(max_depth=default_depth_plus_3)
+        for root3_line in root3_tree.split('\n'):
+            self.assertIn(root3_line.strip(), node3_tree)
 
         root = Root(label='test-root')
         unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
@@ -1419,18 +1421,15 @@ multi_word_name:
 name: 
 name2: ab
    Root: 
-   label: test-root'''
-        self.assertIn(expected, unrooted_leaf.pprint())
+   label: test-root
+root2: None'''
+        self.assertEqual(expected, unrooted_leaf.pprint())
 
         root = DateRoot()
         root.date = date(2000, 10, 1)
         root.datetime = datetime(1900, 1, 1, 0, 0, 0, 0)
         root.time = time(0, 0, 0, 0)
         self.assertIn('time: 0.0', root.pprint())
-
-        # want net of Models with various attribute types, and related attributes, incl n-to-n
-        # todo: make a cycle of n hops, remove related_name, then number of copies of obj
-        # in pprint will be floor(depth/n)
 
     def test_difference(self):
         g = [
