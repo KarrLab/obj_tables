@@ -1217,7 +1217,9 @@ class Model(with_metaclass(ModelMeta, object)):
 
             Follows the graph of related `Model`s up to a depth of `max_depth`. `Model`s at depth
             `max_depth+1` are represented by '<class name>: ...', while deeper `Model`s are not
-            traversed or printed. Attributes that are related or iterable are indented.
+            traversed or printed. Re-encountered Model's do not get printed, and are indicated by
+            '<attribute name>: --'.
+            Attributes that are related or iterable are indented.
 
         Args:
             max_depth (:obj:`int`, optional): the maximum depth to which related `Model`s should be printed
@@ -1246,14 +1248,14 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`ValuerError`: if an attribute cannot be represented as a string, or a
             related attribute value is not `None`, a `Model`, or an Iterable
         """
+        # get class
+        cls = self.__class__
+
         # check depth
         if max_depth<depth:
             return ["{}: {}".format(cls.__name__, '...')]
 
         printed_objs.add(self)
-
-        # get class
-        cls = self.__class__
 
         # get attribute names and their string values
         attrs = [(cls.__name__, '')]
@@ -1264,14 +1266,18 @@ class Model(with_metaclass(ModelMeta, object)):
                 if val is None:
                     attrs.append((name, val))
                 elif isinstance(val, Model):
-                    if not val in printed_objs:
+                    if val in printed_objs:
+                        attrs.append((name, '--'))
+                    else:
+                        attrs.append((name, ''))
                         attrs.append(val._pprint(printed_objs, depth+1, max_depth))
                 elif isinstance(val, (set, list, tuple)):
+                    attrs.append((name, ''))
                     iter_attr = []
                     for v in val:
                         if not v in printed_objs:
                             iter_attr.append(v._pprint(printed_objs, depth+1, max_depth))
-                    attrs.append(iter_attr)
+                    attrs.extend(iter_attr)
                 else:
                     raise ValueError("Related attribute '{}' has invalid value".format(name))
 

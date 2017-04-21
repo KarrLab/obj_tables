@@ -1380,17 +1380,19 @@ class TestCore(unittest.TestCase):
         node1 = Node1(id='node1', roots=roots1)
         expected = '''Root1: 
 label: root_0
+node: 
    Node1: 
    id: node1
-         Root1: 
-         label: root_1
-         Root1: 
-         label: root_2'''
+   roots: 
+      Root1: 
+      label: root_1
+      node: --
+      Root1: 
+      label: root_2
+      node: --'''
         self.assertEqual(expected, roots1[0].pprint())
-
-        expected = ['Root1: ', 'label: root_0', ['Node1: ', 'id: node1',
-            [['Root1: ', 'label: root_1'], ['Root1: ', 'label: root_2']]]]
-        self.assertEqual(expected, roots1[0]._pprint(set(), 0, core.Model.DEFAULT_MAX_DEPTH))
+        self.assertEqual(node1.pprint(max_depth=1).count('label: root'), NUM)
+        self.assertEqual(node1.pprint(max_depth=0).count('Root1: ...'), NUM)
 
         class Root3(core.Model):
             label = core.StringAttribute()
@@ -1420,8 +1422,11 @@ id2: b
 multi_word_name: 
 name: 
 name2: ab
+root: 
    Root: 
    label: test-root
+   leaves: 
+   leaves2: 
 root2: None'''
         self.assertEqual(expected, unrooted_leaf.pprint())
 
