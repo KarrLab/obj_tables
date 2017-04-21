@@ -1246,14 +1246,14 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`ValuerError`: if an attribute cannot be represented as a string, or a
             related attribute value is not `None`, a `Model`, or an Iterable
         """
+        # check depth
+        if max_depth<depth:
+            return ["{}: {}".format(cls.__name__, '...')]
+
         printed_objs.add(self)
 
         # get class
         cls = self.__class__
-
-        # check depth
-        if max_depth<depth:
-            return ["{}: {}".format(cls.__name__, '...')]
 
         # get attribute names and their string values
         attrs = [(cls.__name__, '')]
