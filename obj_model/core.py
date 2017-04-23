@@ -138,6 +138,7 @@ from operator import attrgetter, methodcaller
 from six import integer_types, string_types, with_metaclass
 from stringcase import sentencecase
 from os.path import basename, dirname, splitext
+import sys
 from wc_utils.util.introspection import get_class_that_defined_function
 from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote, OrderableNone
@@ -1212,8 +1213,13 @@ class Model(with_metaclass(ModelMeta, object)):
 
     DEFAULT_MAX_DEPTH=2
     DEFAULT_INDENT=3
-    def pprint(self, max_depth=DEFAULT_MAX_DEPTH, indent=DEFAULT_INDENT):
-        """ Return a printable string representation of this `Model`.
+    def pprint(self, stream=None, max_depth=DEFAULT_MAX_DEPTH, indent=DEFAULT_INDENT):
+        if stream is None:
+            stream = sys.stdout
+        print(self.pformat(max_depth=max_depth, indent=indent), file=stream)
+
+    def pformat(self, max_depth=DEFAULT_MAX_DEPTH, indent=DEFAULT_INDENT):
+        """ Return a human-readable string representation of this `Model`.
 
             Follows the graph of related `Model`s up to a depth of `max_depth`. `Model`s at depth
             `max_depth+1` are represented by '<class name>: ...', while deeper `Model`s are not
@@ -1247,16 +1253,16 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:str: readable string representation of this `Model`
         """
         printed_objs = set()
-        return indent_forest(self._pprint(printed_objs, depth=0, max_depth=max_depth), indentation=indent)
+        return indent_forest(self._tree_str(printed_objs, depth=0, max_depth=max_depth), indentation=indent)
 
-    def _pprint(self, printed_objs, depth, max_depth):
+    def _tree_str(self, printed_objs, depth, max_depth):
         """ Obtain a nested list of string representations of this Model.
 
             Follows the graph of related `Model`s up to a depth of `max_depth`. Called recursively.
 
         Args:
-            printed_objs (:obj:`set`): objects that have already been `_pprint`'ed
-            depth (:obj:`int`): the depth at which this `Model` is being `_pprint`'ed
+            printed_objs (:obj:`set`): objects that have already been `_tree_str`'ed
+            depth (:obj:`int`): the depth at which this `Model` is being `_tree_str`'ed
             max_depth (:obj:`int`): the maximum depth to which related `Model`s should be printed
 
         Returns:
@@ -1288,13 +1294,13 @@ class Model(with_metaclass(ModelMeta, object)):
                         attrs.append((name, '--'))
                     else:
                         attrs.append((name, ''))
-                        attrs.append(val._pprint(printed_objs, depth+1, max_depth))
+                        attrs.append(val._tree_str(printed_objs, depth+1, max_depth))
                 elif isinstance(val, (set, list, tuple)):
                     attrs.append((name, ''))
                     iter_attr = []
                     for v in val:
                         if not v in printed_objs:
-                            iter_attr.append(v._pprint(printed_objs, depth+1, max_depth))
+                            iter_attr.append(v._tree_str(printed_objs, depth+1, max_depth))
                     attrs.extend(iter_attr)
                 else:
                     raise ValueError("Related attribute '{}' has invalid value".format(name))

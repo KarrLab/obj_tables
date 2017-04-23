@@ -1361,9 +1361,7 @@ class TestCore(unittest.TestCase):
         self.assertFalse(copy is g1)
         self.assertTrue(g1.is_equal(copy))
 
-    def test_pprint(self):
-
-
+    def test_pformat(self):
         root = Root(label='test-root')
         unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
                                      float3=None, enum2=None, enum3=Order['leaf'])
@@ -1383,7 +1381,7 @@ root:
    leaves: 
    leaves2: 
 root2: None'''
-        self.assertEqual(expected, unrooted_leaf.pprint())
+        self.assertEqual(expected, unrooted_leaf.pformat())
 
         class Root0(core.Model):
             label = core.SlugAttribute()
@@ -1393,11 +1391,11 @@ root2: None'''
             root = core.OneToOneAttribute(Root0, related_name='node')
         root0 = Root0(label='root0-1', f=3.14)
         node0 = Node0(id='node0-1', root=root0)
-        # pprint()s of root0 and node0 contain each other's lines, except for lines with re-encountered Models
+        # pformat()s of root0 and node0 contain each other's lines, except for lines with re-encountered Models
         for (this, other) in [(root0, node0), (node0, root0)]:
-            for this_line in this.pprint().split('\n'):
+            for this_line in this.pformat().split('\n'):
                 if '--' not in this_line:
-                    self.assertIn(this_line.strip(), other.pprint())
+                    self.assertIn(this_line.strip(), other.pformat())
 
         class Root1(core.Model):
             label = core.SlugAttribute()
@@ -1426,9 +1424,9 @@ node:
       Root1: 
       label: root_2
       node: --'''
-        self.assertEqual(expected, roots1[0].pprint())
-        self.assertEqual(node1.pprint(max_depth=1).count('label: root'), NUM)
-        self.assertEqual(node1.pprint(max_depth=0).count('Root1: ...'), NUM)
+        self.assertEqual(expected, roots1[0].pformat())
+        self.assertEqual(node1.pformat(max_depth=1).count('label: root'), NUM)
+        self.assertEqual(node1.pformat(max_depth=0).count('Root1: ...'), NUM)
 
         class Root3(core.Model):
             label = core.StringAttribute()
@@ -1440,8 +1438,8 @@ node:
 
         # the lines in root3_tree are all in node3_tree
         default_depth_plus_3 = core.Model.DEFAULT_MAX_DEPTH+3
-        root3_tree = root3s[0].pprint(max_depth=default_depth_plus_3)
-        node3_tree = node3s[0].pprint(max_depth=default_depth_plus_3)
+        root3_tree = root3s[0].pformat(max_depth=default_depth_plus_3)
+        node3_tree = node3s[0].pformat(max_depth=default_depth_plus_3)
         for root3_line in root3_tree.split('\n'):
             self.assertIn(root3_line.strip(), node3_tree)
 
@@ -1449,7 +1447,7 @@ node:
         root.date = date(2000, 10, 1)
         root.datetime = datetime(1900, 1, 1, 0, 0, 0, 0)
         root.time = time(0, 0, 0, 0)
-        self.assertIn('time: 0.0', root.pprint())
+        self.assertIn('time: 0.0', root.pformat())
 
     def test_difference(self):
         g = [
