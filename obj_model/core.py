@@ -1272,6 +1272,16 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`ValuerError`: if an attribute cannot be represented as a string, or a
             related attribute value is not `None`, a `Model`, or an Iterable
         """
+        '''
+        TODO: many possible improvements
+            output to formattable text, most likely html
+                in html, distinguish class names, attribute names, and values; link to previously
+                printed Models; make deeper references collapsable
+            could convert to YAML, and use YAML renderers
+            take iterable of models instead of one
+            take sets of attributes to print, or not print
+            don't display empty attributes
+        '''
         # get class
         cls = self.__class__
 
