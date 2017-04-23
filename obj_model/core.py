@@ -1221,6 +1221,24 @@ class Model(with_metaclass(ModelMeta, object)):
             '<attribute name>: --'.
             Attributes that are related or iterable are indented.
 
+            For example, we have::
+            Model1 classname:       # Each model starts with its classname, followed by a list of
+            attr1: value1           # attribute names & values.
+            attr2: value2
+            attr3:                  # Reference attributes can point to other Models; we indent these under the attribute name
+                Model2 classname:   # Reference attribute attr3 contains Model2;
+                ...                 # its attributes follow.
+            attr4:
+                Model3 classname:   # An iteration over reference attributes is a list at constant indentation:
+                ...
+            attr5:
+                Model2 classname: --    # Traversing the Model network may re-encounter a Model; they're listed with '--'
+            attr6:
+                Model5 classname:
+                attr7:
+                    Model5 classname: ...   # The size of the output is controlled with max_depth;
+                                            # models encountered at depth = max_depth+1 are shown with '...'
+
         Args:
             max_depth (:obj:`int`, optional): the maximum depth to which related `Model`s should be printed
             indent (:obj:`int`, optional): number of spaces to indent

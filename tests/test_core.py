@@ -1363,6 +1363,42 @@ class TestCore(unittest.TestCase):
 
     def test_pprint(self):
 
+
+        root = Root(label='test-root')
+        unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
+                                     float3=None, enum2=None, enum3=Order['leaf'])
+        expected = '''UnrootedLeaf: 
+enum2: None
+enum3: Order.leaf
+float2: 2.4
+float3: None
+id: a
+id2: b
+multi_word_name: 
+name: 
+name2: ab
+root: 
+   Root: 
+   label: test-root
+   leaves: 
+   leaves2: 
+root2: None'''
+        self.assertEqual(expected, unrooted_leaf.pprint())
+
+        class Root0(core.Model):
+            label = core.SlugAttribute()
+            f = core.FloatAttribute()
+        class Node0(core.Model):
+            id = core.SlugAttribute()
+            root = core.OneToOneAttribute(Root0, related_name='node')
+        root0 = Root0(label='root0-1', f=3.14)
+        node0 = Node0(id='node0-1', root=root0)
+        # pprint()s of root0 and node0 contain each other's lines, except for lines with re-encountered Models
+        for (this, other) in [(root0, node0), (node0, root0)]:
+            for this_line in this.pprint().split('\n'):
+                if '--' not in this_line:
+                    self.assertIn(this_line.strip(), other.pprint())
+
         class Root1(core.Model):
             label = core.SlugAttribute()
         class Node1(core.Model):
@@ -1408,27 +1444,6 @@ node:
         node3_tree = node3s[0].pprint(max_depth=default_depth_plus_3)
         for root3_line in root3_tree.split('\n'):
             self.assertIn(root3_line.strip(), node3_tree)
-
-        root = Root(label='test-root')
-        unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
-                                     float3=None, enum2=None, enum3=Order['leaf'])
-        expected = '''UnrootedLeaf: 
-enum2: None
-enum3: Order.leaf
-float2: 2.4
-float3: None
-id: a
-id2: b
-multi_word_name: 
-name: 
-name2: ab
-root: 
-   Root: 
-   label: test-root
-   leaves: 
-   leaves2: 
-root2: None'''
-        self.assertEqual(expected, unrooted_leaf.pprint())
 
         root = DateRoot()
         root.date = date(2000, 10, 1)
