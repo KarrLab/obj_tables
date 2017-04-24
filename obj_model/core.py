@@ -127,6 +127,7 @@ The `utils` module provides several additional utilities for manipulating :obj:`
 :License: MIT
 """
 
+from __future__ import print_function
 from collections import Iterable, OrderedDict, defaultdict
 from copy import copy as make_copy, deepcopy as make_deepcopy
 from datetime import date, time, datetime
@@ -139,7 +140,6 @@ from six import integer_types, string_types, with_metaclass
 from stringcase import sentencecase
 from os.path import basename, dirname, splitext
 import sys
-from wc_utils.util.introspection import get_class_that_defined_function
 from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
