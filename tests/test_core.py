@@ -1366,20 +1366,20 @@ class TestCore(unittest.TestCase):
         unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
                                      float3=None, enum2=None, enum3=Order['leaf'])
         expected = '''UnrootedLeaf: 
-enum2: None
-enum3: Order.leaf
-float2: 2.4
-float3: None
 id: a
-id2: b
-multi_word_name: 
 name: 
-name2: ab
 root: 
    Root: 
    label: test-root
    leaves: 
    leaves2: 
+enum2: None
+enum3: Order.leaf
+float2: 2.4
+float3: None
+id2: b
+multi_word_name: 
+name2: ab
 root2: None'''
         self.assertEqual(expected, unrooted_leaf.pformat())
 
@@ -1682,20 +1682,26 @@ node:
 
     @unittest.expectedFailure
     def test_maintain_unique(self):
-        class test(core.Model):
-            unique_attr = core.StringAttribute(unique=True)
-        t1 = test(unique_attr='x')
-        t2 = test(unique_attr='y')
+        class Test(core.Model):
+            a_unique_attr = core.StringAttribute(unique=True)
+            attr1 = core.IntegerAttribute()
+            attr2 = core.IntegerAttribute()
+
+            class Meta(BaseModel.Meta):
+                unique_together = (('attr1', 'attr2', ), )
+
+        t1 = Test(a_unique_attr='x')
+        t2 = Test(a_unique_attr='y')
 
         '''
         Currently (2/2017), validation of uniqueness is a static property that's
         ensured only when validate_unique() is called, that is, when a model's created or when
         validate_unique() is called by the user.
 
-        Thus, this fails:
+        Thus, this fails, because uniqueness constraints are not checked immediately:
         '''
         with self.assertRaises(Exception) as context:
-            t2.unique_attr = 'x'
+            t2.a_unique_attr = 'x'
         '''
         Todo fix:
             Index each unique & unique_together in their class object derived from Model. Obtain
@@ -1703,6 +1709,19 @@ node:
             Will also provide instance lookup by unique or unique_together attributes.
 
             Implementation:
+                let unique_attr refer to any unique or unique_together.
+                in ModelMeta, each Model class instance defines a dict for each unique_attr and a
+                map from each unique_attr to its dict
+                Analogous to Django, ModelMeta creates an 'objects' method for the class which returns
+                the class's Manager. Managers support:
+                    all(): return all object instances of the class; e.g.:
+                    Test.objects.all()
+                    get(): return single object instances whose attributes match; e.g.:
+                    Test.objects.get(unique_attr='x')
+                    Test.objects.get(unique_attr='nope'): throws exception
+                    Test.objects.get((attr1=1, attr2=2, )):
+
+                To maintain:
                 create instance:
                     redefine __new__() to insert a weak reference to the object in a dict in the class
 
@@ -1711,6 +1730,9 @@ node:
 
                 delete object:
                     use a finalizer to remove object from the class dict
+
+                obviates the need for validate_unique(), as uniqueness is constantly maintained.
+                unique exceptions raised when creating many instances get convert into errors
         '''
 
     def test_sort(self):

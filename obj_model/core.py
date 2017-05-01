@@ -1293,7 +1293,17 @@ class Model(with_metaclass(ModelMeta, object)):
 
         # get attribute names and their string values
         attrs = [(cls.__name__, '')]
-        for name,attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
+
+        # first do the attributes in cls.Meta.attribute_order in that order, then do the rest
+        all_attrs = cls.Meta.attributes.copy()
+        all_attrs.update(cls.Meta.related_attributes)
+        ordered_attrs = []
+        for name in cls.Meta.attribute_order:
+            ordered_attrs.append((name, all_attrs[name]))
+        for name in all_attrs.keys():
+            if name not in cls.Meta.attribute_order:
+                ordered_attrs.append((name, all_attrs[name]))
+        for name,attr in ordered_attrs:
             val = getattr(self, name)
 
             if isinstance(attr, RelatedAttribute):
