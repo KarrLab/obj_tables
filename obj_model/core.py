@@ -524,7 +524,7 @@ class Model(with_metaclass(ModelMeta, object)):
                     warnings.warn(
                         'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), SchemaWarning)
 
-                elif attr.related_none:
+                elif attr.min_related == 0:
                     warnings.warn(
                         'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), SchemaWarning)
             else:
@@ -2662,10 +2662,15 @@ class RelatedAttribute(Attribute):
         verbose_related_name (:obj:`str`): verbose related name
         related_init_value (:obj:`object`): initial value of related attribute
         related_default (:obj:`object`): default value of related attribute
+        min_related (:obj:`int`): minimum number of related objects in the forward direction
+        max_related (:obj:`int`): maximum number of related objects in the forward direction
+        min_related_rev (:obj:`int`): minimum number of related objects in the reverse direction
+        max_related_rev (:obj:`int`): maximum number of related objects in the reverse direction
     """
 
     def __init__(self, related_class, related_name='',
                  init_value=None, default=None, related_init_value=None, related_default=None,
+                 min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', help=''):
         """
         Args:
@@ -2675,6 +2680,10 @@ class RelatedAttribute(Attribute):
             default (:obj:`object`, optional): default value
             related_init_value (:obj:`object`, optional): related initial value
             related_default (:obj:`object`, optional): related default value
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
+            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
@@ -2703,6 +2712,10 @@ class RelatedAttribute(Attribute):
         self.verbose_related_name = verbose_related_name
         self.related_init_value = related_init_value
         self.related_default = related_default
+        self.min_related = min_related
+        self.max_related = max_related
+        self.min_related_rev = min_related_rev
+        self.max_related_rev = max_related_rev
 
     def get_related_init_value(self, obj):
         """ Get initial related value for attribute
@@ -2781,23 +2794,20 @@ class RelatedAttribute(Attribute):
 
 
 class OneToOneAttribute(RelatedAttribute):
-    """ Represents a one-to-one relationship between two types of objects.
+    """ Represents a one-to-one relationship between two types of objects. """
 
-    Attributes:
-        none (:obj:`bool`): if true, the attribute is invalid if its value is None
-        related_none (:obj:`bool`): if true, the related attribute is invalid if its value is `None`
-    """
-
-    def __init__(self, related_class, related_name='', none=True, related_none=True, default=None, related_default=None,
+    def __init__(self, related_class, related_name='',                  
+                 default=None, related_default=None,
+                 min_related=0, min_related_rev=0, 
                  verbose_name='', verbose_related_name='', help=''):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
-            none (:obj:`bool`, optional): if true, the attribute is invalid if its value is `None`
-            related_none (:obj:`bool`, optional): if true, the related attribute is invalid if its value is `None`
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`            
             default (:obj:`callable`, optional): callable which returns default value
             related_default (:obj:`callable`, optional): callable which returns default related value 
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
@@ -2808,9 +2818,9 @@ class OneToOneAttribute(RelatedAttribute):
         super(OneToOneAttribute, self).__init__(related_class, related_name=related_name,
                                                 init_value=None, default=default,
                                                 related_init_value=None, related_default=related_default,
+                                                min_related=min_related, max_related=1, 
+                                                min_related_rev=min_related_rev, max_related_rev=1,
                                                 verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
-        self.none = none
-        self.related_none = related_none
 
     def set_value(self, obj, new_value):
         """ Update the values of the related attributes of the attribute
@@ -2921,7 +2931,7 @@ class OneToOneAttribute(RelatedAttribute):
             errors = []
 
         if value is None:
-            if not self.none:
+            if self.min_related == 1:
                 errors.append('Value cannot be `None`')
         elif not isinstance(value, self.related_class):
             errors.append('Value must be an instance of "{:s}" or `None`'.format(self.related_class.__name__))
@@ -2949,7 +2959,10 @@ class OneToOneAttribute(RelatedAttribute):
         else:
             errors = []
 
-        if self.related_name and value:
+        if value is None:
+            if self.min_related_rev == 1:
+                errors.append('Value cannot be `None`')
+        elif value and self.related_name:
             if not isinstance(value, self.primary_class):
                 errors.append('Related value must be an instance of "{:s}"'.format(self.primary_class.__name__))
             elif getattr(value, self.name) is not obj:
@@ -3005,22 +3018,21 @@ class OneToOneAttribute(RelatedAttribute):
 
 
 class ManyToOneAttribute(RelatedAttribute):
-    """ Represents a many-to-one relationship between two types of objects. This is analagous to a foreign key relationship in a database.
+    """ Represents a many-to-one relationship between two types of objects. This is analagous to a foreign key relationship in a database. """
 
-    Attributes:
-        none (:obj:`bool`): if true, the attribute is invalid if its value is None
-    """
-
-    def __init__(self, related_class, related_name='', none=True,
+    def __init__(self, related_class, related_name='',                 
                  default=None, related_default=list(),
+                 min_related=0, min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', help=''):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
-            none (:obj:`bool`, optional): if true, the attribute is invalid if its value is None
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`            
             default (:obj:`callable`, optional): callable which returns the default value
             related_default (:obj:`callable`, optional): callable which returns the default related value
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
+            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
@@ -3028,8 +3040,8 @@ class ManyToOneAttribute(RelatedAttribute):
         super(ManyToOneAttribute, self).__init__(related_class, related_name=related_name,
                                                  init_value=None, default=default,
                                                  related_init_value=ManyToOneRelatedManager, related_default=related_default,
+                                                 min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
                                                  verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
-        self.none = none
 
     def get_related_init_value(self, obj):
         """ Get initial related value for attribute
@@ -3154,7 +3166,7 @@ class ManyToOneAttribute(RelatedAttribute):
             errors = []
 
         if value is None:
-            if not self.none:
+            if self.min_related == 1:
                 errors.append('Value cannot be `None`')
         elif not isinstance(value, self.related_class):
             errors.append('Value must be an instance of "{:s}" or `None`'.format(self.related_class.__name__))
@@ -3188,12 +3200,16 @@ class ManyToOneAttribute(RelatedAttribute):
         if self.related_name:
             if not isinstance(value, list):
                 errors.append('Related value must be a list')
-
-            for v in value:
-                if not isinstance(v, self.primary_class):
-                    errors.append('Related value must be an instance of "{:s}"'.format(self.primary_class.__name__))
-                elif getattr(v, self.name) is not obj:
-                    errors.append('Object must be related value')
+            elif len(value) < self.min_related_rev:
+                errors.append('There must be at least {} related values'.format(self.min_related_rev))
+            elif len(value) > self.max_related_rev:
+                errors.append('There cannot be more than {} related values'.format(self.max_related_rev))
+            else:
+                for v in value:
+                    if not isinstance(v, self.primary_class):
+                        errors.append('Related value must be an instance of "{:s}"'.format(self.primary_class.__name__))
+                    elif getattr(v, self.name) is not obj:
+                        errors.append('Object must be related value')
 
         if errors:
             return InvalidAttribute(self, errors, related=True)
@@ -3245,21 +3261,20 @@ class ManyToOneAttribute(RelatedAttribute):
 
 
 class OneToManyAttribute(RelatedAttribute):
-    """ Represents a one-to-many relationship between two types of objects. This is analagous to a foreign key relationship in a database.
+    """ Represents a one-to-many relationship between two types of objects. This is analagous to a foreign key relationship in a database. """
 
-    Attributes:
-        related_none (:obj:`bool`): if true, the related attribute is invalid if its value is None
-    """
-
-    def __init__(self, related_class, related_name='', related_none=True, default=list(), related_default=None,
+    def __init__(self, related_class, related_name='',  default=list(), related_default=None,
+                 min_related=0, max_related=float('inf'), min_related_rev=0,
                  verbose_name='', verbose_related_name='', help=''):
         """
         Args:
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
-            related_none (:obj:`bool`, optional): if true, the related attribute is invalid if its value is None
             default (:obj:`callable`, optional): function which returns the default value
             related_default (:obj:`callable`, optional): function which returns the default related value
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
@@ -3267,8 +3282,8 @@ class OneToManyAttribute(RelatedAttribute):
         super(OneToManyAttribute, self).__init__(related_class, related_name=related_name,
                                                  init_value=OneToManyRelatedManager, default=default,
                                                  related_init_value=None, related_default=related_default,
+                                                 min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
                                                  verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
-        self.related_none = related_none
 
     def get_init_value(self, obj):
         """ Get initial value for attribute
@@ -3387,12 +3402,16 @@ class OneToManyAttribute(RelatedAttribute):
 
         if not isinstance(value, list):
             errors.append('Related value must be a list')
-
-        for v in value:
-            if not isinstance(v, self.related_class):
-                errors.append('Value must be an instance of "{:s}"'.format(self.related_class.__name__))
-            elif self.related_name and getattr(v, self.related_name) is not obj:
-                errors.append('Object must be related value')
+        elif len(value) < self.min_related:
+            errors.append('There must be at least {} related values'.format(self.min_related))
+        elif len(value) > self.max_related:
+            errors.append('There must be no more than {} related values'.format(self.max_related))
+        else:
+            for v in value:
+                if not isinstance(v, self.related_class):
+                    errors.append('Value must be an instance of "{:s}"'.format(self.related_class.__name__))
+                elif self.related_name and getattr(v, self.related_name) is not obj:
+                    errors.append('Object must be related value')
 
         if errors:
             return InvalidAttribute(self, errors)
@@ -3416,7 +3435,7 @@ class OneToManyAttribute(RelatedAttribute):
 
         if self.related_name:
             if value is None:
-                if not self.related_none:
+                if self.min_related_rev == 1:
                     errors.append('Value cannot be `None`')
             elif not isinstance(value, self.primary_class):
                 errors.append('Value must be an instance of "{:s}" or `None`'.format(self.primary_class.__name__))
@@ -3489,13 +3508,19 @@ class OneToManyAttribute(RelatedAttribute):
 class ManyToManyAttribute(RelatedAttribute):
     """ Represents a many-to-many relationship between two types of objects. """
 
-    def __init__(self, related_class, related_name='', default=list(), related_default=list(), verbose_name='', verbose_related_name='', help=''):
+    def __init__(self, related_class, related_name='', default=list(), related_default=list(), 
+                 min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
+                 verbose_name='', verbose_related_name='', help=''):
         """
         Args:
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): function which returns the default values
             related_default (:obj:`callable`, optional): function which returns the default related values
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
+            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
@@ -3503,6 +3528,7 @@ class ManyToManyAttribute(RelatedAttribute):
         super(ManyToManyAttribute, self).__init__(related_class, related_name=related_name,
                                                   init_value=ManyToManyRelatedManager, default=default,
                                                   related_init_value=ManyToManyRelatedManager, related_default=related_default,
+                                                  min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
                                                   verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
 
     def get_init_value(self, obj):
@@ -3640,6 +3666,10 @@ class ManyToManyAttribute(RelatedAttribute):
 
         if not isinstance(value, list):
             errors.append('Value must be a `list`')
+        elif len(value) < self.min_related:
+            errors.append('There must be at least {} related values'.format(self.min_related))
+        elif len(value) > self.max_related:
+            errors.append('There cannot be more than {} related values'.format(self.max_related))
         else:
             for v in value:
                 if not isinstance(v, self.related_class):
@@ -3675,12 +3705,16 @@ class ManyToManyAttribute(RelatedAttribute):
         if self.related_name:
             if not isinstance(value, list):
                 errors.append('Related value must be a list')
-
-            for v in value:
-                if not isinstance(v, self.primary_class):
-                    errors.append('Related value must be an instance of "{:s}"'.format(self.primary_class.__name__))
-                elif obj not in getattr(v, self.name):
-                    errors.append('Object must be in related values')
+            elif len(value) < self.min_related_rev:
+                errors.append('There must be at least {} related values'.format(self.min_related_rev))
+            elif len(value) > self.max_related_rev:
+                errors.append('There cannot be more than {} related values'.format(self.max_related_rev))
+            else:
+                for v in value:
+                    if not isinstance(v, self.primary_class):
+                        errors.append('Related value must be an instance of "{:s}"'.format(self.primary_class.__name__))
+                    elif obj not in getattr(v, self.name):
+                        errors.append('Object must be in related values')
 
         if errors:
             return InvalidAttribute(self, errors, related=True)
