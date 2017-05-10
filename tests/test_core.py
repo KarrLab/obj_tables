@@ -1167,7 +1167,7 @@ class TestCore(unittest.TestCase):
         class TestNode(core.Model):
             id = core.SlugAttribute()
             roots = core.ManyToManyAttribute(TestRoot, related_name='nodes',
-                                            min_related=1, max_related=2, min_related_rev=1, max_related_rev=2)
+                                             min_related=1, max_related=2, min_related_rev=1, max_related_rev=2)
 
         root1 = TestRoot(id='a')
         root2 = TestRoot(id='b')
@@ -2249,3 +2249,59 @@ node:
             .extend([m1, m2]) \
             .symmetric_difference_update([m1])
         self.assertEqual(set(d.mothers), set([m2]))
+
+    def test_override_superclass_attributes(self):
+        class TestSup(core.Model):
+            value = core.IntegerAttribute(min=1, max=10)
+        class TestSub(TestSup):
+            value = core.IntegerAttribute(min=3, max=12)
+
+        sup = TestSup(value=0)
+        sub = TestSub(value=0)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+        sup = TestSup(value=2)
+        sub = TestSub(value=2)
+        self.assertEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+        sup = TestSup(value=12)
+        sub = TestSub(value=12)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertEqual(sub.validate(), None)
+
+        sup = TestSup(value=13)
+        sub = TestSub(value=13)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+    def test_modify_superclass_attributes(self):
+        class TestSup(core.Model):
+            value = core.IntegerAttribute(min=1, max=10)
+        class TestSub(TestSup):
+            pass
+
+        self.assertNotEqual(TestSub.Meta.attributes['value'], TestSup.Meta.attributes['value'])
+        TestSub.Meta.attributes['value'].min = 3
+        TestSub.Meta.attributes['value'].max = 12
+
+        sup = TestSup(value=0)
+        sub = TestSub(value=0)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+        sup = TestSup(value=2)
+        sub = TestSub(value=2)
+        self.assertEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+        sup = TestSup(value=12)
+        sub = TestSub(value=12)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertEqual(sub.validate(), None)
+
+        sup = TestSup(value=13)
+        sub = TestSub(value=13)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)

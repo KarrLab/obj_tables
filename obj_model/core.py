@@ -129,7 +129,6 @@ The `utils` module provides several additional utilities for manipulating :obj:`
 
 from __future__ import print_function
 from collections import Iterable, OrderedDict, defaultdict
-from copy import copy as make_copy, deepcopy as make_deepcopy
 from datetime import date, time, datetime
 from enum import Enum
 from itertools import chain
@@ -139,24 +138,24 @@ from operator import attrgetter, methodcaller
 from six import integer_types, string_types, with_metaclass
 from stringcase import sentencecase
 from os.path import basename, dirname, splitext
-import sys
 from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
+import copy
 import dateutil.parser
 import inflect
 import re
+import sys
 import warnings
 
 # todo: simplify primary attributes, deserialization
 # todo: improve memory efficiency
 # todo: improve run-time
-# todo: eliminate recursion in eq, difference
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
 # todo: implement schema migration
 # todo: ensure unique and unique_together properties always maintained:
-# see schema/test_core.py::TestCore::test_maintain_unique
+#       see schema/test_core.py::TestCore::test_maintain_unique
 
 
 class ModelMeta(type):
@@ -186,10 +185,10 @@ class ModelMeta(type):
                             Meta.attribute_order.append(attr_name)
             Meta.attribute_order = tuple(Meta.attribute_order)
 
-            Meta.unique_together = make_deepcopy(bases[0].Meta.unique_together)
+            Meta.unique_together = copy.deepcopy(bases[0].Meta.unique_together)
             Meta.tabular_orientation = bases[0].Meta.tabular_orientation
             Meta.frozen_columns = bases[0].Meta.frozen_columns
-            Meta.ordering = bases[0].Meta.ordering
+            Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
 
         # validate attribute inheritance
         metacls.validate_attribute_inheritance(name, bases, namespace)
@@ -245,16 +244,20 @@ class ModelMeta(type):
 
         cls.Meta.attributes = OrderedDict()
         for attr_name in sorted(dir(cls)):
-            attr = getattr(cls, attr_name)
+            orig_attr = getattr(cls, attr_name)            
 
-            if isinstance(attr, Attribute):
+            if isinstance(orig_attr, Attribute):
+                if attr_name in cls.__dict__:
+                    attr = orig_attr
+                else:
+                    attr = copy.copy(orig_attr)
+
                 attr.name = attr_name
                 if not attr.verbose_name:
                     attr.verbose_name = sentencecase(attr_name)
                 cls.Meta.attributes[attr_name] = attr
 
-            if isinstance(attr, RelatedAttribute):
-                if attr.name in cls.__dict__:
+                if isinstance(attr, RelatedAttribute) and attr.name in cls.__dict__:
                     attr.primary_class = cls
 
     def init_related_attributes(cls):
@@ -1357,11 +1360,11 @@ class Model(with_metaclass(ModelMeta, object)):
         # return copy
         return objects_and_copies[self]
 
-    def _copy_attributes(self, copy, objects_and_copies):
-        """ Copy the attributes from `self` to its new copy, `copy`
+    def _copy_attributes(self, other, objects_and_copies):
+        """ Copy the attributes from `self` to its new copy, `other`
 
         Args:
-            copy (:obj:`Model`): object to copy attribute values to
+            other (:obj:`Model`): object to copy attribute values to
             objects_and_copies (:obj:`dict` of `Model`: `Model`): dictionary of pairs of objects and their new copies
 
         Raises:
@@ -1390,11 +1393,11 @@ class Model(with_metaclass(ModelMeta, object)):
                 if val is None:
                     copy_val = val
                 elif isinstance(val, (string_types, bool, integer_types, float, Enum, )):
-                    copy_val = make_copy(val)
+                    copy_val = copy.copy(val)
                 else:
                     raise ValueError('Invalid attribute value')
 
-            setattr(copy, attr.name, copy_val)
+            setattr(other, attr.name, copy_val)
 
     @classmethod
     def is_serializable(cls):
@@ -1532,7 +1535,7 @@ class Attribute(object):
         if self.init_value and hasattr(self.init_value, '__call__'):
             return self.init_value()
 
-        return make_copy(self.init_value)
+        return copy.copy(self.init_value)
 
     def get_default(self, obj):
         """ Get default value for attribute
@@ -1546,7 +1549,7 @@ class Attribute(object):
         if self.default and hasattr(self.default, '__call__'):
             return self.default()
 
-        return make_copy(self.default)
+        return copy.copy(self.default)
 
     def set_value(self, obj, new_value):
         """ Set value of attribute of object
@@ -2732,7 +2735,7 @@ class RelatedAttribute(Attribute):
         if not self.related_name:
             raise ValueError('Related property is not defined')
 
-        return make_copy(self.related_init_value)
+        return copy.copy(self.related_init_value)
 
     def get_related_default(self, obj):
         """ Get default related value for attribute
@@ -2749,7 +2752,7 @@ class RelatedAttribute(Attribute):
         if self.related_default and hasattr(self.related_default, '__call__'):
             return self.related_default()
 
-        return make_copy(self.related_default)
+        return copy.copy(self.related_default)
 
     def set_related_value(self, obj, new_values):
         """ Update the values of the related attributes of the attribute
@@ -3955,8 +3958,8 @@ class RelatedManager(list):
         Returns:
             :obj:`RelatedManager': self
         """
-        self_copy = make_copy(self)
-        values_copy = make_copy(values)
+        self_copy = copy.copy(self)
+        values_copy = copy.copy(values)
 
         for value in values_copy:
             if value in self_copy:
