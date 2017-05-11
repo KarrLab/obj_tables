@@ -1,3 +1,4 @@
+biopython
 enum34
 inflect
 natsort
