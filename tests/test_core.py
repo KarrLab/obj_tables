@@ -31,7 +31,7 @@ class Root(core.Model):
     label = core.StringAttribute(verbose_name='Label', max_length=255, primary=True, unique=True)
 
     class Meta(core.Model.Meta):
-        _donot_use_manager = True
+        pass
 
 
 class Leaf(core.Model):
@@ -70,8 +70,6 @@ class Leaf3(UnrootedLeaf):
 class Grandparent(core.Model):
     id = core.StringAttribute(max_length=1, primary=True, unique=True)
     val = core.StringAttribute()
-    class Meta(core.Model.Meta):
-        _donot_use_manager = True
 
 
 class Parent(core.Model):
@@ -93,7 +91,7 @@ class UniqueRoot(Root):
     pos_int_attr = core.PositiveIntegerAttribute()
 
     class Meta(core.Model.Meta):
-        _donot_use_manager = True
+        pass
 
 
 class DateRoot(core.Model):
@@ -118,8 +116,6 @@ class OneToOneLeaf(core.Model):
 
 class ManyToOneRoot(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
-    class Meta(core.Model.Meta):
-        _donot_use_manager = True
 
 
 class ManyToOneLeaf(core.Model):
@@ -129,8 +125,6 @@ class ManyToOneLeaf(core.Model):
 
 class OneToManyRoot(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
-    class Meta(core.Model.Meta):
-        _donot_use_manager = True
 
 
 class OneToManyLeaf(core.Model):
@@ -140,8 +134,6 @@ class OneToManyLeaf(core.Model):
 
 class ManyToManyRoot(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
-    class Meta(core.Model.Meta):
-        _donot_use_manager = True
 
 
 class ManyToManyLeaf(core.Model):
@@ -156,7 +148,6 @@ class UniqueTogetherRoot(core.Model):
 
     class Meta(core.Model.Meta):
         unique_together = (('val1', 'val2'),)
-        _donot_use_manager = True
 
 
 class InlineRoot(core.Model):
@@ -817,8 +808,6 @@ class TestCore(unittest.TestCase):
             label = core.StringAttribute(primary=True, unique=True, default='leaf0')
             root = core.OneToOneAttribute(RootDefault, related_name='leaf',
                                           related_default=lambda: LeafDefault(label='leaf2'))
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         leaf0 = LeafDefault()
         self.assertEqual(leaf0.label, 'leaf0')
@@ -845,8 +834,6 @@ class TestCore(unittest.TestCase):
     def test_onetomany_default(self):
         class LeafDefault(core.Model):
             label = core.StringAttribute(primary=True, unique=True, default='leaf22')
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         class RootDefault(core.Model):
             label = core.StringAttribute(primary=True, unique=True, default='root0')
@@ -881,8 +868,6 @@ class TestCore(unittest.TestCase):
             label = core.StringAttribute(primary=True, unique=True, default='root0')
             leaves = core.OneToManyAttribute(LeafDefault, related_name='root',
                                              related_default=lambda: RootDefault(label='root1'))
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         root0 = RootDefault()
         self.assertEqual(root0.label, 'root0')
@@ -2347,14 +2332,10 @@ node:
     def test_chaining_many_to_one(self):
         class Mother(core.Model):
             id = core.SlugAttribute()
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         class Daughter(core.Model):
             id = core.SlugAttribute()
             mother = core.ManyToOneAttribute(Mother, related_name='daughters')
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         m = Mother()
         d1 = Daughter()
@@ -2396,14 +2377,10 @@ node:
     def test_chaining_one_to_many(self):
         class Daughter(core.Model):
             id = core.SlugAttribute()
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         class Mother(core.Model):
             id = core.SlugAttribute()
             daughters = core.OneToManyAttribute(Daughter, related_name='mother')
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         m = Mother()
         d1 = Daughter()
@@ -2445,14 +2422,10 @@ node:
     def test_chaining_many_to_many(self):
         class Mother(core.Model):
             id = core.SlugAttribute()
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         class Daughter(core.Model):
             id = core.SlugAttribute()
             mothers = core.ManyToManyAttribute(Mother, related_name='daughters')
-            class Meta(core.Model.Meta):
-                _donot_use_manager = True
 
         m = Mother()
         d1 = Daughter()
