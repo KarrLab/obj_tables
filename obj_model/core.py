@@ -982,7 +982,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
         # process arguments
         for attr_name, val in kwargs.items():
-            print("setting name='{}', value='{}'".format(attr_name, val))
+            print(u"setting name='{}', value='{}'".format(attr_name, val))
             if attr_name not in self.Meta.attributes and attr_name not in self.Meta.related_attributes:
                 raise TypeError("'{:s}' is an invalid keyword argument for {}.__init__".format(
                     attr_name, self.__class__.__name__))
