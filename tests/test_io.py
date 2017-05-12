@@ -67,8 +67,8 @@ class Leaf(core.Model):
     nodes = core.ManyToManyAttribute(Node, related_name='leaves')
     val1 = core.FloatAttribute()
     val2 = core.FloatAttribute()
-    onetomany_rows = OneToManyRowAttribute('OneToManyRow', related_name='leaf', related_none=False)
-    onetomany_inlines = OneToManyInlineAttribute('OneToManyInline', related_name='leaf', related_none=False)
+    onetomany_rows = OneToManyRowAttribute('OneToManyRow', related_name='leaf', min_related_rev=1)
+    onetomany_inlines = OneToManyInlineAttribute('OneToManyInline', related_name='leaf', min_related_rev=1)
 
     class Meta(core.Model.Meta):
         attribute_order = (

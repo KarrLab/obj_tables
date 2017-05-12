@@ -33,7 +33,7 @@ class Root(core.Model):
 
 class Leaf(core.Model):
     root = core.ManyToOneAttribute(Root, verbose_name='Root',
-                                   related_name='leaves', verbose_related_name='Leaves', none=False)
+                                   related_name='leaves', verbose_related_name='Leaves', min_related=1)
     id = core.RegexAttribute(verbose_name='ID', min_length=1, max_length=63,
                              pattern=r'^[a-z][a-z0-9_]*$', flags=re.I, primary=True)
     name = core.StringAttribute(verbose_name='Name', max_length=255)
@@ -47,7 +47,7 @@ class Leaf(core.Model):
 class UnrootedLeaf(Leaf):
     name = core.StringAttribute(verbose_name='Name', max_length=10)
 
-    root2 = core.ManyToOneAttribute(Root, none=True, verbose_name='Root', related_name='leaves2')
+    root2 = core.ManyToOneAttribute(Root, min_related=0, verbose_name='Root', related_name='leaves2')
     id2 = core.RegexAttribute(verbose_name='ID', min_length=1, max_length=63,
                               pattern=r'^[a-z][a-z0-9_]*$', flags=re.I)
     name2 = core.StringAttribute(verbose_name='Name', min_length=2, max_length=3)
@@ -72,13 +72,13 @@ class Grandparent(core.Model):
 class Parent(core.Model):
     id = core.StringAttribute(max_length=2, primary=True, unique=True)
     val = core.StringAttribute()
-    grandparent = core.ManyToOneAttribute(Grandparent, related_name='children', none=False)
+    grandparent = core.ManyToOneAttribute(Grandparent, related_name='children', min_related=1)
 
 
 class Child(core.Model):
     id = core.StringAttribute(primary=True)
     val = core.StringAttribute()
-    parent = core.ManyToOneAttribute(Parent, related_name='children', none=False)
+    parent = core.ManyToOneAttribute(Parent, related_name='children', min_related=1)
 
 
 class UniqueRoot(Root):
@@ -108,7 +108,7 @@ class OneToOneRoot(core.Model):
 
 
 class OneToOneLeaf(core.Model):
-    root = core.OneToOneAttribute(OneToOneRoot, related_name='leaf', none=False)
+    root = core.OneToOneAttribute(OneToOneRoot, related_name='leaf', min_related=1)
 
 
 class ManyToOneRoot(core.Model):
@@ -117,7 +117,7 @@ class ManyToOneRoot(core.Model):
 
 class ManyToOneLeaf(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
-    root = core.ManyToOneAttribute(ManyToOneRoot, related_name='leaves', none=False)
+    root = core.ManyToOneAttribute(ManyToOneRoot, related_name='leaves', min_related=1)
 
 
 class OneToManyRoot(core.Model):
@@ -126,7 +126,7 @@ class OneToManyRoot(core.Model):
 
 class OneToManyLeaf(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
-    roots = core.OneToManyAttribute(OneToManyRoot, related_name='leaf', related_none=False)
+    roots = core.OneToManyAttribute(OneToManyRoot, related_name='leaf', min_related_rev=1)
 
 
 class ManyToManyRoot(core.Model):
@@ -859,7 +859,11 @@ class TestCore(unittest.TestCase):
         class LeafDefault(core.Model):
             label = core.StringAttribute(primary=True, unique=True, default='leaf2')
             root = core.ManyToOneAttribute(RootDefault, related_name='leaves',
-                                           related_default=lambda: [LeafDefault(label='leaf3'), LeafDefault(label='leaf4'), LeafDefault(label='leaf5')])
+                                           related_default=lambda: [
+                                               LeafDefault(label='leaf3'),
+                                               LeafDefault(label='leaf4'),
+                                               LeafDefault(label='leaf5')
+                                           ])
 
         leaf0 = LeafDefault()
         self.assertEqual(leaf0.label, 'leaf2')
@@ -977,6 +981,255 @@ class TestCore(unittest.TestCase):
         for obj in chain(roots, leaves):
             error = obj.validate()
             self.assertEqual(error, None)
+
+    def test_validate_one_to_one_num_related(self):
+        # min_related=0, min_related_rev=0
+        class TestRoot(core.Model):
+            id = core.SlugAttribute()
+
+        class TestNode(core.Model):
+            id = core.SlugAttribute()
+            root = core.OneToOneAttribute(TestRoot, related_name='node', min_related=0, min_related_rev=0)
+
+        root = TestRoot(id='a')
+        node = TestNode(id='b')
+        self.assertEqual(root.validate(), None)
+        self.assertEqual(node.validate(), None)
+
+        root.node = node
+        self.assertEqual(root.validate(), None)
+        self.assertEqual(node.validate(), None)
+
+        # min_related=1, min_related_rev=1
+        class TestRoot(core.Model):
+            id = core.SlugAttribute()
+
+        class TestNode(core.Model):
+            id = core.SlugAttribute()
+            root = core.OneToOneAttribute(TestRoot, related_name='node', min_related=1, min_related_rev=1)
+
+        root = TestRoot(id='a')
+        node = TestNode(id='b')
+        self.assertNotEqual(root.validate(), None)
+        self.assertNotEqual(node.validate(), None)
+
+        root.node = node
+        self.assertEqual(root.validate(), None)
+        self.assertEqual(node.validate(), None)
+
+    def test_validate_one_to_many_num_related(self):
+        # min_related=1, max_related=2, min_related_rev=1
+        class TestRoot(core.Model):
+            id = core.SlugAttribute()
+
+        class TestNode(core.Model):
+            id = core.SlugAttribute()
+            roots = core.OneToManyAttribute(TestRoot, related_name='node', min_related=1, max_related=2, min_related_rev=1)
+
+        root1 = TestRoot(id='a')
+        root2 = TestRoot(id='b')
+        root3 = TestRoot(id='c')
+        node = TestNode(id='a')
+        self.assertNotEqual(root1.validate(), None)
+        self.assertNotEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertNotEqual(node.validate(), None)
+
+        node.roots = [root1]
+        self.assertEqual(root1.validate(), None)
+        self.assertNotEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertEqual(node.validate(), None)
+
+        node.roots = [root1, root2]
+        self.assertEqual(root1.validate(), None)
+        self.assertEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertEqual(node.validate(), None)
+
+        node.roots = [root1, root2, root3]
+        self.assertEqual(root1.validate(), None)
+        self.assertEqual(root2.validate(), None)
+        self.assertEqual(root3.validate(), None)
+        self.assertNotEqual(node.validate(), None)
+
+        # min_related=1, max_related=2, min_related_rev=0
+        class TestRoot(core.Model):
+            id = core.SlugAttribute()
+
+        class TestNode(core.Model):
+            id = core.SlugAttribute()
+            roots = core.OneToManyAttribute(TestRoot, related_name='node', min_related=1, max_related=2, min_related_rev=0)
+
+        root1 = TestRoot(id='a')
+        root2 = TestRoot(id='b')
+        root3 = TestRoot(id='c')
+        node = TestNode(id='a')
+        self.assertEqual(root1.validate(), None)
+        self.assertEqual(root2.validate(), None)
+        self.assertEqual(root3.validate(), None)
+        self.assertNotEqual(node.validate(), None)
+
+        node.roots = [root1]
+        self.assertEqual(root1.validate(), None)
+        self.assertEqual(root2.validate(), None)
+        self.assertEqual(root3.validate(), None)
+        self.assertEqual(node.validate(), None)
+
+        node.roots = [root1, root2]
+        self.assertEqual(root1.validate(), None)
+        self.assertEqual(root2.validate(), None)
+        self.assertEqual(root3.validate(), None)
+        self.assertEqual(node.validate(), None)
+
+        node.roots = [root1, root2, root3]
+        self.assertEqual(root1.validate(), None)
+        self.assertEqual(root2.validate(), None)
+        self.assertEqual(root3.validate(), None)
+        self.assertNotEqual(node.validate(), None)
+
+    def test_validate_many_to_one_num_related(self):
+        # min_related=1, min_related_rev=1, max_related_rev=2
+        class TestRoot(core.Model):
+            id = core.SlugAttribute()
+
+        class TestNode(core.Model):
+            id = core.SlugAttribute()
+            root = core.ManyToOneAttribute(TestRoot, related_name='nodes', min_related=1, min_related_rev=1, max_related_rev=2)
+
+        root = TestRoot(id='a')
+        node1 = TestNode(id='a')
+        node2 = TestNode(id='b')
+        node3 = TestNode(id='a')
+        self.assertNotEqual(root.validate(), None)
+        self.assertNotEqual(node1.validate(), None)
+        self.assertNotEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
+
+        root.nodes = [node1]
+        self.assertEqual(root.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertNotEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
+
+        root.nodes = [node1, node2]
+        self.assertEqual(root.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
+
+        root.nodes = [node1, node2, node3]
+        self.assertNotEqual(root.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertEqual(node2.validate(), None)
+        self.assertEqual(node3.validate(), None)
+
+        # min_related=0, min_related_rev=1, max_related_rev=2
+        class TestRoot(core.Model):
+            id = core.SlugAttribute()
+
+        class TestNode(core.Model):
+            id = core.SlugAttribute()
+            root = core.ManyToOneAttribute(TestRoot, related_name='nodes', min_related=0, min_related_rev=1, max_related_rev=2)
+
+        root = TestRoot(id='a')
+        node1 = TestNode(id='a')
+        node2 = TestNode(id='b')
+        node3 = TestNode(id='a')
+        self.assertNotEqual(root.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertEqual(node2.validate(), None)
+        self.assertEqual(node3.validate(), None)
+
+        root.nodes = [node1]
+        self.assertEqual(root.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertEqual(node2.validate(), None)
+        self.assertEqual(node3.validate(), None)
+
+        root.nodes = [node1, node2]
+        self.assertEqual(root.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertEqual(node2.validate(), None)
+        self.assertEqual(node3.validate(), None)
+
+        root.nodes = [node1, node2, node3]
+        self.assertNotEqual(root.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertEqual(node2.validate(), None)
+        self.assertEqual(node3.validate(), None)
+
+    def test_validate_many_to_many_num_related(self):
+        # min_related=1, max_related=2, min_related_rev=1, max_related_rev=2
+        class TestRoot(core.Model):
+            id = core.SlugAttribute()
+
+        class TestNode(core.Model):
+            id = core.SlugAttribute()
+            roots = core.ManyToManyAttribute(TestRoot, related_name='nodes',
+                                             min_related=1, max_related=2, min_related_rev=1, max_related_rev=2)
+
+        root1 = TestRoot(id='a')
+        root2 = TestRoot(id='b')
+        root3 = TestRoot(id='c')
+        node1 = TestNode(id='a')
+        node2 = TestNode(id='b')
+        node3 = TestNode(id='a')
+        self.assertNotEqual(root1.validate(), None)
+        self.assertNotEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertNotEqual(node1.validate(), None)
+        self.assertNotEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
+
+        root1.nodes = [node1]
+        self.assertEqual(root1.validate(), None)
+        self.assertNotEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertNotEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
+
+        root1.nodes = [node1, node2]
+        self.assertEqual(root1.validate(), None)
+        self.assertNotEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
+
+        root1.nodes = [node1, node2, node3]
+        self.assertNotEqual(root1.validate(), None)
+        self.assertNotEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertEqual(node2.validate(), None)
+        self.assertEqual(node3.validate(), None)
+
+        root1.nodes = []
+        node1.roots = [root1]
+        self.assertEqual(root1.validate(), None)
+        self.assertNotEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertNotEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
+
+        node1.roots = [root1, root2]
+        self.assertEqual(root1.validate(), None)
+        self.assertEqual(root2.validate(), None)
+        self.assertNotEqual(root3.validate(), None)
+        self.assertEqual(node1.validate(), None)
+        self.assertNotEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
+
+        node1.roots = [root1, root2, root3]
+        self.assertEqual(root1.validate(), None)
+        self.assertEqual(root2.validate(), None)
+        self.assertEqual(root3.validate(), None)
+        self.assertNotEqual(node1.validate(), None)
+        self.assertNotEqual(node2.validate(), None)
+        self.assertNotEqual(node3.validate(), None)
 
     def test_onetoone_set_related(self):
         root = OneToOneRoot()
@@ -1386,6 +1639,7 @@ root2: None'''
         class Root0(core.Model):
             label = core.SlugAttribute()
             f = core.FloatAttribute()
+
         class Node0(core.Model):
             id = core.SlugAttribute()
             root = core.OneToOneAttribute(Root0, related_name='node')
@@ -1399,12 +1653,14 @@ root2: None'''
 
         class Root1(core.Model):
             label = core.SlugAttribute()
+
         class Node1(core.Model):
             id = core.SlugAttribute()
             roots = core.OneToManyAttribute(Root1, related_name='node')
 
         class Root2(core.Model):
             label = core.StringAttribute()
+
         class Node2(core.Model):
             id = core.StringAttribute()
             root = core.ManyToOneAttribute(Root2, related_name='nodes')
@@ -1430,6 +1686,7 @@ node:
 
         class Root3(core.Model):
             label = core.StringAttribute()
+
         class Node3(core.Model):
             id = core.StringAttribute()
             roots = core.ManyToManyAttribute(Root3, related_name='nodes')
@@ -2014,3 +2271,59 @@ node:
             .extend([m1, m2]) \
             .symmetric_difference_update([m1])
         self.assertEqual(set(d.mothers), set([m2]))
+
+    def test_override_superclass_attributes(self):
+        class TestSup(core.Model):
+            value = core.IntegerAttribute(min=1, max=10)
+        class TestSub(TestSup):
+            value = core.IntegerAttribute(min=3, max=12)
+
+        sup = TestSup(value=0)
+        sub = TestSub(value=0)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+        sup = TestSup(value=2)
+        sub = TestSub(value=2)
+        self.assertEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+        sup = TestSup(value=12)
+        sub = TestSub(value=12)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertEqual(sub.validate(), None)
+
+        sup = TestSup(value=13)
+        sub = TestSub(value=13)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+    def test_modify_superclass_attributes(self):
+        class TestSup(core.Model):
+            value = core.IntegerAttribute(min=1, max=10)
+        class TestSub(TestSup):
+            pass
+
+        self.assertNotEqual(TestSub.Meta.attributes['value'], TestSup.Meta.attributes['value'])
+        TestSub.Meta.attributes['value'].min = 3
+        TestSub.Meta.attributes['value'].max = 12
+
+        sup = TestSup(value=0)
+        sub = TestSub(value=0)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+        sup = TestSup(value=2)
+        sub = TestSub(value=2)
+        self.assertEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
+
+        sup = TestSup(value=12)
+        sub = TestSub(value=12)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertEqual(sub.validate(), None)
+
+        sup = TestSup(value=13)
+        sub = TestSub(value=13)
+        self.assertNotEqual(sup.validate(), None)
+        self.assertNotEqual(sub.validate(), None)
