@@ -1,0 +1,4 @@
+general:
+  branches:
+    ignore:
+      - online_unique_testing # list of branches to ignore
