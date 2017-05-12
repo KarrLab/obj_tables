@@ -45,3 +45,7 @@ jobs:
       - store_artifacts:
           path: /root/project/docs/_build/html
           destination: docs
+general:
+  branches:
+    ignore:
+      - online_unique_testing # list of branches to ignore
