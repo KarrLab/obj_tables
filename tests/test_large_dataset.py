@@ -18,28 +18,38 @@ import unittest
 
 class Model(core.Model):
     id = core.SlugAttribute()
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class Gene(core.Model):
     model = core.ManyToOneAttribute(Model, related_name='genes')
     id = core.SlugAttribute()
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class Rna(core.Model):
     model = core.ManyToOneAttribute(Model, related_name='rna')
     gene = core.ManyToOneAttribute(Gene, related_name='rna')
     id = core.SlugAttribute()
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class Protein(core.Model):
     model = core.ManyToOneAttribute(Model, related_name='proteins')
     rna = core.ManyToOneAttribute(Rna, related_name='proteins')
     id = core.SlugAttribute()
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class Metabolite(core.Model):
     model = core.ManyToOneAttribute(Model, related_name='metabolites')
     id = core.SlugAttribute()
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class Reaction(core.Model):
@@ -47,6 +57,8 @@ class Reaction(core.Model):
     id = core.SlugAttribute()
     metabolites = core.ManyToManyAttribute(Metabolite, related_name='reactions')
     enzyme = core.ManyToOneAttribute(Protein, related_name='reactions')
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 def generate_model(n_gene, n_rna, n_prot, n_met):

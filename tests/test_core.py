@@ -17,6 +17,9 @@ import re
 import resource
 import sys
 import unittest
+import gc
+import copy
+import collections
 
 
 class Order(Enum):
@@ -28,7 +31,7 @@ class Root(core.Model):
     label = core.StringAttribute(verbose_name='Label', max_length=255, primary=True, unique=True)
 
     class Meta(core.Model.Meta):
-        pass
+        _donot_use_manager = True
 
 
 class Leaf(core.Model):
@@ -67,12 +70,16 @@ class Leaf3(UnrootedLeaf):
 class Grandparent(core.Model):
     id = core.StringAttribute(max_length=1, primary=True, unique=True)
     val = core.StringAttribute()
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class Parent(core.Model):
     id = core.StringAttribute(max_length=2, primary=True, unique=True)
     val = core.StringAttribute()
     grandparent = core.ManyToOneAttribute(Grandparent, related_name='children', none=False)
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class Child(core.Model):
@@ -88,7 +95,7 @@ class UniqueRoot(Root):
     pos_int_attr = core.PositiveIntegerAttribute()
 
     class Meta(core.Model.Meta):
-        pass
+        _donot_use_manager = True
 
 
 class DateRoot(core.Model):
@@ -113,24 +120,34 @@ class OneToOneLeaf(core.Model):
 
 class ManyToOneRoot(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class ManyToOneLeaf(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
     root = core.ManyToOneAttribute(ManyToOneRoot, related_name='leaves', none=False)
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class OneToManyRoot(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class OneToManyLeaf(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
     roots = core.OneToManyAttribute(OneToManyRoot, related_name='leaf', related_none=False)
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class ManyToManyRoot(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
+    class Meta(core.Model.Meta):
+        _donot_use_manager = True
 
 
 class ManyToManyLeaf(core.Model):
@@ -145,6 +162,7 @@ class UniqueTogetherRoot(core.Model):
 
     class Meta(core.Model.Meta):
         unique_together = (('val1', 'val2'),)
+        _donot_use_manager = True
 
 
 class InlineRoot(core.Model):
@@ -337,6 +355,68 @@ class TestCore(unittest.TestCase):
     def test___str__(self):
         root = Root(label='test label')
         self.assertEqual(str(root), '<{}.{}: {}>'.format(Root.__module__, 'Root', root.label))
+
+    def test_validate_attributes_errors(self):
+        with self.assertRaises(ValueError) as context:
+            class Test1(core.Model):
+                name = core.StringAttribute()
+                class Meta(core.Model.Meta): attribute_order = (1,)
+        self.assertIn('must contain attribute names', str(context.exception))
+        
+        bad_name = 'ERROR'
+        with self.assertRaises(ValueError) as context:
+            class Test1(core.Model):
+                name = core.StringAttribute()
+                class Meta(core.Model.Meta): attribute_order = (bad_name,)
+        self.assertIn("'{}' not found in attributes of".format(bad_name), str(context.exception))
+
+        with self.assertRaises(ValueError) as context:
+            class Test1(core.Model):
+                name = core.StringAttribute()
+                class Meta(core.Model.Meta): unique_together = 'hello'
+        self.assertIn("must be a tuple, not", str(context.exception))
+
+        with self.assertRaises(ValueError) as context:
+            class Test1(core.Model):
+                name = core.StringAttribute()
+                class Meta(core.Model.Meta): unique_together = ('hello', 2)
+        self.assertIn("must be a tuple of tuples, not", str(context.exception))
+
+        with self.assertRaises(ValueError) as context:
+            class Test1(core.Model):
+                name = core.StringAttribute()
+                class Meta(core.Model.Meta): unique_together = ((3,), ('var', 'woops!'),)
+        self.assertIn("must be a tuple of tuples of strings, not", str(context.exception))
+
+        with self.assertRaises(ValueError) as context:
+            class Test1(core.Model):
+                name = core.StringAttribute()
+                var = core.IntegerAttribute()
+                class Meta(core.Model.Meta): unique_together = (('name',), ('var', 'woops!'),)
+        self.assertIn("must be a tuple of tuples of attribute names", str(context.exception))
+
+        with self.assertRaises(ValueError) as context:
+            class Test1(core.Model):
+                name = core.StringAttribute()
+                var = core.IntegerAttribute()
+                class Meta(core.Model.Meta): unique_together = (('name', 'var', 'name', ),)
+        self.assertIn("cannot repeat attribute names in any tuple", str(context.exception))
+
+        with self.assertRaises(ValueError) as context:
+            class Test1(core.Model):
+                name = core.StringAttribute()
+                var = core.IntegerAttribute()
+                class Meta(core.Model.Meta): unique_together = (('var', 'name',), ('name', 'var', ), )
+        self.assertIn("unique_together cannot contain identical attribute sets", str(context.exception))
+
+        test_tuples = (('b_name', 'a_name',), ('c_name', 'b_name', ), )
+        class Test1(core.Model):
+            a_name = core.StringAttribute()
+            b_name = core.IntegerAttribute()
+            c_name = core.IntegerAttribute()
+            class Meta(core.Model.Meta): unique_together = test_tuples
+        for a_tuple in test_tuples:
+            self.assertIn(tuple(sorted(a_tuple)), Test1.Meta.unique_together)
 
     def test_validate_attribute(self):
         root = Root()
@@ -743,6 +823,8 @@ class TestCore(unittest.TestCase):
             label = core.StringAttribute(primary=True, unique=True, default='leaf0')
             root = core.OneToOneAttribute(RootDefault, related_name='leaf',
                                           related_default=lambda: LeafDefault(label='leaf2'))
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         leaf0 = LeafDefault()
         self.assertEqual(leaf0.label, 'leaf0')
@@ -769,11 +851,15 @@ class TestCore(unittest.TestCase):
     def test_onetomany_default(self):
         class LeafDefault(core.Model):
             label = core.StringAttribute(primary=True, unique=True, default='leaf22')
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         class RootDefault(core.Model):
             label = core.StringAttribute(primary=True, unique=True, default='root0')
             leaves = core.OneToManyAttribute(LeafDefault, related_name='root', default=lambda: [
                 LeafDefault(label='leaf00'), LeafDefault(label='leaf01')])
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         root0 = RootDefault()
         self.assertEqual(root0.label, 'root0')
@@ -801,6 +887,8 @@ class TestCore(unittest.TestCase):
             label = core.StringAttribute(primary=True, unique=True, default='root0')
             leaves = core.OneToManyAttribute(LeafDefault, related_name='root',
                                              related_default=lambda: RootDefault(label='root1'))
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         root0 = RootDefault()
         self.assertEqual(root0.label, 'root0')
@@ -1680,28 +1768,188 @@ node:
         self.assertEqual(excel_col_name(5), 'E')
         self.assertEqual(excel_col_name(2**14), 'XFD')
 
-    @unittest.expectedFailure
-    def test_maintain_unique(self):
-        class Test(core.Model):
+    def test_manager_staticmethods(self):
+        class Foo(object):
+            def __init__(self, a, b):
+                self.a = a
+                self.b = b
+        attrs = ('a', 'b')
+        vals = ('hi', 3)
+        f1 = Foo(*vals)
+        self.assertEqual(vals, core.Manager.get_attr_tuple(f1, attrs))
+        new_vals = ('new', 3)
+        self.assertEqual(new_vals, core.Manager.replace_in_attr_tuple(f1, attrs, 'a', 'new'))
+
+    def test_manager_small_methods(self):
+        class Test0(core.Model): pass
+        class Test1(core.Model):
+            str_attr = core.StringAttribute()
+            int_attr = core.IntegerAttribute()
+            test0 = core.OneToOneAttribute(Test0, related_name='test1')
+            test0s = core.OneToManyAttribute(Test0, related_name='test1_1tm')
+        mgr = core.Manager(Test1)
+        t0 = Test0()
+
+        # test get_attribute_types
+        vs, vi = 's', 1
+        t1 = Test1(str_attr=vs, int_attr=vi, test0=t0)
+        self.assertEqual((core.OneToOneAttribute, core.StringAttribute, core.IntegerAttribute),
+            tuple([attr.__class__ 
+                for attr in mgr.get_attribute_types(t1, ('test0', 'str_attr', 'int_attr'))]))
+        bad_attr = 'no_attr'
+        with self.assertRaises(ValueError) as context:
+            mgr.get_attribute_types(t1, (bad_attr,))
+        self.assertIn("Cannot find '{}' in attribute names".format(bad_attr), str(context.exception))
+
+        # test _get_hashable_values
+        s1 = 'abc'
+        self.assertEqual((s1,), core.Manager._get_hashable_values(s1))
+        self.assertEqual((vs, vi, id(t0)), core.Manager._get_hashable_values((t1.str_attr, t1.int_attr,
+            t1.test0)))
+        t0s = [Test0() for i in range(3)]
+        ids = [id(t0) for t0 in t0s]
+        t2 = Test1()
+        t2.test0s.extend(t0s)
+        self.assertEqual(tuple(ids), core.Manager._get_hashable_values(t2.test0s))
+
+        # test get_hashable_values
+        self.assertEqual(s1, core.Manager.get_hashable_values(s1))
+        self.assertEqual((vs, vi, id(t0)),
+            core.Manager.get_hashable_values((t1.str_attr, t1.int_attr, t1.test0)))
+        self.assertEqual(vs, core.Manager.get_hashable_values(t1.str_attr))
+
+        # test make & break tuple
+        x = 3
+        vals = (x, 'hi')
+        self.assertEqual(vals, core.Manager.make_tuple(vals))
+        self.assertEqual((x,), core.Manager.make_tuple(x))
+        self.assertEqual(vals, core.Manager.first_tuple(vals, False))
+        self.assertEqual(x, core.Manager.first_tuple(vals, True))
+
+        # test get_vals
+        self.assertEqual(vs, core.Manager.get_vals(t1, 'str_attr'))
+        self.assertEqual(vi, core.Manager.get_vals(t1, 'int_attr'))
+        self.assertEqual((vs, vi), core.Manager.get_vals(t1, ('str_attr', 'int_attr')))
+
+    def test_context_manager(self):
+        pass
+
+    def test_manager(self):
+        class Test1(core.Model):
             a_unique_attr = core.StringAttribute(unique=True)
+            non_unique_attr = core.StringAttribute(unique=False)
+
+        # test get() and all()
+        v = 'x'
+        t1 = Test1(a_unique_attr=v)
+        self.assertEqual(t1, Test1.objects.get(a_unique_attr=v))
+        self.assertEqual(t1, Test1.objects.all()[0])
+
+        # test get() with no arguments
+        with self.assertRaises(ValueError) as context:
+            Test1.objects.get()
+        self.assertIn('No attribute', str(context.exception))
+
+        # test get() with a non-unique attribute
+        with self.assertRaises(ValueError) as context:
+            Test1.objects.get(non_unique_attr=7)
+        self.assertIn('not a unique attribute', str(context.exception))
+        
+        # test get() of multiple attributes not in a unique_together
+        with self.assertRaises(ValueError) as context:
+            Test1.objects.get(a_unique_attr=v, non_unique_attr=7)
+        self.assertIn('not a unique_together', str(context.exception))
+        
+        # test duplicates during construction
+        with self.assertRaises(ValueError) as context:
+            Test1(a_unique_attr=v)
+        self.assertIn('Duplicate value', str(context.exception))
+
+        # test duplicates changing attribute
+        t2 = Test1(a_unique_attr='abc')
+        with self.assertRaises(ValueError) as context:
+            t2.a_unique_attr = v
+        self.assertIn('Duplicate', str(context.exception))
+
+        # test weakrefs
+        v2 = 'y'
+        Test1(a_unique_attr=v2) # only weak references in Manager() to this object remain
+        gc.collect()
+        t = Test1.objects.get(a_unique_attr=v2)
+        self.assertEqual(None, t)
+
+
+        #### test unique_together ####
+        class Test2(core.Model):
             attr1 = core.IntegerAttribute()
             attr2 = core.IntegerAttribute()
+            attr3 = core.IntegerAttribute()
+            class Meta(core.Model.Meta):
+                unique_together = (('attr2', 'attr1'), ('attr3', 'attr1'))
+        class Test3(core.Model):
+            test2s = core.OneToManyAttribute(Test2, related_name='test3')
+            class Meta(core.Model.Meta):
+                unique_together = (('test2s',), )
 
-            class Meta(BaseModel.Meta):
-                unique_together = (('attr1', 'attr2', ), )
+        kwargs1 = collections.OrderedDict(attr1=3, attr2=5)
+        t4 = Test2(**kwargs1)
+        # test unique_together constructing identical instance
+        with self.assertRaises(ValueError) as context:
+            with core.Manager.unique(Test2):
+                Test2(**kwargs1)
+        self.assertIn("Duplicate value '(3, 5)'", str(context.exception))
+        self.assertIn("Duplicate value '(3, None)'", str(context.exception))
 
-        t1 = Test(a_unique_attr='x')
-        t2 = Test(a_unique_attr='y')
-
+        """
+        print('<<<<START>>>>')
+        with self.assertRaises(ValueError) as context:
+            Test2(**kwargs1)
+        print('<<<<END>>>>')
+        Test2.objects._dump_unique_dicts()
+        print('<<<<', str(context.exception), '>>>>>>>>>')
         '''
-        Currently (2/2017), validation of uniqueness is a static property that's
-        ensured only when validate_unique() is called, that is, when a model's created or when
-        validate_unique() is called by the user.
-
-        Thus, this fails, because uniqueness constraints are not checked immediately:
+        self.assertIn("Duplicate value '(3, 5)'", str(context.exception))
+        self.assertIn("Duplicate value '(3, None)'", str(context.exception))
         '''
-        with self.assertRaises(Exception) as context:
-            t2.a_unique_attr = 'x'
+        """
+
+        # test unique_together duplicate when changing attribute value
+        kwargs2 = copy.deepcopy(kwargs1)
+        kwargs2['attr1'] += 1
+        t5 = Test2(**kwargs2)
+        with self.assertRaises(ValueError) as context:
+            t5.attr1 -= 1
+        self.assertIn("Duplicate value '(3, 5)'", str(context.exception))
+        self.assertIn("Duplicate value '(3, None)'", str(context.exception))
+
+        # test get() of unique_together attributes in the order provided in Meta
+        self.assertEqual(t4, Test2.objects.get(**kwargs1))
+        
+        # test get() of unique_together attributes in another order
+        kwargs1.move_to_end(list(kwargs1.keys())[0])
+        self.assertEqual(t4, Test2.objects.get(**kwargs1))
+
+        # test unique_together related attribute
+        # T3 = Test3(test2s=[t4, t5])
+
+        #### test related attributes ####
+        class Mother(core.Model):
+            id = core.StringAttribute()
+
+        class Daughter(core.Model):
+            id = core.StringAttribute()
+            mothers = core.ManyToManyAttribute(Mother, related_name='daughters')
+            class Meta(core.Model.Meta):
+                unique_together = (('mothers',),)
+
+        m1 = Mother(id='m1')
+        m2 = Mother(id='m2')
+        d1 = Daughter(id='d1')
+        d1.mothers.extend([m1, m2])
+        d1.pprint()
+        
+        # d2 = Daughter()
+        # d2.mothers.extend([m1, m2])
         '''
         Todo fix:
             Index each unique & unique_together in their class object derived from Model. Obtain
@@ -1709,9 +1957,9 @@ node:
             Will also provide instance lookup by unique or unique_together attributes.
 
             Implementation:
-                let unique_attr refer to any unique or unique_together.
-                in ModelMeta, each Model class instance defines a dict for each unique_attr and a
-                map from each unique_attr to its dict
+                Let unique_attr refer to any unique or unique_together.
+                In ModelMeta, each Model class instance defines a dict for each unique_attr and a
+                map from each unique_attr to its dict. 
                 Analogous to Django, ModelMeta creates an 'objects' method for the class which returns
                 the class's Manager. Managers support:
                     all(): return all object instances of the class; e.g.:
@@ -1723,15 +1971,17 @@ node:
 
                 To maintain:
                 create instance:
-                    redefine __new__() to insert a weak reference to the object in a dict in the class
+                    extend __init__() to insert a weak reference to the object in a dict in the class,
+                    and in an __instances list in the class
 
                 modify field:
                     modify __setattr__() to test uniqueness, and raise exception if test fails
 
-                delete object:
+                not necessary: delete object:
                     use a finalizer to remove object from the class dict
 
                 obviates the need for validate_unique(), as uniqueness is constantly maintained.
+                replace validate_unique code
                 unique exceptions raised when creating many instances get convert into errors
         '''
 
@@ -1846,10 +2096,14 @@ node:
     def test_chaining_many_to_one(self):
         class Mother(core.Model):
             id = core.SlugAttribute()
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         class Daughter(core.Model):
             id = core.SlugAttribute()
             mother = core.ManyToOneAttribute(Mother, related_name='daughters')
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         m = Mother()
         d1 = Daughter()
@@ -1891,10 +2145,14 @@ node:
     def test_chaining_one_to_many(self):
         class Daughter(core.Model):
             id = core.SlugAttribute()
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         class Mother(core.Model):
             id = core.SlugAttribute()
             daughters = core.OneToManyAttribute(Daughter, related_name='mother')
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         m = Mother()
         d1 = Daughter()
@@ -1936,10 +2194,14 @@ node:
     def test_chaining_many_to_many(self):
         class Mother(core.Model):
             id = core.SlugAttribute()
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         class Daughter(core.Model):
             id = core.SlugAttribute()
             mothers = core.ManyToManyAttribute(Mother, related_name='daughters')
+            class Meta(core.Model.Meta):
+                _donot_use_manager = True
 
         m = Mother()
         d1 = Daughter()
