@@ -13,15 +13,11 @@ import unittest
 
 class Root(core.Model):
     id = core.StringAttribute(max_length=1, primary=True, unique=True, verbose_name='Identifier')
-    class Meta(core.Model.Meta):
-        _donot_use_manager = True
 
 
 class Node(core.Model):
     id = core.StringAttribute(max_length=2, primary=True, unique=True)
     root = core.ManyToOneAttribute(Root, related_name='nodes')
-    class Meta(core.Model.Meta):
-        _donot_use_manager = True
 
 
 class Leaf(core.Model):

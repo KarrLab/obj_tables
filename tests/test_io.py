@@ -26,7 +26,6 @@ class MainRoot(core.Model):
     class Meta(core.Model.Meta):
         attribute_order = ('id', 'name', )
         tabular_orientation = core.TabularOrientation.column
-        _donot_use_manager = True
 
 
 class Node(core.Model):
@@ -37,7 +36,6 @@ class Node(core.Model):
 
     class Meta(core.Model.Meta):
         attribute_order = ('id', 'root', 'val1', 'val2', )
-        _donot_use_manager = True
 
 
 class OneToManyRowAttribute(core.OneToManyAttribute):
@@ -84,7 +82,6 @@ class OneToManyRow(core.Model):
 
     class Meta(core.Model.Meta):
         attribute_order = ('id',)
-        _donot_use_manager = True
 
 
 class OneToManyInline(core.Model):
@@ -93,7 +90,6 @@ class OneToManyInline(core.Model):
     class Meta(core.Model.Meta):
         attribute_order = ('id',)
         tabular_orientation = core.TabularOrientation.inline
-        _donot_use_manager = True
 
 
 class TestIo(unittest.TestCase):
@@ -309,7 +305,6 @@ class TestIo(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'val')
-                _donot_use_manager = True
 
         class Transposed(core.Model):
             tid = core.SlugAttribute()
@@ -318,7 +313,6 @@ class TestIo(unittest.TestCase):
             class Meta(core.Model.Meta):
                 attribute_order = ('tid', 's', )
                 tabular_orientation = core.TabularOrientation.column
-                _donot_use_manager = True
 
         file = 'test-locations.xlsx'
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', file)
