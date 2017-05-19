@@ -2249,6 +2249,17 @@ node:
         mgr1.get(str_attr='t')              # get e2
         self.assertIn(e2, mgr1.get(str_attr='t'))
 
+        # test weak refs
+        mgr1 = Example1.get_manager()
+        val = 'unique apg'
+        e1 = Example1(str_attr=val)
+        mgr1.upsert(e1)
+        self.assertIn(e1, mgr1.get(str_attr=val))
+        # models without strong refs disappear from indices after gc
+        e1 = None
+        gc.collect()
+        self.assertEqual(None, mgr1.get(str_attr=val))
+
     def test_sort(self):
         roots = [
             Root(label='c'),
