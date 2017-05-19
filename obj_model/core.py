@@ -150,15 +150,11 @@ import inflect
 import re
 import sys
 import warnings
-import traceback
-from contextlib import contextmanager
 # todo: simplify primary attributes, deserialization
 # todo: improve memory efficiency
 # todo: improve run-time
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
 # todo: implement schema migration
-# todo: ensure unique and unique_together properties always maintained:
-#       see schema/test_core.py::TestCore::test_maintain_unique
 
 
 class ModelMeta(type):
@@ -190,6 +186,7 @@ class ModelMeta(type):
             Meta.attribute_order = tuple(Meta.attribute_order)
 
             Meta.unique_together = copy.deepcopy(bases[0].Meta.unique_together)
+            Meta.indexed_attrs_tuples = copy.deepcopy(bases[0].Meta.indexed_attrs_tuples)
             Meta.tabular_orientation = bases[0].Meta.tabular_orientation
             Meta.frozen_columns = bases[0].Meta.frozen_columns
             Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
@@ -219,10 +216,7 @@ class ModelMeta(type):
 
         metacls.validate_attributes(cls)
 
-        # inactivate the Manager if '_donot_use_manager' is set in the Meta class
-        # provided to avoid fixing legacy code that temporarily violates unique constraints
-        active = not hasattr(cls.Meta, '_donot_use_manager')
-        metacls.create_model_manager(cls, active)
+        metacls.create_model_manager(cls)
 
         # Return new class
         return cls
@@ -253,7 +247,7 @@ class ModelMeta(type):
 
         cls.Meta.attributes = OrderedDict()
         for attr_name in sorted(dir(cls)):
-            orig_attr = getattr(cls, attr_name)            
+            orig_attr = getattr(cls, attr_name)
 
             if isinstance(orig_attr, Attribute):
                 if attr_name in cls.__dict__:
@@ -315,7 +309,7 @@ class ModelMeta(type):
                         # add attribute to dictionary of related attributes
                         related_class.Meta.related_attributes[attr.related_name] = attr
                         related_class.Meta.related_attributes = OrderedDict(
-                            sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))    
+                            sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))
 
     def init_primary_attribute(cls):
         """ Initialize the primary attribute of a model
@@ -369,6 +363,56 @@ class ModelMeta(type):
             inflect_engine = inflect.engine()
             cls.Meta.verbose_name_plural = inflect_engine.plural(cls.Meta.verbose_name)
 
+    def validate_n_normalize_attr_tuples(cls, attribute):
+        """ Validate and normalize a tuple of tuples of attribute names
+
+        Args:
+            attribute (:obj:`str`): the name of the attribute to validate and normalize
+
+        Raises:
+            :obj:`ValueError`: if attributes are not valid
+        """
+        # getattr(cls.Meta, attribute) should be a tuple of tuples of attribute names
+        if not isinstance(getattr(cls.Meta, attribute), tuple):
+            raise ValueError("{} for '{}' must be a tuple, not '{}'".format(
+                attribute, cls.__name__, getattr(cls.Meta, attribute)))
+
+        for tup_of_attrnames in getattr(cls.Meta, attribute):
+            if not isinstance(tup_of_attrnames, tuple):
+                raise ValueError("{} for '{}' must be a tuple of tuples, not '{}'".format(
+                attribute, cls.__name__, getattr(cls.Meta, attribute)))
+
+            for attr_name in tup_of_attrnames:
+                if not isinstance(attr_name, str):
+                    raise ValueError("{} for '{}' must be a tuple of tuples of strings, not '{}'".format(
+                attribute, cls.__name__, getattr(cls.Meta, attribute)))
+
+                if attr_name not in cls.Meta.attributes and attr_name not in cls.Meta.related_attributes:
+                    raise ValueError("{} for '{}' must be a tuple of tuples of attribute names, "
+                        "not '{}'".format(attribute, cls.__name__, getattr(cls.Meta, attribute)))
+
+            if len(set(tup_of_attrnames)) < len(tup_of_attrnames):
+                raise ValueError("{} for '{}' cannot repeat attribute names "
+                    "in any tuple: '{}'".format(attribute, cls.__name__, getattr(cls.Meta, attribute)))
+
+        # raise errors if multiple tup_of_attrnames are equivalent
+        tup_of_attrnames_map = defaultdict(list)
+        for tup_of_attrnames in getattr(cls.Meta, attribute):
+            tup_of_attrnames_map[frozenset(tup_of_attrnames)].append(tup_of_attrnames)
+        equivalent_tuples = []
+        for equivalent_tup_of_attrnames in tup_of_attrnames_map.values():
+            if 1<len(equivalent_tup_of_attrnames):
+                equivalent_tuples.append(equivalent_tup_of_attrnames)
+        if 0<len(equivalent_tuples):
+            raise ValueError("{} cannot contain identical attribute sets: {}".format(
+                attribute, str(equivalent_tuples)))
+
+        # Normalize each tup_of_attrnames in a sorted tuple
+        normalized_tup_of_attrnames = []
+        for tup_of_attrnames in getattr(cls.Meta, attribute):
+            normalized_tup_of_attrnames.append(tuple(sorted(tup_of_attrnames)))
+        setattr(cls.Meta, attribute, tuple(normalized_tup_of_attrnames))
+
     def validate_attributes(cls):
         """ Validate attribute values
 
@@ -388,124 +432,91 @@ class ModelMeta(type):
                 raise ValueError("attribute_order must contain attribute names; '{}' not found in "
                 "attributes of {}: {}".format(attr_name, cls.__name__, set(cls.Meta.attributes.keys())))
 
-        # `unique_together` is a tuple of tuples of attribute names
-        if not isinstance(cls.Meta.unique_together, tuple):
-            raise ValueError("unique_together for '{}' must be a tuple, not '{}'".format(
-                cls.__name__, cls.Meta.unique_together))
+        cls.validate_n_normalize_attr_tuples('unique_together')
+        cls.validate_n_normalize_attr_tuples('indexed_attrs_tuples')
 
-        for unique_together in cls.Meta.unique_together:
-            if not isinstance(unique_together, tuple):
-                raise ValueError("unique_together for '{}' must be a tuple of tuples, not '{}'".format(
-                cls.__name__, cls.Meta.unique_together))
-
-            for attr_name in unique_together:
-                if not isinstance(attr_name, str):
-                    raise ValueError("unique_together for '{}' must be a tuple of tuples of strings, not '{}'".format(
-                cls.__name__, cls.Meta.unique_together))
-
-                if attr_name not in cls.Meta.attributes and attr_name not in cls.Meta.related_attributes:
-                    raise ValueError("unique_together for '{}' must be a tuple of tuples of attribute names, "
-                        "not '{}'".format(cls.__name__, cls.Meta.unique_together))
-
-            if len(set(unique_together)) < len(unique_together):
-                raise ValueError("unique_together for '{}' cannot repeat attribute names "
-                    "in any tuple: '{}'".format(cls.__name__, cls.Meta.unique_together))
-
-        # raise errors if multiple unique_togethers are equivalent
-        unique_togethers_map = defaultdict(list)
-        for unique_together in cls.Meta.unique_together:
-            unique_togethers_map[frozenset(unique_together)].append(unique_together)
-        equivalent_tuples = []
-        for equivalent_unique_togethers in unique_togethers_map.values():
-            if 1<len(equivalent_unique_togethers):
-                equivalent_tuples.append(equivalent_unique_togethers)
-        if 0<len(equivalent_tuples):
-            raise ValueError("unique_together cannot contain identical attribute sets: {}".format(str(equivalent_tuples)))
-
-        # Normalize each unique_together in a sorted tuple
-        normalized_unique_togethers = []
-        for unique_together in cls.Meta.unique_together:
-            normalized_unique_togethers.append(tuple(sorted(unique_together)))
-        cls.Meta.unique_together = tuple(normalized_unique_togethers)
-
-    def create_model_manager(cls, active=True):
+    def create_model_manager(cls):
         """ Create a `Manager` for this `Model`
 
         The `Manager` is accessed via a `Model`'s `objects` attribute
 
         Attributes:
             cls (:obj:`Class`): the `Model` class which is being managed
-            active (:obj:`bool`, optional): if set, create an active `Manager`
         """
-        setattr(cls, 'objects', Manager(cls, active))
+        setattr(cls, 'objects', Manager(cls))
 
 
 class Manager(object):
-    """ Manage searches of a Model's instances and maintain unique constraints
+    """ Enable O(1) dictionary-based searching of a Model's instances
 
     This class is inspired by Django's `Manager` class. An instance of `Manger` is associated with
     each `Model` and accessed as the class attribute `objects` (as in Django).
-    `Manager` maintains a dictionary for each unique attribute and each unique_together constraint.
-    It also maintains a list of all instances of its associated `Model`.
+    `Manager` maintains a dictionary for each indexed attribute tuple, and a reverse index from each
+    `Model` instance to its indexed attribute tuple keys.
 
     These data structures are used to support
-    * O(1) dynamic enforcement of unique constraints, via an override of `__setattr__()`
-    * O(1) lookup operations for instances indexed by any unique constraint
-
-    To facilitate convenient, temporary, violation of uniqueness constraints a `Manager` may be
-    `deactivate`d and later `activate`d. An `activate` reports all current uniqueness constraint
-    violations and updates `Manager`s data structures for dynamic enforcement of the constraints.
+    * O(1) lookup operations for instances indexed by any indexed attribute tuple
+    * O(1) insert, and update operations
 
     Attributes:
         cls (:obj:`Class`): the `Model` class which is being managed
-        active (:obj:`bool`, optional): if set this `Manager` actively checks uniqueness constraints;
-            otherwise, it does not check them until `activate()` is called
-        _instances (:obj:`str`): list of references to all instances to `Class` `cls`, stored as
-        weakrefs in a `WeakList`, so `Model`s that are otherwise unused can be garbage collected.
+        _new_instances (:obj:`WeakSet`): set of all new instances of `cls` that have not been indexed,
+            stored as weakrefs, so `Model`s that are otherwise unused can be garbage collected
+        _index_dicts (:obj:`dict` mapping `tuple` to `WeakValueDictionary`): indices that enable
+            lookup of `Model` instances from their `Meta.indexed_attrs_tuples`
+        _reverse_index (:obj:`WeakKeyDictionary` mapping `Model` instance to `dict`): a reverse
+            index that provides all of each `Model`'s indexed attribute tuple keys
+        num_ops_since_gc (:obj:`int`): number of operations since the last gc of weaksets
     """
-    def __init__(self, cls, active=True):
-        self._instances = WeakList()
-        self.active = active
+    # todo: make a contextmanager that supports creation of many `Model`s indexing them automatically
+
+    # number of operations between calls to _gc_weaksets
+    # todo: make this value configurable
+    GC_PERIOD = 1000
+    def __init__(self, cls):
         self.cls = cls
-        self.create_unique_dicts()
+        self._new_instances = weakref.WeakSet()
+        self.create_indices()
+        self.num_ops_since_gc = 0
 
-    def deactivate(self):
-        """ Deactivate this `Manager` to permit temporary violations of uniqueness constraints
+    def create_indices(self):
+        """ Create dicts needed to manage indices on attribute tuples
+
+        The references to `Model` instances are stored as weakrefs in a WeakKeyDictionary, so that
+        `Model`s which are otherwise unused get garbage collected.
         """
-        self.active = False
+        self._index_dicts = {}
+        # for each indexed_attrs, create a dict
+        for indexed_attrs in self.cls.Meta.indexed_attrs_tuples:
+            self._index_dicts[indexed_attrs] = {}
 
-    def activate(self):
-        """ Activate this `Manager`, and check all unique constraints if the `Manager` was inactive
+        # a reverse index from Model instances to index keys enables updates to instances that
+        # are already indexed
+        self._reverse_index = weakref.WeakKeyDictionary()
+
+    def all(self):
+        """ Provide all instances of the `Model` managed by this `Manager`
+
+        Returns:
+            :obj:`iterator` of `Model`: an iterator over all instances of the managed `Model`
         """
-        if not self.active:
-            self.validate_unique_all()
-        self.active = True
+        self._run_gc_weaksets()
+        return self._reverse_index.keys()
 
-    def create_unique_dicts(self):
-        """ Create dicts for all unique constraints
-
-        The references to `Model` instances are stored as weakrefs in a `WeakValueDictionary`, so that
-        `Model`s which are otherwise unused can be garbage collected.
-        """
-        self._unique_dicts = {}
-        # for each unique attribute, create a dict
-        for name,attr in self.cls.Meta.attributes.items():
-            if attr.unique:
-                self._unique_dicts[name] = weakref.WeakValueDictionary()
-
-        # for each unique_together, create a dict
-        for unique_together in self.cls.Meta.unique_together:
-            self._unique_dicts[unique_together] = weakref.WeakValueDictionary()
-
-    def _dump_unique_dicts(self):
-        print("Dicts for '{}'".format(self.cls.__name__))
-        for name,d in self._unique_dicts.items():
-            print('attr(s)', name)
+    def _dump_index_dicts(self):
+        print("Dicts for '{}':".format(self.cls.__name__))
+        for name,d in self._index_dicts.items():
+            print('\tindexed attr(s)', name)
             for k,v in d.items():
-                print('    k,v', k,v)
+                print('\t\tk,v', k, {str(item) for item in v})
+        print("Reverse dicts for '{}':".format(self.cls.__name__))
+        for obj,attr_keys in self._reverse_index.items():
+            print("\tmodel at {}".format(id(obj)))
+            for indexed_attrs,vals in attr_keys.items():
+                print("\t\t'{}' is '{}'".format(indexed_attrs,vals))
 
     @staticmethod
-    def get_attr_tuple(model_obj, attr_tuple):
+    def get_attr_tuple_vals(model_obj, attr_tuple):
         """ Provide the values of the attributes in `attr_tuple`
 
         Args:
@@ -518,58 +529,6 @@ class Manager(object):
         return tuple(map(lambda name: getattr(model_obj, name), attr_tuple))
 
     @staticmethod
-    def replace_in_attr_tuple(model_obj, attr_tuple, name, val):
-        """ Get `model_obj`'s values for the attributes in `attr_tuple`, but with `name`'s value replaced
-
-        Used to determine whether an attribute change will violate a unique_together constraint.
-
-        Args:
-            model_obj (:obj:`Model`): a `Model` instance
-            attr_tuple (:obj:`tuple`): a tuple of attribute names in `model_obj`
-            name (:obj:`str`): the name of an attribute in `model_obj`
-            val (:obj:`object`): a possible value for `name`
-
-        Returns:
-            :obj:`tuple`: `model_obj`'s values for the attributes in `attr_tuple`, but with the
-            value of `name` replaced by `val`
-        """
-        vals = list(Manager.get_attr_tuple(model_obj, attr_tuple))
-        idx_name = list(attr_tuple).index(name)
-        vals[idx_name] = val
-        return(tuple(vals))
-
-    @staticmethod
-    def make_tuple(arg):
-        """ Insert into a tuple, if necessary
-
-        Args:
-            arg (:obj:`obj`): an argument
-
-        Returns:
-            :obj:`tuple`: return arg in a tuple, if it is not already one
-        """
-        if type(arg) is tuple:
-            return arg
-        else:
-            return (arg,)
-
-    @staticmethod
-    def first_tuple(arg, first_tuple):
-        """ Return the first element of a tuple, if requested
-
-        Args:
-            arg (:obj:`obj`): an argument
-            first_tuple (:obj:`bool`): whether to return the first element
-
-        Returns:
-            :obj:`obj`: return `arg`, or the first element of `arg` if `first_tuple` is set
-        """
-        if first_tuple:
-            return arg[0]
-        else:
-            return arg
-
-    @staticmethod
     def _get_hashable_values(values):
         """ Provide hashable values for a tuple of values of a `Model`'s attributes
 
@@ -580,7 +539,9 @@ class Manager(object):
             :obj:`tuple`: hashable values for a `tuple` of values of `Model` attributes
         """
         if isinstance(values, string_types):
-            return (values,)
+            raise ValueError("_get_hashable_values does not take a string: '{}'".format(values))
+        if not isinstance(values, Iterable):
+            raise ValueError("_get_hashable_values takes an iterable, not: '{}'".format(values))
         hashable_values = []
         for val in values:
             if isinstance(val, RelatedManager):
@@ -590,34 +551,19 @@ class Manager(object):
             else:
                 hashable_values.append(val)
         return tuple(hashable_values)
- 
-    @staticmethod
-    def get_hashable_values(values):
-        """ Provide hashable values for a value or a tuple of values of a `Model`'s attribute(s)
 
-        Args:
-            values (:obj:`obj` or `tuple`): value or a tuple of values of a `Model`'s attribute(s)
-
-        Returns:
-            ::obj:`obj` or `tuple`: hashable value(s) for `values`
-        """
-        return Manager.first_tuple(Manager._get_hashable_values(values), type(values) is not tuple)
- 
     @staticmethod
-    def get_vals(model_obj, attr_names):
-        """ Get hashable values for some attributes
+    def hashable_attr_tup_vals(model_obj, attr_tuple):
+        """ Provide hashable values for the attributes in `attr_tuple`
 
         Args:
             model_obj (:obj:`Model`): a `Model` instance
-            attr_names (:obj:`str` or `tuple` of `str`): one or more attribute names
+            attr_tuple (:obj:`tuple`): a tuple of attribute names in `model_obj`
 
         Returns:
-            :obj:`obj` or `tuple`: hashable value(s) for the attribute(s) in `attr_names`
+            :obj:`tuple`: hashable values for `model_obj`'s attributes in `attr_tuple`
         """
-        tpl_attr_names = Manager.make_tuple(attr_names)
-        raw_values = tuple([getattr(model_obj, attr_name) for attr_name in tpl_attr_names])
-        hashable_values = Manager.get_hashable_values(raw_values)
-        return Manager.first_tuple(hashable_values, not type(attr_names) is tuple)
+        return Manager._get_hashable_values(Manager.get_attr_tuple_vals(model_obj, attr_tuple))
 
     def get_attribute_types(self, model_obj, attr_names):
         """ Provide the attribute types for a tuple of attribute names
@@ -629,6 +575,11 @@ class Manager(object):
         Returns:
             :obj:`tuple`: `model_obj`'s attribute types for the attribute name(s) in `attr_names`
         """
+        self._check_model_type(model_obj, 'get_attribute_types')
+        if isinstance(attr_names, string_types):
+            raise ValueError("get_attribute_types(): attr_names cannot be a string: '{}'".format(attr_names))
+        if not isinstance(attr_names, Iterable):
+            raise ValueError("get_attribute_types(): attr_names must be an iterable, not: '{}'".format(attr_names))
         cls = self.cls
         types = []
         for attr_name in attr_names:
@@ -645,258 +596,177 @@ class Manager(object):
     def register_obj(self, model_obj):
         """ Register the `Model` instance `model_obj`
 
+        Called by Model.__init__()
+
         Args:
             model_obj (:obj:`Model`): a new `Model` instance
         """
-        self._instances.append(model_obj)
-        # model_obj doesn't need to be inserted into the _unique_dicts because set has already done so
+        self._check_model_type(model_obj, 'register_obj')
+        self._run_gc_weaksets()
+        self._reverse_index[model_obj] = {}
+        self._new_instances.add(model_obj)
 
-    def validate_unique_all(self):
-        """ Validate uniqueness constraints for all instances of the `Model` associated with this `Manager`.
+    def _update(self, model_obj):
+        """ Update the indices for `model_obj` that are used to search on indexed_attrs keys
 
-        This is called when an inactive `Manager` is `activate`d. This `Manager`'s
-        state is updated to enable on-line validation of uniqueness constraints.
-
-        Returns:
-           :obj:`None` or `list` of `InvalidModel`:`None` if all uniqueness constraints are satisfied
-           for all instances, otherwise return errors in a list of `InvalidModel`s. 
-        """
-        errors = []
-        for model_obj in self._instances:
-            obj_errors = self.validate_unique(model_obj)
-            if not obj_errors is None:
-                errors.append(obj_errors)
-        if errors:
-            raise ValueError(errors)
-            return errors
-        return None
-
-    def validate_unique(self, model_obj):
-        """ Validate uniqueness constraints on an instance of the `Model` associated with this `Manager`
-
-        Costs O(C) where C is the number of constraints for the `Model`.
+        Costs O(I) where I is the number of indexed attribute tuples for the `Model`.
 
         Args:
-            obj (:obj:model_obj): a `Model` instance
-
-        Returns:
-           :obj:`None` or an `InvalidModel`:`None` if all uniqueness constraints are satisfied,
-            otherwise return errors in a list of `InvalidModel`s. 
+            model_obj (:obj:`Model`): a `Model` instance
         """
-        errors = []
+        self._check_model_type(model_obj, '_update')
+        self._run_gc_weaksets()
         cls = self.cls
-
-        # check unique attributes
-        for name,attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
-            if attr.unique:
-                duplicate = self._is_duplicate(model_obj, name)
-                if not duplicate is None:
-                    errors.append(duplicate)
-
-        # check unique_togethers
-        for unique_together in cls.Meta.unique_together:
-            duplicate = self._is_duplicate(model_obj, unique_together)
-            if not duplicate is None:
-                errors.append(duplicate)
- 
-        if errors:
-            return InvalidModel(cls, errors)
-        return None
-
-    def _update_unique_dicts(self, model_obj):
-        """ Update the dictionary entries for `model_obj` used to evaluate unique attribute constraints
-
-        Costs O(C) where C is the number of constraints for the `Model`.
-
-        Args:
-            model_obj (:obj:`Model`): a `Model` instance
-        """
-        # ensure that each unique constraint for `model_obj` has a self._unique_dicts entry
-        # unique attributes
-        for name,attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
-            if attr.unique:
-                val = Manager.get_vals(model_obj, name)
-                self._unique_dicts[name][val] = model_obj
-
-        # unique_together constraints
-        for unique_together in cls.Meta.unique_together:
-            vals = Manager.get_vals(model_obj, unique_together)
-            self._unique_dicts[unique_together][vals] = model_obj
-        
-    def _is_duplicate(self, model_obj, attr_names, values=None):
-        """ Evaluate whether attributes in a `Model` object have unique values
-
-        Costs O(1).
-
-        Args:
-            model_obj (:obj:`Model`): a `Model` instance
-            attr_names (:obj:`str` or `tuple`): an attribute name, or a tuple of attribute names
-            values (:obj:`obj` or `tuple`, optional): proposed new value, or values, of the attribute(s)
-
-        Returns:
-           :obj:`None` or `InvalidModel`: `None` if the value(s) are unique, otherwise return a list of
-           errors as an instance of `InvalidModel`
-        """
-        if values is not None:
-            if (type(values) is tuple) and (type(attr_names) is not tuple):
-                raise ValueError('if values is a tuple, then attr_names must also be a tuple')
-
-        # handle individual unique attributes and unique_together tuples simultaneously
-        tpl_attr_names = Manager.make_tuple(attr_names)
-        if values is None:
-            tpl_values = Manager.get_attr_tuple(model_obj, tpl_attr_names)
-        else:
-            tpl_values = Manager.make_tuple(values)
-
-        # values must be hashable
-        tpl_values = Manager.get_hashable_values(tpl_values)
-
-        # generic_* is a tuple for a unique_together constraint, and an individual value otherwise
-        handling_unique_together = type(attr_names) is tuple
-        generic_names = Manager.first_tuple(tpl_attr_names, not handling_unique_together)
-        generic_values = Manager.first_tuple(tpl_values, not handling_unique_together)
-
-        unique_together_str = ' unique_together' if handling_unique_together else ''
-        if generic_values in self._unique_dicts[generic_names]:
-            # arbitrarily use the first attribute type in the InvalidAttribute()
-            # TODO: fix this; need an InvalidAttributeTuple class
-            attr = self.get_attribute_types(model_obj, tpl_attr_names)[0]
-            return InvalidAttribute(attr, ["Duplicate value '{}' for{} '{}' in '{}'".format(
-                generic_values, unique_together_str, generic_names, self.cls.__name__)],
-                value=generic_values)
-        return None
-
-    def set(self, model_obj, name, val):
-        """ Validate unique attribute constraints and maintain their maps
-
-        Costs O(C) where C is the number of constraints for the `Model`. Called by `__setattr__()`.
-
-        Args:
-            model_obj (:obj:`Model`): a `Model` instance
-            name (:obj:`str`): the name of an attribute in `model_obj`
-            val (:obj:`object`): a proposed new value for `name`
-
-        Returns:
-           :obj:`InvalidModel` or None: None if values are unique, otherwise return a list of
-           errors as an instance of `InvalidModel`
-        """
-        # todo: what about case insensitive equality?
-        if not self.active:
-            return
-        cls = self.cls
-        if name in cls.Meta.attributes:
-            attr = cls.Meta.attributes[name]
-        elif name in cls.Meta.related_attributes:
-            attr = cls.Meta.related_attributes[name]
-        else:
-            return None
-
-        errors = []
-
-        # check for duplicate errors
-        # check individual attribute
-        if attr.unique:
-            dup = self._is_duplicate(model_obj, name, values=val)
-            if not dup is None:
-                errors.append(dup)
-
-        # check unique_togethers
-        for unique_together in cls.Meta.unique_together:
-            if name in unique_together:
-                vals = Manager.replace_in_attr_tuple(model_obj, unique_together, name, val)
-                print("calling _is_duplicate: name='{}'; unique_together='{}'; values='{}'".format(name,
-                    unique_together, vals))
-                dup = self._is_duplicate(model_obj, unique_together, values=vals)
-                if not dup is None:
-                    errors.append(dup)
-
-        if errors:
-            return InvalidModel(cls, errors)
-
-        # maintain individual attribute dict
-        if attr.unique:
+        if model_obj not in self._reverse_index:
+            raise ValueError("Can't _update an instance of '{}' that hasn't been inserted into the index".format(
+                cls.__name__))
+        for indexed_attrs,vals in self._reverse_index[model_obj].items():
             try:
-                curr_val = Manager.get_vals(model_obj, name)
-                del self._unique_dicts[name][curr_val]
-            except:
-                pass
-            val = Manager.get_hashable_values(val)
-            print('name, val, model_obj', name,val, model_obj)
-            self._unique_dicts[name][val] = model_obj
+                self._index_dicts[indexed_attrs][vals].remove(model_obj)
+                # avoid memory leaks by deleting empty WeakSets;
+                # empty WeakSets formed by automatic removal of weak refs are gc'ed by _gc_weaksets
+                if 0 == len(self._index_dicts[indexed_attrs][vals]):
+                    del self._index_dicts[indexed_attrs][vals]
+            except KeyError as e:
+                raise ValueError("Cannot _update() an instance of '{}': '{}' = '{}' not found "
+                    "in _index_dicts".format(cls.__name__, indexed_attrs, vals))
+        self._insert(model_obj)
 
-        # maintain unique_togethers attribute dicts
-        for unique_together in cls.Meta.unique_together:
-            if name in unique_together:
-                try:
-                    curr_vals = Manager.get_vals(model_obj, unique_together)
-                    del self._unique_dicts[unique_together][curr_vals]
-                except:
-                    pass
-                new_vals = Manager.replace_in_attr_tuple(model_obj, unique_together, name, val)
-                new_vals = Manager.get_hashable_values(new_vals)
-                self._unique_dicts[unique_together][new_vals] = model_obj
+    def _check_model_type(self, model_obj, method):
+        """ Verify that a model object has the right type
 
-        return None
+        Args:
+            model_obj (:obj:`Model`): a `Model` instance
+            method (:obj:`str`): the name of the method requesting the check
+        """
+        if not type(model_obj) is self.cls:
+            raise ValueError("{}(): The '{}' Manager does not process '{}' objects".format(
+                method, self.cls.__name__, type(model_obj).__name__))
 
-    def all(self):
-        """ Return all instances of a `Model`
+    def _insert_new(self, model_obj):
+        """ Insert a new `model_obj` into the indices that are used to search on indexed attribute tuples
+
+        Args:
+            model_obj (:obj:`Model`): a `Model` instance
+        """
+        if model_obj not in self._new_instances:
+            raise ValueError("Cannot _insert_new() an instance of '{}' that is not new".format(self.cls.__name__))
+        self._insert(model_obj)
+        self._new_instances.remove(model_obj)
+
+    def _insert(self, model_obj):
+        """ Insert `model_obj` into the indices that are used to search on indexed attribute tuples
+
+        Costs O(I) where I is the number of indexed attribute tuples for the `Model`.
+
+        Args:
+            model_obj (:obj:`Model`): a `Model` instance
+        """
+        self._check_model_type(model_obj, '_insert')
+        self._run_gc_weaksets()
+        cls = self.cls
+        # todo: what about case insensitive equality?
+        for indexed_attrs in cls.Meta.indexed_attrs_tuples:
+            vals = Manager.hashable_attr_tup_vals(model_obj, indexed_attrs)
+            if vals not in self._index_dicts[indexed_attrs]:
+                self._index_dicts[indexed_attrs][vals] = weakref.WeakSet()
+            self._index_dicts[indexed_attrs][vals].add(model_obj)
+
+        d = {}
+        for indexed_attrs in cls.Meta.indexed_attrs_tuples:
+            d[indexed_attrs] = Manager.hashable_attr_tup_vals(model_obj, indexed_attrs)
+        self._reverse_index[model_obj] = d
+
+    def _run_gc_weaksets(self):
+        """ Periodically garbage collect empty WeakSets
 
         Returns:
-            :obj:`list` of `Model`: a list of all instances of a `Model`
+            :obj:`int`: number of empty WeakSets deleted
         """
-        return self._instances
+        self.num_ops_since_gc += 1
+        if Manager.GC_PERIOD <= self.num_ops_since_gc:
+            self.num_ops_since_gc = 0
+            return self._gc_weaksets()
+        return 0
+
+    def _gc_weaksets(self):
+        """ Garbage collect empty WeakSets formed by deletion of weak refs to objects with no strong refs
+
+        Returns:
+            :obj:`int`: number of empty WeakSets deleted
+        """
+        num = 0
+        for name,d in self._index_dicts.items():
+            items = list(d.items())
+            for k,v in items:
+                if not v:
+                    del self._index_dicts[name][k]
+                    num += 1
+        return num
+
+    def upsert(self, model_obj):
+        """ Update the indices for `model_obj` that are used to search on indexed attribute tuples
+
+        `Upsert` means update or insert. If the `Model` is stored in the indices update them, otherwise
+        insert a new object into them.
+        Costs O(I) where I is the number of indexed attribute tuples for the `Model`.
+
+        Args:
+            model_obj (:obj:`Model`): a `Model` instance
+        """
+        self._check_model_type(model_obj, 'upsert')
+        if model_obj in self._new_instances:
+            self._insert_new(model_obj)
+        else:
+            self._update(model_obj)
+
+    def upsert_all(self):
+        """ Upsert the indices for all of this `Manager`'s `Model`s
+        """
+        for model_obj in self.all():
+            self.upsert(model_obj)
+
+    def insert_all_new(self):
+        """ Insert all new instances of this `Manager`'s `Model`s into the search indices
+        """
+        for model_obj in self._new_instances:
+            self._insert(model_obj)
 
     def get(self, **kwargs):
-        """ Get the `Model` instance that matches the attribute name, value pair(s) in `kwargs`
+        """ Get the `Model` instance(s) that match the attribute name,value pair(s) in `kwargs`
 
-        If `kwargs` contains one keyword, then search individual attributes, otherwise
-        search a unique_together attribute. The attribute name(s) in `kwargs` must be constrained
-        by a uniqueness constraint.
+        The keys in `kwargs` must correspond to an entry in the `Model`'s `indexed_attrs_tuples`.
 
         Args:
-            kwargs (:obj:`dict`): keyword args mapping from attribute name to value
+            kwargs (:obj:`dict`): keyword args mapping from attribute name(s) to value(s)
 
         Returns:
-            :obj:`Model`: a `Model` instance whose unique attribute or unique_together attributes
-            has the value or values in `kwargs`; otherwise `None`, indicating no match
+            :obj:`list` of `Model`: a list of `Model` instances whose indexed attribute tuples have the
+            values in `kwargs`; otherwise `None`, indicating no match
 
         Raises:
-            :obj:`ValueError`: if attribute name(s) in `kwargs.keys()` are not unique attributes,
-            or unique_together attributes
+            :obj:`ValueError`: if the attribute name(s) in `kwargs.keys()` do not correspond to an
+            indexed attribute tuple of the `Model`
         """
         cls = self.cls
-        if len(kwargs.keys()) == 1:
-            # look for a single attribute
-            [(name,val)] = kwargs.items()
-            if name not in self._unique_dicts:
-                raise ValueError("'{}' not a unique attribute in '{}'".format(name,
-                    cls.__name__))
-            print(val, name, [(k,v) for k,v in self._unique_dicts[name].items()])
-            if val not in self._unique_dicts[name]:
-                return None
-            return self._unique_dicts[name][val]
 
-        elif 1<len(kwargs.keys()):
-            # searching for a unique_together instance
-            # sort by attribute names -- keys in kwargs
-            keys, vals = zip(*sorted(kwargs.items()))
-            possible_unique_together = keys
-            if possible_unique_together not in self._unique_dicts:
-                raise ValueError("'{}' not a unique_together in '{}'".format(possible_unique_together,
-                    cls.__name__))
-            if vals not in self._unique_dicts[possible_unique_together]:
-                return None
-            return self._unique_dicts[possible_unique_together][vals]
+        if 0==len(kwargs.keys()):
+            raise ValueError("No arguments provided in get() on '{}'".format(cls.__name__))
         else:
-            raise ValueError("No attribute provided in get() on '{}'".format(cls.__name__))
+            # searching for an indexed_attrs instance
+            # sort by attribute names, which is the normalized order for attributes in an indexed_attributes tuple
+            # todo: make this normalization explicit by moving it to some normalization method(s)
+            keys, vals = zip(*sorted(kwargs.items()))
+            possible_indexed_attributes = keys
+            if possible_indexed_attributes not in self._index_dicts:
+                raise ValueError("{} not an indexed attribute tuple in '{}'".format(possible_indexed_attributes,
+                    cls.__name__))
+            if vals not in self._index_dicts[possible_indexed_attributes]:
+                return None
+            if 0 == len(self._index_dicts[possible_indexed_attributes][vals]):
+                return None
+            return self._index_dicts[possible_indexed_attributes][vals]
 
-    @contextmanager
-    def unique(model):
-        try:
-            model.objects.deactivate()
-            yield model
-        finally:
-            model.objects.activate()
 
 class TabularOrientation(Enum):
     """ Describes a table's orientation
@@ -911,7 +781,7 @@ class TabularOrientation(Enum):
 
 
 class Model(with_metaclass(ModelMeta, object)):
-    """ Base object model 
+    """ Base object model
 
     Attributes:
         _source (:obj:`ModelSource`): file location, worksheet, column, and row where the object was defined
@@ -925,8 +795,10 @@ class Model(with_metaclass(ModelMeta, object)):
             attributes (:obj:`OrderedDict` of `Attribute`): attributes
             related_attributes (:obj:`set` of `Attribute`): attributes declared in related objects
             primary_attribute (:obj:`Attribute`): attribute with `primary`=`True`
-            unique_together (obj:`tuple` of `tuple` of attribute names): controls what tuples of
+            unique_together (obj:`tuple` of `tuple`s of attribute names): controls what tuples of
                 attribute values must be unique
+            indexed_attrs_tuples (obj:`tuple` of `tuple`s of attribute names): tuples of attributes on
+                which instances of this `Model` will be indexed by the `Model`'s `Manager`
             attribute_order (:obj:`tuple` of `str`): tuple of attribute names, in the order in which they should be displayed
             verbose_name (:obj:`str`): verbose name to refer to an instance of the model
             verbose_name_plural (:obj:`str`): plural verbose name for multiple instances of the model
@@ -939,6 +811,7 @@ class Model(with_metaclass(ModelMeta, object)):
         related_attributes = None
         primary_attribute = None
         unique_together = ()
+        indexed_attrs_tuples = ()
         attribute_order = ()
         verbose_name = ''
         verbose_name_plural = ''
@@ -962,7 +835,6 @@ class Model(with_metaclass(ModelMeta, object)):
         """ initialize attributes """
         # attributes
         for attr in self.Meta.attributes.values():
-            print("setting init_value name='{}', value='{}'".format(attr.name, attr.get_init_value(self)))
             super(Model, self).__setattr__(attr.name, attr.get_init_value(self))
 
         # related attributes
@@ -985,7 +857,6 @@ class Model(with_metaclass(ModelMeta, object)):
 
         # process arguments
         for attr_name, val in kwargs.items():
-            print("setting name='{}', value='{}'".format(attr_name, val))
             if attr_name not in self.Meta.attributes and attr_name not in self.Meta.related_attributes:
                 raise TypeError("'{:s}' is an invalid keyword argument for {}.__init__".format(
                     attr_name, self.__class__.__name__))
@@ -1054,14 +925,10 @@ class Model(with_metaclass(ModelMeta, object)):
                 attr = self.__class__.Meta.related_attributes[attr_name]
                 value = attr.set_related_value(self, value)
 
-        # validate unique attribute constraints and maintain their maps
-        rv = self.__class__.objects.set(self, attr_name, value)
-        if not rv is None:
-            raise ValueError(rv)
         super(Model, self).__setattr__(attr_name, value)
 
     def normalize(self):
-        """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers into a canonical order because their 
+        """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers into a canonical order because their
         order has no semantic meaning. Importantly, this canonical form is reproducible. Thus, this canonical form facilitates reproducible
         computations on top of :obj:`Model` objects.
 
@@ -1117,8 +984,6 @@ class Model(with_metaclass(ModelMeta, object)):
     @classmethod
     def _generate_normalize_sort_key(cls):
         """ Generates key for sorting the class """
-
-        # todo: use custom validate_unique
 
         # single unique attribute
         for attr_name, attr in cls.Meta.attributes.items():
@@ -1179,7 +1044,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """
 
         """
-        todo: this can potentially be sped up by 
+        todo: this can potentially be sped up by
 
         #. Flattening the object graphs
         #. Sorting the flattening object lists
@@ -1447,7 +1312,7 @@ class Model(with_metaclass(ModelMeta, object)):
         return self._render_difference(self._simplify_difference(total_difference))
 
     def _simplify_difference(self, difference):
-        """ Simplify difference data structure 
+        """ Simplify difference data structure
 
         Args:
             difference (:obj:`dict`): representation of the semantic difference between two objects
@@ -1500,7 +1365,7 @@ class Model(with_metaclass(ModelMeta, object)):
         return difference
 
     def _render_difference(self, difference):
-        """ Generate string representation of difference data structure 
+        """ Generate string representation of difference data structure
 
         Args:
             difference (:obj:`dict`): representation of the semantic difference between two objects
@@ -1979,6 +1844,9 @@ class Model(with_metaclass(ModelMeta, object)):
                                 return False
         return True
 
+    @classmethod
+    def get_manager(cls):
+        return cls.objects
 
 class ModelSource(object):
     """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
@@ -3316,16 +3184,16 @@ class RelatedAttribute(Attribute):
 class OneToOneAttribute(RelatedAttribute):
     """ Represents a one-to-one relationship between two types of objects. """
 
-    def __init__(self, related_class, related_name='',                  
+    def __init__(self, related_class, related_name='',
                  default=None, related_default=None,
-                 min_related=0, min_related_rev=0, 
+                 min_related=0, min_related_rev=0,
                  verbose_name='', verbose_related_name='', help=''):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`            
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): callable which returns default value
-            related_default (:obj:`callable`, optional): callable which returns default related value 
+            related_default (:obj:`callable`, optional): callable which returns default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
             verbose_name (:obj:`str`, optional): verbose name
@@ -3338,7 +3206,7 @@ class OneToOneAttribute(RelatedAttribute):
         super(OneToOneAttribute, self).__init__(related_class, related_name=related_name,
                                                 init_value=None, default=default,
                                                 related_init_value=None, related_default=related_default,
-                                                min_related=min_related, max_related=1, 
+                                                min_related=min_related, max_related=1,
                                                 min_related_rev=min_related_rev, max_related_rev=1,
                                                 verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
 
@@ -3540,14 +3408,14 @@ class OneToOneAttribute(RelatedAttribute):
 class ManyToOneAttribute(RelatedAttribute):
     """ Represents a many-to-one relationship between two types of objects. This is analagous to a foreign key relationship in a database. """
 
-    def __init__(self, related_class, related_name='',                 
+    def __init__(self, related_class, related_name='',
                  default=None, related_default=list(),
                  min_related=0, min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', help=''):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`            
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): callable which returns the default value
             related_default (:obj:`callable`, optional): callable which returns the default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
@@ -4028,7 +3896,7 @@ class OneToManyAttribute(RelatedAttribute):
 class ManyToManyAttribute(RelatedAttribute):
     """ Represents a many-to-many relationship between two types of objects. """
 
-    def __init__(self, related_class, related_name='', default=list(), related_default=list(), 
+    def __init__(self, related_class, related_name='', default=list(), related_default=list(),
                  min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', help=''):
         """
@@ -4318,7 +4186,7 @@ class RelatedManager(list):
         self.related = related
 
     def create(self, **kwargs):
-        """ Create instance of primary class and add to list 
+        """ Create instance of primary class and add to list
 
         Args:
             kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
@@ -4386,7 +4254,7 @@ class RelatedManager(list):
         return self
 
     def clear(self):
-        """ Remove all elements from list 
+        """ Remove all elements from list
 
         Returns:
             :obj:`RelatedManager': self
@@ -4397,7 +4265,7 @@ class RelatedManager(list):
         return self
 
     def pop(self, i=-1):
-        """ Remove an arbitrary element from the list 
+        """ Remove an arbitrary element from the list
 
         Args:
             i (:obj:`int`, optional): index of element to remove
