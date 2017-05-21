@@ -2036,10 +2036,7 @@ node:
         t0 = Example0()
         vs, vi = 's', 1
         t1a = Example1(str_attr=vs, int_attr=vi, test0=t0)
-        print('id(t1a.test0), id(t0)', id(t1a.test0), id(t0), 'id(t1a.test0) == id(t0)',
-            id(t1a.test0) == id(t0), )
         hashable_values = core.Manager._get_hashable_values((t1a.str_attr, t1a.int_attr, t1a.test0))
-        print('(vs, vi, id(t0),)', (vs, vi, id(t0),), '(vs, vi, id(t0))', (vs, vi, id(t0)), 'vs, vi, id(t0)', vs, vi, id(t0))
         id_t0 = id(t0)
         self.assertEqual(id_t0, id(t0))
         self.assertEqual((id_t0,), (id(t0),))
@@ -2069,7 +2066,7 @@ node:
         self.assertIn("_get_hashable_values takes an iterable, not", str(context.exception))
 
         # test hashable_attr_tup_vals
-        self.assertEqual((vs, vi, id(t0)),
+        self.assertEqual((vs, vi, id_t0),
             core.Manager.hashable_attr_tup_vals(t1a, ('str_attr', 'int_attr', 'test0')))
 
         # test get_attribute_types
