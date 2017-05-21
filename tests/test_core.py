@@ -2040,7 +2040,10 @@ node:
             id(t1a.test0) == id(t0), )
         hashable_values = core.Manager._get_hashable_values((t1a.str_attr, t1a.int_attr, t1a.test0))
         print('(vs, vi, id(t0),)', (vs, vi, id(t0),), '(vs, vi, id(t0))', (vs, vi, id(t0)), 'vs, vi, id(t0)', vs, vi, id(t0))
-        self.assertEqual((vs, vi, id(t0)), hashable_values)
+        id_t0 = id(t0)
+        self.assertEqual(id_t0, id(t0))
+        self.assertEqual((id_t0,), (id(t0),))
+        self.assertEqual((vs, vi, id_t0), hashable_values)
         s = set()
         try:
             s.add(hashable_values)
