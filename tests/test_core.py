@@ -2038,7 +2038,6 @@ node:
         t1a = Example1(str_attr=vs, int_attr=vi, test0=t0)
         print('id(t1a.test0), id(t0)', id(t1a.test0), id(t0), 'id(t1a.test0) == id(t0)',
             id(t1a.test0) == id(t0), )
-        print('hashable_values', hashable_values)
         hashable_values = core.Manager._get_hashable_values((t1a.str_attr, t1a.int_attr, t1a.test0))
         print('(vs, vi, id(t0),)', (vs, vi, id(t0),), '(vs, vi, id(t0))', (vs, vi, id(t0)), 'vs, vi, id(t0)', vs, vi, id(t0))
         self.assertEqual((vs, vi, id(t0)), hashable_values)
