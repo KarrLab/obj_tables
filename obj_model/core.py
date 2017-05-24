@@ -191,6 +191,9 @@ class ModelMeta(type):
             Meta.frozen_columns = bases[0].Meta.frozen_columns
             Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
 
+        # validate attributes
+        metacls.validate_related_attributes(name, bases, namespace)
+
         # validate attribute inheritance
         metacls.validate_attribute_inheritance(name, bases, namespace)
 
@@ -198,6 +201,7 @@ class ModelMeta(type):
         cls = super(ModelMeta, metacls).__new__(metacls, name, bases, namespace)
 
         # Initialize meta data
+        # todo: move all validation in the below methods to the metaclass
         metacls.init_inheritance(cls)
 
         metacls.init_attributes(cls)
@@ -225,6 +229,17 @@ class ModelMeta(type):
         """ Get tuple of this model and superclasses which are subclasses of `Model` """
         cls.Meta.inheritance = tuple([cls] + [supercls for supercls in get_superclasses(cls)
                                               if issubclass(supercls, Model) and supercls is not Model])
+
+    @classmethod
+    def validate_related_attributes(metacls, name, bases, namespace):
+        """ Check the related attributes
+
+        Raises:
+            :obj:`ValueError`: if an :obj:`OneToManyAttribute` or :obj:`ManyToOneAttribute` has a `related_name` equal to its `name`
+        """
+        for attr_name, attr in namespace.items():
+            if isinstance(attr, (OneToManyAttribute, ManyToOneAttribute)) and attr.related_name == attr_name:
+                raise ValueError('The related name of {} {} cannot be equal to its name'.format(attr.__class__.__name__, attr_name))
 
     @classmethod
     def validate_attribute_inheritance(metacls, name, bases, namespace):
@@ -289,7 +304,8 @@ class ModelMeta(type):
                     related_classes = chain([attr.related_class], get_subclasses(attr.related_class))
                     for related_class in related_classes:
                         # check that name doesn't conflict with another attribute
-                        if attr.related_name in related_class.Meta.attributes:
+                        if attr.related_name in related_class.Meta.attributes and \
+                            not (isinstance(attr, (OneToOneAttribute, ManyToManyAttribute)) and attr.related_name == attr.name):
                             other_attr = related_class.Meta.attributes[attr.related_name]
                             raise ValueError('Related attribute {}.{} cannot use the same related name as {}.{}'.format(
                                 model_cls.__name__, attr.name,
