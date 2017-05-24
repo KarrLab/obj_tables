@@ -206,7 +206,7 @@ class ModelMeta(type):
 
         cls.Meta.related_attributes = OrderedDict()
         for model in get_subclasses(Model):
-            metacls.init_related_attributes(model)
+            metacls.init_related_attributes(cls, model)
 
         metacls.init_attribute_order(cls)
 
@@ -263,28 +263,28 @@ class ModelMeta(type):
                 if isinstance(attr, RelatedAttribute) and attr.name in cls.__dict__:
                     attr.primary_class = cls
 
-    def init_related_attributes(cls):
+    def init_related_attributes(cls, model_cls):
         """ Initialize related attributes
 
         Raises:
             :obj:`ValueError`: if related attributes of the class are not valid
                 (e.g. if a class that is the subject of a relationship does not have a primary attribute)
         """
-        for attr in cls.Meta.attributes.values():
+        for attr in model_cls.Meta.attributes.values():
             if isinstance(attr, RelatedAttribute):
 
                 # deserialize related class references by class name
                 if isinstance(attr.related_class, string_types):
                     related_class_name = attr.related_class
                     if '.' not in related_class_name:
-                        related_class_name = cls.__module__ + '.' + related_class_name
+                        related_class_name = model_cls.__module__ + '.' + related_class_name
 
                     related_class = get_model(related_class_name)
                     if related_class:
                         attr.related_class = related_class
 
                 # setup related attributes on related classes
-                if attr.name in cls.__dict__ and attr.related_name and \
+                if attr.name in model_cls.__dict__ and attr.related_name and \
                         isinstance(attr.related_class, type) and issubclass(attr.related_class, Model):
                     related_classes = chain([attr.related_class], get_subclasses(attr.related_class))
                     for related_class in related_classes:
@@ -292,7 +292,7 @@ class ModelMeta(type):
                         if attr.related_name in related_class.Meta.attributes:
                             other_attr = related_class.Meta.attributes[attr.related_name]
                             raise ValueError('Related attribute {}.{} cannot use the same related name as {}.{}'.format(
-                                cls.__name__, attr.name,
+                                model_cls.__name__, attr.name,
                                 related_class.__name__, attr.related_name,
                             ))
 
@@ -301,7 +301,7 @@ class ModelMeta(type):
                                 related_class.Meta.related_attributes[attr.related_name] is not attr:
                             other_attr = related_class.Meta.related_attributes[attr.related_name]
                             raise ValueError('Attributes {}.{} and {}.{} cannot use the same related attribute name {}.{}'.format(
-                                cls.__name__, attr.name,
+                                model_cls.__name__, attr.name,
                                 other_attr.primary_class.__name__, other_attr.name,
                                 related_class.__name__, attr.related_name,
                             ))
