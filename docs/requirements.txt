@@ -1,3 +1,4 @@
+biopython
 configparser
 enum34
 inflect
