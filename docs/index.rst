@@ -1,23 +1,16 @@
-.. Object model documentation master file, created by
-   sphinx-quickstart on Thu Oct 20 18:11:46 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to Object model's documentation!
+`obj_model` documentation
 ================================================
 
-Contents:
+`obj_model` allows developers to define standalone (i.e. separate from databases) schemas using a syntax similar to Django.
+The `obj_model.io` module provides methods to serialize and deserialize schema objects to/from Excel, csv, and tsv file(s).
+
+Contents
+--------
 
 .. toctree::
-   :maxdepth: 2
-
-   source/modules.rst
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   :maxdepth: 3
+   
+   installation.rst
+   overview.rst   
+   API documentation <source/modules.rst>
+   about.rst
