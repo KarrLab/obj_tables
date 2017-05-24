@@ -8,5 +8,7 @@ six
 Sphinx
 sphinx_rtd_theme
 stringcase
+sympy
 robpol86-sphinxcontrib-googleanalytics
 git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
+weakreflist
