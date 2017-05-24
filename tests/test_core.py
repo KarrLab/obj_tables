@@ -1578,25 +1578,25 @@ class TestCore(unittest.TestCase):
         self.assertRaises(ValueError, lambda: leaf.roots.get(id='root_1'))
         self.assertEqual(leaf.roots.get(id='root_2'), roots[3])
 
-    def test_asymetric_self_reference_one_to_one(self):
-        class TestNodeAsymetricOneToOne(core.Model):
+    def test_asymmetric_self_reference_one_to_one(self):
+        class TestNodeAsymmetricOneToOne(core.Model):
             name = core.SlugAttribute()
-            child = core.OneToOneAttribute('TestNodeAsymetricOneToOne', related_name='parent')
+            child = core.OneToOneAttribute('TestNodeAsymmetricOneToOne', related_name='parent')
 
-        parent = TestNodeAsymetricOneToOne(name='parent_0')
-        child = TestNodeAsymetricOneToOne(name='child_0')
+        parent = TestNodeAsymmetricOneToOne(name='parent_0')
+        child = TestNodeAsymmetricOneToOne(name='child_0')
         parent.child = child
         self.assertEqual(child.parent, parent)
 
-    def test_asymetric_self_reference_one_to_many(self):
-        class TestNodeAsymetricOneToMany(core.Model):
+    def test_asymmetric_self_reference_one_to_many(self):
+        class TestNodeAsymmetricOneToMany(core.Model):
             name = core.SlugAttribute()
-            children = core.OneToManyAttribute('TestNodeAsymetricOneToMany', related_name='parent')
+            children = core.OneToManyAttribute('TestNodeAsymmetricOneToMany', related_name='parent')
 
-        parent = TestNodeAsymetricOneToMany(name='parent_0')
+        parent = TestNodeAsymmetricOneToMany(name='parent_0')
         children = [
-            TestNodeAsymetricOneToMany(name='child_0'),
-            TestNodeAsymetricOneToMany(name='child_1'),
+            TestNodeAsymmetricOneToMany(name='child_0'),
+            TestNodeAsymmetricOneToMany(name='child_1'),
         ]
         parent.children.append(children[0])
         parent.children.append(children[1])
@@ -1605,15 +1605,15 @@ class TestCore(unittest.TestCase):
         self.assertEqual(children[0].parent, parent)
         self.assertEqual(children[1].parent, parent)
 
-    def test_asymetric_self_reference_many_to_one(self):
-        class TestNodeAsymetricManyToOne(core.Model):
+    def test_asymmetric_self_reference_many_to_one(self):
+        class TestNodeAsymmetricManyToOne(core.Model):
             name = core.SlugAttribute()
-            parent = core.ManyToOneAttribute('TestNodeAsymetricManyToOne', related_name='children')
+            parent = core.ManyToOneAttribute('TestNodeAsymmetricManyToOne', related_name='children')
 
-        parent = TestNodeAsymetricManyToOne(name='parent_0')
+        parent = TestNodeAsymmetricManyToOne(name='parent_0')
         children = [
-            TestNodeAsymetricManyToOne(name='child_0'),
-            TestNodeAsymetricManyToOne(name='child_1'),
+            TestNodeAsymmetricManyToOne(name='child_0'),
+            TestNodeAsymmetricManyToOne(name='child_1'),
         ]
         parent.children.append(children[0])
         parent.children.append(children[1])
@@ -1622,18 +1622,18 @@ class TestCore(unittest.TestCase):
         self.assertEqual(children[0].parent, parent)
         self.assertEqual(children[1].parent, parent)
 
-    def test_asymetric_self_reference_many_to_many(self):
-        class TestNodeAsymetricManyToMany(core.Model):
+    def test_asymmetric_self_reference_many_to_many(self):
+        class TestNodeAsymmetricManyToMany(core.Model):
             name = core.SlugAttribute()
-            children = core.ManyToManyAttribute('TestNodeAsymetricManyToMany', related_name='parents')
+            children = core.ManyToManyAttribute('TestNodeAsymmetricManyToMany', related_name='parents')
 
         parents = [
-            TestNodeAsymetricManyToMany(name='parent_0'),
-            TestNodeAsymetricManyToMany(name='parent_1'),
+            TestNodeAsymmetricManyToMany(name='parent_0'),
+            TestNodeAsymmetricManyToMany(name='parent_1'),
             ]
         children = [
-            TestNodeAsymetricManyToMany(name='child_0'),
-            TestNodeAsymetricManyToMany(name='child_1'),
+            TestNodeAsymmetricManyToMany(name='child_0'),
+            TestNodeAsymmetricManyToMany(name='child_1'),
         ]
         parents[0].children = children
         parents[1].children = children
@@ -1641,14 +1641,14 @@ class TestCore(unittest.TestCase):
         self.assertEqual(children[0].parents, parents)
         self.assertEqual(children[1].parents, parents)
 
-    def test_symetric_self_reference_one_to_one(self):
-        class TestNodeSymetricOneToOne(core.Model):
+    def test_symmetric_self_reference_one_to_one(self):
+        class TestNodeSymmetricOneToOne(core.Model):
             name = core.SlugAttribute()
-            other = core.OneToOneAttribute('TestNodeSymetricOneToOne', related_name='other')
+            other = core.OneToOneAttribute('TestNodeSymmetricOneToOne', related_name='other')
 
         nodes = [
-            TestNodeSymetricOneToOne(name='node_0'),
-            TestNodeSymetricOneToOne(name='node_1'),
+            TestNodeSymmetricOneToOne(name='node_0'),
+            TestNodeSymmetricOneToOne(name='node_1'),
         ]
         nodes[0].other = nodes[1]
         self.assertEqual(nodes[1].other, nodes[0])
@@ -1664,32 +1664,32 @@ class TestCore(unittest.TestCase):
         nodes[1].other = nodes[1]
         self.assertTrue(nodes[0].is_equal(nodes[1]))
 
-    def test_symetric_self_reference_one_to_many(self):
-        def make_TestNodeSymetricOneToMany():
-            class TestNodeSymetricOneToMany(core.Model):
+    def test_symmetric_self_reference_one_to_many(self):
+        def make_TestNodeSymmetricOneToMany():
+            class TestNodeSymmetricOneToMany(core.Model):
                 name = core.SlugAttribute()
-                others = core.OneToManyAttribute('TestNodeSymetricOneToMany', related_name='others')
+                others = core.OneToManyAttribute('TestNodeSymmetricOneToMany', related_name='others')
 
-        self.assertRaises(ValueError, make_TestNodeSymetricOneToMany)
+        self.assertRaises(ValueError, make_TestNodeSymmetricOneToMany)
 
-    def test_symetric_self_reference_many_to_one(self):
-        def make_TestNodeSymetricManyToOne():
-            class TestNodeSymetricManyToOne(core.Model):
+    def test_symmetric_self_reference_many_to_one(self):
+        def make_TestNodeSymmetricManyToOne():
+            class TestNodeSymmetricManyToOne(core.Model):
                 name = core.SlugAttribute()
-                others = core.OneToManyAttribute('TestNodeSymetricManyToOne', related_name='others')
+                others = core.OneToManyAttribute('TestNodeSymmetricManyToOne', related_name='others')
 
-        self.assertRaises(ValueError, make_TestNodeSymetricManyToOne)
+        self.assertRaises(ValueError, make_TestNodeSymmetricManyToOne)
 
-    def test_symetric_self_reference_many_to_many(self):
-        class TestNodeSymetricManyToMany(core.Model):
+    def test_symmetric_self_reference_many_to_many(self):
+        class TestNodeSymmetricManyToMany(core.Model):
             name = core.SlugAttribute()
-            others = core.ManyToManyAttribute('TestNodeSymetricManyToMany', related_name='others')
+            others = core.ManyToManyAttribute('TestNodeSymmetricManyToMany', related_name='others')
 
         nodes = [
-            TestNodeSymetricManyToMany(name='node_0'),
-            TestNodeSymetricManyToMany(name='node_1'),
-            TestNodeSymetricManyToMany(name='node_2'),
-            TestNodeSymetricManyToMany(name='node_3'),
+            TestNodeSymmetricManyToMany(name='node_0'),
+            TestNodeSymmetricManyToMany(name='node_1'),
+            TestNodeSymmetricManyToMany(name='node_2'),
+            TestNodeSymmetricManyToMany(name='node_3'),
         ]
         nodes[0].others = nodes[2:4]
         nodes[1].others = nodes[2:4]
