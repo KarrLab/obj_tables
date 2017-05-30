@@ -1,125 +1,5 @@
 """ Database-independent Django-like object model
 
-This module allows developers to define standalone (separate from databases) schemas using a syntax similar to Django.
-The `io` module provides methods to serialize and deserialize schema objects to/from Excel, csv, and tsv file(s).
-
-=====================================
-Defining schemas
-=====================================
-Each schema is composed of one or models (subclasses of :obj:`Model`) each of which has one or more attributes
-(instances of :obj:`Attribute` and its subclasses). The following shows an example of a schema for a lab member::
-
-    class Member(Model):
-        first_name = StringAttribute()
-        last_name = StringAttribute()
-
-Multiple attributes types are provided:
-
-* :obj:`BooleanAttribute`
-* :obj:`EnumAttribute`
-* :obj:`IntegerAttribute`, :obj:`PositiveIntegerAttribute`
-* :obj:`FloatAttribute`
-* :obj:`StringAttribute`, :obj:`LongStringAttribute`, :obj:`RegexAttribute`, :obj:`UrlAttribute`, :obj:`SlugAttribute`
-* :obj:`DateAttribute`, :obj:`TimeAttribute`, :obj:`DateTimeAttribute`
-
-Four related attribute types (:obj:`OneToOneAttribute`, :obj:`OneToManyAttribute`, :obj:`ManyToOneAttribute`, and
-:obj:`ManyToManyAttribute`) are provided to enable relationships among objects. Each constructor includes an
-optional argument `related_name` which when provided automatically constructs a reverse attribute between the
-instances::
-
-    class Lab(Model):
-        name = StringAttribute()
-        url = UrlAttribute()
-
-    class Member(Model):
-        first_name = StringAttribute()
-        last_name = StringAttribute()
-        lab = ManyToOneAttribute(Lab, related_name='members')
-
-Do not choose attribute names that would clash with with built-in attributes or methods of
-classes, such as `validate`, `serialize`, and `deserialize`.
-
-
-=====================================
-Instantiating objects
-=====================================
-The module automatically adds optional keyword arguments to the constructor for each type. Thus objects can be
-constructed as illustrated below::
-
-    lab = Lab(name='Karr Lab')
-    member = Member(first_name='Jonathan', last_name='Karr', lab=lab)
-
-=====================================
-Getting and setting object attributes
-=====================================
-Objects attributes can be get and set as shown below::
-
-    name = lab.name
-    lab.url = 'http://www.karrlab.org'
-
-Related attributes can also be edited as shown below::
-
-    new_member = Member(first_name='new', last_name='guy')
-    lab.members = [new_member]
-
-*-to-many and many-to-* attribute and related attribute values are instances of :obj:`RelatedManager` which is a subclass
-of :obj:`set`. Thus, their values can also be edited with set methods such as `add`, `clear`, `remove`, and `update`.
-:obj:`RelatedManager` provides three additional methods:
-
-* `create`: `object.related_objects.create(**kwargs)` is syntatic sugar for `object.attribute.add(RelatedObject(**kwargs))`
-* `get`: this returns a related object with attribute values equal to the supplies keyward argments
-* `filter`: this returns the subset of the related objects with attribute values equal to the supplied keyword argments
-
-=====================================
-Meta information
-=====================================
-To allow developers to customize the behavior of each :obj:`Model` subclass, :obj:`Model` provides an internal `Meta` class
-(:obj:`Model.Meta`). This provides several attributes:
-
-* `attribute_order`: :obj:`tuple` of attribute names; controls order in which attributes should be printed when serialized
-* `frozen_columns`: :obj:`int`: controls how many columns should be frozen when the model is serialized to Excel
-* `ordering`: :obj:`tuple` of attribute names; controls the order in which objects should be printed when serialized
-* `tabular_orientation`: :obj:`TabularOrientation`: controls orientation (row, column, inline) of model when serialized
-* `unique_together`: :obj:`tuple` of attribute names; controls what tuples of attribute values must be unique
-* `verbose_name`: verbose name of the model; used for (de)serialization
-* `verbose_name_plural`: plural verbose name of the model; used for (de)serialization
-
-=====================================
-Validation
-=====================================
-To facilitate data validation, the module allows developers to specify how objects should be validated at several levels:
-
-* Attribute: :obj:`Attribute` defines a method `validate` which can be used to validate individual attribute values. Attributes of
-  (e.g. `min`, `max`, `min_length`, `max_length`, etc. ) these classes can be used to customize this validation
-* Object: :obj:`Model` defines a method `validate` which can be used to validate entire object instances
-* Model: :obj:`Model` defines a class method `validate_unique` which can be used to validate sets of object instances of the same type.
-  This is customized by setting (a) the `unique` attribute of each model type's attrbutes or (b) the `unique_together` attribute
-  of the model's `Meta` class.
-* Dataset: :obj:`Validator` can be subclasses provide additional custom validation of entire datasets
-
-Validation does not occur automatically, rather users must call validate() when it is needed.
-
-=====================================
-Equality, differencing
-=====================================
-To facilitate comparison between objects, the :obj:`Model` provides two methods
-
-* `is_equal`: returns :obj:`True` if two :obj:`Model` instances are semantically equal (all attribute values are recursively equal)
-* `difference`: returns a textual description of the difference(s) between two objects
-
-=====================================
-Serialization/deserialization
-=====================================
-The `io` module provides methods to serialize and deserialize schema objects to/from Excel, csv, and tsv files(s). :obj:`Model.Meta`
-provides several attributes to enable developers to control how each model is serialized. Please see the "Meta information" section
-above for more information.
-
-=====================================
-Utilities
-=====================================
-The `utils` module provides several additional utilities for manipulating :obj:`Model` instances.
-
-
 :Author: Jonathan Karr <karr@mssm.edu>
 :Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
 :Date: 2016-12-12
@@ -139,7 +19,6 @@ from six import integer_types, string_types, with_metaclass
 from stringcase import sentencecase
 from os.path import basename, dirname, splitext
 import weakref
-from weakreflist import WeakList
 from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
@@ -191,6 +70,9 @@ class ModelMeta(type):
             Meta.frozen_columns = bases[0].Meta.frozen_columns
             Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
 
+        # validate attributes
+        metacls.validate_related_attributes(name, bases, namespace)
+
         # validate attribute inheritance
         metacls.validate_attribute_inheritance(name, bases, namespace)
 
@@ -198,6 +80,7 @@ class ModelMeta(type):
         cls = super(ModelMeta, metacls).__new__(metacls, name, bases, namespace)
 
         # Initialize meta data
+        # todo: move all validation in the below methods to the metaclass
         metacls.init_inheritance(cls)
 
         metacls.init_attributes(cls)
@@ -206,7 +89,7 @@ class ModelMeta(type):
 
         cls.Meta.related_attributes = OrderedDict()
         for model in get_subclasses(Model):
-            metacls.init_related_attributes(model)
+            metacls.init_related_attributes(cls, model)
 
         metacls.init_attribute_order(cls)
 
@@ -225,6 +108,17 @@ class ModelMeta(type):
         """ Get tuple of this model and superclasses which are subclasses of `Model` """
         cls.Meta.inheritance = tuple([cls] + [supercls for supercls in get_superclasses(cls)
                                               if issubclass(supercls, Model) and supercls is not Model])
+
+    @classmethod
+    def validate_related_attributes(metacls, name, bases, namespace):
+        """ Check the related attributes
+
+        Raises:
+            :obj:`ValueError`: if an :obj:`OneToManyAttribute` or :obj:`ManyToOneAttribute` has a `related_name` equal to its `name`
+        """
+        for attr_name, attr in namespace.items():
+            if isinstance(attr, (OneToManyAttribute, ManyToOneAttribute)) and attr.related_name == attr_name:
+                raise ValueError('The related name of {} {} cannot be equal to its name'.format(attr.__class__.__name__, attr_name))
 
     @classmethod
     def validate_attribute_inheritance(metacls, name, bases, namespace):
@@ -263,36 +157,37 @@ class ModelMeta(type):
                 if isinstance(attr, RelatedAttribute) and attr.name in cls.__dict__:
                     attr.primary_class = cls
 
-    def init_related_attributes(cls):
+    def init_related_attributes(cls, model_cls):
         """ Initialize related attributes
 
         Raises:
             :obj:`ValueError`: if related attributes of the class are not valid
                 (e.g. if a class that is the subject of a relationship does not have a primary attribute)
         """
-        for attr in cls.Meta.attributes.values():
+        for attr in model_cls.Meta.attributes.values():
             if isinstance(attr, RelatedAttribute):
 
                 # deserialize related class references by class name
                 if isinstance(attr.related_class, string_types):
                     related_class_name = attr.related_class
                     if '.' not in related_class_name:
-                        related_class_name = cls.__module__ + '.' + related_class_name
+                        related_class_name = model_cls.__module__ + '.' + related_class_name
 
                     related_class = get_model(related_class_name)
                     if related_class:
                         attr.related_class = related_class
 
                 # setup related attributes on related classes
-                if attr.name in cls.__dict__ and attr.related_name and \
+                if attr.name in model_cls.__dict__ and attr.related_name and \
                         isinstance(attr.related_class, type) and issubclass(attr.related_class, Model):
                     related_classes = chain([attr.related_class], get_subclasses(attr.related_class))
                     for related_class in related_classes:
                         # check that name doesn't conflict with another attribute
-                        if attr.related_name in related_class.Meta.attributes:
+                        if attr.related_name in related_class.Meta.attributes and \
+                            not (isinstance(attr, (OneToOneAttribute, ManyToManyAttribute)) and attr.related_name == attr.name):
                             other_attr = related_class.Meta.attributes[attr.related_name]
                             raise ValueError('Related attribute {}.{} cannot use the same related name as {}.{}'.format(
-                                cls.__name__, attr.name,
+                                model_cls.__name__, attr.name,
                                 related_class.__name__, attr.related_name,
                             ))
 
@@ -301,7 +196,7 @@ class ModelMeta(type):
                                 related_class.Meta.related_attributes[attr.related_name] is not attr:
                             other_attr = related_class.Meta.related_attributes[attr.related_name]
                             raise ValueError('Attributes {}.{} and {}.{} cannot use the same related attribute name {}.{}'.format(
-                                cls.__name__, attr.name,
+                                model_cls.__name__, attr.name,
                                 other_attr.primary_class.__name__, other_attr.name,
                                 related_class.__name__, attr.related_name,
                             ))
@@ -449,26 +344,27 @@ class ModelMeta(type):
 class Manager(object):
     """ Enable O(1) dictionary-based searching of a Model's instances
 
-    This class is inspired by Django's `Manager` class. An instance of `Manger` is associated with
-    each `Model` and accessed as the class attribute `objects` (as in Django).
-    `Manager` maintains a dictionary for each indexed attribute tuple, and a reverse index from each
-    `Model` instance to its indexed attribute tuple keys.
+    This class is inspired by Django's `Manager` class. An instance of :obj:`Manger` is associated with
+    each :obj:`Model` and accessed as the class attribute `objects` (as in Django).
+    :obj:`Manager` maintains a dictionary for each indexed attribute tuple, and a reverse index from each
+    :obj:`Model` instance to its indexed attribute tuple keys.
 
     These data structures are used to support
+
     * O(1) lookup operations for instances indexed by any indexed attribute tuple
     * O(1) insert, and update operations
 
     Attributes:
-        cls (:obj:`Class`): the `Model` class which is being managed
+        cls (:obj:`Class`): the :obj:`Model` class which is being managed
         _new_instances (:obj:`WeakSet`): set of all new instances of `cls` that have not been indexed,
-            stored as weakrefs, so `Model`s that are otherwise unused can be garbage collected
-        _index_dicts (:obj:`dict` mapping `tuple` to `WeakValueDictionary`): indices that enable
-            lookup of `Model` instances from their `Meta.indexed_attrs_tuples`
-        _reverse_index (:obj:`WeakKeyDictionary` mapping `Model` instance to `dict`): a reverse
-            index that provides all of each `Model`'s indexed attribute tuple keys
+            stored as weakrefs, so `Model`'s that are otherwise unused can be garbage collected
+        _index_dicts (:obj:`dict` mapping `tuple` to :obj:`weakref.WeakValueDictionary`): indices that enable
+            lookup of :obj:`Model` instances from their `Meta.indexed_attrs_tuples`
+        _reverse_index (:obj:`weakref.WeakKeyDictionary` mapping :obj:`Model` instance to :obj:`dict`): a reverse
+            index that provides all of each :obj:`Model`'s indexed attribute tuple keys
         num_ops_since_gc (:obj:`int`): number of operations since the last gc of weaksets
     """
-    # todo: make a contextmanager that supports creation of many `Model`s indexing them automatically
+    # todo: make a contextmanager that supports creation of many `Model`'s indexing them automatically
 
     # number of operations between calls to _gc_weaksets
     # todo: make this value configurable
@@ -482,8 +378,8 @@ class Manager(object):
     def create_indices(self):
         """ Create dicts needed to manage indices on attribute tuples
 
-        The references to `Model` instances are stored as weakrefs in a WeakKeyDictionary, so that
-        `Model`s which are otherwise unused get garbage collected.
+        The references to :obj:`Model` instances are stored as weakrefs in a :obj:`weakref.WeakKeyDictionary`, so that
+        :obj:`Model`'s which are otherwise unused get garbage collected.
         """
         self._index_dicts = {}
         # for each indexed_attrs, create a dict
@@ -721,13 +617,13 @@ class Manager(object):
             self._update(model_obj)
 
     def upsert_all(self):
-        """ Upsert the indices for all of this `Manager`'s `Model`s
+        """ Upsert the indices for all of this `Manager`'s `Model`'s
         """
         for model_obj in self.all():
             self.upsert(model_obj)
 
     def insert_all_new(self):
-        """ Insert all new instances of this `Manager`'s `Model`s into the search indices
+        """ Insert all new instances of this `Manager`'s `Model`'s into the search indices
         """
         for model_obj in self._new_instances:
             self._insert(model_obj)
@@ -794,10 +690,10 @@ class Model(with_metaclass(ModelMeta, object)):
         Attributes:
             attributes (:obj:`OrderedDict` of `Attribute`): attributes
             related_attributes (:obj:`set` of `Attribute`): attributes declared in related objects
-            primary_attribute (:obj:`Attribute`): attribute with `primary`=`True`
-            unique_together (obj:`tuple` of `tuple`s of attribute names): controls what tuples of
+            primary_attribute (:obj:`Attribute`): attribute with `primary` = `True`
+            unique_together (:obj:`tuple` of :obj:`tuple`'s of attribute names): controls what tuples of
                 attribute values must be unique
-            indexed_attrs_tuples (obj:`tuple` of `tuple`s of attribute names): tuples of attributes on
+            indexed_attrs_tuples (:obj:`tuple` of `tuple`'s of attribute names): tuples of attributes on
                 which instances of this `Model` will be indexed by the `Model`'s `Manager`
             attribute_order (:obj:`tuple` of `str`): tuple of attribute names, in the order in which they should be displayed
             verbose_name (:obj:`str`): verbose name to refer to an instance of the model
@@ -1596,32 +1492,33 @@ class Model(with_metaclass(ModelMeta, object)):
     def pformat(self, max_depth=DEFAULT_MAX_DEPTH, indent=DEFAULT_INDENT):
         """ Return a human-readable string representation of this `Model`.
 
-            Follows the graph of related `Model`s up to a depth of `max_depth`. `Model`s at depth
-            `max_depth+1` are represented by '<class name>: ...', while deeper `Model`s are not
+            Follows the graph of related `Model`'s up to a depth of `max_depth`. `Model`'s at depth
+            `max_depth+1` are represented by '<class name>: ...', while deeper `Model`'s are not
             traversed or printed. Re-encountered Model's do not get printed, and are indicated by
             '<attribute name>: --'.
             Attributes that are related or iterable are indented.
 
             For example, we have::
-            Model1 classname:       # Each model starts with its classname, followed by a list of
-            attr1: value1           # attribute names & values.
-            attr2: value2
-            attr3:                  # Reference attributes can point to other Models; we indent these under the attribute name
-                Model2 classname:   # Reference attribute attr3 contains Model2;
-                ...                 # its attributes follow.
-            attr4:
-                Model3 classname:   # An iteration over reference attributes is a list at constant indentation:
-                ...
-            attr5:
-                Model2 classname: --    # Traversing the Model network may re-encounter a Model; they're listed with '--'
-            attr6:
-                Model5 classname:
-                attr7:
-                    Model5 classname: ...   # The size of the output is controlled with max_depth;
-                                            # models encountered at depth = max_depth+1 are shown with '...'
+
+                Model1 classname:       # Each model starts with its classname, followed by a list of
+                attr1: value1           # attribute names & values.
+                attr2: value2
+                attr3:                  # Reference attributes can point to other Models; we indent these under the attribute name
+                    Model2 classname:   # Reference attribute attr3 contains Model2;
+                    ...                 # its attributes follow.
+                attr4:
+                    Model3 classname:   # An iteration over reference attributes is a list at constant indentation:
+                    ...
+                attr5:
+                    Model2 classname: --    # Traversing the Model network may re-encounter a Model; they're listed with '--'
+                attr6:
+                    Model5 classname:
+                    attr7:
+                        Model5 classname: ...   # The size of the output is controlled with max_depth;
+                                                # models encountered at depth = max_depth+1 are shown with '...'
 
         Args:
-            max_depth (:obj:`int`, optional): the maximum depth to which related `Model`s should be printed
+            max_depth (:obj:`int`, optional): the maximum depth to which related `Model`'s should be printed
             indent (:obj:`int`, optional): number of spaces to indent
 
         Returns:
@@ -1633,12 +1530,12 @@ class Model(with_metaclass(ModelMeta, object)):
     def _tree_str(self, printed_objs, depth, max_depth):
         """ Obtain a nested list of string representations of this Model.
 
-            Follows the graph of related `Model`s up to a depth of `max_depth`. Called recursively.
+            Follows the graph of related `Model`'s up to a depth of `max_depth`. Called recursively.
 
         Args:
             printed_objs (:obj:`set`): objects that have already been `_tree_str`'ed
             depth (:obj:`int`): the depth at which this `Model` is being `_tree_str`'ed
-            max_depth (:obj:`int`): the maximum depth to which related `Model`s should be printed
+            max_depth (:obj:`int`): the maximum depth to which related `Model`'s should be printed
 
         Returns:
             :obj:`list` of `list`: a nested list of string representations of this Model
@@ -4220,7 +4117,7 @@ class RelatedManager(list):
             value (:obj:`object`): value
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         super(RelatedManager, self).append(value, **kwargs)
 
@@ -4233,7 +4130,7 @@ class RelatedManager(list):
             value (:obj:`object`): value
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         self.append(value, **kwargs)
 
@@ -4246,7 +4143,7 @@ class RelatedManager(list):
             value (:obj:`object`): value
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         if value in self:
             self.remove(value)
@@ -4257,7 +4154,7 @@ class RelatedManager(list):
         """ Remove all elements from list
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         for value in reversed(self):
             self.remove(value)
@@ -4271,7 +4168,7 @@ class RelatedManager(list):
             i (:obj:`int`, optional): index of element to remove
 
         Returns:
-            :obj:`object': removed element
+            :obj:`object`: removed element
         """
         value = super(RelatedManager, self).pop(i)
         self.remove(value, update_list=False)
@@ -4285,7 +4182,7 @@ class RelatedManager(list):
             values (:obj:`list`): values to add to list
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         self.extend(values)
 
@@ -4298,7 +4195,7 @@ class RelatedManager(list):
             values (:obj:`list`): values to add to list
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         for value in values:
             self.append(value)
@@ -4312,7 +4209,7 @@ class RelatedManager(list):
             values (:obj:`list`): values to intersect with list
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         for value in reversed(self):
             if value not in values:
@@ -4327,7 +4224,7 @@ class RelatedManager(list):
             values (:obj:`list`): values to difference with list
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         for value in values:
             if value in self:
@@ -4342,7 +4239,7 @@ class RelatedManager(list):
             values (:obj:`list`): values to difference with list
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         self_copy = copy.copy(self)
         values_copy = copy.copy(values)
@@ -4470,7 +4367,7 @@ class ManyToOneRelatedManager(RelatedManager):
             propagate (:obj:`bool`, optional): propagate change to related attribute
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         if value in self:
             return self
@@ -4489,7 +4386,7 @@ class ManyToOneRelatedManager(RelatedManager):
             propagate (:obj:`bool`, optional): propagate change to related attribute
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         if update_list:
             super(ManyToOneRelatedManager, self).remove(value)
@@ -4518,7 +4415,7 @@ class OneToManyRelatedManager(RelatedManager):
             propagate (:obj:`bool`, optional): propagate change to related attribute
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         if value in self:
             return self
@@ -4537,7 +4434,7 @@ class OneToManyRelatedManager(RelatedManager):
             propagate (:obj:`bool`, optional): propagate change to related attribute
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         if update_list:
             super(OneToManyRelatedManager, self).remove(value)
@@ -4558,7 +4455,7 @@ class ManyToManyRelatedManager(RelatedManager):
             propagate (:obj:`bool`, optional): propagate change to related attribute
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         if value in self:
             return self
@@ -4581,7 +4478,7 @@ class ManyToManyRelatedManager(RelatedManager):
             propagate (:obj:`bool`, optional): propagate change to related attribute
 
         Returns:
-            :obj:`RelatedManager': self
+            :obj:`RelatedManager`: self
         """
         if update_list:
             super(ManyToManyRelatedManager, self).remove(value)
