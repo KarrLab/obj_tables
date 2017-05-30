@@ -2040,6 +2040,7 @@ node:
         id_t0 = id(t0)
         self.assertEqual(id_t0, id(t0))
         self.assertEqual((id_t0,), (id(t0),))
+        # self.assertEqual((vs, vi, id(t0)), hashable_values) fails, but the assertion below succeeds
         self.assertEqual((vs, vi, id_t0), hashable_values)
         s = set()
         try:
