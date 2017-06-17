@@ -41,7 +41,7 @@ class ModelMeta(type):
     def __new__(metacls, name, bases, namespace):
         """
         Args:
-            metacls (:obj:`Model`): `Model`, or a subclass of `Model`
+            metacls (:obj:`class`): the `ModelMeta` class
             name (:obj:`str`): `Model` class name
             bases (:obj: `tuple`): tuple of superclasses
             namespace (:obj:`dict`): namespace of `Model` class definition
@@ -159,6 +159,12 @@ class ModelMeta(type):
 
     def init_related_attributes(cls, model_cls):
         """ Initialize related attributes
+
+        Initialize the related attributes in `model_cls`
+
+        Args:
+            cls (:obj:`Model`): `Model`, or a subclass of `Model`
+            model_cls (:obj:`Model`): a subclass of `cls`
 
         Raises:
             :obj:`ValueError`: if related attributes of the class are not valid
