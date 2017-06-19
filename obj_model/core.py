@@ -845,11 +845,15 @@ class Model(with_metaclass(ModelMeta, object)):
                 for attr_name, attr in chain(obj.Meta.attributes.items(), obj.Meta.related_attributes.items()):
                     if isinstance(attr, RelatedAttribute):
                         val = getattr(obj, attr_name)
-                        if isinstance(val, list) and len(val) > 1:
-                            # normalize children
+                        
+                        # normalize children
+                        if isinstance(val, list):
                             objs_to_normalize.extend(val)
+                        elif val:
+                            objs_to_normalize.append(val)
 
-                            # sort
+                        # sort
+                        if isinstance(val, list) and len(val) > 1:
                             if attr_name in obj.Meta.attributes:
                                 cls = attr.related_class
                             else:

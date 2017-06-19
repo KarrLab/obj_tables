@@ -2464,6 +2464,17 @@ node:
         self.assertEqual(node_0.children[1].children, [node_0_b_a, node_0_b_b, node_0_b_c])
         self.assertEqual(node_0.children[2].children, [node_0_c_a, node_0_c_b, node_0_c_c])
 
+        # example
+        node_0 = NormNodeLevel0(label='node_0')
+        node_1 = NormNodeLevel1(parent=node_0, label='node_1')
+        node_2_a = NormNodeLevel2(parent=node_1, label='node_a')
+        node_2_b = NormNodeLevel2(parent=node_1, label='node_b')        
+        node_2_d = NormNodeLevel2(parent=node_1, label='node_d')
+        node_2_c = NormNodeLevel2(parent=node_1, label='node_c')
+
+        node_0.normalize()
+        self.assertEqual(node_1.children, [node_2_a, node_2_b, node_2_c, node_2_d])
+
     def test_setter(self):
         class Site(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
