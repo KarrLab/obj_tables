@@ -41,7 +41,7 @@ class ModelMeta(type):
     def __new__(metacls, name, bases, namespace):
         """
         Args:
-            metacls (:obj:`class`): the `ModelMeta` class
+            metacls (:obj:`Model`): `Model`, or a subclass of `Model`
             name (:obj:`str`): `Model` class name
             bases (:obj: `tuple`): tuple of superclasses
             namespace (:obj:`dict`): namespace of `Model` class definition
@@ -159,12 +159,6 @@ class ModelMeta(type):
 
     def init_related_attributes(cls, model_cls):
         """ Initialize related attributes
-
-        Initialize the related attributes in `model_cls`
-
-        Args:
-            cls (:obj:`Model`): `Model`, or a subclass of `Model`
-            model_cls (:obj:`Model`): a subclass of `cls`
 
         Raises:
             :obj:`ValueError`: if related attributes of the class are not valid
@@ -1287,8 +1281,12 @@ class Model(with_metaclass(ModelMeta, object)):
             if 'attributes' in difference:
                 if indent:
                     msg += '\n' + ' ' * 2 * indent
-                msg += 'Objects ("{}", "{}") have different attribute values:'.format(
-                    difference['objects'][0].serialize(), difference['objects'][1].serialize())
+                msg += 'Objects ({}: "{}", {}: "{}") have different attribute values:'.format(
+                    difference['objects'][0].__class__.__name__,
+                    difference['objects'][0].serialize(), 
+                    difference['objects'][1].__class__.__name__,
+                    difference['objects'][1].serialize(),
+                    )
 
                 for attr_name in natsorted(difference['attributes'].keys(), alg=ns.IGNORECASE):
                     prefix = '\n{}`{}` are not equal:'.format(' ' * 2 * (indent + 1), attr_name)
@@ -1300,8 +1298,13 @@ class Model(with_metaclass(ModelMeta, object)):
                         new_to_msg = ''
                         for i_el, el_diff in enumerate(difference['attributes'][attr_name]):
                             if isinstance(el_diff, dict):
-                                el_prefix = '\n{}element: "{}" != element: "{}"'.format(
-                                    ' ' * 2 * (indent + 2), el_diff['objects'][0].serialize(), el_diff['objects'][1].serialize())
+                                el_prefix = '\n{}element: {}: "{}" != element: {}: "{}"'.format(
+                                    ' ' * 2 * (indent + 2), 
+                                    el_diff['objects'][0].__class__.__name__,
+                                    el_diff['objects'][0].serialize(), 
+                                    el_diff['objects'][1].__class__.__name__,
+                                    el_diff['objects'][1].serialize(),
+                                    )
                                 new_to_render.append([el_diff, indent + 3, el_prefix, ])
                             else:
                                 new_to_msg += '\n' + ' ' * 2 * (indent + 2) + el_diff
