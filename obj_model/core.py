@@ -1942,7 +1942,12 @@ class Attribute(object):
         return self.clean(value)
 
 
-class EnumAttribute(Attribute):
+class LiteratureAttribute(Attribute):
+    """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
+    pass
+
+
+class EnumAttribute(LiteratureAttribute):
     """ Enumeration attribute
 
     Attributes:
@@ -2045,7 +2050,7 @@ class EnumAttribute(Attribute):
         return value.name
 
 
-class BooleanAttribute(Attribute):
+class BooleanAttribute(LiteratureAttribute):
     """ Boolean attribute
 
     Attributes:
@@ -2138,7 +2143,7 @@ class BooleanAttribute(Attribute):
         return value
 
 
-class FloatAttribute(Attribute):
+class FloatAttribute(LiteratureAttribute):
     """ Float attribute
 
     Attributes:
@@ -2255,7 +2260,7 @@ class FloatAttribute(Attribute):
         return value
 
 
-class IntegerAttribute(Attribute):
+class IntegerAttribute(LiteratureAttribute):
     """ Interger attribute
 
     Attributes:
@@ -2407,7 +2412,7 @@ class PositiveIntegerAttribute(IntegerAttribute):
         return None
 
 
-class StringAttribute(Attribute):
+class StringAttribute(LiteratureAttribute):
     """ String attribute
 
     Attributes:
@@ -2628,7 +2633,7 @@ class UrlAttribute(RegexAttribute):
                                            primary=primary, unique=unique)
 
 
-class DateAttribute(Attribute):
+class DateAttribute(LiteratureAttribute):
     """ Date attribute
 
     Attributes:
@@ -2733,7 +2738,7 @@ class DateAttribute(Attribute):
         return value.toordinal() - date(1900, 1, 1).toordinal() + 1.
 
 
-class TimeAttribute(Attribute):
+class TimeAttribute(LiteratureAttribute):
     """ Time attribute
 
     Attributes:
@@ -2836,7 +2841,7 @@ class TimeAttribute(Attribute):
         return (value.hour * 60. * 60. + value.minute * 60. + value.second) / (24. * 60. * 60.)
 
 
-class DateTimeAttribute(Attribute):
+class DateTimeAttribute(LiteratureAttribute):
     """ Datetime attribute
 
     Attributes:
