@@ -1942,12 +1942,12 @@ class Attribute(object):
         return self.clean(value)
 
 
-class LiteratureAttribute(Attribute):
+class LiteralAttribute(Attribute):
     """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
     pass
 
 
-class EnumAttribute(LiteratureAttribute):
+class EnumAttribute(LiteralAttribute):
     """ Enumeration attribute
 
     Attributes:
@@ -2050,7 +2050,7 @@ class EnumAttribute(LiteratureAttribute):
         return value.name
 
 
-class BooleanAttribute(LiteratureAttribute):
+class BooleanAttribute(LiteralAttribute):
     """ Boolean attribute
 
     Attributes:
@@ -2143,7 +2143,7 @@ class BooleanAttribute(LiteratureAttribute):
         return value
 
 
-class FloatAttribute(LiteratureAttribute):
+class FloatAttribute(LiteralAttribute):
     """ Float attribute
 
     Attributes:
@@ -2260,7 +2260,7 @@ class FloatAttribute(LiteratureAttribute):
         return value
 
 
-class IntegerAttribute(LiteratureAttribute):
+class IntegerAttribute(LiteralAttribute):
     """ Interger attribute
 
     Attributes:
@@ -2412,7 +2412,7 @@ class PositiveIntegerAttribute(IntegerAttribute):
         return None
 
 
-class StringAttribute(LiteratureAttribute):
+class StringAttribute(LiteralAttribute):
     """ String attribute
 
     Attributes:
@@ -2633,7 +2633,7 @@ class UrlAttribute(RegexAttribute):
                                            primary=primary, unique=unique)
 
 
-class DateAttribute(LiteratureAttribute):
+class DateAttribute(LiteralAttribute):
     """ Date attribute
 
     Attributes:
@@ -2738,7 +2738,7 @@ class DateAttribute(LiteratureAttribute):
         return value.toordinal() - date(1900, 1, 1).toordinal() + 1.
 
 
-class TimeAttribute(LiteratureAttribute):
+class TimeAttribute(LiteralAttribute):
     """ Time attribute
 
     Attributes:
@@ -2841,7 +2841,7 @@ class TimeAttribute(LiteratureAttribute):
         return (value.hour * 60. * 60. + value.minute * 60. + value.second) / (24. * 60. * 60.)
 
 
-class DateTimeAttribute(LiteratureAttribute):
+class DateTimeAttribute(LiteralAttribute):
     """ Datetime attribute
 
     Attributes:
