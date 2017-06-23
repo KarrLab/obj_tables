@@ -1946,6 +1946,10 @@ class LiteralAttribute(Attribute):
     """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
     pass
 
+class NumericAttribute(LiteralAttribute):
+    """ Base class for numeric literal attributes (float, integer) """
+    pass
+
 
 class EnumAttribute(LiteralAttribute):
     """ Enumeration attribute
@@ -2143,7 +2147,7 @@ class BooleanAttribute(LiteralAttribute):
         return value
 
 
-class FloatAttribute(LiteralAttribute):
+class FloatAttribute(NumericAttribute):
     """ Float attribute
 
     Attributes:
@@ -2260,7 +2264,7 @@ class FloatAttribute(LiteralAttribute):
         return value
 
 
-class IntegerAttribute(LiteralAttribute):
+class IntegerAttribute(NumericAttribute):
     """ Interger attribute
 
     Attributes:
