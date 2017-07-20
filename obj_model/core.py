@@ -18,7 +18,7 @@ from operator import attrgetter, methodcaller
 from six import integer_types, string_types, with_metaclass
 from stringcase import sentencecase
 from os.path import basename, dirname, splitext
-import weakref
+from weakref import WeakSet, WeakKeyDictionary
 from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
@@ -302,11 +302,26 @@ class ModelMeta(type):
             raise ValueError("{} cannot contain identical attribute sets: {}".format(
                 attribute, str(equivalent_tuples)))
 
-        # Normalize each tup_of_attrnames in a sorted tuple
+        # Normalize each tup_of_attrnames as a sorted tuple
+        setattr(cls.Meta, attribute,
+            ModelMeta.normalize_tuple_of_tuples_of_attribute_names(getattr(cls.Meta, attribute)))
+
+    @staticmethod
+    def normalize_tuple_of_tuples_of_attribute_names(tuple_of_tuples_of_attribute_names):
+        """ Normalize a tuple of tuples of attribute names by sorting each member tuple
+
+        Enables simple indexing and searching of tuples
+
+        Args:
+            tuple_of_tuples_of_attribute_names (:obj:`tuple`): a tuple of tuples of attribute names
+
+        Returns:
+            :obj:`tuple`: a tuple of sorted tuples of attribute names
+        """
         normalized_tup_of_attrnames = []
-        for tup_of_attrnames in getattr(cls.Meta, attribute):
+        for tup_of_attrnames in tuple_of_tuples_of_attribute_names:
             normalized_tup_of_attrnames.append(tuple(sorted(tup_of_attrnames)))
-        setattr(cls.Meta, attribute, tuple(normalized_tup_of_attrnames))
+        return tuple(normalized_tup_of_attrnames)
 
     def validate_attributes(cls):
         """ Validate attribute values
@@ -346,39 +361,63 @@ class Manager(object):
 
     This class is inspired by Django's `Manager` class. An instance of :obj:`Manger` is associated with
     each :obj:`Model` and accessed as the class attribute `objects` (as in Django).
+    The tuples of attributes to index are specified by the `indexed_attrs_tuples` attribute of
+    `core.Model.Meta`, which contains a tuple of tuples of attributes to index.
+    `Model`s with empty `indexed_attrs_tuples` attributes incur no overhead from `Manager`.
+
     :obj:`Manager` maintains a dictionary for each indexed attribute tuple, and a reverse index from each
     :obj:`Model` instance to its indexed attribute tuple keys.
 
-    These data structures are used to support
-
-    * O(1) lookup operations for instances indexed by any indexed attribute tuple
-    * O(1) insert, and update operations
+    These data structures support
+    * O(1) get operations for `Model` instances indexed by a indexed attribute tuple
+    * O(1) `Model` instance insert and update operations
 
     Attributes:
         cls (:obj:`Class`): the :obj:`Model` class which is being managed
         _new_instances (:obj:`WeakSet`): set of all new instances of `cls` that have not been indexed,
             stored as weakrefs, so `Model`'s that are otherwise unused can be garbage collected
-        _index_dicts (:obj:`dict` mapping `tuple` to :obj:`weakref.WeakValueDictionary`): indices that enable
+        _index_dicts (:obj:`dict` mapping `tuple` to :obj:`WeakSet`): indices that enable
             lookup of :obj:`Model` instances from their `Meta.indexed_attrs_tuples`
-        _reverse_index (:obj:`weakref.WeakKeyDictionary` mapping :obj:`Model` instance to :obj:`dict`): a reverse
+            mapping: <attr names tuple> -> <attr values tuple> -> WeakSet(<model_obj instances>)
+        _reverse_index (:obj:`WeakKeyDictionary` mapping :obj:`Model` instance to :obj:`dict`): a reverse
             index that provides all of each :obj:`Model`'s indexed attribute tuple keys
+            mapping: <model_obj instances> -> <attr names tuple> -> <attr values tuple>
         num_ops_since_gc (:obj:`int`): number of operations since the last gc of weaksets
     """
-    # todo: make a contextmanager that supports creation of many `Model`'s indexing them automatically
+    # todo: learn how to describe dict -> dict -> X in Sphinx
 
-    # number of operations between calls to _gc_weaksets
+    # number of Manager operations between calls to _gc_weaksets
     # todo: make this value configurable
     GC_PERIOD = 1000
     def __init__(self, cls):
         self.cls = cls
-        self._new_instances = weakref.WeakSet()
-        self.create_indices()
-        self.num_ops_since_gc = 0
+        if self.cls.Meta.indexed_attrs_tuples:
+            self._new_instances = WeakSet()
+            self._create_indices()
+            self.num_ops_since_gc = 0
 
-    def create_indices(self):
+    def _check_model(self, model_obj, method):
+        """ Verify `model_obj`'s `Model`
+
+        Args:
+            model_obj (:obj:`Model`): a `Model` instance
+            method (:obj:`str`): the name of the method requesting the check
+
+        Raises:
+            :obj:`ValueError`: if `model_obj`'s type is not handled by this `Manager`
+            :obj:`ValueError`: if `model_obj`'s type does not have any indexed attribute tuples
+        """
+        if not type(model_obj) is self.cls:
+            raise ValueError("{}(): The '{}' Manager does not process '{}' objects".format(
+                method, self.cls.__name__, type(model_obj).__name__))
+        if not self.cls.Meta.indexed_attrs_tuples:
+            raise ValueError("{}(): The '{}' Manager does not have any indexed attribute tuples".format(
+                method, self.cls.__name__))
+
+    def _create_indices(self):
         """ Create dicts needed to manage indices on attribute tuples
 
-        The references to :obj:`Model` instances are stored as weakrefs in a :obj:`weakref.WeakKeyDictionary`, so that
+        The references to :obj:`Model` instances are stored as weakrefs in a :obj:`WeakKeyDictionary`, so that
         :obj:`Model`'s which are otherwise unused get garbage collected.
         """
         self._index_dicts = {}
@@ -386,25 +425,18 @@ class Manager(object):
         for indexed_attrs in self.cls.Meta.indexed_attrs_tuples:
             self._index_dicts[indexed_attrs] = {}
 
-        # a reverse index from Model instances to index keys enables updates to instances that
-        # are already indexed
-        self._reverse_index = weakref.WeakKeyDictionary()
-
-    def all(self):
-        """ Provide all instances of the `Model` managed by this `Manager`
-
-        Returns:
-            :obj:`iterator` of `Model`: an iterator over all instances of the managed `Model`
-        """
-        self._run_gc_weaksets()
-        return self._reverse_index.keys()
+        # A reverse index from Model instances to index keys enables updates of instances that
+        # are already indexed. Update is performed by deleting and inserting.
+        self._reverse_index = WeakKeyDictionary()
 
     def _dump_index_dicts(self):
+        # gc before printing to produce consistent data
+        self._gc_weaksets()
         print("Dicts for '{}':".format(self.cls.__name__))
-        for name,d in self._index_dicts.items():
-            print('\tindexed attr(s)', name)
+        for attr_tuple,d in self._index_dicts.items():
+            print('\tindexed attr tuple:', attr_tuple)
             for k,v in d.items():
-                print('\t\tk,v', k, {str(item) for item in v})
+                print('\t\tk,v', k, {id(obj_model) for obj_model in v})
         print("Reverse dicts for '{}':".format(self.cls.__name__))
         for obj,attr_keys in self._reverse_index.items():
             print("\tmodel at {}".format(id(obj)))
@@ -412,7 +444,7 @@ class Manager(object):
                 print("\t\t'{}' is '{}'".format(indexed_attrs,vals))
 
     @staticmethod
-    def get_attr_tuple_vals(model_obj, attr_tuple):
+    def _get_attr_tuple_vals(model_obj, attr_tuple):
         """ Provide the values of the attributes in `attr_tuple`
 
         Args:
@@ -449,7 +481,7 @@ class Manager(object):
         return tuple(hashable_values)
 
     @staticmethod
-    def hashable_attr_tup_vals(model_obj, attr_tuple):
+    def _hashable_attr_tup_vals(model_obj, attr_tuple):
         """ Provide hashable values for the attributes in `attr_tuple`
 
         Args:
@@ -459,9 +491,9 @@ class Manager(object):
         Returns:
             :obj:`tuple`: hashable values for `model_obj`'s attributes in `attr_tuple`
         """
-        return Manager._get_hashable_values(Manager.get_attr_tuple_vals(model_obj, attr_tuple))
+        return Manager._get_hashable_values(Manager._get_attr_tuple_vals(model_obj, attr_tuple))
 
-    def get_attribute_types(self, model_obj, attr_names):
+    def _get_attribute_types(self, model_obj, attr_names):
         """ Provide the attribute types for a tuple of attribute names
 
         Args:
@@ -471,11 +503,11 @@ class Manager(object):
         Returns:
             :obj:`tuple`: `model_obj`'s attribute types for the attribute name(s) in `attr_names`
         """
-        self._check_model_type(model_obj, 'get_attribute_types')
+        self._check_model(model_obj, '_get_attribute_types')
         if isinstance(attr_names, string_types):
-            raise ValueError("get_attribute_types(): attr_names cannot be a string: '{}'".format(attr_names))
+            raise ValueError("_get_attribute_types(): attr_names cannot be a string: '{}'".format(attr_names))
         if not isinstance(attr_names, Iterable):
-            raise ValueError("get_attribute_types(): attr_names must be an iterable, not: '{}'".format(attr_names))
+            raise ValueError("_get_attribute_types(): attr_names must be an iterable, not: '{}'".format(attr_names))
         cls = self.cls
         types = []
         for attr_name in attr_names:
@@ -489,55 +521,51 @@ class Manager(object):
             types.append(attr)
         return tuple(types)
 
-    def register_obj(self, model_obj):
+    def _register_obj(self, model_obj):
         """ Register the `Model` instance `model_obj`
 
-        Called by Model.__init__()
+        Called by `Model.__init__()`. Do nothing if `model_obj`'s `Model` has no indexed attribute tuples.
 
         Args:
             model_obj (:obj:`Model`): a new `Model` instance
         """
-        self._check_model_type(model_obj, 'register_obj')
-        self._run_gc_weaksets()
-        self._reverse_index[model_obj] = {}
-        self._new_instances.add(model_obj)
+        if self.cls.Meta.indexed_attrs_tuples:
+            self._check_model(model_obj, '_register_obj')
+            self._run_gc_weaksets()
+            self._new_instances.add(model_obj)
 
     def _update(self, model_obj):
-        """ Update the indices for `model_obj` that are used to search on indexed_attrs keys
+        """ Update the indices for `model_obj`, whose indexed attribute have been updated
 
-        Costs O(I) where I is the number of indexed attribute tuples for the `Model`.
+        Costs O(I) where I is the number of indexed attribute tuples for `model_obj`.
 
         Args:
             model_obj (:obj:`Model`): a `Model` instance
         """
-        self._check_model_type(model_obj, '_update')
+        self._check_model(model_obj, '_update')
         self._run_gc_weaksets()
         cls = self.cls
         if model_obj not in self._reverse_index:
-            raise ValueError("Can't _update an instance of '{}' that hasn't been inserted into the index".format(
+            raise ValueError("Can't _update an instance of '{}' that is not in the _reverse_index".format(
                 cls.__name__))
-        for indexed_attrs,vals in self._reverse_index[model_obj].items():
-            try:
-                self._index_dicts[indexed_attrs][vals].remove(model_obj)
-                # avoid memory leaks by deleting empty WeakSets;
-                # empty WeakSets formed by automatic removal of weak refs are gc'ed by _gc_weaksets
-                if 0 == len(self._index_dicts[indexed_attrs][vals]):
-                    del self._index_dicts[indexed_attrs][vals]
-            except KeyError as e:
-                raise ValueError("Cannot _update() an instance of '{}': '{}' = '{}' not found "
-                    "in _index_dicts".format(cls.__name__, indexed_attrs, vals))
+        self._delete(model_obj)
         self._insert(model_obj)
 
-    def _check_model_type(self, model_obj, method):
-        """ Verify that a model object has the right type
+    def _delete(self, model_obj):
+        """ Delete an `model_obj` from the indices
 
         Args:
             model_obj (:obj:`Model`): a `Model` instance
-            method (:obj:`str`): the name of the method requesting the check
         """
-        if not type(model_obj) is self.cls:
-            raise ValueError("{}(): The '{}' Manager does not process '{}' objects".format(
-                method, self.cls.__name__, type(model_obj).__name__))
+        self._check_model(model_obj, '_delete')
+        for indexed_attr_tuple,vals in self._reverse_index[model_obj].items():
+            if vals in self._index_dicts[indexed_attr_tuple]:
+                self._index_dicts[indexed_attr_tuple][vals].remove(model_obj)
+                # Recover memory by deleting empty WeakSets.
+                # Empty WeakSets formed by automatic removal of weak refs are gc'ed by _gc_weaksets.
+                if 0 == len(self._index_dicts[indexed_attr_tuple][vals]):
+                    del self._index_dicts[indexed_attr_tuple][vals]
+        del self._reverse_index[model_obj]
 
     def _insert_new(self, model_obj):
         """ Insert a new `model_obj` into the indices that are used to search on indexed attribute tuples
@@ -545,6 +573,7 @@ class Manager(object):
         Args:
             model_obj (:obj:`Model`): a `Model` instance
         """
+        self._check_model(model_obj, '_insert_new')
         if model_obj not in self._new_instances:
             raise ValueError("Cannot _insert_new() an instance of '{}' that is not new".format(self.cls.__name__))
         self._insert(model_obj)
@@ -558,19 +587,19 @@ class Manager(object):
         Args:
             model_obj (:obj:`Model`): a `Model` instance
         """
-        self._check_model_type(model_obj, '_insert')
+        self._check_model(model_obj, '_insert')
         self._run_gc_weaksets()
         cls = self.cls
-        # todo: what about case insensitive equality?
-        for indexed_attrs in cls.Meta.indexed_attrs_tuples:
-            vals = Manager.hashable_attr_tup_vals(model_obj, indexed_attrs)
-            if vals not in self._index_dicts[indexed_attrs]:
-                self._index_dicts[indexed_attrs][vals] = weakref.WeakSet()
-            self._index_dicts[indexed_attrs][vals].add(model_obj)
+
+        for indexed_attr_tuple in cls.Meta.indexed_attrs_tuples:
+            vals = Manager._hashable_attr_tup_vals(model_obj, indexed_attr_tuple)
+            if vals not in self._index_dicts[indexed_attr_tuple]:
+                self._index_dicts[indexed_attr_tuple][vals] = WeakSet()
+            self._index_dicts[indexed_attr_tuple][vals].add(model_obj)
 
         d = {}
-        for indexed_attrs in cls.Meta.indexed_attrs_tuples:
-            d[indexed_attrs] = Manager.hashable_attr_tup_vals(model_obj, indexed_attrs)
+        for indexed_attr_tuple in cls.Meta.indexed_attrs_tuples:
+            d[indexed_attr_tuple] = Manager._hashable_attr_tup_vals(model_obj, indexed_attr_tuple)
         self._reverse_index[model_obj] = d
 
     def _run_gc_weaksets(self):
@@ -586,52 +615,84 @@ class Manager(object):
         return 0
 
     def _gc_weaksets(self):
-        """ Garbage collect empty WeakSets formed by deletion of weak refs to objects with no strong refs
+        """ Garbage collect empty WeakSets formed by deletion of weak refs to `Model` instances with no strong refs
 
         Returns:
             :obj:`int`: number of empty WeakSets deleted
         """
         num = 0
-        for name,d in self._index_dicts.items():
-            items = list(d.items())
-            for k,v in items:
-                if not v:
-                    del self._index_dicts[name][k]
+        for indexed_attr_tuple,attr_val_dict in self._index_dicts.items():
+            # do not change attr_val_dict while iterating
+            attr_val_weakset_pairs = list(attr_val_dict.items())
+            for attr_val,weakset in attr_val_weakset_pairs:
+                if not weakset:
+                    del self._index_dicts[indexed_attr_tuple][attr_val]
                     num += 1
         return num
+
+    # Public Manager() methods follow
+    # If the Model is not indexed these methods do nothing (and return None if a value is returned)
+    def all(self):
+        """ Provide all instances of the `Model` managed by this `Manager`
+
+        Returns:
+            :obj:`list` of `Model`: a list of all instances of the managed `Model`
+            or `None` if the `Model` is not indexed
+        """
+        if self.cls.Meta.indexed_attrs_tuples:
+            self._run_gc_weaksets()
+            # return list of strong refs, so keys in WeakKeyDictionary cannot be changed by gc
+            # while iterating over them
+            return list(self._reverse_index.keys())
+        else:
+            return None
 
     def upsert(self, model_obj):
         """ Update the indices for `model_obj` that are used to search on indexed attribute tuples
 
-        `Upsert` means update or insert. If the `Model` is stored in the indices update them, otherwise
-        insert a new object into them.
+        `Upsert` means update or insert. Update the indices if `model_obj` is already stored, otherwise
+        insert `model_obj`.
+
         Costs O(I) where I is the number of indexed attribute tuples for the `Model`.
 
         Args:
             model_obj (:obj:`Model`): a `Model` instance
         """
-        self._check_model_type(model_obj, 'upsert')
-        if model_obj in self._new_instances:
-            self._insert_new(model_obj)
-        else:
-            self._update(model_obj)
+        if self.cls.Meta.indexed_attrs_tuples:
+            if model_obj in self._new_instances:
+                self._insert_new(model_obj)
+            else:
+                self._update(model_obj)
 
     def upsert_all(self):
         """ Upsert the indices for all of this `Manager`'s `Model`'s
         """
-        for model_obj in self.all():
-            self.upsert(model_obj)
+        if self.cls.Meta.indexed_attrs_tuples:
+            for model_obj in self.all():
+                self.upsert(model_obj)
 
     def insert_all_new(self):
         """ Insert all new instances of this `Manager`'s `Model`'s into the search indices
         """
-        for model_obj in self._new_instances:
-            self._insert(model_obj)
+        if self.cls.Meta.indexed_attrs_tuples:
+            for model_obj in self._new_instances:
+                self._insert(model_obj)
+            self._new_instances.clear()
+
+    def clear_new_instances(self):
+        """ Clear the set of new instances that have not been inserted
+        """
+        if self.cls.Meta.indexed_attrs_tuples:
+            self._new_instances.clear()
 
     def get(self, **kwargs):
         """ Get the `Model` instance(s) that match the attribute name,value pair(s) in `kwargs`
 
         The keys in `kwargs` must correspond to an entry in the `Model`'s `indexed_attrs_tuples`.
+        Warning: this method is non-deterministic. To obtain `Manager`'s O(1) performance, `Model`
+        instances in the index are stored in `WeakSet`s. Therefore, the order of elements in the list
+        returned is not reproducible. Applications that need reproducibility must deterministically
+        order elements in lists returned by this method.
 
         Args:
             kwargs (:obj:`dict`): keyword args mapping from attribute name(s) to value(s)
@@ -648,20 +709,23 @@ class Manager(object):
 
         if 0==len(kwargs.keys()):
             raise ValueError("No arguments provided in get() on '{}'".format(cls.__name__))
-        else:
-            # searching for an indexed_attrs instance
-            # sort by attribute names, which is the normalized order for attributes in an indexed_attributes tuple
-            # todo: make this normalization explicit by moving it to some normalization method(s)
-            keys, vals = zip(*sorted(kwargs.items()))
-            possible_indexed_attributes = keys
-            if possible_indexed_attributes not in self._index_dicts:
-                raise ValueError("{} not an indexed attribute tuple in '{}'".format(possible_indexed_attributes,
-                    cls.__name__))
-            if vals not in self._index_dicts[possible_indexed_attributes]:
-                return None
-            if 0 == len(self._index_dicts[possible_indexed_attributes][vals]):
-                return None
-            return self._index_dicts[possible_indexed_attributes][vals]
+        if not self.cls.Meta.indexed_attrs_tuples:
+            return None
+
+        # searching for an indexed_attrs instance
+        # Sort by attribute names, to obtain the normalized order for attributes in an indexed_attrs_tuples.
+        # This normalization is performed by
+        # ModelMeta.normalize_tuple_of_tuples_of_attribute_names during ModelMeta.__new__()
+        keys, vals = zip(*sorted(kwargs.items()))
+        possible_indexed_attributes = keys
+        if possible_indexed_attributes not in self._index_dicts:
+            raise ValueError("{} not an indexed attribute tuple in '{}'".format(possible_indexed_attributes,
+                cls.__name__))
+        if vals not in self._index_dicts[possible_indexed_attributes]:
+            return None
+        if 0 == len(self._index_dicts[possible_indexed_attributes][vals]):
+            return None
+        return list(self._index_dicts[possible_indexed_attributes][vals])
 
 
 class TabularOrientation(Enum):
@@ -761,7 +825,7 @@ class Model(with_metaclass(ModelMeta, object)):
         self._source = None
 
         # register this Model instance with the class' Manager
-        self.__class__.objects.register_obj(self)
+        self.__class__.objects._register_obj(self)
 
     @classmethod
     def validate_related_attributes(cls):
@@ -863,7 +927,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
     @classmethod
     def _generate_normalize_sort_keys(cls):
-        """ Generates key for sorting the class """
+        """ Generates keys for sorting the class """
         generated_keys = []
         keys_to_generate = [cls]
         while keys_to_generate:

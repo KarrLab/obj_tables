@@ -36,6 +36,7 @@ class Node(core.Model):
 
     class Meta(core.Model.Meta):
         attribute_order = ('id', 'root', 'val1', 'val2', )
+        indexed_attrs_tuples = (('id',), ('id', 'val1'))
 
 
 class OneToManyRowAttribute(core.OneToManyAttribute):
@@ -123,10 +124,10 @@ class TestIo(unittest.TestCase):
         leaves[4].onetomany_inlines = [OneToManyInline(id='inline_4_0'), OneToManyInline(id='inline_4_1')]
         leaves[5].onetomany_inlines = [OneToManyInline(id='inline_5_0'), OneToManyInline(id='inline_5_1')]
 
-        self.dirname = tempfile.mkdtemp()
+        self.tmp_dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.dirname)
+        shutil.rmtree(self.tmp_dirname)
 
     def test_dummy_model(self):
         # test integrity of relationships
@@ -140,7 +141,7 @@ class TestIo(unittest.TestCase):
         objects = list(set([root] + root.get_related()))
         objects = utils.group_objects_by_model(objects)
 
-        filename = os.path.join(self.dirname, 'test.xlsx')
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         Writer().run(filename, [root], [MainRoot, Node, Leaf, ])
         objects2 = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
 
@@ -158,7 +159,7 @@ class TestIo(unittest.TestCase):
 
         root2 = objects2[MainRoot].pop()
 
-        filename2 = os.path.join(self.dirname, 'test2.xlsx')
+        filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
         Writer().run(filename2, [root2], [MainRoot, Node, Leaf, ])
         original = read_workbook(filename)
         copy = read_workbook(filename2)
@@ -170,16 +171,46 @@ class TestIo(unittest.TestCase):
         # unicode
         self.assertEqual(root2.name, u'\u20ac')
 
+    def test_manager(self):
+
+        class Example0(core.Model):
+            id = core.SlugAttribute(primary=True)
+            int_attr = core.IntegerAttribute()
+
+            class Meta(core.Model.Meta):
+                indexed_attrs_tuples = (('id',),)
+
+        class Example1(core.Model):
+            str_attr = core.StringAttribute()
+            int_attr = core.IntegerAttribute()
+            int_attr2 = core.IntegerAttribute()
+            test0 = core.OneToOneAttribute(Example0, related_name='test1')
+
+            class Meta(core.Model.Meta):
+                indexed_attrs_tuples = (('str_attr',), ('int_attr', 'int_attr2'),)
+
+        filename = os.path.join(os.path.dirname(__file__), 'fixtures', 'test_manager.xlsx')
+        Reader().run(filename, [Example0, Example1])
+
+        self.assertEqual(len(Example0.objects.get(id = 'A')), 1)
+        self.assertEqual(len(Example1.objects.get(str_attr = 'C')), 2)
+        self.assertEqual(len(Example1.objects.get(int_attr=11, int_attr2=21)), 1)
+        self.assertEqual(Example0.objects.get(id = 'A')[0],
+            Example1.objects.get(int_attr=11, int_attr2=21)[0].test0)
+        with self.assertRaises(ValueError) as context:
+            Example0.objects.get(int_attr = 1)
+        self.assertIn("not an indexed attribute tuple", str(context.exception))
+
     def test_read_inexact_worksheet_name_match(self):
-        filename = os.path.join(self.dirname, 'test-*.csv')
+        filename = os.path.join(self.tmp_dirname, 'test-*.csv')
 
         # write to file
         Writer().run(filename, [self.root], [MainRoot, Node, Leaf, ])
 
         """ test reading worksheet by the model's name """
         # rename worksheet
-        self.assertTrue(os.path.isfile(os.path.join(self.dirname, 'test-Main root.csv')))
-        os.rename(os.path.join(self.dirname, 'test-Main root.csv'), os.path.join(self.dirname, 'test-MainRoot.csv'))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Main root.csv')))
+        os.rename(os.path.join(self.tmp_dirname, 'test-Main root.csv'), os.path.join(self.tmp_dirname, 'test-MainRoot.csv'))
 
         objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
@@ -188,8 +219,8 @@ class TestIo(unittest.TestCase):
 
         """ test reading worksheet by the model's verbose name """
         # rename worksheet
-        self.assertTrue(os.path.isfile(os.path.join(self.dirname, 'test-Leaves.csv')))
-        os.rename(os.path.join(self.dirname, 'test-Leaves.csv'), os.path.join(self.dirname, 'test-Leaf.csv'))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Leaves.csv')))
+        os.rename(os.path.join(self.tmp_dirname, 'test-Leaves.csv'), os.path.join(self.tmp_dirname, 'test-Leaf.csv'))
 
         objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
@@ -198,8 +229,8 @@ class TestIo(unittest.TestCase):
 
         """ test reading worksheet by the model's plural verbose name """
         # rename worksheet
-        self.assertTrue(os.path.isfile(os.path.join(self.dirname, 'test-MainRoot.csv')))
-        os.rename(os.path.join(self.dirname, 'test-MainRoot.csv'), os.path.join(self.dirname, 'test-Main roots.csv'))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-MainRoot.csv')))
+        os.rename(os.path.join(self.tmp_dirname, 'test-MainRoot.csv'), os.path.join(self.tmp_dirname, 'test-Main roots.csv'))
 
         objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
@@ -208,8 +239,8 @@ class TestIo(unittest.TestCase):
 
         """ test reading worksheet by the model's plural verbose name, case-insensitive """
         # rename worksheet
-        self.assertTrue(os.path.isfile(os.path.join(self.dirname, 'test-Main roots.csv')))
-        os.rename(os.path.join(self.dirname, 'test-Main roots.csv'), os.path.join(self.dirname, 'test-main roots.csv'))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Main roots.csv')))
+        os.rename(os.path.join(self.tmp_dirname, 'test-Main roots.csv'), os.path.join(self.tmp_dirname, 'test-main roots.csv'))
 
         objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
@@ -217,8 +248,8 @@ class TestIo(unittest.TestCase):
         self.assertTrue(root.is_equal(self.root))
 
     def test_read_inexact_attribute_name_match(self):
-        filename = os.path.join(self.dirname, 'test.xlsx')
-        filename2 = os.path.join(self.dirname, 'test2.xlsx')
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
 
         # write to file
         Writer().run(filename, [self.root], [MainRoot, Node, Leaf, ])
@@ -477,9 +508,9 @@ class TestIo(unittest.TestCase):
         self.assertIsInstance(Writer.create_worksheet_style(MainRoot), WorksheetStyle)
 
     def test_convert(self):
-        filename_xls1 = os.path.join(self.dirname, 'test1.xlsx')
-        filename_xls2 = os.path.join(self.dirname, 'test2.xlsx')
-        filename_csv = os.path.join(self.dirname, 'test-*.csv')
+        filename_xls1 = os.path.join(self.tmp_dirname, 'test1.xlsx')
+        filename_xls2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
+        filename_csv = os.path.join(self.tmp_dirname, 'test-*.csv')
 
         models = [MainRoot, Node, Leaf, OneToManyRow]
 
@@ -495,7 +526,7 @@ class TestIo(unittest.TestCase):
         self.assertTrue(self.root.is_equal(objects2[MainRoot][0]))
 
     def test_create_template(self):
-        filename = os.path.join(self.dirname, 'test3.xlsx')
+        filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
         create_template(filename, [MainRoot, Node, Leaf])
         objects = Reader().run(filename, [MainRoot, Node, Leaf])
         self.assertEqual(objects, {

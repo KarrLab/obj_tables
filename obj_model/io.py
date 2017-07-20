@@ -374,7 +374,7 @@ class Reader(object):
             model (:obj:`class`): the model describing the objects' schema
             ignore_missing_attributes (:obj:`boolean`, optional): if false, report an error if the worksheet/files
                 don't have all of attributes in the model
-            ignore_extra_attributes (:obj:`boolean`): if set, do not report errors if attributes
+            ignore_extra_attributes (:obj:`boolean`, optional): if set, do not report errors if attributes
                 in the data are not in the model
 
         Returns:
@@ -501,6 +501,7 @@ class Reader(object):
 
             objects.append(obj)
 
+        model.get_manager().insert_all_new()
         return (attributes, data, errors, objects)
 
     def read_sheet(self, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0):

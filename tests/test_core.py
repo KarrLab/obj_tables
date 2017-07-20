@@ -173,7 +173,11 @@ class Example1(core.Model):
     test0s = core.OneToManyAttribute(Example0, related_name='test1_1tm')
 
     class Meta(core.Model.Meta):
-        indexed_attrs_tuples = (('str_attr',), ('int_attr', 'int_attr2'), ('test0s',))
+        indexed_attrs_tuples = (('str_attr',), ('int_attr', 'int_attr2'), ('test0',))
+
+
+class Example2(core.Model):
+    id = core.IntegerAttribute()
 
 
 class TestCore(unittest.TestCase):
@@ -183,7 +187,7 @@ class TestCore(unittest.TestCase):
             Root, Leaf, UnrootedLeaf, Leaf3, Grandparent, Parent, Child,
             UniqueRoot, DateRoot, NotNoneDateRoot, OneToOneRoot, OneToOneLeaf,
             ManyToOneRoot, ManyToOneLeaf, OneToManyRoot, OneToManyLeaf, ManyToManyRoot, ManyToManyLeaf,
-            UniqueTogetherRoot, InlineRoot, Example0, Example1
+            UniqueTogetherRoot, InlineRoot, Example0, Example1, Example2
         ))
         self.assertEqual(set(core.get_models(module=sys.modules[__name__])), models)
         self.assertEqual(models.difference(core.get_models()), set())
@@ -2163,7 +2167,7 @@ node:
         attrs = ('a', 'b')
         vals = ('hi', 3)
         f1 = Foo(*vals)
-        self.assertEqual(vals, core.Manager.get_attr_tuple_vals(f1, attrs))
+        self.assertEqual(vals, core.Manager._get_attr_tuple_vals(f1, attrs))
 
         # test _get_hashable_values
         t0 = Example0()
@@ -2199,41 +2203,42 @@ node:
             core.Manager._get_hashable_values(3)
         self.assertIn("_get_hashable_values takes an iterable, not", str(context.exception))
 
-        # test hashable_attr_tup_vals
+        # test _hashable_attr_tup_vals
         self.assertEqual((vs, vi, id_t0),
-            core.Manager.hashable_attr_tup_vals(t1a, ('str_attr', 'int_attr', 'test0')))
+            core.Manager._hashable_attr_tup_vals(t1a, ('str_attr', 'int_attr', 'test0')))
 
-        # test get_attribute_types
+        # test _get_attribute_types
         mgr1 = core.Manager(Example1)
         self.assertEqual((core.OneToOneAttribute, core.StringAttribute, core.IntegerAttribute),
             tuple([attr.__class__
-                for attr in mgr1.get_attribute_types(t1a, ('test0', 'str_attr', 'int_attr'))]))
+                for attr in mgr1._get_attribute_types(t1a, ('test0', 'str_attr', 'int_attr'))]))
 
         mgr0 = core.Manager(Example0)
         t0a = Example0()
         t1c = Example1(test0=t0a)
-        self.assertTrue(isinstance(mgr0.get_attribute_types(t0a, ('test1',))[0], core.OneToOneAttribute))
+        self.assertTrue(isinstance(mgr0._get_attribute_types(t0a, ('test1',))[0], core.OneToOneAttribute))
 
         bad_attr = 'no_attr'
         with self.assertRaises(ValueError) as context:
-            mgr1.get_attribute_types(t1a, (bad_attr,))
+            mgr1._get_attribute_types(t1a, (bad_attr,))
         self.assertIn("Cannot find '{}' in attribute names".format(bad_attr), str(context.exception))
 
         with self.assertRaises(ValueError) as context:
-            mgr1.get_attribute_types(t1a, 'abc')
-        self.assertIn("get_attribute_types(): attr_names cannot be a string", str(context.exception))
+            mgr1._get_attribute_types(t1a, 'abc')
+        self.assertIn("_get_attribute_types(): attr_names cannot be a string", str(context.exception))
         with self.assertRaises(ValueError) as context:
-            mgr1.get_attribute_types(t1a, 3)
-        self.assertIn("get_attribute_types(): attr_names must be an iterable", str(context.exception))
+            mgr1._get_attribute_types(t1a, 3)
+        self.assertIn("_get_attribute_types(): attr_names must be an iterable", str(context.exception))
 
     def test_manager(self):
         self.assertEqual(Example1.objects, Example1.get_manager())
         mgr1 = Example1.get_manager()
+        mgr1.clear_new_instances()
 
         # test all()
         self.assertEqual(0, len(set(mgr1.all())))
-        n = 4
-        t1s = [Example1() for i in range(n)]
+        t1s = [Example1(int_attr=i+12) for i in range(4)]
+        mgr1.insert_all_new()
         self.assertEqual(set(t1s), set(mgr1.all()))
 
         # test get() with no arguments
@@ -2249,6 +2254,9 @@ node:
         # test get() return nothing
         self.assertEqual(None, Example1.objects.get(str_attr='x'))
 
+        # test get() on Model not indexed
+        self.assertEqual(None, Example2.objects.get(str_attr='x'))
+
         # test _insert_new()
         letters = 'ABC'
         test_attrs = zip(letters, range(len(letters)))
@@ -2256,7 +2264,6 @@ node:
         mgr1._insert_new(more_t1s[0])
         self.assertEqual(1, len(Example1.objects.get(str_attr='A')))
         self.assertIn(more_t1s[0], Example1.objects.get(str_attr='A'))
-        mgr1._insert_new(t1s[0])
         with self.assertRaises(ValueError) as context:
             mgr1._insert_new(t1s[0])
         self.assertIn("Cannot _insert_new() an instance of 'Example1' that is not new", str(context.exception))
@@ -2266,7 +2273,6 @@ node:
         self.assertIn(more_t1s[0], Example1.objects.get(**kwargs))
 
         # test get() return multiple Models
-        # copy_more_t1s = copy.deepcopy(more_t1s)
         copy_t1s_0 = more_t1s[0].copy()
         mgr1._insert_new(copy_t1s_0)
         self.assertEqual(2, len(Example1.objects.get(str_attr='A')))
@@ -2301,12 +2307,9 @@ node:
         # test _gc_weaksets
         mgr0 = Example0.get_manager()
         make = 9
-        l = []
-        for i in range(make):
-            l.append(Example0(int_attr=i))
-            mgr0._insert_new(l[i])
+        l = [Example0(int_attr=i) for i in range(make)]
+        mgr0.insert_all_new()
         self.assertEqual(0, mgr0._gc_weaksets())
-        num = mgr0._gc_weaksets()
         n = 3
         del l[n:]
         gc.collect()
@@ -2337,29 +2340,46 @@ node:
         self.assertEqual(None, mgr1.get(str_attr='x'))
         self.assertEqual(t1, mgr1.get(str_attr='y').pop())
 
-        # test upsert, upsert_all, and insert_all_new
-        mgr1.__init__(Example1) # reinitialize mgr1
-        t1 = Example1(str_attr='x')
-        mgr1.upsert(t1)
-        self.assertIn(t1, mgr1.get(str_attr='x'))
-        t1.str_attr='y'
-        mgr1.upsert(t1)
-        self.assertEqual(None, mgr1.get(str_attr='x'))
-        self.assertIn(t1, mgr1.get(str_attr='y'))
-        n = 5
-        t1s = [Example1(int_attr=i, int_attr2=i+1) for i in range(n)]
-        mgr1.upsert_all()
-        for i in range(n):
-            self.assertIn(t1s[i], mgr1.get(int_attr=i, int_attr2=i+1))
-
         # test insert_all_new
         mgr1.__init__(Example1) # reinitialize mgr1
         n = 5
         t1s = [Example1(int_attr=i, int_attr2=i+1) for i in range(n)]
         mgr1.insert_all_new()
         for i in range(n):
-            self.assertIn(t1s[i], mgr1.get(int_attr=i, int_attr2=i+1))
-        # todo: test indices on related objects
+            self.assertEqual(t1s[i], mgr1.get(int_attr=i, int_attr2=i+1)[0])
+
+        # test upsert and upsert_all
+        mgr1.__init__(Example1) # reinitialize mgr1
+        t1 = Example1(str_attr='x')
+        mgr1.upsert(t1)
+        self.assertIn(t1, mgr1.get(str_attr='x'))
+        self.assertEqual(t1, mgr1.get(str_attr='x')[0])
+        t1.str_attr='y'
+        mgr1.upsert(t1)
+        self.assertEqual(None, mgr1.get(str_attr='x'))
+        self.assertIn(t1, mgr1.get(str_attr='y'))
+        n = 5
+        t1s = [Example1(int_attr=i, int_attr2=i+1) for i in range(n)]
+        mgr1.insert_all_new()
+        for t1 in t1s:
+            t1.int_attr += 1
+        mgr1.upsert_all()
+        for i in range(n):
+            self.assertEqual(t1s[i], mgr1.get(int_attr=i+1, int_attr2=i+1)[0])
+
+        # test index on related objects
+        mgr1.__init__(Example1) # reinitialize mgr1
+        t0 = Example0(int_attr=1)
+        t1 = Example1(str_attr='x', test0=t0)
+        mgr1.insert_all_new()
+        self.assertEqual(mgr1.get(test0=id(t0))[0], t1)
+
+        t2 = Example2()
+        with self.assertRaises(ValueError) as context:
+            Example2.objects._check_model(t2, 'test')
+        self.assertIn("'{}' Manager does not have any indexed attribute tuples".format(Example2.__name__),
+            str(context.exception))
+        self.assertEqual(Example2.objects.all(), None)
 
     def test_simple_user_example(self):
         from obj_model.core import Model, StringAttribute, IntegerAttribute, OneToManyAttribute
