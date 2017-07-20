@@ -385,6 +385,8 @@ class Manager(object):
         num_ops_since_gc (:obj:`int`): number of operations since the last gc of weaksets
     """
     # todo: learn how to describe dict -> dict -> X in Sphinx
+    # todo: index computed attributes which don't take arguments
+    # implement by modifying _get_attr_tuple_vals & using inspect.getcallargs()
 
     # number of Manager operations between calls to _gc_weaksets
     # todo: make this value configurable
@@ -417,8 +419,8 @@ class Manager(object):
     def _create_indices(self):
         """ Create dicts needed to manage indices on attribute tuples
 
-        The references to :obj:`Model` instances are stored as weakrefs in a :obj:`WeakKeyDictionary`, so that
-        :obj:`Model`'s which are otherwise unused get garbage collected.
+        The references to :obj:`Model` instances are stored as weakrefs in a :obj:`WeakKeyDictionary`,
+        so that :obj:`Model`'s which are otherwise unused get garbage collected.
         """
         self._index_dicts = {}
         # for each indexed_attrs, create a dict
@@ -651,7 +653,8 @@ class Manager(object):
         """ Update the indices for `model_obj` that are used to search on indexed attribute tuples
 
         `Upsert` means update or insert. Update the indices if `model_obj` is already stored, otherwise
-        insert `model_obj`.
+        insert `model_obj`. Users of `Manager` are responsible for calling this method if `model_obj`
+        changes.
 
         Costs O(I) where I is the number of indexed attribute tuples for the `Model`.
 
