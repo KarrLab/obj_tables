@@ -2332,7 +2332,7 @@ node:
         self.assertIn("The 'Example0' Manager does not process 'Example1' objects", str(context.exception))
 
         # test _update
-        mgr1.__init__(Example1) # reinitialize mgr1
+        mgr1.reset()
         t1 = Example1(str_attr='x')
         mgr1._insert_new(t1)
         t1.str_attr='y'
@@ -2341,7 +2341,7 @@ node:
         self.assertEqual(t1, mgr1.get(str_attr='y').pop())
 
         # test insert_all_new
-        mgr1.__init__(Example1) # reinitialize mgr1
+        mgr1.reset()
         n = 5
         t1s = [Example1(int_attr=i, int_attr2=i+1) for i in range(n)]
         mgr1.insert_all_new()
@@ -2349,7 +2349,7 @@ node:
             self.assertEqual(t1s[i], mgr1.get(int_attr=i, int_attr2=i+1)[0])
 
         # test upsert and upsert_all
-        mgr1.__init__(Example1) # reinitialize mgr1
+        mgr1.reset()
         t1 = Example1(str_attr='x')
         mgr1.upsert(t1)
         self.assertIn(t1, mgr1.get(str_attr='x'))
@@ -2368,7 +2368,7 @@ node:
             self.assertEqual(t1s[i], mgr1.get(int_attr=i+1, int_attr2=i+1)[0])
 
         # test index on related objects
-        mgr1.__init__(Example1) # reinitialize mgr1
+        mgr1.reset()
         t0 = Example0(int_attr=1)
         t1 = Example1(str_attr='x', test0=t0)
         mgr1.insert_all_new()

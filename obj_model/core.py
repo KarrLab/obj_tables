@@ -387,6 +387,9 @@ class Manager(object):
     # todo: learn how to describe dict -> dict -> X in Sphinx
     # todo: index computed attributes which don't take arguments
     # implement by modifying _get_attr_tuple_vals & using inspect.getcallargs()
+    # todo: make local Managers by associating them with a Model collection, and searching
+    # them through the collection; associate with a collection via a weakref so that when
+    # the collection goes out of scope the Managers are gc'ed
 
     # number of Manager operations between calls to _gc_weaksets
     # todo: make this value configurable
@@ -634,6 +637,15 @@ class Manager(object):
 
     # Public Manager() methods follow
     # If the Model is not indexed these methods do nothing (and return None if a value is returned)
+    def reset(self):
+        """ Reset this `Manager`
+
+        Empty `Manager`'s indices. Since `Manager` globally indexes all instances of a `Model`,
+        this method is useful when multiple models are loaded sequentially.
+        """
+        self.__init__(self.cls)
+
+
     def all(self):
         """ Provide all instances of the `Model` managed by this `Manager`
 
@@ -912,7 +924,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 for attr_name, attr in chain(obj.Meta.attributes.items(), obj.Meta.related_attributes.items()):
                     if isinstance(attr, RelatedAttribute):
                         val = getattr(obj, attr_name)
-                        
+
                         # normalize children
                         if isinstance(val, list):
                             objs_to_normalize.extend(val)
@@ -1354,7 +1366,7 @@ class Model(with_metaclass(ModelMeta, object)):
                     msg += '\n' + ' ' * 2 * indent
                 msg += 'Objects ({}: "{}", {}: "{}") have different attribute values:'.format(
                     difference['objects'][0].__class__.__name__,
-                    difference['objects'][0].serialize(), 
+                    difference['objects'][0].serialize(),
                     difference['objects'][1].__class__.__name__,
                     difference['objects'][1].serialize(),
                     )
@@ -1370,9 +1382,9 @@ class Model(with_metaclass(ModelMeta, object)):
                         for i_el, el_diff in enumerate(difference['attributes'][attr_name]):
                             if isinstance(el_diff, dict):
                                 el_prefix = '\n{}element: {}: "{}" != element: {}: "{}"'.format(
-                                    ' ' * 2 * (indent + 2), 
+                                    ' ' * 2 * (indent + 2),
                                     el_diff['objects'][0].__class__.__name__,
-                                    el_diff['objects'][0].serialize(), 
+                                    el_diff['objects'][0].serialize(),
                                     el_diff['objects'][1].__class__.__name__,
                                     el_diff['objects'][1].serialize(),
                                     )
