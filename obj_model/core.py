@@ -387,6 +387,7 @@ class Manager(object):
     # todo: learn how to describe dict -> dict -> X in Sphinx
     # todo: index computed attributes which don't take arguments
     # implement by modifying _get_attr_tuple_vals & using inspect.getcallargs()
+    # todo: add get_one() method that returns a single instance, or None
     # todo: make local Managers by associating them with a Model collection, and searching
     # them through the collection; associate with a collection via a weakref so that when
     # the collection goes out of scope the Managers are gc'ed
