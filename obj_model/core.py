@@ -387,7 +387,6 @@ class Manager(object):
     # todo: learn how to describe dict -> dict -> X in Sphinx
     # todo: index computed attributes which don't take arguments
     # implement by modifying _get_attr_tuple_vals & using inspect.getcallargs()
-    # todo: add get_one() method that returns a single instance, or None
     # todo: make local Managers by associating them with a Model collection, and searching
     # them through the collection; associate with a collection via a weakref so that when
     # the collection goes out of scope the Managers are gc'ed
@@ -435,19 +434,24 @@ class Manager(object):
         # are already indexed. Update is performed by deleting and inserting.
         self._reverse_index = WeakKeyDictionary()
 
-    def _dump_index_dicts(self):
+    def _dump_index_dicts(self, file=None):
+        """ Dump the index dictionaries for debugging
+
+        Args:
+            file (:obj:): an object with a `write(string)` method
+        """
         # gc before printing to produce consistent data
         self._gc_weaksets()
-        print("Dicts for '{}':".format(self.cls.__name__))
+        print("Dicts for '{}':".format(self.cls.__name__), file=file)
         for attr_tuple,d in self._index_dicts.items():
-            print('\tindexed attr tuple:', attr_tuple)
+            print('\tindexed attr tuple:', attr_tuple, file=file)
             for k,v in d.items():
-                print('\t\tk,v', k, {id(obj_model) for obj_model in v})
-        print("Reverse dicts for '{}':".format(self.cls.__name__))
+                print('\t\tk,v', k, {id(obj_model) for obj_model in v}, file=file)
+        print("Reverse dicts for '{}':".format(self.cls.__name__), file=file)
         for obj,attr_keys in self._reverse_index.items():
-            print("\tmodel at {}".format(id(obj)))
+            print("\tmodel at {}".format(id(obj)), file=file)
             for indexed_attrs,vals in attr_keys.items():
-                print("\t\t'{}' is '{}'".format(indexed_attrs,vals))
+                print("\t\t'{}' is '{}'".format(indexed_attrs,vals), file=file)
 
     @staticmethod
     def _get_attr_tuple_vals(model_obj, attr_tuple):
@@ -742,6 +746,30 @@ class Manager(object):
         if 0 == len(self._index_dicts[possible_indexed_attributes][vals]):
             return None
         return list(self._index_dicts[possible_indexed_attributes][vals])
+
+    def get_one(self, **kwargs):
+        """ Get one `Model` instance that matches the attribute name,value pair(s) in `kwargs`
+
+        Uses `get`.
+
+        Args:
+            kwargs (:obj:`dict`): keyword args mapping from attribute name(s) to value(s)
+
+        Returns:
+            :obj:`list` of `Model`: a list of `Model` instances whose indexed attribute tuples have the
+            values in `kwargs`; otherwise `None`, indicating no match
+
+        Raises:
+            :obj:`ValueError`: if the attribute name(s) in `kwargs.keys()` do not correspond to an
+            indexed attribute tuple of the `Model`, or if `get` obtains more than one instance.
+        """
+        rv = self.get(**kwargs)
+        cls = self.cls
+        if rv is None:
+            return None
+        if 1<len(rv):
+            raise ValueError("get_one(): {} values obtained in '{}'".format(len(rv), cls.__name__))
+        return rv[0]
 
 
 class TabularOrientation(Enum):
@@ -1617,6 +1645,7 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:str: readable string representation of this `Model`
         """
+        # todo: improve indentation; indent instance data under its type name
         printed_objs = set()
         return indent_forest(self._tree_str(printed_objs, depth=0, max_depth=max_depth), indentation=indent)
 

@@ -195,8 +195,8 @@ class TestIo(unittest.TestCase):
         self.assertEqual(len(Example0.objects.get(id = 'A')), 1)
         self.assertEqual(len(Example1.objects.get(str_attr = 'C')), 2)
         self.assertEqual(len(Example1.objects.get(int_attr=11, int_attr2=21)), 1)
-        self.assertEqual(Example0.objects.get(id = 'A')[0],
-            Example1.objects.get(int_attr=11, int_attr2=21)[0].test0)
+        self.assertEqual(Example0.objects.get_one(id = 'A'),
+            Example1.objects.get_one(int_attr=11, int_attr2=21).test0)
         with self.assertRaises(ValueError) as context:
             Example0.objects.get(int_attr = 1)
         self.assertIn("not an indexed attribute tuple", str(context.exception))

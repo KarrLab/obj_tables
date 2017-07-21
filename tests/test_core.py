@@ -22,7 +22,7 @@ import copy
 import collections
 from contextlib import contextmanager
 import copy
-
+from six import StringIO
 
 class Order(Enum):
     root = 1
@@ -2237,7 +2237,8 @@ node:
 
         # test all()
         self.assertEqual(0, len(set(mgr1.all())))
-        t1s = [Example1(int_attr=i+12) for i in range(4)]
+        FIRST=12
+        t1s = [Example1(int_attr=i+FIRST) for i in range(4)]
         mgr1.insert_all_new()
         self.assertEqual(set(t1s), set(mgr1.all()))
 
@@ -2262,31 +2263,50 @@ node:
         test_attrs = zip(letters, range(len(letters)))
         more_t1s = [Example1(str_attr=s, int_attr=i, int_attr2=i+1) for s,i in test_attrs]
         mgr1._insert_new(more_t1s[0])
+
+        # test get() w multiple attributes
+        kwargs = dict(zip(('int_attr', 'int_attr2'), range(2)))
+        self.assertIn(more_t1s[0], Example1.objects.get(**kwargs))
+
+        # test get() of recently inserted objects
         self.assertEqual(1, len(Example1.objects.get(str_attr='A')))
         self.assertIn(more_t1s[0], Example1.objects.get(str_attr='A'))
         with self.assertRaises(ValueError) as context:
             mgr1._insert_new(t1s[0])
         self.assertIn("Cannot _insert_new() an instance of 'Example1' that is not new", str(context.exception))
 
-        # test get() w multiple attributes
-        kwargs = dict(zip(('int_attr', 'int_attr2'), range(2)))
-        self.assertIn(more_t1s[0], Example1.objects.get(**kwargs))
-
         # test get() return multiple Models
         copy_t1s_0 = more_t1s[0].copy()
         mgr1._insert_new(copy_t1s_0)
-        self.assertEqual(2, len(Example1.objects.get(str_attr='A')))
-        self.assertIn(more_t1s[0], Example1.objects.get(str_attr='A'))
-        self.assertIn(copy_t1s_0, Example1.objects.get(str_attr='A'))
+        self.assertEqual(2, len(mgr1.get(str_attr='A')))
+        self.assertIn(more_t1s[0], mgr1.get(str_attr='A'))
+        self.assertIn(copy_t1s_0, mgr1.get(str_attr='A'))
+
+        # test get_one()
+        # return no instance
+        self.assertEqual(None, mgr1.get_one(str_attr='B'))
+        # return 1
+        self.assertEqual(t1s[0], mgr1.get_one(int_attr=FIRST, int_attr2=None))
+        # return > 1
+        with self.assertRaises(ValueError) as context:
+            mgr1.get_one(str_attr='A')
+        self.assertIn("get_one(): {} values obtained".format(len(mgr1.get(str_attr='A'))),
+            str(context.exception))
+
+        output = StringIO()
+        mgr1._dump_index_dicts(file=output)
+        content = output.getvalue()
+        for s in ["Dicts", "indexed attr tuple:", "Reverse dicts for", "model at"]:
+            self.assertIn(s, content)
 
         # test weakrefs
         for i in range(1, len(more_t1s)):
             mgr1._insert_new(more_t1s[i])
-        self.assertEqual(1, len(Example1.objects.get(str_attr='B')))
+        self.assertEqual(1, len(mgr1.get(str_attr='B')))
         del more_t1s[:]
         # models without strong refs disappear from indices after gc
         gc.collect()
-        self.assertEqual(None, Example1.objects.get(str_attr='B'))
+        self.assertEqual(None, mgr1.get(str_attr='B'))
 
         tmp = Example1()
         self.assertIn(tmp, mgr1._new_instances)
@@ -2346,14 +2366,14 @@ node:
         t1s = [Example1(int_attr=i, int_attr2=i+1) for i in range(n)]
         mgr1.insert_all_new()
         for i in range(n):
-            self.assertEqual(t1s[i], mgr1.get(int_attr=i, int_attr2=i+1)[0])
+            self.assertEqual(t1s[i], mgr1.get_one(int_attr=i, int_attr2=i+1))
 
         # test upsert and upsert_all
         mgr1.reset()
         t1 = Example1(str_attr='x')
         mgr1.upsert(t1)
         self.assertIn(t1, mgr1.get(str_attr='x'))
-        self.assertEqual(t1, mgr1.get(str_attr='x')[0])
+        self.assertEqual(t1, mgr1.get_one(str_attr='x'))
         t1.str_attr='y'
         mgr1.upsert(t1)
         self.assertEqual(None, mgr1.get(str_attr='x'))
@@ -2365,14 +2385,14 @@ node:
             t1.int_attr += 1
         mgr1.upsert_all()
         for i in range(n):
-            self.assertEqual(t1s[i], mgr1.get(int_attr=i+1, int_attr2=i+1)[0])
+            self.assertEqual(t1s[i], mgr1.get_one(int_attr=i+1, int_attr2=i+1))
 
         # test index on related objects
         mgr1.reset()
         t0 = Example0(int_attr=1)
         t1 = Example1(str_attr='x', test0=t0)
         mgr1.insert_all_new()
-        self.assertEqual(mgr1.get(test0=id(t0))[0], t1)
+        self.assertEqual(mgr1.get_one(test0=id(t0)), t1)
 
         t2 = Example2()
         with self.assertRaises(ValueError) as context:
