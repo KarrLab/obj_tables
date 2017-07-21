@@ -768,7 +768,8 @@ class Manager(object):
         if rv is None:
             return None
         if 1<len(rv):
-            raise ValueError("get_one(): {} values obtained in '{}'".format(len(rv), cls.__name__))
+            raise ValueError("get_one(): {} {} instances with '{}'".format(len(rv), cls.__name__,
+                kwargs))
         return rv[0]
 
 

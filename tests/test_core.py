@@ -2290,7 +2290,7 @@ node:
         # return > 1
         with self.assertRaises(ValueError) as context:
             mgr1.get_one(str_attr='A')
-        self.assertIn("get_one(): {} values obtained".format(len(mgr1.get(str_attr='A'))),
+        self.assertIn("get_one(): 2 Example1 instances with".format(len(mgr1.get(str_attr='A'))),
             str(context.exception))
 
         output = StringIO()
