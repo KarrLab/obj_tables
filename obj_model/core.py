@@ -3257,7 +3257,9 @@ class OneToOneAttribute(RelatedAttribute):
             return new_value
 
         if new_value and getattr(new_value, self.related_name):
-            raise ValueError('Related attribute of `new_value` must be `None`')
+            raise ValueError("Attribute '{}' of '{}' must be `None`".format(
+                getattr(new_value, self.related_name),
+                new_value))
 
         if self.related_name:
             if cur_value:
