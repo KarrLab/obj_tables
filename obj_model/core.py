@@ -4176,6 +4176,8 @@ class ManyToManyAttribute(RelatedAttribute):
             related_objs = []
             related_classes = chain([self.related_class], get_subclasses(self.related_class))
             for related_class in related_classes:
+                if not related_class in objects:
+                    continue
                 if issubclass(related_class, Model) and value in objects[related_class]:
                     related_objs.append(objects[related_class][value])
 
