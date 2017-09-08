@@ -1622,22 +1622,22 @@ class Model(with_metaclass(ModelMeta, object)):
 
             For example, we have::
 
-                Model1 classname:       # Each model starts with its classname, followed by a list of
-                attr1: value1           # attribute names & values.
-                attr2: value2
-                attr3:                  # Reference attributes can point to other Models; we indent these under the attribute name
-                    Model2 classname:   # Reference attribute attr3 contains Model2;
-                    ...                 # its attributes follow.
-                attr4:
-                    Model3 classname:   # An iteration over reference attributes is a list at constant indentation:
-                    ...
-                attr5:
-                    Model2 classname: --    # Traversing the Model network may re-encounter a Model; they're listed with '--'
-                attr6:
-                    Model5 classname:
-                    attr7:
-                        Model5 classname: ...   # The size of the output is controlled with max_depth;
-                                                # models encountered at depth = max_depth+1 are shown with '...'
+                Model1_classname:       # Each model starts with its classname, followed by a list of
+                    attr1: value1           # attribute names & values.
+                    attr2: value2
+                    attr3:                  # Reference attributes can point to other Models; we indent these under the attribute name
+                        Model2_classname:   # Reference attribute attr3 contains Model2;
+                            ...                 # its attributes follow.
+                    attr4:
+                        Model3_classname:   # An iteration over reference attributes is a list at constant indentation:
+                            ...
+                    attr5:
+                        Model2_classname: --    # Traversing the Model network may re-encounter a Model; they're listed with '--'
+                    attr6:
+                        Model5_classname:
+                            attr7:
+                                Model5_classname: ...   # The size of the output is controlled with max_depth;
+                                                        # models encountered at depth = max_depth+1 are shown with '...'
 
         Args:
             max_depth (:obj:`int`, optional): the maximum depth to which related `Model`'s should be printed
@@ -1687,7 +1687,7 @@ class Model(with_metaclass(ModelMeta, object)):
         printed_objs.add(self)
 
         # get attribute names and their string values
-        attrs = [(cls.__name__, '')]
+        attrs = []
 
         # first do the attributes in cls.Meta.attribute_order in that order, then do the rest
         all_attrs = cls.Meta.attributes.copy()
@@ -1733,13 +1733,15 @@ class Model(with_metaclass(ModelMeta, object)):
             else:
                 raise ValueError("Attribute '{}' is not an Attribute or RelatedAttribute".format(name))
 
-        rv = []
+        rv = ["{}:".format(cls.__name__)]
+        nested = []
         for item in attrs:
             if isinstance(item, tuple):
                 name, val = item
-                rv.append("{}: {}".format(name, val))
+                nested.append("{}: {}".format(name, val))
             else:
-                rv.append(item)
+                nested.append(item)
+        rv.append(nested)
         return rv
 
     def copy(self):

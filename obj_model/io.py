@@ -264,7 +264,11 @@ class Reader(object):
             raise ValueError("No matching models for worksheets/files {} / {}".format(
                 basename(path), "', '".join(sorted(extra_sheet_names))))
 
-        # check that models are serializble
+        # check that models are valid
+        for model in models:
+            model.validate_related_attributes()
+
+        # check that models are serializable
         for model in models:
             if not model.is_serializable():
                 raise ValueError('Class {}.{} cannot be serialized'.format(model.__module__, model.__name__))

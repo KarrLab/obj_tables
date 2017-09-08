@@ -1840,23 +1840,24 @@ class TestCore(unittest.TestCase):
         root = Root(label='test-root')
         unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
                                      float3=None, enum2=None, enum3=Order['leaf'])
-        expected = '''UnrootedLeaf: 
-id: a
-name: 
-root: 
-   Root: 
-   label: test-root
-   leaves: 
-   leaves2: 
-enum2: None
-enum3: Order.leaf
-float2: 2.4
-float3: None
-id2: b
-multi_word_name: 
-name2: ab
-root2: None'''
-        self.assertEqual(expected, unrooted_leaf.pformat())
+        expected = \
+'''UnrootedLeaf:
+    id: a
+    name: 
+    root: 
+        Root:
+            label: test-root
+            leaves: 
+            leaves2: 
+    enum2: None
+    enum3: Order.leaf
+    float2: 2.4
+    float3: None
+    id2: b
+    multi_word_name: 
+    name2: ab
+    root2: None'''
+        self.assertEqual(expected, unrooted_leaf.pformat(indent=4))
 
         class Root0(core.Model):
             label = core.SlugAttribute()
@@ -1890,19 +1891,20 @@ root2: None'''
         NUM = 3
         roots1 = [Root1(label='root_{}'.format(i)) for i in range(NUM)]
         node1 = Node1(id='node1', roots=roots1)
-        expected = '''Root1: 
-label: root_0
-node: 
-   Node1: 
-   id: node1
-   roots: 
-      Root1: 
-      label: root_1
-      node: --
-      Root1: 
-      label: root_2
-      node: --'''
-        self.assertEqual(expected, roots1[0].pformat())
+        expected = \
+'''Root1:
+    label: root_0
+    node: 
+        Node1:
+            id: node1
+            roots: 
+                Root1:
+                    label: root_1
+                    node: --
+                Root1:
+                    label: root_2
+                    node: --'''
+        self.assertEqual(expected, roots1[0].pformat(indent=4))
         self.assertEqual(node1.pformat(max_depth=1).count('label: root'), NUM)
         self.assertEqual(node1.pformat(max_depth=0).count('Root1: ...'), NUM)
 
