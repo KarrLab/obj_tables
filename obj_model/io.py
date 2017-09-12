@@ -280,8 +280,8 @@ class Reader(object):
         objects = {}
         for model in models:
             model_attributes, model_data, model_errors, model_objects = self.read_model(reader, model,
-                                                                                        ignore_missing_attributes=ignore_missing_attributes,
-                                                                                        ignore_extra_attributes=ignore_extra_attributes)
+                ignore_missing_attributes=ignore_missing_attributes,
+                ignore_extra_attributes=ignore_extra_attributes)
             if model_attributes:
                 attributes[model] = model_attributes
             if model_data:

@@ -105,7 +105,7 @@ def get_component_by_id(models, id, identifier='id'):
     Raises:
         :obj:`AttributeError`: if `model` does not have the attribute specified by `identifier`
     '''
-    # todo: has O(n) performance; achieve O(1) by maintaining dictionaries id -> component for each model
+    # TODO: this is O(n); achieve O(1) by using Manager() dictionaries id -> component for each model
     for model in models:
         try:
             if getattr(model, identifier) == id:

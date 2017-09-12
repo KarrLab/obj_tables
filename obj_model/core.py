@@ -1,5 +1,16 @@
 """ Database-independent Django-like object model
 
+Many classes contain the methods `serialize()` and `deserialize()`, which invert each other.
+`serialize()` converts a python object instance into a string representation, whereas
+`deserialize()` parses an object's string representation -- as would be stored in a file or spreadsheet
+representation of a biochemical model -- into a python object instance.
+`deserialize()` returns an error when the string representation cannot be parsed into the
+python object. Deserialization methods for related attributes (subclasses of `RelatedAttribute`)
+do not get called until all other attributes have been deserialized. In particular, they're called
+by `obj_model.io.Reader.link_model`. Therefore, they get passed all objects that are not inline,
+which can then be referenced to deserialize the related attribute.
+
+
 :Author: Jonathan Karr <karr@mssm.edu>
 :Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
 :Date: 2016-12-12
@@ -387,8 +398,8 @@ class Manager(object):
     # todo: learn how to describe dict -> dict -> X in Sphinx
     # todo: index computed attributes which don't take arguments
     # implement by modifying _get_attr_tuple_vals & using inspect.getcallargs()
-    # todo: make local Managers by associating them with a Model collection, and searching
-    # them through the collection; associate with a collection via a weakref so that when
+    # todo: make Managers local, rather than global, by associating them with a Model collection, and
+    # searching them through the collection; associate with a collection via a weakref so that when
     # the collection goes out of scope the Managers are gc'ed
 
     # number of Manager operations between calls to _gc_weaksets
@@ -650,7 +661,6 @@ class Manager(object):
         """
         self.__init__(self.cls)
 
-
     def all(self):
         """ Provide all instances of the `Model` managed by this `Manager`
 
@@ -722,8 +732,8 @@ class Manager(object):
             values in `kwargs`; otherwise `None`, indicating no match
 
         Raises:
-            :obj:`ValueError`: if the attribute name(s) in `kwargs.keys()` do not correspond to an
-            indexed attribute tuple of the `Model`
+            :obj:`ValueError`: if no arguments are provided, or the attribute name(s) in `kwargs.keys()`
+            do not correspond to an indexed attribute tuple of the `Model`
         """
         cls = self.cls
 
@@ -756,12 +766,11 @@ class Manager(object):
             kwargs (:obj:`dict`): keyword args mapping from attribute name(s) to value(s)
 
         Returns:
-            :obj:`list` of `Model`: a list of `Model` instances whose indexed attribute tuples have the
-            values in `kwargs`; otherwise `None`, indicating no match
+            `Model`: a `Model` instance whose indexed attribute tuples have the values in `kwargs`,
+            or `None` if no `Model` satisfies the query
 
         Raises:
-            :obj:`ValueError`: if the attribute name(s) in `kwargs.keys()` do not correspond to an
-            indexed attribute tuple of the `Model`, or if `get` obtains more than one instance.
+            :obj:`ValueError`: if `get` raises an exception, or if multiple instances match.
         """
         rv = self.get(**kwargs)
         cls = self.cls
@@ -1816,6 +1825,10 @@ class Model(with_metaclass(ModelMeta, object)):
             cls = classes_to_check.pop()
             if cls not in checked_classes:
                 checked_classes.append(cls)
+
+                if not (isinstance(cls, type) and issubclass(cls, Model)):
+                    raise ValueError("Related class '{}' must be an obj_model.Model".format(
+                        cls.__name__))
 
                 if not cls.are_related_attributes_serializable():
                     return False
