@@ -13,8 +13,131 @@ import Bio.Seq
 import json
 import six
 import sympy
+import numpy as n
 
+class NumpyArrayAttribute(core.Attribute):
+	""" numpy.array attribute
+	Attributes:
+		dtype (:obj:`type`): standard python and numpy types
+		default_fill (:obj:`int`): default value to fill array with
+	"""
+	
+	def __init__(self, min_length=0, max_length=float('inf'), default=None, verbose_name='', help='',
+                primary=False, unique=False, unique_case_insensitive=False,dtype=None,default_fill=None):
+		"""
+        Args:
+            min_length (:obj:`int`, optional): minimum length
+            max_length (:obj:`int`, optional): maximum length
+            default (:obj:`Bio.Seq.Seq`, optional): default value
+            verbose_name (:obj:`str`, optional): verbose name
+            help (:obj:`str`, optional): help string
+            primary (:obj:`bool`, optional): indicate if attribute is primary attribute
+            unique (:obj:`bool`, optional): indicate if attribute value must be unique
+            unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
+		"""
+		if default is not None and not isinstance(default, n.array()):
+			raise ValueError('`default` must be a `numpy.array()` or `None`')
+		if not isinstance(min_length, (six.integer_types, float)) or min_length < 0:
+			raise ValueError('`min_length` must be a non-negative number')
+		if not isinstance(max_length, (six.integer_types, float)) or max_length < 0:
+			raise ValueError('`max_length` must be a non-negative number')
 
+		super(NumpyArrayAttribute, self).__init__(default=default,
+                                              verbose_name=verbose_name, help=help,
+                                              primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
+
+		self.dtype = dtype
+		self.default_fill = default_fill
+		
+	def get_default(self,obj,length=0):
+		return n.full(length,self.default_fill,dtype=self.dtype)
+		
+	def clean(self, value):
+		""" Convert attribute value into the appropriate type
+
+        Args:
+            value (:obj:`str`): value of attribute to clean
+
+        Returns:
+            :obj:`tuple` of `numpy.array`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+		"""
+		if isinstance(value,(list,tuple)):
+			if self.dtype:
+				value = np.array(value,self.dtype)
+		else:
+			value = None
+		return (value, None)
+		
+	def validate(self, obj, value):
+		""" Determine if `value` is a valid value
+
+        Args:
+            obj (:obj:`Model`): class being validated
+            value (:obj:`numpy.array`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+		"""
+		errors = super(NumpyArrayAttribute, self).validate(obj, value)
+		if errors:
+			errors = errors.messages
+		else:
+			errors = []
+
+		if value is not None:
+			if not isinstance(value, n.array()):
+				errors.append('Value must be an instance of `numpy.array`')
+			elif self.dtype: 
+				for elem in np.nditer(value):
+					if not isinstance(elem,self.dtype):
+						errors.append('Array elements must be of type `{}`'.format(self.dtype.__name__))
+						break
+
+		if self.min_length and (not value or len(value) < self.min_length):
+			errors.append('Value must be at least {:d} characters'.format(self.min_length))
+
+		if self.max_length and value and len(value) > self.max_length:
+			errors.append('Value must be less than {:d} characters'.format(self.max_length))
+
+		if self.primary and (not value or len(value) == 0):
+			errors.append('{} value for primary attribute cannot be empty'.format(
+                self.__class__.__name__))
+
+		if errors:
+			return core.InvalidAttribute(self, errors)
+		return None
+
+	def validate_unique(self, objects, values):
+		""" Determine if the attribute values are unique
+
+        Args:
+            objects (:obj:`list` of `Model`): list of `Model` objects
+            values (:obj:`list` of :obj:`Bio.Seq.Seq`): list of values
+
+        Returns:
+           :obj:`InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `InvalidAttribute`
+		"""
+		str_values = []
+		for v in values:
+			if v:
+				str_values.append(str(v))
+			else:
+				str_values.append('')
+		return super(NumpyArrayAttribute, self).validate_unique(objects, str_values)
+
+	def serialize(self, value):
+		""" Serialize string
+
+        Args:
+            value (:obj:`numpy.array`): Python representation
+
+        Returns:
+            :obj:`str`: simple Python representation
+		"""
+		if value is not None:
+			return str(value)
+		return ''
+		
 class BioSeqAttribute(core.Attribute):
     """ Bio.Seq.Seq attribute 
 
