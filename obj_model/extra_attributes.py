@@ -10,10 +10,121 @@ from . import core
 import Bio
 import Bio.Alphabet
 import Bio.Seq
+import Bio.SeqFeature
 import json
 import six
 import sympy
 import numpy as n
+
+class FeatureLocationAttribute(core.Attribute):
+	""" Bio.SeqFeature.FeatureLocation attribute
+	Attributes:
+		start (:obj:`type`): a position object derived from Bio.SeqFeature.AbstractPosition
+		end (:obj:`int`): a position object derived from Bio.SeqFeature.AbstractPosition
+		strad (:obj:`int`): 
+	"""
+	
+	def __init__(self, default=None, verbose_name='', help='', start=0,end=0,strand=+1,
+                primary=False, unique=False, unique_case_insensitive=False,):
+		"""
+        Args:
+            min_length (:obj:`int`, optional): minimum length
+            max_length (:obj:`int`, optional): maximum length
+            default (:obj:`Bio.Seq.Seq`, optional): default value
+            verbose_name (:obj:`str`, optional): verbose name
+            help (:obj:`str`, optional): help string
+            primary (:obj:`bool`, optional): indicate if attribute is primary attribute
+            unique (:obj:`bool`, optional): indicate if attribute value must be unique
+            unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
+		"""
+		if default is None:
+			default = Bio.SeqFeature.FeatureLocation(start,end,strand)
+		if default is not None and not isinstance(default, Bio.SeqFeature.FeatureLocation):
+			raise ValueError('`default` must be a `Bio.SeqFeature.FeatureLocation` or `None`')
+
+
+		super(FeatureLocationAttribute, self).__init__(default=default,
+                                              verbose_name=verbose_name, help=help,
+                                              primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
+
+		
+	def get_default(self,obj):
+		return Bio.SeqFeature.FeatureLocation(0,0,strand=+1	)
+		
+	def clean(self, value):
+		""" Convert attribute value into the appropriate type
+
+        Args:
+            value (:obj:`str`): value of attribute to clean
+
+        Returns:
+            :obj:`tuple` of `numpy.array`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+		"""
+		if isinstance(value,(list,tuple)):
+			value = Bio.SeqFeature.FeatureLocation(*value)
+		else:
+			value = None
+		return (value, None)
+		
+	def validate(self, obj, value):
+		""" Determine if `value` is a valid value
+
+        Args:
+            obj (:obj:`Model`): class being validated
+            value (:obj:`numpy.array`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+		"""
+		errors = super(FeatureLocationAttribute, self).validate(obj, value)
+		if errors:
+			errors = errors.messages
+		else:
+			errors = []
+
+		if value is not None:
+			if not isinstance(value, Bio.SeqFeature.FeatureLocation):
+				errors.append('Value must be an instance of `Bio.SeqFeature.FeatureLocation`')
+
+		if self.primary and (not value or len(value) == 0):
+			errors.append('{} value for primary attribute cannot be empty'.format(
+                self.__class__.__name__))
+
+		if errors:
+			return core.InvalidAttribute(self, errors)
+		return None
+
+	def validate_unique(self, objects, values):
+		""" Determine if the attribute values are unique
+
+        Args:
+            objects (:obj:`list` of `Model`): list of `Model` objects
+            values (:obj:`list` of :obj:`Bio.Seq.Seq`): list of values
+
+        Returns:
+           :obj:`InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `InvalidAttribute`
+		"""
+		str_values = []
+		for v in values:
+			if v:
+				str_values.append(str(v))
+			else:
+				str_values.append('')
+		return super(FeatureLocationAttribute, self).validate_unique(objects, str_values)
+
+	def serialize(self, value):
+		""" Serialize string
+
+        Args:
+            value (:obj:`numpy.array`): Python representation
+
+        Returns:
+            :obj:`str`: simple Python representation
+		"""
+		if value is not None:
+			return str(value)
+		return ''
+
 
 class NumpyArrayAttribute(core.Attribute):
 	""" numpy.array attribute
@@ -35,8 +146,8 @@ class NumpyArrayAttribute(core.Attribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
 		"""
-		if default is not None and not isinstance(default, n.array()):
-			raise ValueError('`default` must be a `numpy.array()` or `None`')
+		if default is not None and not isinstance(default, n.array):
+			raise ValueError('`default` must be a `numpy.array` or `None`')
 		if not isinstance(min_length, (six.integer_types, float)) or min_length < 0:
 			raise ValueError('`min_length` must be a non-negative number')
 		if not isinstance(max_length, (six.integer_types, float)) or max_length < 0:
