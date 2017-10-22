@@ -4404,7 +4404,7 @@ class RelatedManager(list):
         return self
 
     def get(self, **kwargs):
-        """ Get related objects by attribute/value pairs
+        """ Get a related object by attribute/value pairs; report an error if multiple objects match
 
         Args:
             **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching

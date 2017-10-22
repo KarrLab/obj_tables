@@ -33,13 +33,13 @@ class Writer(object):
 
     def run(self, path, objects, models, get_related=True, 
         title=None, description=None, keywords=None, version=None, language=None, creator=None):
-        """ Write a list of model objects to an Excel file, with one worksheet for each model, or to
+        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`list`): list of objects
-            models (:obj:`list`): list of model, in the order that they should
+            models (:obj:`list` of `Model`): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
             title (:obj:`str`, optional): title
