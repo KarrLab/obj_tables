@@ -720,7 +720,7 @@ class Manager(object):
 
         The keys in `kwargs` must correspond to an entry in the `Model`'s `indexed_attrs_tuples`.
         Warning: this method is non-deterministic. To obtain `Manager`'s O(1) performance, `Model`
-        instances in the index are stored in `WeakSet`s. Therefore, the order of elements in the list
+        instances in the index are stored in `WeakSet`'s. Therefore, the order of elements in the list
         returned is not reproducible. Applications that need reproducibility must deterministically
         order elements in lists returned by this method.
 

@@ -9,6 +9,8 @@ Sphinx
 sphinx_rtd_theme
 stringcase
 sympy
+sphinxcontrib-bibtex
 robpol86-sphinxcontrib-googleanalytics
+sphinxcontrib-spelling; python_version >= '3.0'
 git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
 weakreflist
