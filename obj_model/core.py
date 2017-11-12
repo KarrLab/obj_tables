@@ -19,7 +19,6 @@ which can then be referenced to deserialize the related attribute.
 """
 
 from __future__ import print_function
-from collections import Iterable, OrderedDict, defaultdict
 from datetime import date, time, datetime
 from enum import Enum
 from itertools import chain
@@ -34,6 +33,7 @@ from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
+import collections
 import copy
 import dateutil.parser
 import inflect
@@ -98,7 +98,7 @@ class ModelMeta(type):
 
         metacls.init_primary_attribute(cls)
 
-        cls.Meta.related_attributes = OrderedDict()
+        cls.Meta.related_attributes = collections.OrderedDict()
         for model in get_subclasses(Model):
             metacls.init_related_attributes(cls, model)
 
@@ -150,7 +150,7 @@ class ModelMeta(type):
     def init_attributes(cls):
         """ Initialize attributes """
 
-        cls.Meta.attributes = OrderedDict()
+        cls.Meta.attributes = collections.OrderedDict()
         for attr_name in sorted(dir(cls)):
             orig_attr = getattr(cls, attr_name)
 
@@ -214,7 +214,7 @@ class ModelMeta(type):
 
                         # add attribute to dictionary of related attributes
                         related_class.Meta.related_attributes[attr.related_name] = attr
-                        related_class.Meta.related_attributes = OrderedDict(
+                        related_class.Meta.related_attributes = collections.OrderedDict(
                             sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))
 
     def init_primary_attribute(cls):
@@ -302,7 +302,7 @@ class ModelMeta(type):
                     "in any tuple: '{}'".format(attribute, cls.__name__, getattr(cls.Meta, attribute)))
 
         # raise errors if multiple tup_of_attrnames are equivalent
-        tup_of_attrnames_map = defaultdict(list)
+        tup_of_attrnames_map = collections.defaultdict(list)
         for tup_of_attrnames in getattr(cls.Meta, attribute):
             tup_of_attrnames_map[frozenset(tup_of_attrnames)].append(tup_of_attrnames)
         equivalent_tuples = []
@@ -489,7 +489,7 @@ class Manager(object):
         """
         if isinstance(values, string_types):
             raise ValueError("_get_hashable_values does not take a string: '{}'".format(values))
-        if not isinstance(values, Iterable):
+        if not isinstance(values, collections.Iterable):
             raise ValueError("_get_hashable_values takes an iterable, not: '{}'".format(values))
         hashable_values = []
         for val in values:
@@ -527,7 +527,7 @@ class Manager(object):
         self._check_model(model_obj, '_get_attribute_types')
         if isinstance(attr_names, string_types):
             raise ValueError("_get_attribute_types(): attr_names cannot be a string: '{}'".format(attr_names))
-        if not isinstance(attr_names, Iterable):
+        if not isinstance(attr_names, collections.Iterable):
             raise ValueError("_get_attribute_types(): attr_names must be an iterable, not: '{}'".format(attr_names))
         cls = self.cls
         types = []
@@ -806,7 +806,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Meta data for :class:`Model`
 
         Attributes:
-            attributes (:obj:`OrderedDict` of `Attribute`): attributes
+            attributes (:obj:`collections.OrderedDict` of `Attribute`): attributes
             related_attributes (:obj:`set` of `Attribute`): attributes declared in related objects
             primary_attribute (:obj:`Attribute`): attribute with `primary` = `True`
             unique_together (:obj:`tuple` of :obj:`tuple`'s of attribute names): controls what tuples of
@@ -4672,7 +4672,7 @@ class InvalidObjectSet(object):
         Returns:
             :obj:`dict` of `Model`: `list` of `InvalidObject`: dictionary of object errors, grouped by model
         """
-        object_errors_by_model = defaultdict(list)
+        object_errors_by_model = collections.defaultdict(list)
         for obj in self.invalid_objects:
             object_errors_by_model[obj.object.__class__].append(obj)
 

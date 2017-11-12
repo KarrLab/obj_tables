@@ -11,7 +11,7 @@
 :License: MIT
 """
 
-from collections import defaultdict
+import collections
 from itertools import chain, compress
 from natsort import natsorted, ns
 from os.path import basename, dirname, splitext
@@ -406,7 +406,7 @@ class Reader(object):
         headings = headings[0]
 
         # prohibit duplicate headers
-        header_map = defaultdict(list)
+        header_map = collections.defaultdict(list)
         for heading in headings:
             if heading is None:
                 continue
