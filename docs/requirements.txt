@@ -5,10 +5,12 @@ inflect
 natsort
 python-dateutil
 six
-Sphinx
+Sphinx >= 1.6
 sphinx_rtd_theme
 stringcase
 sympy
+sphinxcontrib-bibtex
 robpol86-sphinxcontrib-googleanalytics
+sphinxcontrib-spelling
 git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
 weakreflist
