@@ -2403,7 +2403,7 @@ class TestCore(unittest.TestCase):
             str(context.exception))
         self.assertEqual(Example2.objects.all(), None)
 
-    def test_simple_user_example(self):
+    def test_simple_manager_example(self):
         from obj_model.core import Model, StringAttribute, IntegerAttribute, OneToManyAttribute
 
         class Example1(Model):

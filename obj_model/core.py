@@ -1052,7 +1052,7 @@ class Model(with_metaclass(ModelMeta, object)):
         return key
 
     def is_equal(self, other):
-        """ Determine if two objects are semantically equal
+        """ Determine whether two models are semantically equal
 
         Args:
             other (:obj:`Model`): object to compare
@@ -1249,10 +1249,10 @@ class Model(with_metaclass(ModelMeta, object)):
         return tuple(vals)
 
     def difference(self, other):
-        """ Get the semantic difference between two objects
+        """ Get the semantic difference between two models
 
         Args:
-            other (:obj:`Model`): other object
+            other (:obj:`Model`): other `Model`
 
         Returns:
             :obj:`str`: difference message
@@ -2729,7 +2729,7 @@ class SlugAttribute(RegexAttribute):
         """
         if help is None:
             help = "Enter a unique string identifier that (1) starts with a letter, (2) is composed "
-            "of letters, numbers and underscopes, and (3) is less than 64 characters long"
+            "of letters, numbers and underscores, and (3) is less than 64 characters long"
 
         super(SlugAttribute, self).__init__(pattern=r'^[a-z_][a-z0-9_]*$', flags=re.I,
                                             min_length=1, max_length=63,
