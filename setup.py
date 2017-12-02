@@ -1,8 +1,18 @@
 from setuptools import setup, find_packages
-import obj_model
 import os
 import pip
 import re
+
+# get long description
+if os.path.isfile('README.rst'):
+    with open('README.rst', 'r') as file:
+        long_description = file.read()
+else:
+    long_description = ''
+
+# get version
+with open('obj_model/VERSION', 'r') as file:
+    version = file.read().strip()
 
 # parse dependencies and their links from requirements.txt files
 install_requires = []
@@ -34,9 +44,10 @@ dependency_links = list(set(dependency_links))
 # install package
 setup(
     name='obj_model',
-    version=obj_model.__version__,
+    version=version,
 
     description='Database-independent Django-like object model',
+    long_description=long_description,
 
     # The project's main homepage.
     url='https://github.com/KarrLab/obj_model',
@@ -67,7 +78,11 @@ setup(
 
     # packages not prepared yet
     packages=find_packages(exclude=['tests', 'tests.*']),
-    include_package_data=True,
+    package_data={
+        'obj_model': [
+            'VERSION',
+        ],
+    },
 
     install_requires=install_requires,
     tests_require=tests_require,
