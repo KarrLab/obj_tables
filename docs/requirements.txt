@@ -12,5 +12,5 @@ sympy
 sphinxcontrib_bibtex
 robpol86_sphinxcontrib_googleanalytics
 sphinxcontrib_spelling
-git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
+git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils-0.0.1
 weakreflist

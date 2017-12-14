@@ -6,6 +6,7 @@ prof/
 
 # coverage files
 .coverage
+htmlcov/
 
 # compiled files
 *.pyc
