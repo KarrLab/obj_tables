@@ -12,6 +12,7 @@
 """
 
 import collections
+import copy
 from itertools import chain, compress
 from natsort import natsorted, ns
 from os.path import basename, dirname, splitext
@@ -19,7 +20,7 @@ from warnings import warn
 from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                                   InvalidObject, excel_col_name,
-                                  InvalidWorksheet, InvalidAttribute)
+                                  InvalidWorksheet, InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose
 from wc_utils.workbook.io import (get_writer, get_reader, WorkbookStyle, WorksheetStyle,
                                   Writer as BaseWriter, Reader as BaseReader,
@@ -50,6 +51,19 @@ class Writer(object):
             creator (:obj:`str`, optional): creator
         """
 
+        sheet_names = []
+        for model in models:
+            if model.Meta.tabular_orientation == TabularOrientation.row:
+                sheet_names.append(model.Meta.verbose_name_plural)
+            else:
+                sheet_names.append(model.Meta.verbose_name)
+        ambiguous_sheet_names = get_ambiguous_sheet_names(sheet_names, models)
+        if ambiguous_sheet_names:
+            msg = 'The following sheets will not be able to be unambiguously mapped to models:'
+            for sheet_name, models in ambiguous_sheet_names.items():
+                msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
+            warn(msg, IoWarning)
+
         # get related objects
         more_objects = []
         if get_related:
@@ -62,7 +76,7 @@ class Writer(object):
 
         if error:
             warn('Some data will not be written because objects are not valid:\n  {}'.format(
-                str(error).replace('\n', '\n  ').rstrip()))
+                str(error).replace('\n', '\n  ').rstrip()), IoWarning)
 
         # group objects by class
         grouped_objects = {}
@@ -117,6 +131,17 @@ class Writer(object):
         # column labels
         headings = [[attr.verbose_name for attr in attributes]]
 
+        header_map = collections.defaultdict(list)
+        for heading in headings[0]:
+            l = heading.lower()
+            header_map[l].append(heading)
+        duplicate_headers = list(filter(lambda x: 1 < len(x), header_map.values()))
+        if duplicate_headers:
+            errors = []
+            for dupes in duplicate_headers:
+                str = ', '.join(map(lambda s: "'{}'".format(s), dupes))
+                warn('Duplicate, case insensitive, header fields: {}'.format(str), IoWarning)
+
         # objects
         objects = model.sort(objects)
 
@@ -156,7 +181,7 @@ class Writer(object):
             style (:obj:`WorksheetStyle`, optional): worksheet style
         """
         row_headings = row_headings or []
-        column_headings = column_headings or []
+        column_headings = copy.deepcopy(column_headings) or []
 
         # merge data, headings
         for i_row, row_heading in enumerate(transpose(row_headings)):
@@ -245,7 +270,7 @@ class Reader(object):
 
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
-        ambiguous_sheet_names = self.get_ambiguous_sheet_names(sheet_names, models)
+        ambiguous_sheet_names = get_ambiguous_sheet_names(sheet_names, models)
         if ambiguous_sheet_names:
             msg = 'The following sheets cannot be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
@@ -334,11 +359,6 @@ class Reader(object):
         for model in models:
             all_objects.extend(objects[model])
 
-        errors = Validator().clean(all_objects)
-        if errors:
-            raise ValueError(
-                indent_forest(['The model cannot be loaded because it fails to clean:', [errors]]))
-
         errors = Validator().validate(all_objects)
         if errors:
             raise ValueError(
@@ -346,29 +366,6 @@ class Reader(object):
 
         # return
         return objects
-
-    def get_ambiguous_sheet_names(self, sheet_names, models):
-        """ Get names of sheets than cannot be unambiguously mapped to models (sheet names that map to multiple models).
-
-        Args:
-            sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
-            models (:obj:`list` of :obj:`Model`): list of models
-
-        Returns:
-            :obj:`dict` of :obj:`str`, :obj:`list` of :obj:`Model`: dictionary of ambiguous sheet names and their matching models
-        """
-        sheets_to_models = {}
-        for sheet_name in sheet_names:
-            sheets_to_models[sheet_name] = []
-            for model in models:
-                for possible_sheet_name in get_possible_model_sheet_names(model):
-                    if sheet_name == possible_sheet_name:
-                        sheets_to_models[sheet_name].append(model)
-
-            if len(sheets_to_models[sheet_name]) <= 1:
-                sheets_to_models.pop(sheet_name)
-
-        return sheets_to_models
 
     def read_model(self, reader, model, ignore_missing_attributes=False, ignore_extra_attributes=False):
         """ Instantiate a list of objects from data in a table in a file
@@ -540,7 +537,7 @@ class Reader(object):
                 row_heading.append(row.pop(0))
 
             for column_heading in column_headings:
-                column_headings.pop(0)
+                column_heading.pop(0)
 
         return (data, row_headings, column_headings)
 
@@ -683,3 +680,32 @@ def get_possible_model_sheet_names(model):
         :obj:`set`: set of possible sheet names for a model
     """
     return set([model.__name__, model.Meta.verbose_name, model.Meta.verbose_name_plural])
+
+
+def get_ambiguous_sheet_names(sheet_names, models):
+        """ Get names of sheets than cannot be unambiguously mapped to models (sheet names that map to multiple models).
+
+        Args:
+            sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
+            models (:obj:`list` of :obj:`Model`): list of models
+
+        Returns:
+            :obj:`dict` of :obj:`str`, :obj:`list` of :obj:`Model`: dictionary of ambiguous sheet names and their matching models
+        """
+        sheets_to_models = {}
+        for sheet_name in sheet_names:
+            sheets_to_models[sheet_name] = []
+            for model in models:
+                for possible_sheet_name in get_possible_model_sheet_names(model):
+                    if sheet_name == possible_sheet_name:
+                        sheets_to_models[sheet_name].append(model)
+
+            if len(sheets_to_models[sheet_name]) <= 1:
+                sheets_to_models.pop(sheet_name)
+
+        return sheets_to_models
+
+
+class IoWarning(ObjModelWarning):
+    """ IO warning """
+    pass

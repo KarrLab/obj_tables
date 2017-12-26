@@ -913,14 +913,17 @@ class Model(with_metaclass(ModelMeta, object)):
 
                 if not isinstance(attr, (OneToOneAttribute, OneToManyAttribute)):
                     warnings.warn(
-                        'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), SchemaWarning)
+                        'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), 
+                        SchemaWarning)
 
                 elif attr.min_related == 0:
                     warnings.warn(
-                        'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), SchemaWarning)
+                        'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__),
+                        SchemaWarning)
             else:
                 warnings.warn(
-                    'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), SchemaWarning)
+                    'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__),
+                    SchemaWarning)
 
     def __setattr__(self, attr_name, value, propagate=True):
         """ Set attribute and validate any unique attribute constraints
@@ -5015,6 +5018,10 @@ class InvalidWorksheet(object):
         return indent_forest(error_forest)
 
 
-class SchemaWarning(UserWarning):
+class ObjModelWarning(UserWarning):
+    """ :obj:`obj_model` warning """
+    pass
+
+class SchemaWarning(ObjModelWarning):
     """ Schema warning """
     pass

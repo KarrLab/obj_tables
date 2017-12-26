@@ -9,9 +9,11 @@
 
 from os.path import splitext
 from obj_model import core, utils
-from obj_model.io import Reader, Writer, convert, create_template, get_possible_model_sheet_names
-from wc_utils.workbook.io import WorksheetStyle, read as read_workbook, get_reader, get_writer
+from obj_model.io import (Reader, Writer, convert, create_template, get_possible_model_sheet_names, 
+                          IoWarning, get_ambiguous_sheet_names, get_model_sheet_name)
+from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle, read as read_workbook, get_reader, get_writer)
 import os
+import pytest
 import re
 import shutil
 import sys
@@ -608,9 +610,259 @@ class TestIo(unittest.TestCase):
         self.assertEqual(sorted(get_possible_model_sheet_names(TestModels3)),
                          sorted(['TestModels3', 'TestModel', 'TestModels']))
 
-        ambiguous_sheet_names = Reader().get_ambiguous_sheet_names(['Test models', 'Test model', 'TestModel', 'TestModels'], [
+        ambiguous_sheet_names = get_ambiguous_sheet_names(['Test models', 'Test model', 'TestModel', 'TestModels'], [
             TestModel, TestModels, TestModels2, TestModels3])
         self.assertEqual(len(ambiguous_sheet_names), 3)
         self.assertEqual(ambiguous_sheet_names['Test models'], [TestModel, TestModels])
         self.assertEqual(ambiguous_sheet_names['TestModel'], [TestModel, TestModels3])
         self.assertEqual(ambiguous_sheet_names['TestModels'], [TestModels, TestModels3])
+
+
+class TestMisc(unittest.TestCase):
+    
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dirname)
+
+    def test_read_write_row_oriented(self):
+        class Parent1(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+            children = core.OneToManyAttribute('Child1', verbose_name='children', related_name='parent')
+
+        class Child1(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+
+        parents = [
+            Parent1(id='parent_0'), 
+            Parent1(id='parent_1'), 
+            Parent1(id='parent_2'),
+        ]
+        parents[0].children.create(id='child_0_0')
+        parents[0].children.create(id='child_0_1')
+        parents[0].children.create(id='child_0_2')
+        parents[1].children.create(id='child_1_0')
+        parents[1].children.create(id='child_1_1')
+        parents[1].children.create(id='child_1_2')
+        parents[2].children.create(id='child_2_0')
+        parents[2].children.create(id='child_2_1')
+        parents[2].children.create(id='child_2_2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+
+        writer = Writer()
+        writer.run(filename, parents, [Parent1, Child1])
+
+        objects = Reader().run(filename, [Parent1, Child1])
+        objects[Parent1].sort(key=lambda parent:parent.id)
+        for orig_parent, copy_parent in zip(parents, objects[Parent1]):
+            self.assertTrue(orig_parent.is_equal(copy_parent))
+
+    def test_warn_about_errors(self):
+        class Node2(core.Model):
+            id = core.StringAttribute(max_length=1, primary=True, unique=True, verbose_name='Identifier')
+
+        node = Node2(id='id')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer = Writer()
+        
+        with pytest.warns(IoWarning):
+            writer.run(filename, [node], [Node2])
+
+    def test_writer_error_if_not_serializable(self):
+        class ChildrenAttribute3(core.OneToManyAttribute):
+            pass
+
+        class Parent3(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+            children = ChildrenAttribute3('Child3', verbose_name='children', related_name='parent')
+
+        class Child3(core.Model):
+            id = core.StringAttribute(verbose_name='Identifier')
+
+        parent = Parent3(id='parent')
+        parent.children.create(id='child_1')
+        parent.children.create(id='child_2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer = Writer()
+
+        with self.assertRaisesRegexp(ValueError, 'cannot be serialized'):
+            writer.run(filename, [parent], [Parent3, Child3])
+
+    def test_reader_error_if_not_serializable(self):
+        class WriterChildrenAttribute(core.OneToManyAttribute):
+            def serialize(self, value):
+                return super(WriterChildrenAttribute, self).serialize(value)
+            
+            def deserialize(self, values, objects):
+                return super(WriterChildrenAttribute, self).deserialize(value, objects)
+
+        class WriterParent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+            children = WriterChildrenAttribute('WriterChild', verbose_name='children', related_name='parent')
+
+            class Meta(core.Model.Meta):
+                verbose_name_plural = 'Parents'
+
+        class WriterChild(core.Model):
+            id = core.StringAttribute(primary=True, verbose_name='Identifier')
+
+            class Meta(core.Model.Meta):
+                verbose_name_plural = 'Children'
+
+        class ReaderChildrenAttribute(core.OneToManyAttribute):
+            pass
+
+        class ReaderParent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+            children = ReaderChildrenAttribute('ReaderChild', verbose_name='children', related_name='parent')
+
+            class Meta(core.Model.Meta):
+                verbose_name_plural = 'Parents'
+
+        class ReaderChild(core.Model):
+            id = core.StringAttribute(verbose_name='Identifier')
+
+            class Meta(core.Model.Meta):
+                verbose_name_plural = 'Children'
+
+        parent = WriterParent(id='parent')
+        parent.children.create(id='child_1')
+        parent.children.create(id='child_2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer = Writer()
+        writer.run(filename, [parent], [WriterParent, WriterChild])
+
+        with self.assertRaisesRegexp(ValueError, 'cannot be serialized'):
+            Reader().run(filename, [ReaderParent, ReaderChild])
+
+    def test_abiguous_sheet_names_error(self):
+        class Node4(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+
+            class Meta(core.Model.Meta):
+                verbose_name = 'Node'
+
+        class Node5(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+
+            class Meta(core.Model.Meta):
+                verbose_name = 'Node'
+
+        node1 = Node4(id='node_1')
+        node2 = Node5(id='node_2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer = Writer()
+
+        with pytest.warns(IoWarning):
+            writer.run(filename, [node1, node2], [Node4, Node5])
+
+        with self.assertRaisesRegexp(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):            
+            Reader().run(filename, [Node4, Node5])
+
+    def test_read_missing_sheet(self):
+        class Node6(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+
+        class Node7(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+
+        nodes = [
+            Node6(id='node_6_0'),
+            Node6(id='node_6_1'),
+            Node6(id='node_6_2'),
+        ]
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer = Writer()
+        writer.run(filename, nodes, [Node6])
+
+        objects = Reader().run(filename, [Node6, Node7])
+        objects[Node6].sort(key=lambda node: node.id)
+        for orig_node, copy_node in zip(nodes, objects[Node6]):
+            self.assertTrue(orig_node.is_equal(copy_node))
+        self.assertEqual(objects[Node7], [])
+
+    def test_ambiguous_column_headers(self):
+        class Node8(core.Model):
+            id1 = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+            id2 = core.StringAttribute(primary=False, unique=True, verbose_name='Identifier')
+            id3 = core.StringAttribute(primary=False, unique=True)
+
+        nodes = [
+            Node8(id1='node_0_1', id2='node_0_2'),
+            Node8(id1='node_1_1', id2='node_1_2'),
+            ]
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer = Writer()
+
+        with pytest.warns(IoWarning):
+            writer.run(filename, nodes, [Node8])
+
+        with self.assertRaisesRegexp(ValueError, 'Duplicate, case insensitive, header fields:'):            
+            Reader().run(filename, [Node8])
+
+    def test_row_and_column_headings(self):
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer = Writer()
+        xslx_writer = get_writer('.xlsx')(filename)
+        xslx_writer.initialize_workbook()
+        writer.write_sheet(xslx_writer, 
+            sheet_name='Sheet', 
+            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']], 
+            row_headings=[['Row_2', 'Row_3']],
+            column_headings=[['Column_B', 'Column_C']])
+        xslx_writer.finalize_workbook()
+
+        xlsx_reader = get_reader('.xlsx')(filename)
+        workbook = xlsx_reader.run()
+        self.assertEqual(list(workbook['Sheet'][0]), [None, 'Column_B', 'Column_C'])
+        self.assertEqual(list(workbook['Sheet'][1]), ['Row_2', 'Cell_2_B', 'Cell_2_C'])
+        self.assertEqual(list(workbook['Sheet'][2]), ['Row_3', 'Cell_3_B', 'Cell_3_C'])
+
+        reader = Reader()
+        xlsx_reader = get_reader('.xlsx')(filename)
+        xlsx_reader.initialize_workbook()
+        data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet', 
+            num_row_heading_columns=1, 
+            num_column_heading_rows=1)
+        self.assertEqual(len(data), 2)
+        self.assertEqual(list(data[0]), ['Cell_2_B', 'Cell_2_C'])
+        self.assertEqual(list(data[1]), ['Cell_3_B', 'Cell_3_C'])
+        self.assertEqual(row_headings, [['Row_2', 'Row_3']])
+        self.assertEqual(len(column_headings), 1)
+        self.assertEqual(list(column_headings[0]), ['Column_B', 'Column_C'])
+
+    def test_get_model_sheet_name_error(self):
+        class Node9(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+
+            class Meta(core.Model.Meta):
+                verbose_name_plural = 'Nodes'
+
+        with self.assertRaisesRegexp(ValueError, 'matches multiple sheets'):
+            get_model_sheet_name(['Nodes', 'nodes'], Node9)
+
+    def test_unclean_data(self):
+        workbook = Workbook()
+        workbook['Node10'] = worksheet = Worksheet()
+        worksheet.append(Row(['Id', 'Value']))
+        worksheet.append(Row(['A', '1.0']))
+        worksheet.append(Row(['B', 'x']))
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        xslx_writer = get_writer('.xlsx')(filename)
+        xslx_writer.run(workbook)
+
+        class Node10(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Id')
+            value = core.FloatAttribute(verbose_name='Value')
+
+        with self.assertRaisesRegexp(ValueError, 'Value must be a `float`'):
+            Reader().run(filename, [Node10])
