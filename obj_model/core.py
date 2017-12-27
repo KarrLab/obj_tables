@@ -38,6 +38,7 @@ import copy
 import dateutil.parser
 import inflect
 import re
+import six
 import sys
 import warnings
 # todo: simplify primary attributes, deserialization
@@ -1969,10 +1970,10 @@ class Attribute(object):
         Returns:
             :obj:`object`: initial value
         """
-        if self.default and hasattr(self.default, '__call__'):
+        if isinstance(self.default, (six.types.FunctionType, six.types.MethodType, six.types.LambdaType)):
             return self.default()
 
-        return copy.copy(self.default)
+        return copy.deepcopy(self.default)
 
     def set_value(self, obj, new_value):
         """ Set value of attribute of object
@@ -2043,8 +2044,8 @@ class Attribute(object):
                 unq_vals.add(val)
 
         if rep_vals:
-            message = "{} values must be unique, but these values are repeated: {}".format(self.name,
-                                                                                           ', '.join([quote(val) for val in rep_vals]))
+            message = "{} values must be unique, but these values are repeated: {}".format(
+                self.name, ', '.join([quote(val) for val in rep_vals]))
             return InvalidAttribute(self, [message])
 
     def serialize(self, value):
