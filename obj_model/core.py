@@ -95,8 +95,7 @@ class ModelMeta(type):
         metacls.validate_attribute_inheritance(name, bases, namespace)
 
         # call super class method
-        cls = super(ModelMeta, metacls).__new__(
-            metacls, name, bases, namespace)
+        cls = super(ModelMeta, metacls).__new__(metacls, name, bases, namespace)
 
         # Initialize meta data
         metacls.init_inheritance(cls)
@@ -146,8 +145,7 @@ class ModelMeta(type):
                                      "attributes of {}".format(attr_name, name))
 
         metacls.validate_attr_tuples(name, bases, namespace, 'unique_together')
-        metacls.validate_attr_tuples(
-            name, bases, namespace, 'indexed_attrs_tuples')
+        metacls.validate_attr_tuples(name, bases, namespace, 'indexed_attrs_tuples')
 
     @classmethod
     def validate_attr_tuples(metacls, name, bases, namespace, meta_attribute_name):
@@ -169,7 +167,7 @@ class ModelMeta(type):
             if isinstance(attr, Attribute):
                 attribute_names.append(attr_name)
         for base in bases:
-            if base.Meta.attributes:
+            if issubclass(base, Model) and base.Meta.attributes:
                 attribute_names += base.Meta.attributes.keys()
 
         for model in get_subclasses(Model):
