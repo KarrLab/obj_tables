@@ -7,22 +7,21 @@
 :License: MIT
 """
 
-import re
+from contextlib import contextmanager
 from datetime import date, time, datetime
 from enum import Enum
 from itertools import chain
 from obj_model import core
 from obj_model.core import excel_col_name
+from six import StringIO
+import gc
+import collections
+import copy
 import re
 import resource
 import sys
 import unittest
-import gc
-import copy
-import collections
-from contextlib import contextmanager
-import copy
-from six import StringIO
+
 
 class Order(Enum):
     root = 1
@@ -30,7 +29,8 @@ class Order(Enum):
 
 
 class Root(core.Model):
-    label = core.StringAttribute(verbose_name='Label', max_length=255, primary=True, unique=True)
+    label = core.StringAttribute(
+        verbose_name='Label', max_length=255, primary=True, unique=True)
 
     class Meta(core.Model.Meta):
         pass
@@ -52,14 +52,17 @@ class Leaf(core.Model):
 class UnrootedLeaf(Leaf):
     name = core.StringAttribute(verbose_name='Name', max_length=10)
 
-    root2 = core.ManyToOneAttribute(Root, min_related=0, verbose_name='Root', related_name='leaves2')
+    root2 = core.ManyToOneAttribute(
+        Root, min_related=0, verbose_name='Root', related_name='leaves2')
     id2 = core.RegexAttribute(verbose_name='ID', min_length=1, max_length=63,
                               pattern=r'^[a-z][a-z0-9_]*$', flags=re.I)
-    name2 = core.StringAttribute(verbose_name='Name', min_length=2, max_length=3)
+    name2 = core.StringAttribute(
+        verbose_name='Name', min_length=2, max_length=3)
     float2 = core.FloatAttribute(verbose_name='Float', min=2., max=3.)
     float3 = core.FloatAttribute(verbose_name='Float', min=2., nan=False)
     enum2 = core.EnumAttribute(Order, verbose_name='Enum')
-    enum3 = core.EnumAttribute(Order, verbose_name='Enum', default=Order['leaf'])
+    enum3 = core.EnumAttribute(
+        Order, verbose_name='Enum', default=Order['leaf'])
     multi_word_name = core.StringAttribute()
 
 
@@ -77,13 +80,15 @@ class Grandparent(core.Model):
 class Parent(core.Model):
     id = core.StringAttribute(max_length=2, primary=True, unique=True)
     val = core.StringAttribute()
-    grandparent = core.ManyToOneAttribute(Grandparent, related_name='children', min_related=1)
+    grandparent = core.ManyToOneAttribute(
+        Grandparent, related_name='children', min_related=1)
 
 
 class Child(core.Model):
     id = core.StringAttribute(primary=True)
     val = core.StringAttribute()
-    parent = core.ManyToOneAttribute(Parent, related_name='children', min_related=1)
+    parent = core.ManyToOneAttribute(
+        Parent, related_name='children', min_related=1)
 
 
 class UniqueRoot(Root):
@@ -113,7 +118,8 @@ class OneToOneRoot(core.Model):
 
 
 class OneToOneLeaf(core.Model):
-    root = core.OneToOneAttribute(OneToOneRoot, related_name='leaf', min_related=1)
+    root = core.OneToOneAttribute(
+        OneToOneRoot, related_name='leaf', min_related=1)
 
 
 class ManyToOneRoot(core.Model):
@@ -122,7 +128,8 @@ class ManyToOneRoot(core.Model):
 
 class ManyToOneLeaf(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
-    root = core.ManyToOneAttribute(ManyToOneRoot, related_name='leaves', min_related=1)
+    root = core.ManyToOneAttribute(
+        ManyToOneRoot, related_name='leaves', min_related=1)
 
 
 class OneToManyRoot(core.Model):
@@ -131,7 +138,8 @@ class OneToManyRoot(core.Model):
 
 class OneToManyLeaf(core.Model):
     id = core.SlugAttribute(verbose_name='ID')
-    roots = core.OneToManyAttribute(OneToManyRoot, related_name='leaf', min_related_rev=1)
+    roots = core.OneToManyAttribute(
+        OneToManyRoot, related_name='leaf', min_related_rev=1)
 
 
 class ManyToManyRoot(core.Model):
@@ -173,7 +181,8 @@ class Example1(core.Model):
     test0s = core.OneToManyAttribute(Example0, related_name='test1_1tm')
 
     class Meta(core.Model.Meta):
-        indexed_attrs_tuples = (('str_attr',), ('int_attr', 'int_attr2'), ('test0',))
+        indexed_attrs_tuples = (
+            ('str_attr',), ('int_attr', 'int_attr2'), ('test0',))
 
 
 class Example2(core.Model):
@@ -189,16 +198,20 @@ class TestCore(unittest.TestCase):
             ManyToOneRoot, ManyToOneLeaf, OneToManyRoot, OneToManyLeaf, ManyToManyRoot, ManyToManyLeaf,
             UniqueTogetherRoot, InlineRoot, Example0, Example1, Example2
         ))
-        self.assertEqual(set(core.get_models(module=sys.modules[__name__])), models)
+        self.assertEqual(
+            set(core.get_models(module=sys.modules[__name__])), models)
         self.assertEqual(models.difference(core.get_models()), set())
 
         models.remove(InlineRoot)
-        self.assertEqual(set(core.get_models(module=sys.modules[__name__], inline=False)), models)
-        self.assertEqual(models.difference(core.get_models(inline=False)), set())
+        self.assertEqual(
+            set(core.get_models(module=sys.modules[__name__], inline=False)), models)
+        self.assertEqual(models.difference(
+            core.get_models(inline=False)), set())
 
     def test_get_model(self):
         self.assertEqual(core.get_model('Root'), None)
-        self.assertEqual(core.get_model('Root', module=sys.modules[__name__]), Root)
+        self.assertEqual(core.get_model(
+            'Root', module=sys.modules[__name__]), Root)
         self.assertEqual(core.get_model(Root.__module__ + '.Root'), Root)
 
     def test_verbose_name(self):
@@ -209,33 +222,43 @@ class TestCore(unittest.TestCase):
         self.assertEqual(Leaf.Meta.verbose_name_plural, 'Leaves')
 
         self.assertEqual(UnrootedLeaf.Meta.verbose_name, 'Unrooted leaf')
-        self.assertEqual(UnrootedLeaf.Meta.verbose_name_plural, 'Unrooted leaves')
+        self.assertEqual(
+            UnrootedLeaf.Meta.verbose_name_plural, 'Unrooted leaves')
 
         self.assertEqual(Leaf3.Meta.verbose_name, 'Leaf3')
         self.assertEqual(Leaf3.Meta.verbose_name_plural, 'Leaf3s')
 
-        self.assertEqual(UnrootedLeaf.Meta.attributes['multi_word_name'].verbose_name, 'Multi word name')
+        self.assertEqual(UnrootedLeaf.Meta.attributes[
+                         'multi_word_name'].verbose_name, 'Multi word name')
 
     def test_meta_attributes(self):
         self.assertEqual(set(Root.Meta.attributes.keys()), set(('label', )))
-        self.assertEqual(set(Leaf.Meta.attributes.keys()), set(('root', 'id', 'name', )))
+        self.assertEqual(set(Leaf.Meta.attributes.keys()),
+                         set(('root', 'id', 'name', )))
 
     def test_meta_related_attributes(self):
-        self.assertEqual(set(Root.Meta.related_attributes.keys()), set(('leaves', 'leaves2', )))
+        self.assertEqual(set(Root.Meta.related_attributes.keys()),
+                         set(('leaves', 'leaves2', )))
         self.assertEqual(set(Leaf.Meta.related_attributes.keys()), set())
 
     def test_attributes(self):
         root = Root()
         leaf = Leaf()
 
-        self.assertEqual(set(vars(root).keys()), set(('_source', 'label', 'leaves', 'leaves2')))
-        self.assertEqual(set(vars(leaf).keys()), set(('_source', 'root', 'id', 'name')))
+        self.assertEqual(set(vars(root).keys()), set(
+            ('_source', 'label', 'leaves', 'leaves2')))
+        self.assertEqual(set(vars(leaf).keys()), set(
+            ('_source', 'root', 'id', 'name')))
 
     def test_attribute_order(self):
-        self.assertEqual(set(Root.Meta.attribute_order), set(Root.Meta.attributes.keys()))
-        self.assertEqual(set(Leaf.Meta.attribute_order), set(Leaf.Meta.attributes.keys()))
-        self.assertEqual(set(UnrootedLeaf.Meta.attribute_order), set(UnrootedLeaf.Meta.attributes.keys()))
-        self.assertEqual(set(Leaf3.Meta.attribute_order), set(Leaf3.Meta.attributes.keys()))
+        self.assertEqual(set(Root.Meta.attribute_order),
+                         set(Root.Meta.attributes.keys()))
+        self.assertEqual(set(Leaf.Meta.attribute_order),
+                         set(Leaf.Meta.attributes.keys()))
+        self.assertEqual(set(UnrootedLeaf.Meta.attribute_order),
+                         set(UnrootedLeaf.Meta.attributes.keys()))
+        self.assertEqual(set(Leaf3.Meta.attribute_order),
+                         set(Leaf3.Meta.attributes.keys()))
 
         self.assertEqual(Root.Meta.attribute_order, ('label', ))
         self.assertEqual(Leaf.Meta.attribute_order, ('id', 'name', 'root'))
@@ -331,12 +354,16 @@ class TestCore(unittest.TestCase):
         ]
 
         self.assertEqual(set(g0.get_related()), set((g0,)) | set(p0) | set(c0))
-        self.assertEqual(set(p0[0].get_related()), set((g0,)) | set(p0) | set(c0))
-        self.assertEqual(set(c0[0].get_related()), set((g0,)) | set(p0) | set(c0))
+        self.assertEqual(set(p0[0].get_related()),
+                         set((g0,)) | set(p0) | set(c0))
+        self.assertEqual(set(c0[0].get_related()),
+                         set((g0,)) | set(p0) | set(c0))
 
         self.assertEqual(set(g1.get_related()), set((g1,)) | set(p1) | set(c1))
-        self.assertEqual(set(p1[0].get_related()), set((g1,)) | set(p1) | set(c1))
-        self.assertEqual(set(c1[0].get_related()), set((g1,)) | set(p1) | set(c1))
+        self.assertEqual(set(p1[0].get_related()),
+                         set((g1,)) | set(p1) | set(c1))
+        self.assertEqual(set(c1[0].get_related()),
+                         set((g1,)) | set(p1) | set(c1))
 
     def test_equal(self):
         root1 = Root(label='a')
@@ -363,67 +390,93 @@ class TestCore(unittest.TestCase):
 
     def test___str__(self):
         root = Root(label='test label')
-        self.assertEqual(str(root), '<{}.{}: {}>'.format(Root.__module__, 'Root', root.label))
+        self.assertEqual(str(root), '<{}.{}: {}>'.format(
+            Root.__module__, 'Root', root.label))
+
+    def test_validate_attributes(self):
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+            children = core.OneToManyAttribute(
+                'TestChild', related_name='parent')
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+
+        children = [TestChild()]
+        parent = TestParent(children=[TestChild()])
 
     def test_validate_attributes_errors(self):
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
-                class Meta(core.Model.Meta): attribute_order = (1,)
+                class Meta(core.Model.Meta):
+                    attribute_order = (1,)
         self.assertIn('must contain attribute names', str(context.exception))
 
         bad_name = 'ERROR'
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
-                class Meta(core.Model.Meta): attribute_order = (bad_name,)
-        self.assertIn("'{}' not found in attributes of".format(bad_name), str(context.exception))
+                class Meta(core.Model.Meta):
+                    attribute_order = (bad_name,)
+        self.assertIn("'{}' not found in attributes of".format(
+            bad_name), str(context.exception))
 
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
-                class Meta(core.Model.Meta): unique_together = 'hello'
+                class Meta(core.Model.Meta):
+                    unique_together = 'hello'
         self.assertIn("must be a tuple, not", str(context.exception))
 
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
-                class Meta(core.Model.Meta): unique_together = ('hello', 2)
+                class Meta(core.Model.Meta):
+                    unique_together = ('hello', 2)
         self.assertIn("must be a tuple of tuples, not", str(context.exception))
 
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
-                class Meta(core.Model.Meta): unique_together = ((3,), ('var', 'woops!'),)
-        self.assertIn("must be a tuple of tuples of strings, not", str(context.exception))
+                class Meta(core.Model.Meta):
+                    unique_together = ((3,), ('var', 'woops!'),)
+        self.assertIn("must be a tuple of tuples of strings, not",
+                      str(context.exception))
 
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
                 var = core.IntegerAttribute()
-                class Meta(core.Model.Meta): unique_together = (('name',), ('var', 'woops!'),)
-        self.assertIn("must be a tuple of tuples of attribute names", str(context.exception))
+                class Meta(core.Model.Meta):
+                    unique_together = (('name',), ('var', 'woops!'),)
+        self.assertIn("must be a tuple of tuples of attribute names",
+                      str(context.exception))
 
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
                 var = core.IntegerAttribute()
-                class Meta(core.Model.Meta): unique_together = (('name', 'var', 'name', ),)
-        self.assertIn("cannot repeat attribute names in any tuple", str(context.exception))
+                class Meta(core.Model.Meta):
+                    unique_together = (('name', 'var', 'name', ),)
+        self.assertIn("cannot repeat attribute names in any tuple",
+                      str(context.exception))
 
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
                 var = core.IntegerAttribute()
-                class Meta(core.Model.Meta): unique_together = (('var', 'name',), ('name', 'var', ), )
-        self.assertIn("unique_together cannot contain identical attribute sets", str(context.exception))
+                class Meta(core.Model.Meta):
+                    unique_together = (('var', 'name',), ('name', 'var', ), )
+        self.assertIn("unique_together cannot contain identical attribute sets", str(
+            context.exception))
 
         test_tuples = (('b_name', 'a_name',), ('c_name', 'b_name', ), )
         class Test1(core.Model):
             a_name = core.StringAttribute()
             b_name = core.IntegerAttribute()
             c_name = core.IntegerAttribute()
-            class Meta(core.Model.Meta): unique_together = test_tuples
+            class Meta(core.Model.Meta):
+                unique_together = test_tuples
         for a_tuple in test_tuples:
             self.assertIn(tuple(sorted(a_tuple)), Test1.Meta.unique_together)
 
@@ -434,16 +487,20 @@ class TestCore(unittest.TestCase):
                       root.validate().attributes[0].messages[0])
 
         leaf = Leaf()
-        self.assertEqual(set((x.attribute.name for x in leaf.validate().attributes)), set(('id', 'root',)))
+        self.assertEqual(
+            set((x.attribute.name for x in leaf.validate().attributes)), set(('id', 'root',)))
 
         leaf.id = 'a'
-        self.assertEqual(set((x.attribute.name for x in leaf.validate().attributes)), set(('root',)))
+        self.assertEqual(
+            set((x.attribute.name for x in leaf.validate().attributes)), set(('root',)))
 
         leaf.name = 1
-        self.assertEqual(set((x.attribute.name for x in leaf.validate().attributes)), set(('name', 'root',)))
+        self.assertEqual(set(
+            (x.attribute.name for x in leaf.validate().attributes)), set(('name', 'root',)))
 
         leaf.name = 'b'
-        self.assertEqual(set((x.attribute.name for x in leaf.validate().attributes)), set(('root',)))
+        self.assertEqual(
+            set((x.attribute.name for x in leaf.validate().attributes)), set(('root',)))
 
         leaf.root = root
         self.assertEqual(leaf.validate(), None)
@@ -458,42 +515,52 @@ class TestCore(unittest.TestCase):
         leaf = UnrootedLeaf()
 
         leaf.name2 = 'a'
-        self.assertIn('name2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'name2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.name2 = 'abcd'
-        self.assertIn('name2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'name2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.name2 = 'ab'
-        self.assertNotIn('name2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'name2', [x.attribute.name for x in leaf.validate().attributes])
 
     def test_validate_regex_attribute(self):
         leaf = Leaf()
 
         leaf.id = ''
-        self.assertIn('id', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'id', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.id = '1'
-        self.assertIn('id', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'id', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.id = 'a-'
-        self.assertIn('id', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'id', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.id = 'a_'
-        self.assertNotIn('id', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'id', [x.attribute.name for x in leaf.validate().attributes])
 
     def test_validate_slug_attribute(self):
         root = UniqueRoot(label='root-0')
-        self.assertIn('label', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn(
+            'label', [x.attribute.name for x in root.validate().attributes])
 
         root.label = 'root_0'
         self.assertEqual(root.validate(), None)
 
     def test_validate_url_attribute(self):
         root = UniqueRoot(url='root-0')
-        self.assertIn('url', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn(
+            'url', [x.attribute.name for x in root.validate().attributes])
 
         root.url = 'http://www.test.com'
-        self.assertNotIn('url', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn(
+            'url', [x.attribute.name for x in root.validate().attributes])
 
     def test_validate_float_attribute(self):
         leaf = UnrootedLeaf()
@@ -501,129 +568,160 @@ class TestCore(unittest.TestCase):
         # max=3.
         leaf.float2 = 'a'
         leaf.clean()
-        self.assertIn('float2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'float2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.float2 = 1
         leaf.clean()
-        self.assertIn('float2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'float2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.float2 = 4
         leaf.clean()
-        self.assertIn('float2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'float2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.float2 = 3
         leaf.clean()
-        self.assertNotIn('float2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'float2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.float2 = 3.
         leaf.clean()
-        self.assertNotIn('float2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'float2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.float2 = 2.
         leaf.clean()
-        self.assertNotIn('float2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'float2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.float2 = 2.5
         leaf.clean()
-        self.assertNotIn('float2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'float2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.float2 = float('nan')
         leaf.clean()
-        self.assertNotIn('float2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'float2', [x.attribute.name for x in leaf.validate().attributes])
 
         # max=nan
         leaf.float3 = 2.5
         leaf.clean()
-        self.assertNotIn('float3', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'float3', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.float3 = float('nan')
         leaf.clean()
-        self.assertIn('float3', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'float3', [x.attribute.name for x in leaf.validate().attributes])
 
     def test_validate_int_attribute(self):
         root = UniqueRoot(int_attr='1.0.')
         root.clean()
-        self.assertIn('int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn(
+            'int_attr', [x.attribute.name for x in root.validate().attributes])
 
         root.int_attr = '1.5'
         root.clean()
-        self.assertIn('int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn(
+            'int_attr', [x.attribute.name for x in root.validate().attributes])
 
         root.int_attr = 1.5
         root.clean()
-        self.assertIn('int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn(
+            'int_attr', [x.attribute.name for x in root.validate().attributes])
 
         root.int_attr = '1.'
         root.clean()
-        self.assertNotIn('int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn(
+            'int_attr', [x.attribute.name for x in root.validate().attributes])
 
         root.int_attr = 1.
         root.clean()
-        self.assertNotIn('int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn(
+            'int_attr', [x.attribute.name for x in root.validate().attributes])
 
         root.int_attr = 1
         root.clean()
-        self.assertNotIn('int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn(
+            'int_attr', [x.attribute.name for x in root.validate().attributes])
 
         root.int_attr = None
         root.clean()
-        self.assertNotIn('int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn(
+            'int_attr', [x.attribute.name for x in root.validate().attributes])
 
     def test_validate_pos_int_attribute(self):
         root = UniqueRoot(pos_int_attr='0.')
         root.clean()
-        self.assertIn('pos_int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn('pos_int_attr', [
+                      x.attribute.name for x in root.validate().attributes])
 
         root.pos_int_attr = 1.5
         root.clean()
-        self.assertIn('pos_int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn('pos_int_attr', [
+                      x.attribute.name for x in root.validate().attributes])
 
         root.pos_int_attr = -1
         root.clean()
-        self.assertIn('pos_int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn('pos_int_attr', [
+                      x.attribute.name for x in root.validate().attributes])
 
         root.pos_int_attr = 0
         root.clean()
-        self.assertIn('pos_int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertIn('pos_int_attr', [
+                      x.attribute.name for x in root.validate().attributes])
 
         root.pos_int_attr = 1.
         root.clean()
-        self.assertNotIn('pos_int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn('pos_int_attr', [
+                         x.attribute.name for x in root.validate().attributes])
 
         root.pos_int_attr = 1
         root.clean()
-        self.assertNotIn('pos_int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn('pos_int_attr', [
+                         x.attribute.name for x in root.validate().attributes])
 
         root.pos_int_attr = None
         root.clean()
-        self.assertNotIn('pos_int_attr', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn('pos_int_attr', [
+                         x.attribute.name for x in root.validate().attributes])
 
     def test_validate_enum_attribute(self):
         leaf = UnrootedLeaf()
         leaf.clean()
 
-        self.assertIn('enum2', [x.attribute.name for x in leaf.validate().attributes])
-        self.assertNotIn('enum3', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'enum2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'enum3', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.enum2 = Order['root']
         leaf.clean()
-        self.assertNotIn('enum2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'enum2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.enum2 = 'root'
         leaf.clean()
-        self.assertNotIn('enum2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'enum2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.enum2 = 1
         leaf.clean()
-        self.assertNotIn('enum2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'enum2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.enum2 = 'root2'
         leaf.clean()
-        self.assertIn('enum2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'enum2', [x.attribute.name for x in leaf.validate().attributes])
 
         leaf.enum2 = 3
         leaf.clean()
-        self.assertIn('enum2', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'enum2', [x.attribute.name for x in leaf.validate().attributes])
 
     def test_validate_date_attribute(self):
         root = DateRoot()
@@ -790,21 +888,27 @@ class TestCore(unittest.TestCase):
     @unittest.expectedFailure
     def test_related_no_double_default(self):
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
 
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf0')
             root = core.OneToOneAttribute(RootDefault, related_name='leaf',
-                                          default=lambda: RootDefault(label='root0'),
+                                          default=lambda: RootDefault(
+                                              label='root0'),
                                           related_default=lambda: LeafDefault(label='leaf0'))
 
     def test_onetoone_default(self):
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
 
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf0')
-            root = core.OneToOneAttribute(RootDefault, related_name='leaf', default=lambda: RootDefault(label='root2'))
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf0')
+            root = core.OneToOneAttribute(
+                RootDefault, related_name='leaf', default=lambda: RootDefault(label='root2'))
 
         leaf0 = LeafDefault(root=RootDefault())
         self.assertEqual(leaf0.label, 'leaf0')
@@ -826,10 +930,12 @@ class TestCore(unittest.TestCase):
 
     def test_onetoone_related_default(self):
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
 
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf0')
             root = core.OneToOneAttribute(RootDefault, related_name='leaf',
                                           related_default=lambda: LeafDefault(label='leaf2'))
 
@@ -857,37 +963,45 @@ class TestCore(unittest.TestCase):
 
     def test_onetomany_default(self):
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf22')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf22')
 
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
             leaves = core.OneToManyAttribute(LeafDefault, related_name='root', default=lambda: [
                 LeafDefault(label='leaf00'), LeafDefault(label='leaf01')])
 
         root0 = RootDefault()
         self.assertEqual(root0.label, 'root0')
         self.assertEqual(len(root0.leaves), 2)
-        self.assertEqual(set([l.label for l in root0.leaves]), set(['leaf00', 'leaf01']))
+        self.assertEqual(
+            set([l.label for l in root0.leaves]), set(['leaf00', 'leaf01']))
         self.assertEqual(set([l.root for l in root0.leaves]), set([root0]))
 
         root1 = RootDefault(leaves=[LeafDefault(), LeafDefault()])
         self.assertEqual(root1.label, 'root0')
         self.assertEqual(len(root1.leaves), 2)
-        self.assertEqual(set([l.label for l in root1.leaves]), set(['leaf22', 'leaf22']))
+        self.assertEqual(
+            set([l.label for l in root1.leaves]), set(['leaf22', 'leaf22']))
         self.assertEqual(set([l.root for l in root1.leaves]), set([root1]))
 
-        root2 = RootDefault(label='root2', leaves=[LeafDefault(label='leaf20'), LeafDefault(label='leaf21')])
+        root2 = RootDefault(label='root2', leaves=[LeafDefault(
+            label='leaf20'), LeafDefault(label='leaf21')])
         self.assertEqual(root2.label, 'root2')
         self.assertEqual(len(root2.leaves), 2)
-        self.assertEqual(set([l.label for l in root2.leaves]), set(['leaf20', 'leaf21']))
+        self.assertEqual(
+            set([l.label for l in root2.leaves]), set(['leaf20', 'leaf21']))
         self.assertEqual(set([l.root for l in root2.leaves]), set([root2]))
 
     def test_onetomany_related_default(self):
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf22')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf22')
 
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
             leaves = core.OneToManyAttribute(LeafDefault, related_name='root',
                                              related_default=lambda: RootDefault(label='root1'))
 
@@ -918,10 +1032,12 @@ class TestCore(unittest.TestCase):
 
     def test_manytoone_default(self):
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
 
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf2')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf2')
             root = core.ManyToOneAttribute(RootDefault, related_name='leaves',
                                            default=lambda: RootDefault(label='root1'))
 
@@ -943,10 +1059,12 @@ class TestCore(unittest.TestCase):
 
     def test_manytoone_related_default(self):
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
 
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf2')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf2')
             root = core.ManyToOneAttribute(RootDefault, related_name='leaves',
                                            related_default=lambda: [
                                                LeafDefault(label='leaf3'),
@@ -960,22 +1078,29 @@ class TestCore(unittest.TestCase):
 
         root1 = RootDefault()
         self.assertEqual(root1.label, 'root0')
-        self.assertEqual(set([l.__class__ for l in root1.leaves]), set([LeafDefault]))
-        self.assertEqual(set([l.label for l in root1.leaves]), set(['leaf3', 'leaf4', 'leaf5']))
+        self.assertEqual(
+            set([l.__class__ for l in root1.leaves]), set([LeafDefault]))
+        self.assertEqual(set([l.label for l in root1.leaves]),
+                         set(['leaf3', 'leaf4', 'leaf5']))
         self.assertEqual(set([l.root for l in root1.leaves]), set([root1]))
 
-        root2 = RootDefault(label='root2', leaves=[LeafDefault(label='leaf6'), LeafDefault(label='leaf7')])
+        root2 = RootDefault(label='root2', leaves=[LeafDefault(
+            label='leaf6'), LeafDefault(label='leaf7')])
         self.assertEqual(root2.label, 'root2')
-        self.assertEqual(set([l.__class__ for l in root2.leaves]), set([LeafDefault]))
-        self.assertEqual(set([l.label for l in root2.leaves]), set(['leaf6', 'leaf7']))
+        self.assertEqual(
+            set([l.__class__ for l in root2.leaves]), set([LeafDefault]))
+        self.assertEqual(
+            set([l.label for l in root2.leaves]), set(['leaf6', 'leaf7']))
         self.assertEqual(set([l.root for l in root2.leaves]), set([root2]))
 
     def test_manytomany_default(self):
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
 
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf0')
             roots = core.ManyToManyAttribute(RootDefault, related_name='leaves', default=lambda: [
                                              RootDefault(label='root1'), RootDefault(label='root2')])
 
@@ -986,17 +1111,21 @@ class TestCore(unittest.TestCase):
         leaf1 = LeafDefault()
         self.assertEqual(leaf1.label, 'leaf0')
         self.assertEqual(len(leaf1.roots), 2)
-        self.assertEqual(set([r.__class__ for r in leaf1.roots]), set([RootDefault]))
-        self.assertEqual(set([r.label for r in leaf1.roots]), set(['root1', 'root2']))
+        self.assertEqual(
+            set([r.__class__ for r in leaf1.roots]), set([RootDefault]))
+        self.assertEqual(
+            set([r.label for r in leaf1.roots]), set(['root1', 'root2']))
         self.assertEqual(set([len(r.leaves) for r in leaf1.roots]), set([1]))
         self.assertEqual(set([r.leaves[0] for r in leaf1.roots]), set([leaf1]))
 
     def test_manytomany_related_default(self):
         class RootDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='root0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='root0')
 
         class LeafDefault(core.Model):
-            label = core.StringAttribute(primary=True, unique=True, default='leaf0')
+            label = core.StringAttribute(
+                primary=True, unique=True, default='leaf0')
             roots = core.ManyToManyAttribute(RootDefault, related_name='leaves', related_default=lambda: [
                                              LeafDefault(label='leaf1'), LeafDefault(label='leaf2'), LeafDefault(label='leaf3')])
 
@@ -1007,8 +1136,10 @@ class TestCore(unittest.TestCase):
         root1 = RootDefault()
         self.assertEqual(root1.label, 'root0')
         self.assertEqual(len(root1.leaves), 3)
-        self.assertEqual(set([l.__class__ for l in root1.leaves]), set([LeafDefault]))
-        self.assertEqual(set([l.label for l in root1.leaves]), set(['leaf1', 'leaf2', 'leaf3']))
+        self.assertEqual(
+            set([l.__class__ for l in root1.leaves]), set([LeafDefault]))
+        self.assertEqual(set([l.label for l in root1.leaves]),
+                         set(['leaf1', 'leaf2', 'leaf3']))
         self.assertEqual(set([len(l.roots) for l in root1.leaves]), set([1]))
         self.assertEqual(set([l.roots[0] for l in root1.leaves]), set([root1]))
 
@@ -1024,28 +1155,34 @@ class TestCore(unittest.TestCase):
     def test_validate_manytoone_attribute(self):
         # none=False
         leaf = Leaf()
-        self.assertIn('root', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertIn(
+            'root', [x.attribute.name for x in leaf.validate().attributes])
 
         def set_root():
             leaf.root = Leaf()
         self.assertRaises(AttributeError, set_root)
 
         leaf.root = Root()
-        self.assertNotIn('root', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'root', [x.attribute.name for x in leaf.validate().attributes])
 
         # none=True
         unrooted_leaf = UnrootedLeaf()
-        self.assertNotIn('root2', [x.attribute.name for x in unrooted_leaf.validate().attributes])
+        self.assertNotIn(
+            'root2', [x.attribute.name for x in unrooted_leaf.validate().attributes])
 
     def test_validate_onetomany_attribute(self):
         root = OneToManyRoot()
         leaf = OneToManyLeaf()
-        self.assertNotIn('roots', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'roots', [x.attribute.name for x in leaf.validate().attributes])
 
         root.leaf = leaf
         self.assertEqual(leaf.roots, [root])
-        self.assertNotIn('leaf', [x.attribute.name for x in root.validate().attributes])
-        self.assertNotIn('roots', [x.attribute.name for x in leaf.validate().attributes])
+        self.assertNotIn(
+            'leaf', [x.attribute.name for x in root.validate().attributes])
+        self.assertNotIn(
+            'roots', [x.attribute.name for x in leaf.validate().attributes])
 
     def test_validate_manytomany_attribute(self):
         roots = [
@@ -1078,7 +1215,8 @@ class TestCore(unittest.TestCase):
 
         class TestNode(core.Model):
             id = core.SlugAttribute()
-            root = core.OneToOneAttribute(TestRoot, related_name='node', min_related=0, min_related_rev=0)
+            root = core.OneToOneAttribute(
+                TestRoot, related_name='node', min_related=0, min_related_rev=0)
 
         root = TestRoot(id='a')
         node = TestNode(id='b')
@@ -1095,7 +1233,8 @@ class TestCore(unittest.TestCase):
 
         class TestNode(core.Model):
             id = core.SlugAttribute()
-            root = core.OneToOneAttribute(TestRoot, related_name='node', min_related=1, min_related_rev=1)
+            root = core.OneToOneAttribute(
+                TestRoot, related_name='node', min_related=1, min_related_rev=1)
 
         root = TestRoot(id='a')
         node = TestNode(id='b')
@@ -1113,7 +1252,8 @@ class TestCore(unittest.TestCase):
 
         class TestNode(core.Model):
             id = core.SlugAttribute()
-            roots = core.OneToManyAttribute(TestRoot, related_name='node', min_related=1, max_related=2, min_related_rev=1)
+            roots = core.OneToManyAttribute(
+                TestRoot, related_name='node', min_related=1, max_related=2, min_related_rev=1)
 
         root1 = TestRoot(id='a')
         root2 = TestRoot(id='b')
@@ -1148,7 +1288,8 @@ class TestCore(unittest.TestCase):
 
         class TestNode(core.Model):
             id = core.SlugAttribute()
-            roots = core.OneToManyAttribute(TestRoot, related_name='node', min_related=1, max_related=2, min_related_rev=0)
+            roots = core.OneToManyAttribute(
+                TestRoot, related_name='node', min_related=1, max_related=2, min_related_rev=0)
 
         root1 = TestRoot(id='a')
         root2 = TestRoot(id='b')
@@ -1184,7 +1325,8 @@ class TestCore(unittest.TestCase):
 
         class TestNode(core.Model):
             id = core.SlugAttribute()
-            root = core.ManyToOneAttribute(TestRoot, related_name='nodes', min_related=1, min_related_rev=1, max_related_rev=2)
+            root = core.ManyToOneAttribute(
+                TestRoot, related_name='nodes', min_related=1, min_related_rev=1, max_related_rev=2)
 
         root = TestRoot(id='a')
         node1 = TestNode(id='a')
@@ -1219,7 +1361,8 @@ class TestCore(unittest.TestCase):
 
         class TestNode(core.Model):
             id = core.SlugAttribute()
-            root = core.ManyToOneAttribute(TestRoot, related_name='nodes', min_related=0, min_related_rev=1, max_related_rev=2)
+            root = core.ManyToOneAttribute(
+                TestRoot, related_name='nodes', min_related=0, min_related_rev=1, max_related_rev=2)
 
         root = TestRoot(id='a')
         node1 = TestNode(id='a')
@@ -1530,7 +1673,8 @@ class TestCore(unittest.TestCase):
         root.leaves = leaves
 
         self.assertEqual(root.leaves.filter(id='leaf_0'), leaves[0:1])
-        self.assertEqual(set(root.leaves.filter(id='leaf_1')), set(leaves[1:3]))
+        self.assertEqual(set(root.leaves.filter(id='leaf_1')),
+                         set(leaves[1:3]))
         self.assertEqual(root.leaves.filter(id='leaf_2'), leaves[3:4])
 
         self.assertEqual(root.leaves.get(id='leaf_0'), leaves[0])
@@ -1538,14 +1682,20 @@ class TestCore(unittest.TestCase):
         self.assertEqual(root.leaves.get(id='leaf_2'), leaves[3])
 
         leaves_list = [l for l in root.leaves]
-        self.assertEqual(root.leaves.index(id='leaf_0'), leaves_list.index(leaves[0]))
+        self.assertEqual(root.leaves.index(id='leaf_0'),
+                         leaves_list.index(leaves[0]))
         self.assertRaises(ValueError, lambda: root.leaves.index(id='leaf_1'))
-        self.assertEqual(root.leaves.index(id='leaf_2'), leaves_list.index(leaves[3]))
+        self.assertEqual(root.leaves.index(id='leaf_2'),
+                         leaves_list.index(leaves[3]))
 
-        self.assertEqual(root.leaves.index(leaves[0]), leaves_list.index(leaves[0]))
-        self.assertEqual(root.leaves.index(leaves[1]), leaves_list.index(leaves[1]))
-        self.assertEqual(root.leaves.index(leaves[2]), leaves_list.index(leaves[2]))
-        self.assertEqual(root.leaves.index(leaves[3]), leaves_list.index(leaves[3]))
+        self.assertEqual(root.leaves.index(
+            leaves[0]), leaves_list.index(leaves[0]))
+        self.assertEqual(root.leaves.index(
+            leaves[1]), leaves_list.index(leaves[1]))
+        self.assertEqual(root.leaves.index(
+            leaves[2]), leaves_list.index(leaves[2]))
+        self.assertEqual(root.leaves.index(
+            leaves[3]), leaves_list.index(leaves[3]))
 
         # one to many
         leaf = OneToManyLeaf()
@@ -1585,7 +1735,8 @@ class TestCore(unittest.TestCase):
     def test_asymmetric_self_reference_one_to_one(self):
         class TestNodeAsymmetricOneToOne(core.Model):
             name = core.SlugAttribute()
-            child = core.OneToOneAttribute('TestNodeAsymmetricOneToOne', related_name='parent')
+            child = core.OneToOneAttribute(
+                'TestNodeAsymmetricOneToOne', related_name='parent')
 
         parent = TestNodeAsymmetricOneToOne(name='parent_0')
         child = TestNodeAsymmetricOneToOne(name='child_0')
@@ -1595,7 +1746,8 @@ class TestCore(unittest.TestCase):
     def test_asymmetric_self_reference_one_to_many(self):
         class TestNodeAsymmetricOneToMany(core.Model):
             name = core.SlugAttribute()
-            children = core.OneToManyAttribute('TestNodeAsymmetricOneToMany', related_name='parent')
+            children = core.OneToManyAttribute(
+                'TestNodeAsymmetricOneToMany', related_name='parent')
 
         parent = TestNodeAsymmetricOneToMany(name='parent_0')
         children = [
@@ -1612,7 +1764,8 @@ class TestCore(unittest.TestCase):
     def test_asymmetric_self_reference_many_to_one(self):
         class TestNodeAsymmetricManyToOne(core.Model):
             name = core.SlugAttribute()
-            parent = core.ManyToOneAttribute('TestNodeAsymmetricManyToOne', related_name='children')
+            parent = core.ManyToOneAttribute(
+                'TestNodeAsymmetricManyToOne', related_name='children')
 
         parent = TestNodeAsymmetricManyToOne(name='parent_0')
         children = [
@@ -1629,12 +1782,13 @@ class TestCore(unittest.TestCase):
     def test_asymmetric_self_reference_many_to_many(self):
         class TestNodeAsymmetricManyToMany(core.Model):
             name = core.SlugAttribute()
-            children = core.ManyToManyAttribute('TestNodeAsymmetricManyToMany', related_name='parents')
+            children = core.ManyToManyAttribute(
+                'TestNodeAsymmetricManyToMany', related_name='parents')
 
         parents = [
             TestNodeAsymmetricManyToMany(name='parent_0'),
             TestNodeAsymmetricManyToMany(name='parent_1'),
-            ]
+        ]
         children = [
             TestNodeAsymmetricManyToMany(name='child_0'),
             TestNodeAsymmetricManyToMany(name='child_1'),
@@ -1648,7 +1802,8 @@ class TestCore(unittest.TestCase):
     def test_symmetric_self_reference_one_to_one(self):
         class TestNodeSymmetricOneToOne(core.Model):
             name = core.SlugAttribute()
-            other = core.OneToOneAttribute('TestNodeSymmetricOneToOne', related_name='other')
+            other = core.OneToOneAttribute(
+                'TestNodeSymmetricOneToOne', related_name='other')
 
         nodes = [
             TestNodeSymmetricOneToOne(name='node_0'),
@@ -1672,7 +1827,8 @@ class TestCore(unittest.TestCase):
         def make_TestNodeSymmetricOneToMany():
             class TestNodeSymmetricOneToMany(core.Model):
                 name = core.SlugAttribute()
-                others = core.OneToManyAttribute('TestNodeSymmetricOneToMany', related_name='others')
+                others = core.OneToManyAttribute(
+                    'TestNodeSymmetricOneToMany', related_name='others')
 
         self.assertRaises(ValueError, make_TestNodeSymmetricOneToMany)
 
@@ -1680,14 +1836,16 @@ class TestCore(unittest.TestCase):
         def make_TestNodeSymmetricManyToOne():
             class TestNodeSymmetricManyToOne(core.Model):
                 name = core.SlugAttribute()
-                others = core.OneToManyAttribute('TestNodeSymmetricManyToOne', related_name='others')
+                others = core.OneToManyAttribute(
+                    'TestNodeSymmetricManyToOne', related_name='others')
 
         self.assertRaises(ValueError, make_TestNodeSymmetricManyToOne)
 
     def test_symmetric_self_reference_many_to_many(self):
         class TestNodeSymmetricManyToMany(core.Model):
             name = core.SlugAttribute()
-            others = core.ManyToManyAttribute('TestNodeSymmetricManyToMany', related_name='others')
+            others = core.ManyToManyAttribute(
+                'TestNodeSymmetricManyToMany', related_name='others')
 
         nodes = [
             TestNodeSymmetricManyToMany(name='node_0'),
@@ -1726,7 +1884,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(len(errors.invalid_objects), 2)
         self.assertEqual(errors.invalid_objects[0].object, parents[0])
         self.assertEqual(len(errors.invalid_objects[0].attributes), 1)
-        self.assertEqual(errors.invalid_objects[0].attributes[0].attribute.name, 'id')
+        self.assertEqual(errors.invalid_objects[0].attributes[
+                         0].attribute.name, 'id')
 
         roots = [
             Root(label='root-0'),
@@ -1744,35 +1903,49 @@ class TestCore(unittest.TestCase):
         errors = core.Validator().run(roots)
 
         self.assertEqual(len(errors.invalid_objects), 0)
-        self.assertEqual(set([model.model for model in errors.invalid_models]), set((Root, UniqueRoot)))
+        self.assertEqual(
+            set([model.model for model in errors.invalid_models]), set((Root, UniqueRoot)))
         self.assertEqual(len(errors.invalid_models[0].attributes), 1)
-        self.assertEqual(errors.invalid_models[0].attributes[0].attribute.name, 'label')
-        self.assertEqual(len(errors.invalid_models[0].attributes[0].messages), 1)
-        self.assertRegexpMatches(errors.invalid_models[0].attributes[0].messages[0], 'values must be unique')
+        self.assertEqual(errors.invalid_models[0].attributes[
+                         0].attribute.name, 'label')
+        self.assertEqual(
+            len(errors.invalid_models[0].attributes[0].messages), 1)
+        self.assertRegexpMatches(errors.invalid_models[0].attributes[
+                                 0].messages[0], 'values must be unique')
 
     def test_inheritance(self):
         self.assertEqual(Leaf.Meta.attributes['name'].max_length, 255)
         self.assertEqual(UnrootedLeaf.Meta.attributes['name'].max_length, 10)
 
-        self.assertEqual(set(Root.Meta.related_attributes.keys()), set(('leaves', 'leaves2')))
+        self.assertEqual(set(Root.Meta.related_attributes.keys()),
+                         set(('leaves', 'leaves2')))
 
         self.assertEqual(Leaf.Meta.attributes['root'].primary_class, Leaf)
         self.assertEqual(Leaf.Meta.attributes['root'].related_class, Root)
-        self.assertEqual(UnrootedLeaf.Meta.attributes['root'].primary_class, Leaf)
-        self.assertEqual(UnrootedLeaf.Meta.attributes['root'].related_class, Root)
+        self.assertEqual(UnrootedLeaf.Meta.attributes[
+                         'root'].primary_class, Leaf)
+        self.assertEqual(UnrootedLeaf.Meta.attributes[
+                         'root'].related_class, Root)
         self.assertEqual(Leaf3.Meta.attributes['root'].primary_class, Leaf)
         self.assertEqual(Leaf3.Meta.attributes['root'].related_class, Root)
 
-        self.assertEqual(UnrootedLeaf.Meta.attributes['root2'].primary_class, UnrootedLeaf)
-        self.assertEqual(UnrootedLeaf.Meta.attributes['root2'].related_class, Root)
-        self.assertEqual(Leaf3.Meta.attributes['root2'].primary_class, UnrootedLeaf)
+        self.assertEqual(UnrootedLeaf.Meta.attributes[
+                         'root2'].primary_class, UnrootedLeaf)
+        self.assertEqual(UnrootedLeaf.Meta.attributes[
+                         'root2'].related_class, Root)
+        self.assertEqual(Leaf3.Meta.attributes[
+                         'root2'].primary_class, UnrootedLeaf)
         self.assertEqual(Leaf3.Meta.attributes['root2'].related_class, Root)
 
-        self.assertEqual(Root.Meta.related_attributes['leaves'].primary_class, Leaf)
-        self.assertEqual(Root.Meta.related_attributes['leaves'].related_class, Root)
+        self.assertEqual(Root.Meta.related_attributes[
+                         'leaves'].primary_class, Leaf)
+        self.assertEqual(Root.Meta.related_attributes[
+                         'leaves'].related_class, Root)
 
-        self.assertEqual(Root.Meta.related_attributes['leaves2'].primary_class, UnrootedLeaf)
-        self.assertEqual(Root.Meta.related_attributes['leaves2'].related_class, Root)
+        self.assertEqual(Root.Meta.related_attributes[
+                         'leaves2'].primary_class, UnrootedLeaf)
+        self.assertEqual(Root.Meta.related_attributes[
+                         'leaves2'].related_class, Root)
 
         root = Root()
         leaf = Leaf(root=root)
@@ -1807,7 +1980,8 @@ class TestCore(unittest.TestCase):
             UniqueTogetherRoot(val0='a', val1='b', val2='a'),
             UniqueTogetherRoot(val0='a', val1='c', val2='a'),
         ]
-        errors = [x.attribute.name for x in UniqueTogetherRoot.validate_unique(roots).attributes]
+        errors = [x.attribute.name for x in UniqueTogetherRoot.validate_unique(
+            roots).attributes]
         self.assertEqual(errors, ['val0'])
 
         roots = [
@@ -1815,7 +1989,8 @@ class TestCore(unittest.TestCase):
             UniqueTogetherRoot(val0='b', val1='a', val2='a'),
             UniqueTogetherRoot(val0='c', val1='c', val2='a'),
         ]
-        errors = [x.attribute.name for x in UniqueTogetherRoot.validate_unique(roots).attributes]
+        errors = [x.attribute.name for x in UniqueTogetherRoot.validate_unique(
+            roots).attributes]
         self.assertNotIn('val0', errors)
         self.assertEqual(len(errors), 1)
 
@@ -1841,7 +2016,7 @@ class TestCore(unittest.TestCase):
         unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
                                      float3=None, enum2=None, enum3=Order['leaf'])
         expected = \
-'''UnrootedLeaf:
+            '''UnrootedLeaf:
     id: a
     name: 
     root: 
@@ -1868,7 +2043,8 @@ class TestCore(unittest.TestCase):
             root = core.OneToOneAttribute(Root0, related_name='node')
         root0 = Root0(label='root0-1', f=3.14)
         node0 = Node0(id='node0-1', root=root0)
-        # pformat()s of root0 and node0 contain each other's lines, except for lines with re-encountered Models
+        # pformat()s of root0 and node0 contain each other's lines, except for
+        # lines with re-encountered Models
         for (this, other) in [(root0, node0), (node0, root0)]:
             for this_line in this.pformat().split('\n'):
                 if '--' not in this_line:
@@ -1892,7 +2068,7 @@ class TestCore(unittest.TestCase):
         roots1 = [Root1(label='root_{}'.format(i)) for i in range(NUM)]
         node1 = Node1(id='node1', roots=roots1)
         expected = \
-'''Root1:
+            '''Root1:
     label: root_0
     node: 
         Node1:
@@ -1915,7 +2091,8 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute()
             roots = core.ManyToManyAttribute(Root3, related_name='nodes')
         root3s = [Root3(label='root3_{}'.format(i)) for i in range(NUM)]
-        node3s = [Node3(id='node3_{}'.format(i), roots=root3s) for i in range(NUM)]
+        node3s = [Node3(id='node3_{}'.format(i), roots=root3s)
+                  for i in range(NUM)]
 
         # the lines in root3_tree are all in node3_tree
         default_depth_plus_3 = core.Model.DEFAULT_MAX_DEPTH+3
@@ -1962,7 +2139,8 @@ class TestCore(unittest.TestCase):
             '    gparent_0 != gparent_1'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' + g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
+                         g[0].difference(g[1]) + '\n\n' + msg)
 
         g[1].val = 'gparent_1'
         c[4].val = 'child_3_0'
@@ -1980,7 +2158,8 @@ class TestCore(unittest.TestCase):
             '                child_0_0 != child_3_0'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' + g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
+                         g[0].difference(g[1]) + '\n\n' + msg)
 
         g[1].val = 'gparent_0'
         c[4].val = 'child_3_0'
@@ -1996,7 +2175,8 @@ class TestCore(unittest.TestCase):
             '                child_0_0 != child_3_0'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' + g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
+                         g[0].difference(g[1]) + '\n\n' + msg)
 
         g[1].val = 'gparent_0'
         c[4].val = 'child_3_0'
@@ -2017,7 +2197,8 @@ class TestCore(unittest.TestCase):
             '                child_0_1 != child_3_1'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' + g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
+                         g[0].difference(g[1]) + '\n\n' + msg)
 
         g[1].val = 'gparent_0'
         c[4].val = 'child_3_0'
@@ -2034,7 +2215,8 @@ class TestCore(unittest.TestCase):
             '          No matching element c_0_1'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' + g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
+                         g[0].difference(g[1]) + '\n\n' + msg)
 
     def test_invalid_attribute_str(self):
         attr = core.Attribute()
@@ -2108,7 +2290,8 @@ class TestCore(unittest.TestCase):
         obj_err_p = core.InvalidObject(p, [attr_err, attr_err])
         mod_err_gp = core.InvalidModel(Grandparent, [attr_err, attr_err])
         mod_err_p = core.InvalidModel(Parent, [attr_err, attr_err])
-        err = core.InvalidObjectSet([obj_err_gp, obj_err_gp, obj_err_p, obj_err_p], [mod_err_gp, mod_err_p])
+        err = core.InvalidObjectSet([obj_err_gp, obj_err_gp, obj_err_p, obj_err_p], [
+                                    mod_err_gp, mod_err_p])
 
         self.assertEqual(str(err), (
             '{}:\n'.format(Grandparent.__name__) +
@@ -2163,6 +2346,7 @@ class TestCore(unittest.TestCase):
 
     def test_manager_small_methods(self):
         class Foo(object):
+
             def __init__(self, a, b):
                 self.a = a
                 self.b = b
@@ -2175,17 +2359,20 @@ class TestCore(unittest.TestCase):
         t0 = Example0()
         vs, vi = 's', 1
         t1a = Example1(str_attr=vs, int_attr=vi, test0=t0)
-        hashable_values = core.Manager._get_hashable_values((t1a.str_attr, t1a.int_attr, t1a.test0))
+        hashable_values = core.Manager._get_hashable_values(
+            (t1a.str_attr, t1a.int_attr, t1a.test0))
         id_t0 = id(t0)
         self.assertEqual(id_t0, id(t0))
         self.assertEqual((id_t0,), (id(t0),))
-        # self.assertEqual((vs, vi, id(t0)), hashable_values) fails, but the assertion below succeeds
+        # self.assertEqual((vs, vi, id(t0)), hashable_values) fails, but the
+        # assertion below succeeds
         self.assertEqual((vs, vi, id_t0), hashable_values)
         s = set()
         try:
             s.add(hashable_values)
         except Exception:
-            self.fail("Manager._get_hashable_values() returns values that are not hashable")
+            self.fail(
+                "Manager._get_hashable_values() returns values that are not hashable")
 
         t0s = [Example0() for i in range(3)]
         ids = tuple(sorted([id(t0) for t0 in t0s]))
@@ -2196,41 +2383,48 @@ class TestCore(unittest.TestCase):
         try:
             s.add(hashable_values)
         except Exception:
-            self.fail("Manager._get_hashable_values() returns values that are not hashable")
+            self.fail(
+                "Manager._get_hashable_values() returns values that are not hashable")
 
         with self.assertRaises(ValueError) as context:
             core.Manager._get_hashable_values('abc')
-        self.assertIn("_get_hashable_values does not take a string", str(context.exception))
+        self.assertIn("_get_hashable_values does not take a string",
+                      str(context.exception))
         with self.assertRaises(ValueError) as context:
             core.Manager._get_hashable_values(3)
-        self.assertIn("_get_hashable_values takes an iterable, not", str(context.exception))
+        self.assertIn("_get_hashable_values takes an iterable, not",
+                      str(context.exception))
 
         # test _hashable_attr_tup_vals
         self.assertEqual((vs, vi, id_t0),
-            core.Manager._hashable_attr_tup_vals(t1a, ('str_attr', 'int_attr', 'test0')))
+                         core.Manager._hashable_attr_tup_vals(t1a, ('str_attr', 'int_attr', 'test0')))
 
         # test _get_attribute_types
         mgr1 = core.Manager(Example1)
         self.assertEqual((core.OneToOneAttribute, core.StringAttribute, core.IntegerAttribute),
-            tuple([attr.__class__
-                for attr in mgr1._get_attribute_types(t1a, ('test0', 'str_attr', 'int_attr'))]))
+                         tuple([attr.__class__
+                                for attr in mgr1._get_attribute_types(t1a, ('test0', 'str_attr', 'int_attr'))]))
 
         mgr0 = core.Manager(Example0)
         t0a = Example0()
         t1c = Example1(test0=t0a)
-        self.assertTrue(isinstance(mgr0._get_attribute_types(t0a, ('test1',))[0], core.OneToOneAttribute))
+        self.assertTrue(isinstance(mgr0._get_attribute_types(
+            t0a, ('test1',))[0], core.OneToOneAttribute))
 
         bad_attr = 'no_attr'
         with self.assertRaises(ValueError) as context:
             mgr1._get_attribute_types(t1a, (bad_attr,))
-        self.assertIn("Cannot find '{}' in attribute names".format(bad_attr), str(context.exception))
+        self.assertIn("Cannot find '{}' in attribute names".format(
+            bad_attr), str(context.exception))
 
         with self.assertRaises(ValueError) as context:
             mgr1._get_attribute_types(t1a, 'abc')
-        self.assertIn("_get_attribute_types(): attr_names cannot be a string", str(context.exception))
+        self.assertIn("_get_attribute_types(): attr_names cannot be a string", str(
+            context.exception))
         with self.assertRaises(ValueError) as context:
             mgr1._get_attribute_types(t1a, 3)
-        self.assertIn("_get_attribute_types(): attr_names must be an iterable", str(context.exception))
+        self.assertIn("_get_attribute_types(): attr_names must be an iterable", str(
+            context.exception))
 
     def test_manager(self):
         self.assertEqual(Example1.objects, Example1.get_manager())
@@ -2239,7 +2433,7 @@ class TestCore(unittest.TestCase):
 
         # test all()
         self.assertEqual(0, len(set(mgr1.all())))
-        FIRST=12
+        FIRST = 12
         t1s = [Example1(int_attr=i+FIRST) for i in range(4)]
         mgr1.insert_all_new()
         self.assertEqual(set(t1s), set(mgr1.all()))
@@ -2252,7 +2446,8 @@ class TestCore(unittest.TestCase):
         # test get() with an attribute that's not an indexed_attribute
         with self.assertRaises(ValueError) as context:
             Example1.objects.get(non_indexed_attribute=7)
-        self.assertIn('not an indexed attribute tuple in', str(context.exception))
+        self.assertIn('not an indexed attribute tuple in',
+                      str(context.exception))
 
         # test get() return nothing
         self.assertEqual(None, Example1.objects.get(str_attr='x'))
@@ -2263,7 +2458,8 @@ class TestCore(unittest.TestCase):
         # test _insert_new()
         letters = 'ABC'
         test_attrs = zip(letters, range(len(letters)))
-        more_t1s = [Example1(str_attr=s, int_attr=i, int_attr2=i+1) for s,i in test_attrs]
+        more_t1s = [Example1(str_attr=s, int_attr=i, int_attr2=i+1)
+                    for s, i in test_attrs]
         mgr1._insert_new(more_t1s[0])
 
         # test get() w multiple attributes
@@ -2275,7 +2471,8 @@ class TestCore(unittest.TestCase):
         self.assertIn(more_t1s[0], Example1.objects.get(str_attr='A'))
         with self.assertRaises(ValueError) as context:
             mgr1._insert_new(t1s[0])
-        self.assertIn("Cannot _insert_new() an instance of 'Example1' that is not new", str(context.exception))
+        self.assertIn("Cannot _insert_new() an instance of 'Example1' that is not new", str(
+            context.exception))
 
         # test get() return multiple Models
         copy_t1s_0 = more_t1s[0].copy()
@@ -2293,7 +2490,7 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             mgr1.get_one(str_attr='A')
         self.assertIn("get_one(): 2 Example1 instances with".format(len(mgr1.get(str_attr='A'))),
-            str(context.exception))
+                      str(context.exception))
 
         output = StringIO()
         mgr1._dump_index_dicts(file=output)
@@ -2351,13 +2548,14 @@ class TestCore(unittest.TestCase):
         t = Example1()
         with self.assertRaises(ValueError) as context:
             mgr0._update(t)
-        self.assertIn("The 'Example0' Manager does not process 'Example1' objects", str(context.exception))
+        self.assertIn("The 'Example0' Manager does not process 'Example1' objects", str(
+            context.exception))
 
         # test _update
         mgr1.reset()
         t1 = Example1(str_attr='x')
         mgr1._insert_new(t1)
-        t1.str_attr='y'
+        t1.str_attr = 'y'
         mgr1._update(t1)
         self.assertEqual(None, mgr1.get(str_attr='x'))
         self.assertEqual(t1, mgr1.get(str_attr='y').pop())
@@ -2376,7 +2574,7 @@ class TestCore(unittest.TestCase):
         mgr1.upsert(t1)
         self.assertIn(t1, mgr1.get(str_attr='x'))
         self.assertEqual(t1, mgr1.get_one(str_attr='x'))
-        t1.str_attr='y'
+        t1.str_attr = 'y'
         mgr1.upsert(t1)
         self.assertEqual(None, mgr1.get(str_attr='x'))
         self.assertIn(t1, mgr1.get(str_attr='y'))
@@ -2400,7 +2598,7 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             Example2.objects._check_model(t2, 'test')
         self.assertIn("'{}' Manager does not have any indexed attribute tuples".format(Example2.__name__),
-            str(context.exception))
+                      str(context.exception))
         self.assertEqual(Example2.objects.all(), None)
 
     def test_simple_manager_example(self):
@@ -2412,7 +2610,8 @@ class TestCore(unittest.TestCase):
             int_attr2 = IntegerAttribute()
 
             class Meta(Model.Meta):
-                indexed_attrs_tuples = (('str_attr',), ('int_attr', 'int_attr2'), )
+                indexed_attrs_tuples = (
+                    ('str_attr',), ('int_attr', 'int_attr2'), )
 
         mgr1 = Example1.get_manager()
         e1 = Example1(str_attr='s')
@@ -2423,7 +2622,7 @@ class TestCore(unittest.TestCase):
         self.assertIn(e2, mgr1.get(str_attr='s'))
         mgr1.get(int_attr=1, int_attr2=3)   # get e2
         self.assertIn(e2, mgr1.get(int_attr=1, int_attr2=3))
-        e2.str_attr='t'
+        e2.str_attr = 't'
         mgr1.upsert(e2)
         mgr1.get(str_attr='t')              # get e2
         self.assertIn(e2, mgr1.get(str_attr='t'))
@@ -2469,11 +2668,13 @@ class TestCore(unittest.TestCase):
 
         class NormNodeLevel1(core.Model):
             label = core.StringAttribute(primary=True, unique=True)
-            parent = core.ManyToOneAttribute(NormNodeLevel0, related_name='children')
+            parent = core.ManyToOneAttribute(
+                NormNodeLevel0, related_name='children')
 
         class NormNodeLevel2(core.Model):
             label = core.StringAttribute(primary=True, unique=True)
-            parent = core.ManyToOneAttribute(NormNodeLevel1, related_name='children')
+            parent = core.ManyToOneAttribute(
+                NormNodeLevel1, related_name='children')
 
         class NormNodeLevel3(core.Model):
             label = core.StringAttribute()
@@ -2502,20 +2703,24 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(node_0.children, [node_0_a, node_0_b, node_0_c])
 
-        self.assertEqual(node_0.children[0].children, [node_0_a_a, node_0_a_b, node_0_a_c])
-        self.assertEqual(node_0.children[1].children, [node_0_b_a, node_0_b_b, node_0_b_c])
-        self.assertEqual(node_0.children[2].children, [node_0_c_a, node_0_c_b, node_0_c_c])
+        self.assertEqual(node_0.children[0].children, [
+                         node_0_a_a, node_0_a_b, node_0_a_c])
+        self.assertEqual(node_0.children[1].children, [
+                         node_0_b_a, node_0_b_b, node_0_b_c])
+        self.assertEqual(node_0.children[2].children, [
+                         node_0_c_a, node_0_c_b, node_0_c_c])
 
         # example
         node_0 = NormNodeLevel0(label='node_0')
         node_1 = NormNodeLevel1(parent=node_0, label='node_1')
         node_2_a = NormNodeLevel2(parent=node_1, label='node_a')
-        node_2_b = NormNodeLevel2(parent=node_1, label='node_b')        
+        node_2_b = NormNodeLevel2(parent=node_1, label='node_b')
         node_2_d = NormNodeLevel2(parent=node_1, label='node_d')
         node_2_c = NormNodeLevel2(parent=node_1, label='node_c')
 
         node_0.normalize()
-        self.assertEqual(node_1.children, [node_2_a, node_2_b, node_2_c, node_2_d])
+        self.assertEqual(node_1.children, [
+                         node_2_a, node_2_b, node_2_c, node_2_d])
 
     def test_setter(self):
         class Site(core.Model):
@@ -2556,7 +2761,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(set(add_bond2.sites), set([s1, s2]))
         self.assertEqual(set(add_bond2.targets), set([s1, s2]))
 
-        self.assertRaises(TypeError, "targets' is an invalid keyword argument for AddBond.__init__", AddBond, targets=[s1, s2])
+        self.assertRaises(
+            TypeError, "targets' is an invalid keyword argument for AddBond.__init__", AddBond, targets=[s1, s2])
 
     def test_chaining_many_to_one(self):
         class Mother(core.Model):
@@ -2582,7 +2788,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(m.daughters.difference_update([d1]), m.daughters)
         self.assertEqual(set(m.daughters), set([]))
         self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
-        self.assertEqual(m.daughters.symmetric_difference_update([d1]), m.daughters)
+        self.assertEqual(
+            m.daughters.symmetric_difference_update([d1]), m.daughters)
         self.assertEqual(set(m.daughters), set([d2]))
 
         m = Mother()
@@ -2609,7 +2816,8 @@ class TestCore(unittest.TestCase):
 
         class Mother(core.Model):
             id = core.SlugAttribute()
-            daughters = core.OneToManyAttribute(Daughter, related_name='mother')
+            daughters = core.OneToManyAttribute(
+                Daughter, related_name='mother')
 
         m = Mother()
         d1 = Daughter()
@@ -2627,7 +2835,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(m.daughters.difference_update([d1]), m.daughters)
         self.assertEqual(set(m.daughters), set([]))
         self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
-        self.assertEqual(m.daughters.symmetric_difference_update([d1]), m.daughters)
+        self.assertEqual(
+            m.daughters.symmetric_difference_update([d1]), m.daughters)
         self.assertEqual(set(m.daughters), set([d2]))
 
         m = Mother()
@@ -2654,7 +2863,8 @@ class TestCore(unittest.TestCase):
 
         class Daughter(core.Model):
             id = core.SlugAttribute()
-            mothers = core.ManyToManyAttribute(Mother, related_name='daughters')
+            mothers = core.ManyToManyAttribute(
+                Mother, related_name='daughters')
 
         m = Mother()
         d1 = Daughter()
@@ -2672,7 +2882,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(m.daughters.difference_update([d1]), m.daughters)
         self.assertEqual(set(m.daughters), set([]))
         self.assertEqual(m.daughters.extend([d1, d2]), m.daughters)
-        self.assertEqual(m.daughters.symmetric_difference_update([d1]), m.daughters)
+        self.assertEqual(
+            m.daughters.symmetric_difference_update([d1]), m.daughters)
         self.assertEqual(set(m.daughters), set([d2]))
 
         m = Mother()
@@ -2709,7 +2920,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(d.mothers.difference_update([m1]), d.mothers)
         self.assertEqual(set(d.mothers), set([]))
         self.assertEqual(d.mothers.extend([m1, m2]), d.mothers)
-        self.assertEqual(d.mothers.symmetric_difference_update([m1]), d.mothers)
+        self.assertEqual(
+            d.mothers.symmetric_difference_update([m1]), d.mothers)
         self.assertEqual(set(d.mothers), set([m2]))
 
         m1 = Mother()
@@ -2762,7 +2974,8 @@ class TestCore(unittest.TestCase):
         class TestSub(TestSup):
             pass
 
-        self.assertNotEqual(TestSub.Meta.attributes['value'], TestSup.Meta.attributes['value'])
+        self.assertNotEqual(TestSub.Meta.attributes[
+                            'value'], TestSup.Meta.attributes['value'])
         TestSub.Meta.attributes['value'].min = 3
         TestSub.Meta.attributes['value'].max = 12
 
@@ -2785,3 +2998,32 @@ class TestCore(unittest.TestCase):
         sub = TestSub(value=13)
         self.assertNotEqual(sup.validate(), None)
         self.assertNotEqual(sub.validate(), None)
+
+
+class TestErrors(unittest.TestCase):
+
+    def test_error_related_attribute_with_same_name_as_primary_attribute(self):
+        class Parent1(core.Model):
+            id = core.StringAttribute(primary=True)
+            children1 = core.StringAttribute()
+
+        with self.assertRaisesRegexp(ValueError, 'cannot use the same related name as'):
+            class Child1(core.Model):
+                id = core.StringAttribute(primary=True)
+                parent1 = core.ManyToOneAttribute(
+                    Parent1, related_name='children1')
+
+    def test_error_related_attribute_with_same_name_as_related_attribute(self):
+        class Parent2(core.Model):
+            id = core.StringAttribute(primary=True)
+
+        class Child2a(core.Model):
+            id = core.StringAttribute(primary=True)
+            parent2 = core.ManyToOneAttribute(
+                Parent2, related_name='children2')
+
+        with self.assertRaisesRegexp(ValueError, 'cannot use the same related attribute name'):
+            class Child2b(core.Model):
+                id = core.StringAttribute(primary=True)
+                parent2 = core.ManyToOneAttribute(
+                    Parent2, related_name='children2')
