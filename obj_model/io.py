@@ -20,7 +20,7 @@ from warnings import warn
 from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                                   InvalidObject, excel_col_name,
-                                  InvalidWorksheet, InvalidAttribute, ObjModelWarning)
+                                  InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose
 from wc_utils.workbook.io import (get_writer, get_reader, WorkbookStyle, WorksheetStyle,
                                   Writer as BaseWriter, Reader as BaseReader,

@@ -1679,8 +1679,7 @@ class Model(with_metaclass(ModelMeta, object)):
         # related attributes
         for attr_name, attr in self.Meta.related_attributes.items():
             if attr.related_name:
-                error = attr.related_validate(
-                    self, getattr(self, attr.related_name))
+                error = attr.related_validate(self, getattr(self, attr.related_name))
                 if error:
                     errors.append(error)
 
@@ -4791,8 +4790,8 @@ class InvalidObjectSet(object):
     """ Represents a list of invalid objects and invalid models
 
     Attributes:
-        objects (:obj:`list` of `InvalidObject`): list of invalid objects
-        models (:obj:`list` of `InvalidModel`): list of invalid models
+        invalid_objects (:obj:`list` of `InvalidObject`): list of invalid objects
+        invalid_models (:obj:`list` of `InvalidModel`): list of invalid models
     """
 
     def __init__(self, invalid_objects, invalid_models):
@@ -5072,7 +5071,7 @@ class Validator(object):
                 object_errors.append(error)
 
         if object_errors:
-            return InvalidObjectSet(object_errors, None)
+            return InvalidObjectSet(object_errors, [])
 
         return None
 
@@ -5130,37 +5129,6 @@ def excel_col_name(col):
         col, rem = divmod(col - 1, 26)
         result[:0] = LETTERS[rem]
     return ''.join(result)
-
-
-class InvalidWorksheet(object):
-    """ Represents an invalid worksheet or delimiter-separated file and its errors
-
-    Attributes:
-        filename (:obj:`str`): filename of file containing the invalid worksheet
-        name (:obj:`str`): name of the invalid worksheet
-        errors (:obj:`list` of `str`): list of the worksheet's errors
-    """
-
-    def __init__(self, filename, name, errors):
-        """
-        Args:
-            filename (:obj:`str`): filename of file containing the invalid worksheet
-            name (:obj:`str`): name of the invalid worksheet
-            errors (:obj:`list` of `str`): list of the worksheet's errors
-        """
-        self.filename = filename
-        self.name = name
-        self.errors = errors
-
-    def __str__(self):
-        """ Get string representation of an `InvalidWorksheet`
-
-        Returns:
-            :obj:`str`: string representation of an `InvalidWorksheet`
-        """
-        error_forest = ["'{}':'{}':".format(self.filename, self.name)]
-        error_forest.append(self.errors)
-        return indent_forest(error_forest)
 
 
 class ObjModelWarning(UserWarning):

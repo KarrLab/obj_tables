@@ -2084,6 +2084,23 @@ class TestCore(unittest.TestCase):
         self.assertRegexpMatches(errors.invalid_models[0].attributes[
                                  0].messages[0], 'values must be unique')
 
+    def test_validator_related(self):
+        class TestParent(core.Model):
+            id = core.StringAttribute(min_length=4)
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(min_length=4)
+            value = core.FloatAttribute()
+            parent = core.ManyToOneAttribute(TestParent, related_name='children')
+
+        parent = TestParent(id='parent_0')
+        child_0 = parent.children.create(id='c_0', value='c_0')
+        child_1 = parent.children.create(id='c_1', value='c_1')
+
+        errors = core.Validator().run(parent, get_related=True)
+        self.assertIsInstance(errors, core.InvalidObjectSet)
+        self.assertEqual(set([invalid_obj.object for invalid_obj in errors.invalid_objects]), set([child_0, child_1]))
+
     def test_inheritance(self):
         self.assertEqual(Leaf.Meta.attributes['name'].max_length, 255)
         self.assertEqual(UnrootedLeaf.Meta.attributes['name'].max_length, 10)
@@ -2396,6 +2413,18 @@ class TestCore(unittest.TestCase):
         err = core.InvalidAttribute(attr, msgs)
         self.assertEqual(str(err),
                          "'{}':\n  {}\n  {}".format(attr.name, msgs[0], msgs[1].replace('\n', '\n  ')))
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+            children = core.OneToManyAttribute(TestChild, related_name='parent', min_related_rev=1)
+
+        child = TestChild(id='child')
+
+        error = child.validate().attributes[0]
+        self.assertRegexpMatches(str(error), "parent':\n  Value cannot be `None`")
 
     def test_invalid_object_str(self):
         attrs = [
