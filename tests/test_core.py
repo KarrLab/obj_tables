@@ -9,21 +9,21 @@
 
 from contextlib import contextmanager
 from datetime import date, time, datetime
-from enum import Enum
 from itertools import chain
 from obj_model import core
 from obj_model.core import excel_col_name
-from six import StringIO
+import enum
 import gc
 import collections
 import copy
 import re
 import resource
+import six
 import sys
 import unittest
 
 
-class Order(Enum):
+class Order(enum.Enum):
     root = 1
     leaf = 2
 
@@ -393,9 +393,9 @@ class TestCore(unittest.TestCase):
         self.assertEqual(str(root), '<{}.{}: {}>'.format(
             Root.__module__, 'Root', root.label))
 
-    def test_serialize(self):
+    def test_literal_attribute_serialize(self):
         class TestModel(core.Model):
-            id = core.Attribute()
+            id = core.LiteralAttribute()
 
         value = 'str'
         self.assertEqual(TestModel.Meta.attributes['id'].serialize(value), value)
@@ -517,6 +517,40 @@ class TestCore(unittest.TestCase):
         unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
                                      float3=2.4, enum2=Order['root'], enum3=Order['leaf'])
         self.assertEqual(unrooted_leaf.validate(), None)
+
+    def test_enum_attribute(self):
+        class TestEnum(enum.Enum):
+                val0 = 0
+
+        with self.assertRaisesRegexp(ValueError, 'must be a subclass of `Enum`'):
+            core.EnumAttribute(int)
+       
+        with self.assertRaisesRegexp(ValueError, 'Default must be `None` or an instance of `enum_class`'):            
+            core.EnumAttribute(TestEnum, default=0)
+
+        attr = core.EnumAttribute(TestEnum)
+        self.assertEqual(attr.serialize(TestEnum.val0), 'val0')
+
+    def test_boolean_attribute(self):
+        with self.assertRaisesRegexp(ValueError, '`default` must be `None` or an instance of `bool`'):
+            core.BooleanAttribute(default=0)
+
+        attr = core.BooleanAttribute()
+
+        self.assertEqual(attr.clean(''), (None, None))
+        self.assertEqual(attr.clean('true'), (True, None))
+        self.assertEqual(attr.clean('false'), (False, None))
+        self.assertEqual(attr.clean(float('nan')), (None, None))
+        self.assertEqual(attr.clean(1.), (True, None))
+        self.assertEqual(attr.clean(0.), (False, None))
+        self.assertEqual(attr.clean(None), (None, None))
+        self.assertEqual(attr.clean([])[0], None)
+        self.assertNotEqual(attr.clean([])[1], None)
+
+        self.assertEqual(attr.validate(None, None), None)
+        self.assertEqual(attr.validate(None, False), None)
+        self.assertEqual(attr.validate(None, True), None)
+        self.assertNotEqual(attr.validate(None, 1.), None)
 
     def test_validate_string_attribute(self):
         leaf = UnrootedLeaf()
@@ -2499,7 +2533,7 @@ class TestCore(unittest.TestCase):
         self.assertIn("get_one(): 2 Example1 instances with".format(len(mgr1.get(str_attr='A'))),
                       str(context.exception))
 
-        output = StringIO()
+        output = six.StringIO()
         mgr1._dump_index_dicts(file=output)
         content = output.getvalue()
         for s in ["Dicts", "indexed attr tuple:", "Reverse dicts for", "model at"]:

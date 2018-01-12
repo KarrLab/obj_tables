@@ -33,6 +33,7 @@ from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
+import abc
 import collections
 import copy
 import dateutil.parser
@@ -2051,7 +2052,7 @@ class ModelSource(object):
         self.row = row
 
 
-class Attribute(object):
+class Attribute(six.with_metaclass(abc.ABCMeta, object)):
     """ Model attribute
 
     Attributes:
@@ -2183,6 +2184,34 @@ class Attribute(object):
                 self.name, ', '.join([quote(val) for val in rep_vals]))
             return InvalidAttribute(self, [message])
 
+    @abc.abstractmethod
+    def serialize(self, value):
+        """ Serialize value
+
+        Args:
+            value (:obj:`object`): Python representation
+
+        Returns:
+            :obj:`bool`, `float`, `str`, or `None`: simple Python representation
+        """
+        pass # pragma: no cover
+
+    @abc.abstractmethod
+    def deserialize(self, value):
+        """ Deserialize value
+
+        Args:
+            value (:obj:`object`): semantically equivalent representation
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        pass # pragma: no cover
+
+
+class LiteralAttribute(Attribute):
+    """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
+    
     def serialize(self, value):
         """ Serialize value
 
@@ -2204,11 +2233,6 @@ class Attribute(object):
             :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
         return self.clean(value)
-
-
-class LiteralAttribute(Attribute):
-    """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
-    pass
 
 
 class NumericAttribute(LiteralAttribute):
@@ -2239,10 +2263,10 @@ class EnumAttribute(LiteralAttribute):
             :obj:`ValueError`: if `enum_class` is not an instance of `Enum` or if `default` is not an instance of `enum_class`
         """
         if not issubclass(enum_class, Enum):
-            raise ValueError('`enum_class` must be an subclass of `Enum`')
+            raise ValueError('`enum_class` must be a subclass of `Enum`')
         if default is not None and not isinstance(default, enum_class):
             raise ValueError(
-                'Default must be None or an instance of `enum_class`')
+                'Default must be `None` or an instance of `enum_class`')
 
         super(EnumAttribute, self).__init__(default=default,
                                             verbose_name=verbose_name, help=help,
@@ -2294,18 +2318,10 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(EnumAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
-
         if not isinstance(value, self.enum_class):
-            errors.append("Value '{}' must be an instance of `{}` which contains {}".format(value,
-                                                                                            self.enum_class.__name__, list(self.enum_class.__members__.keys())))
+            return InvalidAttribute(self, ["Value '{}' must be an instance of `{}` which contains {}".format(
+                value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))])
 
-        if errors:
-            return InvalidAttribute(self, errors)
         return None
 
     def serialize(self, value):
@@ -2338,7 +2354,7 @@ class BooleanAttribute(LiteralAttribute):
             :obj:`ValueError`: if `default` is not a `bool`
         """
         if default is not None and not isinstance(default, bool):
-            raise ValueError('`default` must be None or an instance of `bool`')
+            raise ValueError('`default` must be `None` or an instance of `bool`')
 
         super(BooleanAttribute, self).__init__(default=default,
                                                verbose_name=verbose_name, help=help,
@@ -2353,26 +2369,27 @@ class BooleanAttribute(LiteralAttribute):
         Returns:
             :obj:`tuple` of `bool`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
-        errors = []
-        if isinstance(value, string_types):
+        if value is None:
+            pass
+        elif isinstance(value, string_types):
             if value == '':
                 value = None
             elif value in ['true', 'True', 'TRUE', '1']:
                 value = True
             elif value in ['false', 'False', 'FALSE', '0']:
                 value = False
+        else:
+            try:
+                float_value = float(value)
 
-        try:
-            float_value = float(value)
-
-            if isnan(float_value):
-                value = None
-            elif float_value == 0.:
-                value = False
-            elif float_value == 1.:
-                value = True
-        except ValueError:
-            pass
+                if isnan(float_value):
+                    value = None
+                elif float_value == 0.:
+                    value = False
+                elif float_value == 1.:
+                    value = True
+            except:
+                pass
 
         if (value is None) or isinstance(value, bool):
             return (value, None)
@@ -2388,29 +2405,10 @@ class BooleanAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(BooleanAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
-
         if value is not None and not isinstance(value, bool):
-            errors.append('Value must be an instance of `bool` or `None`')
+            return InvalidAttribute(self, ['Value must be an instance of `bool` or `None`'])
 
-        if errors:
-            return InvalidAttribute(self, errors)
         return None
-
-    def serialize(self, value):
-        """ Serialize value
-
-        Args:
-            value (:obj:`bool`): Python representation
-
-        Returns:
-            :obj:`bool`: simple Python representation
-        """
-        return value
 
 
 class FloatAttribute(NumericAttribute):

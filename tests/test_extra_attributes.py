@@ -31,17 +31,17 @@ class TestExtraAttribute(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, '`default` must be a `Bio.SeqFeature.FeatureLocation`'):
             extra_attributes.FeatureLocationAttribute(default='')
 
-        # clean
+        # deserialize
         attr = extra_attributes.FeatureLocationAttribute()
-        self.assertEqual(attr.clean(None), (None, None))
-        self.assertEqual(attr.clean(''), (None, None))
-        self.assertEqual(attr.clean('10,10,1'), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
-        self.assertEqual(attr.clean((10,10,1)), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
-        self.assertEqual(attr.clean([10,10,1]), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
-        self.assertEqual(attr.clean(Bio.SeqFeature.FeatureLocation(10, 10, 1)), 
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize('10,10,1'), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
+        self.assertEqual(attr.deserialize((10,10,1)), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
+        self.assertEqual(attr.deserialize([10,10,1]), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
+        self.assertEqual(attr.deserialize(Bio.SeqFeature.FeatureLocation(10, 10, 1)), 
             (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
-        self.assertEqual(attr.clean(1)[0], None)
-        self.assertNotEqual(attr.clean(1)[1], None)
+        self.assertEqual(attr.deserialize(1)[0], None)
+        self.assertNotEqual(attr.deserialize(1)[1], None)
 
         # validate
         obj = None
@@ -108,42 +108,42 @@ class TestExtraAttribute(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, '`max_length` must be an integer greater than or equal to `min_length`'):
             extra_attributes.BioSeqAttribute(min_length=10, max_length=5)
 
-        # clean
-        self.assertEqual(attr.clean(''), (None, None))
-        self.assertEqual(attr.clean(None), (None, None))
+        # deserialize
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(None), (None, None))
 
         alphabet = Bio.Alphabet.Alphabet()
         alphabet.letters = None
         alphabet.size = None
-        self.assertEqual(attr.clean(
+        self.assertEqual(attr.deserialize(
             '{"seq": "ATCG", "alphabet": {"type": "Alphabet", "letters": "", "size": ""}}'),
             (Bio.Seq.Seq('ATCG', alphabet), None))
 
         alphabet = Bio.Alphabet.Alphabet()
         alphabet.letters = 'ACGT'
         alphabet.size = 1
-        self.assertEqual(attr.clean(
+        self.assertEqual(attr.deserialize(
             '{"seq": "ATCG", "alphabet": {"type": "Alphabet", "letters": "ACGT", "size": 1}}'),
             (Bio.Seq.Seq('ATCG', alphabet), None))
 
         alphabet = Bio.Alphabet.Alphabet()
         alphabet.letters = ['AC', 'GT']
         alphabet.size = 2
-        self.assertEqual(attr.clean(
+        self.assertEqual(attr.deserialize(
             '{"seq": "ATCG", "alphabet": {"type": "Alphabet", "letters": ["AC", "GT"], "size": 2}}'),
             (Bio.Seq.Seq('ATCG', alphabet), None))
 
         alphabet = Bio.Alphabet.ProteinAlphabet()
         alphabet.letters = None
         alphabet.size = 1
-        self.assertEqual(attr.clean(
+        self.assertEqual(attr.deserialize(
             '{"seq": "ATCG", "alphabet": {"type": "ProteinAlphabet", "letters": "", "size": 1}}'),
             (Bio.Seq.Seq('ATCG', alphabet), None))
 
         alphabet = Bio.Alphabet.ProteinAlphabet()
         alphabet.letters = 'ARG'
         alphabet.size = 1
-        self.assertEqual(attr.clean(
+        self.assertEqual(attr.deserialize(
             '{"seq": "ATCG", "alphabet": {"type": "ProteinAlphabet", "letters": "ARG", "size": 1}}'),
             (Bio.Seq.Seq('ATCG', alphabet), None))
 
@@ -214,10 +214,10 @@ class TestExtraAttribute(unittest.TestCase):
 
         attr = Node.Meta.attributes['value']
 
-        # clean
-        self.assertEqual(attr.clean(''), (None, None))
-        self.assertEqual(attr.clean(None), (None, None))
-        self.assertEqual(attr.clean('ARG'), (Bio.Seq.Seq('ARG', Bio.Alphabet.ProteinAlphabet()), None))
+        # deserialize
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize('ARG'), (Bio.Seq.Seq('ARG', Bio.Alphabet.ProteinAlphabet()), None))
 
         # serialize
         self.assertEqual(attr.serialize(None), '')
@@ -262,20 +262,20 @@ class TestExtraAttribute(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 'Default must be a '):
             extra_attributes.SympyBasicAttribute(default='x')
 
-        # clean
-        self.assertEqual(attr.clean(''), (None, None))
-        self.assertEqual(attr.clean(None), (None, None))
-        self.assertEqual(attr.clean('x'), (sympy.Basic('x'), None))
+        # deserialize
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize('x'), (sympy.Basic('x'), None))
 
         # serialize
         self.assertEqual(attr.serialize(''), '')
         self.assertEqual(attr.serialize(None), '')
         self.assertEqual(attr.serialize(sympy.Basic('x')), 'x')
 
-        # clean + serialize
-        self.assertEqual(attr.serialize(attr.clean('')[0]), '')
-        self.assertEqual(attr.serialize(attr.clean(None)[0]), '')
-        self.assertEqual(attr.serialize(attr.clean('x')[0]), 'x')
+        # deserialize + serialize
+        self.assertEqual(attr.serialize(attr.deserialize('')[0]), '')
+        self.assertEqual(attr.serialize(attr.deserialize(None)[0]), '')
+        self.assertEqual(attr.serialize(attr.deserialize('x')[0]), 'x')
 
         # validate
         node = Node()
@@ -315,25 +315,25 @@ class TestExtraAttribute(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, '`max_length` must be an integer greater than or equal to `min_length`'):
             extra_attributes.NumpyArrayAttribute(min_length=10, max_length=5)
 
-        # clean
+        # deserialize
         attr = extra_attributes.NumpyArrayAttribute()
-        self.assertEqual(attr.clean(None), (None, None))
-        self.assertEqual(attr.clean(''), (None, None))
-        numpy.testing.assert_equal(attr.clean('[1, 2, 3]'), (numpy.array([1, 2, 3]), None))
-        numpy.testing.assert_equal(attr.clean((1, 2, 3)), (numpy.array([1, 2, 3]), None))
-        numpy.testing.assert_equal(attr.clean([1., 2., 3.]), (numpy.array([1., 2., 3.]), None))
-        numpy.testing.assert_equal(attr.clean(numpy.array([1., 2., 3.])), (numpy.array([1., 2., 3.]), None))
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize(''), (None, None))
+        numpy.testing.assert_equal(attr.deserialize('[1, 2, 3]'), (numpy.array([1, 2, 3]), None))
+        numpy.testing.assert_equal(attr.deserialize((1, 2, 3)), (numpy.array([1, 2, 3]), None))
+        numpy.testing.assert_equal(attr.deserialize([1., 2., 3.]), (numpy.array([1., 2., 3.]), None))
+        numpy.testing.assert_equal(attr.deserialize(numpy.array([1., 2., 3.])), (numpy.array([1., 2., 3.]), None))
 
         attr = extra_attributes.NumpyArrayAttribute(default=numpy.ones((1, 1)))
-        self.assertEqual(attr.clean(None), (None, None))
-        self.assertEqual(attr.clean(''), (None, None))
-        numpy.testing.assert_equal(attr.clean('[1, 2, 3]'), (numpy.array([1, 2, 3], numpy.float64), None))
-        numpy.testing.assert_equal(attr.clean((1, 2, 3)), (numpy.array([1, 2, 3], numpy.float64), None))
-        numpy.testing.assert_equal(attr.clean([1, 2, 3]), (numpy.array([1, 2, 3], numpy.float64), None))
-        numpy.testing.assert_equal(attr.clean(numpy.array([1, 2, 3])), (numpy.array([1., 2., 3.], numpy.float64), None))
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize(''), (None, None))
+        numpy.testing.assert_equal(attr.deserialize('[1, 2, 3]'), (numpy.array([1, 2, 3], numpy.float64), None))
+        numpy.testing.assert_equal(attr.deserialize((1, 2, 3)), (numpy.array([1, 2, 3], numpy.float64), None))
+        numpy.testing.assert_equal(attr.deserialize([1, 2, 3]), (numpy.array([1, 2, 3], numpy.float64), None))
+        numpy.testing.assert_equal(attr.deserialize(numpy.array([1, 2, 3])), (numpy.array([1., 2., 3.], numpy.float64), None))
 
-        self.assertNotEqual(attr.clean('x')[1], None)
-        self.assertNotEqual(attr.clean(1.)[1], None)
+        self.assertNotEqual(attr.deserialize('x')[1], None)
+        self.assertNotEqual(attr.deserialize(1.)[1], None)
 
         # validate
         attr = extra_attributes.NumpyArrayAttribute()
@@ -374,20 +374,20 @@ class TestExtraAttribute(unittest.TestCase):
 
         attr = Node.Meta.attributes['value']
 
-        # clean
-        self.assertEqual(attr.clean(''), (None, None))
-        self.assertEqual(attr.clean(None), (None, None))
-        self.assertEqual(attr.clean('x'), (sympy.Expr('x'), None))
+        # deserialize
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize('x'), (sympy.Expr('x'), None))
 
         # serialize
         self.assertEqual(attr.serialize(''), '')
         self.assertEqual(attr.serialize(None), '')
         self.assertEqual(attr.serialize(sympy.Expr('x')), 'x')
 
-        # clean + serialize
-        self.assertEqual(attr.serialize(attr.clean('')[0]), '')
-        self.assertEqual(attr.serialize(attr.clean(None)[0]), '')
-        self.assertEqual(attr.serialize(attr.clean('x')[0]), 'x')
+        # deserialize + serialize
+        self.assertEqual(attr.serialize(attr.deserialize('')[0]), '')
+        self.assertEqual(attr.serialize(attr.deserialize(None)[0]), '')
+        self.assertEqual(attr.serialize(attr.deserialize('x')[0]), 'x')
 
         # validate
         node = Node()
@@ -407,20 +407,20 @@ class TestExtraAttribute(unittest.TestCase):
 
         attr = Node.Meta.attributes['value']
 
-        # clean
-        self.assertEqual(attr.clean(''), (None, None))
-        self.assertEqual(attr.clean(None), (None, None))
-        self.assertEqual(attr.clean('x'), (sympy.Symbol('x'), None))
+        # deserialize
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize('x'), (sympy.Symbol('x'), None))
 
         # serialize
         self.assertEqual(attr.serialize(''), '')
         self.assertEqual(attr.serialize(None), '')
         self.assertEqual(attr.serialize(sympy.Symbol('x')), 'x')
 
-        # clean + serialize
-        self.assertEqual(attr.serialize(attr.clean('')[0]), '')
-        self.assertEqual(attr.serialize(attr.clean(None)[0]), '')
-        self.assertEqual(attr.serialize(attr.clean('x')[0]), 'x')
+        # deserialize + serialize
+        self.assertEqual(attr.serialize(attr.deserialize('')[0]), '')
+        self.assertEqual(attr.serialize(attr.deserialize(None)[0]), '')
+        self.assertEqual(attr.serialize(attr.deserialize('x')[0]), 'x')
 
         # validate
         node = Node()

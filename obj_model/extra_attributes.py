@@ -40,11 +40,11 @@ class FeatureLocationAttribute(core.Attribute):
                                               verbose_name=verbose_name, help=help,
                                               primary=primary, unique=unique)
         
-    def clean(self, value):
-        """ Convert attribute value into the appropriate type
+    def deserialize(self, value):
+        """ Deserialize value
 
         Args:
-            value (:obj:`str`): value of attribute to clean
+            value (:obj:`str`): semantically equivalent representation
 
         Returns:
             :obj:`tuple` of `numpy.array`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
@@ -165,11 +165,11 @@ class BioSeqAttribute(core.Attribute):
         self.min_length = min_length
         self.max_length = max_length
 
-    def clean(self, value):
-        """ Convert attribute value into the appropriate type
+    def deserialize(self, value):
+        """ Deserialize value
 
         Args:
-            value (:obj:`str`): value of attribute to clean
+            value (:obj:`str`): semantically equivalent representation
 
         Returns:
             :obj:`tuple` of `Bio.Seq.Seq`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
@@ -363,11 +363,11 @@ class NumpyArrayAttribute(core.Attribute):
         self.min_length = min_length
         self.max_length = max_length
         
-    def clean(self, value):
-        """ Convert attribute value into the appropriate type
+    def deserialize(self, value):
+        """ Deserialize value
 
         Args:
-            value (:obj:`str`): value of attribute to clean
+            value (:obj:`str`): semantically equivalent representation
 
         Returns:
             :obj:`tuple` of `numpy.array`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
@@ -501,11 +501,11 @@ class SympyBasicAttribute(core.Attribute):
 
         self.type = type
 
-    def clean(self, value):
-        """ Convert attribute value into the appropriate type
+    def deserialize(self, value):
+        """ Deserialize value
 
         Args:
-            value (:obj:`str`): value of attribute to clean
+            value (:obj:`str`): semantically equivalent representation
 
         Returns:
             :obj:`tuple` of `sympy.Basic`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
