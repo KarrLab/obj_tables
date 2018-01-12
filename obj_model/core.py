@@ -2857,8 +2857,8 @@ class SlugAttribute(RegexAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
         """
         if help is None:
-            help = "Enter a unique string identifier that (1) starts with a letter, (2) is composed "
-            "of letters, numbers and underscores, and (3) is less than 64 characters long"
+            help = ("Enter a unique string identifier that (1) starts with a letter, (2) is composed "
+                    "of letters, numbers and underscores, and (3) is less than 64 characters long")
 
         super(SlugAttribute, self).__init__(pattern=r'^[a-z_][a-z0-9_]*$', flags=re.I,
                                             min_length=1, max_length=63,
