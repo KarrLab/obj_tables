@@ -2094,9 +2094,6 @@ class Attribute(object):
         Returns:
             :obj:`object`: initial value
         """
-        if self.init_value and hasattr(self.init_value, '__call__'):
-            return self.init_value()
-
         return copy.copy(self.init_value)
 
     def get_default(self, obj):

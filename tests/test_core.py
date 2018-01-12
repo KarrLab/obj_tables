@@ -393,6 +393,13 @@ class TestCore(unittest.TestCase):
         self.assertEqual(str(root), '<{}.{}: {}>'.format(
             Root.__module__, 'Root', root.label))
 
+    def test_serialize(self):
+        class TestModel(core.Model):
+            id = core.Attribute()
+
+        value = 'str'
+        self.assertEqual(TestModel.Meta.attributes['id'].serialize(value), value)
+
     def test_validate_attributes(self):
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
@@ -2219,7 +2226,7 @@ class TestCore(unittest.TestCase):
                          g[0].difference(g[1]) + '\n\n' + msg)
 
     def test_invalid_attribute_str(self):
-        attr = core.Attribute()
+        attr = core.StringAttribute()
         attr.name = 'attr'
         msgs = ['msg1', 'msg2\ncontinue']
         err = core.InvalidAttribute(attr, msgs)
@@ -2228,8 +2235,8 @@ class TestCore(unittest.TestCase):
 
     def test_invalid_object_str(self):
         attrs = [
-            core.Attribute(),
-            core.Attribute(),
+            core.StringAttribute(),
+            core.StringAttribute(),
         ]
         attrs[0].name = 'attr0'
         attrs[1].name = 'attr1'
@@ -2251,8 +2258,8 @@ class TestCore(unittest.TestCase):
 
     def test_invalid_model_str(self):
         attrs = [
-            core.Attribute(),
-            core.Attribute(),
+            core.StringAttribute(),
+            core.StringAttribute(),
         ]
         attrs[0].name = 'attr0'
         attrs[1].name = 'attr1'
@@ -2550,6 +2557,10 @@ class TestCore(unittest.TestCase):
             mgr0._update(t)
         self.assertIn("The 'Example0' Manager does not process 'Example1' objects", str(
             context.exception))
+
+        t = Example0()
+        with self.assertRaisesRegexp(ValueError, "Can't _update an instance of "):
+            mgr0._update(t)
 
         # test _update
         mgr1.reset()
