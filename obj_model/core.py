@@ -2194,7 +2194,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             :obj:`bool`, `float`, `str`, or `None`: simple Python representation
         """
-        pass # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def deserialize(self, value):
@@ -2206,12 +2206,12 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
-        pass # pragma: no cover
+        pass  # pragma: no cover
 
 
 class LiteralAttribute(Attribute):
     """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
-    
+
     def serialize(self, value):
         """ Serialize value
 
@@ -2442,7 +2442,7 @@ class FloatAttribute(NumericAttribute):
         max = float(max)
         default = float(default)
         if not isnan(min) and not isnan(max) and max < min:
-            raise ValueError('max must be at least min')
+            raise ValueError('`max` must be at least `min`')
 
         super(FloatAttribute, self).__init__(default=default,
                                              verbose_name=verbose_name, help=help,
@@ -2492,11 +2492,7 @@ class FloatAttribute(NumericAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(FloatAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if isinstance(value, float):
             if not self.nan and isnan(value):
@@ -2558,7 +2554,7 @@ class IntegerAttribute(NumericAttribute):
         if default is not None:
             default = int(default)
         if min is not None and max is not None and max < min:
-            raise ValueError('max must be at least min')
+            raise ValueError('`max` must be at least `min`')
 
         super(IntegerAttribute, self).__init__(default=default,
                                                verbose_name=verbose_name, help=help,
@@ -2598,26 +2594,19 @@ class IntegerAttribute(NumericAttribute):
             :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return list of
                 errors as an instance of `InvalidAttribute`
         """
-        errors = super(IntegerAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if isinstance(value, integer_types):
             if self.min is not None:
-                if value is None:
-                    errors.append('Value cannot be None')
-                elif value < self.min:
+                if value < self.min:
                     errors.append(
                         'Value must be at least {:d}'.format(self.min))
 
             if self.max is not None:
-                if value is None:
-                    errors.append('Value cannot be None')
-                elif value > self.max:
+                if value > self.max:
                     errors.append(
                         'Value must be at most {:d}'.format(self.max))
+
         elif value is not None:
             errors.append('Value must be an instance of `int` or `None`')
 
@@ -2709,12 +2698,11 @@ class StringAttribute(LiteralAttribute):
         """
 
         if not isinstance(min_length, integer_types) or min_length < 0:
-            raise ValueError('min_length must be a non-negative integer')
-        if (max_length is not None) and (not isinstance(max_length, integer_types) or max_length < 0):
-            raise ValueError(
-                'max_length must be None or a non-negative integer')
+            raise ValueError('`min_length` must be a non-negative integer')
+        if (max_length is not None) and (not isinstance(max_length, integer_types) or max_length < min_length):
+            raise ValueError('`max_length` must be at least `min_length` or `None`')
         if not isinstance(default, string_types):
-            raise ValueError('Default must be a string')
+            raise ValueError('`default` must be a string')
 
         super(StringAttribute, self).__init__(default=default,
                                               verbose_name=verbose_name, help=help,
@@ -2748,11 +2736,7 @@ class StringAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(StringAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if not isinstance(value, string_types):
             errors.append('Value must be an instance of `str`')
@@ -2853,7 +2837,7 @@ class RegexAttribute(StringAttribute):
         else:
             errors = []
 
-        if not re.match(self.pattern, value, flags=self.flags):
+        if not re.search(self.pattern, value, flags=self.flags):
             errors.append("Value '{}' does not match pattern: {}".format(
                 value, self.pattern))
 
@@ -2895,10 +2879,7 @@ class UrlAttribute(RegexAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         core_pattern = '(?:http|ftp)s?://(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:/?|[/?]\S+)'
-        if min_length == 0:
-            pattern = '^(|{})$'.format(core_pattern)
-        else:
-            pattern = '^{}$'.format(core_pattern)
+        pattern = '^(|{})$'.format(core_pattern)
 
         super(UrlAttribute, self).__init__(pattern=pattern,
                                            flags=re.I,
@@ -2942,14 +2923,14 @@ class DateAttribute(LiteralAttribute):
         if value is None:
             return (value, None)
 
-        if isinstance(value, date):
-            return (value, None)
-
         if isinstance(value, datetime):
             if value.hour == 0 and value.minute == 0 and value.second == 0 and value.microsecond == 0:
                 return (value.date(), None)
             else:
                 return (None, InvalidAttribute(self, ['Time must be 0:0:0.0']))
+
+        if isinstance(value, date):
+            return (value, None)
 
         if isinstance(value, string_types):
             try:
@@ -2966,7 +2947,7 @@ class DateAttribute(LiteralAttribute):
             int_value = int(float_value)
             if float_value == int_value:
                 return (date.fromordinal(int_value + date(1900, 1, 1).toordinal() - 1), None)
-        except ValueError:
+        except (TypeError, ValueError):
             pass
 
         return (None, 'Value must be an instance of `date`')
@@ -2981,11 +2962,7 @@ class DateAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(DateAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if not self.none:
@@ -3069,7 +3046,7 @@ class TimeAttribute(LiteralAttribute):
             minutes = int((int_value - hour * 60. * 60.) / 60.)
             seconds = int(int_value % 60)
             return (time(hour, minutes, seconds), None)
-        except ValueError:
+        except (TypeError, ValueError):
             pass
 
         return (None, 'Value must be an instance of `time`')
@@ -3084,11 +3061,7 @@ class TimeAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(TimeAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if not self.none:
@@ -3166,19 +3139,20 @@ class DateTimeAttribute(LiteralAttribute):
             float_value = float(value)
             date_int_value = int(float_value)
             time_int_value = round((float_value % 1) * 24 * 60 * 60)
+            if time_int_value == 24 * 60 * 60:
+                time_int_value = 0
+                date_int_value += 1
 
             date_value = date.fromordinal(
                 date_int_value + date(1900, 1, 1).toordinal() - 1)
 
-            if time_int_value < 0 or time_int_value > 24 * 60 * 60 - 1:
-                return (None, InvalidAttribute(self, ['Number must be a valid datetime']))
             hour = int(time_int_value / (60. * 60.))
             minutes = int((time_int_value - hour * 60. * 60.) / 60.)
             seconds = int(time_int_value % 60)
             time_value = time(hour, minutes, seconds)
 
             return (datetime.combine(date_value, time_value), None)
-        except ValueError:
+        except (TypeError, ValueError):
             pass
 
         return (None, 'Value must be an instance of `datetime`')
@@ -3193,11 +3167,7 @@ class DateTimeAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(DateTimeAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if not self.none:
@@ -3268,17 +3238,23 @@ class RelatedAttribute(Attribute):
             help (:obj:`str`, optional): help string
 
         Raises:
-            :obj:`ValueError`: If default or related_default is not None or a callable or default and related_default are both callables
+            :obj:`ValueError`: If default or related_default is not None, an empty list, or a callable or 
+                default and related_default are both non-empty lists or callables
         """
 
-        if default and not hasattr(default, '__call__'):
-            raise ValueError('Default must be None or a callable')
+        if default is not None and not isinstance(default, list) and not callable(default):
+            raise ValueError('Default must be `None`, a list, or a callable')
 
-        if related_default and not hasattr(related_default, '__call__'):
-            raise ValueError('Related default must be None or a callable')
+        if related_default is not None and not isinstance(related_default, list) and not callable(related_default):
+            raise ValueError('Related default must be `None`, a list, or a callable')
 
-        if default and related_default:
-            raise ValueError('Default and related_default cannot both be used')
+        if (callable(default) or
+                (isinstance(default, list) and len(default) > 0) or
+                (not isinstance(default, list) and default is not None)) and \
+           (callable(related_default) or
+                (isinstance(related_default, list) and len(related_default) > 0) or
+                (not isinstance(related_default, list) and related_default is not None)):
+            raise ValueError('Default and `related_default` cannot both be used')
 
         if not verbose_related_name:
             verbose_related_name = sentencecase(related_name)
@@ -3325,11 +3301,12 @@ class RelatedAttribute(Attribute):
         if not self.related_name:
             raise ValueError('Related property is not defined')
 
-        if self.related_default and hasattr(self.related_default, '__call__'):
+        if self.related_default and callable(self.related_default):
             return self.related_default()
 
         return copy.copy(self.related_default)
 
+    @abc.abstractmethod
     def set_related_value(self, obj, new_values):
         """ Update the values of the related attributes of the attribute
 
@@ -3343,9 +3320,7 @@ class RelatedAttribute(Attribute):
         Raises:
             :obj:`ValueError`: if related property is not defined
         """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-        return new_values
+        pass  # pragma: no cover
 
     def related_validate(self, obj, value):
         """ Determine if `value` is a valid value of the related attribute
@@ -3358,18 +3333,6 @@ class RelatedAttribute(Attribute):
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
         return None
-
-    def deserialize(self, value, objects):
-        """ Deserialize value
-
-        Args:
-            value (:obj:`str`): String representation
-            objects (:obj:`dict`): dictionary of objects, grouped by model
-
-        Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
-        """
-        return (value, None)
 
 
 class OneToOneAttribute(RelatedAttribute):

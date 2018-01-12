@@ -16,6 +16,7 @@ import enum
 import gc
 import collections
 import copy
+import math
 import re
 import resource
 import six
@@ -520,12 +521,12 @@ class TestCore(unittest.TestCase):
 
     def test_enum_attribute(self):
         class TestEnum(enum.Enum):
-                val0 = 0
+            val0 = 0
 
         with self.assertRaisesRegexp(ValueError, 'must be a subclass of `Enum`'):
             core.EnumAttribute(int)
-       
-        with self.assertRaisesRegexp(ValueError, 'Default must be `None` or an instance of `enum_class`'):            
+
+        with self.assertRaisesRegexp(ValueError, 'Default must be `None` or an instance of `enum_class`'):
             core.EnumAttribute(TestEnum, default=0)
 
         attr = core.EnumAttribute(TestEnum)
@@ -551,6 +552,56 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.validate(None, False), None)
         self.assertEqual(attr.validate(None, True), None)
         self.assertNotEqual(attr.validate(None, 1.), None)
+
+    def test_float_attribute(self):
+        with self.assertRaisesRegexp(ValueError, '`max` must be at least `min`'):
+            core.FloatAttribute(min=10., max=1.)
+
+        attr = core.FloatAttribute()
+        self.assertTrue(math.isnan(attr.clean('')[0]))
+        self.assertEqual(attr.clean('')[1], None)
+
+        self.assertEqual(attr.serialize(float('nan')), None)
+
+    def test_integer_attribute(self):
+        attr = core.IntegerAttribute(default=1.)
+        self.assertIsInstance(attr.default, int)
+        self.assertEqual(attr.default, 1)
+
+        with self.assertRaisesRegexp(ValueError, '`max` must be at least `min`'):
+            core.IntegerAttribute(min=10, max=1)
+
+        attr = core.IntegerAttribute(min=5)
+        self.assertEqual(attr.validate(None, 5), None)
+        self.assertEqual(attr.validate(None, 6), None)
+        self.assertEqual(attr.validate(None, None), None)
+        self.assertNotEqual(attr.validate(None, 4), None)
+
+        attr = core.IntegerAttribute(max=5)
+        self.assertEqual(attr.validate(None, 4), None)
+        self.assertEqual(attr.validate(None, 5), None)
+        self.assertEqual(attr.validate(None, None), None)
+        self.assertNotEqual(attr.validate(None, 6), None)
+
+        attr = core.IntegerAttribute()
+        self.assertEqual(attr.serialize(None), None)
+        self.assertEqual(attr.serialize(1.), 1.)
+        self.assertEqual(attr.serialize(1), 1.)
+
+    def test_string_attribute(self):
+        with self.assertRaisesRegexp(ValueError, '`min_length` must be a non-negative integer'):
+            core.StringAttribute(min_length=-1)
+
+        with self.assertRaisesRegexp(ValueError, '`max_length` must be at least `min_length` or `None`'):
+            core.StringAttribute(max_length=-1)
+
+        with self.assertRaisesRegexp(ValueError, '`default` must be a string'):
+            core.StringAttribute(default=None)
+
+        attr = core.StringAttribute()
+        self.assertEqual(attr.clean(None), ('', None))
+        self.assertEqual(attr.clean(''), ('', None))
+        self.assertEqual(attr.clean(1), ('1', None))
 
     def test_validate_string_attribute(self):
         leaf = UnrootedLeaf()
@@ -764,6 +815,37 @@ class TestCore(unittest.TestCase):
         self.assertIn(
             'enum2', [x.attribute.name for x in leaf.validate().attributes])
 
+    def test_date_attribute(self):
+        attr = core.DateAttribute()
+
+        # clean
+        self.assertEqual(attr.clean(None), (None, None))
+
+        now = datetime(year=1, month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        self.assertEqual(attr.clean(now), (now.date(), None))
+
+        now = datetime(year=1, month=1, day=1, hour=1)
+        self.assertEqual(attr.clean(now)[0], None)
+        self.assertNotEqual(attr.clean(now)[1], None)
+
+        now = date(year=1, month=1, day=1)
+        self.assertEqual(attr.clean(now), (now, None))
+
+        now = '2000-01-01'
+        self.assertEqual(attr.clean(now), (date(year=2000, month=1, day=1), None))
+
+        now = '2000-01-01 01:01:00'
+        self.assertEqual(attr.clean(now)[0], None)
+        self.assertNotEqual(attr.clean(now)[1], None)
+
+        now = 'x'
+        self.assertEqual(attr.clean(now)[0], None)
+        self.assertNotEqual(attr.clean(now)[1], None)
+
+        now = []
+        self.assertEqual(attr.clean(now)[0], None)
+        self.assertNotEqual(attr.clean(now)[1], None)
+
     def test_validate_date_attribute(self):
         root = DateRoot()
 
@@ -851,11 +933,23 @@ class TestCore(unittest.TestCase):
         root.clean()
         self.assertNotEqual(root.validate(), None)
 
+        root.time = 'x'
+        root.clean()
+        self.assertNotEqual(root.validate(), None)
+
+        root.time = '99:99:99'
+        root.clean()
+        self.assertNotEqual(root.validate(), None)
+
         root.time = -0.25
         root.clean()
         self.assertNotEqual(root.validate(), None)
 
         root.time = 1.25
+        root.clean()
+        self.assertNotEqual(root.validate(), None)
+
+        root.time = []
         root.clean()
         self.assertNotEqual(root.validate(), None)
 
@@ -896,9 +990,21 @@ class TestCore(unittest.TestCase):
         root.clean()
         self.assertEqual(root.validate(), None)
 
+        root.datetime = 'x'
+        root.clean()
+        self.assertNotEqual(root.validate(), None)
+
         root.datetime = 10.25
         root.clean()
         self.assertEqual(root.validate(), None)
+
+        root.datetime = 1.-1e-10
+        root.clean()
+        self.assertEqual(root.validate(), None)
+
+        root.datetime = []
+        root.clean()
+        self.assertNotEqual(root.validate(), None)
 
         # negative examples
         root.datetime = datetime(2000, 10, 1, 0, 0, 1, 1)
@@ -925,6 +1031,30 @@ class TestCore(unittest.TestCase):
         root.datetime = None
         root.clean()
         self.assertNotEqual(root.validate(), None)
+
+    def test_related_attribute(self):
+        class ConcreteRelatedAttribute(core.RelatedAttribute):
+
+            def set_related_value(self):
+                pass
+
+            def serialize(self):
+                pass
+
+            def deserialize(self):
+                pass
+
+        with self.assertRaisesRegexp(ValueError, 'Default must be `None`, a list, or a callable'):
+            ConcreteRelatedAttribute(None, default='')
+
+        with self.assertRaisesRegexp(ValueError, 'Related default must be `None`, a list, or a callable'):
+            ConcreteRelatedAttribute(None, related_default='')
+
+        attr = ConcreteRelatedAttribute(None)
+        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+            attr.get_related_init_value(None)
+        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+            attr.get_related_default(None)
 
     @unittest.expectedFailure
     def test_related_no_double_default(self):
