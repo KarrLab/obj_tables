@@ -2145,6 +2145,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """
         return (value, None)
 
+    @abc.abstractmethod
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
 
@@ -2155,7 +2156,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
         """
-        return None
+        pass  # pragma: no cover
 
     def validate_unique(self, objects, values):
         """ Determine if the attribute values are unique
@@ -2210,6 +2211,18 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
 
 class LiteralAttribute(Attribute):
     """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`object`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
+        """
+        return None
 
     def serialize(self, value):
         """ Serialize value

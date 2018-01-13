@@ -9,6 +9,7 @@
 from . import core
 import Bio
 import Bio.Alphabet
+import Bio.motifs.matrix
 import Bio.Seq
 import Bio.SeqFeature
 import json
@@ -16,15 +17,16 @@ import numpy
 import six
 import sympy
 
+
 class FeatureLocationAttribute(core.Attribute):
     """ Bio.SeqFeature.FeatureLocation attribute
 
     Attributes:
         default (:obj:`Bio.SeqFeature.FeatureLocation`): defaultl value
     """
-    
+
     def __init__(self, default=None, verbose_name='', help='',
-                primary=False, unique=False):
+                 primary=False, unique=False):
         """
         Args:
             default (:obj:`Bio.SeqFeature.FeatureLocation`, optional): default value
@@ -37,9 +39,9 @@ class FeatureLocationAttribute(core.Attribute):
             raise ValueError('`default` must be a `Bio.SeqFeature.FeatureLocation` or `None`')
 
         super(FeatureLocationAttribute, self).__init__(default=default,
-                                              verbose_name=verbose_name, help=help,
-                                              primary=primary, unique=unique)
-        
+                                                       verbose_name=verbose_name, help=help,
+                                                       primary=primary, unique=unique)
+
     def deserialize(self, value):
         """ Deserialize value
 
@@ -66,11 +68,11 @@ class FeatureLocationAttribute(core.Attribute):
             value = None
             error = core.InvalidAttribute(self, [
                 ('FeatureLocationAttribute must be None, an empty string, '
-                'a comma-separated string representation of a tuple, a tuple, a list, '
-                'or a Bio.SeqFeature.FeatureLocation')
-                ])
+                 'a comma-separated string representation of a tuple, a tuple, a list, '
+                 'or a Bio.SeqFeature.FeatureLocation')
+            ])
         return (value, error)
-        
+
     def validate(self, obj, value):
         """ Determine if `value` is a valid value
 
@@ -81,14 +83,10 @@ class FeatureLocationAttribute(core.Attribute):
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
         """
-        errors = super(FeatureLocationAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is not None and not isinstance(value, Bio.SeqFeature.FeatureLocation):
-                errors.append('Value must be an instance of `Bio.SeqFeature.FeatureLocation`')
+            errors.append('Value must be an instance of `Bio.SeqFeature.FeatureLocation`')
 
         if self.primary and value is None:
             errors.append('{} value for primary attribute cannot be empty'.format(
@@ -125,9 +123,9 @@ class FeatureLocationAttribute(core.Attribute):
         if value is None:
             return ''
         else:
-            return '{},{},{}'.format(value.start, value.end, value.strand) # :todo: check if this is sufficient
+            return '{},{},{}'.format(value.start, value.end, value.strand)  # :todo: check if this is sufficient
 
-        
+
 class BioSeqAttribute(core.Attribute):
     """ Bio.Seq.Seq attribute 
 
@@ -197,11 +195,7 @@ class BioSeqAttribute(core.Attribute):
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
         """
-        errors = super(BioSeqAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is not None:
             if not isinstance(value, Bio.Seq.Seq):
@@ -323,9 +317,74 @@ class BioRnaSeqAttribute(BioSeqAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(BioRnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
-                                                     verbose_name=verbose_name, help=help,
-                                                     primary=primary, unique=unique)
+                                                 verbose_name=verbose_name, help=help,
+                                                 primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.RNAAlphabet()
+
+
+class FrequencyPositionMatrixAttribute(core.Attribute):
+    """ Bio.motif.matrix.FrequencyPositionMatrix attribute """
+
+    def __init__(self, verbose_name='', help=''):
+        super(FrequencyPositionMatrixAttribute, self).__init__(
+            default=None, verbose_name=verbose_name, help=help)
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value
+
+        Args:
+            obj (:obj:`Model`): class being validated
+            value (:obj:`Bio.motifs.matrix.FrequencyPositionMatrix`): value of attribute to validate
+
+        Returns:
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+        """
+        if value is not None and not isinstance(value, Bio.motifs.matrix.FrequencyPositionMatrix):
+            return core.InvalidAttribute(self, ['Value must be an instance of `Bio.motifs.matrix.FrequencyPositionMatrix`'])
+        return None
+
+    def serialize(self, value):
+        """ Serialize value to a string
+
+        Args:
+            value (:obj:`Bio.motifs.matrix.FrequencyPositionMatrix`): Python representation
+
+        Returns:
+            :obj:`str`: string representation
+        """
+        if not value:
+            return ''
+
+        dict_value = {
+            '_alphabet': {
+                'type': value.alphabet.__class__.__name__,
+                'letters': value.alphabet.letters,
+                'size': value.alphabet.size,
+            },
+        }
+        for letter, counts in value.items():
+            dict_value[letter] = counts
+
+        return json.dumps(dict_value)
+
+    def deserialize(self, value):
+        """ Deserialize value
+
+        Args:
+            value (:obj:`str`): string representation
+
+        Returns:
+            :obj:`tuple` of `Bio.motifs.matrix.FrequencyPositionMatrix`, `core.InvalidAttribute` or `None`: 
+                tuple of cleaned value and cleaning error
+        """
+        dict_value = json.loads(value)
+
+        alphabet = getattr(Bio.Alphabet, dict_value['_alphabet']['type'])()
+        alphabet.size = dict_value['_alphabet']['size']
+        alphabet.letters = dict_value['_alphabet']['letters']
+        dict_value.pop('_alphabet')
+
+        return Bio.motifs.matrix.FrequencyPositionMatrix(alphabet, dict_value)
 
 
 class NumpyArrayAttribute(core.Attribute):
@@ -336,9 +395,9 @@ class NumpyArrayAttribute(core.Attribute):
         max_length (:obj:`int`): maximum length
         default (:obj:`numpy.ndarray`): default value
     """
-    
+
     def __init__(self, min_length=0, max_length=float('inf'), default=None, verbose_name='', help='',
-                primary=False, unique=False):
+                 primary=False, unique=False):
         """
         Args:
             min_length (:obj:`int`, optional): minimum length
@@ -357,12 +416,12 @@ class NumpyArrayAttribute(core.Attribute):
             raise ValueError('`max_length` must be an integer greater than or equal to `min_length`')
 
         super(NumpyArrayAttribute, self).__init__(default=default,
-                                              verbose_name=verbose_name, help=help,
-                                              primary=primary, unique=unique)
+                                                  verbose_name=verbose_name, help=help,
+                                                  primary=primary, unique=unique)
 
         self.min_length = min_length
         self.max_length = max_length
-        
+
     def deserialize(self, value):
         """ Deserialize value
 
@@ -397,11 +456,11 @@ class NumpyArrayAttribute(core.Attribute):
             value = None
             error = core.InvalidAttribute(self, [
                 ('NumpyArrayAttribute must be None, an empty string, '
-                'a JSON-formatted array, a tuple, a list, '
-                'or a numpy array')
-                ])
+                 'a JSON-formatted array, a tuple, a list, '
+                 'or a numpy array')
+            ])
         return (value, error)
-        
+
     def validate(self, obj, value):
         """ Determine if `value` is a valid value
 
@@ -412,16 +471,12 @@ class NumpyArrayAttribute(core.Attribute):
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
         """
-        errors = super(NumpyArrayAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is not None:
             if not isinstance(value, numpy.ndarray):
                 errors.append('Value must be an instance of `numpy.ndarray`')
-            elif self.default is not None: 
+            elif self.default is not None:
                 for elem in numpy.nditer(value):
                     if not isinstance(elem, self.default.dtype.type):
                         errors.append('Array elements must be of type `{}`'.format(self.default.dtype.type.__name__))
@@ -526,11 +581,7 @@ class SympyBasicAttribute(core.Attribute):
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
         """
-        errors = super(SympyBasicAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value and not isinstance(value, self.type):
             errors.append('Value must be an instance of `{}`'.format(str(self.type)[8:-2]))

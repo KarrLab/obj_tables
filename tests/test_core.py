@@ -1038,6 +1038,9 @@ class TestCore(unittest.TestCase):
             def set_related_value(self):
                 pass
 
+            def validate(self):
+                pass
+
             def serialize(self):
                 pass
 

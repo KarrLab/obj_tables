@@ -9,6 +9,7 @@
 from obj_model import core
 from obj_model import extra_attributes
 import Bio.Alphabet
+import Bio.motifs.matrix
 import Bio.Seq
 import Bio.SeqFeature
 import json
@@ -245,6 +246,35 @@ class TestExtraAttribute(unittest.TestCase):
         alphabet = Bio.Alphabet.ProteinAlphabet()
         alphabet.size = 2
         self.assertNotEqual(attr.validate(node, Bio.Seq.Seq('ACG', alphabet)), None)
+
+    def test_FrequencyPositionMatrixAttribute(self):
+        attr = extra_attributes.FrequencyPositionMatrixAttribute()
+
+
+        alphabet = Bio.Alphabet.DNAAlphabet()
+        alphabet.letters = 'ACGT'
+        alphabet.size = 4
+        letter_counts = {
+            'A': [1, 2, 3],
+            'C': [4, 5, 6],
+            'G': [7, 8, 9],
+            'T': [10, 11, 12],
+        }
+        mat = Bio.motifs.matrix.FrequencyPositionMatrix(alphabet, letter_counts)
+
+        self.assertEqual(attr.validate(None, None), None)
+        self.assertEqual(attr.validate(None, mat), None)
+        self.assertNotEqual(attr.validate(None, ''), None)
+        self.assertNotEqual(attr.validate(None, 1), None)
+        self.assertNotEqual(attr.validate(None, []), None)
+
+        self.assertEqual(attr.deserialize(attr.serialize(mat)), mat)
+        self.assertEqual(attr.deserialize(attr.serialize(mat)).alphabet.letters, 'ACGT')
+        self.assertEqual(sorted(attr.deserialize(attr.serialize(mat)).keys()), ['A', 'C', 'G', 'T'])
+        self.assertEqual(attr.deserialize(attr.serialize(mat))['A'], letter_counts['A'])
+        self.assertEqual(attr.deserialize(attr.serialize(mat))['C'], letter_counts['C'])
+        self.assertEqual(attr.deserialize(attr.serialize(mat))['G'], letter_counts['G'])
+        self.assertEqual(attr.deserialize(attr.serialize(mat))['T'], letter_counts['T'])
 
     def test_SympyBasicAttribute(self):
         class Node(core.Model):
