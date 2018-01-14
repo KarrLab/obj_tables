@@ -268,13 +268,18 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertNotEqual(attr.validate(None, 1), None)
         self.assertNotEqual(attr.validate(None, []), None)
 
-        self.assertEqual(attr.deserialize(attr.serialize(mat)), mat)
-        self.assertEqual(attr.deserialize(attr.serialize(mat)).alphabet.letters, 'ACGT')
-        self.assertEqual(sorted(attr.deserialize(attr.serialize(mat)).keys()), ['A', 'C', 'G', 'T'])
-        self.assertEqual(attr.deserialize(attr.serialize(mat))['A'], letter_counts['A'])
-        self.assertEqual(attr.deserialize(attr.serialize(mat))['C'], letter_counts['C'])
-        self.assertEqual(attr.deserialize(attr.serialize(mat))['G'], letter_counts['G'])
-        self.assertEqual(attr.deserialize(attr.serialize(mat))['T'], letter_counts['T'])
+        self.assertEqual(attr.deserialize(attr.serialize(None)), (None, None))
+
+        self.assertEqual(attr.deserialize(attr.serialize(mat)), (mat, None))
+        self.assertEqual(attr.deserialize(attr.serialize(mat))[0].alphabet.letters, 'ACGT')
+        self.assertEqual(sorted(attr.deserialize(attr.serialize(mat))[0].keys()), ['A', 'C', 'G', 'T'])
+        self.assertEqual(attr.deserialize(attr.serialize(mat))[0]['A'], letter_counts['A'])
+        self.assertEqual(attr.deserialize(attr.serialize(mat))[0]['C'], letter_counts['C'])
+        self.assertEqual(attr.deserialize(attr.serialize(mat))[0]['G'], letter_counts['G'])
+        self.assertEqual(attr.deserialize(attr.serialize(mat))[0]['T'], letter_counts['T'])
+
+        self.assertEqual(attr.deserialize('x')[0], None)
+        self.assertNotEqual(attr.deserialize('x')[1], None)
 
     def test_SympyBasicAttribute(self):
         class Node(core.Model):

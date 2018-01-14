@@ -377,14 +377,20 @@ class FrequencyPositionMatrixAttribute(core.Attribute):
             :obj:`tuple` of `Bio.motifs.matrix.FrequencyPositionMatrix`, `core.InvalidAttribute` or `None`: 
                 tuple of cleaned value and cleaning error
         """
-        dict_value = json.loads(value)
+        if value:
+            try:
+                dict_value = json.loads(value)
 
-        alphabet = getattr(Bio.Alphabet, dict_value['_alphabet']['type'])()
-        alphabet.size = dict_value['_alphabet']['size']
-        alphabet.letters = dict_value['_alphabet']['letters']
-        dict_value.pop('_alphabet')
+                alphabet = getattr(Bio.Alphabet, dict_value['_alphabet']['type'])()
+                alphabet.size = dict_value['_alphabet']['size']
+                alphabet.letters = dict_value['_alphabet']['letters']
+                dict_value.pop('_alphabet')
 
-        return Bio.motifs.matrix.FrequencyPositionMatrix(alphabet, dict_value)
+                return (Bio.motifs.matrix.FrequencyPositionMatrix(alphabet, dict_value), None)
+            except Exception as error:
+                return (None, core.InvalidAttribute(self, [str(error)]))
+        else:
+            return (None, None)
 
 
 class NumpyArrayAttribute(core.Attribute):
