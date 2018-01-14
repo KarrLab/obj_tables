@@ -12,6 +12,7 @@ from datetime import date, time, datetime
 from itertools import chain
 from obj_model import core
 from obj_model.core import excel_col_name
+import attrdict
 import enum
 import gc
 import collections
@@ -1041,6 +1042,9 @@ class TestCore(unittest.TestCase):
             def validate(self):
                 pass
 
+            def related_validate(self):
+                pass
+
             def serialize(self):
                 pass
 
@@ -2046,6 +2050,290 @@ class TestCore(unittest.TestCase):
         self.assertFalse(nodes[0].is_equal(nodes[1]))
         nodes[1].others = nodes[1:2]
         self.assertTrue(nodes[0].is_equal(nodes[1]))
+
+    def test_onetooneattribute(self):
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parent = core.OneToOneAttribute(TestParent, related_name='child')
+        parent_0 = TestParent(id='parent_0')
+        parent_1 = TestParent(id='parent_1')
+        parent_2 = TestParent(id='parent_2')
+        child_0 = TestChild(id='child_0', parent=parent_0)
+        child_1 = TestChild(id='child_1', parent=parent_1)
+        with self.assertRaisesRegexp(ValueError, ' must be `None`'):
+            child_0.parent = parent_1
+        self.assertEqual(child_0.parent, parent_0)
+        child_0.parent = parent_2
+        self.assertEqual(child_0.parent, parent_2)
+        self.assertEqual(parent_0.child, None)
+        self.assertEqual(parent_2.child, child_0)
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parent = core.OneToOneAttribute('TestParent')
+        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+            TestChild.Meta.attributes['parent'].set_related_value(None, None)
+
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parent = core.OneToOneAttribute(TestParent, related_name='child')
+        parent_0 = TestParent()
+        child_0 = TestChild(parent=parent_0)
+        TestChild.Meta.attributes['parent'].set_related_value(parent_0, child_0)
+
+        parent_0 = TestParent()
+        parent_1 = TestParent()
+        child_0 = TestChild(parent=parent_0)
+        child_1 = TestChild(parent=parent_1)
+        child_2 = TestChild()
+        with self.assertRaisesRegexp(ValueError, 'Attribute of `new_value` must be `None`'):
+            parent_0.child = child_1
+        self.assertEqual(parent_0.child, child_0)
+        parent_0.child = child_2
+        self.assertEqual(parent_0.child, child_2)
+
+        parent_0 = TestParent(id='parent')
+        parent_1 = TestParent(id='parent')
+        child_0 = TestChild(id='child', parent=parent_0)
+        child_1 = TestChild(id='child', parent=parent_1)
+        self.assertTrue(parent_0.is_equal(parent_1))
+        self.assertTrue(child_0.is_equal(child_1))
+
+        attr = TestChild.Meta.attributes['parent']
+
+        self.assertEqual(attr.validate(child_0, parent_0), None)
+        self.assertNotEqual(attr.validate(child_0, child_0), None)
+        self.assertNotEqual(attr.validate(child_0, parent_1), None)
+
+        self.assertEqual(attr.related_validate(parent_0, child_0), None)
+        self.assertNotEqual(attr.related_validate(parent_0, parent_0), None)
+        self.assertNotEqual(attr.related_validate(parent_0, child_1), None)
+
+        objs = {
+            TestParent: {
+                'parent': parent_0,
+            },
+        }
+        self.assertEqual(attr.deserialize(attr.serialize(None), objs), (None, None))
+        self.assertEqual(attr.deserialize(attr.serialize(parent_0), objs), (parent_0, None))
+
+        class TestParent2(TestParent):
+            pass
+
+        parent_0_2 = TestParent2(id='parent')
+        objs = {
+            TestParent: {
+                'parent': parent_0,
+            },
+            TestParent2: {
+                'parent': parent_0_2,
+            },
+        }
+        self.assertEqual(attr.deserialize('parent', objs)[0], None)
+        self.assertNotEqual(attr.deserialize('parent', objs)[1], None)
+
+    def test_manytooneattribute(self):
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parent = core.ManyToOneAttribute(TestParent)
+        attr = TestChild.Meta.attributes['parent']
+        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+            attr.get_related_init_value(None)
+        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+            attr.set_related_value(None, None)
+
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parent = core.ManyToOneAttribute(TestParent, related_name='children')
+        attr = TestChild.Meta.attributes['parent']
+        parent_0 = TestParent(id='parent_0')
+        parent_1 = TestParent(id='parent_1')
+        child_0 = TestChild(id='child_0', parent=parent_0)
+        child_1 = TestChild(id='child_1', parent=parent_1)
+        self.assertEqual(attr.validate(child_0, parent_0), None)
+        self.assertNotEqual(attr.validate(child_0, child_0), None)
+        self.assertNotEqual(attr.validate(child_0, parent_1), None)
+
+        parent_0_mock = attrdict.AttrDict({'children': set([child_0])})
+        self.assertNotEqual(attr.validate(child_0, parent_0_mock), None)
+
+        self.assertEqual(attr.related_validate(parent_0, [child_0]), None)
+        self.assertNotEqual(attr.related_validate(parent_0, set()), None)
+        self.assertNotEqual(attr.related_validate(parent_0, [parent_1]), None)
+        self.assertNotEqual(attr.related_validate(parent_0, [child_1]), None)
+
+        self.assertEqual(attr.deserialize(attr.serialize(None), {}), (None, None))
+
+        class TestParent2(TestParent):
+            pass
+
+        parent_0_2 = TestParent2(id='parent_0')
+        objs = {
+            TestParent: {
+                'parent_0': parent_0,
+            },
+            TestParent2: {
+                'parent_0': parent_0_2,
+            },
+        }
+        self.assertEqual(attr.deserialize('parent_0', objs)[0], None)
+        self.assertNotEqual(attr.deserialize('parent_0', objs)[1], None)
+
+    def test_onetomanyattribute(self):
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+            children = core.OneToManyAttribute(TestChild)
+        attr = TestParent.Meta.attributes['children']
+        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+            attr.set_related_value(None, None)
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        parent_0 = TestParent(id='parent_0')
+        parent_1 = TestParent(id='parent_1')
+        child_0 = TestChild(id='child_0', parent=parent_0)
+        child_1 = TestChild(id='child_1', parent=parent_1)
+        attr = TestParent.Meta.attributes['children']
+        self.assertEqual(attr.validate(parent_0, [child_0]), None)
+        self.assertNotEqual(attr.validate(parent_0, set([child_0])), None)
+        self.assertNotEqual(attr.validate(parent_0, [parent_1]), None)
+        self.assertNotEqual(attr.validate(parent_0, [child_1]), None)
+
+        self.assertEqual(attr.related_validate(child_0, parent_0), None)
+        self.assertNotEqual(attr.related_validate(child_0, child_1), None)
+        self.assertNotEqual(attr.related_validate(child_0, parent_1), None)
+
+        self.assertEqual(attr.deserialize(attr.serialize([]), {}), ([], None))
+
+        class TestChild2(TestChild):
+            pass
+        child_0_2 = TestChild2(id='child_0')
+        objs = {
+            TestChild: {
+                'child_0': child_0,
+            },
+            TestChild2: {
+                'child_0': child_0_2,
+            },
+        }
+        self.assertEqual(attr.deserialize('child_0', objs)[0], None)
+        self.assertNotEqual(attr.deserialize('child_0', objs)[1], None)
+
+    def test_manytomanyattribute(self):
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parents = core.ManyToManyAttribute(TestParent)
+        attr = TestChild.Meta.attributes['parents']
+        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+            attr.get_related_init_value(None)
+        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+            attr.set_related_value(None, None)
+
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parents = core.ManyToManyAttribute(TestParent, related_name='children')
+        attr = TestChild.Meta.attributes['parents']
+        parent_0 = TestParent(id='parent_0')
+        parent_1 = TestParent(id='parent_1')
+        child_0 = TestChild(id='child_0', parents=[parent_0])
+        child_1 = TestChild(id='child_1', parents=[parent_1])
+        self.assertEqual(attr.validate(child_0, [parent_0]), None)
+        self.assertNotEqual(attr.validate(child_0, set([parent_0])), None)
+        self.assertNotEqual(attr.validate(child_0, [child_1]), None)
+        self.assertNotEqual(attr.validate(child_0, [parent_1]), None)
+
+        self.assertEqual(attr.related_validate(parent_0, [child_0]), None)
+        self.assertNotEqual(attr.related_validate(parent_0, set([child_0])), None)
+        self.assertNotEqual(attr.related_validate(parent_0, [parent_1]), None)
+        self.assertNotEqual(attr.related_validate(parent_0, [child_1]), None)
+
+        self.assertEqual(attr.deserialize(attr.serialize([]), {}), ([], None))
+
+        class TestParent2(TestParent):
+            pass
+        objs = {
+            TestParent: {
+                'parent_0': parent_0,
+            },
+        }
+        self.assertEqual(attr.deserialize('parent_0', objs), ([parent_0], None))
+
+        parent_0_2 = TestParent2(id='parent_0')
+        objs = {
+            TestParent: {
+                'parent_0': parent_0,
+            },
+            TestParent2: {
+                'parent_0': parent_0_2,
+            },
+        }
+        self.assertEqual(attr.deserialize('parent_0', objs)[0], None)
+        self.assertNotEqual(attr.deserialize('parent_0', objs)[1], None)
+
+    def test_relatedmanager(self):
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parents = core.ManyToManyAttribute(TestParent, related_name='children')
+
+        parent = TestParent()
+        with self.assertRaisesRegexp(TypeError, 'is an invalid keyword argument for'):
+            parent.children.create(parents='child_0')
+
+        child = TestChild()
+        with self.assertRaisesRegexp(TypeError, 'is an invalid keyword argument for'):
+            child.parents.create(children='parent_0')
+
+        parent_0 = TestParent()
+        child_0 = parent_0.children.create()
+        child_1 = parent_0.children.create()
+        self.assertEqual(parent_0.children.pop(), child_1)
+        self.assertEqual(parent_0.children, [child_0])
+
+        parent_0 = TestParent()
+        parent_1 = TestParent()
+        parent_2 = TestParent()
+        child_0 = TestChild()
+        child_0.parents = [parent_0, parent_1]
+        child_0.parents.symmetric_difference_update([parent_1, parent_2])
+        expected = set([parent_0, parent_1])
+        expected.symmetric_difference_update(set([parent_1, parent_2]))
+        self.assertEqual(set(child_0.parents), expected)
+
+        parent_0 = TestParent(id='parent_0')
+        parent_1 = TestParent(id='parent_1')
+        child_0 = TestChild(parents=[parent_0, parent_1])
+        self.assertEqual(child_0.parents.get(id='parent_0'), parent_0)
+        self.assertEqual(child_0.parents.get(id='parent_1'), parent_1)
+        self.assertEqual(child_0.parents.get(id='parent_2'), None)
+        self.assertEqual(child_0.parents.index(parent_0), 0)
+        self.assertEqual(child_0.parents.index(id='parent_0'), 0)
+        with self.assertRaisesRegexp(ValueError, 'Argument and keyword arguments cannot both be provided'):
+            child_0.parents.index(parent_0, id='parent_0')
+        with self.assertRaisesRegexp(ValueError, 'At least one argument must be provided'):
+            child_0.parents.index()
+        with self.assertRaisesRegexp(ValueError, 'At most one argument can be provided'):
+            child_0.parents.index(parent_0, parent_1)
+        with self.assertRaisesRegexp(ValueError, 'No matching object'):
+            child_0.parents.index(id='parent_2')
 
     def test_validator(self):
         grandparent = Grandparent(id='root')

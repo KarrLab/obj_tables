@@ -3334,6 +3334,7 @@ class RelatedAttribute(Attribute):
         """
         pass  # pragma: no cover
 
+    @abc.abstractmethod
     def related_validate(self, obj, value):
         """ Determine if `value` is a valid value of the related attribute
 
@@ -3344,7 +3345,7 @@ class RelatedAttribute(Attribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        return None
+        pass  # pragma: no cover
 
 
 class OneToOneAttribute(RelatedAttribute):
@@ -3438,38 +3439,6 @@ class OneToOneAttribute(RelatedAttribute):
 
         return new_value
 
-    def value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`Model`): first value
-            val2 (:obj:`Model`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if val1.__class__ is not val2.__class__:
-            return False
-        if val1 is None:
-            return True
-        return val1.eq_attributes(val2)
-
-    def related_value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`Model`): first value
-            val2 (:obj:`Model`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if val1.__class__ is not val2.__class__:
-            return False
-        if val1 is None:
-            return True
-        return val1.eq_attributes(val2)
-
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
 
@@ -3480,11 +3449,7 @@ class OneToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(OneToOneAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if self.min_related == 1:
@@ -3510,11 +3475,7 @@ class OneToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(OneToOneAttribute, self).related_validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if self.min_related_rev == 1:
@@ -3615,7 +3576,7 @@ class ManyToOneAttribute(RelatedAttribute):
             :obj:`ValueError`: if related property is not defined
         """
         if not self.related_name:
-            raise ValueError('Related property is undefined')
+            raise ValueError('Related property is not defined')
 
         return ManyToOneRelatedManager(obj, self)
 
@@ -3668,46 +3629,6 @@ class ManyToOneAttribute(RelatedAttribute):
 
         return cur_values
 
-    def value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`Model`): first value
-            val2 (:obj:`Model`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if val1.__class__ is not val2.__class__:
-            return False
-        if val1 is None:
-            return True
-        return val1.eq_attributes(val2)
-
-    def related_value_equal(self, vals1, vals2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`list`): first value
-            val2 (:obj:`list`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if vals1.__class__ != vals2.__class__:
-            return False
-
-        for v1 in vals1:
-            match = False
-            for v2 in vals2:
-                if v1.eq_attributes(v2):
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
 
@@ -3718,11 +3639,7 @@ class ManyToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(ManyToOneAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if self.min_related == 1:
@@ -3732,8 +3649,8 @@ class ManyToOneAttribute(RelatedAttribute):
                 self.related_class.__name__))
         elif self.related_name:
             related_value = getattr(value, self.related_name)
-            if not isinstance(related_value, list):
-                errors.append('Related value must be a list')
+            if not isinstance(related_value, ManyToOneRelatedManager):
+                errors.append('Related value must be a `ManyToOneRelatedManager`')  # pragma: no cover # unreachable due to above error checking
             if obj not in related_value:
                 errors.append('Object must be in related values')
 
@@ -3751,11 +3668,7 @@ class ManyToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(ManyToOneAttribute, self).related_validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if self.related_name:
             if not isinstance(value, list):
@@ -3878,46 +3791,6 @@ class OneToManyAttribute(RelatedAttribute):
 
         return cur_values
 
-    def value_equal(self, vals1, vals2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`list`): first value
-            val2 (:obj:`list`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if vals1.__class__ != vals2.__class__:
-            return False
-
-        for v1 in vals1:
-            match = False
-            for v2 in vals2:
-                if v1.eq_attributes(v2):
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-
-    def related_value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`Model`): first value
-            val2 (:obj:`Model`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if val1.__class__ is not val2.__class__:
-            return False
-        if val1 is None:
-            return True
-        return val1.eq_attributes(val2)
-
     def set_related_value(self, obj, new_value):
         """ Update the values of the related attributes of the attribute
 
@@ -3958,11 +3831,7 @@ class OneToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(OneToManyAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if not isinstance(value, list):
             errors.append('Related value must be a list')
@@ -3994,11 +3863,7 @@ class OneToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(OneToManyAttribute, self).related_validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if self.related_name:
             if value is None:
@@ -4009,8 +3874,8 @@ class OneToManyAttribute(RelatedAttribute):
                     self.primary_class.__name__))
             else:
                 related_value = getattr(value, self.name)
-                if not isinstance(related_value, list):
-                    errors.append('Related value must be a list')
+                if not isinstance(related_value, OneToManyRelatedManager):
+                    errors.append('Related value must be a `OneToManyRelatedManager`')  # pragma: no cover # unreachable due to above error checking
                 if obj not in related_value:
                     errors.append('Object must be in related values')
 
@@ -4171,54 +4036,6 @@ class ManyToManyAttribute(RelatedAttribute):
 
         return cur_values
 
-    def value_equal(self, vals1, vals2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`list`): first value
-            val2 (:obj:`list`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if vals1.__class__ != vals2.__class__:
-            return False
-
-        for v1 in vals1:
-            match = False
-            for v2 in vals2:
-                if v1.eq_attributes(v2):
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-
-    def related_value_equal(self, vals1, vals2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`list`): first value
-            val2 (:obj:`list`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if vals1.__class__ != vals2.__class__:
-            return False
-
-        for v1 in vals1:
-            match = False
-            for v2 in vals2:
-                if v1.eq_attributes(v2):
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
 
@@ -4229,11 +4046,7 @@ class ManyToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(ManyToManyAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if not isinstance(value, list):
             errors.append('Value must be a `list`')
@@ -4249,10 +4062,11 @@ class ManyToManyAttribute(RelatedAttribute):
                     errors.append('Value must be a `list` of "{:s}"'.format(
                         self.related_class.__name__))
 
-                if self.related_name:
+                elif self.related_name:
                     related_v = getattr(v, self.related_name)
-                    if not isinstance(related_v, list):
-                        errors.append('Related value must be a list')
+                    if not isinstance(related_v, ManyToManyRelatedManager):
+                        errors.append(
+                            'Related value must be a `ManyToManyRelatedManager`')  # pragma: no cover # unreachable due to above error checking
                     if obj not in related_v:
                         errors.append('Object must be in related values')
 
@@ -4270,11 +4084,7 @@ class ManyToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(ManyToManyAttribute, self).related_validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if self.related_name:
             if not isinstance(value, list):
@@ -4614,8 +4424,7 @@ class RelatedManager(list):
                 or if the keyword attribute/value pairs match multiple objects
         """
         if args and kwargs:
-            raise ValueError(
-                'Argument and keyword arguments cannot both be provided')
+            raise ValueError('Argument and keyword arguments cannot both be provided')
         if not args and not kwargs:
             raise ValueError('At least one argument must be provided')
 
