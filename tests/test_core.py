@@ -2831,6 +2831,59 @@ class TestCore(unittest.TestCase):
         self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
                          g[0].difference(g[1]) + '\n\n' + msg)
 
+    def test_difference_2(self):
+        class TestModel(core.Model):
+            pass
+        class TestModel2(core.Model):
+            pass
+        self.assertEqual(TestModel().difference(TestModel()), '')
+        self.assertNotEqual(TestModel().difference(TestModel2()), '')
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        p_0 = TestParent(children=[TestChild(id='c_0'), TestChild(id='c_1')])
+        p_1 = TestParent(children=[TestChild(id='c_0'), TestChild(id='c_1')])
+        p_2 = TestParent(children=[TestChild(id='c_0'), TestChild(id='c_1'), TestChild(id='c_2')])
+        self.assertEqual(p_0.difference(p_1), '')
+        self.assertNotEqual(p_0.difference(p_2), '')
+
+        p_0 = TestParent(children=[TestChild(id='c_0'), TestChild(id='c_1')])
+        p_1 = TestParent(children=[TestChild(id='c_0'), TestChild(id='c_2')])
+        self.assertNotEqual(p_0.difference(p_1), '')
+        self.assertNotEqual(p_1.difference(p_0), '')
+
+        c_0 = TestChild(id='c')
+        c_1 = TestChild(id='c')
+        c_2 = TestChild(id='c', parent=TestParent())
+        c_3 = TestChild(id='c', parent=TestParent())
+        self.assertEqual(c_0.difference(c_1), '')
+        self.assertEqual(c_2.difference(c_3), '')
+        self.assertNotEqual(c_0.difference(c_2), '')
+        self.assertNotEqual(c_2.difference(c_0), '')
+
+        class TestChild2(TestChild):
+            pass
+        p_0 = TestParent(children=[TestChild(id='c_0'), TestChild(id='c_1')])
+        p_1 = TestParent(children=[TestChild(id='c_0'), TestChild(id='c_1')])
+        p_2 = TestParent(children=[TestChild2(id='c_0'), TestChild2(id='c_1')])
+        self.assertEqual(p_0.difference(p_1), '')
+        self.assertNotEqual(p_0.difference(p_2), '')
+        self.assertNotEqual(p_2.difference(p_0), '')
+
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            parent = core.OneToOneAttribute(TestParent, related_name='child')
+        c_0 = TestChild(id='c_0', parent=TestParent(id='p_0'))
+        c_1 = TestChild(id='c_0', parent=TestParent(id='p_0'))
+        c_2 = TestChild(id='c_0', parent=TestParent(id='p_1'))
+        self.assertEqual(c_0.difference(c_1), '')
+        self.assertNotEqual(c_0.difference(c_2), '')
+        self.assertNotEqual(c_2.difference(c_0), '')
+
     def test_invalid_attribute_str(self):
         attr = core.StringAttribute()
         attr.name = 'attr'
@@ -3800,6 +3853,24 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestModel.deserialize('model_0', objs), (objs[TestModel]['model_0'], None))
         self.assertEqual(TestModel.deserialize('model_3', objs)[0], None)
         self.assertNotEqual(TestModel.deserialize('model_3', objs)[1], None)
+
+    def test_get_source(self):
+        class TestModel(core.Model):
+            id = core.StringAttribute()
+
+        model = TestModel()
+        with self.assertRaisesRegexp(ValueError, 'TestModel was not loaded from a file'):
+            self.assertEqual(model.get_source('id'), None)
+
+        model._source = core.ModelSource('path.xlsx', 'sheet', [], 2)
+        with self.assertRaisesRegexp(ValueError, 'TestModel.id was not loaded from a file'):
+            self.assertEqual(model.get_source('id'), None)
+
+        model._source = core.ModelSource('path.xlsx', 'sheet', ['id'], 2)
+        self.assertEqual(model.get_source('id'), ('xlsx', 'path.xlsx', 'sheet', 2, 'A'))
+
+        model._source = core.ModelSource('path.csv', 'sheet', ['id'], 2)
+        self.assertEqual(model.get_source('id'), ('csv', 'path.csv', 'sheet', 2, 1))
 
 
 class TestErrors(unittest.TestCase):

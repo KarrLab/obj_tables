@@ -1297,14 +1297,14 @@ class Model(with_metaclass(ModelMeta, object)):
             ValueError if the location of `attr_name` is unknown
         """
         if self._source is None:
-            raise ValueError("location information unavailable".format())
+            raise ValueError("{} was not loaded from a file".format(self.__class__.__name__))
 
         # account for the header row and possible transposition
         row = self._source.row
         try:
             column = self._source.attribute_seq.index(attr_name) + 1
-        except ValueError as e:
-            raise ValueError("cannot find attr with name {}".format(attr_name))
+        except ValueError:
+            raise ValueError("{}.{} was not loaded from a file".format(self.__class__.__name__, attr_name))
         if self.Meta.tabular_orientation == TabularOrientation.column:
             column, row = row, column
         path = self._source.path_name
