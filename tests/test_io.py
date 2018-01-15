@@ -9,7 +9,7 @@
 
 from os.path import splitext
 from obj_model import core, utils
-from obj_model.io import (Reader, Writer, convert, create_template, get_possible_model_sheet_names, 
+from obj_model.io import (Reader, Writer, convert, create_template, get_possible_model_sheet_names,
                           IoWarning, get_ambiguous_sheet_names, get_model_sheet_name)
 from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle, read as read_workbook, get_reader, get_writer)
 import os
@@ -619,7 +619,7 @@ class TestIo(unittest.TestCase):
 
 
 class TestMisc(unittest.TestCase):
-    
+
     def setUp(self):
         self.dirname = tempfile.mkdtemp()
 
@@ -635,8 +635,8 @@ class TestMisc(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
 
         parents = [
-            Parent1(id='parent_0'), 
-            Parent1(id='parent_1'), 
+            Parent1(id='parent_0'),
+            Parent1(id='parent_1'),
             Parent1(id='parent_2'),
         ]
         parents[0].children.create(id='child_0_0')
@@ -667,7 +667,7 @@ class TestMisc(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = Writer()
-        
+
         with pytest.warns(IoWarning):
             writer.run(filename, [node], [Node2])
 
@@ -696,7 +696,7 @@ class TestMisc(unittest.TestCase):
         class WriterChildrenAttribute(core.OneToManyAttribute):
             def serialize(self, value):
                 return super(WriterChildrenAttribute, self).serialize(value)
-            
+
             def deserialize(self, values, objects):
                 return super(WriterChildrenAttribute, self).deserialize(value, objects)
 
@@ -762,7 +762,7 @@ class TestMisc(unittest.TestCase):
         with pytest.warns(IoWarning):
             writer.run(filename, [node1, node2], [Node4, Node5])
 
-        with self.assertRaisesRegexp(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):            
+        with self.assertRaisesRegexp(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):
             Reader().run(filename, [Node4, Node5])
 
     def test_read_missing_sheet(self):
@@ -805,7 +805,7 @@ class TestMisc(unittest.TestCase):
         with pytest.warns(IoWarning):
             writer.run(filename, nodes, [Node8])
 
-        with self.assertRaisesRegexp(ValueError, 'Duplicate, case insensitive, header fields:'):            
+        with self.assertRaisesRegexp(ValueError, 'Duplicate, case insensitive, header fields:'):
             Reader().run(filename, [Node8])
 
     def test_row_and_column_headings(self):
@@ -813,9 +813,9 @@ class TestMisc(unittest.TestCase):
         writer = Writer()
         xslx_writer = get_writer('.xlsx')(filename)
         xslx_writer.initialize_workbook()
-        writer.write_sheet(xslx_writer, 
-            sheet_name='Sheet', 
-            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']], 
+        writer.write_sheet(xslx_writer,
+            sheet_name='Sheet',
+            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
             row_headings=[['Row_2', 'Row_3']],
             column_headings=[['Column_B', 'Column_C']])
         xslx_writer.finalize_workbook()
@@ -829,8 +829,8 @@ class TestMisc(unittest.TestCase):
         reader = Reader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
-        data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet', 
-            num_row_heading_columns=1, 
+        data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet',
+            num_row_heading_columns=1,
             num_column_heading_rows=1)
         self.assertEqual(len(data), 2)
         self.assertEqual(list(data[0]), ['Cell_2_B', 'Cell_2_C'])

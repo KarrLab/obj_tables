@@ -127,7 +127,7 @@ class FeatureLocationAttribute(core.Attribute):
 
 
 class BioSeqAttribute(core.Attribute):
-    """ Bio.Seq.Seq attribute 
+    """ Bio.Seq.Seq attribute
 
     Attributes:
         _alphabet (:obj:`Bio.Alphabet.Alphabet`): alphabet
@@ -374,7 +374,7 @@ class FrequencyPositionMatrixAttribute(core.Attribute):
             value (:obj:`str`): string representation
 
         Returns:
-            :obj:`tuple` of `Bio.motifs.matrix.FrequencyPositionMatrix`, `core.InvalidAttribute` or `None`: 
+            :obj:`tuple` of `Bio.motifs.matrix.FrequencyPositionMatrix`, `core.InvalidAttribute` or `None`:
                 tuple of cleaned value and cleaning error
         """
         if value:
@@ -532,10 +532,10 @@ class NumpyArrayAttribute(core.Attribute):
 
 
 class SympyBasicAttribute(core.Attribute):
-    """ Base class for SymPy expression, symbol attributes 
+    """ Base class for SymPy expression, symbol attributes
 
     Attributes:
-        type (:obj:`sympy.core.assumptions.ManagedProperties`): attribute type (e.g. :obj:`sympy.Basic`, 
+        type (:obj:`sympy.core.assumptions.ManagedProperties`): attribute type (e.g. :obj:`sympy.Basic`,
                 :obj:`sympy.Expr`, :obj:`sympy.Symbol`)
         default (:obj:`sympy.Basic`): default value
     """
@@ -544,7 +544,7 @@ class SympyBasicAttribute(core.Attribute):
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
-            type (:obj:`sympy.core.assumptions.ManagedProperties`, optional): attribute type (e.g. :obj:`sympy.Basic`, 
+            type (:obj:`sympy.core.assumptions.ManagedProperties`, optional): attribute type (e.g. :obj:`sympy.Basic`,
                 :obj:`sympy.Expr`, :obj:`sympy.Symbol`)
             default (:obj:`sympy.Basic`, optional): default value
             verbose_name (:obj:`str`, optional): verbose name
@@ -629,7 +629,7 @@ class SympyBasicAttribute(core.Attribute):
 
 
 class SympyExprAttribute(SympyBasicAttribute):
-    """ SymPy expression attribute 
+    """ SymPy expression attribute
 
     Attributes:
         default (:obj:`sympy.Expr`): default value
@@ -664,7 +664,7 @@ class SympyExprAttribute(SympyBasicAttribute):
 
 
 class SympySymbolAttribute(SympyBasicAttribute):
-    """ SymPy symbol attribute 
+    """ SymPy symbol attribute
 
     Attributes:
         default (:obj:`sympy.Symbol`): default value

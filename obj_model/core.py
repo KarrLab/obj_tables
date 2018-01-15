@@ -314,7 +314,7 @@ class ModelMeta(type):
                                          format(__name__, super_cls.__name__, attr_name, super_attr.__class__.__name__))
 
     def init_inheritance(cls):
-        """ Get tuple of this model and superclasses which are subclasses of `Model` """
+        """ Create tuple of this model and superclasses which are subclasses of `Model` """
         cls.Meta.inheritance = tuple([cls] + [supercls for supercls in get_superclasses(cls)
                                               if issubclass(supercls, Model) and supercls is not Model])
 
@@ -367,8 +367,7 @@ class ModelMeta(type):
                             sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))
 
     def init_primary_attribute(cls):
-        """ Initialize the primary attribute of a model
-        """
+        """ Initialize the primary attribute of a model """
         primary_attributes = [
             attr for attr in cls.Meta.attributes.values() if attr.primary]
 
@@ -477,7 +476,7 @@ class Manager(object):
     * O(1) `Model` instance insert and update operations
 
     Attributes:
-        cls (:obj:`Class`): the :obj:`Model` class which is being managed
+        cls (:obj:`class`): the :obj:`Model` class which is being managed
         _new_instances (:obj:`WeakSet`): set of all new instances of `cls` that have not been indexed,
             stored as weakrefs, so `Model`'s that are otherwise unused can be garbage collected
         _index_dicts (:obj:`dict` mapping `tuple` to :obj:`WeakSet`): indices that enable
@@ -500,6 +499,10 @@ class Manager(object):
     GC_PERIOD = 1000
 
     def __init__(self, cls):
+        """
+        Args:
+            cls (:obj:`class`): the :obj:`Model` class which is being managed
+        """
         self.cls = cls
         if self.cls.Meta.indexed_attrs_tuples:
             self._new_instances = WeakSet()
@@ -543,7 +546,7 @@ class Manager(object):
         """ Dump the index dictionaries for debugging
 
         Args:
-            file (:obj:): an object with a `write(string)` method
+            file (:obj:`object`, optitonal): an object with a `write(string)` method
         """
         # gc before printing to produce consistent data
         self._gc_weaksets()
@@ -582,6 +585,9 @@ class Manager(object):
 
         Returns:
             :obj:`tuple`: hashable values for a `tuple` of values of `Model` attributes
+
+        Raises:
+            :obj:`ValueError`: the `values` is not an iterable or is a string
         """
         if isinstance(values, string_types):
             raise ValueError(
@@ -622,6 +628,10 @@ class Manager(object):
 
         Returns:
             :obj:`tuple`: `model_obj`'s attribute types for the attribute name(s) in `attr_names`
+
+        Raises:
+            :obj:`ValueError`: `attr_names` is not an iterable or is a string or contains a string that
+                is not a valid attribute name
         """
         self._check_model(model_obj, '_get_attribute_types')
         if isinstance(attr_names, string_types):
@@ -663,6 +673,9 @@ class Manager(object):
 
         Args:
             model_obj (:obj:`Model`): a `Model` instance
+
+        Raises:
+            :obj:`ValueError`: `model_obj` is not in `_reverse_index`
         """
         self._check_model(model_obj, '_update')
         self._run_gc_weaksets()
@@ -695,6 +708,9 @@ class Manager(object):
 
         Args:
             model_obj (:obj:`Model`): a `Model` instance
+
+        Raises:
+            :obj:`ValueError`: `model_obj` is not in `_new_instances`
         """
         self._check_model(model_obj, '_insert_new')
         if model_obj not in self._new_instances:
@@ -1033,9 +1049,6 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers into a canonical order because their
         order has no semantic meaning. Importantly, this canonical form is reproducible. Thus, this canonical form facilitates reproducible
         computations on top of :obj:`Model` objects.
-
-        Raises:
-            :obj:`ValueError`: if object is not reproducibly normalizable
         """
 
         self._generate_normalize_sort_keys()
@@ -1104,7 +1117,15 @@ class Model(with_metaclass(ModelMeta, object)):
         return cls._generate_normalize_sort_key_all_attrs
 
     @classmethod
-    def _generate_normalize_sort_key_unique_attr(cls, seen_classes=None):
+    def _generate_normalize_sort_key_unique_attr(cls, processed_models=None):
+        """ Generate a key for sorting models by their first unique attribute into a normalized order
+
+        Args:
+            processed_models (:obj:`list`, optional): list of models for which sort keys have already been generated
+
+        Returns:
+            :obj:`function`: key for sorting models by their first unique attribute into a normalized order
+        """
         for attr_name, attr in cls.Meta.attributes.items():
             if attr.unique:
                 break
@@ -1117,7 +1138,15 @@ class Model(with_metaclass(ModelMeta, object)):
         return key
 
     @classmethod
-    def _generate_normalize_sort_key_unique_together(cls, seen_classes=None):
+    def _generate_normalize_sort_key_unique_together(cls, processed_models=None):
+        """ Generate a key for sorting models by their shortest set of unique attributes into a normalized order
+
+        Args:
+            processed_models (:obj:`list`, optional): list of models for which sort keys have already been generated
+
+        Returns:
+            :obj:`function`: key for sorting models by their shortest set of unique attributes into a normalized order
+        """
         lens = [len(x) for x in cls.Meta.unique_together]
         i_shortest = lens.index(min(lens))
         attr_names = cls.Meta.unique_together[i_shortest]
@@ -1137,25 +1166,34 @@ class Model(with_metaclass(ModelMeta, object)):
         return key
 
     @classmethod
-    def _generate_normalize_sort_key_all_attrs(cls, seen_classes=None):
-        seen_classes = copy.copy(seen_classes) or []
-        seen_classes.append(cls)
-        def key(obj, seen_classes=seen_classes):
+    def _generate_normalize_sort_key_all_attrs(cls, processed_models=None):
+        """ Generate a key for sorting models by all of their attributes into a normalized order. This method should
+        be used for models which do not have unique attributes or sets of unique attributes.
+
+        Args:
+            processed_models (:obj:`list`, optional): list of models for which sort keys have already been generated
+
+        Returns:
+            :obj:`function`: key for sorting models by all of their attributes into a normalized order
+        """
+        processed_models = copy.copy(processed_models) or []
+        processed_models.append(cls)
+        def key(obj, processed_models=processed_models):
             vals = []
             for attr_name in chain(cls.Meta.attributes.keys(), cls.Meta.related_attributes.keys()):
                 val = getattr(obj, attr_name)
                 if isinstance(val, RelatedManager):
-                    if val.__class__ not in seen_classes:
+                    if val.__class__ not in processed_models:
                         subvals_serial = []
                         for subval in val:
-                            key = subval._normalize_sort_key(seen_classes=seen_classes)
+                            key = subval._normalize_sort_key(processed_models=processed_models)
                             subval_serial = key(subval)
                             subvals_serial.append(subval_serial)
                         vals.append(tuple(sorted(subvals_serial)))
                 elif isinstance(val, Model):
-                    if val.__class__ not in seen_classes:
+                    if val.__class__ not in processed_models:
                         key_gen = val._normalize_sort_key
-                        key = key_gen(seen_classes=seen_classes)
+                        key = key_gen(processed_models=processed_models)
                         vals.append(key(val))
                 else:
                     vals.append(OrderableNone if val is None else val)
@@ -1792,7 +1830,7 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`list` of `list`: a nested list of string representations of this Model
 
         Raises:
-            :obj:`ValuerError`: if an attribute cannot be represented as a string, or a
+            :obj:`ValueError`: if an attribute cannot be represented as a string, or a
             related attribute value is not `None`, a `Model`, or an Iterable
         """
         '''
@@ -1906,7 +1944,7 @@ class Model(with_metaclass(ModelMeta, object)):
             objects_and_copies (:obj:`dict` of `Model`: `Model`): dictionary of pairs of objects and their new copies
 
         Raises:
-            :obj:`ValuerError`: if related attribute value is not `None`, a `Model`, or an Iterable,
+            :obj:`ValueError`: if related attribute value is not `None`, a `Model`, or an Iterable,
                 or if a non-related attribute is not an immutable
         """
         # get class
@@ -1975,7 +2013,7 @@ class Model(with_metaclass(ModelMeta, object)):
     def are_related_attributes_serializable(cls):
         """ Determine if the immediate related attributes of the class can be serialized
 
-        Raises:
+        Returns:
             :obj:`bool`: `True` if the related attributes can be serialized
         """
         for attr in cls.Meta.attributes.values():
@@ -2010,6 +2048,11 @@ class Model(with_metaclass(ModelMeta, object)):
 
     @classmethod
     def get_manager(cls):
+        """ Get the manager for the model
+
+        Return:
+            :obj:`Manager`: manager
+        """
         return cls.objects
 
 
@@ -3238,7 +3281,7 @@ class RelatedAttribute(Attribute):
             help (:obj:`str`, optional): help string
 
         Raises:
-            :obj:`ValueError`: If default or related_default is not None, an empty list, or a callable or 
+            :obj:`ValueError`: If default or related_default is not None, an empty list, or a callable or
                 default and related_default are both non-empty lists or callables
         """
 
@@ -3297,6 +3340,9 @@ class RelatedAttribute(Attribute):
 
         Returns:
             :obj:`object`: initial value
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
         """
         if not self.related_name:
             raise ValueError('Related property is not defined')
@@ -3316,9 +3362,6 @@ class RelatedAttribute(Attribute):
 
         Returns:
             :obj:`object`: value of the attribute
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
         """
         pass  # pragma: no cover
 
@@ -3354,9 +3397,6 @@ class OneToOneAttribute(RelatedAttribute):
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
-
-        Raises:
-            :obj:`ValueError`: If default is not `None` or a callable
         """
         super(OneToOneAttribute, self).__init__(related_class, related_name=related_name,
                                                 init_value=None, default=default,
@@ -4609,6 +4649,9 @@ class InvalidObjectSet(object):
         Args:
             invalid_objects (:obj:`list` of `InvalidObject`): list of invalid objects
             invalid_models (:obj:`list` of `InvalidModel`): list of invalid models
+
+        Raises:
+            :obj:`ValueError`: `invalid_models` is not unique
         """
         all_invalid_models = set()
         models = [invalid_model.model for invalid_model in invalid_models]
@@ -4928,6 +4971,15 @@ def excel_col_name(col):
     """ Convert column number to an Excel-style string.
 
     From http://stackoverflow.com/a/19169180/509882
+
+    Args:
+        col (:obj:`int`): column number (positive integer)
+
+    Returns:
+        :obj:`str`: alphabetic column name
+
+    Raises:
+        :obj:`ValueError`: if `col` is not positive
     """
     LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     if not isinstance(col, int) or col < 1:

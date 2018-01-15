@@ -161,7 +161,7 @@ class TestUtils(unittest.TestCase):
         # randomize
         n_random = 0
         n_trials = 100
-        for i in range(n_trials):                
+        for i in range(n_trials):
             utils.randomize_object_graph(nodes0[0])
             n_random += (check_sorted() == False)
 

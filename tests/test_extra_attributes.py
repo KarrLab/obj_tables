@@ -39,7 +39,7 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertEqual(attr.deserialize('10,10,1'), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
         self.assertEqual(attr.deserialize((10,10,1)), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
         self.assertEqual(attr.deserialize([10,10,1]), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
-        self.assertEqual(attr.deserialize(Bio.SeqFeature.FeatureLocation(10, 10, 1)), 
+        self.assertEqual(attr.deserialize(Bio.SeqFeature.FeatureLocation(10, 10, 1)),
             (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
         self.assertEqual(attr.deserialize(1)[0], None)
         self.assertNotEqual(attr.deserialize(1)[1], None)
@@ -62,11 +62,11 @@ class TestExtraAttribute(unittest.TestCase):
         # validate unique
         attr = extra_attributes.FeatureLocationAttribute()
         self.assertEqual(attr.validate_unique([], [
-            Bio.SeqFeature.FeatureLocation(10, 10, 1), 
+            Bio.SeqFeature.FeatureLocation(10, 10, 1),
             None,
             ]), None)
         self.assertEqual(attr.validate_unique([], [
-            Bio.SeqFeature.FeatureLocation(10, 10, 1), 
+            Bio.SeqFeature.FeatureLocation(10, 10, 1),
             Bio.SeqFeature.FeatureLocation(1, 10, 1),
             ]), None)
         self.assertNotEqual(attr.validate_unique([], [
@@ -74,7 +74,7 @@ class TestExtraAttribute(unittest.TestCase):
             Bio.SeqFeature.FeatureLocation(10, 10, 1),
             ]), None)
         self.assertNotEqual(attr.validate_unique([], [
-            None, 
+            None,
             None,
             ]), None)
 
@@ -99,7 +99,7 @@ class TestExtraAttribute(unittest.TestCase):
 
         attr2 = extra_attributes.BioSeqAttribute(default=Bio.Seq.Seq('acgt'))
         self.assertEqual(attr2.get_default(None), Bio.Seq.Seq('acgt'))
-        
+
         with self.assertRaisesRegexp(ValueError, '`default` must be a `Bio.Seq.Seq` or `None`'):
             extra_attributes.BioSeqAttribute(default='acgt')
 

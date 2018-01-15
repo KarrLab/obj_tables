@@ -32,7 +32,7 @@ from wc_utils.util.string import indent_forest
 class Writer(object):
     """ Write model objects to file(s) """
 
-    def run(self, path, objects, models, get_related=True, 
+    def run(self, path, objects, models, get_related=True,
         title=None, description=None, keywords=None, version=None, language=None, creator=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
@@ -253,10 +253,10 @@ class Reader(object):
             :obj:`dict`: model objects grouped by `Model`
 
         Raises:
-            :obj:`ValueError`: if 
+            :obj:`ValueError`: if
 
                 * Sheets cannot be unambiguously mapped to models
-                * File(s) contains extra sheets that don't correspond to one of `models` or if the data is not valid, 
+                * File(s) contains extra sheets that don't correspond to one of `models` or if the data is not valid,
                   depending on the optional arguments
         """
 
