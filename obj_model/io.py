@@ -143,7 +143,7 @@ class Writer(object):
                 warn('Duplicate, case insensitive, header fields: {}'.format(str), IoWarning)
 
         # objects
-        objects = model.sort(objects)
+        model.sort(objects)
 
         data = []
         for obj in objects:

@@ -9,15 +9,16 @@
 
 from contextlib import contextmanager
 from datetime import date, time, datetime
-from itertools import chain
 from obj_model import core
-from obj_model.core import excel_col_name
+import abduct
 import attrdict
 import enum
 import gc
 import collections
 import copy
+import itertools
 import math
+import pytest
 import re
 import resource
 import six
@@ -395,20 +396,39 @@ class TestCore(unittest.TestCase):
         self.assertEqual(str(root), '<{}.{}: {}>'.format(
             Root.__module__, 'Root', root.label))
 
-    def test_literal_attribute_serialize(self):
         class TestModel(core.Model):
-            id = core.LiteralAttribute()
+            id = core.StringAttribute()
+        model = TestModel()
+        self.assertRegexpMatches(str(model), 'object at 0x')
 
-        value = 'str'
-        self.assertEqual(TestModel.Meta.attributes['id'].serialize(value), value)
+    def test_model_constructor(self):
+        class TestModel(core.Model):
+            id = core.StringAttribute()
+        with self.assertRaisesRegexp(TypeError, 'is an invalid keyword argument for'):
+            TestModel(name='x')
+
+    def test_model_validate_related_attributes(self):
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute('__undefined__', related_name='parent')
+        with self.assertRaisesRegexp(ValueError, 'must be defined'):
+            TestParent.validate_related_attributes()
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+            class Meta (core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+        class TestParent(core.Model):
+            pass
+        with self.assertRaisesRegexp(ValueError, 'should have at least one one-to-one or one-to-many attribute'):
+            TestChild.validate_related_attributes()
 
     def test_validate_attributes(self):
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
             children = core.OneToManyAttribute(
-                'TestChild', related_name='parent')
-        class TestChild(core.Model):
-            id = core.StringAttribute(primary=True)
+                TestChild, related_name='parent')
 
         children = [TestChild()]
         parent = TestParent(children=[TestChild()])
@@ -519,6 +539,26 @@ class TestCore(unittest.TestCase):
         unrooted_leaf = UnrootedLeaf(root=root, id='a', id2='b', name2='ab', float2=2.4,
                                      float3=2.4, enum2=Order['root'], enum3=Order['leaf'])
         self.assertEqual(unrooted_leaf.validate(), None)
+
+    def test_pprint(self):
+        class TestModel(core.Model):
+            id = core.StringAttribute()
+
+        test_model = TestModel(id='test')
+        with abduct.captured(abduct.out()) as stdout:
+            test_model.pprint()
+            self.assertEqual(stdout.getvalue(), 'TestModel:\n   id: test\n')
+
+    def test_literal_attribute_validate(self):
+        attr = core.LiteralAttribute()
+        self.assertEqual(attr.validate(None, None), None)
+
+    def test_literal_attribute_serialize(self):
+        class TestModel(core.Model):
+            id = core.LiteralAttribute()
+
+        value = 'str'
+        self.assertEqual(TestModel.Meta.attributes['id'].serialize(value), value)
 
     def test_enum_attribute(self):
         class TestEnum(enum.Enum):
@@ -1382,7 +1422,7 @@ class TestCore(unittest.TestCase):
 
         # self.assertRaises(Exception, lambda: leaves[0].roots.add(roots[2]))
 
-        for obj in chain(roots, leaves):
+        for obj in itertools.chain(roots, leaves):
             error = obj.validate()
             self.assertEqual(error, None)
 
@@ -2473,6 +2513,74 @@ class TestCore(unittest.TestCase):
         self.assertNotIn('val0', errors)
         self.assertEqual(len(errors), 1)
 
+    def test_unique_together(self):
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestParent(core.Model):
+            name = core.StringAttribute()
+            children = core.ManyToManyAttribute(TestChild, related_name='parents')
+            class Meta(core.Model.Meta):
+                unique_together = (('name', 'children'),)
+
+        child_0 = TestChild(id='child_0')
+        child_1 = TestChild(id='child_1')
+        child_2 = TestChild(id='child_2')
+        objs = [
+            TestParent(name='parent_0', children=[child_0, child_1]),
+            TestParent(name='parent_1', children=[child_0, child_1]),
+        ]
+        self.assertEqual(TestParent.validate_unique(objs), None)
+
+        child_0 = TestChild(id='child_0')
+        child_1 = TestChild(id='child_1')
+        child_2 = TestChild(id='child_2')
+        objs = [
+            TestParent(name='parent_0', children=[child_0, child_1]),
+            TestParent(name='parent_0', children=[child_0, child_1]),
+        ]
+        self.assertNotEqual(TestParent.validate_unique(objs), None)
+
+        child_0 = TestChild(id='child_0')
+        child_1 = TestChild(id='child_1')
+        child_2 = TestChild(id='child_2')
+        objs = [
+            TestParent(name='parent_0', children=[child_0, child_1]),
+            TestParent(name='parent_0', children=[child_0, child_2]),
+        ]
+        self.assertEqual(TestParent.validate_unique(objs), None)
+
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            name = core.StringAttribute()
+            parent = core.ManyToOneAttribute(TestParent, related_name='children')
+            class Meta(core.Model.Meta):
+                unique_together = (('name', 'parent'),)
+
+        parent_0 = TestParent(id='parent_0')
+        parent_1 = TestParent(id='parent_1')
+        objs = [
+            TestChild(name='child_0', parent=parent_0),
+            TestChild(name='child_1', parent=parent_0),
+        ]
+        self.assertEqual(TestChild.validate_unique(objs), None)
+
+        parent_0 = TestParent(id='parent_0')
+        parent_1 = TestParent(id='parent_1')
+        objs = [
+            TestChild(name='child_0', parent=parent_0),
+            TestChild(name='child_0', parent=parent_1),
+        ]
+        self.assertEqual(TestChild.validate_unique(objs), None)
+
+        parent_0 = TestParent(id='parent_0')
+        parent_1 = TestParent(id='parent_1')
+        objs = [
+            TestChild(name='child_0', parent=parent_0),
+            TestChild(name='child_0', parent=parent_0),
+        ]
+        self.assertNotEqual(TestChild.validate_unique(objs), None)
+
     def test_copy(self):
         g1 = Grandparent(id='root-1')
         p1 = [
@@ -2489,6 +2597,32 @@ class TestCore(unittest.TestCase):
         copy = g1.copy()
         self.assertFalse(copy is g1)
         self.assertTrue(g1.is_equal(copy))
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestParent(core.Model):
+            id = core.StringAttribute(primary=True)
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        parent = TestParent(id='parent_0')
+        parent.children.create(id='child_0')
+        parent.children.create(id='child_1')
+        self.assertTrue(parent.copy().is_equal(parent))
+
+        class TestModel(core.Model):
+            id = core.StringAttribute(primary=True)
+        model = TestModel(id=None)
+        self.assertTrue(model.copy().is_equal(model))
+
+        class TestAttribute(core.Attribute):
+
+            def validate(self): pass
+            def serialize(self): pass
+            def deserialize(self): pass
+
+        class TestModel(core.Model):
+            attr = TestAttribute()
+        model = TestModel(attr=[])
+        self.assertTrue(model.copy().is_equal(model))
 
     def test_pformat(self):
         root = Root(label='test-root')
@@ -2830,10 +2964,10 @@ class TestCore(unittest.TestCase):
         ))
 
     def test_excel_col_name(self):
-        self.assertRaises(ValueError, lambda: excel_col_name(0))
-        self.assertRaises(ValueError, lambda: excel_col_name(''))
-        self.assertEqual(excel_col_name(5), 'E')
-        self.assertEqual(excel_col_name(2**14), 'XFD')
+        self.assertRaises(ValueError, lambda: core.excel_col_name(0))
+        self.assertRaises(ValueError, lambda: core.excel_col_name(''))
+        self.assertEqual(core.excel_col_name(5), 'E')
+        self.assertEqual(core.excel_col_name(2**14), 'XFD')
 
     def test_manager_small_methods(self):
         class Foo(object):
@@ -3134,28 +3268,106 @@ class TestCore(unittest.TestCase):
         self.assertEqual(None, mgr1.get(str_attr=val))
 
     def test_sort(self):
+        root_0 = Root(label='c')
+        root_1 = Root(label='d')
+        root_2 = Root(label='a')
+        root_3 = Root(label='b')
         roots = [
-            Root(label='c'),
-            Root(label='d'),
-            Root(label='a'),
-            Root(label='b'),
+            root_0,
+            root_1,
+            root_2,
+            root_3,
         ]
 
-        roots2 = Root.sort(roots)
-        self.assertEqual(roots[0].label, 'c')
-        self.assertEqual(roots[1].label, 'd')
-        self.assertEqual(roots[2].label, 'a')
-        self.assertEqual(roots[3].label, 'b')
+        Root.sort(roots)
 
-        self.assertEqual(roots2[0].label, 'a')
-        self.assertEqual(roots2[1].label, 'b')
-        self.assertEqual(roots2[2].label, 'c')
-        self.assertEqual(roots2[3].label, 'd')
+        self.assertEqual(roots[0].label, 'a')
+        self.assertEqual(roots[1].label, 'b')
+        self.assertEqual(roots[2].label, 'c')
+        self.assertEqual(roots[3].label, 'd')
 
-        self.assertEqual(roots2[0], roots[2])
-        self.assertEqual(roots2[1], roots[3])
-        self.assertEqual(roots2[2], roots[0])
-        self.assertEqual(roots2[3], roots[1])
+        self.assertEqual(roots[0], root_2)
+        self.assertEqual(roots[1], root_3)
+        self.assertEqual(roots[2], root_0)
+        self.assertEqual(roots[3], root_1)
+
+        class TestModel(core.Model):
+            id = core.StringAttribute(primary=True)
+            class Meta(core.Model.Meta):
+                ordering = ('-id',)
+
+        model_0 = TestModel(id='model_0')
+        model_1 = TestModel(id='model_1')
+        model_2 = TestModel(id='model_2')
+        objs = [model_0, model_1, model_2]
+        TestModel.sort(objs)
+        self.assertEqual(objs, [model_2, model_1, model_0])
+
+    def test__generate_normalize_sort_key(self):
+        class TestChild(core.Model):
+            id = core.StringAttribute(unique=True)
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        parent = TestParent()
+        child_0 = parent.children.create(id=None)
+        child_1 = parent.children.create(id=None)
+        parent.normalize()
+
+        class TestChild(core.Model):
+            id = core.StringAttribute()
+            class Meta(core.Model.Meta):
+                unique_together = (('id',),)
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        parent = TestParent()
+        child_0 = parent.children.create(id=None)
+        child_1 = parent.children.create(id=None)
+        parent.normalize()
+
+        class TestGrandChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            children = core.OneToManyAttribute(TestGrandChild, related_name='parent')
+            class Meta(core.Model.Meta):
+                unique_together = (('children',),)
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        parent = TestParent()
+        c_0 = parent.children.create()
+        c_1 = parent.children.create()
+        g_0_0 = c_0.children.create(id='g_0_0')
+        g_0_1 = c_0.children.create(id='g_0_1')
+        g_1_0 = c_1.children.create(id='g_1_0')
+        g_1_1 = c_1.children.create(id='g_1_1')
+        parent.normalize()
+
+        class TestGrandChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            child = core.OneToOneAttribute(TestGrandChild, related_name='parent')
+            class Meta(core.Model.Meta):
+                unique_together = (('child',),)
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        parent = TestParent()
+        c_0 = parent.children.create()
+        c_1 = parent.children.create()
+        g_0_0 = c_0.child = TestGrandChild(id='g_0_0')
+        g_1_0 = c_1.child = TestGrandChild(id='g_1_0')
+        parent.normalize()
+
+        class TestGrandChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestChild(core.Model):
+            child = core.OneToOneAttribute(TestGrandChild, related_name='parent')
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        parent = TestParent()
+        c_0 = parent.children.create()
+        c_1 = parent.children.create()
+        g_0_0 = c_0.child = TestGrandChild(id='g_0_0')
+        g_1_0 = c_1.child = TestGrandChild(id='g_1_0')
+        parent.normalize()
 
     def test_normalize(self):
         class NormNodeLevel0(core.Model):
@@ -3216,6 +3428,36 @@ class TestCore(unittest.TestCase):
         node_0.normalize()
         self.assertEqual(node_1.children, [
                          node_2_a, node_2_b, node_2_c, node_2_d])
+
+    def test_is_equal(self):
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True)
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+
+        parent_0 = TestParent()
+        parent_0.children.create(id='child_0_0')
+        parent_0.children.create(id='child_0_1')
+
+        parent_1 = TestParent()
+        parent_1.children.create(id='child_0_0')
+        parent_1.children.create(id='child_0_1')
+
+        self.assertTrue(parent_0.is_equal(parent_1))
+
+        parent_1.children.create(id='child_0_2')
+        self.assertFalse(parent_0.is_equal(parent_1))
+
+        child_0 = TestChild(id='child', parent=TestParent())
+        child_1 = TestChild(id='child')
+        self.assertFalse(child_0.is_equal(child_1))
+        self.assertFalse(child_1.is_equal(child_0))
+
+    def test__is_equal_attributes(self):
+        class TestModel(core.Model):
+            pass
+        model = TestModel()
+        self.assertFalse(model._is_equal_attributes(None))
 
     def test_setter(self):
         class Site(core.Model):
@@ -3493,6 +3735,71 @@ class TestCore(unittest.TestCase):
         sub = TestSub(value=13)
         self.assertNotEqual(sup.validate(), None)
         self.assertNotEqual(sub.validate(), None)
+
+    def test_serialization(self):
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute('__undefined__', related_name='parent')
+        with self.assertRaisesRegexp(ValueError, ' must be a `Model`'):
+            TestParent.is_serializable()
+
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(int, related_name='parent')
+        with self.assertRaisesRegexp(ValueError, ' must be a `Model`'):
+            TestParent.is_serializable()
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=False)
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        self.assertFalse(TestParent.is_serializable())
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=False)
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        with pytest.warns(core.SchemaWarning, match='must have a primary attribute'):
+            TestParent.is_serializable()
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True, unique=False)
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        with pytest.warns(core.SchemaWarning, match='must be unique'):
+            TestParent.is_serializable()
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True, unique=False)
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        self.assertFalse(TestParent.is_serializable())
+
+        class TestChild(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+        class TestParent(core.Model):
+            children = core.OneToManyAttribute(TestChild, related_name='parent')
+        self.assertTrue(TestParent.is_serializable())
+
+    def test_deserialize(self):
+        class TestModel(core.Model):
+            id = core.StringAttribute(primary=True)
+
+        objs = {
+            TestModel: {
+                'model_0': TestModel(id='model_0'),
+                'model_1': TestModel(id='model_1'),
+                'model_2': TestModel(id='model_2'),
+            },
+        }
+
+        self.assertEqual(TestModel.deserialize('model_0', objs), (objs[TestModel]['model_0'], None))
+        self.assertEqual(TestModel.deserialize('model_3', objs)[0], None)
+        self.assertNotEqual(TestModel.deserialize('model_3', objs)[1], None)
 
 
 class TestErrors(unittest.TestCase):

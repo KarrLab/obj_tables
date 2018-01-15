@@ -61,14 +61,14 @@ def generate_model(n_gene, n_rna, n_prot, n_met):
     for i_met in range(1, n_met + 1):
         met = model.metabolites.create(id='Metabolite_{}'.format(i_met))
 
-    prots = Protein.sort(model.proteins)
-    mets = Metabolite.sort(model.metabolites)
+    Protein.sort(model.proteins)
+    Metabolite.sort(model.metabolites)
     for i_rxn in range(1, n_gene * n_rna * n_prot + 1):
-        rxn = model.reactions.create(id='Reaction_{}'.format(i_rxn), enzyme=prots[i_rxn - 1], metabolites=[
-            mets[(i_rxn - 1 + 0) % n_met],
-            mets[(i_rxn - 1 + 1) % n_met],
-            mets[(i_rxn - 1 + 2) % n_met],
-            mets[(i_rxn - 1 + 3) % n_met],
+        rxn = model.reactions.create(id='Reaction_{}'.format(i_rxn), enzyme=model.proteins[i_rxn - 1], metabolites=[
+            model.metabolites[(i_rxn - 1 + 0) % n_met],
+            model.metabolites[(i_rxn - 1 + 1) % n_met],
+            model.metabolites[(i_rxn - 1 + 2) % n_met],
+            model.metabolites[(i_rxn - 1 + 3) % n_met],
         ])
 
     return model

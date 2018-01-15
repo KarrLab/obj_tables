@@ -1006,37 +1006,9 @@ class Model(with_metaclass(ModelMeta, object)):
 
         # tabular orientation
         if cls.Meta.tabular_orientation == TabularOrientation.inline:
-            for attr in cls.Meta.related_attributes.values():
-                if attr in [OneToManyAttribute, OneToManyAttribute, ManyToOneAttribute, ManyToManyAttribute]:
-                    raise ValueError(
-                        'Inline model "{}" must define their own serialization/deserialization methods'.format(cls.__name__))
-
-                if 'deserialize' not in attr.__class__.__dict__:
-                    raise ValueError(
-                        'Inline model "{}" must define their own serialization/deserialization methods'.format(cls.__name__))
-
             if len(cls.Meta.related_attributes) == 0:
                 raise ValueError(
-                    'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__))
-            elif len(cls.Meta.related_attributes) == 1:
-                attr = list(cls.Meta.related_attributes.values())[0]
-
-                if not isinstance(attr, (OneToOneAttribute, OneToManyAttribute)):
-                    warnings.warn(
-                        'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(
-                            cls.__name__),
-                        SchemaWarning)
-
-                elif attr.min_related == 0:
-                    warnings.warn(
-                        'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(
-                            cls.__name__),
-                        SchemaWarning)
-            else:
-                warnings.warn(
-                    'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(
-                        cls.__name__),
-                    SchemaWarning)
+                    'Inline model "{}" should have at least one one-to-one or one-to-many attribute'.format(cls.__name__))
 
     def __setattr__(self, attr_name, value, propagate=True):
         """ Set attribute and validate any unique attribute constraints
@@ -1093,7 +1065,7 @@ class Model(with_metaclass(ModelMeta, object)):
                             else:
                                 cls = attr.primary_class
 
-                            val.sort(key=cls._normalize_sort_key)
+                            val.sort(key=cls._normalize_sort_key())
 
     @classmethod
     def _generate_normalize_sort_keys(cls):
@@ -1122,47 +1094,69 @@ class Model(with_metaclass(ModelMeta, object)):
         # single unique attribute
         for attr_name, attr in cls.Meta.attributes.items():
             if attr.unique:
-                def key(obj):
-                    val = getattr(obj, attr_name)
-                    if val is None:
-                        return OrderableNone
-                    return val
-                return key
+                return cls._generate_normalize_sort_key_unique_attr
 
         # tuple of attributes that are unique together
         if cls.Meta.unique_together:
-            lens = [len(x) for x in cls.Meta.unique_together]
-            i_shortest = lens.index(min(lens))
-
-            def key(obj):
-                vals = []
-                for attr_name in cls.Meta.unique_together[i_shortest]:
-                    val = getattr(obj, attr_name)
-                    if isinstance(val, RelatedManager):
-                        vals.append((subval.serialize() for subval in val))
-                    elif isinstance(val, Model):
-                        vals.append(val.serialize())
-                    else:
-                        vals.append(val)
-                return tuple(vals)
-            return key
+            return cls._generate_normalize_sort_key_unique_together
 
         # include all attributes
+        return cls._generate_normalize_sort_key_all_attrs
+
+    @classmethod
+    def _generate_normalize_sort_key_unique_attr(cls, seen_classes=None):
+        for attr_name, attr in cls.Meta.attributes.items():
+            if attr.unique:
+                break
+
         def key(obj):
+            val = getattr(obj, attr_name)
+            if val is None:
+                return OrderableNone
+            return val
+        return key
+
+    @classmethod
+    def _generate_normalize_sort_key_unique_together(cls, seen_classes=None):
+        lens = [len(x) for x in cls.Meta.unique_together]
+        i_shortest = lens.index(min(lens))
+        attr_names = cls.Meta.unique_together[i_shortest]
+
+        def key(obj):
+            vals = []
+            for attr_name in attr_names:
+                val = getattr(obj, attr_name)
+                if isinstance(val, RelatedManager):
+                    vals.append(tuple([subval.serialize() for subval in val]))
+                elif isinstance(val, Model):
+                    vals.append(val.serialize())
+                else:
+                    vals.append(val)
+            return tuple(vals)
+
+        return key
+
+    @classmethod
+    def _generate_normalize_sort_key_all_attrs(cls, seen_classes=None):
+        seen_classes = copy.copy(seen_classes) or []
+        seen_classes.append(cls)
+        def key(obj, seen_classes=seen_classes):
             vals = []
             for attr_name in chain(cls.Meta.attributes.keys(), cls.Meta.related_attributes.keys()):
                 val = getattr(obj, attr_name)
                 if isinstance(val, RelatedManager):
-                    subvals_serial = []
-                    for subval in val:
-                        subval_serial = subval.__class__._normalize_sort_key(
-                            subval)
-                        if subval_serial is None:
-                            subval_serial = OrderableNone
-                        subvals_serial.append(subval_serial)
-                    vals.append(tuple(sorted(subvals_serial)))
+                    if val.__class__ not in seen_classes:
+                        subvals_serial = []
+                        for subval in val:
+                            key = subval._normalize_sort_key(seen_classes=seen_classes)
+                            subval_serial = key(subval)
+                            subvals_serial.append(subval_serial)
+                        vals.append(tuple(sorted(subvals_serial)))
                 elif isinstance(val, Model):
-                    vals.append(val.__class__._normalize_sort_key(val))
+                    if val.__class__ not in seen_classes:
+                        key_gen = val._normalize_sort_key
+                        key = key_gen(seen_classes=seen_classes)
+                        vals.append(key(val))
                 else:
                     vals.append(OrderableNone if val is None else val)
             return tuple(vals)
@@ -1215,7 +1209,7 @@ class Model(with_metaclass(ModelMeta, object)):
                         elif isinstance(val, Model):
                             pairs_to_check.append((val, other_val, ))
                         elif len(val) != len(other_val):
-                            return False
+                            return False  # pragma: no cover # unreachable because already checked by :obj:`_is_equal_attributes`
                         else:
                             if attr_name in obj.Meta.attributes:
                                 cls = attr.related_class
@@ -1335,35 +1329,27 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`list` of `Model`: sorted list of objects
         """
         if cls.Meta.ordering:
-            return natsorted(objects, cls.get_sort_key, alg=ns.IGNORECASE)
+            for attr_name in reversed(cls.Meta.ordering):
+                if attr_name[0] == '-':
+                    reverse = True
+                    attr_name = attr_name[1:]
+                else:
+                    reverse = False
+                objects.sort(key=natsort_keygen(key=lambda obj: cls.get_sort_key(obj, attr_name), alg=ns.IGNORECASE), reverse=reverse)
 
     @classmethod
-    def get_sort_key(cls, object):
+    def get_sort_key(cls, object, attr_name):
         """ Get sort key for `Model` instance `object` based on `cls.Meta.ordering`
 
         Args:
             object (:obj:`Model`): `Model` instance
+            attr_name (:obj:`str`): attribute name
 
         Returns:
-            :obj:`object` or `tuple` of `object`: sort key for `object`
+            :obj:`object`: sort key for `object`
         """
-        vals = []
-        for attr_name in cls.Meta.ordering:
-            if attr_name[0] == '-':
-                increasing = False
-                attr_name = attr_name[1:]
-            else:
-                increasing = True
-            attr = cls.Meta.attributes[attr_name]
-            val = attr.serialize(getattr(object, attr_name))
-            if increasing:
-                vals.append(val)
-            else:
-                vals.append(-val)
-
-        if len(vals) == 1:
-            return val
-        return tuple(vals)
+        attr = cls.Meta.attributes[attr_name]
+        return attr.serialize(getattr(object, attr_name))
 
     def difference(self, other):
         """ Get the semantic difference between two models
@@ -1719,10 +1705,9 @@ class Model(with_metaclass(ModelMeta, object)):
                 for attr_name in unique_together:
                     attr_val = getattr(obj, attr_name)
                     if isinstance(attr_val, RelatedManager):
-                        val.append(tuple(sorted((id(sub_val)
-                                                 for sub_val in attr_val))))
+                        val.append(tuple(sorted((sub_val.serialize() for sub_val in attr_val))))
                     elif isinstance(attr_val, Model):
-                        val.append(id(attr_val))
+                        val.append(attr_val.serialize())
                     else:
                         val.append(attr_val)
                 val = tuple(val)
@@ -1864,8 +1849,8 @@ class Model(with_metaclass(ModelMeta, object)):
                                 printed_objs, depth+1, max_depth))
                     attrs.extend(iter_attr)
                 else:
-                    raise ValueError(
-                        "Related attribute '{}' has invalid value".format(name))
+                    raise ValueError("Related attribute '{}' has invalid value".format(
+                        name))  # pragma: no cover # unreachable due to other error checking
 
             elif isinstance(attr, Attribute):
                 if val is None:
@@ -1876,11 +1861,11 @@ class Model(with_metaclass(ModelMeta, object)):
                     attrs.append((name, attr.serialize(val)))
                 else:
                     raise ValueError(
-                        "Attribute '{}' has invalid value '{}'".format(name, str(val)))
+                        "Attribute '{}' has invalid value '{}'".format(name, str(val)))  # pragma: no cover # unreachable due to other error checking
 
             else:
-                raise ValueError(
-                    "Attribute '{}' is not an Attribute or RelatedAttribute".format(name))
+                raise ValueError("Attribute '{}' is not an Attribute or RelatedAttribute".format(name)
+                                 )  # pragma: no cover # unreachable due to other error checking
 
         rv = ["{}:".format(cls.__name__)]
         nested = []
@@ -1941,14 +1926,14 @@ class Model(with_metaclass(ModelMeta, object)):
                     for v in val:
                         copy_val.append(objects_and_copies[v])
                 else:
-                    raise ValueError('Invalid related attribute value')
+                    raise ValueError('Invalid related attribute value')  # pragma: no cover # unreachable due to other error checking
             else:
                 if val is None:
                     copy_val = val
                 elif isinstance(val, (string_types, bool, integer_types, float, Enum, )):
-                    copy_val = copy.copy(val)
+                    copy_val = val
                 else:
-                    raise ValueError('Invalid attribute value')
+                    copy_val = copy.deepcopy(val)
 
             setattr(other, attr.name, copy_val)
 
@@ -1966,8 +1951,11 @@ class Model(with_metaclass(ModelMeta, object)):
             if cls not in checked_classes:
                 checked_classes.append(cls)
 
-                if not (isinstance(cls, type) and issubclass(cls, Model)):
-                    raise ValueError("Related class '{}' must be an obj_model.Model".format(
+                if not isinstance(cls, type):
+                    raise ValueError("Related class '{}' must be a `Model`".format(cls))
+
+                if not issubclass(cls, Model):
+                    raise ValueError("Related class '{}' must be a `Model`".format(
                         cls.__name__))
 
                 if not cls.are_related_attributes_serializable():
