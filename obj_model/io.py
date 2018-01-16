@@ -211,28 +211,30 @@ class Reader(object):
     def run(self, path, models, ignore_other_sheets=False, ignore_missing_attributes=False, ignore_extra_attributes=False):
         """ Read a list of model objects from file(s) and validate them
 
-        File(s) may be a single Excel workbook with multiple sheets or a set of delimeter
+        File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
         separated files encoded by a single path with a glob pattern.
 
         Args:
             path (:obj:`str`): path to file(s)
-            models (:obj:`list` of :obj:`Model`): list of models
-            ignore_other_sheets (:obj:`boolean`, optional): if true and all models found, ignore
+            models (:obj:`list` of :obj:`Model`): list of `Model` classes to read
+            ignore_other_sheets (:obj:`boolean`, optional): if true and all `models` are found, ignore
                 other worksheets or files
-            ignore_missing_attributes (:obj:`boolean`, optional): if false, report an error if the worksheet/files
-                don't have all of attributes in the model
+            ignore_missing_attributes (:obj:`boolean`, optional): if false, report an error if a
+                worksheet/file doesn't contain all of attributes in a model in `models`
             ignore_extra_attributes (:obj:`boolean`, optional): if set, do not report errors if
                 attributes in the data are not in the model
 
         Returns:
-            :obj:`dict`: model objects grouped by `Model`
+            :obj:`dict`: model objects grouped by `Model` class
 
         Raises:
             :obj:`ValueError`: if 
 
                 * Sheets cannot be unambiguously mapped to models
-                * File(s) contains extra sheets that don't correspond to one of `models` or if the data is not valid, 
-                  depending on the optional arguments
+                * The file(s) indicated by `path` contains extra sheets that don't correspond to one
+                of `models` and `ignore_other_sheets` is True
+                * Some models are not serializable
+                * The data contains parsing errors found by `read_model`
         """
 
         # initialize reader
@@ -548,7 +550,7 @@ class Reader(object):
         """ Construct object graph
 
         Args:
-            model (:obj:`class`): model
+            model (:obj:`Model`): an `obj_model.core.Model`
             attributes (:obj:`list` of `Attribute`): attribute order of `data`
             data (:obj:`list` of `list` of `object`): nested list of object data
             objects (:obj:`list`): list of model objects in order of `data`
