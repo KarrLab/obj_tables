@@ -24,3 +24,7 @@ docs/_build
 
 # distributions
 *.egg-info
+
+# mac nuisance files
+.DS_Store
+.DS_Store?
