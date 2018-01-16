@@ -7,16 +7,17 @@
 """
 
 from __future__ import absolute_import
+from abc import abstractmethod
 import abc
 import obj_model.core
 import six
 
 
-class ModelMetaAbc(obj_model.core.ModelMeta, abc.ABCMeta):
+class AbstractModelMeta(obj_model.core.ModelMeta, abc.ABCMeta):
     """ Abstract model metaclass """
     pass
 
 
-class ModelAbc(six.with_metaclass(ModelMetaAbc, obj_model.core.Model)):
+class AbstractModel(six.with_metaclass(AbstractModelMeta, obj_model.core.Model)):
     """ Abstract model base class """
     pass

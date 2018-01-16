@@ -3,14 +3,14 @@ configparser
 enum34
 inflect
 natsort
-python-dateutil
+python_dateutil
 six
-Sphinx >= 1.6
+sphinx >= 1.6
 sphinx_rtd_theme
 stringcase
 sympy
-sphinxcontrib-bibtex
-robpol86-sphinxcontrib-googleanalytics
-sphinxcontrib-spelling
-git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
+sphinxcontrib_bibtex
+robpol86_sphinxcontrib_googleanalytics
+sphinxcontrib_spelling
+git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils-0.0.1
 weakreflist

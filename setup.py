@@ -1,45 +1,29 @@
-from setuptools import setup, find_packages
-import obj_model
+import setuptools
+try:
+    import pkg_utils
+except ImportError:
+    import pip
+    pip.main(['install', '--process-dependency-links', 'git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils'])
+    import pkg_utils
 import os
-import pip
-import re
 
-# parse dependencies and their links from requirements.txt files
-install_requires = []
-tests_require = []
-dependency_links = []
+name = 'obj_model'
+dirname = os.path.dirname(__file__)
 
-for line in open('requirements.txt'):
-    pkg_src = line.rstrip()
-    match = re.match('^.+#egg=(.*?)$', pkg_src)
-    if match:
-        pkg_id = match.group(1)
-        dependency_links.append(pkg_src)
-    else:
-        pkg_id = pkg_src
-    install_requires.append(pkg_id)
-    pip.main(['install', line])
-
-for line in open('tests/requirements.txt'):
-    pkg_src = line.rstrip()
-    match = re.match('^.+#egg=(.*?)$', pkg_src)
-    if match:
-        pkg_id = match.group(1)
-        dependency_links.append(pkg_src)
-    else:
-        pkg_id = pkg_src
-    tests_require.append(pkg_id)    
-dependency_links = list(set(dependency_links))
+# get package metadata
+md = pkg_utils.get_package_metadata(dirname, name)
 
 # install package
-setup(
-    name='obj_model',
-    version=obj_model.__version__,
+setuptools.setup(
+    name=name,
+    version=md.version,
 
     description='Database-independent Django-like object model',
+    long_description=md.long_description,
 
     # The project's main homepage.
-    url='https://github.com/KarrLab/obj_model',
+    url='https://github.com/KarrLab/' + name,
+    download_url='https://github.com/KarrLab/' + name,
 
     author='Jonathan Karr',
     author_email='karr@mssm.edu',
@@ -66,10 +50,15 @@ setup(
     keywords='object model, schema',
 
     # packages not prepared yet
-    packages=find_packages(exclude=['tests', 'tests.*']),
-    include_package_data=True,
+    packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
+    package_data={
+        name: [
+            'VERSION',
+        ],
+    },
 
-    install_requires=install_requires,
-    tests_require=tests_require,
-    dependency_links=dependency_links,
+    install_requires=md.install_requires,
+    extras_require=md.extras_require,
+    tests_require=md.tests_require,
+    dependency_links=md.dependency_links,
 )

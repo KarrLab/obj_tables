@@ -6,8 +6,7 @@
 :License: MIT
 """
 
-import abc
-import obj_model.abc
+import obj_model.abstract
 import obj_model.core
 import unittest
 
@@ -16,11 +15,11 @@ class Child(obj_model.core.Model):
     name = obj_model.core.SlugAttribute()
 
 
-class A_Abc(obj_model.abc.ModelAbc):
+class A_Abc(obj_model.abstract.AbstractModel):
     name = obj_model.core.SlugAttribute()
     children = obj_model.core.OneToManyAttribute(Child, related_name='parent')
 
-    @abc.abstractmethod
+    @obj_model.abstract.abstractmethod
     def abstract_method(self, x, y=None):
         pass
 

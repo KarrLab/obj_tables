@@ -77,6 +77,18 @@ class TestUtils(unittest.TestCase):
 
         self.assertIsInstance(str(errors), string_types)
 
+    def test_get_related_errors_no_related(self):
+        class LoneNode(core.Model):
+            id = core.StringAttribute(max_length=1, primary=True, unique=True, verbose_name='Identifier')
+
+        node = LoneNode(id='l')
+        errors = utils.get_related_errors(node)
+        self.assertEqual(errors, None)
+
+        node = LoneNode(id='lone_node')
+        errors = utils.get_related_errors(node)
+        self.assertEqual([invalid_obj.object for invalid_obj in errors.invalid_objects], [node])
+
     def test_get_component_by_id(self):
         class Test(core.Model):
             val = core.StringAttribute()
@@ -149,7 +161,7 @@ class TestUtils(unittest.TestCase):
         # randomize
         n_random = 0
         n_trials = 100
-        for i in range(n_trials):                
+        for i in range(n_trials):
             utils.randomize_object_graph(nodes0[0])
             n_random += (check_sorted() == False)
 

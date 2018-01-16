@@ -33,11 +33,13 @@ from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
+import abc
 import collections
 import copy
 import dateutil.parser
 import inflect
 import re
+import six
 import sys
 import warnings
 # todo: simplify primary attributes, deserialization
@@ -58,7 +60,8 @@ class ModelMeta(type):
             namespace (:obj:`dict`): namespace of `Model` class definition
         """
 
-        # terminate early so this method is only run on the subclasses of `Model`
+        # terminate early so this method is only run on the subclasses of
+        # `Model`
         if name == 'Model' and len(bases) == 1 and bases[0] is object:
             return super(ModelMeta, metacls).__new__(metacls, name, bases, namespace)
 
@@ -76,13 +79,18 @@ class ModelMeta(type):
             Meta.attribute_order = tuple(Meta.attribute_order)
 
             Meta.unique_together = copy.deepcopy(bases[0].Meta.unique_together)
-            Meta.indexed_attrs_tuples = copy.deepcopy(bases[0].Meta.indexed_attrs_tuples)
+            Meta.indexed_attrs_tuples = copy.deepcopy(
+                bases[0].Meta.indexed_attrs_tuples)
             Meta.tabular_orientation = bases[0].Meta.tabular_orientation
             Meta.frozen_columns = bases[0].Meta.frozen_columns
             Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
 
         # validate attributes
+        metacls.validate_attributes(name, bases, namespace)
         metacls.validate_related_attributes(name, bases, namespace)
+
+        # validate primary attribute
+        metacls.validate_primary_attribute(name, bases, namespace)
 
         # validate attribute inheritance
         metacls.validate_attribute_inheritance(name, bases, namespace)
@@ -91,7 +99,6 @@ class ModelMeta(type):
         cls = super(ModelMeta, metacls).__new__(metacls, name, bases, namespace)
 
         # Initialize meta data
-        # todo: move all validation in the below methods to the metaclass
         metacls.init_inheritance(cls)
 
         metacls.init_attributes(cls)
@@ -106,19 +113,118 @@ class ModelMeta(type):
 
         metacls.init_ordering(cls)
 
-        metacls.init_verbose_names(cls)
+        metacls.normalize_attr_tuples(cls, 'unique_together')
+        metacls.normalize_attr_tuples(cls, 'indexed_attrs_tuples')
 
-        metacls.validate_attributes(cls)
+        metacls.init_verbose_names(cls)
 
         metacls.create_model_manager(cls)
 
         # Return new class
         return cls
 
-    def init_inheritance(cls):
-        """ Get tuple of this model and superclasses which are subclasses of `Model` """
-        cls.Meta.inheritance = tuple([cls] + [supercls for supercls in get_superclasses(cls)
-                                              if issubclass(supercls, Model) and supercls is not Model])
+    @classmethod
+    def validate_attributes(metacls, name, bases, namespace):
+        """ Validate attribute values
+
+        Raises:
+            :obj:`ValueError`: if attributes are not valid
+        """
+        for attr_name in namespace['Meta'].attribute_order:
+            if not isinstance(attr_name, str):
+                raise ValueError("`attribute_order` for {} must contain attribute names; '{}' is "
+                                 "not a string".format(name, attr_name))
+
+            if attr_name not in namespace:
+                is_attr = False
+                for base in bases:
+                    if attr_name in dir(base):
+                        is_attr = True
+
+                if not is_attr:
+                    raise ValueError("`attribute_order` must contain attribute names; '{}' not found in "
+                                     "attributes of {}".format(attr_name, name))
+
+        metacls.validate_attr_tuples(name, bases, namespace, 'unique_together')
+        metacls.validate_attr_tuples(name, bases, namespace, 'indexed_attrs_tuples')
+
+    @classmethod
+    def validate_attr_tuples(metacls, name, bases, namespace, meta_attribute_name):
+        """ Validate a tuple of tuples of attribute names
+
+        Args:
+            meta_attribute_name (:obj:`str`): the name of the attribute to validate and normalize
+
+        Raises:
+            :obj:`ValueError`: if attributes are not valid
+        """
+        # getattr(namespace['Meta'], meta_attribute_name) should be a tuple of tuples of
+        # attribute names
+
+        meta_attribute = getattr(namespace['Meta'], meta_attribute_name)
+
+        attribute_names = []
+        for attr_name, attr in namespace.items():
+            if isinstance(attr, Attribute):
+                attribute_names.append(attr_name)
+        for base in bases:
+            if issubclass(base, Model) and base.Meta.attributes:
+                attribute_names += base.Meta.attributes.keys()
+
+        for model in get_subclasses(Model):
+            for attr in model.Meta.attributes.values():
+                if isinstance(attr, RelatedAttribute):
+                    if isinstance(attr.related_class, string_types):
+                        related_class_name = attr.related_class
+                        if '.' not in related_class_name:
+                            related_class_name = model.__module__ + '.' + related_class_name
+                    else:
+                        related_class_name = attr.related_class.__module__ + \
+                            '.' + attr.related_class.__name__
+
+                    if attr.name in model.__dict__ and attr.related_name:
+                        if '__module__' in namespace and related_class_name == namespace['__module__'] + '.' + name:
+                            attribute_names.append(attr.related_name)
+                        else:
+                            for base in bases:
+                                if related_class_name == base.__module__ + '.' + base.__name__:
+                                    attribute_names.append(attr.related_name)
+                                    break
+
+        if not isinstance(meta_attribute, tuple):
+            raise ValueError("{} for '{}' must be a tuple, not '{}'".format(
+                meta_attribute_name, name, meta_attribute))
+
+        for tup_of_attrnames in meta_attribute:
+            if not isinstance(tup_of_attrnames, tuple):
+                raise ValueError("{} for '{}' must be a tuple of tuples, not '{}'".format(
+                    meta_attribute_name, name, meta_attribute))
+
+            for attr_name in tup_of_attrnames:
+                if not isinstance(attr_name, str):
+                    raise ValueError("{} for '{}' must be a tuple of tuples of strings, not '{}'".format(
+                        meta_attribute_name, name, meta_attribute))
+
+                if attr_name not in attribute_names:
+                    raise ValueError("{} for '{}' must be a tuple of tuples of attribute names, not '{}'".format(
+                        meta_attribute_name, name, meta_attribute))
+
+            if len(set(tup_of_attrnames)) < len(tup_of_attrnames):
+                raise ValueError("{} for '{}' cannot repeat attribute names "
+                                 "in any tuple: '{}'".format(meta_attribute_name, name, meta_attribute))
+
+        # raise errors if multiple tup_of_attrnames are equivalent
+        tup_of_attrnames_map = collections.defaultdict(list)
+        for tup_of_attrnames in meta_attribute:
+            tup_of_attrnames_map[
+                frozenset(tup_of_attrnames)].append(tup_of_attrnames)
+        equivalent_tuples = []
+        for equivalent_tup_of_attrnames in tup_of_attrnames_map.values():
+            if 1 < len(equivalent_tup_of_attrnames):
+                equivalent_tuples.append(equivalent_tup_of_attrnames)
+        if 0 < len(equivalent_tuples):
+            raise ValueError("{} cannot contain identical attribute sets: {}".format(
+                meta_attribute_name, str(equivalent_tuples)))
 
     @classmethod
     def validate_related_attributes(metacls, name, bases, namespace):
@@ -129,7 +235,67 @@ class ModelMeta(type):
         """
         for attr_name, attr in namespace.items():
             if isinstance(attr, (OneToManyAttribute, ManyToOneAttribute)) and attr.related_name == attr_name:
-                raise ValueError('The related name of {} {} cannot be equal to its name'.format(attr.__class__.__name__, attr_name))
+                raise ValueError('The related name of {} {} cannot be equal to its name'.format(
+                    attr.__class__.__name__, attr_name))
+
+        for attr_name, attr in namespace.items():
+            if isinstance(attr, RelatedAttribute):
+
+                # deserialize related class references by class name
+                if isinstance(attr.related_class, string_types):
+                    related_class_name = attr.related_class
+                    if '.' not in related_class_name:
+                        related_class_name = namespace[
+                            '__module__'] + '.' + related_class_name
+
+                    related_class = get_model(related_class_name)
+                else:
+                    related_class = attr.related_class
+
+                # setup related attributes on related classes
+                if attr_name in namespace and attr.related_name and \
+                        isinstance(related_class, type) and issubclass(related_class, Model):
+                    related_classes = chain(
+                        [related_class], get_subclasses(related_class))
+                    for related_class in related_classes:
+                        # check that name doesn't conflict with another
+                        # attribute
+                        if attr.related_name in related_class.Meta.attributes and \
+                                not (isinstance(attr, (OneToOneAttribute, ManyToManyAttribute)) and attr.related_name == attr_name):
+                            other_attr = related_class.Meta.attributes[
+                                attr.related_name]
+                            raise ValueError('Related attribute {}.{} cannot use the same related name as {}.{}'.format(
+                                name, attr_name,
+                                related_class.__name__, attr.related_name,
+                            ))
+
+                        # check that name doesn't clash with another related
+                        # attribute from a different model
+                        if attr.related_name in related_class.Meta.related_attributes and \
+                                related_class.Meta.related_attributes[attr.related_name] is not attr:
+                            other_attr = related_class.Meta.related_attributes[
+                                attr.related_name]
+                            raise ValueError('Attributes {}.{} and {}.{} cannot use the same related attribute name {}.{}'.format(
+                                name, attr_name,
+                                other_attr.primary_class.__name__, other_attr.name,
+                                related_class.__name__, attr.related_name,
+                            ))
+
+    @classmethod
+    def validate_primary_attribute(metacls, name, bases, namespace):
+        """ Check the attributes
+
+        Raises:
+            :obj:`ValueError`: if there are multiple primary attributes
+        """
+        num_primary_attributes = 0
+        for attr_name, attr in namespace.items():
+            if isinstance(attr, Attribute) and attr.primary:
+                num_primary_attributes += 1
+
+        if num_primary_attributes > 1:
+            raise ValueError('Model {} cannot have more than one primary attribute'.format(
+                cls.__name__))  # pragma: no cover
 
     @classmethod
     def validate_attribute_inheritance(metacls, name, bases, namespace):
@@ -146,6 +312,11 @@ class ModelMeta(type):
                     if (isinstance(attr, Attribute) or isinstance(super_attr, Attribute)) and not isinstance(attr, super_attr.__class__):
                         raise ValueError('Attribute "{}" of class "{}" inherited from "{}" must be a subclass of {} because the attribute is already defined in the superclass'.
                                          format(__name__, super_cls.__name__, attr_name, super_attr.__class__.__name__))
+
+    def init_inheritance(cls):
+        """ Create tuple of this model and superclasses which are subclasses of `Model` """
+        cls.Meta.inheritance = tuple([cls] + [supercls for supercls in get_superclasses(cls)
+                                              if issubclass(supercls, Model) and supercls is not Model])
 
     def init_attributes(cls):
         """ Initialize attributes """
@@ -169,12 +340,7 @@ class ModelMeta(type):
                     attr.primary_class = cls
 
     def init_related_attributes(cls, model_cls):
-        """ Initialize related attributes
-
-        Raises:
-            :obj:`ValueError`: if related attributes of the class are not valid
-                (e.g. if a class that is the subject of a relationship does not have a primary attribute)
-        """
+        """ Initialize related attributes """
         for attr in model_cls.Meta.attributes.values():
             if isinstance(attr, RelatedAttribute):
 
@@ -191,39 +357,19 @@ class ModelMeta(type):
                 # setup related attributes on related classes
                 if attr.name in model_cls.__dict__ and attr.related_name and \
                         isinstance(attr.related_class, type) and issubclass(attr.related_class, Model):
-                    related_classes = chain([attr.related_class], get_subclasses(attr.related_class))
+                    related_classes = chain(
+                        [attr.related_class], get_subclasses(attr.related_class))
                     for related_class in related_classes:
-                        # check that name doesn't conflict with another attribute
-                        if attr.related_name in related_class.Meta.attributes and \
-                            not (isinstance(attr, (OneToOneAttribute, ManyToManyAttribute)) and attr.related_name == attr.name):
-                            other_attr = related_class.Meta.attributes[attr.related_name]
-                            raise ValueError('Related attribute {}.{} cannot use the same related name as {}.{}'.format(
-                                model_cls.__name__, attr.name,
-                                related_class.__name__, attr.related_name,
-                            ))
-
-                        # check that name doesn't clash with another related attribute from a different model
-                        if attr.related_name in related_class.Meta.related_attributes and \
-                                related_class.Meta.related_attributes[attr.related_name] is not attr:
-                            other_attr = related_class.Meta.related_attributes[attr.related_name]
-                            raise ValueError('Attributes {}.{} and {}.{} cannot use the same related attribute name {}.{}'.format(
-                                model_cls.__name__, attr.name,
-                                other_attr.primary_class.__name__, other_attr.name,
-                                related_class.__name__, attr.related_name,
-                            ))
-
                         # add attribute to dictionary of related attributes
-                        related_class.Meta.related_attributes[attr.related_name] = attr
+                        related_class.Meta.related_attributes[
+                            attr.related_name] = attr
                         related_class.Meta.related_attributes = collections.OrderedDict(
                             sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))
 
     def init_primary_attribute(cls):
-        """ Initialize the primary attribute of a model
-
-        Raises:
-            :obj:`ValueError`: if class has multiple primary attributes
-        """
-        primary_attributes = [attr for attr in cls.Meta.attributes.values() if attr.primary]
+        """ Initialize the primary attribute of a model """
+        primary_attributes = [
+            attr for attr in cls.Meta.attributes.values() if attr.primary]
 
         if len(primary_attributes) == 0:
             cls.Meta.primary_attribute = None
@@ -232,7 +378,8 @@ class ModelMeta(type):
             cls.Meta.primary_attribute = primary_attributes[0]
 
         else:
-            raise ValueError('Model {} cannot have more than one primary attribute'.format(cls.__name__))
+            # unreachable because covered by above validation
+            pass  # pragma: no cover
 
     def init_attribute_order(cls):
         """ Initialize the order in which the attributes should be printed across Excel columns """
@@ -244,9 +391,11 @@ class ModelMeta(type):
                 if isinstance(getattr(base, attr_name), Attribute) and attr_name not in ordered_attributes:
                     unordered_attributes.add(attr_name)
 
-        unordered_attributes = natsorted(unordered_attributes, alg=ns.IGNORECASE)
+        unordered_attributes = natsorted(
+            unordered_attributes, alg=ns.IGNORECASE)
 
-        cls.Meta.attribute_order = tuple(ordered_attributes + unordered_attributes)
+        cls.Meta.attribute_order = tuple(
+            ordered_attributes + unordered_attributes)
 
     def init_ordering(cls):
         """ Initialize how to sort objects """
@@ -263,59 +412,24 @@ class ModelMeta(type):
 
             if not cls.Meta.verbose_name_plural:
                 inflect_engine = inflect.engine()
-                cls.Meta.verbose_name_plural = sentencecase(inflect_engine.plural(cls.__name__))
+                cls.Meta.verbose_name_plural = sentencecase(
+                    inflect_engine.plural(cls.__name__))
 
         elif not cls.Meta.verbose_name_plural:
             inflect_engine = inflect.engine()
-            cls.Meta.verbose_name_plural = inflect_engine.plural(cls.Meta.verbose_name)
+            cls.Meta.verbose_name_plural = inflect_engine.plural(
+                cls.Meta.verbose_name)
 
-    def validate_n_normalize_attr_tuples(cls, attribute):
-        """ Validate and normalize a tuple of tuples of attribute names
+    def normalize_attr_tuples(cls, attribute):
+        """ Normalize a tuple of tuples of attribute names
 
         Args:
             attribute (:obj:`str`): the name of the attribute to validate and normalize
-
-        Raises:
-            :obj:`ValueError`: if attributes are not valid
         """
-        # getattr(cls.Meta, attribute) should be a tuple of tuples of attribute names
-        if not isinstance(getattr(cls.Meta, attribute), tuple):
-            raise ValueError("{} for '{}' must be a tuple, not '{}'".format(
-                attribute, cls.__name__, getattr(cls.Meta, attribute)))
-
-        for tup_of_attrnames in getattr(cls.Meta, attribute):
-            if not isinstance(tup_of_attrnames, tuple):
-                raise ValueError("{} for '{}' must be a tuple of tuples, not '{}'".format(
-                attribute, cls.__name__, getattr(cls.Meta, attribute)))
-
-            for attr_name in tup_of_attrnames:
-                if not isinstance(attr_name, str):
-                    raise ValueError("{} for '{}' must be a tuple of tuples of strings, not '{}'".format(
-                attribute, cls.__name__, getattr(cls.Meta, attribute)))
-
-                if attr_name not in cls.Meta.attributes and attr_name not in cls.Meta.related_attributes:
-                    raise ValueError("{} for '{}' must be a tuple of tuples of attribute names, "
-                        "not '{}'".format(attribute, cls.__name__, getattr(cls.Meta, attribute)))
-
-            if len(set(tup_of_attrnames)) < len(tup_of_attrnames):
-                raise ValueError("{} for '{}' cannot repeat attribute names "
-                    "in any tuple: '{}'".format(attribute, cls.__name__, getattr(cls.Meta, attribute)))
-
-        # raise errors if multiple tup_of_attrnames are equivalent
-        tup_of_attrnames_map = collections.defaultdict(list)
-        for tup_of_attrnames in getattr(cls.Meta, attribute):
-            tup_of_attrnames_map[frozenset(tup_of_attrnames)].append(tup_of_attrnames)
-        equivalent_tuples = []
-        for equivalent_tup_of_attrnames in tup_of_attrnames_map.values():
-            if 1<len(equivalent_tup_of_attrnames):
-                equivalent_tuples.append(equivalent_tup_of_attrnames)
-        if 0<len(equivalent_tuples):
-            raise ValueError("{} cannot contain identical attribute sets: {}".format(
-                attribute, str(equivalent_tuples)))
 
         # Normalize each tup_of_attrnames as a sorted tuple
         setattr(cls.Meta, attribute,
-            ModelMeta.normalize_tuple_of_tuples_of_attribute_names(getattr(cls.Meta, attribute)))
+                ModelMeta.normalize_tuple_of_tuples_of_attribute_names(getattr(cls.Meta, attribute)))
 
     @staticmethod
     def normalize_tuple_of_tuples_of_attribute_names(tuple_of_tuples_of_attribute_names):
@@ -333,28 +447,6 @@ class ModelMeta(type):
         for tup_of_attrnames in tuple_of_tuples_of_attribute_names:
             normalized_tup_of_attrnames.append(tuple(sorted(tup_of_attrnames)))
         return tuple(normalized_tup_of_attrnames)
-
-    def validate_attributes(cls):
-        """ Validate attribute values
-
-        Raises:
-            :obj:`ValueError`: if attributes are not valid
-        """
-        # `attribute_order` is a tuple of attribute names
-        if not isinstance(cls.Meta.attribute_order, tuple):
-            raise ValueError('attribute_order for {} must be a tuple'.format(cls.__name__))
-
-        for attr_name in cls.Meta.attribute_order:
-            if not isinstance(attr_name, str):
-                raise ValueError("attribute_order for {} must contain attribute names; '{}' is "
-                                 "not a string".format(cls.__name__, attr_name))
-
-            if attr_name not in cls.Meta.attributes:
-                raise ValueError("attribute_order must contain attribute names; '{}' not found in "
-                "attributes of {}: {}".format(attr_name, cls.__name__, set(cls.Meta.attributes.keys())))
-
-        cls.validate_n_normalize_attr_tuples('unique_together')
-        cls.validate_n_normalize_attr_tuples('indexed_attrs_tuples')
 
     def create_model_manager(cls):
         """ Create a `Manager` for this `Model`
@@ -384,7 +476,7 @@ class Manager(object):
     * O(1) `Model` instance insert and update operations
 
     Attributes:
-        cls (:obj:`Class`): the :obj:`Model` class which is being managed
+        cls (:obj:`class`): the :obj:`Model` class which is being managed
         _new_instances (:obj:`WeakSet`): set of all new instances of `cls` that have not been indexed,
             stored as weakrefs, so `Model`'s that are otherwise unused can be garbage collected
         _index_dicts (:obj:`dict` mapping `tuple` to :obj:`WeakSet`): indices that enable
@@ -405,7 +497,12 @@ class Manager(object):
     # number of Manager operations between calls to _gc_weaksets
     # todo: make this value configurable
     GC_PERIOD = 1000
+
     def __init__(self, cls):
+        """
+        Args:
+            cls (:obj:`class`): the :obj:`Model` class which is being managed
+        """
         self.cls = cls
         if self.cls.Meta.indexed_attrs_tuples:
             self._new_instances = WeakSet()
@@ -449,20 +546,22 @@ class Manager(object):
         """ Dump the index dictionaries for debugging
 
         Args:
-            file (:obj:): an object with a `write(string)` method
+            file (:obj:`object`, optitonal): an object with a `write(string)` method
         """
         # gc before printing to produce consistent data
         self._gc_weaksets()
         print("Dicts for '{}':".format(self.cls.__name__), file=file)
-        for attr_tuple,d in self._index_dicts.items():
+        for attr_tuple, d in self._index_dicts.items():
             print('\tindexed attr tuple:', attr_tuple, file=file)
-            for k,v in d.items():
-                print('\t\tk,v', k, {id(obj_model) for obj_model in v}, file=file)
+            for k, v in d.items():
+                print('\t\tk,v', k, {id(obj_model)
+                                     for obj_model in v}, file=file)
         print("Reverse dicts for '{}':".format(self.cls.__name__), file=file)
-        for obj,attr_keys in self._reverse_index.items():
+        for obj, attr_keys in self._reverse_index.items():
             print("\tmodel at {}".format(id(obj)), file=file)
-            for indexed_attrs,vals in attr_keys.items():
-                print("\t\t'{}' is '{}'".format(indexed_attrs,vals), file=file)
+            for indexed_attrs, vals in attr_keys.items():
+                print("\t\t'{}' is '{}'".format(
+                    indexed_attrs, vals), file=file)
 
     @staticmethod
     def _get_attr_tuple_vals(model_obj, attr_tuple):
@@ -486,15 +585,21 @@ class Manager(object):
 
         Returns:
             :obj:`tuple`: hashable values for a `tuple` of values of `Model` attributes
+
+        Raises:
+            :obj:`ValueError`: the `values` is not an iterable or is a string
         """
         if isinstance(values, string_types):
-            raise ValueError("_get_hashable_values does not take a string: '{}'".format(values))
+            raise ValueError(
+                "_get_hashable_values does not take a string: '{}'".format(values))
         if not isinstance(values, collections.Iterable):
-            raise ValueError("_get_hashable_values takes an iterable, not: '{}'".format(values))
+            raise ValueError(
+                "_get_hashable_values takes an iterable, not: '{}'".format(values))
         hashable_values = []
         for val in values:
             if isinstance(val, RelatedManager):
-                hashable_values.append(tuple(sorted([id(sub_val) for sub_val in val])))
+                hashable_values.append(
+                    tuple(sorted([id(sub_val) for sub_val in val])))
             elif isinstance(val, Model):
                 hashable_values.append(id(val))
             else:
@@ -523,12 +628,18 @@ class Manager(object):
 
         Returns:
             :obj:`tuple`: `model_obj`'s attribute types for the attribute name(s) in `attr_names`
+
+        Raises:
+            :obj:`ValueError`: `attr_names` is not an iterable or is a string or contains a string that
+                is not a valid attribute name
         """
         self._check_model(model_obj, '_get_attribute_types')
         if isinstance(attr_names, string_types):
-            raise ValueError("_get_attribute_types(): attr_names cannot be a string: '{}'".format(attr_names))
+            raise ValueError(
+                "_get_attribute_types(): attr_names cannot be a string: '{}'".format(attr_names))
         if not isinstance(attr_names, collections.Iterable):
-            raise ValueError("_get_attribute_types(): attr_names must be an iterable, not: '{}'".format(attr_names))
+            raise ValueError(
+                "_get_attribute_types(): attr_names must be an iterable, not: '{}'".format(attr_names))
         cls = self.cls
         types = []
         for attr_name in attr_names:
@@ -538,7 +649,7 @@ class Manager(object):
                 attr = cls.Meta.related_attributes[attr_name]
             else:
                 raise ValueError("Cannot find '{}' in attribute names for '{}'".format(attr_name,
-                    cls.__name__))
+                                                                                       cls.__name__))
             types.append(attr)
         return tuple(types)
 
@@ -562,6 +673,9 @@ class Manager(object):
 
         Args:
             model_obj (:obj:`Model`): a `Model` instance
+
+        Raises:
+            :obj:`ValueError`: `model_obj` is not in `_reverse_index`
         """
         self._check_model(model_obj, '_update')
         self._run_gc_weaksets()
@@ -579,11 +693,12 @@ class Manager(object):
             model_obj (:obj:`Model`): a `Model` instance
         """
         self._check_model(model_obj, '_delete')
-        for indexed_attr_tuple,vals in self._reverse_index[model_obj].items():
+        for indexed_attr_tuple, vals in self._reverse_index[model_obj].items():
             if vals in self._index_dicts[indexed_attr_tuple]:
                 self._index_dicts[indexed_attr_tuple][vals].remove(model_obj)
                 # Recover memory by deleting empty WeakSets.
-                # Empty WeakSets formed by automatic removal of weak refs are gc'ed by _gc_weaksets.
+                # Empty WeakSets formed by automatic removal of weak refs are
+                # gc'ed by _gc_weaksets.
                 if 0 == len(self._index_dicts[indexed_attr_tuple][vals]):
                     del self._index_dicts[indexed_attr_tuple][vals]
         del self._reverse_index[model_obj]
@@ -593,10 +708,14 @@ class Manager(object):
 
         Args:
             model_obj (:obj:`Model`): a `Model` instance
+
+        Raises:
+            :obj:`ValueError`: `model_obj` is not in `_new_instances`
         """
         self._check_model(model_obj, '_insert_new')
         if model_obj not in self._new_instances:
-            raise ValueError("Cannot _insert_new() an instance of '{}' that is not new".format(self.cls.__name__))
+            raise ValueError(
+                "Cannot _insert_new() an instance of '{}' that is not new".format(self.cls.__name__))
         self._insert(model_obj)
         self._new_instances.remove(model_obj)
 
@@ -613,14 +732,16 @@ class Manager(object):
         cls = self.cls
 
         for indexed_attr_tuple in cls.Meta.indexed_attrs_tuples:
-            vals = Manager._hashable_attr_tup_vals(model_obj, indexed_attr_tuple)
+            vals = Manager._hashable_attr_tup_vals(
+                model_obj, indexed_attr_tuple)
             if vals not in self._index_dicts[indexed_attr_tuple]:
                 self._index_dicts[indexed_attr_tuple][vals] = WeakSet()
             self._index_dicts[indexed_attr_tuple][vals].add(model_obj)
 
         d = {}
         for indexed_attr_tuple in cls.Meta.indexed_attrs_tuples:
-            d[indexed_attr_tuple] = Manager._hashable_attr_tup_vals(model_obj, indexed_attr_tuple)
+            d[indexed_attr_tuple] = Manager._hashable_attr_tup_vals(
+                model_obj, indexed_attr_tuple)
         self._reverse_index[model_obj] = d
 
     def _run_gc_weaksets(self):
@@ -642,17 +763,18 @@ class Manager(object):
             :obj:`int`: number of empty WeakSets deleted
         """
         num = 0
-        for indexed_attr_tuple,attr_val_dict in self._index_dicts.items():
+        for indexed_attr_tuple, attr_val_dict in self._index_dicts.items():
             # do not change attr_val_dict while iterating
             attr_val_weakset_pairs = list(attr_val_dict.items())
-            for attr_val,weakset in attr_val_weakset_pairs:
+            for attr_val, weakset in attr_val_weakset_pairs:
                 if not weakset:
                     del self._index_dicts[indexed_attr_tuple][attr_val]
                     num += 1
         return num
 
     # Public Manager() methods follow
-    # If the Model is not indexed these methods do nothing (and return None if a value is returned)
+    # If the Model is not indexed these methods do nothing (and return None if
+    # a value is returned)
     def reset(self):
         """ Reset this `Manager`
 
@@ -737,20 +859,22 @@ class Manager(object):
         """
         cls = self.cls
 
-        if 0==len(kwargs.keys()):
-            raise ValueError("No arguments provided in get() on '{}'".format(cls.__name__))
+        if 0 == len(kwargs.keys()):
+            raise ValueError(
+                "No arguments provided in get() on '{}'".format(cls.__name__))
         if not self.cls.Meta.indexed_attrs_tuples:
             return None
 
         # searching for an indexed_attrs instance
         # Sort by attribute names, to obtain the normalized order for attributes in an indexed_attrs_tuples.
         # This normalization is performed by
-        # ModelMeta.normalize_tuple_of_tuples_of_attribute_names during ModelMeta.__new__()
+        # ModelMeta.normalize_tuple_of_tuples_of_attribute_names during
+        # ModelMeta.__new__()
         keys, vals = zip(*sorted(kwargs.items()))
         possible_indexed_attributes = keys
         if possible_indexed_attributes not in self._index_dicts:
             raise ValueError("{} not an indexed attribute tuple in '{}'".format(possible_indexed_attributes,
-                cls.__name__))
+                                                                                cls.__name__))
         if vals not in self._index_dicts[possible_indexed_attributes]:
             return None
         if 0 == len(self._index_dicts[possible_indexed_attributes][vals]):
@@ -776,9 +900,9 @@ class Manager(object):
         cls = self.cls
         if rv is None:
             return None
-        if 1<len(rv):
+        if 1 < len(rv):
             raise ValueError("get_one(): {} {} instances with '{}'".format(len(rv), cls.__name__,
-                kwargs))
+                                                                           kwargs))
         return rv[0]
 
 
@@ -849,11 +973,13 @@ class Model(with_metaclass(ModelMeta, object)):
         """ initialize attributes """
         # attributes
         for attr in self.Meta.attributes.values():
-            super(Model, self).__setattr__(attr.name, attr.get_init_value(self))
+            super(Model, self).__setattr__(
+                attr.name, attr.get_init_value(self))
 
         # related attributes
         for attr in self.Meta.related_attributes.values():
-            super(Model, self).__setattr__(attr.related_name, attr.get_related_init_value(self))
+            super(Model, self).__setattr__(
+                attr.related_name, attr.get_related_init_value(self))
 
         """ set attribute values """
         # attributes
@@ -896,31 +1022,9 @@ class Model(with_metaclass(ModelMeta, object)):
 
         # tabular orientation
         if cls.Meta.tabular_orientation == TabularOrientation.inline:
-            for attr in cls.Meta.related_attributes.values():
-                if attr in [OneToManyAttribute, OneToManyAttribute, ManyToOneAttribute, ManyToManyAttribute]:
-                    raise ValueError(
-                        'Inline model "{}" must define their own serialization/deserialization methods'.format(cls.__name__))
-
-                if 'deserialize' not in attr.__class__.__dict__:
-                    raise ValueError(
-                        'Inline model "{}" must define their own serialization/deserialization methods'.format(cls.__name__))
-
             if len(cls.Meta.related_attributes) == 0:
                 raise ValueError(
-                    'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__))
-            elif len(cls.Meta.related_attributes) == 1:
-                attr = list(cls.Meta.related_attributes.values())[0]
-
-                if not isinstance(attr, (OneToOneAttribute, OneToManyAttribute)):
-                    warnings.warn(
-                        'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), SchemaWarning)
-
-                elif attr.min_related == 0:
-                    warnings.warn(
-                        'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), SchemaWarning)
-            else:
-                warnings.warn(
-                    'Inline model "{}" should have a single required related one-to-one or one-to-many attribute'.format(cls.__name__), SchemaWarning)
+                    'Inline model "{}" should have at least one one-to-one or one-to-many attribute'.format(cls.__name__))
 
     def __setattr__(self, attr_name, value, propagate=True):
         """ Set attribute and validate any unique attribute constraints
@@ -945,9 +1049,6 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers into a canonical order because their
         order has no semantic meaning. Importantly, this canonical form is reproducible. Thus, this canonical form facilitates reproducible
         computations on top of :obj:`Model` objects.
-
-        Raises:
-            :obj:`ValueError`: if object is not reproducibly normalizable
         """
 
         self._generate_normalize_sort_keys()
@@ -977,7 +1078,7 @@ class Model(with_metaclass(ModelMeta, object)):
                             else:
                                 cls = attr.primary_class
 
-                            val.sort(key=cls._normalize_sort_key)
+                            val.sort(key=cls._normalize_sort_key())
 
     @classmethod
     def _generate_normalize_sort_keys(cls):
@@ -1006,46 +1107,94 @@ class Model(with_metaclass(ModelMeta, object)):
         # single unique attribute
         for attr_name, attr in cls.Meta.attributes.items():
             if attr.unique:
-                def key(obj):
-                    val = getattr(obj, attr_name)
-                    if val is None:
-                        return OrderableNone
-                    return val
-                return key
+                return cls._generate_normalize_sort_key_unique_attr
 
         # tuple of attributes that are unique together
         if cls.Meta.unique_together:
-            lens = [len(x) for x in cls.Meta.unique_together]
-            i_shortest = lens.index(min(lens))
-
-            def key(obj):
-                vals = []
-                for attr_name in cls.Meta.unique_together[i_shortest]:
-                    val = getattr(obj, attr_name)
-                    if isinstance(val, RelatedManager):
-                        vals.append((subval.serialize() for subval in val))
-                    elif isinstance(val, Model):
-                        vals.append(val.serialize())
-                    else:
-                        vals.append(val)
-                return tuple(vals)
-            return key
+            return cls._generate_normalize_sort_key_unique_together
 
         # include all attributes
+        return cls._generate_normalize_sort_key_all_attrs
+
+    @classmethod
+    def _generate_normalize_sort_key_unique_attr(cls, processed_models=None):
+        """ Generate a key for sorting models by their first unique attribute into a normalized order
+
+        Args:
+            processed_models (:obj:`list`, optional): list of models for which sort keys have already been generated
+
+        Returns:
+            :obj:`function`: key for sorting models by their first unique attribute into a normalized order
+        """
+        for attr_name, attr in cls.Meta.attributes.items():
+            if attr.unique:
+                break
+
         def key(obj):
+            val = getattr(obj, attr_name)
+            if val is None:
+                return OrderableNone
+            return val
+        return key
+
+    @classmethod
+    def _generate_normalize_sort_key_unique_together(cls, processed_models=None):
+        """ Generate a key for sorting models by their shortest set of unique attributes into a normalized order
+
+        Args:
+            processed_models (:obj:`list`, optional): list of models for which sort keys have already been generated
+
+        Returns:
+            :obj:`function`: key for sorting models by their shortest set of unique attributes into a normalized order
+        """
+        lens = [len(x) for x in cls.Meta.unique_together]
+        i_shortest = lens.index(min(lens))
+        attr_names = cls.Meta.unique_together[i_shortest]
+
+        def key(obj):
+            vals = []
+            for attr_name in attr_names:
+                val = getattr(obj, attr_name)
+                if isinstance(val, RelatedManager):
+                    vals.append(tuple([subval.serialize() for subval in val]))
+                elif isinstance(val, Model):
+                    vals.append(val.serialize())
+                else:
+                    vals.append(val)
+            return tuple(vals)
+
+        return key
+
+    @classmethod
+    def _generate_normalize_sort_key_all_attrs(cls, processed_models=None):
+        """ Generate a key for sorting models by all of their attributes into a normalized order. This method should
+        be used for models which do not have unique attributes or sets of unique attributes.
+
+        Args:
+            processed_models (:obj:`list`, optional): list of models for which sort keys have already been generated
+
+        Returns:
+            :obj:`function`: key for sorting models by all of their attributes into a normalized order
+        """
+        processed_models = copy.copy(processed_models) or []
+        processed_models.append(cls)
+        def key(obj, processed_models=processed_models):
             vals = []
             for attr_name in chain(cls.Meta.attributes.keys(), cls.Meta.related_attributes.keys()):
                 val = getattr(obj, attr_name)
                 if isinstance(val, RelatedManager):
-                    subvals_serial = []
-                    for subval in val:
-                        subval_serial = subval.__class__._normalize_sort_key(subval)
-                        if subval_serial is None:
-                            subval_serial = OrderableNone
-                        subvals_serial.append(subval_serial)
-                    vals.append(tuple(sorted(subvals_serial)))
+                    if val.__class__ not in processed_models:
+                        subvals_serial = []
+                        for subval in val:
+                            key = subval._normalize_sort_key(processed_models=processed_models)
+                            subval_serial = key(subval)
+                            subvals_serial.append(subval_serial)
+                        vals.append(tuple(sorted(subvals_serial)))
                 elif isinstance(val, Model):
-                    vals.append(val.__class__._normalize_sort_key(val))
+                    if val.__class__ not in processed_models:
+                        key_gen = val._normalize_sort_key
+                        key = key_gen(processed_models=processed_models)
+                        vals.append(key(val))
                 else:
                     vals.append(OrderableNone if val is None else val)
             return tuple(vals)
@@ -1098,7 +1247,7 @@ class Model(with_metaclass(ModelMeta, object)):
                         elif isinstance(val, Model):
                             pairs_to_check.append((val, other_val, ))
                         elif len(val) != len(other_val):
-                            return False
+                            return False  # pragma: no cover # unreachable because already checked by :obj:`_is_equal_attributes`
                         else:
                             if attr_name in obj.Meta.attributes:
                                 cls = attr.related_class
@@ -1186,14 +1335,14 @@ class Model(with_metaclass(ModelMeta, object)):
             ValueError if the location of `attr_name` is unknown
         """
         if self._source is None:
-            raise ValueError("location information unavailable".format())
+            raise ValueError("{} was not loaded from a file".format(self.__class__.__name__))
 
         # account for the header row and possible transposition
         row = self._source.row
         try:
             column = self._source.attribute_seq.index(attr_name) + 1
-        except ValueError as e:
-            raise ValueError("cannot find attr with name {}".format(attr_name))
+        except ValueError:
+            raise ValueError("{}.{} was not loaded from a file".format(self.__class__.__name__, attr_name))
         if self.Meta.tabular_orientation == TabularOrientation.column:
             column, row = row, column
         path = self._source.path_name
@@ -1218,35 +1367,27 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`list` of `Model`: sorted list of objects
         """
         if cls.Meta.ordering:
-            return natsorted(objects, cls.get_sort_key, alg=ns.IGNORECASE)
+            for attr_name in reversed(cls.Meta.ordering):
+                if attr_name[0] == '-':
+                    reverse = True
+                    attr_name = attr_name[1:]
+                else:
+                    reverse = False
+                objects.sort(key=natsort_keygen(key=lambda obj: cls.get_sort_key(obj, attr_name), alg=ns.IGNORECASE), reverse=reverse)
 
     @classmethod
-    def get_sort_key(cls, object):
+    def get_sort_key(cls, object, attr_name):
         """ Get sort key for `Model` instance `object` based on `cls.Meta.ordering`
 
         Args:
             object (:obj:`Model`): `Model` instance
+            attr_name (:obj:`str`): attribute name
 
         Returns:
-            :obj:`object` or `tuple` of `object`: sort key for `object`
+            :obj:`object`: sort key for `object`
         """
-        vals = []
-        for attr_name in cls.Meta.ordering:
-            if attr_name[0] == '-':
-                increasing = False
-                attr_name = attr_name[1:]
-            else:
-                increasing = True
-            attr = cls.Meta.attributes[attr_name]
-            val = attr.serialize(getattr(object, attr_name))
-            if increasing:
-                vals.append(val)
-            else:
-                vals.append(-val)
-
-        if len(vals) == 1:
-            return val
-        return tuple(vals)
+        attr = cls.Meta.attributes[attr_name]
+        return attr.serialize(getattr(object, attr_name))
 
     def difference(self, other):
         """ Get the semantic difference between two models
@@ -1287,15 +1428,18 @@ class Model(with_metaclass(ModelMeta, object)):
 
                 if not isinstance(attr, RelatedAttribute):
                     if not attr.value_equal(val, other_val):
-                        difference['attributes'][attr_name] = '{} != {}'.format(val, other_val)
+                        difference['attributes'][
+                            attr_name] = '{} != {}'.format(val, other_val)
 
                 elif isinstance(val, RelatedManager):
                     if len(val) != len(other_val):
                         difference['attributes'][attr_name] = 'Length: {} != Length: {}'.format(
                             len(val), len(other_val))
                     else:
-                        serial_vals = sorted(((v.serialize(), v) for v in val), key=lambda x: x[0])
-                        serial_other_vals = sorted(((v.serialize(), v) for v in other_val), key=lambda x: x[0])
+                        serial_vals = sorted(((v.serialize(), v)
+                                              for v in val), key=lambda x: x[0])
+                        serial_other_vals = sorted(
+                            ((v.serialize(), v) for v in other_val), key=lambda x: x[0])
 
                         i_val = 0
                         oi_val = 0
@@ -1305,12 +1449,15 @@ class Model(with_metaclass(ModelMeta, object)):
                             serial_ov = serial_other_vals[oi_val][0]
                             if serial_v == serial_ov:
                                 el_diff = {}
-                                difference['attributes'][attr_name].append(el_diff)
-                                pairs_to_check.append((serial_vals[i_val][1], serial_other_vals[oi_val][1], el_diff))
+                                difference['attributes'][
+                                    attr_name].append(el_diff)
+                                pairs_to_check.append(
+                                    (serial_vals[i_val][1], serial_other_vals[oi_val][1], el_diff))
                                 i_val += 1
                                 oi_val += 1
                             elif serial_v < serial_ov:
-                                difference['attributes'][attr_name].append('No matching element {}'.format(serial_v))
+                                difference['attributes'][attr_name].append(
+                                    'No matching element {}'.format(serial_v))
                                 i_val += 1
                             else:
                                 oi_val += 1
@@ -1320,12 +1467,15 @@ class Model(with_metaclass(ModelMeta, object)):
                                 'No matching element {}'.format(serial_vals[i_val2][0]))
                 elif val is None:
                     if other_val is not None:
-                        difference['attributes'][attr_name] = '{} != {}'.format(val, other_val.serialize())
+                        difference['attributes'][attr_name] = '{} != {}'.format(
+                            val, other_val.serialize())
                 elif other_val is None:
-                    difference['attributes'][attr_name] = '{} != {}'.format(val.serialize(), other_val)
+                    difference['attributes'][attr_name] = '{} != {}'.format(
+                        val.serialize(), other_val)
                 else:
                     difference['attributes'][attr_name] = {}
-                    pairs_to_check.append((val, other_val, difference['attributes'][attr_name], ))
+                    pairs_to_check.append(
+                        (val, other_val, difference['attributes'][attr_name], ))
 
         return self._render_difference(self._simplify_difference(total_difference))
 
@@ -1408,12 +1558,14 @@ class Model(with_metaclass(ModelMeta, object)):
                     difference['objects'][0].serialize(),
                     difference['objects'][1].__class__.__name__,
                     difference['objects'][1].serialize(),
-                    )
+                )
 
                 for attr_name in natsorted(difference['attributes'].keys(), alg=ns.IGNORECASE):
-                    prefix = '\n{}`{}` are not equal:'.format(' ' * 2 * (indent + 1), attr_name)
+                    prefix = '\n{}`{}` are not equal:'.format(
+                        ' ' * 2 * (indent + 1), attr_name)
                     if isinstance(difference['attributes'][attr_name], dict):
-                        to_render.append([difference['attributes'][attr_name], indent + 2, prefix, ])
+                        to_render.append(
+                            [difference['attributes'][attr_name], indent + 2, prefix, ])
 
                     elif isinstance(difference['attributes'][attr_name], list):
                         new_to_render = []
@@ -1426,10 +1578,12 @@ class Model(with_metaclass(ModelMeta, object)):
                                     el_diff['objects'][0].serialize(),
                                     el_diff['objects'][1].__class__.__name__,
                                     el_diff['objects'][1].serialize(),
-                                    )
-                                new_to_render.append([el_diff, indent + 3, el_prefix, ])
+                                )
+                                new_to_render.append(
+                                    [el_diff, indent + 3, el_prefix, ])
                             else:
-                                new_to_msg += '\n' + ' ' * 2 * (indent + 2) + el_diff
+                                new_to_msg += '\n' + ' ' * \
+                                    2 * (indent + 2) + el_diff
 
                         if new_to_msg:
                             msg += prefix + new_to_msg
@@ -1440,7 +1594,8 @@ class Model(with_metaclass(ModelMeta, object)):
                             new_to_render.reverse()
                             to_render.extend(new_to_render)
                     else:
-                        msg += prefix + '\n' + ' ' * 2 * (indent + 2) + difference['attributes'][attr_name]
+                        msg += prefix + '\n' + ' ' * 2 * \
+                            (indent + 2) + difference['attributes'][attr_name]
 
         return msg
 
@@ -1588,9 +1743,9 @@ class Model(with_metaclass(ModelMeta, object)):
                 for attr_name in unique_together:
                     attr_val = getattr(obj, attr_name)
                     if isinstance(attr_val, RelatedManager):
-                        val.append(tuple(sorted((id(sub_val) for sub_val in attr_val))))
+                        val.append(tuple(sorted((sub_val.serialize() for sub_val in attr_val))))
                     elif isinstance(attr_val, Model):
-                        val.append(id(attr_val))
+                        val.append(attr_val.serialize())
                     else:
                         val.append(attr_val)
                 val = tuple(val)
@@ -1604,7 +1759,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 msg = 'Combinations of ({}) must be unique. The following combinations are repeated:'.format(
                     ', '.join(unique_together))
                 for rep_val in rep_vals:
-                    msg += '\n  {}'.format(', '.join((str(x) for x in rep_val)))
+                    msg += '\n  {}'.format(', '.join((str(x)
+                                                      for x in rep_val)))
                 attr = cls.Meta.attributes[list(unique_together)[0]]
                 errors.append(InvalidAttribute(attr, [msg]))
 
@@ -1613,8 +1769,9 @@ class Model(with_metaclass(ModelMeta, object)):
             return InvalidModel(cls, errors)
         return None
 
-    DEFAULT_MAX_DEPTH=2
-    DEFAULT_INDENT=3
+    DEFAULT_MAX_DEPTH = 2
+    DEFAULT_INDENT = 3
+
     def pprint(self, stream=None, max_depth=DEFAULT_MAX_DEPTH, indent=DEFAULT_INDENT):
         if stream is None:
             stream = sys.stdout
@@ -1673,7 +1830,7 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`list` of `list`: a nested list of string representations of this Model
 
         Raises:
-            :obj:`ValuerError`: if an attribute cannot be represented as a string, or a
+            :obj:`ValueError`: if an attribute cannot be represented as a string, or a
             related attribute value is not `None`, a `Model`, or an Iterable
         """
         '''
@@ -1690,7 +1847,7 @@ class Model(with_metaclass(ModelMeta, object)):
         cls = self.__class__
 
         # check depth
-        if max_depth<depth:
+        if max_depth < depth:
             return ["{}: {}".format(cls.__name__, '...')]
 
         printed_objs.add(self)
@@ -1698,7 +1855,8 @@ class Model(with_metaclass(ModelMeta, object)):
         # get attribute names and their string values
         attrs = []
 
-        # first do the attributes in cls.Meta.attribute_order in that order, then do the rest
+        # first do the attributes in cls.Meta.attribute_order in that order,
+        # then do the rest
         all_attrs = cls.Meta.attributes.copy()
         all_attrs.update(cls.Meta.related_attributes)
         ordered_attrs = []
@@ -1707,7 +1865,7 @@ class Model(with_metaclass(ModelMeta, object)):
         for name in all_attrs.keys():
             if name not in cls.Meta.attribute_order:
                 ordered_attrs.append((name, all_attrs[name]))
-        for name,attr in ordered_attrs:
+        for name, attr in ordered_attrs:
             val = getattr(self, name)
 
             if isinstance(attr, RelatedAttribute):
@@ -1718,16 +1876,19 @@ class Model(with_metaclass(ModelMeta, object)):
                         attrs.append((name, '--'))
                     else:
                         attrs.append((name, ''))
-                        attrs.append(val._tree_str(printed_objs, depth+1, max_depth))
+                        attrs.append(val._tree_str(
+                            printed_objs, depth+1, max_depth))
                 elif isinstance(val, (set, list, tuple)):
                     attrs.append((name, ''))
                     iter_attr = []
                     for v in val:
                         if not v in printed_objs:
-                            iter_attr.append(v._tree_str(printed_objs, depth+1, max_depth))
+                            iter_attr.append(v._tree_str(
+                                printed_objs, depth+1, max_depth))
                     attrs.extend(iter_attr)
                 else:
-                    raise ValueError("Related attribute '{}' has invalid value".format(name))
+                    raise ValueError("Related attribute '{}' has invalid value".format(
+                        name))  # pragma: no cover # unreachable due to other error checking
 
             elif isinstance(attr, Attribute):
                 if val is None:
@@ -1737,10 +1898,12 @@ class Model(with_metaclass(ModelMeta, object)):
                 elif hasattr(attr, 'serialize'):
                     attrs.append((name, attr.serialize(val)))
                 else:
-                    raise ValueError("Attribute '{}' has invalid value '{}'".format(name, str(val)))
+                    raise ValueError(
+                        "Attribute '{}' has invalid value '{}'".format(name, str(val)))  # pragma: no cover # unreachable due to other error checking
 
             else:
-                raise ValueError("Attribute '{}' is not an Attribute or RelatedAttribute".format(name))
+                raise ValueError("Attribute '{}' is not an Attribute or RelatedAttribute".format(name)
+                                 )  # pragma: no cover # unreachable due to other error checking
 
         rv = ["{}:".format(cls.__name__)]
         nested = []
@@ -1781,7 +1944,7 @@ class Model(with_metaclass(ModelMeta, object)):
             objects_and_copies (:obj:`dict` of `Model`: `Model`): dictionary of pairs of objects and their new copies
 
         Raises:
-            :obj:`ValuerError`: if related attribute value is not `None`, a `Model`, or an Iterable,
+            :obj:`ValueError`: if related attribute value is not `None`, a `Model`, or an Iterable,
                 or if a non-related attribute is not an immutable
         """
         # get class
@@ -1801,14 +1964,14 @@ class Model(with_metaclass(ModelMeta, object)):
                     for v in val:
                         copy_val.append(objects_and_copies[v])
                 else:
-                    raise ValueError('Invalid related attribute value')
+                    raise ValueError('Invalid related attribute value')  # pragma: no cover # unreachable due to other error checking
             else:
                 if val is None:
                     copy_val = val
                 elif isinstance(val, (string_types, bool, integer_types, float, Enum, )):
-                    copy_val = copy.copy(val)
+                    copy_val = val
                 else:
-                    raise ValueError('Invalid attribute value')
+                    copy_val = copy.deepcopy(val)
 
             setattr(other, attr.name, copy_val)
 
@@ -1826,8 +1989,11 @@ class Model(with_metaclass(ModelMeta, object)):
             if cls not in checked_classes:
                 checked_classes.append(cls)
 
-                if not (isinstance(cls, type) and issubclass(cls, Model)):
-                    raise ValueError("Related class '{}' must be an obj_model.Model".format(
+                if not isinstance(cls, type):
+                    raise ValueError("Related class '{}' must be a `Model`".format(cls))
+
+                if not issubclass(cls, Model):
+                    raise ValueError("Related class '{}' must be a `Model`".format(
                         cls.__name__))
 
                 if not cls.are_related_attributes_serializable():
@@ -1847,7 +2013,7 @@ class Model(with_metaclass(ModelMeta, object)):
     def are_related_attributes_serializable(cls):
         """ Determine if the immediate related attributes of the class can be serialized
 
-        Raises:
+        Returns:
             :obj:`bool`: `True` if the related attributes can be serialized
         """
         for attr in cls.Meta.attributes.values():
@@ -1856,7 +2022,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 # setup related attributes on related classes
                 if attr.name in cls.__dict__ and attr.related_name and \
                         isinstance(attr.related_class, type) and issubclass(attr.related_class, Model):
-                    related_classes = chain([attr.related_class], get_subclasses(attr.related_class))
+                    related_classes = chain(
+                        [attr.related_class], get_subclasses(attr.related_class))
                     for related_class in related_classes:
                         # check that related class has primary attributes
                         if isinstance(attr, (OneToManyAttribute, ManyToManyAttribute)) and \
@@ -1881,7 +2048,13 @@ class Model(with_metaclass(ModelMeta, object)):
 
     @classmethod
     def get_manager(cls):
+        """ Get the manager for the model
+
+        Return:
+            :obj:`Manager`: manager
+        """
         return cls.objects
+
 
 class ModelSource(object):
     """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
@@ -1909,7 +2082,7 @@ class ModelSource(object):
         self.row = row
 
 
-class Attribute(object):
+class Attribute(six.with_metaclass(abc.ABCMeta, object)):
     """ Model attribute
 
     Attributes:
@@ -1952,9 +2125,6 @@ class Attribute(object):
         Returns:
             :obj:`object`: initial value
         """
-        if self.init_value and hasattr(self.init_value, '__call__'):
-            return self.init_value()
-
         return copy.copy(self.init_value)
 
     def get_default(self, obj):
@@ -1966,10 +2136,10 @@ class Attribute(object):
         Returns:
             :obj:`object`: initial value
         """
-        if self.default and hasattr(self.default, '__call__'):
+        if isinstance(self.default, (six.types.FunctionType, six.types.MethodType, six.types.LambdaType)):
             return self.default()
 
-        return copy.copy(self.default)
+        return copy.deepcopy(self.default)
 
     def set_value(self, obj, new_value):
         """ Set value of attribute of object
@@ -2006,6 +2176,7 @@ class Attribute(object):
         """
         return (value, None)
 
+    @abc.abstractmethod
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
 
@@ -2016,7 +2187,7 @@ class Attribute(object):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
         """
-        return None
+        pass  # pragma: no cover
 
     def validate_unique(self, objects, values):
         """ Determine if the attribute values are unique
@@ -2040,9 +2211,49 @@ class Attribute(object):
                 unq_vals.add(val)
 
         if rep_vals:
-            message = "{} values must be unique, but these values are repeated: {}".format(self.name,
-                                                                                           ', '.join([quote(val) for val in rep_vals]))
+            message = "{} values must be unique, but these values are repeated: {}".format(
+                self.name, ', '.join([quote(val) for val in rep_vals]))
             return InvalidAttribute(self, [message])
+
+    @abc.abstractmethod
+    def serialize(self, value):
+        """ Serialize value
+
+        Args:
+            value (:obj:`object`): Python representation
+
+        Returns:
+            :obj:`bool`, `float`, `str`, or `None`: simple Python representation
+        """
+        pass  # pragma: no cover
+
+    @abc.abstractmethod
+    def deserialize(self, value):
+        """ Deserialize value
+
+        Args:
+            value (:obj:`object`): semantically equivalent representation
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        pass  # pragma: no cover
+
+
+class LiteralAttribute(Attribute):
+    """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`object`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
+        """
+        return None
 
     def serialize(self, value):
         """ Serialize value
@@ -2066,10 +2277,6 @@ class Attribute(object):
         """
         return self.clean(value)
 
-
-class LiteralAttribute(Attribute):
-    """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
-    pass
 
 class NumericAttribute(LiteralAttribute):
     """ Base class for numeric literal attributes (float, integer) """
@@ -2099,9 +2306,10 @@ class EnumAttribute(LiteralAttribute):
             :obj:`ValueError`: if `enum_class` is not an instance of `Enum` or if `default` is not an instance of `enum_class`
         """
         if not issubclass(enum_class, Enum):
-            raise ValueError('`enum_class` must be an subclass of `Enum`')
+            raise ValueError('`enum_class` must be a subclass of `Enum`')
         if default is not None and not isinstance(default, enum_class):
-            raise ValueError('Default must be None or an instance of `enum_class`')
+            raise ValueError(
+                'Default must be `None` or an instance of `enum_class`')
 
         super(EnumAttribute, self).__init__(default=default,
                                             verbose_name=verbose_name, help=help,
@@ -2153,18 +2361,10 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(EnumAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
-
         if not isinstance(value, self.enum_class):
-            errors.append("Value '{}' must be an instance of `{}` which contains {}".format(value,
-                                                                                            self.enum_class.__name__, list(self.enum_class.__members__.keys())))
+            return InvalidAttribute(self, ["Value '{}' must be an instance of `{}` which contains {}".format(
+                value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))])
 
-        if errors:
-            return InvalidAttribute(self, errors)
         return None
 
     def serialize(self, value):
@@ -2197,7 +2397,7 @@ class BooleanAttribute(LiteralAttribute):
             :obj:`ValueError`: if `default` is not a `bool`
         """
         if default is not None and not isinstance(default, bool):
-            raise ValueError('`default` must be None or an instance of `bool`')
+            raise ValueError('`default` must be `None` or an instance of `bool`')
 
         super(BooleanAttribute, self).__init__(default=default,
                                                verbose_name=verbose_name, help=help,
@@ -2212,26 +2412,27 @@ class BooleanAttribute(LiteralAttribute):
         Returns:
             :obj:`tuple` of `bool`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
-        errors = []
-        if isinstance(value, string_types):
+        if value is None:
+            pass
+        elif isinstance(value, string_types):
             if value == '':
                 value = None
             elif value in ['true', 'True', 'TRUE', '1']:
                 value = True
             elif value in ['false', 'False', 'FALSE', '0']:
                 value = False
+        else:
+            try:
+                float_value = float(value)
 
-        try:
-            float_value = float(value)
-
-            if isnan(float_value):
-                value = None
-            elif float_value == 0.:
-                value = False
-            elif float_value == 1.:
-                value = True
-        except ValueError:
-            pass
+                if isnan(float_value):
+                    value = None
+                elif float_value == 0.:
+                    value = False
+                elif float_value == 1.:
+                    value = True
+            except:
+                pass
 
         if (value is None) or isinstance(value, bool):
             return (value, None)
@@ -2247,29 +2448,10 @@ class BooleanAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(BooleanAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
-
         if value is not None and not isinstance(value, bool):
-            errors.append('Value must be an instance of `bool` or `None`')
+            return InvalidAttribute(self, ['Value must be an instance of `bool` or `None`'])
 
-        if errors:
-            return InvalidAttribute(self, errors)
         return None
-
-    def serialize(self, value):
-        """ Serialize value
-
-        Args:
-            value (:obj:`bool`): Python representation
-
-        Returns:
-            :obj:`bool`: simple Python representation
-        """
-        return value
 
 
 class FloatAttribute(NumericAttribute):
@@ -2303,7 +2485,7 @@ class FloatAttribute(NumericAttribute):
         max = float(max)
         default = float(default)
         if not isnan(min) and not isnan(max) and max < min:
-            raise ValueError('max must be at least min')
+            raise ValueError('`max` must be at least `min`')
 
         super(FloatAttribute, self).__init__(default=default,
                                              verbose_name=verbose_name, help=help,
@@ -2353,11 +2535,7 @@ class FloatAttribute(NumericAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(FloatAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if isinstance(value, float):
             if not self.nan and isnan(value):
@@ -2419,7 +2597,7 @@ class IntegerAttribute(NumericAttribute):
         if default is not None:
             default = int(default)
         if min is not None and max is not None and max < min:
-            raise ValueError('max must be at least min')
+            raise ValueError('`max` must be at least `min`')
 
         super(IntegerAttribute, self).__init__(default=default,
                                                verbose_name=verbose_name, help=help,
@@ -2459,24 +2637,19 @@ class IntegerAttribute(NumericAttribute):
             :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return list of
                 errors as an instance of `InvalidAttribute`
         """
-        errors = super(IntegerAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if isinstance(value, integer_types):
             if self.min is not None:
-                if value is None:
-                    errors.append('Value cannot be None')
-                elif value < self.min:
-                    errors.append('Value must be at least {:d}'.format(self.min))
+                if value < self.min:
+                    errors.append(
+                        'Value must be at least {:d}'.format(self.min))
 
             if self.max is not None:
-                if value is None:
-                    errors.append('Value cannot be None')
-                elif value > self.max:
-                    errors.append('Value must be at most {:d}'.format(self.max))
+                if value > self.max:
+                    errors.append(
+                        'Value must be at most {:d}'.format(self.max))
+
         elif value is not None:
             errors.append('Value must be an instance of `int` or `None`')
 
@@ -2568,11 +2741,11 @@ class StringAttribute(LiteralAttribute):
         """
 
         if not isinstance(min_length, integer_types) or min_length < 0:
-            raise ValueError('min_length must be a non-negative integer')
-        if (max_length is not None) and (not isinstance(max_length, integer_types) or max_length < 0):
-            raise ValueError('max_length must be None or a non-negative integer')
+            raise ValueError('`min_length` must be a non-negative integer')
+        if (max_length is not None) and (not isinstance(max_length, integer_types) or max_length < min_length):
+            raise ValueError('`max_length` must be at least `min_length` or `None`')
         if not isinstance(default, string_types):
-            raise ValueError('Default must be a string')
+            raise ValueError('`default` must be a string')
 
         super(StringAttribute, self).__init__(default=default,
                                               verbose_name=verbose_name, help=help,
@@ -2606,20 +2779,18 @@ class StringAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(StringAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if not isinstance(value, string_types):
             errors.append('Value must be an instance of `str`')
         else:
             if self.min_length and len(value) < self.min_length:
-                errors.append('Value must be at least {:d} characters'.format(self.min_length))
+                errors.append(
+                    'Value must be at least {:d} characters'.format(self.min_length))
 
             if self.max_length and len(value) > self.max_length:
-                errors.append('Value must be less than {:d} characters'.format(self.max_length))
+                errors.append(
+                    'Value must be less than {:d} characters'.format(self.max_length))
 
             if self.primary and (value == '' or value is None):
                 errors.append('{} value for primary attribute cannot be empty'.format(
@@ -2709,8 +2880,9 @@ class RegexAttribute(StringAttribute):
         else:
             errors = []
 
-        if not re.match(self.pattern, value, flags=self.flags):
-            errors.append("Value '{}' does not match pattern: {}".format(value, self.pattern))
+        if not re.search(self.pattern, value, flags=self.flags):
+            errors.append("Value '{}' does not match pattern: {}".format(
+                value, self.pattern))
 
         if errors:
             return InvalidAttribute(self, errors)
@@ -2728,8 +2900,8 @@ class SlugAttribute(RegexAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
         """
         if help is None:
-            help = "Enter a unique string identifier that (1) starts with a letter, (2) is composed "
-            "of letters, numbers and underscores, and (3) is less than 64 characters long"
+            help = ("Enter a unique string identifier that (1) starts with a letter, (2) is composed "
+                    "of letters, numbers and underscores, and (3) is less than 64 characters long")
 
         super(SlugAttribute, self).__init__(pattern=r'^[a-z_][a-z0-9_]*$', flags=re.I,
                                             min_length=1, max_length=63,
@@ -2750,10 +2922,7 @@ class UrlAttribute(RegexAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         core_pattern = '(?:http|ftp)s?://(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:/?|[/?]\S+)'
-        if min_length == 0:
-            pattern = '^(|{})$'.format(core_pattern)
-        else:
-            pattern = '^{}$'.format(core_pattern)
+        pattern = '^(|{})$'.format(core_pattern)
 
         super(UrlAttribute, self).__init__(pattern=pattern,
                                            flags=re.I,
@@ -2797,14 +2966,14 @@ class DateAttribute(LiteralAttribute):
         if value is None:
             return (value, None)
 
-        if isinstance(value, date):
-            return (value, None)
-
         if isinstance(value, datetime):
             if value.hour == 0 and value.minute == 0 and value.second == 0 and value.microsecond == 0:
                 return (value.date(), None)
             else:
                 return (None, InvalidAttribute(self, ['Time must be 0:0:0.0']))
+
+        if isinstance(value, date):
+            return (value, None)
 
         if isinstance(value, string_types):
             try:
@@ -2821,7 +2990,7 @@ class DateAttribute(LiteralAttribute):
             int_value = int(float_value)
             if float_value == int_value:
                 return (date.fromordinal(int_value + date(1900, 1, 1).toordinal() - 1), None)
-        except ValueError:
+        except (TypeError, ValueError):
             pass
 
         return (None, 'Value must be an instance of `date`')
@@ -2836,11 +3005,7 @@ class DateAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(DateAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if not self.none:
@@ -2924,7 +3089,7 @@ class TimeAttribute(LiteralAttribute):
             minutes = int((int_value - hour * 60. * 60.) / 60.)
             seconds = int(int_value % 60)
             return (time(hour, minutes, seconds), None)
-        except ValueError:
+        except (TypeError, ValueError):
             pass
 
         return (None, 'Value must be an instance of `time`')
@@ -2939,11 +3104,7 @@ class TimeAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(TimeAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if not self.none:
@@ -3021,18 +3182,20 @@ class DateTimeAttribute(LiteralAttribute):
             float_value = float(value)
             date_int_value = int(float_value)
             time_int_value = round((float_value % 1) * 24 * 60 * 60)
+            if time_int_value == 24 * 60 * 60:
+                time_int_value = 0
+                date_int_value += 1
 
-            date_value = date.fromordinal(date_int_value + date(1900, 1, 1).toordinal() - 1)
+            date_value = date.fromordinal(
+                date_int_value + date(1900, 1, 1).toordinal() - 1)
 
-            if time_int_value < 0 or time_int_value > 24 * 60 * 60 - 1:
-                return (None, InvalidAttribute(self, ['Number must be a valid datetime']))
             hour = int(time_int_value / (60. * 60.))
             minutes = int((time_int_value - hour * 60. * 60.) / 60.)
             seconds = int(time_int_value % 60)
             time_value = time(hour, minutes, seconds)
 
             return (datetime.combine(date_value, time_value), None)
-        except ValueError:
+        except (TypeError, ValueError):
             pass
 
         return (None, 'Value must be an instance of `datetime`')
@@ -3047,11 +3210,7 @@ class DateTimeAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(DateTimeAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if not self.none:
@@ -3081,7 +3240,8 @@ class DateTimeAttribute(LiteralAttribute):
         time_value = value.time()
 
         return date_value.toordinal() - date(1900, 1, 1).toordinal() + 1 \
-            + (time_value.hour * 60. * 60. + time_value.minute * 60. + time_value.second) / (24. * 60. * 60.)
+            + (time_value.hour * 60. * 60. + time_value.minute *
+               60. + time_value.second) / (24. * 60. * 60.)
 
 
 class RelatedAttribute(Attribute):
@@ -3121,17 +3281,23 @@ class RelatedAttribute(Attribute):
             help (:obj:`str`, optional): help string
 
         Raises:
-            :obj:`ValueError`: If default or related_default is not None or a callable or default and related_default are both callables
+            :obj:`ValueError`: If default or related_default is not None, an empty list, or a callable or
+                default and related_default are both non-empty lists or callables
         """
 
-        if default and not hasattr(default, '__call__'):
-            raise ValueError('Default must be None or a callable')
+        if default is not None and not isinstance(default, list) and not callable(default):
+            raise ValueError('Default must be `None`, a list, or a callable')
 
-        if related_default and not hasattr(related_default, '__call__'):
-            raise ValueError('Related default must be None or a callable')
+        if related_default is not None and not isinstance(related_default, list) and not callable(related_default):
+            raise ValueError('Related default must be `None`, a list, or a callable')
 
-        if default and related_default:
-            raise ValueError('Default and related_default cannot both be used')
+        if (callable(default) or
+                (isinstance(default, list) and len(default) > 0) or
+                (not isinstance(default, list) and default is not None)) and \
+           (callable(related_default) or
+                (isinstance(related_default, list) and len(related_default) > 0) or
+                (not isinstance(related_default, list) and related_default is not None)):
+            raise ValueError('Default and `related_default` cannot both be used')
 
         if not verbose_related_name:
             verbose_related_name = sentencecase(related_name)
@@ -3174,15 +3340,19 @@ class RelatedAttribute(Attribute):
 
         Returns:
             :obj:`object`: initial value
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
         """
         if not self.related_name:
             raise ValueError('Related property is not defined')
 
-        if self.related_default and hasattr(self.related_default, '__call__'):
+        if self.related_default and callable(self.related_default):
             return self.related_default()
 
         return copy.copy(self.related_default)
 
+    @abc.abstractmethod
     def set_related_value(self, obj, new_values):
         """ Update the values of the related attributes of the attribute
 
@@ -3192,14 +3362,10 @@ class RelatedAttribute(Attribute):
 
         Returns:
             :obj:`object`: value of the attribute
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
         """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-        return new_values
+        pass  # pragma: no cover
 
+    @abc.abstractmethod
     def related_validate(self, obj, value):
         """ Determine if `value` is a valid value of the related attribute
 
@@ -3210,19 +3376,7 @@ class RelatedAttribute(Attribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        return None
-
-    def deserialize(self, value, objects):
-        """ Deserialize value
-
-        Args:
-            value (:obj:`str`): String representation
-            objects (:obj:`dict`): dictionary of objects, grouped by model
-
-        Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
-        """
-        return (value, None)
+        pass  # pragma: no cover
 
 
 class OneToOneAttribute(RelatedAttribute):
@@ -3243,9 +3397,6 @@ class OneToOneAttribute(RelatedAttribute):
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
-
-        Raises:
-            :obj:`ValueError`: If default is not `None` or a callable
         """
         super(OneToOneAttribute, self).__init__(related_class, related_name=related_name,
                                                 init_value=None, default=default,
@@ -3316,38 +3467,6 @@ class OneToOneAttribute(RelatedAttribute):
 
         return new_value
 
-    def value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`Model`): first value
-            val2 (:obj:`Model`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if val1.__class__ is not val2.__class__:
-            return False
-        if val1 is None:
-            return True
-        return val1.eq_attributes(val2)
-
-    def related_value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`Model`): first value
-            val2 (:obj:`Model`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if val1.__class__ is not val2.__class__:
-            return False
-        if val1 is None:
-            return True
-        return val1.eq_attributes(val2)
-
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
 
@@ -3358,17 +3477,14 @@ class OneToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(OneToOneAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if self.min_related == 1:
                 errors.append('Value cannot be `None`')
         elif not isinstance(value, self.related_class):
-            errors.append('Value must be an instance of "{:s}" or `None`'.format(self.related_class.__name__))
+            errors.append('Value must be an instance of "{:s}" or `None`'.format(
+                self.related_class.__name__))
         elif self.related_name:
             if obj is not getattr(value, self.related_name):
                 errors.append('Object must be related value')
@@ -3387,18 +3503,15 @@ class OneToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(OneToOneAttribute, self).related_validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if self.min_related_rev == 1:
                 errors.append('Value cannot be `None`')
         elif value and self.related_name:
             if not isinstance(value, self.primary_class):
-                errors.append('Related value must be an instance of "{:s}"'.format(self.primary_class.__name__))
+                errors.append('Related value must be an instance of "{:s}"'.format(
+                    self.primary_class.__name__))
             elif getattr(value, self.name) is not obj:
                 errors.append('Object must be related value')
 
@@ -3435,7 +3548,8 @@ class OneToOneAttribute(RelatedAttribute):
             return (None, None)
 
         related_objs = []
-        related_classes = chain([self.related_class], get_subclasses(self.related_class))
+        related_classes = chain([self.related_class],
+                                get_subclasses(self.related_class))
         for related_class in related_classes:
             if issubclass(related_class, Model) and value in objects[related_class]:
                 related_objs.append(objects[related_class][value])
@@ -3490,7 +3604,7 @@ class ManyToOneAttribute(RelatedAttribute):
             :obj:`ValueError`: if related property is not defined
         """
         if not self.related_name:
-            raise ValueError('Related property is undefined')
+            raise ValueError('Related property is not defined')
 
         return ManyToOneRelatedManager(obj, self)
 
@@ -3543,46 +3657,6 @@ class ManyToOneAttribute(RelatedAttribute):
 
         return cur_values
 
-    def value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`Model`): first value
-            val2 (:obj:`Model`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if val1.__class__ is not val2.__class__:
-            return False
-        if val1 is None:
-            return True
-        return val1.eq_attributes(val2)
-
-    def related_value_equal(self, vals1, vals2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`list`): first value
-            val2 (:obj:`list`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if vals1.__class__ != vals2.__class__:
-            return False
-
-        for v1 in vals1:
-            match = False
-            for v2 in vals2:
-                if v1.eq_attributes(v2):
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
 
@@ -3593,21 +3667,18 @@ class ManyToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(ManyToOneAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if value is None:
             if self.min_related == 1:
                 errors.append('Value cannot be `None`')
         elif not isinstance(value, self.related_class):
-            errors.append('Value must be an instance of "{:s}" or `None`'.format(self.related_class.__name__))
+            errors.append('Value must be an instance of "{:s}" or `None`'.format(
+                self.related_class.__name__))
         elif self.related_name:
             related_value = getattr(value, self.related_name)
-            if not isinstance(related_value, list):
-                errors.append('Related value must be a list')
+            if not isinstance(related_value, ManyToOneRelatedManager):
+                errors.append('Related value must be a `ManyToOneRelatedManager`')  # pragma: no cover # unreachable due to above error checking
             if obj not in related_value:
                 errors.append('Object must be in related values')
 
@@ -3625,23 +3696,22 @@ class ManyToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(ManyToOneAttribute, self).related_validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if self.related_name:
             if not isinstance(value, list):
                 errors.append('Related value must be a list')
             elif len(value) < self.min_related_rev:
-                errors.append('There must be at least {} related values'.format(self.min_related_rev))
+                errors.append('There must be at least {} related values'.format(
+                    self.min_related_rev))
             elif len(value) > self.max_related_rev:
-                errors.append('There cannot be more than {} related values'.format(self.max_related_rev))
+                errors.append('There cannot be more than {} related values'.format(
+                    self.max_related_rev))
             else:
                 for v in value:
                     if not isinstance(v, self.primary_class):
-                        errors.append('Related value must be an instance of "{:s}"'.format(self.primary_class.__name__))
+                        errors.append('Related value must be an instance of "{:s}"'.format(
+                            self.primary_class.__name__))
                     elif getattr(v, self.name) is not obj:
                         errors.append('Object must be related value')
 
@@ -3678,7 +3748,8 @@ class ManyToOneAttribute(RelatedAttribute):
             return (None, None)
 
         related_objs = []
-        related_classes = chain([self.related_class], get_subclasses(self.related_class))
+        related_classes = chain([self.related_class],
+                                get_subclasses(self.related_class))
         for related_class in related_classes:
             if issubclass(related_class, Model) and value in objects[related_class]:
                 related_objs.append(objects[related_class][value])
@@ -3748,46 +3819,6 @@ class OneToManyAttribute(RelatedAttribute):
 
         return cur_values
 
-    def value_equal(self, vals1, vals2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`list`): first value
-            val2 (:obj:`list`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if vals1.__class__ != vals2.__class__:
-            return False
-
-        for v1 in vals1:
-            match = False
-            for v2 in vals2:
-                if v1.eq_attributes(v2):
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-
-    def related_value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`Model`): first value
-            val2 (:obj:`Model`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if val1.__class__ is not val2.__class__:
-            return False
-        if val1 is None:
-            return True
-        return val1.eq_attributes(val2)
-
     def set_related_value(self, obj, new_value):
         """ Update the values of the related attributes of the attribute
 
@@ -3828,22 +3859,21 @@ class OneToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(OneToManyAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if not isinstance(value, list):
             errors.append('Related value must be a list')
         elif len(value) < self.min_related:
-            errors.append('There must be at least {} related values'.format(self.min_related))
+            errors.append(
+                'There must be at least {} related values'.format(self.min_related))
         elif len(value) > self.max_related:
-            errors.append('There must be no more than {} related values'.format(self.max_related))
+            errors.append(
+                'There must be no more than {} related values'.format(self.max_related))
         else:
             for v in value:
                 if not isinstance(v, self.related_class):
-                    errors.append('Value must be an instance of "{:s}"'.format(self.related_class.__name__))
+                    errors.append('Value must be an instance of "{:s}"'.format(
+                        self.related_class.__name__))
                 elif self.related_name and getattr(v, self.related_name) is not obj:
                     errors.append('Object must be related value')
 
@@ -3861,22 +3891,19 @@ class OneToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(OneToManyAttribute, self).related_validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if self.related_name:
             if value is None:
                 if self.min_related_rev == 1:
                     errors.append('Value cannot be `None`')
             elif not isinstance(value, self.primary_class):
-                errors.append('Value must be an instance of "{:s}" or `None`'.format(self.primary_class.__name__))
+                errors.append('Value must be an instance of "{:s}" or `None`'.format(
+                    self.primary_class.__name__))
             else:
                 related_value = getattr(value, self.name)
-                if not isinstance(related_value, list):
-                    errors.append('Related value must be a list')
+                if not isinstance(related_value, OneToManyRelatedManager):
+                    errors.append('Related value must be a `OneToManyRelatedManager`')  # pragma: no cover # unreachable due to above error checking
                 if obj not in related_value:
                     errors.append('Object must be in related values')
 
@@ -3897,7 +3924,8 @@ class OneToManyAttribute(RelatedAttribute):
         serialized_vals = []
         for v in value:
             primary_attr = v.__class__.Meta.primary_attribute
-            serialized_vals.append(primary_attr.serialize(getattr(v, primary_attr.name)))
+            serialized_vals.append(primary_attr.serialize(
+                getattr(v, primary_attr.name)))
 
         serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
         return ', '.join(serialized_vals)
@@ -3921,7 +3949,8 @@ class OneToManyAttribute(RelatedAttribute):
             value = value.strip()
 
             related_objs = []
-            related_classes = chain([self.related_class], get_subclasses(self.related_class))
+            related_classes = chain(
+                [self.related_class], get_subclasses(self.related_class))
             for related_class in related_classes:
                 if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
                     related_objs.append(objects[related_class][value])
@@ -3932,7 +3961,8 @@ class OneToManyAttribute(RelatedAttribute):
                 errors.append('Unable to find {} with {}={}'.format(
                     self.related_class.__name__, self.related_class.Meta.primary_attribute.name, quote(value)))
             else:
-                errors.append('Multiple matching objects with primary attribute = {}'.format(value))
+                errors.append(
+                    'Multiple matching objects with primary attribute = {}'.format(value))
 
         if errors:
             return (None, InvalidAttribute(self, errors))
@@ -4034,54 +4064,6 @@ class ManyToManyAttribute(RelatedAttribute):
 
         return cur_values
 
-    def value_equal(self, vals1, vals2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`list`): first value
-            val2 (:obj:`list`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if vals1.__class__ != vals2.__class__:
-            return False
-
-        for v1 in vals1:
-            match = False
-            for v2 in vals2:
-                if v1.eq_attributes(v2):
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-
-    def related_value_equal(self, vals1, vals2):
-        """ Determine if attribute values are equal
-
-        Args:
-            val1 (:obj:`list`): first value
-            val2 (:obj:`list`): second value
-
-        Returns:
-            :obj:`bool`: True if attribute values are equal
-        """
-        if vals1.__class__ != vals2.__class__:
-            return False
-
-        for v1 in vals1:
-            match = False
-            for v2 in vals2:
-                if v1.eq_attributes(v2):
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
 
@@ -4092,27 +4074,27 @@ class ManyToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(ManyToManyAttribute, self).validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if not isinstance(value, list):
             errors.append('Value must be a `list`')
         elif len(value) < self.min_related:
-            errors.append('There must be at least {} related values'.format(self.min_related))
+            errors.append(
+                'There must be at least {} related values'.format(self.min_related))
         elif len(value) > self.max_related:
-            errors.append('There cannot be more than {} related values'.format(self.max_related))
+            errors.append(
+                'There cannot be more than {} related values'.format(self.max_related))
         else:
             for v in value:
                 if not isinstance(v, self.related_class):
-                    errors.append('Value must be a `list` of "{:s}"'.format(self.related_class.__name__))
+                    errors.append('Value must be a `list` of "{:s}"'.format(
+                        self.related_class.__name__))
 
-                if self.related_name:
+                elif self.related_name:
                     related_v = getattr(v, self.related_name)
-                    if not isinstance(related_v, list):
-                        errors.append('Related value must be a list')
+                    if not isinstance(related_v, ManyToManyRelatedManager):
+                        errors.append(
+                            'Related value must be a `ManyToManyRelatedManager`')  # pragma: no cover # unreachable due to above error checking
                     if obj not in related_v:
                         errors.append('Object must be in related values')
 
@@ -4130,23 +4112,22 @@ class ManyToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        errors = super(ManyToManyAttribute, self).related_validate(obj, value)
-        if errors:
-            errors = errors.messages
-        else:
-            errors = []
+        errors = []
 
         if self.related_name:
             if not isinstance(value, list):
                 errors.append('Related value must be a list')
             elif len(value) < self.min_related_rev:
-                errors.append('There must be at least {} related values'.format(self.min_related_rev))
+                errors.append('There must be at least {} related values'.format(
+                    self.min_related_rev))
             elif len(value) > self.max_related_rev:
-                errors.append('There cannot be more than {} related values'.format(self.max_related_rev))
+                errors.append('There cannot be more than {} related values'.format(
+                    self.max_related_rev))
             else:
                 for v in value:
                     if not isinstance(v, self.primary_class):
-                        errors.append('Related value must be an instance of "{:s}"'.format(self.primary_class.__name__))
+                        errors.append('Related value must be an instance of "{:s}"'.format(
+                            self.primary_class.__name__))
                     elif obj not in getattr(v, self.name):
                         errors.append('Object must be in related values')
 
@@ -4167,7 +4148,8 @@ class ManyToManyAttribute(RelatedAttribute):
         serialized_vals = []
         for v in value:
             primary_attr = v.__class__.Meta.primary_attribute
-            serialized_vals.append(primary_attr.serialize(getattr(v, primary_attr.name)))
+            serialized_vals.append(primary_attr.serialize(
+                getattr(v, primary_attr.name)))
 
         serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
         return ', '.join(serialized_vals)
@@ -4191,7 +4173,8 @@ class ManyToManyAttribute(RelatedAttribute):
             value = value.strip()
 
             related_objs = []
-            related_classes = chain([self.related_class], get_subclasses(self.related_class))
+            related_classes = chain(
+                [self.related_class], get_subclasses(self.related_class))
             for related_class in related_classes:
                 if not related_class in objects:
                     continue
@@ -4205,7 +4188,8 @@ class ManyToManyAttribute(RelatedAttribute):
                 errors.append('Unable to find {} with {}={}'.format(
                     self.related_class.__name__, primary_attr.name, quote(value)))
             else:
-                errors.append('Multiple matching objects with primary attribute = {}'.format(value))
+                errors.append(
+                    'Multiple matching objects with primary attribute = {}'.format(value))
 
         if errors:
             return (None, InvalidAttribute(self, errors))
@@ -4425,7 +4409,8 @@ class RelatedManager(list):
             return matches.pop()
 
         if len(matches) > 1:
-            raise ValueError('Multiple objects match the attribute name/value pair(s)')
+            raise ValueError(
+                'Multiple objects match the attribute name/value pair(s)')
 
     def filter(self, **kwargs):
         """ Get related objects by attribute/value pairs
@@ -4489,7 +4474,8 @@ class RelatedManager(list):
 
                 if is_match:
                     if match is not None:
-                        raise ValueError('Keyword argument attribute/value pairs match multiple objects')
+                        raise ValueError(
+                            'Keyword argument attribute/value pairs match multiple objects')
                     else:
                         match = i_obj
 
@@ -4508,7 +4494,8 @@ class ManyToOneRelatedManager(RelatedManager):
             object (:obj:`Model`): model instance
             attribute (:obj:`Attribute`): attribute
         """
-        super(ManyToOneRelatedManager, self).__init__(object, attribute, related=True)
+        super(ManyToOneRelatedManager, self).__init__(
+            object, attribute, related=True)
 
     def append(self, value, propagate=True):
         """ Add value to list
@@ -4556,7 +4543,8 @@ class OneToManyRelatedManager(RelatedManager):
             object (:obj:`Model`): model instance
             attribute (:obj:`Attribute`): attribute
         """
-        super(OneToManyRelatedManager, self).__init__(object, attribute, related=False)
+        super(OneToManyRelatedManager, self).__init__(
+            object, attribute, related=False)
 
     def append(self, value, propagate=True):
         """ Add value to list
@@ -4573,7 +4561,8 @@ class OneToManyRelatedManager(RelatedManager):
 
         super(OneToManyRelatedManager, self).append(value)
         if propagate:
-            value.__setattr__(self.attribute.related_name, self.object, propagate=True)
+            value.__setattr__(self.attribute.related_name,
+                              self.object, propagate=True)
 
         return self
 
@@ -4590,7 +4579,8 @@ class OneToManyRelatedManager(RelatedManager):
         if update_list:
             super(OneToManyRelatedManager, self).remove(value)
         if propagate:
-            value.__setattr__(self.attribute.related_name, None, propagate=False)
+            value.__setattr__(self.attribute.related_name,
+                              None, propagate=False)
 
         return self
 
@@ -4614,9 +4604,11 @@ class ManyToManyRelatedManager(RelatedManager):
         super(ManyToManyRelatedManager, self).append(value)
         if propagate:
             if self.related:
-                getattr(value, self.attribute.name).append(self.object, propagate=False)
+                getattr(value, self.attribute.name).append(
+                    self.object, propagate=False)
             else:
-                getattr(value, self.attribute.related_name).append(self.object, propagate=False)
+                getattr(value, self.attribute.related_name).append(
+                    self.object, propagate=False)
 
         return self
 
@@ -4635,9 +4627,11 @@ class ManyToManyRelatedManager(RelatedManager):
             super(ManyToManyRelatedManager, self).remove(value)
         if propagate:
             if self.related:
-                getattr(value, self.attribute.name).remove(self.object, propagate=False)
+                getattr(value, self.attribute.name).remove(
+                    self.object, propagate=False)
             else:
-                getattr(value, self.attribute.related_name).remove(self.object, propagate=False)
+                getattr(value, self.attribute.related_name).remove(
+                    self.object, propagate=False)
 
         return self
 
@@ -4646,8 +4640,8 @@ class InvalidObjectSet(object):
     """ Represents a list of invalid objects and invalid models
 
     Attributes:
-        objects (:obj:`list` of `InvalidObject`): list of invalid objects
-        models (:obj:`list` of `InvalidModel`): list of invalid models
+        invalid_objects (:obj:`list` of `InvalidObject`): list of invalid objects
+        invalid_models (:obj:`list` of `InvalidModel`): list of invalid models
     """
 
     def __init__(self, invalid_objects, invalid_models):
@@ -4655,6 +4649,9 @@ class InvalidObjectSet(object):
         Args:
             invalid_objects (:obj:`list` of `InvalidObject`): list of invalid objects
             invalid_models (:obj:`list` of `InvalidModel`): list of invalid models
+
+        Raises:
+            :obj:`ValueError`: `invalid_models` is not unique
         """
         all_invalid_models = set()
         models = [invalid_model.model for invalid_model in invalid_models]
@@ -4708,7 +4705,8 @@ class InvalidObjectSet(object):
                 error_forest.append([str(mdl_errs[model])])
 
             if model in obj_errs:
-                errs = natsorted(obj_errs[model], key=lambda x: x.object.get_primary_attribute(), alg=ns.IGNORECASE)
+                errs = natsorted(obj_errs[
+                                 model], key=lambda x: x.object.get_primary_attribute(), alg=ns.IGNORECASE)
                 error_forest.append([str(obj_err) for obj_err in errs])
 
         return indent_forest(error_forest)
@@ -4737,7 +4735,8 @@ class InvalidModel(object):
         Returns:
             :obj:`str`: string representation of errors
         """
-        attrs = natsorted(self.attributes, key=lambda x: x.attribute.name, alg=ns.IGNORECASE)
+        attrs = natsorted(
+            self.attributes, key=lambda x: x.attribute.name, alg=ns.IGNORECASE)
         return indent_forest(attrs)
 
 
@@ -4925,7 +4924,7 @@ class Validator(object):
                 object_errors.append(error)
 
         if object_errors:
-            return InvalidObjectSet(object_errors, None)
+            return InvalidObjectSet(object_errors, [])
 
         return None
 
@@ -4972,10 +4971,20 @@ def excel_col_name(col):
     """ Convert column number to an Excel-style string.
 
     From http://stackoverflow.com/a/19169180/509882
+
+    Args:
+        col (:obj:`int`): column number (positive integer)
+
+    Returns:
+        :obj:`str`: alphabetic column name
+
+    Raises:
+        :obj:`ValueError`: if `col` is not positive
     """
     LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     if not isinstance(col, int) or col < 1:
-        raise ValueError("excel_col_name: col ({}) must be a positive integer".format(col))
+        raise ValueError(
+            "excel_col_name: col ({}) must be a positive integer".format(col))
 
     result = []
     while col:
@@ -4984,37 +4993,11 @@ def excel_col_name(col):
     return ''.join(result)
 
 
-class InvalidWorksheet(object):
-    """ Represents an invalid worksheet or delimiter-separated file and its errors
-
-    Attributes:
-        filename (:obj:`str`): filename of file containing the invalid worksheet
-        name (:obj:`str`): name of the invalid worksheet
-        errors (:obj:`list` of `str`): list of the worksheet's errors
-    """
-
-    def __init__(self, filename, name, errors):
-        """
-        Args:
-            filename (:obj:`str`): filename of file containing the invalid worksheet
-            name (:obj:`str`): name of the invalid worksheet
-            errors (:obj:`list` of `str`): list of the worksheet's errors
-        """
-        self.filename = filename
-        self.name = name
-        self.errors = errors
-
-    def __str__(self):
-        """ Get string representation of an `InvalidWorksheet`
-
-        Returns:
-            :obj:`str`: string representation of an `InvalidWorksheet`
-        """
-        error_forest = ["'{}':'{}':".format(self.filename, self.name)]
-        error_forest.append(self.errors)
-        return indent_forest(error_forest)
+class ObjModelWarning(UserWarning):
+    """ :obj:`obj_model` warning """
+    pass
 
 
-class SchemaWarning(UserWarning):
+class SchemaWarning(ObjModelWarning):
     """ Schema warning """
     pass
