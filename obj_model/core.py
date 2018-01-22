@@ -1812,7 +1812,6 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:str: readable string representation of this `Model`
         """
-        # todo: improve indentation; indent instance data under its type name
         printed_objs = set()
         return indent_forest(self._tree_str(printed_objs, depth=0, max_depth=max_depth), indentation=indent)
 
@@ -1910,7 +1909,10 @@ class Model(with_metaclass(ModelMeta, object)):
         for item in attrs:
             if isinstance(item, tuple):
                 name, val = item
-                nested.append("{}: {}".format(name, val))
+                if val:
+                    nested.append("{}: {}".format(name, val))
+                else:
+                    nested.append("{}:".format(name))
             else:
                 nested.append(item)
         rv.append(nested)
