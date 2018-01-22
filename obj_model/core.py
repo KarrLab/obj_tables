@@ -1909,10 +1909,10 @@ class Model(with_metaclass(ModelMeta, object)):
         for item in attrs:
             if isinstance(item, tuple):
                 name, val = item
-                if val:
-                    nested.append("{}: {}".format(name, val))
-                else:
+                if val == '':
                     nested.append("{}:".format(name))
+                else:
+                    nested.append("{}: {}".format(name, val))
             else:
                 nested.append(item)
         rv.append(nested)
