@@ -6,5 +6,5 @@ python_dateutil
 six
 stringcase
 sympy
-git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils-0.0.1
+git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils-0.0.1a5
 weakreflist
