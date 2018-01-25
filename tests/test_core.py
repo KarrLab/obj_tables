@@ -2631,18 +2631,18 @@ class TestCore(unittest.TestCase):
         expected = \
             '''UnrootedLeaf:
     id: a
-    name: 
-    root: 
+    name:
+    root:
         Root:
             label: test-root
-            leaves: 
-            leaves2: 
+            leaves:
+            leaves2:
     enum2: None
     enum3: Order.leaf
     float2: 2.4
     float3: None
     id2: b
-    multi_word_name: 
+    multi_word_name:
     name2: ab
     root2: None'''
         self.assertEqual(expected, unrooted_leaf.pformat(indent=4))
@@ -2683,10 +2683,10 @@ class TestCore(unittest.TestCase):
         expected = \
             '''Root1:
     label: root_0
-    node: 
+    node:
         Node1:
             id: node1
-            roots: 
+            roots:
                 Root1:
                     label: root_1
                     node: --
