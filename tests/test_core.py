@@ -3023,8 +3023,9 @@ class TestCore(unittest.TestCase):
         self.assertEqual(core.excel_col_name(2**14), 'XFD')
 
     def test_manager_small_methods(self):
-        class Foo(object):
 
+        # test _get_attr_tuple_vals
+        class Foo(object):
             def __init__(self, a, b):
                 self.a = a
                 self.b = b
@@ -3042,8 +3043,6 @@ class TestCore(unittest.TestCase):
         id_t0 = id(t0)
         self.assertEqual(id_t0, id(t0))
         self.assertEqual((id_t0,), (id(t0),))
-        # self.assertEqual((vs, vi, id(t0)), hashable_values) fails, but the
-        # assertion below succeeds
         self.assertEqual((vs, vi, id_t0), hashable_values)
         s = set()
         try:
