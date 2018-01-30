@@ -1756,7 +1756,8 @@ class Model(with_metaclass(ModelMeta, object)):
                     vals.add(val)
 
             if rep_vals:
-                msg = 'Combinations of ({}) must be unique. The following combinations are repeated:'.format(
+                msg = "Combinations of ({}) must be unique across all instances of this class. "
+                "The following combinations are repeated:".format(
                     ', '.join(unique_together))
                 for rep_val in rep_vals:
                     msg += '\n  {}'.format(', '.join((str(x)
