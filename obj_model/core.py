@@ -58,6 +58,9 @@ class ModelMeta(type):
             name (:obj:`str`): `Model` class name
             bases (:obj: `tuple`): tuple of superclasses
             namespace (:obj:`dict`): namespace of `Model` class definition
+
+        Returns:
+            :obj:`Model`: a new instance of `Model`, or a subclass of `Model`
         """
 
         # terminate early so this method is only run on the subclasses of
