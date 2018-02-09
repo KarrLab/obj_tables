@@ -1181,6 +1181,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """
         processed_models = copy.copy(processed_models) or []
         processed_models.append(cls)
+
         def key(obj, processed_models=processed_models):
             vals = []
             for attr_name in chain(cls.Meta.attributes.keys(), cls.Meta.related_attributes.keys()):
@@ -1880,14 +1881,14 @@ class Model(with_metaclass(ModelMeta, object)):
                     else:
                         attrs.append((name, ''))
                         attrs.append(val._tree_str(
-                            printed_objs, depth+1, max_depth))
+                            printed_objs, depth + 1, max_depth))
                 elif isinstance(val, (set, list, tuple)):
                     attrs.append((name, ''))
                     iter_attr = []
                     for v in val:
                         if not v in printed_objs:
                             iter_attr.append(v._tree_str(
-                                printed_objs, depth+1, max_depth))
+                                printed_objs, depth + 1, max_depth))
                     attrs.extend(iter_attr)
                 else:
                     raise ValueError("Related attribute '{}' has invalid value".format(
@@ -4486,7 +4487,7 @@ class RelatedManager(list):
                         match = i_obj
 
             if match is None:
-                raise ValueError('No matching object')
+                raise ValueError('No matching object with {}'.format(', '.join(str(k) + '=' + str(v) for k, v in kwargs.items())))
 
             return match
 
