@@ -1890,14 +1890,14 @@ class TestCore(unittest.TestCase):
         ]
         root.leaves = leaves
 
-        self.assertEqual(root.leaves.filter(id='leaf_0'), leaves[0:1])
-        self.assertEqual(set(root.leaves.filter(id='leaf_1')),
+        self.assertEqual(root.leaves.get(id='leaf_0'), leaves[0:1])
+        self.assertEqual(set(root.leaves.get(id='leaf_1')),
                          set(leaves[1:3]))
-        self.assertEqual(root.leaves.filter(id='leaf_2'), leaves[3:4])
+        self.assertEqual(root.leaves.get(id='leaf_2'), leaves[3:4])
 
-        self.assertEqual(root.leaves.get(id='leaf_0'), leaves[0])
-        self.assertRaises(ValueError, lambda: root.leaves.get(id='leaf_1'))
-        self.assertEqual(root.leaves.get(id='leaf_2'), leaves[3])
+        self.assertEqual(root.leaves.get_one(id='leaf_0'), leaves[0])
+        self.assertRaises(ValueError, lambda: root.leaves.get_one(id='leaf_1'))
+        self.assertEqual(root.leaves.get_one(id='leaf_2'), leaves[3])
 
         leaves_list = [l for l in root.leaves]
         self.assertEqual(root.leaves.index(id='leaf_0'),
@@ -1925,13 +1925,13 @@ class TestCore(unittest.TestCase):
         ]
         leaf.roots = roots
 
-        self.assertEqual(leaf.roots.filter(id='root_0'), roots[0:1])
-        self.assertEqual(set(leaf.roots.filter(id='root_1')), set(roots[1:3]))
-        self.assertEqual(leaf.roots.filter(id='root_2'), roots[3:4])
+        self.assertEqual(leaf.roots.get(id='root_0'), roots[0:1])
+        self.assertEqual(set(leaf.roots.get(id='root_1')), set(roots[1:3]))
+        self.assertEqual(leaf.roots.get(id='root_2'), roots[3:4])
 
-        self.assertEqual(leaf.roots.get(id='root_0'), roots[0])
-        self.assertRaises(ValueError, lambda: leaf.roots.get(id='root_1'))
-        self.assertEqual(leaf.roots.get(id='root_2'), roots[3])
+        self.assertEqual(leaf.roots.get_one(id='root_0'), roots[0])
+        self.assertRaises(ValueError, lambda: leaf.roots.get_one(id='root_1'))
+        self.assertEqual(leaf.roots.get_one(id='root_2'), roots[3])
 
         # many to many
         roots = [
@@ -1942,13 +1942,13 @@ class TestCore(unittest.TestCase):
         ]
         leaf = ManyToManyLeaf(roots=roots)
 
-        self.assertEqual(leaf.roots.filter(id='root_0'), roots[0:1])
-        self.assertEqual(set(leaf.roots.filter(id='root_1')), set(roots[1:3]))
-        self.assertEqual(leaf.roots.filter(id='root_2'), roots[3:4])
+        self.assertEqual(leaf.roots.get(id='root_0'), roots[0:1])
+        self.assertEqual(set(leaf.roots.get(id='root_1')), set(roots[1:3]))
+        self.assertEqual(leaf.roots.get(id='root_2'), roots[3:4])
 
-        self.assertEqual(leaf.roots.get(id='root_0'), roots[0])
-        self.assertRaises(ValueError, lambda: leaf.roots.get(id='root_1'))
-        self.assertEqual(leaf.roots.get(id='root_2'), roots[3])
+        self.assertEqual(leaf.roots.get_one(id='root_0'), roots[0])
+        self.assertRaises(ValueError, lambda: leaf.roots.get_one(id='root_1'))
+        self.assertEqual(leaf.roots.get_one(id='root_2'), roots[3])
 
     def test_asymmetric_self_reference_one_to_one(self):
         class TestNodeAsymmetricOneToOne(core.Model):
@@ -2361,9 +2361,9 @@ class TestCore(unittest.TestCase):
         parent_0 = TestParent(id='parent_0')
         parent_1 = TestParent(id='parent_1')
         child_0 = TestChild(parents=[parent_0, parent_1])
-        self.assertEqual(child_0.parents.get(id='parent_0'), parent_0)
-        self.assertEqual(child_0.parents.get(id='parent_1'), parent_1)
-        self.assertEqual(child_0.parents.get(id='parent_2'), None)
+        self.assertEqual(child_0.parents.get_one(id='parent_0'), parent_0)
+        self.assertEqual(child_0.parents.get_one(id='parent_1'), parent_1)
+        self.assertEqual(child_0.parents.get_one(id='parent_2'), None)
         self.assertEqual(child_0.parents.index(parent_0), 0)
         self.assertEqual(child_0.parents.index(id='parent_0'), 0)
         with self.assertRaisesRegexp(ValueError, 'Argument and keyword arguments cannot both be provided'):

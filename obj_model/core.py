@@ -4394,7 +4394,7 @@ class RelatedManager(list):
 
         return self
 
-    def get(self, **kwargs):
+    def get_one(self, **kwargs):
         """ Get a related object by attribute/value pairs; report an error if multiple objects match
 
         Args:
@@ -4407,7 +4407,7 @@ class RelatedManager(list):
         Raises:
             :obj:`ValueError`: if multiple matching objects
         """
-        matches = self.filter(**kwargs)
+        matches = self.get(**kwargs)
 
         if len(matches) == 0:
             return None
@@ -4419,7 +4419,7 @@ class RelatedManager(list):
             raise ValueError(
                 'Multiple objects match the attribute name/value pair(s)')
 
-    def filter(self, **kwargs):
+    def get(self, **kwargs):
         """ Get related objects by attribute/value pairs
 
         Args:
