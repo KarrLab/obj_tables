@@ -67,8 +67,8 @@ of :obj:`set`. Thus, their values can also be edited with set methods such as `a
 :obj:`RelatedManager` provides three additional methods:
 
 * `create`: `object.related_objects.create(**kwargs)` is syntatic sugar for `object.attribute.add(RelatedObject(**kwargs))`
-* `get`: this returns a related object with attribute values equal to the supplies keyward argments
-* `filter`: this returns the subset of the related objects with attribute values equal to the supplied keyword argments
+* `get_one`: this returns a related object with attribute values equal to the supplies keyward argments
+* `get`: this returns the subset of the related objects with attribute values equal to the supplied keyword argments
 
 -------------------------------------
 Meta information
