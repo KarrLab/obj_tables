@@ -5,7 +5,7 @@ inflect
 natsort
 python_dateutil
 six
-sphinx >= 1.6
+sphinx >= 1.7
 sphinx_rtd_theme
 stringcase
 sympy
