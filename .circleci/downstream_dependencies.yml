@@ -1,4 +1,5 @@
-- wc_lang
-- wc_sim
-- wc_rules
 - kinetic_datanator
+- wc_kb
+- wc_lang
+- wc_rules
+- wc_sim
