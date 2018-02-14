@@ -16,6 +16,7 @@ dist/
 # pytest files
 __pycache__/
 .cache/
+.pytest_cache/
 
 # documentation files
 README.rst
