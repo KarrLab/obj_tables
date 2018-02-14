@@ -2,7 +2,9 @@ biopython
 enum34
 inflect
 natsort
+numpy
 python_dateutil
+setuptools
 six
 stringcase
 sympy
