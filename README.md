@@ -1,5 +1,5 @@
 [![PyPI package](https://img.shields.io/pypi/v/obj_model.svg)](https://pypi.python.org/pypi/obj_model)
-[![Documentation](https://readthedocs.org/projects/obj_model/badge/?version=latest)](http://obj_model.readthedocs.org)
+[![Documentation](https://img.shields.io/badge/docs-latest-green.svg)](http://docs.karrlab.org/obj_model)
 [![Test results](https://circleci.com/gh/KarrLab/obj_model.svg?style=shield)](https://circleci.com/gh/KarrLab/obj_model)
 [![Test coverage](https://coveralls.io/repos/github/KarrLab/obj_model/badge.svg)](https://coveralls.io/github/KarrLab/obj_model)
 [![Code analysis](https://api.codeclimate.com/v1/badges/2c4b64abc8bef2ea4e22/maintainability)](https://codeclimate.com/github/KarrLab/obj_model)
@@ -19,7 +19,7 @@ pip install git+git://github.com/KarrLab/obj_model.git#egg=obj_model
 ## Example usage
 
 ## Documentation
-Please see the [documentation](http://obj_model.readthedocs.io).
+Please see the [documentation](http://docs.karrlab.org/obj_model).
 
 ## License
 The software is released under the [MIT license](LICENSE).
