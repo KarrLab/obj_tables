@@ -12,6 +12,8 @@ from obj_model import core, utils
 from obj_model.io import (Reader, Writer, convert, create_template, get_possible_model_sheet_names,
                           IoWarning, get_ambiguous_sheet_names, get_model_sheet_name)
 from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle, read as read_workbook, get_reader, get_writer)
+import math
+import openpyxl
 import os
 import pytest
 import re
@@ -194,13 +196,13 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', 'test_manager.xlsx')
         Reader().run(filename, [Example0, Example1])
 
-        self.assertEqual(len(Example0.objects.get(id = 'A')), 1)
-        self.assertEqual(len(Example1.objects.get(str_attr = 'C')), 2)
+        self.assertEqual(len(Example0.objects.get(id='A')), 1)
+        self.assertEqual(len(Example1.objects.get(str_attr='C')), 2)
         self.assertEqual(len(Example1.objects.get(int_attr=11, int_attr2=21)), 1)
-        self.assertEqual(Example0.objects.get_one(id = 'A'),
-            Example1.objects.get_one(int_attr=11, int_attr2=21).test0)
+        self.assertEqual(Example0.objects.get_one(id='A'),
+                         Example1.objects.get_one(int_attr=11, int_attr2=21).test0)
         with self.assertRaises(ValueError) as context:
-            Example0.objects.get(int_attr = 1)
+            Example0.objects.get(int_attr=1)
         self.assertIn("not an indexed attribute tuple", str(context.exception))
 
     def test_read_inexact_worksheet_name_match(self):
@@ -617,6 +619,94 @@ class TestIo(unittest.TestCase):
         self.assertEqual(ambiguous_sheet_names['TestModel'], [TestModel, TestModels3])
         self.assertEqual(ambiguous_sheet_names['TestModels'], [TestModels, TestModels3])
 
+    def test_read_empty_numeric_cell(self):
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+        ws = wb.create_sheet('Test models')
+
+        cell = ws.cell(row=1, column=1)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Id'
+
+        cell = ws.cell(row=1, column=2)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Value'
+
+        cell = ws.cell(row=2, column=1)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Model-1'
+
+        cell = ws.cell(row=2, column=2)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NUMERIC
+        cell.value = 2.
+
+        cell = ws.cell(row=3, column=1)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Model-2'
+
+        cell = ws.cell(row=3, column=2)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NUMERIC
+        cell.value = 3.
+
+        cell = ws.cell(row=4, column=1)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Model-3'
+
+        cell = ws.cell(row=4, column=2)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NUMERIC
+        cell.value = None
+
+        cell = ws.cell(row=5, column=1)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Model-4'
+
+        cell = ws.cell(row=5, column=2)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = None
+
+        cell = ws.cell(row=6, column=1)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Model-5'
+
+        cell = ws.cell(row=6, column=2)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = ''
+
+        cell = ws.cell(row=7, column=1)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Model-6'
+
+        cell = ws.cell(row=7, column=2)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NULL
+        cell.value = None
+
+        cell = ws.cell(row=8, column=1)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.value = 'Model-7'
+
+        cell = ws.cell(row=8, column=2)
+        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NUMERIC
+        cell.value = 5.
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        wb.save(filename)
+
+        class TestModel(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            value = core.FloatAttribute()
+
+        models = Reader().run(filename, [TestModel])[TestModel]
+        models.sort(key=lambda model: model.id)
+
+        m = TestModel.objects.get_one(id='Model-2')
+        self.assertEqual(models[0].value, 2.)
+        self.assertEqual(models[1].value, 3.)
+        self.assertTrue(math.isnan(models[2].value))
+        self.assertTrue(math.isnan(models[3].value))
+        self.assertTrue(math.isnan(models[4].value))
+        self.assertTrue(math.isnan(models[5].value))
+        self.assertEqual(models[6].value, 5.)
+
 
 class TestMisc(unittest.TestCase):
 
@@ -655,7 +745,7 @@ class TestMisc(unittest.TestCase):
         writer.run(filename, parents, [Parent1, Child1])
 
         objects = Reader().run(filename, [Parent1, Child1])
-        objects[Parent1].sort(key=lambda parent:parent.id)
+        objects[Parent1].sort(key=lambda parent: parent.id)
         for orig_parent, copy_parent in zip(parents, objects[Parent1]):
             self.assertTrue(orig_parent.is_equal(copy_parent))
 
@@ -797,7 +887,7 @@ class TestMisc(unittest.TestCase):
         nodes = [
             Node8(id1='node_0_1', id2='node_0_2'),
             Node8(id1='node_1_1', id2='node_1_2'),
-            ]
+        ]
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = Writer()
@@ -814,10 +904,10 @@ class TestMisc(unittest.TestCase):
         xslx_writer = get_writer('.xlsx')(filename)
         xslx_writer.initialize_workbook()
         writer.write_sheet(xslx_writer,
-            sheet_name='Sheet',
-            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
-            row_headings=[['Row_2', 'Row_3']],
-            column_headings=[['Column_B', 'Column_C']])
+                           sheet_name='Sheet',
+                           data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
+                           row_headings=[['Row_2', 'Row_3']],
+                           column_headings=[['Column_B', 'Column_C']])
         xslx_writer.finalize_workbook()
 
         xlsx_reader = get_reader('.xlsx')(filename)
@@ -830,8 +920,8 @@ class TestMisc(unittest.TestCase):
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
         data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet',
-            num_row_heading_columns=1,
-            num_column_heading_rows=1)
+                                                                num_row_heading_columns=1,
+                                                                num_column_heading_rows=1)
         self.assertEqual(len(data), 2)
         self.assertEqual(list(data[0]), ['Cell_2_B', 'Cell_2_C'])
         self.assertEqual(list(data[1]), ['Cell_3_B', 'Cell_3_C'])

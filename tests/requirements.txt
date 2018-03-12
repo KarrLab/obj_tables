@@ -1,3 +1,4 @@
 abduct
 attrdict
+openpyxl
 pytest
