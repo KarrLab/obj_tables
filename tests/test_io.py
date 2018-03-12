@@ -439,9 +439,8 @@ class TestIo(unittest.TestCase):
 
         msgs = ["The model cannot be loaded because 'uncaught-error.xlsx' contains error(s)",
                 "uncaught-error.xlsx:Tests:B5",
-                "float() argument must be a string or a number",
                 "uncaught-error.xlsx:Tests:C6",
-                "Value must be a `float`",
+                "Value must be an instance of `float`",
                 ]
         self.check_reader_errors('uncaught-error.xlsx', msgs, [MainRoot, Test])
 
