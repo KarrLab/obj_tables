@@ -2333,10 +2333,10 @@ class EnumAttribute(LiteralAttribute):
             raise ValueError('`enum_class` must be a subclass of `Enum`')
         if default is not None and not isinstance(default, enum_class):
             raise ValueError(
-                'Default must be `None` or an instance of `enum_class`')
+                '`default` must be `None` or an instance of `enum_class`')
         if default_cleaned_value is not None and not isinstance(default_cleaned_value, enum_class):
             raise ValueError(
-                'Default must be `None` or an instance of `enum_class`')
+                '`default_cleaned_value` must be `None` or an instance of `enum_class`')
 
         super(EnumAttribute, self).__init__(default=default,
                                             default_cleaned_value=default_cleaned_value,

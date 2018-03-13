@@ -12,7 +12,9 @@ from obj_model import core, utils
 from obj_model.io import (Reader, Writer, convert, create_template, get_possible_model_sheet_names,
                           IoWarning, get_ambiguous_sheet_names, get_model_sheet_name)
 from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle, read as read_workbook, get_reader, get_writer)
+import enum
 import math
+import mock
 import openpyxl
 import os
 import pytest
@@ -706,6 +708,29 @@ class TestIo(unittest.TestCase):
         self.assertTrue(math.isnan(models[5].value))
         self.assertEqual(models[6].value, 5.)
 
+    def test_not_existant_referenced_object(self):
+        class ErrorAttribute(core.StringAttribute):
+            def deserialize(self, value):
+                raise Exception()
+
+        class TestModel(core.Model):
+            id = ErrorAttribute(primary=True, unique=True)
+
+        workbook = Workbook()
+
+        workbook['Test models'] = worksheet = Worksheet()
+        worksheet.append(Row(['Id']))
+        worksheet.append(Row(['A']))
+        worksheet.append(Row(['B']))
+        worksheet.append(Row(['C']))
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        xslx_writer = get_writer('.xlsx')(filename)
+        xslx_writer.run(workbook)
+
+        with self.assertRaisesRegexp(ValueError, 'The model cannot be loaded'):
+            Reader().run(filename, [TestModel])
+
 
 class TestMisc(unittest.TestCase):
 
@@ -955,3 +980,60 @@ class TestMisc(unittest.TestCase):
 
         with self.assertRaisesRegexp(ValueError, 'Value must be a `float`'):
             Reader().run(filename, [Node10])
+
+
+class ReadEmptyCellTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dirname)
+
+    def test_clean_enum(self):
+        class TestEnum(enum.Enum):
+            val = 0
+
+        attr = core.EnumAttribute(TestEnum)
+        self.assertNotEqual(attr.clean({})[1], None)
+
+    def test_get_default_cleaned_value(self):
+        class ConcreteAttribute(core.Attribute):
+            def deserialize(self):
+                pass
+
+            def serialize(self):
+                pass
+
+            def validate(self):
+                pass
+
+        attr = ConcreteAttribute(default_cleaned_value=lambda: 1.5)
+        self.assertEqual(attr.get_default_cleaned_value(), 1.5)
+
+    def test_read_empty_float(self):
+        class TestModel(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            value_1 = core.FloatAttribute(default_cleaned_value=float('nan'))
+            value_2 = core.FloatAttribute(default_cleaned_value=2.)
+
+        workbook = Workbook()
+        workbook['Test models'] = worksheet = Worksheet()
+        worksheet.append(Row(['Id', 'Value 1', 'Value 2']))
+        worksheet.append(Row(['A', None, None]))
+        worksheet.append(Row(['B', 1., 3.]))
+        worksheet.append(Row(['C', None, None]))
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        xslx_writer = get_writer('.xlsx')(filename)
+        xslx_writer.run(workbook)
+
+        objects = Reader().run(filename, [TestModel])[TestModel]
+        objects.sort(key=lambda m: m.id)
+
+        self.assertTrue(math.isnan(objects[0].value_1))
+        self.assertEqual(objects[1].value_1, 1.)
+        self.assertTrue(math.isnan(objects[2].value_1))
+
+        self.assertEqual(objects[0].value_2, 2.)
+        self.assertEqual(objects[1].value_2, 3.)
+        self.assertEqual(objects[2].value_2, 2.)
