@@ -313,7 +313,8 @@ class ModelMeta(type):
                 if attr_name in dir(super_cls):
                     super_attr = getattr(super_cls, attr_name)
                     if (isinstance(attr, Attribute) or isinstance(super_attr, Attribute)) and not isinstance(attr, super_attr.__class__):
-                        raise ValueError('Attribute "{}" of class "{}" inherited from "{}" must be a subclass of {} because the attribute is already defined in the superclass'.
+                        raise ValueError(('Attribute "{}" of class "{}" inherited from "{}" must be a subclass of {} '
+                                          'because the attribute is already defined in the superclass').
                                          format(__name__, super_cls.__name__, attr_name, super_attr.__class__.__name__))
 
     def init_inheritance(cls):
@@ -1307,7 +1308,9 @@ class Model(with_metaclass(ModelMeta, object)):
         """
 
         if self.__class__.Meta.primary_attribute:
-            return '<{}.{}: {}>'.format(self.__class__.__module__, self.__class__.__name__, getattr(self, self.__class__.Meta.primary_attribute.name))
+            return '<{}.{}: {}>'.format(self.__class__.__module__,
+                                        self.__class__.__name__,
+                                        getattr(self, self.__class__.Meta.primary_attribute.name))
 
         return super(Model, self).__str__()
 
@@ -1902,8 +1905,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 elif hasattr(attr, 'serialize'):
                     attrs.append((name, attr.serialize(val)))
                 else:
-                    raise ValueError(
-                        "Attribute '{}' has invalid value '{}'".format(name, str(val)))  # pragma: no cover # unreachable due to other error checking
+                    raise ValueError("Attribute '{}' has invalid value '{}'".format(
+                        name, str(val)))  # pragma: no cover # unreachable due to other error checking
 
             else:
                 raise ValueError("Attribute '{}' is not an Attribute or RelatedAttribute".format(name)
@@ -2350,8 +2353,8 @@ class EnumAttribute(LiteralAttribute):
                                                                                     self.enum_class.__name__)
 
         elif not isinstance(value, self.enum_class):
-            error = "Value '{}' must be an instance of `{}` which contains {}".format(value,
-                                                                                      self.enum_class.__name__, list(self.enum_class.__members__.keys()))
+            error = "Value '{}' must be an instance of `{}` which contains {}".format(
+                value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))
 
         if error:
             return (None, InvalidAttribute(self, [error]))
@@ -2928,7 +2931,13 @@ class UrlAttribute(RegexAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
-        core_pattern = '(?:http|ftp)s?://(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:/?|[/?]\S+)'
+        core_pattern = ('(?:http|ftp)s?://'
+                        '(?:'
+                        '(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+'
+                        '(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+                        ')'
+                        '(?::\d+)?'
+                        '(?:/?|[/?]\S+)')
         pattern = '^(|{})$'.format(core_pattern)
 
         super(UrlAttribute, self).__init__(pattern=pattern,
@@ -2985,7 +2994,10 @@ class DateAttribute(LiteralAttribute):
         if isinstance(value, string_types):
             try:
                 datetime_value = dateutil.parser.parse(value)
-                if datetime_value.hour == 0 and datetime_value.minute == 0 and datetime_value.second == 0 and datetime_value.microsecond == 0:
+                if datetime_value.hour == 0 and \
+                        datetime_value.minute == 0 and \
+                        datetime_value.second == 0 and \
+                        datetime_value.microsecond == 0:
                     return (datetime_value.date(), None)
                 else:
                     return (None, InvalidAttribute(self, ['Time must be 0:0:0.0']))
@@ -3573,7 +3585,9 @@ class OneToOneAttribute(RelatedAttribute):
 
 
 class ManyToOneAttribute(RelatedAttribute):
-    """ Represents a many-to-one relationship between two types of objects. This is analagous to a foreign key relationship in a database. """
+    """ Represents a many-to-one relationship between two types of objects. 
+    This is analagous to a foreign key relationship in a database.
+    """
 
     def __init__(self, related_class, related_name='',
                  default=None, related_default=list(),
@@ -3592,11 +3606,12 @@ class ManyToOneAttribute(RelatedAttribute):
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
         """
-        super(ManyToOneAttribute, self).__init__(related_class, related_name=related_name,
-                                                 init_value=None, default=default,
-                                                 related_init_value=ManyToOneRelatedManager, related_default=related_default,
-                                                 min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
-                                                 verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        super(ManyToOneAttribute, self).__init__(
+            related_class, related_name=related_name,
+            init_value=None, default=default,
+            related_init_value=ManyToOneRelatedManager, related_default=related_default,
+            min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
+            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
 
     def get_related_init_value(self, obj):
         """ Get initial related value for attribute
@@ -3685,7 +3700,8 @@ class ManyToOneAttribute(RelatedAttribute):
         elif self.related_name:
             related_value = getattr(value, self.related_name)
             if not isinstance(related_value, ManyToOneRelatedManager):
-                errors.append('Related value must be a `ManyToOneRelatedManager`')  # pragma: no cover # unreachable due to above error checking
+                errors.append('Related value must be a `ManyToOneRelatedManager`'
+                              )  # pragma: no cover # unreachable due to above error checking
             if obj not in related_value:
                 errors.append('Object must be in related values')
 
@@ -3773,7 +3789,9 @@ class ManyToOneAttribute(RelatedAttribute):
 
 
 class OneToManyAttribute(RelatedAttribute):
-    """ Represents a one-to-many relationship between two types of objects. This is analagous to a foreign key relationship in a database. """
+    """ Represents a one-to-many relationship between two types of objects. 
+    This is analagous to a foreign key relationship in a database.
+    """
 
     def __init__(self, related_class, related_name='',  default=list(), related_default=None,
                  min_related=0, max_related=float('inf'), min_related_rev=0,
@@ -3791,11 +3809,12 @@ class OneToManyAttribute(RelatedAttribute):
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
         """
-        super(OneToManyAttribute, self).__init__(related_class, related_name=related_name,
-                                                 init_value=OneToManyRelatedManager, default=default,
-                                                 related_init_value=None, related_default=related_default,
-                                                 min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
-                                                 verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        super(OneToManyAttribute, self).__init__(
+            related_class, related_name=related_name,
+            init_value=OneToManyRelatedManager, default=default,
+            related_init_value=None, related_default=related_default,
+            min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
+            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
 
     def get_init_value(self, obj):
         """ Get initial value for attribute
@@ -3910,7 +3929,8 @@ class OneToManyAttribute(RelatedAttribute):
             else:
                 related_value = getattr(value, self.name)
                 if not isinstance(related_value, OneToManyRelatedManager):
-                    errors.append('Related value must be a `OneToManyRelatedManager`')  # pragma: no cover # unreachable due to above error checking
+                    errors.append('Related value must be a `OneToManyRelatedManager`'
+                                  )  # pragma: no cover # unreachable due to above error checking
                 if obj not in related_value:
                     errors.append('Object must be in related values')
 
@@ -3996,11 +4016,12 @@ class ManyToManyAttribute(RelatedAttribute):
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
         """
-        super(ManyToManyAttribute, self).__init__(related_class, related_name=related_name,
-                                                  init_value=ManyToManyRelatedManager, default=default,
-                                                  related_init_value=ManyToManyRelatedManager, related_default=related_default,
-                                                  min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
-                                                  verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        super(ManyToManyAttribute, self).__init__(
+            related_class, related_name=related_name,
+            init_value=ManyToManyRelatedManager, default=default,
+            related_init_value=ManyToManyRelatedManager, related_default=related_default,
+            min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
+            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
 
     def get_init_value(self, obj):
         """ Get initial value for attribute
@@ -4101,7 +4122,8 @@ class ManyToManyAttribute(RelatedAttribute):
                     related_v = getattr(v, self.related_name)
                     if not isinstance(related_v, ManyToManyRelatedManager):
                         errors.append(
-                            'Related value must be a `ManyToManyRelatedManager`')  # pragma: no cover # unreachable due to above error checking
+                            'Related value must be a `ManyToManyRelatedManager`'
+                        )  # pragma: no cover # unreachable due to above error checking
                     if obj not in related_v:
                         errors.append('Object must be in related values')
 
