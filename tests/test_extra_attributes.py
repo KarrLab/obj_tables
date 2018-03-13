@@ -24,10 +24,10 @@ class TestExtraAttribute(unittest.TestCase):
     def test_FeatureLocationAttribute(self):
         # construction
         attr = extra_attributes.FeatureLocationAttribute()
-        self.assertEqual(attr.get_default(None), None)
+        self.assertEqual(attr.get_default(), None)
 
         attr = extra_attributes.FeatureLocationAttribute(default=Bio.SeqFeature.FeatureLocation(10, 10, 1))
-        self.assertEqual(attr.get_default(None), Bio.SeqFeature.FeatureLocation(10, 10, 1))
+        self.assertEqual(attr.get_default(), Bio.SeqFeature.FeatureLocation(10, 10, 1))
 
         with self.assertRaisesRegexp(ValueError, '`default` must be a `Bio.SeqFeature.FeatureLocation`'):
             extra_attributes.FeatureLocationAttribute(default='')
@@ -37,10 +37,10 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertEqual(attr.deserialize(None), (None, None))
         self.assertEqual(attr.deserialize(''), (None, None))
         self.assertEqual(attr.deserialize('10,10,1'), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
-        self.assertEqual(attr.deserialize((10,10,1)), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
-        self.assertEqual(attr.deserialize([10,10,1]), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
+        self.assertEqual(attr.deserialize((10, 10, 1)), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
+        self.assertEqual(attr.deserialize([10, 10, 1]), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
         self.assertEqual(attr.deserialize(Bio.SeqFeature.FeatureLocation(10, 10, 1)),
-            (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
+                         (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
         self.assertEqual(attr.deserialize(1)[0], None)
         self.assertNotEqual(attr.deserialize(1)[1], None)
 
@@ -64,19 +64,19 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertEqual(attr.validate_unique([], [
             Bio.SeqFeature.FeatureLocation(10, 10, 1),
             None,
-            ]), None)
+        ]), None)
         self.assertEqual(attr.validate_unique([], [
             Bio.SeqFeature.FeatureLocation(10, 10, 1),
             Bio.SeqFeature.FeatureLocation(1, 10, 1),
-            ]), None)
+        ]), None)
         self.assertNotEqual(attr.validate_unique([], [
             Bio.SeqFeature.FeatureLocation(10, 10, 1),
             Bio.SeqFeature.FeatureLocation(10, 10, 1),
-            ]), None)
+        ]), None)
         self.assertNotEqual(attr.validate_unique([], [
             None,
             None,
-            ]), None)
+        ]), None)
 
         # serialize
         attr = extra_attributes.FeatureLocationAttribute()
@@ -86,7 +86,6 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertEqual(attr.serialize(attr.deserialize('10,10,1')[0]), '10,10,1')
         self.assertEqual(attr.serialize(attr.deserialize('')[0]), '')
 
-
     def test_BioSeqAttribute(self):
         class Node(core.Model):
             value = extra_attributes.BioSeqAttribute()
@@ -95,10 +94,10 @@ class TestExtraAttribute(unittest.TestCase):
 
         # constructor
         attr2 = extra_attributes.BioSeqAttribute(default=None)
-        self.assertEqual(attr2.get_default(None), None)
+        self.assertEqual(attr2.get_default(), None)
 
         attr2 = extra_attributes.BioSeqAttribute(default=Bio.Seq.Seq('acgt'))
-        self.assertEqual(attr2.get_default(None), Bio.Seq.Seq('acgt'))
+        self.assertEqual(attr2.get_default(), Bio.Seq.Seq('acgt'))
 
         with self.assertRaisesRegexp(ValueError, '`default` must be a `Bio.Seq.Seq` or `None`'):
             extra_attributes.BioSeqAttribute(default='acgt')
@@ -250,7 +249,6 @@ class TestExtraAttribute(unittest.TestCase):
     def test_FrequencyPositionMatrixAttribute(self):
         attr = extra_attributes.FrequencyPositionMatrixAttribute()
 
-
         alphabet = Bio.Alphabet.DNAAlphabet()
         alphabet.letters = 'ACGT'
         alphabet.size = 4
@@ -289,10 +287,10 @@ class TestExtraAttribute(unittest.TestCase):
 
         # constructor
         attr2 = extra_attributes.SympyBasicAttribute(default=None)
-        self.assertEqual(attr2.get_default(None), None)
+        self.assertEqual(attr2.get_default(), None)
 
         attr2 = extra_attributes.SympyBasicAttribute(default=sympy.Basic('x'))
-        self.assertEqual(attr2.get_default(None), sympy.Basic('x'))
+        self.assertEqual(attr2.get_default(), sympy.Basic('x'))
 
         with self.assertRaisesRegexp(ValueError, 'Default must be a '):
             extra_attributes.SympyBasicAttribute(default='x')
@@ -336,10 +334,10 @@ class TestExtraAttribute(unittest.TestCase):
     def test_NumpyArrayAttribute(self):
         # constructor
         attr = extra_attributes.NumpyArrayAttribute()
-        self.assertEqual(attr.get_default(None), None)
+        self.assertEqual(attr.get_default(), None)
 
         attr = extra_attributes.NumpyArrayAttribute(default=numpy.array([1, 2]))
-        numpy.testing.assert_equal(attr.get_default(None), numpy.array([1, 2]))
+        numpy.testing.assert_equal(attr.get_default(), numpy.array([1, 2]))
 
         with self.assertRaisesRegexp(ValueError, '`default` must be a `numpy.array` or `None`'):
             extra_attributes.NumpyArrayAttribute(default=[1, 2])
