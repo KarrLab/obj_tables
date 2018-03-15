@@ -3642,12 +3642,12 @@ class OneToOneAttribute(RelatedAttribute):
         if not value:
             return (None, None)
 
-        related_objs = []
+        related_objs = set()
         related_classes = chain([self.related_class],
                                 get_subclasses(self.related_class))
         for related_class in related_classes:
-            if issubclass(related_class, Model) and value in objects[related_class]:
-                related_objs.append(objects[related_class][value])
+            if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                related_objs.add(objects[related_class][value])
 
         if len(related_objs) == 0:
             primary_attr = self.related_class.Meta.primary_attribute
@@ -3655,7 +3655,7 @@ class OneToOneAttribute(RelatedAttribute):
                 self.related_class.__name__, primary_attr.name, quote(value))]))
 
         if len(related_objs) == 1:
-            return (related_objs[0], None)
+            return (related_objs.pop(), None)
 
         return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
 
@@ -3847,12 +3847,12 @@ class ManyToOneAttribute(RelatedAttribute):
         if not value:
             return (None, None)
 
-        related_objs = []
+        related_objs = set()
         related_classes = chain([self.related_class],
                                 get_subclasses(self.related_class))
         for related_class in related_classes:
-            if issubclass(related_class, Model) and value in objects[related_class]:
-                related_objs.append(objects[related_class][value])
+            if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                related_objs.add(objects[related_class][value])
 
         if len(related_objs) == 0:
             primary_attr = self.related_class.Meta.primary_attribute
@@ -3860,7 +3860,7 @@ class ManyToOneAttribute(RelatedAttribute):
                 self.related_class.__name__, primary_attr.name, quote(value))]))
 
         if len(related_objs) == 1:
-            return (related_objs[0], None)
+            return (related_objs.pop(), None)
 
         return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
 
@@ -4054,15 +4054,15 @@ class OneToManyAttribute(RelatedAttribute):
         for value in values.split(','):
             value = value.strip()
 
-            related_objs = []
+            related_objs = set()
             related_classes = chain(
                 [self.related_class], get_subclasses(self.related_class))
             for related_class in related_classes:
                 if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                    related_objs.append(objects[related_class][value])
+                    related_objs.add(objects[related_class][value])
 
             if len(related_objs) == 1:
-                deserialized_values.append(related_objs[0])
+                deserialized_values.append(related_objs.pop())
             elif len(related_objs) == 0:
                 errors.append('Unable to find {} with {}={}'.format(
                     self.related_class.__name__, self.related_class.Meta.primary_attribute.name, quote(value)))
@@ -4282,17 +4282,15 @@ class ManyToManyAttribute(RelatedAttribute):
         for value in values.split(','):
             value = value.strip()
 
-            related_objs = []
+            related_objs = set()
             related_classes = chain(
                 [self.related_class], get_subclasses(self.related_class))
             for related_class in related_classes:
-                if not related_class in objects:
-                    continue
-                if issubclass(related_class, Model) and value in objects[related_class]:
-                    related_objs.append(objects[related_class][value])
+                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                    related_objs.add(objects[related_class][value])
 
             if len(related_objs) == 1:
-                deserialized_values.append(related_objs[0])
+                deserialized_values.append(related_objs.pop())
             elif len(related_objs) == 0:
                 primary_attr = self.related_class.Meta.primary_attribute
                 errors.append('Unable to find {} with {}={}'.format(

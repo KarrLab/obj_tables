@@ -1037,3 +1037,107 @@ class ReadEmptyCellTestCase(unittest.TestCase):
         self.assertEqual(objects[0].value_2, 2.)
         self.assertEqual(objects[1].value_2, 3.)
         self.assertEqual(objects[2].value_2, 2.)
+
+
+class InheritedIoTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dirname)
+
+    def test_OneToOneAttribute(self):
+        class B(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class BB(B):
+            pass
+
+        class A(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            b = core.OneToOneAttribute(B, related_name='a')
+
+        class AA(A):
+            pass
+
+        aa1 = AA(id='aa1')
+        bb1 = BB(id='bb')
+        aa1.b = bb1
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        Writer().run(filename, [aa1], [AA, BB])
+
+        aa2 = Reader().run(filename, [AA, BB])[AA][0]
+        self.assertTrue(aa2.is_equal(aa1))
+
+    def test_ManyToOneAttribute(self):
+        class B(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class BB(B):
+            pass
+
+        class A(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            b = core.ManyToOneAttribute(B, related_name='as')
+
+        class AA(A):
+            pass
+
+        aa1 = AA(id='aa1')
+        bb1 = BB(id='bb')
+        aa1.b = bb1
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        Writer().run(filename, [aa1], [AA, BB])
+
+        aa2 = Reader().run(filename, [AA, BB])[AA][0]
+        self.assertTrue(aa2.is_equal(aa1))
+
+    def test_OneToManyAttribute(self):
+        class B(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class BB(B):
+            pass
+
+        class A(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            bs = core.OneToManyAttribute(B, related_name='a')
+
+        class AA(A):
+            pass
+
+        aa1 = AA(id='aa1')
+        bb1 = BB(id='bb')
+        aa1.bs.append(bb1)
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        Writer().run(filename, [aa1], [AA, BB])
+
+        aa2 = Reader().run(filename, [AA, BB])[AA][0]
+        self.assertTrue(aa2.is_equal(aa1))
+
+    def test_ManyToManyAttribute(self):
+        class B(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class BB(B):
+            pass
+
+        class A(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            bs = core.ManyToManyAttribute(B, related_name='as')
+
+        class AA(A):
+            pass
+
+        aa1 = AA(id='aa1')
+        bb1 = BB(id='bb')
+        aa1.bs.append(bb1)
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        Writer().run(filename, [aa1], [AA, BB])
+
+        aa2 = Reader().run(filename, [AA, BB])[AA][0]
+        self.assertTrue(aa2.is_equal(aa1))
