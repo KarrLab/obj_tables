@@ -1,16 +1,8 @@
-biopython
-configparser
-enum34
-inflect
-natsort
-python_dateutil
+mock
+pip_check_reqs
+robpol86_sphinxcontrib_googleanalytics
 six
 sphinx >= 1.7
 sphinx_rtd_theme
-stringcase
-sympy
 sphinxcontrib_bibtex
-robpol86_sphinxcontrib_googleanalytics
 sphinxcontrib_spelling
-git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils-0.0.1a5
-weakreflist
