@@ -257,7 +257,7 @@ class Reader(object):
 
                 * Sheets cannot be unambiguously mapped to models
                 * The file(s) indicated by `path` contains extra sheets that don't correspond to one
-                of `models` and `ignore_other_sheets` is True
+                  of `models` and `ignore_other_sheets` is True
                 * Some models are not serializable
                 * The data contains parsing errors found by `read_model`
         """
