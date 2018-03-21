@@ -1069,6 +1069,7 @@ class InheritedIoTestCase(unittest.TestCase):
 
         aa2 = Reader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
+        self.assertEqual(aa1.b.a, aa1)
 
     def test_ManyToOneAttribute(self):
         class B(core.Model):
@@ -1079,7 +1080,7 @@ class InheritedIoTestCase(unittest.TestCase):
 
         class A(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
-            b = core.ManyToOneAttribute(B, related_name='as')
+            b = core.ManyToOneAttribute(B, related_name='a_s')
 
         class AA(A):
             pass
@@ -1093,6 +1094,7 @@ class InheritedIoTestCase(unittest.TestCase):
 
         aa2 = Reader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
+        self.assertIn(aa1, aa1.b.a_s)
 
     def test_OneToManyAttribute(self):
         class B(core.Model):
@@ -1117,6 +1119,7 @@ class InheritedIoTestCase(unittest.TestCase):
 
         aa2 = Reader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
+        self.assertEqual(bb1.a, aa1)
 
     def test_ManyToManyAttribute(self):
         class B(core.Model):
@@ -1127,7 +1130,7 @@ class InheritedIoTestCase(unittest.TestCase):
 
         class A(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
-            bs = core.ManyToManyAttribute(B, related_name='as')
+            bs = core.ManyToManyAttribute(B, related_name='a_s')
 
         class AA(A):
             pass
@@ -1141,3 +1144,4 @@ class InheritedIoTestCase(unittest.TestCase):
 
         aa2 = Reader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
+        self.assertIn(aa1, bb1.a_s)
