@@ -4495,10 +4495,12 @@ class RelatedManager(list):
 
         return self
 
-    def get_one(self, **kwargs):
-        """ Get a related object by attribute/value pairs; report an error if multiple objects match
+    def get_one(self, _type=None, **kwargs):
+        """ Get a related object by attribute/value pairs; report an error if multiple objects match and, 
+        optionally, only return matches that are also instances of :obj:`Model` subclass :obj:`_type`.
 
         Args:
+            _type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
             **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
                 objects
 
@@ -4508,7 +4510,7 @@ class RelatedManager(list):
         Raises:
             :obj:`ValueError`: if multiple matching objects
         """
-        matches = self.get(**kwargs)
+        matches = self.get(_type=_type, **kwargs)
 
         if len(matches) == 0:
             return None
@@ -4520,16 +4522,19 @@ class RelatedManager(list):
             raise ValueError(
                 'Multiple objects match the attribute name/value pair(s)')
 
-    def get(self, **kwargs):
-        """ Get related objects by attribute/value pairs
+    def get(self, _type=None, **kwargs):
+        """ Get related objects by attribute/value pairs and, optionally, only return matches that are also
+        instances of :obj:`Model` subclass :obj:`_type`.
 
         Args:
+            _type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
             **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
                 objects
 
         Returns:
             :obj:`list` of `Model`: matching instances of `Model`
         """
+        # filter based on properties
         matches = []
 
         for obj in self:
@@ -4541,6 +4546,10 @@ class RelatedManager(list):
 
             if is_match:
                 matches.append(obj)
+
+        # filter based on type        
+        if _type is not None:           
+            matches = list(filter(lambda m: isinstance(m, _type), matches))
 
         return matches
 

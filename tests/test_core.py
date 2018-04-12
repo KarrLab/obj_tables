@@ -3883,6 +3883,64 @@ class TestCore(unittest.TestCase):
         model._source = core.ModelSource('path.csv', 'sheet', ['id'], 2)
         self.assertEqual(model.get_source('id'), ('csv', 'path.csv', 'sheet', 2, 1))
 
+    def test_get_by_type(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            pass
+        class Child1(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+        class Child2(Child1):
+            pass
+        class Child3(Child2):
+            pass
+
+        parent = Parent(id='p')
+        c_1 = Child1(id='c_1', parent=parent)
+        c_2 = Child2(id='c_2', parent=parent)
+        c_3 = Child3(id='c_3', parent=parent)
+
+        self.assertEqual(parent.children.get(id='c_1'), [c_1])
+        self.assertEqual(parent.children.get(id='c_2'), [c_2])
+        self.assertEqual(parent.children.get(id='c_3'), [c_3])
+
+        self.assertEqual(parent.children.get(_type=Child1), [c_1, c_2, c_3])
+        self.assertEqual(parent.children.get(_type=Child2), [c_2, c_3])
+        self.assertEqual(parent.children.get(_type=Child3), [c_3])
+
+        self.assertEqual(parent.children.get(_type=Child1, id='c_1'), [c_1])
+        self.assertEqual(parent.children.get(_type=Child2, id='c_1'), [])
+
+    def test_get_one_by_type(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            pass
+        class Child1(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+        class Child2(Child1):
+            pass
+        class Child3(Child2):
+            pass
+
+        parent = Parent(id='p')
+        c_1 = Child1(id='c_1', parent=parent)
+        c_2 = Child2(id='c_2', parent=parent)
+        c_3 = Child3(id='c_3', parent=parent)
+
+        self.assertEqual(parent.children.get_one(id='c_1'), c_1)
+        self.assertEqual(parent.children.get_one(id='c_2'), c_2)
+        self.assertEqual(parent.children.get_one(id='c_3'), c_3)
+
+        with self.assertRaises(ValueError):
+            parent.children.get_one(_type=Child1)
+        with self.assertRaises(ValueError):
+            parent.children.get_one(_type=Child2)
+        self.assertEqual(parent.children.get_one(_type=Child3), c_3)
+
+        self.assertEqual(parent.children.get_one(_type=Child1, id='c_1'), c_1)
+        self.assertEqual(parent.children.get_one(_type=Child2, id='c_1'), None)
+
 
 class TestErrors(unittest.TestCase):
 
