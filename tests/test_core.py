@@ -3914,7 +3914,6 @@ class TestCore(unittest.TestCase):
     def test_get_one_by_type(self):
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
-            pass
         class Child1(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             parent = core.ManyToOneAttribute(Parent, related_name='children')
@@ -3940,6 +3939,29 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(parent.children.get_one(_type=Child1, id='c_1'), c_1)
         self.assertEqual(parent.children.get_one(_type=Child2, id='c_1'), None)
+
+
+class ContextTestCase(unittest.TestCase):
+    def test(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+        class Child(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+        class GrandChild(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Child, related_name='children')
+
+        with Parent(id='parent') as parent:
+            with parent.children.create(id='child_1') as child:
+                child.children.create(id='grandchild_1_1')
+                child.children.create(id='grandchild_1_2')
+            with parent.children.create(id='child_2') as child:
+                child.children.create(id='grandchild_2_1')
+                child.children.create(id='grandchild_2_2')
+
+        self.assertEqual([c.id for c in parent.children], ['child_1', 'child_2'])
+        self.assertEqual([gc.id for c in parent.children for gc in c.children], ['grandchild_1_1', 'grandchild_1_2', 'grandchild_2_1', 'grandchild_2_2'])
 
 
 class TestErrors(unittest.TestCase):

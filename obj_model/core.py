@@ -2065,6 +2065,14 @@ class Model(with_metaclass(ModelMeta, object)):
         """
         return cls.objects
 
+    def __enter__(self):
+        """ Enter context """
+        return self
+
+    def __exit__(self, type, value, traceback):
+        """ Exit context """
+        pass
+
 
 class ModelSource(object):
     """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
