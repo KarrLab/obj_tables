@@ -185,6 +185,7 @@ class TestIo(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 indexed_attrs_tuples = (('id',),)
+                attribute_order = ('id', 'int_attr')
 
         class Example1(core.Model):
             str_attr = core.StringAttribute()
@@ -194,6 +195,7 @@ class TestIo(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 indexed_attrs_tuples = (('str_attr',), ('int_attr', 'int_attr2'),)
+                attribute_order = ('str_attr', 'int_attr', 'int_attr2', 'test0')
 
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', 'test_manager.xlsx')
         Reader().run(filename, [Example0, Example1])
@@ -489,7 +491,7 @@ class TestIo(unittest.TestCase):
             val = core.StringAttribute(min_length=2)
 
             class Meta(core.Model.Meta):
-                attribute_order = ('id', 'val', 'node')
+                attribute_order = ('id', 'node', 'val')
 
         RE_msgs = [
             "reference-errors.xlsx:Nodes:B3\n +Unable to find MainRoot with id='not root'",
@@ -497,8 +499,8 @@ class TestIo(unittest.TestCase):
             "reference-errors.xlsx:Leaves:E7\n +Unable to find OneToManyRow with id='no such row'",
             "reference-errors.xlsx:'Node friends':B2\n +Unable to find Node with id=no_node",
         ]
-        self.check_reader_errors('reference-errors.xlsx', RE_msgs, [MainRoot, Node, Leaf, OneToManyRow,
-                                                                    NodeFriend], use_re=True)
+        self.check_reader_errors('reference-errors.xlsx', RE_msgs, 
+            [MainRoot, Node, NodeFriend, Leaf, OneToManyRow], use_re=True)
 
     def test_duplicate_primaries(self):
         RE_msgs = [
@@ -555,7 +557,7 @@ class TestIo(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             # raises extra attribute exception
-            Reader().run(filename, [SimpleModel], ignore_other_sheets=True)
+            Reader().run(filename, [SimpleModel], ignore_extra_sheets=True)
         self.assertRegexpMatches(str(context.exception),
                                  "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
@@ -567,7 +569,7 @@ class TestIo(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             # raises validation exception on 'too short'
-            Reader().run(filename, [SimpleModel], ignore_other_sheets=True,
+            Reader().run(filename, [SimpleModel], ignore_extra_sheets=True,
                          ignore_extra_attributes=True)
         self.assertRegexpMatches(str(context.exception),
                                  "The model cannot be loaded because 'test_run_options.*' contains error.*")
@@ -581,7 +583,7 @@ class TestIo(unittest.TestCase):
 
         class SimpleModel(core.Model):
             val = core.StringAttribute()
-        model = Reader().run(filename, [SimpleModel], ignore_other_sheets=True,
+        model = Reader().run(filename, [SimpleModel], ignore_extra_sheets=True,
                              ignore_extra_attributes=True)
         self.assertIn('too short', [r.val for r in model[SimpleModel]])
 
