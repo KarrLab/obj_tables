@@ -499,8 +499,8 @@ class TestIo(unittest.TestCase):
             "reference-errors.xlsx:Leaves:E7\n +Unable to find OneToManyRow with id='no such row'",
             "reference-errors.xlsx:'Node friends':B2\n +Unable to find Node with id=no_node",
         ]
-        self.check_reader_errors('reference-errors.xlsx', RE_msgs, 
-            [MainRoot, Node, NodeFriend, Leaf, OneToManyRow], use_re=True)
+        self.check_reader_errors('reference-errors.xlsx', RE_msgs,
+                                 [MainRoot, Node, NodeFriend, Leaf, OneToManyRow], use_re=True)
 
     def test_duplicate_primaries(self):
         RE_msgs = [
@@ -898,7 +898,7 @@ class TestMisc(unittest.TestCase):
         writer = Writer()
         writer.run(filename, nodes, [Node6])
 
-        objects = Reader().run(filename, [Node6, Node7])
+        objects = Reader().run(filename, [Node6, Node7], ignore_missing_sheets=True)
         objects[Node6].sort(key=lambda node: node.id)
         for orig_node, copy_node in zip(nodes, objects[Node6]):
             self.assertTrue(orig_node.is_equal(copy_node))
@@ -1147,3 +1147,164 @@ class InheritedIoTestCase(unittest.TestCase):
         aa2 = Reader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertIn(aa1, bb1.a_s)
+
+
+class StrictReadingTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dirname)
+
+    def test_missing_sheet(self):
+        class Model1(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class Model2(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+        m1 = Model1(id='m1')
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        Writer().run(filename, [m1], [Model1])
+
+        result = Reader().run(filename, [Model1])
+        self.assertEqual(set(result.keys()), set([Model1]))
+        self.assertEqual(len(result[Model1]), 1)
+        self.assertTrue(m1.is_equal(result[Model1][0]))
+
+        with self.assertRaises(ValueError):
+            Reader().run(filename, [Model1, Model2])
+
+        result = Reader().run(filename, [Model1, Model2], ignore_missing_sheets=True)
+        self.assertEqual(set(result.keys()), set([Model1, Model2]))
+        self.assertEqual(len(result[Model1]), 1)
+        self.assertEqual(len(result[Model2]), 0)
+        self.assertTrue(m1.is_equal(result[Model1][0]))
+
+    def test_extra_sheet(self):
+        class Model1(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class Model2(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+        m1 = Model1(id='m1')
+        m2 = Model2(id='m2')
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        Writer().run(filename, [m1, m2], [Model1, Model2])
+
+        result = Reader().run(filename, [Model1, Model2])
+        self.assertEqual(set(result.keys()), set([Model1, Model2]))
+        self.assertEqual(len(result[Model1]), 1)
+        self.assertEqual(len(result[Model2]), 1)
+        self.assertTrue(m1.is_equal(result[Model1][0]))
+        self.assertTrue(m2.is_equal(result[Model2][0]))
+
+        with self.assertRaises(ValueError):
+            Reader().run(filename, [Model1])
+
+        result = Reader().run(filename, [Model1], ignore_extra_sheets=True)
+        self.assertEqual(set(result.keys()), set([Model1]))
+        self.assertEqual(len(result[Model1]), 1)
+        self.assertTrue(m1.is_equal(result[Model1][0]))
+
+    def test_different_sheet_order(self):
+        class Model1(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class Model2(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+        m1 = Model1(id='m1')
+        m2 = Model2(id='m2')
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        Writer().run(filename, [m1, m2], [Model1, Model2])
+
+        Reader().run(filename, [Model1, Model2])
+        with self.assertRaises(ValueError):
+            Reader().run(filename, [Model2, Model1])
+        Reader().run(filename, [Model2, Model1], ignore_sheet_order=True)
+
+    def test_missing_attribute(self):
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr1 = core.StringAttribute()
+            attr2 = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr1', 'attr2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'Attr1', 'Attr2']))
+        ws.append(Row(['m1', '1', '2']))
+        writer.run(wb)
+        Reader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'Attr2']))
+        ws.append(Row(['m1', '2']))
+        writer.run(wb)
+        with self.assertRaises(ValueError):
+            Reader().run(filename, [Model])
+        Reader().run(filename, [Model], ignore_missing_attributes=True)
+
+    def test_extra_attribute(self):
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr1 = core.StringAttribute()
+            attr2 = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr1', 'attr2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'Attr1', 'Attr2']))
+        ws.append(Row(['m1', '1', '2']))
+        writer.run(wb)
+        Reader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'Attr1', 'Attr2', 'Attr3']))
+        ws.append(Row(['m1', '1', '2', '3']))
+        writer.run(wb)
+        with self.assertRaises(ValueError):
+            Reader().run(filename, [Model])
+        Reader().run(filename, [Model], ignore_extra_attributes=True)
+
+    def test_different_attribute_order(self):
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr1 = core.StringAttribute()
+            attr2 = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr1', 'attr2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'Attr1', 'Attr2']))
+        ws.append(Row(['m1', '1', '2']))
+        writer.run(wb)
+        Reader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'Attr2', 'Attr1']))
+        ws.append(Row(['m1', '2', '1']))
+        writer.run(wb)
+        with self.assertRaises(ValueError):
+            Reader().run(filename, [Model])
+        Reader().run(filename, [Model], ignore_attribute_order=True)

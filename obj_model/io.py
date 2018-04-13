@@ -19,12 +19,13 @@ from os.path import basename, dirname, splitext
 from warnings import warn
 from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
-                                  InvalidObject, excel_col_name,
-                                  InvalidAttribute, ObjModelWarning)
+                            InvalidObject, excel_col_name,
+                            InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose
 from wc_utils.workbook.io import (get_writer, get_reader, WorkbookStyle, WorksheetStyle,
                                   Writer as BaseWriter, Reader as BaseReader,
                                   convert as base_convert)
+from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
@@ -33,7 +34,7 @@ class Writer(object):
     """ Write model objects to file(s) """
 
     def run(self, path, objects, models, get_related=True,
-        title=None, description=None, keywords=None, version=None, language=None, creator=None):
+            title=None, description=None, keywords=None, version=None, language=None, creator=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -233,7 +234,9 @@ class Writer(object):
 class Reader(object):
     """ Read model objects from file(s) """
 
-    def run(self, path, models, ignore_other_sheets=False, ignore_missing_attributes=False, ignore_extra_attributes=False):
+    def run(self, path, models,
+            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
         """ Read a list of model objects from file(s) and validate them
 
         File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
@@ -242,12 +245,18 @@ class Reader(object):
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`list` of :obj:`Model`): list of `Model` classes to read
-            ignore_other_sheets (:obj:`boolean`, optional): if true and all `models` are found, ignore
+            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+                file is missing for one or more models
+            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
                 other worksheets or files
-            ignore_missing_attributes (:obj:`boolean`, optional): if false, report an error if a
+            ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided 
+                in the canonical order
+            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
                 worksheet/file doesn't contain all of attributes in a model in `models`
-            ignore_extra_attributes (:obj:`boolean`, optional): if set, do not report errors if
+            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
+            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided 
+                in the canonical order
 
         Returns:
             :obj:`dict`: model objects grouped by `Model` class
@@ -256,8 +265,12 @@ class Reader(object):
             :obj:`ValueError`: if
 
                 * Sheets cannot be unambiguously mapped to models
-                * The file(s) indicated by `path` contains extra sheets that don't correspond to one
-                  of `models` and `ignore_other_sheets` is True
+                * The file(s) indicated by :obj:`path` is missing a sheet for a model and 
+                  :obj:`ignore_missing_sheets` is :obj:`False`
+                * The file(s) indicated by :obj:`path` contains extra sheets that don't correspond to one
+                  of `models` and :obj:`ignore_extra_sheets` is :obj:`False`
+                * The worksheets are file(s) indicated by :obj:`path` are not in the canonical order and
+                  :obj:`ignore_sheet_order` is :obj:`False`
                 * Some models are not serializable
                 * The data contains parsing errors found by `read_model`
         """
@@ -279,17 +292,43 @@ class Reader(object):
                 msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
             raise ValueError(msg)
 
-        # check that models are defined for each worksheet
-        used_sheet_names = dict()
+        # optionally,
+        # * check every sheet is defined
+        # * check no extra sheets are defined
+        # * check the models are defined in the canonical order
+        expected_sheet_names = []
+        used_sheet_names = []
+        sheet_order = []
+        expected_sheet_order = []
         for model in models:
             model_sheet_name = get_model_sheet_name(sheet_names, model)
             if model_sheet_name:
-                used_sheet_names[model_sheet_name] = model
+                expected_sheet_names.append(model_sheet_name)
+                used_sheet_names.append(model_sheet_name)
+                sheet_order.append(sheet_names.index(model_sheet_name))
+                expected_sheet_order.append(model_sheet_name)
+            else:
+                if model.Meta.tabular_orientation == TabularOrientation.row:
+                    expected_sheet_names.append(model.Meta.verbose_name_plural)
+                else:
+                    expected_sheet_names.append(model.Meta.verbose_name)
 
-        extra_sheet_names = set(reader.get_sheet_names()).difference(set(used_sheet_names.keys()))
-        if extra_sheet_names and not ignore_other_sheets:
-            raise ValueError("No matching models for worksheets/files {} / {}".format(
-                basename(path), "', '".join(sorted(extra_sheet_names))))
+        if not ignore_missing_sheets:
+            missing_sheet_names = set(expected_sheet_names).difference(set(used_sheet_names))
+            if missing_sheet_names:
+                raise ValueError("Worksheets/files {} / {} must be defined".format(
+                    basename(path), "', '".join(sorted(missing_sheet_names))))
+
+        if not ignore_extra_sheets:
+            extra_sheet_names = set(sheet_names).difference(set(used_sheet_names))
+            if extra_sheet_names:
+                raise ValueError("No matching models for worksheets/files {} / {}".format(
+                    basename(path), "', '".join(sorted(extra_sheet_names))))
+
+        if not ignore_sheet_order and ext in ('.xls', '.xlsx'):
+            if not is_sorted(sheet_order):
+                raise ValueError('The sheets must be provided in this order:\n  {}'.format(
+                    '\n  '.join(expected_sheet_order)))
 
         # check that models are valid
         for model in models:
@@ -306,9 +345,11 @@ class Reader(object):
         errors = {}
         objects = {}
         for model in models:
-            model_attributes, model_data, model_errors, model_objects = self.read_model(reader, model,
+            model_attributes, model_data, model_errors, model_objects = self.read_model(
+                reader, model,
                 ignore_missing_attributes=ignore_missing_attributes,
-                ignore_extra_attributes=ignore_extra_attributes)
+                ignore_extra_attributes=ignore_extra_attributes,
+                ignore_attribute_order=ignore_attribute_order)
             if model_attributes:
                 attributes[model] = model_attributes
             if model_data:
@@ -369,16 +410,18 @@ class Reader(object):
         # return
         return objects
 
-    def read_model(self, reader, model, ignore_missing_attributes=False, ignore_extra_attributes=False):
+    def read_model(self, reader, model, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
         """ Instantiate a list of objects from data in a table in a file
 
         Args:
             reader (:obj:`BaseReader`): reader
             model (:obj:`class`): the model describing the objects' schema
-            ignore_missing_attributes (:obj:`boolean`, optional): if false, report an error if the worksheet/files
+            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if the worksheet/files
                 don't have all of attributes in the model
-            ignore_extra_attributes (:obj:`boolean`, optional): if set, do not report errors if attributes
+            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if attributes
                 in the data are not in the model
+            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided in the 
+                canonical order
 
         Returns:
             :obj:`tuple` of
@@ -447,10 +490,22 @@ class Reader(object):
         if errors:
             return ([], [], errors, [])
 
-        # check that all attributes have column headings
-        # todo
+        # optionally, check that all attributes have column headings
         if not ignore_missing_attributes:
-            pass
+            all_attributes = [model.Meta.attributes[attr_name] for attr_name in model.Meta.attribute_order]
+            missing_attrs = set(all_attributes).difference(set(attributes))
+            if missing_attrs:
+                error = 'The following attributes must be defined:\n  {}'.format('\n  '.join(attr.name for attr in missing_attrs))
+                return ([], [], [error], [])
+
+        # optionally, check that the attributes are defined in the canonical order
+        if not ignore_attribute_order:
+            canonical_attr_order = [model.Meta.attributes[attr_name] for attr_name in model.Meta.attribute_order]
+            canonical_attr_order = list(filter(lambda attr: attr in attributes, canonical_attr_order))
+            if attributes != canonical_attr_order:
+                error = 'The attributes must be defined in this order:\n  {}'.format(
+                    '\n  '.join(attr.verbose_name for attr in canonical_attr_order))
+                return ([], [], [error], [])
 
         # save model location in file
         attribute_seq = []
@@ -685,27 +740,27 @@ def get_possible_model_sheet_names(model):
 
 
 def get_ambiguous_sheet_names(sheet_names, models):
-        """ Get names of sheets than cannot be unambiguously mapped to models (sheet names that map to multiple models).
+    """ Get names of sheets than cannot be unambiguously mapped to models (sheet names that map to multiple models).
 
-        Args:
-            sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
-            models (:obj:`list` of :obj:`Model`): list of models
+    Args:
+        sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
+        models (:obj:`list` of :obj:`Model`): list of models
 
-        Returns:
-            :obj:`dict` of :obj:`str`, :obj:`list` of :obj:`Model`: dictionary of ambiguous sheet names and their matching models
-        """
-        sheets_to_models = {}
-        for sheet_name in sheet_names:
-            sheets_to_models[sheet_name] = []
-            for model in models:
-                for possible_sheet_name in get_possible_model_sheet_names(model):
-                    if sheet_name == possible_sheet_name:
-                        sheets_to_models[sheet_name].append(model)
+    Returns:
+        :obj:`dict` of :obj:`str`, :obj:`list` of :obj:`Model`: dictionary of ambiguous sheet names and their matching models
+    """
+    sheets_to_models = {}
+    for sheet_name in sheet_names:
+        sheets_to_models[sheet_name] = []
+        for model in models:
+            for possible_sheet_name in get_possible_model_sheet_names(model):
+                if sheet_name == possible_sheet_name:
+                    sheets_to_models[sheet_name].append(model)
 
-            if len(sheets_to_models[sheet_name]) <= 1:
-                sheets_to_models.pop(sheet_name)
+        if len(sheets_to_models[sheet_name]) <= 1:
+            sheets_to_models.pop(sheet_name)
 
-        return sheets_to_models
+    return sheets_to_models
 
 
 class IoWarning(ObjModelWarning):
