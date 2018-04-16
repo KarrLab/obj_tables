@@ -1,4 +1,4 @@
-""" 
+"""
 :Author: Jonathan Karr <karr@mssm.edu>
 :Date: 2018-03-12
 :Copyright: 2018, Karr Lab
