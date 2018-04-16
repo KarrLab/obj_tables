@@ -7,7 +7,7 @@ representation of a biochemical model -- into a python object instance.
 `deserialize()` returns an error when the string representation cannot be parsed into the
 python object. Deserialization methods for related attributes (subclasses of `RelatedAttribute`)
 do not get called until all other attributes have been deserialized. In particular, they're called
-by `obj_model.io.Reader.link_model`. Therefore, they get passed all objects that are not inline,
+by `obj_model.io.WorkbookReader.link_model`. Therefore, they get passed all objects that are not inline,
 which can then be referenced to deserialize the related attribute.
 
 

@@ -9,9 +9,9 @@
 
 from os.path import splitext
 from obj_model import core, utils
-from obj_model.io import (Reader, Writer, convert, create_template, get_possible_model_sheet_names,
-                          IoWarning, get_ambiguous_sheet_names, get_model_sheet_name)
-from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle, read as read_workbook, get_reader, get_writer)
+from obj_model.io import WorkbookReader, WorkbookWriter, convert, create_template, IoWarning
+from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle,
+                                  read as read_workbook, get_reader, get_writer)
 import enum
 import math
 import mock
@@ -148,8 +148,8 @@ class TestIo(unittest.TestCase):
         objects = utils.group_objects_by_model(objects)
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
-        Writer().run(filename, [root], [MainRoot, Node, Leaf, ])
-        objects2 = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        WorkbookWriter().run(filename, [root], [MainRoot, Node, Leaf, ])
+        objects2 = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
 
         # validate
         all_objects2 = []
@@ -166,7 +166,7 @@ class TestIo(unittest.TestCase):
         root2 = objects2[MainRoot].pop()
 
         filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
-        Writer().run(filename2, [root2], [MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename2, [root2], [MainRoot, Node, Leaf, ])
         original = read_workbook(filename)
         copy = read_workbook(filename2)
         self.assertEqual(copy, original)
@@ -198,7 +198,7 @@ class TestIo(unittest.TestCase):
                 attribute_order = ('str_attr', 'int_attr', 'int_attr2', 'test0')
 
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', 'test_manager.xlsx')
-        Reader().run(filename, [Example0, Example1])
+        WorkbookReader().run(filename, [Example0, Example1])
 
         self.assertEqual(len(Example0.objects.get(id='A')), 1)
         self.assertEqual(len(Example1.objects.get(str_attr='C')), 2)
@@ -213,14 +213,14 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'test-*.csv')
 
         # write to file
-        Writer().run(filename, [self.root], [MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename, [self.root], [MainRoot, Node, Leaf, ])
 
         """ test reading worksheet by the model's name """
         # rename worksheet
         self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Main root.csv')))
         os.rename(os.path.join(self.tmp_dirname, 'test-Main root.csv'), os.path.join(self.tmp_dirname, 'test-MainRoot.csv'))
 
-        objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -230,7 +230,7 @@ class TestIo(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Leaves.csv')))
         os.rename(os.path.join(self.tmp_dirname, 'test-Leaves.csv'), os.path.join(self.tmp_dirname, 'test-Leaf.csv'))
 
-        objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -240,7 +240,7 @@ class TestIo(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-MainRoot.csv')))
         os.rename(os.path.join(self.tmp_dirname, 'test-MainRoot.csv'), os.path.join(self.tmp_dirname, 'test-Main roots.csv'))
 
-        objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -250,7 +250,7 @@ class TestIo(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Main roots.csv')))
         os.rename(os.path.join(self.tmp_dirname, 'test-Main roots.csv'), os.path.join(self.tmp_dirname, 'test-main roots.csv'))
 
-        objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -260,10 +260,10 @@ class TestIo(unittest.TestCase):
         filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
 
         # write to file
-        Writer().run(filename, [self.root], [MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename, [self.root], [MainRoot, Node, Leaf, ])
 
         """ test reading attributes by verbose name """
-        objects = Reader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -288,7 +288,7 @@ class TestIo(unittest.TestCase):
         writer.run(workbook)
 
         # check that attributes can be read by name
-        objects = Reader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -301,7 +301,7 @@ class TestIo(unittest.TestCase):
         writer.run(workbook)
 
         # check that attributes can be read by name
-        objects = Reader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -313,7 +313,7 @@ class TestIo(unittest.TestCase):
 
     def check_reader_errors(self, fixture_file, expected_messages, models, use_re=False,
                             do_not_catch=False):
-        ''' Run Reader expecting an error; check that the exception message matches expected messages
+        ''' Run WorkbookReader expecting an error; check that the exception message matches expected messages
 
         Args:
             fixture_file (:obj:`str`): name of the file to be read
@@ -321,7 +321,7 @@ class TestIo(unittest.TestCase):
                 exception
             models (:obj:`list` of `Model`): `Model`s for the schema of the data being read
             use_re (:obj:`boolean`, optional): if set, `expected_messages` contains RE patterns
-            do_not_catch (:obj:`boolean`, optional): if set, run Reader() outside try ... catch;
+            do_not_catch (:obj:`boolean`, optional): if set, run WorkbookReader() outside try ... catch;
                 produces full exception message for debugging
 
         Raises:
@@ -329,9 +329,9 @@ class TestIo(unittest.TestCase):
         '''
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', fixture_file)
         if do_not_catch:
-            Reader().run(filename, models)
+            WorkbookReader().run(filename, models)
         with self.assertRaises(Exception) as context:
-            Reader().run(filename, models)
+            WorkbookReader().run(filename, models)
         for msg in expected_messages:
             if not use_re:
                 msg = re.escape(msg)
@@ -355,7 +355,7 @@ class TestIo(unittest.TestCase):
 
         file = 'test-locations.xlsx'
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', file)
-        models = Reader().run(filename, [Normal, Transposed])
+        models = WorkbookReader().run(filename, [Normal, Transposed])
         ext = 'xlsx'
         normals = models[Normal]
         for obj in normals:
@@ -383,7 +383,7 @@ class TestIo(unittest.TestCase):
 
         file = 'test-locations-*.csv'
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', file)
-        models = Reader().run(filename, [Normal, Transposed])
+        models = WorkbookReader().run(filename, [Normal, Transposed])
         ext = 'csv'
         normals = models[Normal]
         for obj in normals:
@@ -512,7 +512,7 @@ class TestIo(unittest.TestCase):
                                  use_re=True)
 
     def test_create_worksheet_style(self):
-        self.assertIsInstance(Writer.create_worksheet_style(MainRoot), WorksheetStyle)
+        self.assertIsInstance(WorkbookWriter.create_worksheet_style(MainRoot), WorksheetStyle)
 
     def test_convert(self):
         filename_xls1 = os.path.join(self.tmp_dirname, 'test1.xlsx')
@@ -521,21 +521,21 @@ class TestIo(unittest.TestCase):
 
         models = [MainRoot, Node, Leaf, OneToManyRow]
 
-        Writer().run(filename_xls1, [self.root], models)
+        WorkbookWriter().run(filename_xls1, [self.root], models)
 
         convert(filename_xls1, filename_csv, models)
         convert(filename_csv, filename_xls2, models)
 
-        objects2 = Reader().run(filename_csv, models)
+        objects2 = WorkbookReader().run(filename_csv, models)
         self.assertTrue(self.root.is_equal(objects2[MainRoot][0]))
 
-        objects2 = Reader().run(filename_xls2, models)
+        objects2 = WorkbookReader().run(filename_xls2, models)
         self.assertTrue(self.root.is_equal(objects2[MainRoot][0]))
 
     def test_create_template(self):
         filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
         create_template(filename, [MainRoot, Node, Leaf])
-        objects = Reader().run(filename, [MainRoot, Node, Leaf])
+        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf])
         self.assertEqual(objects, {
             MainRoot: [],
             Node: [],
@@ -551,13 +551,13 @@ class TestIo(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             # raises extra sheet exception
-            Reader().run(filename, [SimpleModel])
+            WorkbookReader().run(filename, [SimpleModel])
         self.assertEqual(str(context.exception),
                          "No matching models for worksheets/files {} / extra sheet".format(fixture_file))
 
         with self.assertRaises(ValueError) as context:
             # raises extra attribute exception
-            Reader().run(filename, [SimpleModel], ignore_extra_sheets=True)
+            WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True)
         self.assertRegexpMatches(str(context.exception),
                                  "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
@@ -569,8 +569,8 @@ class TestIo(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             # raises validation exception on 'too short'
-            Reader().run(filename, [SimpleModel], ignore_extra_sheets=True,
-                         ignore_extra_attributes=True)
+            WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True,
+                                 ignore_extra_attributes=True)
         self.assertRegexpMatches(str(context.exception),
                                  "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
@@ -583,8 +583,8 @@ class TestIo(unittest.TestCase):
 
         class SimpleModel(core.Model):
             val = core.StringAttribute()
-        model = Reader().run(filename, [SimpleModel], ignore_extra_sheets=True,
-                             ignore_extra_attributes=True)
+        model = WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True,
+                                     ignore_extra_attributes=True)
         self.assertIn('too short', [r.val for r in model[SimpleModel]])
 
     def test_run_options(self):
@@ -606,16 +606,16 @@ class TestIo(unittest.TestCase):
             class Meta(core.Model.Meta):
                 verbose_name = 'TestModel'
 
-        self.assertEqual(sorted(get_possible_model_sheet_names(TestModel)),
+        self.assertEqual(sorted(WorkbookReader.get_possible_model_sheet_names(TestModel)),
                          sorted(['TestModel', 'Test model', 'Test models']))
-        self.assertEqual(sorted(get_possible_model_sheet_names(TestModels)),
+        self.assertEqual(sorted(WorkbookReader.get_possible_model_sheet_names(TestModels)),
                          sorted(['TestModels', 'Test models', 'Test modelss']))
-        self.assertEqual(sorted(get_possible_model_sheet_names(TestModels2)),
+        self.assertEqual(sorted(WorkbookReader.get_possible_model_sheet_names(TestModels2)),
                          sorted(['TestModels2', 'Test models2', 'Test models2s']))
-        self.assertEqual(sorted(get_possible_model_sheet_names(TestModels3)),
+        self.assertEqual(sorted(WorkbookReader.get_possible_model_sheet_names(TestModels3)),
                          sorted(['TestModels3', 'TestModel', 'TestModels']))
 
-        ambiguous_sheet_names = get_ambiguous_sheet_names(['Test models', 'Test model', 'TestModel', 'TestModels'], [
+        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(['Test models', 'Test model', 'TestModel', 'TestModels'], [
             TestModel, TestModels, TestModels2, TestModels3])
         self.assertEqual(len(ambiguous_sheet_names), 3)
         self.assertEqual(ambiguous_sheet_names['Test models'], [TestModel, TestModels])
@@ -698,7 +698,7 @@ class TestIo(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True)
             value = core.FloatAttribute()
 
-        models = Reader().run(filename, [TestModel])[TestModel]
+        models = WorkbookReader().run(filename, [TestModel])[TestModel]
         models.sort(key=lambda model: model.id)
 
         m = TestModel.objects.get_one(id='Model-2')
@@ -731,7 +731,7 @@ class TestIo(unittest.TestCase):
         xslx_writer.run(workbook)
 
         with self.assertRaisesRegexp(ValueError, 'The model cannot be loaded'):
-            Reader().run(filename, [TestModel])
+            WorkbookReader().run(filename, [TestModel])
 
 
 class TestMisc(unittest.TestCase):
@@ -767,10 +767,10 @@ class TestMisc(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
 
-        writer = Writer()
+        writer = WorkbookWriter()
         writer.run(filename, parents, [Parent1, Child1])
 
-        objects = Reader().run(filename, [Parent1, Child1])
+        objects = WorkbookReader().run(filename, [Parent1, Child1])
         objects[Parent1].sort(key=lambda parent: parent.id)
         for orig_parent, copy_parent in zip(parents, objects[Parent1]):
             self.assertTrue(orig_parent.is_equal(copy_parent))
@@ -782,7 +782,7 @@ class TestMisc(unittest.TestCase):
         node = Node2(id='id')
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = Writer()
+        writer = WorkbookWriter()
 
         with pytest.warns(IoWarning):
             writer.run(filename, [node], [Node2])
@@ -803,7 +803,7 @@ class TestMisc(unittest.TestCase):
         parent.children.create(id='child_2')
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = Writer()
+        writer = WorkbookWriter()
 
         with self.assertRaisesRegexp(ValueError, 'cannot be serialized'):
             writer.run(filename, [parent], [Parent3, Child3])
@@ -850,11 +850,11 @@ class TestMisc(unittest.TestCase):
         parent.children.create(id='child_2')
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = Writer()
+        writer = WorkbookWriter()
         writer.run(filename, [parent], [WriterParent, WriterChild])
 
         with self.assertRaisesRegexp(ValueError, 'cannot be serialized'):
-            Reader().run(filename, [ReaderParent, ReaderChild])
+            WorkbookReader().run(filename, [ReaderParent, ReaderChild])
 
     def test_abiguous_sheet_names_error(self):
         class Node4(core.Model):
@@ -873,13 +873,13 @@ class TestMisc(unittest.TestCase):
         node2 = Node5(id='node_2')
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = Writer()
+        writer = WorkbookWriter()
 
         with pytest.warns(IoWarning):
             writer.run(filename, [node1, node2], [Node4, Node5])
 
         with self.assertRaisesRegexp(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):
-            Reader().run(filename, [Node4, Node5])
+            WorkbookReader().run(filename, [Node4, Node5])
 
     def test_read_missing_sheet(self):
         class Node6(core.Model):
@@ -895,10 +895,10 @@ class TestMisc(unittest.TestCase):
         ]
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = Writer()
+        writer = WorkbookWriter()
         writer.run(filename, nodes, [Node6])
 
-        objects = Reader().run(filename, [Node6, Node7], ignore_missing_sheets=True)
+        objects = WorkbookReader().run(filename, [Node6, Node7], ignore_missing_sheets=True)
         objects[Node6].sort(key=lambda node: node.id)
         for orig_node, copy_node in zip(nodes, objects[Node6]):
             self.assertTrue(orig_node.is_equal(copy_node))
@@ -916,17 +916,17 @@ class TestMisc(unittest.TestCase):
         ]
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = Writer()
+        writer = WorkbookWriter()
 
         with pytest.warns(IoWarning):
             writer.run(filename, nodes, [Node8])
 
         with self.assertRaisesRegexp(ValueError, 'Duplicate, case insensitive, header fields:'):
-            Reader().run(filename, [Node8])
+            WorkbookReader().run(filename, [Node8])
 
     def test_row_and_column_headings(self):
         filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = Writer()
+        writer = WorkbookWriter()
         xslx_writer = get_writer('.xlsx')(filename)
         xslx_writer.initialize_workbook()
         writer.write_sheet(xslx_writer,
@@ -942,7 +942,7 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(list(workbook['Sheet'][1]), ['Row_2', 'Cell_2_B', 'Cell_2_C'])
         self.assertEqual(list(workbook['Sheet'][2]), ['Row_3', 'Cell_3_B', 'Cell_3_C'])
 
-        reader = Reader()
+        reader = WorkbookReader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
         data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet',
@@ -963,7 +963,7 @@ class TestMisc(unittest.TestCase):
                 verbose_name_plural = 'Nodes'
 
         with self.assertRaisesRegexp(ValueError, 'matches multiple sheets'):
-            get_model_sheet_name(['Nodes', 'nodes'], Node9)
+            WorkbookReader.get_model_sheet_name(['Nodes', 'nodes'], Node9)
 
     def test_unclean_data(self):
         workbook = Workbook()
@@ -981,7 +981,7 @@ class TestMisc(unittest.TestCase):
             value = core.FloatAttribute(verbose_name='Value')
 
         with self.assertRaisesRegexp(ValueError, 'Value must be a `float`'):
-            Reader().run(filename, [Node10])
+            WorkbookReader().run(filename, [Node10])
 
 
 class ReadEmptyCellTestCase(unittest.TestCase):
@@ -1029,7 +1029,7 @@ class ReadEmptyCellTestCase(unittest.TestCase):
         xslx_writer = get_writer('.xlsx')(filename)
         xslx_writer.run(workbook)
 
-        objects = Reader().run(filename, [TestModel])[TestModel]
+        objects = WorkbookReader().run(filename, [TestModel])[TestModel]
         objects.sort(key=lambda m: m.id)
 
         self.assertTrue(math.isnan(objects[0].value_1))
@@ -1067,9 +1067,9 @@ class InheritedIoTestCase(unittest.TestCase):
         aa1.b = bb1
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        Writer().run(filename, [aa1], [AA, BB])
+        WorkbookWriter().run(filename, [aa1], [AA, BB])
 
-        aa2 = Reader().run(filename, [AA, BB])[AA][0]
+        aa2 = WorkbookReader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertEqual(aa1.b.a, aa1)
 
@@ -1092,9 +1092,9 @@ class InheritedIoTestCase(unittest.TestCase):
         aa1.b = bb1
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        Writer().run(filename, [aa1], [AA, BB])
+        WorkbookWriter().run(filename, [aa1], [AA, BB])
 
-        aa2 = Reader().run(filename, [AA, BB])[AA][0]
+        aa2 = WorkbookReader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertIn(aa1, aa1.b.a_s)
 
@@ -1117,9 +1117,9 @@ class InheritedIoTestCase(unittest.TestCase):
         aa1.bs.append(bb1)
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        Writer().run(filename, [aa1], [AA, BB])
+        WorkbookWriter().run(filename, [aa1], [AA, BB])
 
-        aa2 = Reader().run(filename, [AA, BB])[AA][0]
+        aa2 = WorkbookReader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertEqual(bb1.a, aa1)
 
@@ -1142,9 +1142,9 @@ class InheritedIoTestCase(unittest.TestCase):
         aa1.bs.append(bb1)
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        Writer().run(filename, [aa1], [AA, BB])
+        WorkbookWriter().run(filename, [aa1], [AA, BB])
 
-        aa2 = Reader().run(filename, [AA, BB])[AA][0]
+        aa2 = WorkbookReader().run(filename, [AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertIn(aa1, bb1.a_s)
 
@@ -1164,17 +1164,17 @@ class StrictReadingTestCase(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True)
         m1 = Model1(id='m1')
         filename = os.path.join(self.dirname, 'test.xlsx')
-        Writer().run(filename, [m1], [Model1])
+        WorkbookWriter().run(filename, [m1], [Model1])
 
-        result = Reader().run(filename, [Model1])
+        result = WorkbookReader().run(filename, [Model1])
         self.assertEqual(set(result.keys()), set([Model1]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertTrue(m1.is_equal(result[Model1][0]))
 
         with self.assertRaises(ValueError):
-            Reader().run(filename, [Model1, Model2])
+            WorkbookReader().run(filename, [Model1, Model2])
 
-        result = Reader().run(filename, [Model1, Model2], ignore_missing_sheets=True)
+        result = WorkbookReader().run(filename, [Model1, Model2], ignore_missing_sheets=True)
         self.assertEqual(set(result.keys()), set([Model1, Model2]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertEqual(len(result[Model2]), 0)
@@ -1189,9 +1189,9 @@ class StrictReadingTestCase(unittest.TestCase):
         m1 = Model1(id='m1')
         m2 = Model2(id='m2')
         filename = os.path.join(self.dirname, 'test.xlsx')
-        Writer().run(filename, [m1, m2], [Model1, Model2])
+        WorkbookWriter().run(filename, [m1, m2], [Model1, Model2])
 
-        result = Reader().run(filename, [Model1, Model2])
+        result = WorkbookReader().run(filename, [Model1, Model2])
         self.assertEqual(set(result.keys()), set([Model1, Model2]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertEqual(len(result[Model2]), 1)
@@ -1199,9 +1199,9 @@ class StrictReadingTestCase(unittest.TestCase):
         self.assertTrue(m2.is_equal(result[Model2][0]))
 
         with self.assertRaises(ValueError):
-            Reader().run(filename, [Model1])
+            WorkbookReader().run(filename, [Model1])
 
-        result = Reader().run(filename, [Model1], ignore_extra_sheets=True)
+        result = WorkbookReader().run(filename, [Model1], ignore_extra_sheets=True)
         self.assertEqual(set(result.keys()), set([Model1]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertTrue(m1.is_equal(result[Model1][0]))
@@ -1215,12 +1215,12 @@ class StrictReadingTestCase(unittest.TestCase):
         m1 = Model1(id='m1')
         m2 = Model2(id='m2')
         filename = os.path.join(self.dirname, 'test.xlsx')
-        Writer().run(filename, [m1, m2], [Model1, Model2])
+        WorkbookWriter().run(filename, [m1, m2], [Model1, Model2])
 
-        Reader().run(filename, [Model1, Model2])
+        WorkbookReader().run(filename, [Model1, Model2])
         with self.assertRaises(ValueError):
-            Reader().run(filename, [Model2, Model1])
-        Reader().run(filename, [Model2, Model1], ignore_sheet_order=True)
+            WorkbookReader().run(filename, [Model2, Model1])
+        WorkbookReader().run(filename, [Model2, Model1], ignore_sheet_order=True)
 
     def test_missing_attribute(self):
         class Model(core.Model):
@@ -1240,7 +1240,7 @@ class StrictReadingTestCase(unittest.TestCase):
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb)
-        Reader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -1248,8 +1248,8 @@ class StrictReadingTestCase(unittest.TestCase):
         ws.append(Row(['m1', '2']))
         writer.run(wb)
         with self.assertRaises(ValueError):
-            Reader().run(filename, [Model])
-        Reader().run(filename, [Model], ignore_missing_attributes=True)
+            WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model], ignore_missing_attributes=True)
 
     def test_extra_attribute(self):
         class Model(core.Model):
@@ -1269,7 +1269,7 @@ class StrictReadingTestCase(unittest.TestCase):
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb)
-        Reader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -1277,8 +1277,8 @@ class StrictReadingTestCase(unittest.TestCase):
         ws.append(Row(['m1', '1', '2', '3']))
         writer.run(wb)
         with self.assertRaises(ValueError):
-            Reader().run(filename, [Model])
-        Reader().run(filename, [Model], ignore_extra_attributes=True)
+            WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model], ignore_extra_attributes=True)
 
     def test_different_attribute_order(self):
         class Model(core.Model):
@@ -1298,7 +1298,7 @@ class StrictReadingTestCase(unittest.TestCase):
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb)
-        Reader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -1306,5 +1306,5 @@ class StrictReadingTestCase(unittest.TestCase):
         ws.append(Row(['m1', '2', '1']))
         writer.run(wb)
         with self.assertRaises(ValueError):
-            Reader().run(filename, [Model])
-        Reader().run(filename, [Model], ignore_attribute_order=True)
+            WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model], ignore_attribute_order=True)

@@ -2,7 +2,9 @@
 
 * Comma separated values (.csv)
 * Excel (.xlsx)
+* JavaScript Object Notation (.json)
 * Tab separated values (.tsv)
+* Yet Another Markup Language (.yml)
 
 :Author: Jonathan Karr <karr@mssm.edu>
 :Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
@@ -11,8 +13,11 @@
 :License: MIT
 """
 
+import abc
 import collections
 import copy
+import six
+import wc_utils.workbook.io
 from itertools import chain, compress
 from natsort import natsorted, ns
 from os.path import basename, dirname, splitext
@@ -22,16 +27,63 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose
-from wc_utils.workbook.io import (get_writer, get_reader, WorkbookStyle, WorksheetStyle,
-                                  Writer as BaseWriter, Reader as BaseReader,
-                                  convert as base_convert)
+from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle
 from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
 
-class Writer(object):
+class Writer(six.with_metaclass(abc.ABCMeta, object)):
     """ Write model objects to file(s) """
+
+    @abc.abstractmethod
+    def run(self, path, objects, models, get_related=True,
+            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
+            a set of .csv or .tsv files, with one file for each model.
+
+        Args:
+            path (:obj:`str`): path to write file(s)
+            objects (:obj:`list`): list of objects
+            models (:obj:`list` of `Model`): models in the order that they should
+                appear as worksheets; all models which are not in `models` will
+                follow in alphabetical order
+            title (:obj:`str`, optional): title
+            description (:obj:`str`, optional): description
+            keywords (:obj:`str`, optional): keywords
+            version (:obj:`str`, optional): version
+            language (:obj:`str`, optional): language
+            creator (:obj:`str`, optional): creator
+        """
+        pass  # pragma: no cover
+
+
+class ObjectWriter(Writer):
+    """ Write model objects to a JSON or YAML file """
+
+    def run(self, path, objects, models, get_related=True,
+            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
+                a set of .csv or .tsv files, with one file for each model.
+
+        Args:
+            path (:obj:`str`): path to write file(s)
+            objects (:obj:`list`): list of objects
+            models (:obj:`list` of `Model`): models in the order that they should
+                appear as worksheets; all models which are not in `models` will
+                follow in alphabetical order
+            title (:obj:`str`, optional): title
+            description (:obj:`str`, optional): description
+            keywords (:obj:`str`, optional): keywords
+            version (:obj:`str`, optional): version
+            language (:obj:`str`, optional): language
+            creator (:obj:`str`, optional): creator
+        """
+        pass
+
+
+class WorkbookWriter(Writer):
+    """ Write model objects to an Excel file or CSV or TSV file(s) """
 
     def run(self, path, objects, models, get_related=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None):
@@ -58,7 +110,7 @@ class Writer(object):
                 sheet_names.append(model.Meta.verbose_name_plural)
             else:
                 sheet_names.append(model.Meta.verbose_name)
-        ambiguous_sheet_names = get_ambiguous_sheet_names(sheet_names, models)
+        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, models)
         if ambiguous_sheet_names:
             msg = 'The following sheets will not be able to be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
@@ -98,7 +150,7 @@ class Writer(object):
 
         # add sheets
         _, ext = splitext(path)
-        writer_cls = get_writer(ext)
+        writer_cls = wc_utils.workbook.io.get_writer(ext)
         writer = writer_cls(path,
                             title=title, description=description, keywords=keywords,
                             version=version, language=language, creator=creator)
@@ -121,7 +173,7 @@ class Writer(object):
         """ Write a list of model objects to a file
 
         Args:
-            writer (:obj:`BaseWriter`): io writer
+            writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             model (:obj:`class`): model
             objects (:obj:`list` of `Model`): list of instances of `model`
         """
@@ -174,7 +226,7 @@ class Writer(object):
         """ Write data to sheet
 
         Args:
-            writer (:obj:`BaseWriter`): io writer
+            writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             sheet_name (:obj:`str`): sheet name
             data (:obj:`list` of `list` of `object`): list of list of cell values
             row_headings (:obj:`list` of `list` of `str`, optional): list of list of row headings
@@ -231,8 +283,75 @@ class Writer(object):
         return style
 
 
-class Reader(object):
-    """ Read model objects from file(s) """
+class Reader(six.with_metaclass(abc.ABCMeta, object)):
+    """ Write model objects to file(s) """
+
+    @abc.abstractmethod
+    def run(self, path, models,
+            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
+        """ Read a list of model objects from file(s) and validate them
+
+        File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
+        separated files encoded by a single path with a glob pattern.
+
+        Args:
+            path (:obj:`str`): path to file(s)
+            models (:obj:`list` of :obj:`Model`): list of `Model` classes to read
+            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+                file is missing for one or more models
+            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+                other worksheets or files
+            ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided 
+                in the canonical order
+            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
+                worksheet/file doesn't contain all of attributes in a model in `models`
+            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
+                attributes in the data are not in the model
+            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided 
+                in the canonical order
+
+        Returns:
+            :obj:`dict`: model objects grouped by `Model` class
+        """
+        pass  # pragma: no cover
+
+
+class ObjectReader(Reader):
+    """ Read model objects from a JSON or YAML file """
+
+    def run(self, path, models,
+            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
+        """ Read a list of model objects from file(s) and validate them
+
+        File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
+        separated files encoded by a single path with a glob pattern.
+
+        Args:
+            path (:obj:`str`): path to file(s)
+            models (:obj:`list` of :obj:`Model`): list of `Model` classes to read
+            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+                file is missing for one or more models
+            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+                other worksheets or files
+            ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided 
+                in the canonical order
+            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
+                worksheet/file doesn't contain all of attributes in a model in `models`
+            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
+                attributes in the data are not in the model
+            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided 
+                in the canonical order
+
+        Returns:
+            :obj:`dict`: model objects grouped by `Model` class
+    """
+    pass
+
+
+class WorkbookReader(Reader):
+    """ Read model objects from an Excel file or CSV and TSV files """
 
     def run(self, path, models,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
@@ -277,7 +396,7 @@ class Reader(object):
 
         # initialize reader
         _, ext = splitext(path)
-        reader_cls = get_reader(ext)
+        reader_cls = wc_utils.workbook.io.get_reader(ext)
         reader = reader_cls(path)
 
         # initialize reading
@@ -285,7 +404,7 @@ class Reader(object):
 
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
-        ambiguous_sheet_names = get_ambiguous_sheet_names(sheet_names, models)
+        ambiguous_sheet_names = self.get_ambiguous_sheet_names(sheet_names, models)
         if ambiguous_sheet_names:
             msg = 'The following sheets cannot be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
@@ -301,7 +420,7 @@ class Reader(object):
         sheet_order = []
         expected_sheet_order = []
         for model in models:
-            model_sheet_name = get_model_sheet_name(sheet_names, model)
+            model_sheet_name = self.get_model_sheet_name(sheet_names, model)
             if model_sheet_name:
                 expected_sheet_names.append(model_sheet_name)
                 used_sheet_names.append(model_sheet_name)
@@ -325,7 +444,7 @@ class Reader(object):
                 raise ValueError("No matching models for worksheets/files {} / {}".format(
                     basename(path), "', '".join(sorted(extra_sheet_names))))
 
-        if not ignore_sheet_order and ext in ('.xls', '.xlsx'):
+        if not ignore_sheet_order and ext == '.xlsx':
             if not is_sorted(sheet_order):
                 raise ValueError('The sheets must be provided in this order:\n  {}'.format(
                     '\n  '.join(expected_sheet_order)))
@@ -414,7 +533,7 @@ class Reader(object):
         """ Instantiate a list of objects from data in a table in a file
 
         Args:
-            reader (:obj:`BaseReader`): reader
+            reader (:obj:`wc_utils.workbook.io.Reader`): reader
             model (:obj:`class`): the model describing the objects' schema
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if the worksheet/files
                 don't have all of attributes in the model
@@ -435,7 +554,7 @@ class Reader(object):
                 * constructed model objects
         """
         _, ext = splitext(reader.path)
-        sheet_name = get_model_sheet_name(reader.get_sheet_names(), model)
+        sheet_name = self.get_model_sheet_name(reader.get_sheet_names(), model)
         if not sheet_name:
             return ([], [], None, [])
 
@@ -474,7 +593,7 @@ class Reader(object):
             if attr is not None:
                 attributes.append(attr)
             if attr is None and not ignore_extra_attributes:
-                row, col, hdr_entries = header_row_col_names(idx, ext, model.Meta.tabular_orientation)
+                row, col, hdr_entries = self.header_row_col_names(idx, ext, model.Meta.tabular_orientation)
                 if heading is None or heading == '':
                     errors.append("Empty header field in row {}, col {} - delete empty {}(s)".format(
                         row, col, hdr_entries))
@@ -566,7 +685,7 @@ class Reader(object):
         """ Read file into a two-dimensional list
 
         Args:
-            reader (:obj:`BaseReader`): reader
+            reader (:obj:`wc_utils.workbook.io.Reader`): reader
             sheet_name (:obj:`str`): worksheet name
             num_row_heading_columns (:obj:`int`, optional): number of columns of row headings
             num_column_heading_rows (:obj:`int`, optional): number of rows of column headings
@@ -625,36 +744,147 @@ class Reader(object):
 
         return errors
 
+    @classmethod
+    def header_row_col_names(cls, index, file_ext, tabular_orientation):
+        """ Determine row and column names for header entries.
 
-def convert(source, destination, models=None):
-    """ Convert among Excel (.xlsx), comma separated (.csv), and tab separated formats (.tsv)
+        Args:
+            index (:obj:`int`): index in header sequence
+            file_ext (:obj:`str`): extension for model file
+            orientation (:obj:`TabularOrientation`): orientation of the stored table
+
+        Returns:
+            :obj:`tuple` of row, column, header_entries
+        """
+        if tabular_orientation == TabularOrientation.row:
+            row, col, hdr_entries = (1, index, 'column')
+        else:
+            row, col, hdr_entries = (index, 1, 'row')
+        if 'xlsx' in file_ext:
+            col = excel_col_name(col)
+        return (row, col, hdr_entries)
+
+    @classmethod
+    def get_model_sheet_name(cls, sheet_names, model):
+        """ Get the name of the worksheet/file which corresponds to a model
+
+        Args:
+            sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
+            model (:obj:`Model`): model
+
+        Returns:
+            :obj:`str`: name of sheet corresponding to the model or `None` if there is no sheet for the model
+
+        Raises:
+            :obj:`ValueError`: if the model matches more than one sheet
+        """
+        used_sheet_names = []
+        possible_sheet_names = cls.get_possible_model_sheet_names(model)
+        for sheet_name in sheet_names:
+            for possible_sheet_name in possible_sheet_names:
+                if sheet_name.lower() == possible_sheet_name.lower():
+                    used_sheet_names.append(sheet_name)
+                    break
+
+        used_sheet_names = list(set(used_sheet_names))
+        if len(used_sheet_names) == 1:
+            return used_sheet_names[0]
+        if len(used_sheet_names) > 1:
+            raise ValueError('Model {} matches multiple sheets'.format(model.__name__))
+        return None
+
+    @classmethod
+    def get_possible_model_sheet_names(cls, model):
+        """ Return set of possible sheet names for a model
+
+        Args:
+            model (:obj:`Model`): Model
+
+        Returns:
+            :obj:`set`: set of possible sheet names for a model
+        """
+        return set([model.__name__, model.Meta.verbose_name, model.Meta.verbose_name_plural])
+
+    @classmethod
+    def get_ambiguous_sheet_names(cls, sheet_names, models):
+        """ Get names of sheets than cannot be unambiguously mapped to models (sheet names that map to multiple models).
+
+        Args:
+            sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
+            models (:obj:`list` of :obj:`Model`): list of models
+
+        Returns:
+            :obj:`dict` of :obj:`str`, :obj:`list` of :obj:`Model`: dictionary of ambiguous sheet names and their matching models
+        """
+        sheets_to_models = {}
+        for sheet_name in sheet_names:
+            sheets_to_models[sheet_name] = []
+            for model in models:
+                for possible_sheet_name in cls.get_possible_model_sheet_names(model):
+                    if sheet_name == possible_sheet_name:
+                        sheets_to_models[sheet_name].append(model)
+
+            if len(sheets_to_models[sheet_name]) <= 1:
+                sheets_to_models.pop(sheet_name)
+
+        return sheets_to_models
+
+
+def get_writer(ext):
+    """ Get writer
+
+    Args:
+        ext (:obj:`str`): extension (.csv, .json, .tsv, .xlsx, or .yml)
+
+    Returns:
+        :obj:`class`: writer class
+
+    Raises:
+        :obj:`ValueError`: if extension is not supported
+    """
+    if ext in ['.csv', '.tsv', '.xlsx']:
+        return WorkbookWriter
+    elif ext in ['.json', '.yml']:
+        return ObjectWriter
+    else:
+        raise ValueError('Invalid export format: {}'.format(ext))
+
+
+def get_reader(ext):
+    """ Get reader
+
+    Args:
+        ext (:obj:`str`): extension (.csv, .json, .tsv, .xlsx, or .yml)
+
+    Returns:
+        :obj:`class`: reader class
+
+    Raises:
+        :obj:`ValueError`: if extension is not supported
+    """
+    if ext in ['.csv', '.tsv', '.xlsx']:
+        return WorkbookReader
+    elif ext in ['.json', '.yml']:
+        return ObjectReader
+    else:
+        raise ValueError('Invalid export format: {}'.format(ext))
+
+
+def convert(source, destination, models):
+    """ Convert among comma separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json), 
+    tab separated formats (.tsv), and Yet Another Markup Language (.yml) formats
 
     Args:
         source (:obj:`str`): path to source file
         destination (:obj:`str`): path to save converted file
-        models (:obj:`list` of `class`, optional): list of models
+        models (:obj:`list` of `class`): list of models
     """
-    models = models or []
+    reader = get_reader(splitext(source)[1])
+    writer = get_writer(splitext(destination)[1])
 
-    # get used sheet names
-    _, ext = splitext(source)
-    reader_cls = get_reader(ext)
-    reader = reader_cls(source)
-    reader.initialize_workbook()
-    sheet_names = reader.get_sheet_names()
-    del(reader)
-
-    # determine order, style for sheets
-    worksheet_order = []
-    style = WorkbookStyle()
-    for model in models:
-        sheet_name = get_model_sheet_name(sheet_names, model)
-        if sheet_name:
-            worksheet_order.append(sheet_name)
-            style[sheet_name] = Writer.create_worksheet_style(model)
-
-    # convert
-    base_convert(source, destination, worksheet_order=worksheet_order, style=style)
+    objects_by_model = reader().run(source, models)
+    objects = [obj for objs in objects_by_model.values() for obj in objs]
+    writer().run(destination, objects, models)
 
 
 def create_template(path, models, title=None, description=None, keywords=None,
@@ -673,94 +903,10 @@ def create_template(path, models, title=None, description=None, keywords=None,
         language (:obj:`str`, optional): language
         creator (:obj:`str`, optional): creator
     """
-    Writer().run(path, [], models,
-                 title=title, description=description, keywords=keywords,
-                 version=version, language=language, creator=creator)
-
-
-def header_row_col_names(index, file_ext, tabular_orientation):
-    """ Determine row and column names for header entries.
-
-    Args:
-        index (:obj:`int`): index in header sequence
-        file_ext (:obj:`str`): extension for model file
-        orientation (:obj:`TabularOrientation`): orientation of the stored table
-
-    Returns:
-        :obj:`tuple` of row, column, header_entries
-    """
-    if tabular_orientation == TabularOrientation.row:
-        row, col, hdr_entries = (1, index, 'column')
-    else:
-        row, col, hdr_entries = (index, 1, 'row')
-    if 'xlsx' in file_ext:
-        col = excel_col_name(col)
-    return (row, col, hdr_entries)
-
-
-def get_model_sheet_name(sheet_names, model):
-    """ Get the name of the worksheet/file which corresponds to a model
-
-    Args:
-        sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
-        model (:obj:`Model`): model
-
-    Returns:
-        :obj:`str`: name of sheet corresponding to the model or `None` if there is no sheet for the model
-
-    Raises:
-        :obj:`ValueError`: if the model matches more than one sheet
-    """
-    used_sheet_names = []
-    possible_sheet_names = get_possible_model_sheet_names(model)
-    for sheet_name in sheet_names:
-        for possible_sheet_name in possible_sheet_names:
-            if sheet_name.lower() == possible_sheet_name.lower():
-                used_sheet_names.append(sheet_name)
-                break
-
-    used_sheet_names = list(set(used_sheet_names))
-    if len(used_sheet_names) == 1:
-        return used_sheet_names[0]
-    if len(used_sheet_names) > 1:
-        raise ValueError('Model {} matches multiple sheets'.format(model.__name__))
-    return None
-
-
-def get_possible_model_sheet_names(model):
-    """ Return set of possible sheet names for a model
-
-    Args:
-        model (:obj:`Model`): Model
-
-    Returns:
-        :obj:`set`: set of possible sheet names for a model
-    """
-    return set([model.__name__, model.Meta.verbose_name, model.Meta.verbose_name_plural])
-
-
-def get_ambiguous_sheet_names(sheet_names, models):
-    """ Get names of sheets than cannot be unambiguously mapped to models (sheet names that map to multiple models).
-
-    Args:
-        sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
-        models (:obj:`list` of :obj:`Model`): list of models
-
-    Returns:
-        :obj:`dict` of :obj:`str`, :obj:`list` of :obj:`Model`: dictionary of ambiguous sheet names and their matching models
-    """
-    sheets_to_models = {}
-    for sheet_name in sheet_names:
-        sheets_to_models[sheet_name] = []
-        for model in models:
-            for possible_sheet_name in get_possible_model_sheet_names(model):
-                if sheet_name == possible_sheet_name:
-                    sheets_to_models[sheet_name].append(model)
-
-        if len(sheets_to_models[sheet_name]) <= 1:
-            sheets_to_models.pop(sheet_name)
-
-    return sheets_to_models
+    _, ext = splitext(path)
+    get_writer(ext)().run(path, [], models,
+                          title=title, description=description, keywords=keywords,
+                          version=version, language=language, creator=creator)
 
 
 class IoWarning(ObjModelWarning):
