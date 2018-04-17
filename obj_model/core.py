@@ -2080,12 +2080,13 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Exit context """
         pass
 
-    def to_json(self, encoded=None):
+    def to_json(self, max_depth=float('inf'), encoded=None):
         """ Encode an object using a simple Python representation (dict, list, str, float, bool, None) that is
         compatible with JSON and YAML. Use `__id` keys to avoid infinite recursion by encoding each object once and referring
         to objects by their __id for each repeated reference.
 
         Args:
+            max_depth (:obj:`int`, optional): maximum depth to serialize
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
 
         Returns:
@@ -2095,9 +2096,9 @@ class Model(with_metaclass(ModelMeta, object)):
 
         json = {}
         to_encode = queue.Queue()
-        to_encode.put((self, json))
+        to_encode.put((self, json, 0))
         while not to_encode.empty():
-            obj, json_obj = to_encode.get()
+            obj, json_obj, depth = to_encode.get()
             json_id = encoded.get(obj, None)
             if json_id is not None:
                 json_obj['__type'] = obj.__class__.__name__
@@ -2107,40 +2108,43 @@ class Model(with_metaclass(ModelMeta, object)):
                 json_obj['__type'] = obj.__class__.__name__
                 json_obj['__id'] = json_id
                 encoded[obj] = json_id
-                cls = obj.__class__
 
-                for attr in cls.Meta.attributes.values():
-                    val = getattr(obj, attr.name)
-                    if isinstance(attr, RelatedAttribute):
+                if depth <= max_depth:
+
+                    cls = obj.__class__
+
+                    for attr in cls.Meta.attributes.values():
+                        val = getattr(obj, attr.name)
+                        if isinstance(attr, RelatedAttribute):
+                            if val is None:
+                                json_val = None
+                            elif isinstance(val, list):
+                                json_val = []
+                                for v in val:
+                                    json_v = {}
+                                    to_encode.put((v, json_v, depth + 1))
+                                    json_val.append(json_v)
+                            else:
+                                json_val = {}
+                                to_encode.put((val, json_val, depth + 1))
+                        else:
+                            json_val = attr.to_json(val)
+                        json_obj[attr.name] = json_val
+
+                    for attr in cls.Meta.related_attributes.values():
+                        val = getattr(obj, attr.related_name)
                         if val is None:
                             json_val = None
                         elif isinstance(val, list):
                             json_val = []
                             for v in val:
                                 json_v = {}
-                                to_encode.put((v, json_v))
+                                to_encode.put((v, json_v, depth + 1))
                                 json_val.append(json_v)
                         else:
                             json_val = {}
-                            to_encode.put((val, json_val))
-                    else:
-                        json_val = attr.to_json(val)
-                    json_obj[attr.name] = json_val
-
-                for attr in cls.Meta.related_attributes.values():
-                    val = getattr(obj, attr.related_name)
-                    if val is None:
-                        json_val = None
-                    elif isinstance(val, list):
-                        json_val = []
-                        for v in val:
-                            json_v = {}
-                            to_encode.put((v, json_v))
-                            json_val.append(json_v)
-                    else:
-                        json_val = {}
-                        to_encode.put((val, json_val))
-                    json_obj[attr.related_name] = json_val
+                            to_encode.put((val, json_val, depth + 1))
+                        json_obj[attr.related_name] = json_val
 
         return json
 

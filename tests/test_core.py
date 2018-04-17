@@ -4192,6 +4192,38 @@ class JsonTestCase(unittest.TestCase):
         model = Model(id='m')
         self.assertEqual(model.from_json(model.to_json(), decoded={0: 'already decoded'}), 'already decoded')
 
+    def test_max_depth(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+
+        p = Parent(id='p')
+        c0 = p.children.create(id='c0')
+        c1 = p.children.create(id='c1')
+
+        self.assertEqual(p.to_json(max_depth=-1), {'__type': 'Parent', '__id': 0})
+        self.assertEqual(p.to_json(max_depth=0), {
+            '__type': 'Parent',
+            '__id': 0,
+            'id': 'p',
+            'children': [
+                {'__type': 'Child', '__id': 1},
+                {'__type': 'Child', '__id': 2},
+            ],
+        })
+        self.assertEqual(p.to_json(max_depth=1), {
+            '__type': 'Parent',
+            '__id': 0,
+            'id': 'p',
+            'children': [
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+            ],
+        })
+
 
 class TestErrors(unittest.TestCase):
 
