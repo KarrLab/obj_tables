@@ -12,6 +12,7 @@ import Bio.Alphabet
 import Bio.motifs.matrix
 import Bio.Seq
 import Bio.SeqFeature
+import copy
 import json
 import numpy
 import six
@@ -124,6 +125,36 @@ class FeatureLocationAttribute(core.Attribute):
             return ''
         else:
             return '{},{},{}'.format(value.start, value.end, value.strand)  # :todo: check if this is sufficient
+
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`Bio.SeqFeature.FeatureLocation`): value of the attribute
+
+        Returns:
+            :obj:`dict`: simple Python representation of a value of the attribute
+        """
+        if value is None:
+            return None
+        else:
+            return {'start': value.start, 'end': value.end, 'strand': value.strand}
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`dict`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`Bio.SeqFeature.FeatureLocation`: decoded value of the attribute
+        """
+        if json is None:
+            return None
+        else:
+            return Bio.SeqFeature.FeatureLocation(json['start'], json['end'], json['strand'])
 
 
 class BioSeqAttribute(core.Attribute):
@@ -258,6 +289,46 @@ class BioSeqAttribute(core.Attribute):
                 })
         return ''
 
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`Bio.Seq.Seq`): value of the attribute
+
+        Returns:
+            :obj:`dict`: simple Python representation of a value of the attribute
+        """
+        if value is None:
+            return None
+        else:
+            return {
+                'seq': str(value),
+                'alphabet': {
+                    'type': value.alphabet.__class__.__name__,
+                    'letters': value.alphabet.letters,
+                    'size': value.alphabet.size,
+                },
+            }
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`dict`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`Bio.Seq.Seq`: decoded value of the attribute
+        """
+        if json is None:
+            return None
+        else:
+            alphabet = getattr(Bio.Alphabet, json['alphabet']['type'])()
+            alphabet.size = json['alphabet']['size']
+            alphabet.letters = json['alphabet']['letters']
+            return Bio.Seq.Seq(json['seq'], alphabet)
+
 
 class BioDnaSeqAttribute(BioSeqAttribute):
     """ Bio.Seq.Seq attribute with Bio.Alphabet.DNAAlphabet """
@@ -391,6 +462,50 @@ class FrequencyPositionMatrixAttribute(core.Attribute):
                 return (None, core.InvalidAttribute(self, [str(error)]))
         else:
             return (None, None)
+
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`Bio.motifs.matrix.FrequencyPositionMatrix`): value of the attribute
+
+        Returns:
+            :obj:`dict`: simple Python representation of a value of the attribute
+        """
+        if value is None:
+            return None
+        else:
+            json = {
+                '_alphabet': {
+                    'type': value.alphabet.__class__.__name__,
+                    'letters': value.alphabet.letters,
+                    'size': value.alphabet.size,
+                },
+            }
+            for letter, counts in value.items():
+                json[letter] = counts
+            return json
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`dict`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`Bio.motifs.matrix.FrequencyPositionMatrix`: decoded value of the attribute
+        """
+        if json is None:
+            return None
+        else:
+            json = copy.copy(json)
+            alphabet = getattr(Bio.Alphabet, json['_alphabet']['type'])()
+            alphabet.size = json['_alphabet']['size']
+            alphabet.letters = json['_alphabet']['letters']
+            json.pop('_alphabet')
+            return Bio.motifs.matrix.FrequencyPositionMatrix(alphabet, json)
 
 
 class NumpyArrayAttribute(core.Attribute):
@@ -530,6 +645,40 @@ class NumpyArrayAttribute(core.Attribute):
             return json.dumps(value.tolist())
         return ''
 
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`numpy.array`): value of the attribute
+
+        Returns:
+            :obj:`list`: simple Python representation of a value of the attribute
+        """
+        if value is None:
+            return None
+        else:
+            return value.tolist()
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`list`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`numpy.array`: decoded value of the attribute
+        """
+        if json is None:
+            return None
+        else:
+            if self.default is not None:
+                dtype = self.default.dtype.type
+            else:
+                dtype = None
+            return numpy.array(json, dtype)
+
 
 class SympyBasicAttribute(core.Attribute):
     """ Base class for SymPy expression, symbol attributes
@@ -627,6 +776,36 @@ class SympyBasicAttribute(core.Attribute):
             return str(value)[6:-1]
         return ''
 
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`sympy.Basic`): value of the attribute
+
+        Returns:
+            :obj:`str`: simple Python representation of a value of the attribute
+        """
+        if value is None:
+            return None
+        else:
+            return str(value)[6:-1]
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`list`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`sympy.Basic`: decoded value of the attribute
+        """
+        if json is None:
+            return None
+        else:
+            return self.type(json)
+
 
 class SympyExprAttribute(SympyBasicAttribute):
     """ SymPy expression attribute
@@ -653,7 +832,7 @@ class SympyExprAttribute(SympyBasicAttribute):
         """ Serialize string
 
         Args:
-            value (:obj:`sympy.Basic`): Python representation
+            value (:obj:`sympy.Expr`): Python representation
 
         Returns:
             :obj:`str`: simple Python representation
@@ -661,6 +840,21 @@ class SympyExprAttribute(SympyBasicAttribute):
         if value:
             return str(value)[5:-1]
         return ''
+
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`sympy.Expr`): value of the attribute
+
+        Returns:
+            :obj:`str`: simple Python representation of a value of the attribute
+        """
+        if value is None:
+            return None
+        else:
+            return str(value)[5:-1]
 
 
 class SympySymbolAttribute(SympyBasicAttribute):
@@ -688,7 +882,7 @@ class SympySymbolAttribute(SympyBasicAttribute):
         """ Serialize string
 
         Args:
-            value (:obj:`sympy.Basic`): Python representation
+            value (:obj:`sympy.Symbol`): Python representation
 
         Returns:
             :obj:`str`: simple Python representation
@@ -696,3 +890,18 @@ class SympySymbolAttribute(SympyBasicAttribute):
         if value:
             return str(value)
         return ''
+
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`sympy.Symbol`): value of the attribute
+
+        Returns:
+            :obj:`str`: simple Python representation of a value of the attribute
+        """
+        if value is None:
+            return None
+        else:
+            return str(value)

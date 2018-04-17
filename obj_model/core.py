@@ -38,6 +38,7 @@ import collections
 import copy
 import dateutil.parser
 import inflect
+import queue
 import re
 import six
 import sys
@@ -133,6 +134,12 @@ class ModelMeta(type):
         Raises:
             :obj:`ValueError`: if attributes are not valid
         """
+        if '_{}__type'.format(name) in namespace:
+            raise ValueError('Attribute cannot have reserved name `__type`')
+
+        if '_{}__id'.format(name) in namespace:
+            raise ValueError('Attribute cannot have reserved name `__id`')
+
         for attr_name in namespace['Meta'].attribute_order:
             if not isinstance(attr_name, str):
                 raise ValueError("`attribute_order` for {} must contain attribute names; '{}' is "
@@ -2073,6 +2080,142 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Exit context """
         pass
 
+    def to_json(self, encoded=None):
+        """ Encode an object using a simple Python representation (dict, list, str, float, bool, None) that is
+        compatible with JSON and YAML. Use `__id` keys to avoid infinite recursion by encoding each object once and referring
+        to objects by their __id for each repeated reference.
+
+        Args:
+            encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
+
+        Returns:
+            :obj:`dict`: simple Python representation of the object
+        """
+        encoded = encoded or {}
+
+        json = {}
+        to_encode = queue.Queue()
+        to_encode.put((self, json))
+        while not to_encode.empty():
+            obj, json_obj = to_encode.get()
+            json_id = encoded.get(obj, None)
+            if json_id is not None:
+                json_obj['__type'] = obj.__class__.__name__
+                json_obj['__id'] = json_id
+            else:
+                json_id = len(encoded)
+                json_obj['__type'] = obj.__class__.__name__
+                json_obj['__id'] = json_id
+                encoded[obj] = json_id
+                cls = obj.__class__
+
+                for attr in cls.Meta.attributes.values():
+                    val = getattr(obj, attr.name)
+                    if isinstance(attr, RelatedAttribute):
+                        if val is None:
+                            json_val = None
+                        elif isinstance(val, list):
+                            json_val = []
+                            for v in val:
+                                json_v = {}
+                                to_encode.put((v, json_v))
+                                json_val.append(json_v)
+                        else:
+                            json_val = {}
+                            to_encode.put((val, json_val))
+                    else:
+                        json_val = attr.to_json(val)
+                    json_obj[attr.name] = json_val
+
+                for attr in cls.Meta.related_attributes.values():
+                    val = getattr(obj, attr.related_name)
+                    if val is None:
+                        json_val = None
+                    elif isinstance(val, list):
+                        json_val = []
+                        for v in val:
+                            json_v = {}
+                            to_encode.put((v, json_v))
+                            json_val.append(json_v)
+                    else:
+                        json_val = {}
+                        to_encode.put((val, json_val))
+                    json_obj[attr.related_name] = json_val
+
+        return json
+
+    @classmethod
+    def from_json(cls, json, decoded=None):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of an object that
+        is compatible with JSON and YAML, including references to objects through `__id` keys.
+
+        Args:
+            json (:obj:`dict`): simple Python representation of the object
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`Model`: decoded object
+        """
+        decoded = decoded or {}
+
+        obj = decoded.get(json['__id'], None)
+        if obj is not None:
+            return obj
+
+        obj = cls()
+        decoded[json['__id']] = obj
+        to_decode = [(json, obj)]
+        while to_decode:
+            sub_json, sub_obj = to_decode.pop()
+            sub_cls = sub_obj.__class__
+
+            for attr in sub_cls.Meta.attributes.values():
+                attr_json = sub_json[attr.name]
+                if isinstance(attr, RelatedAttribute):
+                    if attr_json is None:
+                        attr_val = None
+                    elif isinstance(attr_json, list):
+                        attr_val = []
+                        for sub_attr_json in attr_json:
+                            sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
+                            if sub_sub_obj is None:
+                                sub_sub_obj = attr.related_class()
+                                decoded[sub_attr_json['__id']] = sub_sub_obj
+                                to_decode.append((sub_attr_json, sub_sub_obj))
+                            attr_val.append(sub_sub_obj)
+                    else:
+                        attr_val = decoded.get(attr_json['__id'], None)
+                        if attr_val is None:
+                            attr_val = attr.related_class()
+                            decoded[attr_json['__id']] = attr_val
+                            to_decode.append((attr_json, attr_val))
+                else:
+                    attr_val = attr.from_json(attr_json)
+                setattr(sub_obj, attr.name, attr_val)
+
+            for attr in sub_cls.Meta.related_attributes.values():
+                attr_json = sub_json[attr.related_name]
+                if attr_json is None:
+                    attr_val = None
+                elif isinstance(attr_json, list):
+                    attr_val = []
+                    for sub_attr_json in attr_json:
+                        sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
+                        if sub_sub_obj is None:
+                            sub_sub_obj = attr.primary_class()
+                            decoded[sub_attr_json['__id']] = sub_sub_obj
+                            to_decode.append((sub_attr_json, sub_sub_obj))
+                        attr_val.append(sub_sub_obj)
+                else:
+                    attr_val = decoded.get(attr_json['__id'], None)
+                    if attr_val is None:
+                        attr_val = attr.primary_class()
+                        decoded[attr_json['__id']] = attr_val
+                        to_decode.append((attr_json, attr_val))
+                setattr(sub_obj, attr.related_name, attr_val)
+
+        return obj
+
 
 class ModelSource(object):
     """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
@@ -2269,6 +2412,32 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """
         pass  # pragma: no cover
 
+    @abc.abstractmethod
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`object`): value of the attribute
+
+        Returns:
+            :obj:`object`: simple Python representation of a value of the attribute
+        """
+        pass  # pragma: no cover
+
+    @abc.abstractmethod
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`object`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`object`: decoded value of the attribute
+        """
+        pass  # pragma: no cover
+
 
 class LiteralAttribute(Attribute):
     """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
@@ -2307,6 +2476,30 @@ class LiteralAttribute(Attribute):
         """
         return self.clean(value)
 
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`object`): value of the attribute
+
+        Returns:
+            :obj:`object`: simple Python representation of a value of the attribute
+        """
+        return value
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`object`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`object`: decoded value of the attribute
+        """
+        return json
+
 
 class NumericAttribute(LiteralAttribute):
     """ Base class for numeric literal attributes (float, integer) """
@@ -2334,7 +2527,7 @@ class EnumAttribute(LiteralAttribute):
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
 
         Raises:
-            :obj:`ValueError`: if `enum_class` is not an instance of `Enum`, if `default` is not an instance 
+            :obj:`ValueError`: if `enum_class` is not an instance of `Enum`, if `default` is not an instance
                 of `enum_class`, or if `default_cleaned_value` is not an instance of `enum_class`
         """
         if not issubclass(enum_class, Enum):
@@ -2416,6 +2609,30 @@ class EnumAttribute(LiteralAttribute):
             :obj:`str`: simple Python representation
         """
         return value.name
+
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`Enum`): value of the attribute
+
+        Returns:
+            :obj:`str`: simple Python representation of a value of the attribute
+        """
+        return value.name
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`str`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`Enum`: decoded value of the attribute
+        """
+        return self.enum_class[json]
 
 
 class BooleanAttribute(LiteralAttribute):
@@ -2724,6 +2941,30 @@ class IntegerAttribute(NumericAttribute):
             return None
         return float(value)
 
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`int`): value of the attribute
+
+        Returns:
+            :obj:`float`: simple Python representation of a value of the attribute
+        """
+        return float(value)
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`float`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`int`: decoded value of the attribute
+        """
+        return int(json)
+
 
 class PositiveIntegerAttribute(IntegerAttribute):
     """ Positive interger attribute """
@@ -2798,7 +3039,7 @@ class StringAttribute(LiteralAttribute):
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
 
         Raises:
-            :obj:`ValueError`: if `min_length` is negative, `max_length` is less than `min_length`, 
+            :obj:`ValueError`: if `min_length` is negative, `max_length` is less than `min_length`,
                 `default` is not a string, or `default_cleaned_value` is not a string
         """
 
@@ -3116,6 +3357,30 @@ class DateAttribute(LiteralAttribute):
         """
         return value.toordinal() - date(1900, 1, 1).toordinal() + 1.
 
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`date`): value of the attribute
+
+        Returns:
+            :obj:`str`: simple Python representation of a value of the attribute
+        """
+        return value.strftime('%Y-%m-%d')
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`str`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`date`: decoded value of the attribute
+        """
+        return datetime.strptime(json, '%Y-%m-%d').date()
+
 
 class TimeAttribute(LiteralAttribute):
     """ Time attribute
@@ -3217,6 +3482,30 @@ class TimeAttribute(LiteralAttribute):
             :obj:`float`: simple Python representation
         """
         return (value.hour * 60. * 60. + value.minute * 60. + value.second) / (24. * 60. * 60.)
+
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`time`): value of the attribute
+
+        Returns:
+            :obj:`str`: simple Python representation of a value of the attribute
+        """
+        return value.strftime('%H:%M:%S')
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`str`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`time`: decoded value of the attribute
+        """
+        return datetime.strptime(json, '%H:%M:%S').time()
 
 
 class DateTimeAttribute(LiteralAttribute):
@@ -3334,6 +3623,30 @@ class DateTimeAttribute(LiteralAttribute):
         return date_value.toordinal() - date(1900, 1, 1).toordinal() + 1 \
             + (time_value.hour * 60. * 60. + time_value.minute *
                60. + time_value.second) / (24. * 60. * 60.)
+
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`datetime`): value of the attribute
+
+        Returns:
+            :obj:`str`: simple Python representation of a value of the attribute
+        """
+        return value.strftime('%Y-%m-%d %H:%M:%S')
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`str`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`datetime`: decoded value of the attribute
+        """
+        return datetime.strptime(json, '%Y-%m-%d %H:%M:%S')
 
 
 class RelatedAttribute(Attribute):
@@ -3479,6 +3792,30 @@ class RelatedAttribute(Attribute):
         """
         pass  # pragma: no cover
 
+    def to_json(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`object`): value of the attribute
+
+        Returns:
+            :obj:`object`: simple Python representation of a value of the attribute
+        """
+        raise Exception('This function should not be executed')
+
+    def from_json(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`object`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`object`: decoded value of the attribute
+        """
+        raise Exception('This function should not be executed')
+
 
 class OneToOneAttribute(RelatedAttribute):
     """ Represents a one-to-one relationship between two types of objects. """
@@ -3492,7 +3829,7 @@ class OneToOneAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): callable which returns default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning            
+            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning
             related_default (:obj:`callable`, optional): callable which returns default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
@@ -3669,7 +4006,7 @@ class OneToOneAttribute(RelatedAttribute):
 
 
 class ManyToOneAttribute(RelatedAttribute):
-    """ Represents a many-to-one relationship between two types of objects. 
+    """ Represents a many-to-one relationship between two types of objects.
     This is analagous to a foreign key relationship in a database.
     """
 
@@ -3682,7 +4019,7 @@ class ManyToOneAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): callable which returns the default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning            
+            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning
             related_default (:obj:`callable`, optional): callable which returns the default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
@@ -3874,7 +4211,7 @@ class ManyToOneAttribute(RelatedAttribute):
 
 
 class OneToManyAttribute(RelatedAttribute):
-    """ Represents a one-to-many relationship between two types of objects. 
+    """ Represents a one-to-many relationship between two types of objects.
     This is analagous to a foreign key relationship in a database.
     """
 
@@ -3887,7 +4224,7 @@ class OneToManyAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): function which returns the default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning            
+            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning
             related_default (:obj:`callable`, optional): function which returns the default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
@@ -4095,7 +4432,7 @@ class ManyToManyAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): function which returns the default values
-            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning            
+            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning
             related_default (:obj:`callable`, optional): function which returns the default related values
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
@@ -4504,7 +4841,7 @@ class RelatedManager(list):
         return self
 
     def get_one(self, _type=None, **kwargs):
-        """ Get a related object by attribute/value pairs; report an error if multiple objects match and, 
+        """ Get a related object by attribute/value pairs; report an error if multiple objects match and,
         optionally, only return matches that are also instances of :obj:`Model` subclass :obj:`_type`.
 
         Args:
@@ -4555,8 +4892,8 @@ class RelatedManager(list):
             if is_match:
                 matches.append(obj)
 
-        # filter based on type        
-        if _type is not None:           
+        # filter based on type
+        if _type is not None:
             matches = list(filter(lambda m: isinstance(m, _type), matches))
 
         return matches

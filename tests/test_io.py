@@ -15,6 +15,7 @@ from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle,
 import enum
 import math
 import mock
+import obj_model.io
 import openpyxl
 import os
 import pytest
@@ -149,6 +150,7 @@ class TestIo(unittest.TestCase):
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         WorkbookWriter().run(filename, [root], [MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename, root, [MainRoot, Node, Leaf, ])
         objects2 = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
 
         # validate
@@ -176,6 +178,14 @@ class TestIo(unittest.TestCase):
 
         # unicode
         self.assertEqual(root2.name, u'\u20ac')
+
+        #
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        WorkbookWriter().run(filename, root, [MainRoot, Node, Leaf, ])
+
+        WorkbookWriter().run(filename, None, [MainRoot, Node, Leaf, ])
+        objects2 = WorkbookReader().run(filename, [MainRoot, Node, Leaf, ], group_objects_by_model=False)
+        self.assertEqual(objects2, None)
 
     def test_manager(self):
 
@@ -1009,6 +1019,12 @@ class ReadEmptyCellTestCase(unittest.TestCase):
             def validate(self):
                 pass
 
+            def to_json(self, encoded=None):
+                pass
+
+            def from_json(self, json, decoded=None):
+                pass
+
         attr = ConcreteAttribute(default_cleaned_value=lambda: 1.5)
         self.assertEqual(attr.get_default_cleaned_value(), 1.5)
 
@@ -1212,6 +1228,13 @@ class StrictReadingTestCase(unittest.TestCase):
 
         class Model2(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
+
+        class Model3(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.column
+
         m1 = Model1(id='m1')
         m2 = Model2(id='m2')
         filename = os.path.join(self.dirname, 'test.xlsx')
@@ -1221,6 +1244,9 @@ class StrictReadingTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, [Model2, Model1])
         WorkbookReader().run(filename, [Model2, Model1], ignore_sheet_order=True)
+
+        WorkbookWriter().run(filename, [m1], [Model1])
+        WorkbookReader().run(filename, [Model1, Model3], ignore_missing_sheets=True)
 
     def test_missing_attribute(self):
         class Model(core.Model):
@@ -1308,3 +1334,114 @@ class StrictReadingTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, [Model])
         WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
+
+
+class JsonTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dirname)
+
+    def test_write_read(self):
+        class AA(core.Model):
+            id = core.StringAttribute()
+
+        class BB(core.Model):
+            id = core.StringAttribute()
+            aa = core.ManyToOneAttribute(AA, related_name='bbs')
+
+        class CC(core.Model):
+            id = core.StringAttribute()
+            bbs = core.ManyToOneAttribute(BB, related_name='ccs')
+            aas = core.ManyToOneAttribute(AA, related_name='ccs')
+
+        aa_0 = AA(id='aa_0')
+        aa_1 = AA(id='aa_1')
+        aa_2 = AA(id='aa_2')
+
+        bb_0_0 = aa_0.bbs.create(id='bb_0_0')
+        bb_0_1 = aa_0.bbs.create(id='bb_0_1')
+
+        cc_0_0_0 = bb_0_0.ccs.create(id='cc_0_0_0')
+        cc_0_0_1 = bb_0_0.ccs.create(id='cc_0_0_1')
+        cc_0_1_0 = bb_0_1.ccs.create(id='cc_0_1_0')
+        cc_0_1_1 = bb_0_1.ccs.create(id='cc_0_1_1')
+
+        # todo
+        #cc_0_0_0.aas = [aa_0]
+        #cc_0_0_1.aas = [aa_1, aa_2]
+        cc_0_0_0.aas = aa_0
+        cc_0_0_1.aas = aa_1
+
+        path = os.path.join(self.dirname, 'out.json')
+        obj_model.io.JsonWriter().run(path, aa_0)
+        aa_0_2 = obj_model.io.JsonReader().run(path, [AA])
+        self.assertTrue(aa_0.is_equal(aa_0_2))
+
+        obj_model.io.JsonWriter().run(path, [aa_0, aa_1], models=AA)
+        aas = obj_model.io.JsonReader().run(path, [AA])
+        self.assertEqual(len(aas), 2)
+        self.assertTrue(aa_0.is_equal(aas[0]))
+        self.assertTrue(aa_1.is_equal(aas[1]))
+
+        obj_model.io.JsonWriter().run(path, aa_0, models=AA)
+        aa_0_2 = obj_model.io.JsonReader().run(path, models=AA)
+        self.assertTrue(aa_0.is_equal(aa_0_2))
+
+        obj_model.io.JsonWriter().run(path, aa_0)
+        aa_0_2 = obj_model.io.JsonReader().run(path, models=AA)
+        self.assertTrue(aa_0.is_equal(aa_0_2))
+        aa_0_2 = obj_model.io.JsonReader().run(path, models=AA, group_objects_by_model=True)
+        self.assertEqual(list(aa_0_2.keys()), [AA])
+        self.assertEqual(len(aa_0_2[AA]), 1)
+        self.assertTrue(aa_0.is_equal(aa_0_2[AA][0]))
+
+        obj_model.io.JsonWriter().run(path, None)
+        self.assertEqual(obj_model.io.JsonReader().run(path), None)
+        self.assertEqual(obj_model.io.JsonReader().run(path, models=AA, group_objects_by_model=True), {})
+
+        path = os.path.join(self.dirname, 'out.yml')
+        obj_model.io.JsonWriter().run(path, aa_0)
+        aa_0_2 = obj_model.io.JsonReader().run(path, [AA])
+        self.assertTrue(aa_0.is_equal(aa_0_2))
+
+        path = os.path.join(self.dirname, 'out.abc')
+        with self.assertRaisesRegexp(ValueError, 'Unsupported format'):
+            obj_model.io.JsonWriter().run(path, aa_0)
+        with self.assertRaisesRegexp(ValueError, 'Unsupported format'):
+            obj_model.io.JsonReader().run(path, [AA])
+
+        old_AA = AA
+
+        class AA(core.Model):
+            id = core.StringAttribute()
+        path = os.path.join(self.dirname, 'out.yml')
+        with self.assertRaisesRegexp(ValueError, 'Model names must be unique to decode objects'):
+            obj_model.io.JsonWriter().run(path, aa_0, models=[AA, old_AA])
+        with self.assertRaisesRegexp(ValueError, 'Model names must be unique to decode objects'):
+            obj_model.io.JsonReader().run(path, models=[AA, old_AA])
+
+
+class UtilsTestCase(unittest.TestCase):
+    def test_get_writer(self):
+        self.assertEqual(obj_model.io.get_writer('.csv'), obj_model.io.WorkbookWriter)
+        self.assertEqual(obj_model.io.get_writer('.tsv'), obj_model.io.WorkbookWriter)
+        self.assertEqual(obj_model.io.get_writer('.xlsx'), obj_model.io.WorkbookWriter)
+        self.assertEqual(obj_model.io.get_writer('.json'), obj_model.io.JsonWriter)
+        self.assertEqual(obj_model.io.get_writer('.yaml'), obj_model.io.JsonWriter)
+        self.assertEqual(obj_model.io.get_writer('.yml'), obj_model.io.JsonWriter)
+
+        with self.assertRaises(ValueError):
+            obj_model.io.get_writer('.abc')
+
+    def test_get_reader(self):
+        self.assertEqual(obj_model.io.get_reader('.csv'), obj_model.io.WorkbookReader)
+        self.assertEqual(obj_model.io.get_reader('.tsv'), obj_model.io.WorkbookReader)
+        self.assertEqual(obj_model.io.get_reader('.xlsx'), obj_model.io.WorkbookReader)
+        self.assertEqual(obj_model.io.get_reader('.json'), obj_model.io.JsonReader)
+        self.assertEqual(obj_model.io.get_reader('.yaml'), obj_model.io.JsonReader)
+        self.assertEqual(obj_model.io.get_reader('.yml'), obj_model.io.JsonReader)
+
+        with self.assertRaises(ValueError):
+            obj_model.io.get_reader('.abc')

@@ -415,8 +415,10 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
+
             class Meta (core.Model.Meta):
                 tabular_orientation = core.TabularOrientation.inline
+
         class TestParent(core.Model):
             pass
         with self.assertRaisesRegexp(ValueError, 'should have at least one one-to-one or one-to-many attribute'):
@@ -425,6 +427,7 @@ class TestCore(unittest.TestCase):
     def test_validate_attributes(self):
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
             children = core.OneToManyAttribute(
@@ -437,6 +440,7 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
+
                 class Meta(core.Model.Meta):
                     attribute_order = (1,)
         self.assertIn('must contain attribute names', str(context.exception))
@@ -445,6 +449,7 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
+
                 class Meta(core.Model.Meta):
                     attribute_order = (bad_name,)
         self.assertIn("'{}' not found in attributes of".format(
@@ -453,6 +458,7 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
+
                 class Meta(core.Model.Meta):
                     unique_together = 'hello'
         self.assertIn("must be a tuple, not", str(context.exception))
@@ -460,6 +466,7 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
+
                 class Meta(core.Model.Meta):
                     unique_together = ('hello', 2)
         self.assertIn("must be a tuple of tuples, not", str(context.exception))
@@ -467,6 +474,7 @@ class TestCore(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
+
                 class Meta(core.Model.Meta):
                     unique_together = ((3,), ('var', 'woops!'),)
         self.assertIn("must be a tuple of tuples of strings, not",
@@ -476,6 +484,7 @@ class TestCore(unittest.TestCase):
             class Test1(core.Model):
                 name = core.StringAttribute()
                 var = core.IntegerAttribute()
+
                 class Meta(core.Model.Meta):
                     unique_together = (('name',), ('var', 'woops!'),)
         self.assertIn("must be a tuple of tuples of attribute names",
@@ -485,6 +494,7 @@ class TestCore(unittest.TestCase):
             class Test1(core.Model):
                 name = core.StringAttribute()
                 var = core.IntegerAttribute()
+
                 class Meta(core.Model.Meta):
                     unique_together = (('name', 'var', 'name', ),)
         self.assertIn("cannot repeat attribute names in any tuple",
@@ -494,16 +504,19 @@ class TestCore(unittest.TestCase):
             class Test1(core.Model):
                 name = core.StringAttribute()
                 var = core.IntegerAttribute()
+
                 class Meta(core.Model.Meta):
                     unique_together = (('var', 'name',), ('name', 'var', ), )
         self.assertIn("unique_together cannot contain identical attribute sets", str(
             context.exception))
 
         test_tuples = (('b_name', 'a_name',), ('c_name', 'b_name', ), )
+
         class Test1(core.Model):
             a_name = core.StringAttribute()
             b_name = core.IntegerAttribute()
             c_name = core.IntegerAttribute()
+
             class Meta(core.Model.Meta):
                 unique_together = test_tuples
         for a_tuple in test_tuples:
@@ -2106,6 +2119,7 @@ class TestCore(unittest.TestCase):
     def test_onetooneattribute(self):
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parent = core.OneToOneAttribute(TestParent, related_name='child')
@@ -2130,6 +2144,7 @@ class TestCore(unittest.TestCase):
 
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parent = core.OneToOneAttribute(TestParent, related_name='child')
@@ -2191,6 +2206,7 @@ class TestCore(unittest.TestCase):
     def test_manytooneattribute(self):
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parent = core.ManyToOneAttribute(TestParent)
@@ -2202,6 +2218,7 @@ class TestCore(unittest.TestCase):
 
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parent = core.ManyToOneAttribute(TestParent, related_name='children')
@@ -2242,6 +2259,7 @@ class TestCore(unittest.TestCase):
     def test_onetomanyattribute(self):
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
             children = core.OneToManyAttribute(TestChild)
@@ -2251,6 +2269,7 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
             children = core.OneToManyAttribute(TestChild, related_name='parent')
@@ -2287,6 +2306,7 @@ class TestCore(unittest.TestCase):
     def test_manytomanyattribute(self):
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parents = core.ManyToManyAttribute(TestParent)
@@ -2298,6 +2318,7 @@ class TestCore(unittest.TestCase):
 
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parents = core.ManyToManyAttribute(TestParent, related_name='children')
@@ -2342,6 +2363,7 @@ class TestCore(unittest.TestCase):
     def test_relatedmanager(self):
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parents = core.ManyToManyAttribute(TestParent, related_name='children')
@@ -2528,9 +2550,11 @@ class TestCore(unittest.TestCase):
     def test_unique_together(self):
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestParent(core.Model):
             name = core.StringAttribute()
             children = core.ManyToManyAttribute(TestChild, related_name='parents')
+
             class Meta(core.Model.Meta):
                 unique_together = (('name', 'children'),)
 
@@ -2563,9 +2587,11 @@ class TestCore(unittest.TestCase):
 
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             name = core.StringAttribute()
             parent = core.ManyToOneAttribute(TestParent, related_name='children')
+
             class Meta(core.Model.Meta):
                 unique_together = (('name', 'parent'),)
 
@@ -2612,6 +2638,7 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
             children = core.OneToManyAttribute(TestChild, related_name='parent')
@@ -2628,8 +2655,14 @@ class TestCore(unittest.TestCase):
         class TestAttribute(core.Attribute):
 
             def validate(self): pass
+
             def serialize(self): pass
+
             def deserialize(self): pass
+
+            def to_json(self, encoded=None): pass
+
+            def from_json(self, json, decoded=None): pass
 
         class TestModel(core.Model):
             attr = TestAttribute()
@@ -2846,6 +2879,7 @@ class TestCore(unittest.TestCase):
     def test_difference_2(self):
         class TestModel(core.Model):
             pass
+
         class TestModel2(core.Model):
             pass
         self.assertEqual(TestModel().difference(TestModel()), '')
@@ -2853,6 +2887,7 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         p_0 = TestParent(children=[TestChild(id='c_0'), TestChild(id='c_1')])
@@ -2886,6 +2921,7 @@ class TestCore(unittest.TestCase):
 
         class TestParent(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parent = core.OneToOneAttribute(TestParent, related_name='child')
@@ -3357,6 +3393,7 @@ class TestCore(unittest.TestCase):
 
         class TestModel(core.Model):
             id = core.StringAttribute(primary=True)
+
             class Meta(core.Model.Meta):
                 ordering = ('-id',)
 
@@ -3370,6 +3407,7 @@ class TestCore(unittest.TestCase):
     def test__generate_normalize_sort_key(self):
         class TestChild(core.Model):
             id = core.StringAttribute(unique=True)
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         parent = TestParent()
@@ -3379,8 +3417,10 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             id = core.StringAttribute()
+
             class Meta(core.Model.Meta):
                 unique_together = (('id',),)
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         parent = TestParent()
@@ -3390,10 +3430,13 @@ class TestCore(unittest.TestCase):
 
         class TestGrandChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             children = core.OneToManyAttribute(TestGrandChild, related_name='parent')
+
             class Meta(core.Model.Meta):
                 unique_together = (('children',),)
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         parent = TestParent()
@@ -3407,10 +3450,13 @@ class TestCore(unittest.TestCase):
 
         class TestGrandChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             child = core.OneToOneAttribute(TestGrandChild, related_name='parent')
+
             class Meta(core.Model.Meta):
                 unique_together = (('child',),)
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         parent = TestParent()
@@ -3422,8 +3468,10 @@ class TestCore(unittest.TestCase):
 
         class TestGrandChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestChild(core.Model):
             child = core.OneToOneAttribute(TestGrandChild, related_name='parent')
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         parent = TestParent()
@@ -3496,6 +3544,7 @@ class TestCore(unittest.TestCase):
     def test_is_equal(self):
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
 
@@ -3746,6 +3795,7 @@ class TestCore(unittest.TestCase):
     def test_override_superclass_attributes(self):
         class TestSup(core.Model):
             value = core.IntegerAttribute(min=1, max=10)
+
         class TestSub(TestSup):
             value = core.IntegerAttribute(min=3, max=12)
 
@@ -3772,6 +3822,7 @@ class TestCore(unittest.TestCase):
     def test_modify_superclass_attributes(self):
         class TestSup(core.Model):
             value = core.IntegerAttribute(min=1, max=10)
+
         class TestSub(TestSup):
             pass
 
@@ -3813,14 +3864,17 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=False)
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         self.assertFalse(TestParent.is_serializable())
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=False)
+
             class Meta(core.Model.Meta):
                 tabular_orientation = core.TabularOrientation.inline
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         with pytest.warns(core.SchemaWarning, match='must have a primary attribute'):
@@ -3828,8 +3882,10 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True, unique=False)
+
             class Meta(core.Model.Meta):
                 tabular_orientation = core.TabularOrientation.inline
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         with pytest.warns(core.SchemaWarning, match='must be unique'):
@@ -3837,14 +3893,17 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True, unique=False)
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         self.assertFalse(TestParent.is_serializable())
 
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
+
             class Meta(core.Model.Meta):
                 tabular_orientation = core.TabularOrientation.inline
+
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
         self.assertTrue(TestParent.is_serializable())
@@ -3887,11 +3946,14 @@ class TestCore(unittest.TestCase):
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             pass
+
         class Child1(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             parent = core.ManyToOneAttribute(Parent, related_name='children')
+
         class Child2(Child1):
             pass
+
         class Child3(Child2):
             pass
 
@@ -3914,11 +3976,14 @@ class TestCore(unittest.TestCase):
     def test_get_one_by_type(self):
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
+
         class Child1(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             parent = core.ManyToOneAttribute(Parent, related_name='children')
+
         class Child2(Child1):
             pass
+
         class Child3(Child2):
             pass
 
@@ -3945,9 +4010,11 @@ class ContextTestCase(unittest.TestCase):
     def test(self):
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
+
         class Child(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             parent = core.ManyToOneAttribute(Parent, related_name='children')
+
         class GrandChild(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             parent = core.ManyToOneAttribute(Child, related_name='children')
@@ -3961,7 +4028,169 @@ class ContextTestCase(unittest.TestCase):
                 child.children.create(id='grandchild_2_2')
 
         self.assertEqual([c.id for c in parent.children], ['child_1', 'child_2'])
-        self.assertEqual([gc.id for c in parent.children for gc in c.children], ['grandchild_1_1', 'grandchild_1_2', 'grandchild_2_1', 'grandchild_2_2'])
+        self.assertEqual([gc.id for c in parent.children for gc in c.children], [
+                         'grandchild_1_1', 'grandchild_1_2', 'grandchild_2_1', 'grandchild_2_2'])
+
+
+class JsonTestCase(unittest.TestCase):
+    def test_bool_attr(self):
+        attr = core.BooleanAttribute()
+        self.assertEqual(attr.to_json(True), True)
+        self.assertEqual(attr.from_json(True), True)
+        self.assertEqual(attr.from_json(attr.to_json(True)), True)
+
+    def test_int_attr(self):
+        attr = core.IntegerAttribute()
+        self.assertEqual(attr.to_json(1), 1.)
+        self.assertEqual(attr.from_json(1.), 1)
+        self.assertEqual(attr.from_json(attr.to_json(1)), 1)
+
+    def test_float_attr(self):
+        attr = core.FloatAttribute()
+        self.assertEqual(attr.to_json(1.1), 1.1)
+        self.assertEqual(attr.from_json(1.1), 1.1)
+        self.assertEqual(attr.from_json(attr.to_json(1.1)), 1.1)
+
+    def test_str_attr(self):
+        attr = core.StringAttribute()
+        self.assertEqual(attr.to_json('abc'), 'abc')
+        self.assertEqual(attr.from_json('abc'), 'abc')
+        self.assertEqual(attr.from_json(attr.to_json('abc')), 'abc')
+
+    def test_enum_attr(self):
+        class TestEnum(enum.Enum):
+            abc = 0
+            xyz = 1
+        attr = core.EnumAttribute(TestEnum)
+        self.assertEqual(attr.to_json(TestEnum.abc), 'abc')
+        self.assertEqual(attr.from_json('abc'), TestEnum.abc)
+        self.assertEqual(attr.from_json(attr.to_json(TestEnum.abc)), TestEnum.abc)
+
+    def test_date_attr(self):
+        attr = core.DateAttribute()
+        self.assertEqual(attr.to_json(date(year=1985, month=4, day=11)), '1985-04-11')
+        self.assertEqual(attr.from_json('1985-04-11'), date(year=1985, month=4, day=11))
+        self.assertEqual(attr.from_json(attr.to_json(date(year=1985, month=4, day=11))), date(year=1985, month=4, day=11))
+
+    def test_time_attr(self):
+        attr = core.TimeAttribute()
+        self.assertEqual(attr.to_json(time(12, 4, 13, 0)), '12:04:13')
+        self.assertEqual(attr.from_json('12:04:13'), time(12, 4, 13, 0))
+        self.assertEqual(attr.from_json(attr.to_json(time(12, 4, 13, 0))), time(12, 4, 13, 0))
+
+    def test_datetime_attr(self):
+        attr = core.DateTimeAttribute()
+        self.assertEqual(attr.to_json(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13)), '1985-04-11 12:04:13')
+        self.assertEqual(attr.from_json('1985-04-11 12:04:13'), datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
+        self.assertEqual(attr.from_json(attr.to_json(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))),
+                         datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
+
+    def test_model(self):
+        class TestModel(core.Model):
+            bool_attr = core.FloatAttribute()
+            float_attr = core.FloatAttribute()
+            str_attr = core.StringAttribute()
+        model = TestModel(bool_attr=False, float_attr=-1.2, str_attr='uvw')
+        self.assertEqual(model.to_json(), {
+            '__type': 'TestModel',
+            '__id': 0,
+            'bool_attr': False,
+            'float_attr': -1.2,
+            'str_attr': 'uvw',
+        })
+        self.assertTrue(model.is_equal(TestModel.from_json({
+            '__type': 'TestModel',
+            '__id': 0,
+            'bool_attr': False,
+            'float_attr': -1.2,
+            'str_attr': 'uvw',
+        })))
+
+    def test_invalid_attr_name(self):
+        with self.assertRaisesRegexp(ValueError, 'Attribute cannot have reserved name `__type`'):
+            class TestModel(core.Model):
+                id = core.StringAttribute()
+                __type = core.StringAttribute()
+
+        with self.assertRaisesRegexp(ValueError, 'Attribute cannot have reserved name `__id`'):
+            class TestModel(core.Model):
+                id = core.StringAttribute()
+                __id = core.FloatAttribute()
+
+    def test_many_to_one_attr(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+        p = Parent(id='p')
+        p.children.create(id='c0')
+        p.children.create(id='c1')
+
+        self.assertEqual(p.to_json(), {
+            '__type': 'Parent',
+            '__id': 0,
+            'id': 'p',
+            'children': [
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+            ],
+        })
+
+        p2 = p.from_json({
+            '__type': 'Parent',
+            '__id': 0,
+            'id': 'p',
+            'children': [
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+            ],
+        })
+
+        self.assertTrue(p.is_equal(p2))
+
+        with self.assertRaisesRegexp(Exception, 'This function should not be executed'):
+            Child.Meta.attributes['parent'].to_json(None)
+
+        with self.assertRaisesRegexp(Exception, 'This function should not be executed'):
+            Child.Meta.attributes['parent'].from_json(None)
+
+    def test_one_to_many_attr(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parents = core.OneToManyAttribute(Parent, related_name='child')
+
+        c = Child(id='c')
+        p0 = c.parents.create(id='p0')
+        p1 = c.parents.create(id='p1')
+
+        self.assertTrue(c.is_equal(c.from_json(c.to_json())))
+        self.assertTrue(p0.is_equal(p0.from_json(p0.to_json())))
+        self.assertTrue(p1.is_equal(p1.from_json(p1.to_json())))
+
+    def test_one_to_one_attr(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.OneToOneAttribute(Parent, related_name='child')
+
+        p = Parent(id='p')
+        self.assertTrue(p.is_equal(p.from_json(p.to_json())))
+
+        c = Child(id='c')
+        self.assertTrue(c.is_equal(c.from_json(c.to_json())))
+
+    def test_already_decoded(self):
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+        model = Model(id='m')
+        self.assertEqual(model.from_json(model.to_json(), decoded={0: 'already decoded'}), 'already decoded')
 
 
 class TestErrors(unittest.TestCase):
