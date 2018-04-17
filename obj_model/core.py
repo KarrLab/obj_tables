@@ -2113,8 +2113,8 @@ class Model(with_metaclass(ModelMeta, object)):
 
                     cls = obj.__class__
 
-                    for attr in cls.Meta.attributes.values():
-                        val = getattr(obj, attr.name)
+                    for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
+                        val = getattr(obj, attr_name)
                         if isinstance(attr, RelatedAttribute):
                             if val is None:
                                 json_val = None
@@ -2129,22 +2129,7 @@ class Model(with_metaclass(ModelMeta, object)):
                                 to_encode.put((val, json_val, depth + 1))
                         else:
                             json_val = attr.to_json(val)
-                        json_obj[attr.name] = json_val
-
-                    for attr in cls.Meta.related_attributes.values():
-                        val = getattr(obj, attr.related_name)
-                        if val is None:
-                            json_val = None
-                        elif isinstance(val, list):
-                            json_val = []
-                            for v in val:
-                                json_v = {}
-                                to_encode.put((v, json_v, depth + 1))
-                                json_val.append(json_v)
-                        else:
-                            json_val = {}
-                            to_encode.put((val, json_val, depth + 1))
-                        json_obj[attr.related_name] = json_val
+                        json_obj[attr_name] = json_val
 
         return json
 
@@ -2173,9 +2158,14 @@ class Model(with_metaclass(ModelMeta, object)):
             sub_json, sub_obj = to_decode.pop()
             sub_cls = sub_obj.__class__
 
-            for attr in sub_cls.Meta.attributes.values():
-                attr_json = sub_json[attr.name]
+            for attr_name, attr in chain(sub_cls.Meta.attributes.items(), sub_cls.Meta.related_attributes.items()):
+                attr_json = sub_json[attr_name]
                 if isinstance(attr, RelatedAttribute):
+                    if attr_name in sub_cls.Meta.attributes:
+                        other_cls = attr.related_class
+                    else:
+                        other_cls = attr.primary_class
+
                     if attr_json is None:
                         attr_val = None
                     elif isinstance(attr_json, list):
@@ -2183,40 +2173,19 @@ class Model(with_metaclass(ModelMeta, object)):
                         for sub_attr_json in attr_json:
                             sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
                             if sub_sub_obj is None:
-                                sub_sub_obj = attr.related_class()
+                                sub_sub_obj = other_cls()
                                 decoded[sub_attr_json['__id']] = sub_sub_obj
                                 to_decode.append((sub_attr_json, sub_sub_obj))
                             attr_val.append(sub_sub_obj)
                     else:
                         attr_val = decoded.get(attr_json['__id'], None)
                         if attr_val is None:
-                            attr_val = attr.related_class()
+                            attr_val = other_cls()
                             decoded[attr_json['__id']] = attr_val
                             to_decode.append((attr_json, attr_val))
                 else:
                     attr_val = attr.from_json(attr_json)
-                setattr(sub_obj, attr.name, attr_val)
-
-            for attr in sub_cls.Meta.related_attributes.values():
-                attr_json = sub_json[attr.related_name]
-                if attr_json is None:
-                    attr_val = None
-                elif isinstance(attr_json, list):
-                    attr_val = []
-                    for sub_attr_json in attr_json:
-                        sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
-                        if sub_sub_obj is None:
-                            sub_sub_obj = attr.primary_class()
-                            decoded[sub_attr_json['__id']] = sub_sub_obj
-                            to_decode.append((sub_attr_json, sub_sub_obj))
-                        attr_val.append(sub_sub_obj)
-                else:
-                    attr_val = decoded.get(attr_json['__id'], None)
-                    if attr_val is None:
-                        attr_val = attr.primary_class()
-                        decoded[attr_json['__id']] = attr_val
-                        to_decode.append((attr_json, attr_val))
-                setattr(sub_obj, attr.related_name, attr_val)
+                setattr(sub_obj, attr_name, attr_val)
 
         return obj
 
