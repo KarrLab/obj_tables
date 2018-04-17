@@ -993,6 +993,88 @@ class TestMisc(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 'Value must be a `float`'):
             WorkbookReader().run(filename, [Node10])
 
+    def test_write_read_subset_of_attributes(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', )
+
+        class Child(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', )
+
+        class GrandChild(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Child, related_name='children')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', )
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+
+        ######
+        p = Parent(id='p')
+
+        WorkbookWriter().run(filename, p, models=Parent, include_all_attributes=True)
+        objs2 = WorkbookReader().run(filename, models=Parent, include_all_attributes=True)
+        self.assertEqual(len(objs2[Parent]), 1)
+        self.assertNotIn(Child, objs2)
+        self.assertNotIn(GrandChild, objs2)
+        p2 = objs2[Parent][0]
+        self.assertTrue(p.is_equal(p2))
+
+        WorkbookWriter().run(filename, p, models=None, include_all_attributes=True)
+        objs2 = WorkbookReader().run(filename, models=Parent, include_all_attributes=True)
+        self.assertEqual(len(objs2[Parent]), 1)
+        self.assertNotIn(Child, objs2)
+        self.assertNotIn(GrandChild, objs2)
+        p2 = objs2[Parent][0]
+        self.assertTrue(p.is_equal(p2))
+
+        ######
+        p = Parent(id='p')
+        c0 = p.children.create(id='c0')
+        c1 = p.children.create(id='c1')
+        g00 = c0.children.create(id='g00')
+        g01 = c0.children.create(id='g01')
+        g10 = c0.children.create(id='g10')
+        g11 = c0.children.create(id='g11')
+
+        WorkbookWriter().run(filename, p, models=[Parent, Child, GrandChild], include_all_attributes=True)
+        objs2 = WorkbookReader().run(filename, models=[Parent, Child, GrandChild], include_all_attributes=True)
+        self.assertEqual(len(objs2[Parent]), 1)
+        self.assertEqual(len(objs2[Child]), 2)
+        self.assertEqual(len(objs2[GrandChild]), 4)
+        p2 = objs2[Parent][0]
+        self.assertTrue(p.is_equal(p2))
+
+        WorkbookWriter().run(filename, p, models=[Parent, Child, GrandChild], include_all_attributes=False)
+        objs2 = WorkbookReader().run(filename, models=[Parent, Child, GrandChild], include_all_attributes=False)
+        self.assertEqual(len(objs2[Parent]), 1)
+        self.assertEqual(len(objs2[Child]), 2)
+        self.assertEqual(len(objs2[GrandChild]), 4)
+        p2 = objs2[Parent][0]
+        self.assertFalse(p.is_equal(p2))
+        self.assertEqual(p2.children, [])
+        self.assertEqual(set(c.id for c in objs2[Child]), set(['c0', 'c1']))
+        for c in objs2[Child]:
+            self.assertEqual(c.parent, None)
+            self.assertEqual(c.children, [])
+        self.assertEqual(set(g.id for g in objs2[GrandChild]), set(['g00', 'g01', 'g10', 'g11']))
+        for g in objs2[GrandChild]:
+            self.assertEqual(g.parent, None)
+
+        ######
+        with self.assertRaisesRegexp(ValueError, 'At least one `Model` must be provided'):
+            WorkbookWriter().run(filename, None, models=None)
+
+        objs2 = WorkbookReader().run(filename, models=None, ignore_extra_sheets=True)
+        self.assertEqual(objs2, {})
+
 
 class ReadEmptyCellTestCase(unittest.TestCase):
     def setUp(self):
@@ -1345,16 +1427,16 @@ class JsonTestCase(unittest.TestCase):
 
     def test_write_read(self):
         class AA(core.Model):
-            id = core.StringAttribute()
+            id = core.StringAttribute(primary=True, unique=True)
 
         class BB(core.Model):
-            id = core.StringAttribute()
+            id = core.StringAttribute(primary=True, unique=True)
             aa = core.ManyToOneAttribute(AA, related_name='bbs')
 
         class CC(core.Model):
-            id = core.StringAttribute()
-            bbs = core.ManyToOneAttribute(BB, related_name='ccs')
-            aas = core.ManyToOneAttribute(AA, related_name='ccs')
+            id = core.StringAttribute(primary=True, unique=True)
+            bbs = core.ManyToManyAttribute(BB, related_name='ccs')
+            aas = core.ManyToManyAttribute(AA, related_name='ccs')
 
         aa_0 = AA(id='aa_0')
         aa_1 = AA(id='aa_1')
@@ -1368,11 +1450,8 @@ class JsonTestCase(unittest.TestCase):
         cc_0_1_0 = bb_0_1.ccs.create(id='cc_0_1_0')
         cc_0_1_1 = bb_0_1.ccs.create(id='cc_0_1_1')
 
-        # todo
-        #cc_0_0_0.aas = [aa_0]
-        #cc_0_0_1.aas = [aa_1, aa_2]
-        cc_0_0_0.aas = aa_0
-        cc_0_0_1.aas = aa_1
+        cc_0_0_0.aas = [aa_0]
+        cc_0_0_1.aas = [aa_1, aa_2]
 
         path = os.path.join(self.dirname, 'out.json')
         obj_model.io.JsonWriter().run(path, aa_0)
@@ -1422,6 +1501,10 @@ class JsonTestCase(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 'Model names must be unique to decode objects'):
             obj_model.io.JsonReader().run(path, models=[AA, old_AA])
 
+    @unittest.skip('Implement me!')
+    def test_convert(self):
+        pass
+
 
 class UtilsTestCase(unittest.TestCase):
     def test_get_writer(self):
@@ -1445,3 +1528,66 @@ class UtilsTestCase(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             obj_model.io.get_reader('.abc')
+
+    def test_get_ordered_attributes(self):
+        class Root(core.Model):
+            label = core.StringAttribute(primary=True, unique=True)
+
+        class Leaf(core.Model):
+            root = core.ManyToOneAttribute(Root, related_name='leaves')
+            id = core.StringAttribute(primary=True)
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', )
+
+        class UnrootedLeaf(Leaf):
+            name = core.StringAttribute()
+            root2 = core.ManyToOneAttribute(Root, related_name='leaves2')
+            id2 = core.StringAttribute()
+            name2 = core.StringAttribute()
+            float2 = core.FloatAttribute()
+            float3 = core.FloatAttribute()
+            enum2 = core.StringAttribute()
+            enum3 = core.StringAttribute()
+            multi_word_name = core.StringAttribute()
+
+        class Leaf3(UnrootedLeaf):
+            class Meta(core.Model.Meta):
+                attribute_order = ('id2', 'name2', )
+
+        # all attributes
+        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root))
+        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf))
+        unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(UnrootedLeaf))
+        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3))
+
+        self.assertEqual(set(root_attrs), set(Root.Meta.attributes.keys()))
+        self.assertEqual(set(leaf_attrs), set(Leaf.Meta.attributes.keys()))
+        self.assertEqual(set(unrooted_leaf_attrs), set(UnrootedLeaf.Meta.attributes.keys()))
+        self.assertEqual(set(leaf3_attrs), set(Leaf3.Meta.attributes.keys()))
+
+        self.assertEqual(root_attrs, ('label', ))
+        self.assertEqual(leaf_attrs, ('id', 'name', 'root'))
+        self.assertEqual(unrooted_leaf_attrs, (
+            'id',
+            'enum2', 'enum3', 'float2', 'float3', 'id2', 'multi_word_name', 'name', 'name2', 'root', 'root2', ))
+        self.assertEqual(leaf3_attrs, (
+            'id2', 'name2',
+            'enum2', 'enum3', 'float2', 'float3', 'id', 'multi_word_name', 'name', 'root', 'root2', ))
+
+        # only explicitly defined attributes
+        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root, include_all_attributes=False))
+        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf, include_all_attributes=False))
+        unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(UnrootedLeaf, include_all_attributes=False))
+        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3, include_all_attributes=False))
+
+        self.assertLessEqual(set(root_attrs), set(Root.Meta.attributes.keys()))
+        self.assertLessEqual(set(leaf_attrs), set(Leaf.Meta.attributes.keys()))
+        self.assertLessEqual(set(unrooted_leaf_attrs), set(UnrootedLeaf.Meta.attributes.keys()))
+        self.assertLessEqual(set(leaf3_attrs), set(Leaf3.Meta.attributes.keys()))
+
+        self.assertEqual(root_attrs, ())
+        self.assertEqual(leaf_attrs, ('id',))
+        self.assertEqual(unrooted_leaf_attrs, ('id',))
+        self.assertEqual(leaf3_attrs, ('id2', 'name2',))

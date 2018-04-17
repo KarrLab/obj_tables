@@ -84,12 +84,12 @@ class JsonWriter(Writer):
         Raises:
             :obj:`ValueError`: if zero or multiple objects are requested to be written
         """
-        # convert object(s) (and their relatives) to Python dicts and lists
         if models is None:
             models = []
         elif not isinstance(models, (list, tuple)):
             models = [models]
 
+        # convert object(s) (and their relatives) to Python dicts and lists
         if objects is None:
             json_objects = None
         elif isinstance(objects, (list, tuple)):
@@ -124,7 +124,8 @@ class WorkbookWriter(Writer):
     """ Write model objects to an Excel file or CSV or TSV file(s) """
 
     def run(self, path, objects, models=None, get_related=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+            title=None, description=None, keywords=None, version=None, language=None, creator=None,
+            include_all_attributes=True):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -140,24 +141,13 @@ class WorkbookWriter(Writer):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
         """
         if objects is None:
             objects = []
         elif not isinstance(objects, list):
             objects = [objects]
-
-        sheet_names = []
-        for model in models:
-            if model.Meta.tabular_orientation == TabularOrientation.row:
-                sheet_names.append(model.Meta.verbose_name_plural)
-            else:
-                sheet_names.append(model.Meta.verbose_name)
-        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, models)
-        if ambiguous_sheet_names:
-            msg = 'The following sheets will not be able to be unambiguously mapped to models:'
-            for sheet_name, models in ambiguous_sheet_names.items():
-                msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
-            warn(msg, IoWarning)
 
         # get related objects
         more_objects = []
@@ -180,6 +170,34 @@ class WorkbookWriter(Writer):
                 grouped_objects[obj.__class__] = []
             if obj not in grouped_objects[obj.__class__]:
                 grouped_objects[obj.__class__].append(obj)
+
+        # check that at least one model was provided
+        if models is None:
+            models = []
+        elif isinstance(models, (list, tuple)):
+            models = list(models)
+        else:
+            models = [models]
+        for model in grouped_objects.keys():
+            if model not in models and model.Meta.tabular_orientation != TabularOrientation.inline:
+                models.append(model)
+
+        if not models:
+            raise ValueError('At least one `Model` must be provided')
+
+        # check that models can be unambiguously mapped to worksheets
+        sheet_names = []
+        for model in models:
+            if model.Meta.tabular_orientation == TabularOrientation.row:
+                sheet_names.append(model.Meta.verbose_name_plural)
+            else:
+                sheet_names.append(model.Meta.verbose_name)
+        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, models)
+        if ambiguous_sheet_names:
+            msg = 'The following sheets will not be able to be unambiguously mapped to models:'
+            for sheet_name, models in ambiguous_sheet_names.items():
+                msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
+            warn(msg, IoWarning)
 
         # check that models are serializble
         for cls in grouped_objects.keys():
@@ -207,21 +225,23 @@ class WorkbookWriter(Writer):
             else:
                 objects = []
 
-            self.write_model(writer, model, objects)
+            self.write_model(writer, model, objects, include_all_attributes=include_all_attributes)
 
         writer.finalize_workbook()
 
-    def write_model(self, writer, model, objects):
+    def write_model(self, writer, model, objects, include_all_attributes=True):
         """ Write a list of model objects to a file
 
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             model (:obj:`class`): model
             objects (:obj:`list` of `Model`): list of instances of `model`
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
+                including those not explictly included in `Model.Meta.attribute_order`
         """
 
         # attribute order
-        attributes = [model.Meta.attributes[attr_name] for attr_name in model.Meta.attribute_order]
+        attributes = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
 
         # column labels
         headings = [[attr.verbose_name for attr in attributes]]
@@ -435,9 +455,9 @@ class JsonReader(Reader):
 class WorkbookReader(Reader):
     """ Read model objects from an Excel file or CSV and TSV files """
 
-    def run(self, path, models,
+    def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
-            ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
             group_objects_by_model=True):
         """ Read a list of model objects from file(s) and validate them
 
@@ -446,13 +466,16 @@ class WorkbookReader(Reader):
 
         Args:
             path (:obj:`str`): path to file(s)
-            models (:obj:`list` of :obj:`Model`): list of `Model` classes to read
+            models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type or list
+                of type of objects to read
             ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
             ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
                 worksheet/file doesn't contain all of attributes in a model in `models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
@@ -487,6 +510,12 @@ class WorkbookReader(Reader):
 
         # initialize reading
         workbook = reader.initialize_workbook()
+
+        # check that at least one model is defined
+        if models is None:
+            models = []
+        elif not isinstance(models, (list, tuple)):
+            models = [models]
 
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
@@ -552,6 +581,7 @@ class WorkbookReader(Reader):
         for model in models:
             model_attributes, model_data, model_errors, model_objects = self.read_model(
                 reader, model,
+                include_all_attributes=include_all_attributes,
                 ignore_missing_attributes=ignore_missing_attributes,
                 ignore_extra_attributes=ignore_extra_attributes,
                 ignore_attribute_order=ignore_attribute_order)
@@ -621,12 +651,15 @@ class WorkbookReader(Reader):
             else:
                 return None
 
-    def read_model(self, reader, model, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
+    def read_model(self, reader, model, include_all_attributes=True,
+                   ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
         """ Instantiate a list of objects from data in a table in a file
 
         Args:
             reader (:obj:`wc_utils.workbook.io.Reader`): reader
             model (:obj:`class`): the model describing the objects' schema
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if the worksheet/files
                 don't have all of attributes in the model
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if attributes
@@ -704,7 +737,7 @@ class WorkbookReader(Reader):
 
         # optionally, check that all attributes have column headings
         if not ignore_missing_attributes:
-            all_attributes = [model.Meta.attributes[attr_name] for attr_name in model.Meta.attribute_order]
+            all_attributes = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
             missing_attrs = set(all_attributes).difference(set(attributes))
             if missing_attrs:
                 error = 'The following attributes must be defined:\n  {}'.format('\n  '.join(attr.name for attr in missing_attrs))
@@ -712,7 +745,7 @@ class WorkbookReader(Reader):
 
         # optionally, check that the attributes are defined in the canonical order
         if not ignore_attribute_order:
-            canonical_attr_order = [model.Meta.attributes[attr_name] for attr_name in model.Meta.attribute_order]
+            canonical_attr_order = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
             canonical_attr_order = list(filter(lambda attr: attr in attributes, canonical_attr_order))
             if attributes != canonical_attr_order:
                 error = 'The attributes must be defined in this order:\n  {}'.format(
@@ -1001,6 +1034,36 @@ def create_template(path, models, title=None, description=None, keywords=None,
     get_writer(ext)().run(path, [], models,
                           title=title, description=description, keywords=keywords,
                           version=version, language=language, creator=creator)
+
+
+def get_ordered_attributes(cls, include_all_attributes=True):
+    """ Get the attributes for a class in the order that they should be printed
+
+    Args:
+        include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+            not explictly included in `Model.Meta.attribute_order`
+
+    Returns:
+        :obj:`tuple` of :obj:`Attribute`: attributes in the order they should be printed
+    """
+    # get names of attributes in desired order
+    if include_all_attributes:
+        ordered_attr_names = list(cls.Meta.attribute_order)
+
+        unordered_attr_names = set()
+        for base in cls.Meta.inheritance:
+            for attr_name in base.__dict__.keys():
+                if isinstance(getattr(base, attr_name), Attribute) and attr_name not in ordered_attr_names:
+                    unordered_attr_names.add(attr_name)
+
+        unordered_attr_names = natsorted(unordered_attr_names, alg=ns.IGNORECASE)
+
+        attr_names = tuple(ordered_attr_names + unordered_attr_names)
+    else:
+        attr_names = cls.Meta.attribute_order
+
+    # get attributes in desired order
+    return [cls.Meta.attributes[attr_name] for attr_name in attr_names]
 
 
 class IoWarning(ObjModelWarning):

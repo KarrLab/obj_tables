@@ -254,23 +254,15 @@ class TestCore(unittest.TestCase):
             ('_source', 'root', 'id', 'name')))
 
     def test_attribute_order(self):
-        self.assertEqual(set(Root.Meta.attribute_order),
-                         set(Root.Meta.attributes.keys()))
-        self.assertEqual(set(Leaf.Meta.attribute_order),
-                         set(Leaf.Meta.attributes.keys()))
-        self.assertEqual(set(UnrootedLeaf.Meta.attribute_order),
-                         set(UnrootedLeaf.Meta.attributes.keys()))
-        self.assertEqual(set(Leaf3.Meta.attribute_order),
-                         set(Leaf3.Meta.attributes.keys()))
+        self.assertLessEqual(set(Root.Meta.attribute_order), set(Root.Meta.attributes.keys()))
+        self.assertLessEqual(set(Leaf.Meta.attribute_order), set(Leaf.Meta.attributes.keys()))
+        self.assertLessEqual(set(UnrootedLeaf.Meta.attribute_order), set(UnrootedLeaf.Meta.attributes.keys()))
+        self.assertLessEqual(set(Leaf3.Meta.attribute_order), set(Leaf3.Meta.attributes.keys()))
 
-        self.assertEqual(Root.Meta.attribute_order, ('label', ))
-        self.assertEqual(Leaf.Meta.attribute_order, ('id', 'name', 'root'))
-        self.assertEqual(UnrootedLeaf.Meta.attribute_order, (
-            'id', 'name', 'root',
-            'enum2', 'enum3', 'float2', 'float3', 'id2', 'multi_word_name', 'name2', 'root2', ))
-        self.assertEqual(Leaf3.Meta.attribute_order, (
-            'id2', 'name2',
-            'enum2', 'enum3', 'float2', 'float3', 'id', 'multi_word_name', 'name', 'root', 'root2', ))
+        self.assertEqual(Root.Meta.attribute_order, ())
+        self.assertEqual(Leaf.Meta.attribute_order, ('id', ))
+        self.assertEqual(UnrootedLeaf.Meta.attribute_order, ('id', ))
+        self.assertEqual(Leaf3.Meta.attribute_order, ('id2', 'name2'))
 
     def test_set(self):
         leaf = Leaf(id='leaf_1', name='Leaf 1')
@@ -2676,19 +2668,19 @@ class TestCore(unittest.TestCase):
         expected = \
             '''UnrootedLeaf:
     id: a
-    name:
-    root:
-        Root:
-            label: test-root
-            leaves:
-            leaves2:
     enum2: None
     enum3: Order.leaf
     float2: 2.4
     float3: None
     id2: b
     multi_word_name:
+    name:
     name2: ab
+    root:
+        Root:
+            label: test-root
+            leaves:
+            leaves2:
     root2: None'''
         self.assertEqual(expected, unrooted_leaf.pformat(indent=4))
 

@@ -394,19 +394,7 @@ class ModelMeta(type):
 
     def init_attribute_order(cls):
         """ Initialize the order in which the attributes should be printed across Excel columns """
-        ordered_attributes = list(cls.Meta.attribute_order or ())
-
-        unordered_attributes = set()
-        for base in cls.Meta.inheritance:
-            for attr_name in base.__dict__.keys():
-                if isinstance(getattr(base, attr_name), Attribute) and attr_name not in ordered_attributes:
-                    unordered_attributes.add(attr_name)
-
-        unordered_attributes = natsorted(
-            unordered_attributes, alg=ns.IGNORECASE)
-
-        cls.Meta.attribute_order = tuple(
-            ordered_attributes + unordered_attributes)
+        cls.Meta.attribute_order = tuple(cls.Meta.attribute_order) or ()
 
     def init_ordering(cls):
         """ Initialize how to sort objects """
