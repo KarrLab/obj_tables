@@ -93,11 +93,11 @@ class TestExtraAttribute(unittest.TestCase):
             'end': 200,
             'strand': 1,
         }
-        self.assertEqual(attr.to_json(None), None)
-        self.assertEqual(attr.to_json(ft), ft2)
-        self.assertEqual(attr.from_json(None), None)
-        self.assertEqual(attr.from_json(ft2), ft)
-        self.assertEqual(attr.from_json(attr.to_json(ft)), ft)
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(ft), ft2)
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin(ft2), ft)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(ft)), ft)
 
     def test_BioSeqAttribute(self):
         class Node(core.Model):
@@ -223,11 +223,11 @@ class TestExtraAttribute(unittest.TestCase):
                 'size': None,
             }
         }
-        self.assertEqual(attr.to_json(None), None)
-        self.assertEqual(attr.to_json(seq), seq2)
-        self.assertEqual(attr.from_json(None), None)
-        self.assertEqual(attr.from_json(seq2), seq)
-        self.assertEqual(attr.from_json(attr.to_json(seq)), seq)
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(seq), seq2)
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin(seq2), seq)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(seq)), seq)
 
     def test_BioDnaSeqAttribute(self):
         attr = extra_attributes.BioDnaSeqAttribute()
@@ -244,9 +244,9 @@ class TestExtraAttribute(unittest.TestCase):
                 'size': alphabet.size,
             }
         }
-        self.assertEqual(attr.to_json(seq), seq2)
-        self.assertEqual(attr.from_json(seq2), seq)
-        self.assertEqual(attr.from_json(attr.to_json(seq)), seq)
+        self.assertEqual(attr.to_builtin(seq), seq2)
+        self.assertEqual(attr.from_builtin(seq2), seq)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(seq)), seq)
 
     def test_BioRnaSeqAttribute(self):
         attr = extra_attributes.BioRnaSeqAttribute()
@@ -263,9 +263,9 @@ class TestExtraAttribute(unittest.TestCase):
                 'size': alphabet.size,
             }
         }
-        self.assertEqual(attr.to_json(seq), seq2)
-        self.assertEqual(attr.from_json(seq2), seq)
-        self.assertEqual(attr.from_json(attr.to_json(seq)), seq)
+        self.assertEqual(attr.to_builtin(seq), seq2)
+        self.assertEqual(attr.from_builtin(seq2), seq)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(seq)), seq)
 
     def test_BioProteinSeqAttribute(self):
         class Node(core.Model):
@@ -316,9 +316,9 @@ class TestExtraAttribute(unittest.TestCase):
                 'size': alphabet.size,
             }
         }
-        self.assertEqual(attr.to_json(seq), seq2)
-        self.assertEqual(attr.from_json(seq2), seq)
-        self.assertEqual(attr.from_json(attr.to_json(seq)), seq)
+        self.assertEqual(attr.to_builtin(seq), seq2)
+        self.assertEqual(attr.from_builtin(seq2), seq)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(seq)), seq)
 
     def test_FrequencyPositionMatrixAttribute(self):
         attr = extra_attributes.FrequencyPositionMatrixAttribute()
@@ -365,11 +365,11 @@ class TestExtraAttribute(unittest.TestCase):
                 'size': 4,
             },
         }
-        self.assertEqual(attr.to_json(None), None)
-        self.assertEqual(attr.to_json(mat), mat2)
-        self.assertEqual(attr.from_json(None), None)
-        self.assertEqual(attr.from_json(mat2), mat)
-        self.assertEqual(attr.from_json(attr.to_json(mat)), mat)
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(mat), mat2)
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin(mat2), mat)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(mat)), mat)
 
     def test_SympyBasicAttribute(self):
         class Node(core.Model):
@@ -424,11 +424,11 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertNotEqual(attr.validate_unique(nodes, [sympy.Basic('x'), sympy.Basic('x')]), None)
 
         # to/from JSON
-        self.assertEqual(attr.to_json(None), None)
-        self.assertEqual(attr.to_json(sympy.Basic('x')), 'x')
-        self.assertEqual(attr.from_json(None), None)
-        self.assertEqual(attr.from_json('x'), sympy.Basic('x'))
-        self.assertEqual(attr.from_json(attr.to_json(sympy.Basic('x'))), sympy.Basic('x'))
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(sympy.Basic('x')), 'x')
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin('x'), sympy.Basic('x'))
+        self.assertEqual(attr.from_builtin(attr.to_builtin(sympy.Basic('x'))), sympy.Basic('x'))
 
     def test_NumpyArrayAttribute(self):
         # constructor
@@ -501,14 +501,14 @@ class TestExtraAttribute(unittest.TestCase):
         numpy.testing.assert_equal(attr.deserialize(attr.serialize(numpy.array([1., 2.])))[0], numpy.array([1., 2.]))
 
         # to/from JSON
-        self.assertEqual(attr.to_json(None), None)
-        self.assertEqual(attr.to_json(numpy.array([1, 2])), [1, 2])
-        self.assertEqual(attr.from_json(None), None)
-        numpy.testing.assert_equal(attr.from_json([1, 2]), numpy.array([1, 2]))
-        numpy.testing.assert_equal(attr.from_json(attr.to_json(numpy.array([1, 2]))), numpy.array([1, 2]))
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(numpy.array([1, 2])), [1, 2])
+        self.assertEqual(attr.from_builtin(None), None)
+        numpy.testing.assert_equal(attr.from_builtin([1, 2]), numpy.array([1, 2]))
+        numpy.testing.assert_equal(attr.from_builtin(attr.to_builtin(numpy.array([1, 2]))), numpy.array([1, 2]))
 
         attr = extra_attributes.NumpyArrayAttribute(primary=True, default=numpy.array([1.1, 2.2]))
-        numpy.testing.assert_equal(attr.from_json([1, 2]), numpy.array([1, 2]))
+        numpy.testing.assert_equal(attr.from_builtin([1, 2]), numpy.array([1, 2]))
 
     def test_SympyExprAttribute(self):
         class Node(core.Model):
@@ -544,11 +544,11 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertNotEqual(attr.validate_unique(nodes, [sympy.Expr('x'), sympy.Expr('x')]), None)
 
         # to/from JSON
-        self.assertEqual(attr.to_json(None), None)
-        self.assertEqual(attr.to_json(sympy.Expr('x')), 'x')
-        self.assertEqual(attr.from_json(None), None)
-        self.assertEqual(attr.from_json('x'), sympy.Expr('x'))
-        self.assertEqual(attr.from_json(attr.to_json(sympy.Expr('x'))), sympy.Expr('x'))
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(sympy.Expr('x')), 'x')
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin('x'), sympy.Expr('x'))
+        self.assertEqual(attr.from_builtin(attr.to_builtin(sympy.Expr('x'))), sympy.Expr('x'))
 
     def test_SympySymbolAttribute(self):
         class Node(core.Model):
@@ -584,8 +584,8 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertNotEqual(attr.validate_unique(nodes, [sympy.Symbol('x'), sympy.Symbol('x')]), None)
 
         # to/from JSON
-        self.assertEqual(attr.to_json(None), None)
-        self.assertEqual(attr.to_json(sympy.Symbol('x')), 'x')
-        self.assertEqual(attr.from_json(None), None)
-        self.assertEqual(attr.from_json('x'), sympy.Symbol('x'))
-        self.assertEqual(attr.from_json(attr.to_json(sympy.Symbol('x'))), sympy.Symbol('x'))
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(sympy.Symbol('x')), 'x')
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin('x'), sympy.Symbol('x'))
+        self.assertEqual(attr.from_builtin(attr.to_builtin(sympy.Symbol('x'))), sympy.Symbol('x'))

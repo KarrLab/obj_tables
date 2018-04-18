@@ -126,7 +126,7 @@ class FeatureLocationAttribute(core.Attribute):
         else:
             return '{},{},{}'.format(value.start, value.end, value.strand)  # :todo: check if this is sufficient
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -141,7 +141,7 @@ class FeatureLocationAttribute(core.Attribute):
         else:
             return {'start': value.start, 'end': value.end, 'strand': value.strand}
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -289,7 +289,7 @@ class BioSeqAttribute(core.Attribute):
                 })
         return ''
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -311,7 +311,7 @@ class BioSeqAttribute(core.Attribute):
                 },
             }
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -463,7 +463,7 @@ class FrequencyPositionMatrixAttribute(core.Attribute):
         else:
             return (None, None)
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -487,7 +487,7 @@ class FrequencyPositionMatrixAttribute(core.Attribute):
                 json[letter] = counts
             return json
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -645,7 +645,7 @@ class NumpyArrayAttribute(core.Attribute):
             return json.dumps(value.tolist())
         return ''
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -660,7 +660,7 @@ class NumpyArrayAttribute(core.Attribute):
         else:
             return value.tolist()
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -776,7 +776,7 @@ class SympyBasicAttribute(core.Attribute):
             return str(value)[6:-1]
         return ''
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -791,7 +791,7 @@ class SympyBasicAttribute(core.Attribute):
         else:
             return str(value)[6:-1]
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -841,7 +841,7 @@ class SympyExprAttribute(SympyBasicAttribute):
             return str(value)[5:-1]
         return ''
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -891,7 +891,7 @@ class SympySymbolAttribute(SympyBasicAttribute):
             return str(value)
         return ''
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 

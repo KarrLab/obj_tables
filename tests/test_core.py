@@ -2652,9 +2652,9 @@ class TestCore(unittest.TestCase):
 
             def deserialize(self): pass
 
-            def to_json(self, encoded=None): pass
+            def to_builtin(self, encoded=None): pass
 
-            def from_json(self, json, decoded=None): pass
+            def from_builtin(self, json, decoded=None): pass
 
         class TestModel(core.Model):
             attr = TestAttribute()
@@ -4027,54 +4027,54 @@ class ContextTestCase(unittest.TestCase):
 class JsonTestCase(unittest.TestCase):
     def test_bool_attr(self):
         attr = core.BooleanAttribute()
-        self.assertEqual(attr.to_json(True), True)
-        self.assertEqual(attr.from_json(True), True)
-        self.assertEqual(attr.from_json(attr.to_json(True)), True)
+        self.assertEqual(attr.to_builtin(True), True)
+        self.assertEqual(attr.from_builtin(True), True)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(True)), True)
 
     def test_int_attr(self):
         attr = core.IntegerAttribute()
-        self.assertEqual(attr.to_json(1), 1.)
-        self.assertEqual(attr.from_json(1.), 1)
-        self.assertEqual(attr.from_json(attr.to_json(1)), 1)
+        self.assertEqual(attr.to_builtin(1), 1.)
+        self.assertEqual(attr.from_builtin(1.), 1)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(1)), 1)
 
     def test_float_attr(self):
         attr = core.FloatAttribute()
-        self.assertEqual(attr.to_json(1.1), 1.1)
-        self.assertEqual(attr.from_json(1.1), 1.1)
-        self.assertEqual(attr.from_json(attr.to_json(1.1)), 1.1)
+        self.assertEqual(attr.to_builtin(1.1), 1.1)
+        self.assertEqual(attr.from_builtin(1.1), 1.1)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(1.1)), 1.1)
 
     def test_str_attr(self):
         attr = core.StringAttribute()
-        self.assertEqual(attr.to_json('abc'), 'abc')
-        self.assertEqual(attr.from_json('abc'), 'abc')
-        self.assertEqual(attr.from_json(attr.to_json('abc')), 'abc')
+        self.assertEqual(attr.to_builtin('abc'), 'abc')
+        self.assertEqual(attr.from_builtin('abc'), 'abc')
+        self.assertEqual(attr.from_builtin(attr.to_builtin('abc')), 'abc')
 
     def test_enum_attr(self):
         class TestEnum(enum.Enum):
             abc = 0
             xyz = 1
         attr = core.EnumAttribute(TestEnum)
-        self.assertEqual(attr.to_json(TestEnum.abc), 'abc')
-        self.assertEqual(attr.from_json('abc'), TestEnum.abc)
-        self.assertEqual(attr.from_json(attr.to_json(TestEnum.abc)), TestEnum.abc)
+        self.assertEqual(attr.to_builtin(TestEnum.abc), 'abc')
+        self.assertEqual(attr.from_builtin('abc'), TestEnum.abc)
+        self.assertEqual(attr.from_builtin(attr.to_builtin(TestEnum.abc)), TestEnum.abc)
 
     def test_date_attr(self):
         attr = core.DateAttribute()
-        self.assertEqual(attr.to_json(date(year=1985, month=4, day=11)), '1985-04-11')
-        self.assertEqual(attr.from_json('1985-04-11'), date(year=1985, month=4, day=11))
-        self.assertEqual(attr.from_json(attr.to_json(date(year=1985, month=4, day=11))), date(year=1985, month=4, day=11))
+        self.assertEqual(attr.to_builtin(date(year=1985, month=4, day=11)), '1985-04-11')
+        self.assertEqual(attr.from_builtin('1985-04-11'), date(year=1985, month=4, day=11))
+        self.assertEqual(attr.from_builtin(attr.to_builtin(date(year=1985, month=4, day=11))), date(year=1985, month=4, day=11))
 
     def test_time_attr(self):
         attr = core.TimeAttribute()
-        self.assertEqual(attr.to_json(time(12, 4, 13, 0)), '12:04:13')
-        self.assertEqual(attr.from_json('12:04:13'), time(12, 4, 13, 0))
-        self.assertEqual(attr.from_json(attr.to_json(time(12, 4, 13, 0))), time(12, 4, 13, 0))
+        self.assertEqual(attr.to_builtin(time(12, 4, 13, 0)), '12:04:13')
+        self.assertEqual(attr.from_builtin('12:04:13'), time(12, 4, 13, 0))
+        self.assertEqual(attr.from_builtin(attr.to_builtin(time(12, 4, 13, 0))), time(12, 4, 13, 0))
 
     def test_datetime_attr(self):
         attr = core.DateTimeAttribute()
-        self.assertEqual(attr.to_json(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13)), '1985-04-11 12:04:13')
-        self.assertEqual(attr.from_json('1985-04-11 12:04:13'), datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
-        self.assertEqual(attr.from_json(attr.to_json(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))),
+        self.assertEqual(attr.to_builtin(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13)), '1985-04-11 12:04:13')
+        self.assertEqual(attr.from_builtin('1985-04-11 12:04:13'), datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
+        self.assertEqual(attr.from_builtin(attr.to_builtin(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))),
                          datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
 
     def test_model(self):
@@ -4083,14 +4083,14 @@ class JsonTestCase(unittest.TestCase):
             float_attr = core.FloatAttribute()
             str_attr = core.StringAttribute()
         model = TestModel(bool_attr=False, float_attr=-1.2, str_attr='uvw')
-        self.assertEqual(model.to_json(), {
+        self.assertEqual(model.to_dict(), {
             '__type': 'TestModel',
             '__id': 0,
             'bool_attr': False,
             'float_attr': -1.2,
             'str_attr': 'uvw',
         })
-        self.assertTrue(model.is_equal(TestModel.from_json({
+        self.assertTrue(model.is_equal(TestModel.from_dict({
             '__type': 'TestModel',
             '__id': 0,
             'bool_attr': False,
@@ -4120,7 +4120,7 @@ class JsonTestCase(unittest.TestCase):
         p.children.create(id='c0')
         p.children.create(id='c1')
 
-        self.assertEqual(p.to_json(), {
+        self.assertEqual(p.to_dict(), {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
@@ -4130,7 +4130,7 @@ class JsonTestCase(unittest.TestCase):
             ],
         })
 
-        p2 = p.from_json({
+        p2 = p.from_dict({
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
@@ -4143,10 +4143,10 @@ class JsonTestCase(unittest.TestCase):
         self.assertTrue(p.is_equal(p2))
 
         with self.assertRaisesRegexp(Exception, 'This function should not be executed'):
-            Child.Meta.attributes['parent'].to_json(None)
+            Child.Meta.attributes['parent'].to_builtin(None)
 
         with self.assertRaisesRegexp(Exception, 'This function should not be executed'):
-            Child.Meta.attributes['parent'].from_json(None)
+            Child.Meta.attributes['parent'].from_builtin(None)
 
     def test_one_to_many_attr(self):
         class Parent(core.Model):
@@ -4160,9 +4160,9 @@ class JsonTestCase(unittest.TestCase):
         p0 = c.parents.create(id='p0')
         p1 = c.parents.create(id='p1')
 
-        self.assertTrue(c.is_equal(c.from_json(c.to_json())))
-        self.assertTrue(p0.is_equal(p0.from_json(p0.to_json())))
-        self.assertTrue(p1.is_equal(p1.from_json(p1.to_json())))
+        self.assertTrue(c.is_equal(c.from_dict(c.to_dict())))
+        self.assertTrue(p0.is_equal(p0.from_dict(p0.to_dict())))
+        self.assertTrue(p1.is_equal(p1.from_dict(p1.to_dict())))
 
     def test_one_to_one_attr(self):
         class Parent(core.Model):
@@ -4173,16 +4173,16 @@ class JsonTestCase(unittest.TestCase):
             parent = core.OneToOneAttribute(Parent, related_name='child')
 
         p = Parent(id='p')
-        self.assertTrue(p.is_equal(p.from_json(p.to_json())))
+        self.assertTrue(p.is_equal(p.from_dict(p.to_dict())))
 
         c = Child(id='c')
-        self.assertTrue(c.is_equal(c.from_json(c.to_json())))
+        self.assertTrue(c.is_equal(c.from_dict(c.to_dict())))
 
     def test_already_decoded(self):
         class Model(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
         model = Model(id='m')
-        self.assertEqual(model.from_json(model.to_json(), decoded={0: 'already decoded'}), 'already decoded')
+        self.assertEqual(model.from_dict(model.to_dict(), decoded={0: 'already decoded'}), 'already decoded')
 
     def test_max_depth(self):
         class Parent(core.Model):
@@ -4196,8 +4196,8 @@ class JsonTestCase(unittest.TestCase):
         c0 = p.children.create(id='c0')
         c1 = p.children.create(id='c1')
 
-        self.assertEqual(p.to_json(max_depth=-1), {'__type': 'Parent', '__id': 0})
-        self.assertEqual(p.to_json(max_depth=0), {
+        self.assertEqual(p.to_dict(max_depth=-1), {'__type': 'Parent', '__id': 0})
+        self.assertEqual(p.to_dict(max_depth=0), {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
@@ -4206,7 +4206,7 @@ class JsonTestCase(unittest.TestCase):
                 {'__type': 'Child', '__id': 2},
             ],
         })
-        self.assertEqual(p.to_json(max_depth=1), {
+        self.assertEqual(p.to_dict(max_depth=1), {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',

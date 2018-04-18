@@ -2068,7 +2068,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Exit context """
         pass
 
-    def to_json(self, max_depth=float('inf'), encoded=None):
+    def to_dict(self, max_depth=float('inf'), encoded=None):
         """ Encode an object using a simple Python representation (dict, list, str, float, bool, None) that is
         compatible with JSON and YAML. Use `__id` keys to avoid infinite recursion by encoding each object once and referring
         to objects by their __id for each repeated reference.
@@ -2116,13 +2116,13 @@ class Model(with_metaclass(ModelMeta, object)):
                                 json_val = {}
                                 to_encode.put((val, json_val, depth + 1))
                         else:
-                            json_val = attr.to_json(val)
+                            json_val = attr.to_builtin(val)
                         json_obj[attr_name] = json_val
 
         return json
 
     @classmethod
-    def from_json(cls, json, decoded=None):
+    def from_dict(cls, json, decoded=None):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of an object that
         is compatible with JSON and YAML, including references to objects through `__id` keys.
 
@@ -2172,7 +2172,7 @@ class Model(with_metaclass(ModelMeta, object)):
                             decoded[attr_json['__id']] = attr_val
                             to_decode.append((attr_json, attr_val))
                 else:
-                    attr_val = attr.from_json(attr_json)
+                    attr_val = attr.from_builtin(attr_json)
                 setattr(sub_obj, attr_name, attr_val)
 
         return obj
@@ -2374,7 +2374,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         pass  # pragma: no cover
 
     @abc.abstractmethod
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -2387,7 +2387,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         pass  # pragma: no cover
 
     @abc.abstractmethod
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -2437,7 +2437,7 @@ class LiteralAttribute(Attribute):
         """
         return self.clean(value)
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -2449,7 +2449,7 @@ class LiteralAttribute(Attribute):
         """
         return value
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -2571,7 +2571,7 @@ class EnumAttribute(LiteralAttribute):
         """
         return value.name
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -2583,7 +2583,7 @@ class EnumAttribute(LiteralAttribute):
         """
         return value.name
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -2902,7 +2902,7 @@ class IntegerAttribute(NumericAttribute):
             return None
         return float(value)
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -2914,7 +2914,7 @@ class IntegerAttribute(NumericAttribute):
         """
         return float(value)
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -3318,7 +3318,7 @@ class DateAttribute(LiteralAttribute):
         """
         return value.toordinal() - date(1900, 1, 1).toordinal() + 1.
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -3330,7 +3330,7 @@ class DateAttribute(LiteralAttribute):
         """
         return value.strftime('%Y-%m-%d')
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -3444,7 +3444,7 @@ class TimeAttribute(LiteralAttribute):
         """
         return (value.hour * 60. * 60. + value.minute * 60. + value.second) / (24. * 60. * 60.)
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -3456,7 +3456,7 @@ class TimeAttribute(LiteralAttribute):
         """
         return value.strftime('%H:%M:%S')
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -3585,7 +3585,7 @@ class DateTimeAttribute(LiteralAttribute):
             + (time_value.hour * 60. * 60. + time_value.minute *
                60. + time_value.second) / (24. * 60. * 60.)
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -3597,7 +3597,7 @@ class DateTimeAttribute(LiteralAttribute):
         """
         return value.strftime('%Y-%m-%d %H:%M:%S')
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -3753,7 +3753,7 @@ class RelatedAttribute(Attribute):
         """
         pass  # pragma: no cover
 
-    def to_json(self, value):
+    def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
 
@@ -3765,7 +3765,7 @@ class RelatedAttribute(Attribute):
         """
         raise Exception('This function should not be executed')
 
-    def from_json(self, json):
+    def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
         that is compatible with JSON and YAML
 

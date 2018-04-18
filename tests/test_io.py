@@ -563,7 +563,7 @@ class TestIo(unittest.TestCase):
             # raises extra sheet exception
             WorkbookReader().run(filename, [SimpleModel])
         self.assertEqual(str(context.exception),
-                         "No matching models for worksheets/files {} / extra sheet".format(fixture_file))
+                         "No matching models for worksheets/files {} / 'extra sheet'".format(fixture_file))
 
         with self.assertRaises(ValueError) as context:
             # raises extra attribute exception
@@ -1101,10 +1101,10 @@ class ReadEmptyCellTestCase(unittest.TestCase):
             def validate(self):
                 pass
 
-            def to_json(self, encoded=None):
+            def to_builtin(self, encoded=None):
                 pass
 
-            def from_json(self, json, decoded=None):
+            def from_builtin(self, json, decoded=None):
                 pass
 
         attr = ConcreteAttribute(default_cleaned_value=lambda: 1.5)

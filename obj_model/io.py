@@ -16,6 +16,7 @@
 import abc
 import collections
 import copy
+import inspect
 import json
 import six
 import wc_utils.workbook.io
@@ -96,10 +97,10 @@ class JsonWriter(Writer):
             json_objects = []
             encoded = {}
             for obj in objects:
-                json_objects.append(obj.to_json(encoded=encoded))
+                json_objects.append(obj.to_dict(encoded=encoded))
                 models.append(obj.__class__)
         else:
-            json_objects = objects.to_json()
+            json_objects = objects.to_dict()
             models.append(objects.__class__)
 
         # check that model names are unique so that objects will be decodable
@@ -431,11 +432,11 @@ class JsonReader(Reader):
             decoded = {}
             for json_obj in json_objs:
                 model = models_by_name[json_obj['__type']]
-                objs.append(model.from_json(json_obj, decoded=decoded))
+                objs.append(model.from_dict(json_obj, decoded=decoded))
 
         else:
             model = models_by_name[json_objs['__type']]
-            objs = model.from_json(json_objs)
+            objs = model.from_dict(json_objs)
 
         if group_objects_by_model:
             grouped_objs = {}
@@ -541,7 +542,7 @@ class WorkbookReader(Reader):
                 used_sheet_names.append(model_sheet_name)
                 sheet_order.append(sheet_names.index(model_sheet_name))
                 expected_sheet_order.append(model_sheet_name)
-            else:
+            elif not inspect.isabstract(model):
                 if model.Meta.tabular_orientation == TabularOrientation.row:
                     expected_sheet_names.append(model.Meta.verbose_name_plural)
                 else:
@@ -550,13 +551,13 @@ class WorkbookReader(Reader):
         if not ignore_missing_sheets:
             missing_sheet_names = set(expected_sheet_names).difference(set(used_sheet_names))
             if missing_sheet_names:
-                raise ValueError("Worksheets/files {} / {} must be defined".format(
+                raise ValueError("Worksheets/files {} / '{}' must be defined".format(
                     basename(path), "', '".join(sorted(missing_sheet_names))))
 
         if not ignore_extra_sheets:
             extra_sheet_names = set(sheet_names).difference(set(used_sheet_names))
             if extra_sheet_names:
-                raise ValueError("No matching models for worksheets/files {} / {}".format(
+                raise ValueError("No matching models for worksheets/files {} / '{}'".format(
                     basename(path), "', '".join(sorted(extra_sheet_names))))
 
         if not ignore_sheet_order and ext == '.xlsx':
@@ -1010,8 +1011,8 @@ def convert(source, destination, models):
     reader = get_reader(splitext(source)[1])
     writer = get_writer(splitext(destination)[1])
 
-    objects = reader().run(source, models, group_objects_by_model=False)
-    writer().run(destination, objects, models)
+    objects = reader().run(source, models=models, group_objects_by_model=False)
+    writer().run(destination, objects, models=models)
 
 
 def create_template(path, models, title=None, description=None, keywords=None,
