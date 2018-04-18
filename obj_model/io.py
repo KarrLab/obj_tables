@@ -87,7 +87,9 @@ class JsonWriter(Writer):
         """
         if models is None:
             models = []
-        elif not isinstance(models, (list, tuple)):
+        elif isinstance(models, (list, tuple)):
+            models = list(models)
+        else:
             models = [models]
 
         # convert object(s) (and their relatives) to Python dicts and lists
@@ -147,7 +149,7 @@ class WorkbookWriter(Writer):
         """
         if objects is None:
             objects = []
-        elif not isinstance(objects, list):
+        elif not isinstance(objects, (list, tuple)):
             objects = [objects]
 
         # get related objects
@@ -180,8 +182,10 @@ class WorkbookWriter(Writer):
         else:
             models = [models]
         for model in grouped_objects.keys():
-            if model not in models and model.Meta.tabular_orientation != TabularOrientation.inline:
+            if model not in models:
                 models.append(model)
+
+        models = list(filter(lambda model: model.Meta.tabular_orientation != TabularOrientation.inline, models))
 
         if not models:
             raise ValueError('At least one `Model` must be provided')
@@ -825,6 +829,14 @@ class WorkbookReader(Reader):
 
         """
         data = reader.read_worksheet(sheet_name)
+
+        if len(data) < num_column_heading_rows:
+            raise ValueError("Worksheet '{}' must have {} header rows".format(
+                sheet_name, num_column_heading_rows))
+
+        if (num_row_heading_columns > 0 and len(data) == 0) or len(data[0]) < num_row_heading_columns:
+            raise ValueError("Worksheet '{}' must have {} header columns".format(
+                sheet_name, num_row_heading_columns))
 
         # separate header rows
         column_headings = []

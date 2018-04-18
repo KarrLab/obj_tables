@@ -523,7 +523,7 @@ class TestIo(unittest.TestCase):
 
     def test_create_worksheet_style(self):
         self.assertIsInstance(WorkbookWriter.create_worksheet_style(MainRoot), WorksheetStyle)
-
+    
     def test_convert(self):
         filename_xls1 = os.path.join(self.tmp_dirname, 'test1.xlsx')
         filename_xls2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
@@ -1501,9 +1501,56 @@ class JsonTestCase(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 'Model names must be unique to decode objects'):
             obj_model.io.JsonReader().run(path, models=[AA, old_AA])
 
-    @unittest.skip('Implement me!')
+    @unittest.skip('Implement me')
     def test_convert(self):
-        pass
+        root = MainRoot(id='root', name=u'\u20ac')
+        nodes = [
+            Node(root=root, id='node_0', val1=1, val2=2),
+            Node(root=root, id='node_1', val1=3, val2=4),
+            Node(root=root, id='node_2', val1=5, val2=6),
+        ]
+        self.leaves = leaves = [
+            Leaf(nodes=[nodes[0]], id='leaf_0_0', val1=7, val2=8),
+            Leaf(nodes=[nodes[0]], id='leaf_0_1', val1=9, val2=10),
+            Leaf(nodes=[nodes[1]], id='leaf_1_0', val1=11, val2=12),
+            Leaf(nodes=[nodes[1]], id='leaf_1_1', val1=13, val2=14),
+            Leaf(nodes=[nodes[2]], id='leaf_2_0', val1=15, val2=16),
+            Leaf(nodes=[nodes[2]], id='leaf_2_1', val1=17, val2=18),
+        ]
+        leaves[0].onetomany_rows = [OneToManyRow(id='row_0_0'), OneToManyRow(id='row_0_1')]
+        leaves[1].onetomany_rows = [OneToManyRow(id='row_1_0'), OneToManyRow(id='row_1_1')]
+        leaves[2].onetomany_rows = [OneToManyRow(id='row_2_0'), OneToManyRow(id='row_2_1')]
+        leaves[3].onetomany_rows = [OneToManyRow(id='row_3_0'), OneToManyRow(id='row_3_1')]
+        leaves[4].onetomany_rows = [OneToManyRow(id='row_4_0'), OneToManyRow(id='row_4_1')]
+        leaves[5].onetomany_rows = [OneToManyRow(id='row_5_0'), OneToManyRow(id='row_5_1')]
+
+        leaves[0].onetomany_inlines = [OneToManyInline(id='inline_0_0'), OneToManyInline(id='inline_0_1')]
+        leaves[1].onetomany_inlines = [OneToManyInline(id='inline_1_0'), OneToManyInline(id='inline_1_1')]
+        leaves[2].onetomany_inlines = [OneToManyInline(id='inline_2_0'), OneToManyInline(id='inline_2_1')]
+        leaves[3].onetomany_inlines = [OneToManyInline(id='inline_3_0'), OneToManyInline(id='inline_3_1')]
+        leaves[4].onetomany_inlines = [OneToManyInline(id='inline_4_0'), OneToManyInline(id='inline_4_1')]
+        leaves[5].onetomany_inlines = [OneToManyInline(id='inline_5_0'), OneToManyInline(id='inline_5_1')]
+
+        filename_1_xlsx = os.path.join(self.dirname, 'test_1.xlsx')
+        filename_2_json = os.path.join(self.dirname, 'test_2.json')
+        filename_3_xlsx = os.path.join(self.dirname, 'test_3.xlsx')
+
+        models = [MainRoot, Node, Leaf, OneToManyRow]
+
+        obj_model.io.get_writer('.xlsx')().run(filename_1_xlsx, [root], models=models)
+
+        convert(filename_1_xlsx, filename_2_json, models=models)
+        convert(filename_2_json, filename_3_xlsx, models=models)
+
+        objects2 = obj_model.io.get_reader('.json')().run(filename_2_json, models=models,
+                                                          group_objects_by_model=True)
+        root2 = objects2[MainRoot][0]
+        self.assertTrue(root.is_equal(root2))
+
+        objects2 = obj_model.io.get_reader('.xlsx')().run(filename_3_xlsx, models=models,
+                                                          group_objects_by_model=True)
+        root2 = objects2[MainRoot][0]
+        self.assertTrue(root.is_equal(root2))
 
 
 class UtilsTestCase(unittest.TestCase):
