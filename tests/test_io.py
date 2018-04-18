@@ -1330,6 +1330,56 @@ class StrictReadingTestCase(unittest.TestCase):
         WorkbookWriter().run(filename, [m1], [Model1])
         WorkbookReader().run(filename, [Model1, Model3], ignore_missing_sheets=True)
 
+    def test_no_header_rows(self):
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'Attr']))
+        writer.run(wb)
+        WorkbookReader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        writer.run(wb)
+        with self.assertRaisesRegexp(ValueError, 'must have 1 header row\(s\)'):
+            WorkbookReader().run(filename, [Model])
+
+    def test_no_header_cols(self):
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr')
+                tabular_orientation = core.TabularOrientation.column
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id']))
+        ws.append(Row(['Attr']))
+        writer.run(wb)
+        WorkbookReader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        writer.run(wb)
+        with self.assertRaisesRegexp(ValueError, 'must have 1 header column\(s\)'):
+            WorkbookReader().run(filename, [Model])
+
     def test_missing_attribute(self):
         class Model(core.Model):
             id = core.StringAttribute(primary=True, unique=True)

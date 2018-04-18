@@ -832,11 +832,11 @@ class WorkbookReader(Reader):
         data = reader.read_worksheet(sheet_name)
 
         if len(data) < num_column_heading_rows:
-            raise ValueError("Worksheet '{}' must have {} header rows".format(
+            raise ValueError("Worksheet '{}' must have {} header row(s)".format(
                 sheet_name, num_column_heading_rows))
 
         if (num_row_heading_columns > 0 and len(data) == 0) or len(data[0]) < num_row_heading_columns:
-            raise ValueError("Worksheet '{}' must have {} header columns".format(
+            raise ValueError("Worksheet '{}' must have {} header column(s)".format(
                 sheet_name, num_row_heading_columns))
 
         # separate header rows
