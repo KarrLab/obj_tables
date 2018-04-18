@@ -523,7 +523,7 @@ class TestIo(unittest.TestCase):
 
     def test_create_worksheet_style(self):
         self.assertIsInstance(WorkbookWriter.create_worksheet_style(MainRoot), WorksheetStyle)
-    
+
     def test_convert(self):
         filename_xls1 = os.path.join(self.tmp_dirname, 'test1.xlsx')
         filename_xls2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
@@ -1460,6 +1460,7 @@ class JsonTestCase(unittest.TestCase):
 
         obj_model.io.JsonWriter().run(path, [aa_0, aa_1], models=AA)
         aas = obj_model.io.JsonReader().run(path, [AA])
+        aas.sort(key=lambda aa: aa.id)
         self.assertEqual(len(aas), 2)
         self.assertTrue(aa_0.is_equal(aas[0]))
         self.assertTrue(aa_1.is_equal(aas[1]))
@@ -1501,7 +1502,6 @@ class JsonTestCase(unittest.TestCase):
         with self.assertRaisesRegexp(ValueError, 'Model names must be unique to decode objects'):
             obj_model.io.JsonReader().run(path, models=[AA, old_AA])
 
-    @unittest.skip('Implement me')
     def test_convert(self):
         root = MainRoot(id='root', name=u'\u20ac')
         nodes = [
@@ -1509,7 +1509,7 @@ class JsonTestCase(unittest.TestCase):
             Node(root=root, id='node_1', val1=3, val2=4),
             Node(root=root, id='node_2', val1=5, val2=6),
         ]
-        self.leaves = leaves = [
+        leaves = [
             Leaf(nodes=[nodes[0]], id='leaf_0_0', val1=7, val2=8),
             Leaf(nodes=[nodes[0]], id='leaf_0_1', val1=9, val2=10),
             Leaf(nodes=[nodes[1]], id='leaf_1_0', val1=11, val2=12),
@@ -1539,16 +1539,21 @@ class JsonTestCase(unittest.TestCase):
 
         obj_model.io.get_writer('.xlsx')().run(filename_1_xlsx, [root], models=models)
 
+        # convert xlsx --> json
         convert(filename_1_xlsx, filename_2_json, models=models)
-        convert(filename_2_json, filename_3_xlsx, models=models)
 
         objects2 = obj_model.io.get_reader('.json')().run(filename_2_json, models=models,
                                                           group_objects_by_model=True)
+        self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
         self.assertTrue(root.is_equal(root2))
 
+        # convert json --> xlsx
+        convert(filename_2_json, filename_3_xlsx, models=models)
+
         objects2 = obj_model.io.get_reader('.xlsx')().run(filename_3_xlsx, models=models,
                                                           group_objects_by_model=True)
+        self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
         self.assertTrue(root.is_equal(root2))
 

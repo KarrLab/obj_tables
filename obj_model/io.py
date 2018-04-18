@@ -437,6 +437,7 @@ class JsonReader(Reader):
             for json_obj in json_objs:
                 model = models_by_name[json_obj['__type']]
                 objs.append(model.from_dict(json_obj, decoded=decoded))
+            objs = list(set(objs))
 
         else:
             model = models_by_name[json_objs['__type']]
@@ -1024,7 +1025,8 @@ def convert(source, destination, models):
     writer = get_writer(splitext(destination)[1])
 
     objects = reader().run(source, models=models, group_objects_by_model=False)
-    writer().run(destination, objects, models=models)
+
+    writer().run(destination, objects, models=models, get_related=False)
 
 
 def create_template(path, models, title=None, description=None, keywords=None,

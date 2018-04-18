@@ -2080,7 +2080,8 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:`dict`: simple Python representation of the object
         """
-        encoded = encoded or {}
+        if encoded is None:
+            encoded = {}
 
         json = {}
         to_encode = queue.Queue()
@@ -2133,7 +2134,8 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:`Model`: decoded object
         """
-        decoded = decoded or {}
+        if decoded is None:
+            decoded = {}
 
         obj = decoded.get(json['__id'], None)
         if obj is not None:
