@@ -2495,13 +2495,15 @@ class EnumAttribute(LiteralAttribute):
 
     Attributes:
         enum_class (:obj:`type`): subclass of `Enum`
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
-    def __init__(self, enum_class, default=None, default_cleaned_value=None, verbose_name='', help='',
+    def __init__(self, enum_class, none=False, default=None, default_cleaned_value=None, verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             enum_class (:obj:`type`): subclass of `Enum`
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`object`, optional): default value
             default_cleaned_value (:obj:`object`, optional): value to replace None values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
@@ -2529,6 +2531,7 @@ class EnumAttribute(LiteralAttribute):
                                             primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
         self.enum_class = enum_class
+        self.none = none
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -2577,7 +2580,11 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
         """
-        if not isinstance(value, self.enum_class):
+        if value is None:
+            if not self.none:
+                return InvalidAttribute(self, ['Value cannot be `None`'])
+
+        elif not isinstance(value, self.enum_class):
             return InvalidAttribute(self, ["Value '{}' must be an instance of `{}` which contains {}".format(
                 value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))])
 
@@ -3238,7 +3245,7 @@ class DateAttribute(LiteralAttribute):
     """ Date attribute
 
     Attributes:
-        none (:obj:`bool`): if true, the attribute is invalid if its value is None
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`date`): default date
         default_cleaned_value (:obj:`date`): value to replace None values with during cleaning
     """
@@ -3247,7 +3254,7 @@ class DateAttribute(LiteralAttribute):
                  verbose_name='', help='', primary=False, unique=False):
         """
         Args:
-            none (:obj:`bool`, optional): if true, the attribute is invalid if its value is None
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`date`, optional): default date
             default_cleaned_value (:obj:`date`, optional): value to replace None values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
@@ -3370,7 +3377,7 @@ class TimeAttribute(LiteralAttribute):
     """ Time attribute
 
     Attributes:
-        none (:obj:`bool`): if true, the attribute is invalid if its value is None
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`time`): default time
         default_cleaned_value (:obj:`time`): value to replace None values with during cleaning
     """
@@ -3378,7 +3385,7 @@ class TimeAttribute(LiteralAttribute):
     def __init__(self, none=True, default=None, default_cleaned_value=None, verbose_name='', help='', primary=False, unique=False):
         """
         Args:
-            none (:obj:`bool`, optional): if true, the attribute is invalid if its value is None
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`time`, optional): default time
             default_cleaned_value (:obj:`time`, optional): value to replace None values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
@@ -3496,7 +3503,7 @@ class DateTimeAttribute(LiteralAttribute):
     """ Datetime attribute
 
     Attributes:
-        none (:obj:`bool`): if true, the attribute is invalid if its value is None
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`datetime`): default datetime
         default_cleaned_value (:obj:`datetime`): value to replace None values with during cleaning
     """
@@ -3505,7 +3512,7 @@ class DateTimeAttribute(LiteralAttribute):
                  verbose_name='', help='', primary=False, unique=False):
         """
         Args:
-            none (:obj:`bool`, optional): if true, the attribute is invalid if its value is None
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`datetime`, optional): default datetime
             default_cleaned_value (:obj:`datetime`, optional): value to replace None values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
