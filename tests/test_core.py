@@ -3965,12 +3965,12 @@ class TestCore(unittest.TestCase):
         self.assertEqual(parent.children.get(id='c_2'), [c_2])
         self.assertEqual(parent.children.get(id='c_3'), [c_3])
 
-        self.assertEqual(parent.children.get(_type=Child1), [c_1, c_2, c_3])
-        self.assertEqual(parent.children.get(_type=Child2), [c_2, c_3])
-        self.assertEqual(parent.children.get(_type=Child3), [c_3])
+        self.assertEqual(parent.children.get(__type=Child1), [c_1, c_2, c_3])
+        self.assertEqual(parent.children.get(__type=Child2), [c_2, c_3])
+        self.assertEqual(parent.children.get(__type=Child3), [c_3])
 
-        self.assertEqual(parent.children.get(_type=Child1, id='c_1'), [c_1])
-        self.assertEqual(parent.children.get(_type=Child2, id='c_1'), [])
+        self.assertEqual(parent.children.get(__type=Child1, id='c_1'), [c_1])
+        self.assertEqual(parent.children.get(__type=Child2, id='c_1'), [])
 
     def test_get_one_by_type(self):
         class Parent(core.Model):
@@ -3996,13 +3996,13 @@ class TestCore(unittest.TestCase):
         self.assertEqual(parent.children.get_one(id='c_3'), c_3)
 
         with self.assertRaises(ValueError):
-            parent.children.get_one(_type=Child1)
+            parent.children.get_one(__type=Child1)
         with self.assertRaises(ValueError):
-            parent.children.get_one(_type=Child2)
-        self.assertEqual(parent.children.get_one(_type=Child3), c_3)
+            parent.children.get_one(__type=Child2)
+        self.assertEqual(parent.children.get_one(__type=Child3), c_3)
 
-        self.assertEqual(parent.children.get_one(_type=Child1, id='c_1'), c_1)
-        self.assertEqual(parent.children.get_one(_type=Child2, id='c_1'), None)
+        self.assertEqual(parent.children.get_one(__type=Child1, id='c_1'), c_1)
+        self.assertEqual(parent.children.get_one(__type=Child2, id='c_1'), None)
 
 
 class ContextTestCase(unittest.TestCase):
