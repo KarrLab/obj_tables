@@ -4125,8 +4125,8 @@ class JsonTestCase(unittest.TestCase):
             '__id': 0,
             'id': 'p',
             'children': [
-                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
-                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
             ],
         })
 
@@ -4135,8 +4135,8 @@ class JsonTestCase(unittest.TestCase):
             '__id': 0,
             'id': 'p',
             'children': [
-                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
-                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
             ],
         })
 
@@ -4196,23 +4196,33 @@ class JsonTestCase(unittest.TestCase):
         c0 = p.children.create(id='c0')
         c1 = p.children.create(id='c1')
 
-        self.assertEqual(p.to_dict(max_depth=-1), {'__type': 'Parent', '__id': 0})
-        self.assertEqual(p.to_dict(max_depth=0), {
+        self.assertEqual(p.to_dict(max_depth=-1), {
+            '__type': 'Parent',
+            '__id': 0,
+            'id': 'p',
+        })
+
+        p_dict = p.to_dict(max_depth=0)
+        p_dict['children'].sort(key=lambda c: c['id'])
+        self.assertEqual(p_dict, {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
             'children': [
-                {'__type': 'Child', '__id': 1},
-                {'__type': 'Child', '__id': 2},
+                {'__type': 'Child', '__id': 1, 'id': 'c0'},
+                {'__type': 'Child', '__id': 2, 'id': 'c1'},
             ],
         })
-        self.assertEqual(p.to_dict(max_depth=1), {
+
+        p_dict = p.to_dict(max_depth=1)
+        p_dict['children'].sort(key=lambda c: c['id'])
+        self.assertEqual(p_dict, {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
             'children': [
-                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
-                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
             ],
         })
 

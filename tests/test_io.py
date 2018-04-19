@@ -11,7 +11,7 @@ from os.path import splitext
 from obj_model import core, utils
 from obj_model.io import WorkbookReader, WorkbookWriter, convert, create_template, IoWarning
 from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle,
-                                  read as read_workbook, get_reader, get_writer)
+                                  read as read_workbook, write as write_workbook, get_reader, get_writer)
 import enum
 import math
 import mock
@@ -52,10 +52,10 @@ class OneToManyRowAttribute(core.OneToManyAttribute):
 
 class OneToManyInlineAttribute(core.OneToManyAttribute):
 
-    def serialize(self, value):
+    def serialize(self, value, encoded=None):
         return ', '.join([obj.id for obj in value])
 
-    def deserialize(self, value, objects):
+    def deserialize(self, value, objects, decoded=None):
         if value:
             objs = []
             for id in value.split(', '):
@@ -820,10 +820,10 @@ class TestMisc(unittest.TestCase):
 
     def test_reader_error_if_not_serializable(self):
         class WriterChildrenAttribute(core.OneToManyAttribute):
-            def serialize(self, value):
+            def serialize(self, value, encoded=None):
                 return super(WriterChildrenAttribute, self).serialize(value)
 
-            def deserialize(self, values, objects):
+            def deserialize(self, values, objects, decoded=None):
                 return super(WriterChildrenAttribute, self).deserialize(value, objects)
 
         class WriterParent(core.Model):
@@ -1092,7 +1092,7 @@ class ReadEmptyCellTestCase(unittest.TestCase):
 
     def test_get_default_cleaned_value(self):
         class ConcreteAttribute(core.Attribute):
-            def deserialize(self):
+            def deserialize(self, value):
                 pass
 
             def serialize(self):
@@ -1606,6 +1606,222 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
         self.assertTrue(root.is_equal(root2))
+
+
+class InlineJsonTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        # shutil.rmtree(self.dirname)
+        print(self.dirname)
+
+    def test_no_primary(self):
+        class OtherGrandChild(core.Model):
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+
+        class GrandChild(core.Model):
+            name = core.StringAttribute()
+            sibling = core.OneToOneAttribute(OtherGrandChild, related_name='sibling')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+
+        class Child(core.Model):
+            name = core.StringAttribute()
+            children = core.OneToManyAttribute(GrandChild, related_name='parent')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            children = core.OneToManyAttribute(Child, related_name='parent')
+
+        p = Parent(id='p')
+        c0 = p.children.create(name='c0')
+        c1 = p.children.create(name='c1')
+        g00 = c0.children.create(name='g00')
+        g01 = c0.children.create(name='g01')
+        g10 = c1.children.create(name='g10')
+        g11 = c1.children.create(name='g11')
+        g00.sibling = OtherGrandChild(name='o00')
+        g11.sibling = OtherGrandChild(name='o11')
+
+        path = os.path.join(self.dirname, 'test.xlsx')
+        obj_model.io.WorkbookWriter().run(path, p)
+        objs2 = obj_model.io.WorkbookReader().run(path, models=Parent)
+        self.assertEqual(list(objs2.keys()), [Parent])
+        self.assertEqual(len(objs2[Parent]), 1)
+        p2 = objs2[Parent][0]
+        self.assertTrue(p.is_equal(p2))
+
+    def test_primary_attribute(self):
+        class GrandChild(core.Model):
+            name = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            name = core.StringAttribute()
+            child = core.ManyToOneAttribute(GrandChild, related_name='parents')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            children = core.OneToManyAttribute(Child, related_name='parent')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'children')
+
+        p = Parent(id='p')
+        c0 = p.children.create(name='c0')
+        c1 = p.children.create(name='c1')
+        g00 = c0.child = GrandChild(name='g00')
+        g01 = c0.child = GrandChild(name='g01')
+        g10 = c1.child = GrandChild(name='g10')
+        g11 = c1.child = GrandChild(name='g11')
+
+        path = os.path.join(self.dirname, 'test.xlsx')
+        obj_model.io.WorkbookWriter().run(path, p)
+        objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
+        self.assertEqual(set(objs2.keys()), set([Parent, GrandChild]))
+        self.assertEqual(len(objs2[Parent]), 1)
+        p2 = objs2[Parent][0]
+        self.assertTrue(p.is_equal(p2))
+
+        # test exception
+        wb = read_workbook(path)
+        wb['Parents'][1][1] = ']'
+        write_workbook(path, wb)
+        with self.assertRaisesRegexp(Exception, 'test.xlsx:Parents:B2'):
+            objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
+
+    def test_one_to_one(self):
+        class GrandChild(core.Model):
+            name = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            name = core.StringAttribute()
+            children = core.OneToManyAttribute(GrandChild, related_name='parent')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            child = core.OneToOneAttribute(Child, related_name='parent')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'child')
+
+        p = Parent(id='p')
+        c0 = p.child = Child(name='c0')
+        c1 = p.child = Child(name='c1')
+        g00 = c0.children.create(name='g00')
+        g01 = c0.children.create(name='g01')
+        g10 = c1.children.create(name='g10')
+        g11 = c1.children.create(name='g11')
+
+        path = os.path.join(self.dirname, 'test.xlsx')
+        obj_model.io.WorkbookWriter().run(path, p)
+        objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
+        self.assertEqual(set(objs2.keys()), set([Parent, GrandChild]))
+        self.assertEqual(len(objs2[Parent]), 1)
+        p2 = objs2[Parent][0]
+        self.assertTrue(p.is_equal(p2))
+
+        # test exception
+        wb = read_workbook(path)
+        wb['Parents'][1][1] = ']'
+        write_workbook(path, wb)
+        with self.assertRaisesRegexp(Exception, 'test.xlsx:Parents:B2'):
+            objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
+
+    def test_many_to_one(self):
+        class GrandChild(core.Model):
+            name = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            name = core.StringAttribute()
+            children = core.ManyToManyAttribute(GrandChild, related_name='parents')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            child = core.ManyToOneAttribute(Child, related_name='parents')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'child')
+
+        p = Parent(id='p')
+        c0 = p.child = Child(name='c0')
+        c1 = p.child = Child(name='c1')
+        g00 = c0.children.create(name='g00')
+        g01 = c0.children.create(name='g01')
+        g10 = c1.children.create(name='g10')
+        g11 = c1.children.create(name='g11')
+
+        path = os.path.join(self.dirname, 'test.xlsx')
+        obj_model.io.WorkbookWriter().run(path, p)
+        objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
+        self.assertEqual(set(objs2.keys()), set([Parent, GrandChild]))
+        self.assertEqual(len(objs2[Parent]), 1)
+        p2 = objs2[Parent][0]
+        self.assertTrue(p.is_equal(p2))
+
+        # test exception
+        wb = read_workbook(path)
+        wb['Parents'][1][1] = ']'
+        write_workbook(path, wb)
+        with self.assertRaisesRegexp(Exception, 'test.xlsx:Parents:B2'):
+            objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
+
+    def test_many_to_many(self):
+        class GrandChild(core.Model):
+            name = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            name = core.StringAttribute()
+            child = core.OneToOneAttribute(GrandChild, related_name='parent')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.inline
+
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            children = core.ManyToManyAttribute(Child, related_name='parents')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'children')
+
+        p = Parent(id='p')
+        c0 = p.children.create(name='c0')
+        c1 = p.children.create(name='c1')
+        g00 = c0.child = GrandChild(name='g00')
+        g01 = c0.child = GrandChild(name='g01')
+        g10 = c1.child = GrandChild(name='g10')
+        g11 = c1.child = GrandChild(name='g11')
+
+        path = os.path.join(self.dirname, 'test.xlsx')
+        obj_model.io.WorkbookWriter().run(path, p)
+        objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
+        self.assertEqual(set(objs2.keys()), set([Parent, GrandChild]))
+        self.assertEqual(len(objs2[Parent]), 1)
+        p2 = objs2[Parent][0]
+        self.assertTrue(p.is_equal(p2))
+
+        # test exception
+        wb = read_workbook(path)
+        wb['Parents'][1][1] = ']'
+        write_workbook(path, wb)
+        with self.assertRaisesRegexp(Exception, 'test.xlsx:Parents:B2'):
+            objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
 
 class UtilsTestCase(unittest.TestCase):

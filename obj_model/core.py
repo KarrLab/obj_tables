@@ -38,6 +38,7 @@ import collections
 import copy
 import dateutil.parser
 import inflect
+import json
 import queue
 import re
 import six
@@ -2068,12 +2069,13 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Exit context """
         pass
 
-    def to_dict(self, max_depth=float('inf'), encoded=None):
+    def to_dict(self, encode_primary_objects=True, max_depth=float('inf'), encoded=None):
         """ Encode an object using a simple Python representation (dict, list, str, float, bool, None) that is
         compatible with JSON and YAML. Use `__id` keys to avoid infinite recursion by encoding each object once and referring
         to objects by their __id for each repeated reference.
 
         Args:
+            encode_primary_objects (:obj:`bool`, optional): if :obj:`True`, encode primary classes otherwise just encode their IDs
             max_depth (:obj:`int`, optional): maximum depth to serialize
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
 
@@ -2088,52 +2090,60 @@ class Model(with_metaclass(ModelMeta, object)):
         to_encode.put((self, json, 0))
         while not to_encode.empty():
             obj, json_obj, depth = to_encode.get()
+
+            cls = obj.__class__
+            json_obj['__type'] = cls.__name__
+            if cls.Meta.primary_attribute:
+                json_obj[cls.Meta.primary_attribute.name] = obj.get_primary_attribute()
+
             json_id = encoded.get(obj, None)
             if json_id is not None:
-                json_obj['__type'] = obj.__class__.__name__
                 json_obj['__id'] = json_id
             else:
                 json_id = len(encoded)
-                json_obj['__type'] = obj.__class__.__name__
                 json_obj['__id'] = json_id
                 encoded[obj] = json_id
 
                 if depth <= max_depth:
 
-                    cls = obj.__class__
-
-                    for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
-                        val = getattr(obj, attr_name)
-                        if isinstance(attr, RelatedAttribute):
-                            if val is None:
-                                json_val = None
-                            elif isinstance(val, list):
-                                json_val = []
-                                for v in val:
-                                    json_v = {}
-                                    to_encode.put((v, json_v, depth + 1))
-                                    json_val.append(json_v)
+                    if encode_primary_objects or cls.Meta.tabular_orientation == TabularOrientation.inline:
+                        for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
+                            val = getattr(obj, attr_name)
+                            if isinstance(attr, RelatedAttribute):
+                                if val is None:
+                                    json_val = None
+                                elif isinstance(val, list):
+                                    json_val = []
+                                    for v in val:
+                                        json_v = {}
+                                        to_encode.put((v, json_v, depth + 1))
+                                        json_val.append(json_v)
+                                else:
+                                    json_val = {}
+                                    to_encode.put((val, json_val, depth + 1))
                             else:
-                                json_val = {}
-                                to_encode.put((val, json_val, depth + 1))
-                        else:
-                            json_val = attr.to_builtin(val)
-                        json_obj[attr_name] = json_val
+                                json_val = attr.to_builtin(val)
+                            json_obj[attr_name] = json_val
 
         return json
 
     @classmethod
-    def from_dict(cls, json, decoded=None):
+    def from_dict(cls, json, decode_primary_objects=True, primary_objects=None, decoded=None):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of an object that
         is compatible with JSON and YAML, including references to objects through `__id` keys.
 
         Args:
             json (:obj:`dict`): simple Python representation of the object
+            decode_primary_objects (:obj:`bool`, optional): if :obj:`True`, decode primary classes otherwise just look up objects by their IDs
+            primary_objects (:obj:`list`, optional): list of instances of primary classes (i.e. non-line classes)
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
             :obj:`Model`: decoded object
         """
+        if primary_objects is None:
+            primary_objects = []
+
         if decoded is None:
             decoded = {}
 
@@ -2158,21 +2168,32 @@ class Model(with_metaclass(ModelMeta, object)):
 
                     if attr_json is None:
                         attr_val = None
+
                     elif isinstance(attr_json, list):
                         attr_val = []
                         for sub_attr_json in attr_json:
-                            sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
-                            if sub_sub_obj is None:
-                                sub_sub_obj = other_cls()
-                                decoded[sub_attr_json['__id']] = sub_sub_obj
-                                to_decode.append((sub_attr_json, sub_sub_obj))
+                            if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.inline:
+                                sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
+                                if sub_sub_obj is None:
+                                    sub_sub_obj = other_cls()
+                                    decoded[sub_attr_json['__id']] = sub_sub_obj
+                                    to_decode.append((sub_attr_json, sub_sub_obj))
+                            else:
+                                primary_attr = sub_attr_json[other_cls.Meta.primary_attribute.name]
+                                sub_sub_obj = primary_objects[other_cls][primary_attr]
                             attr_val.append(sub_sub_obj)
+
                     else:
-                        attr_val = decoded.get(attr_json['__id'], None)
-                        if attr_val is None:
-                            attr_val = other_cls()
-                            decoded[attr_json['__id']] = attr_val
-                            to_decode.append((attr_json, attr_val))
+                        if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.inline:
+                            attr_val = decoded.get(attr_json['__id'], None)
+                            if attr_val is None:
+                                attr_val = other_cls()
+                                decoded[attr_json['__id']] = attr_val
+                                to_decode.append((attr_json, attr_val))
+                        else:
+                            primary_attr = attr_json[other_cls.Meta.primary_attribute.name]
+                            attr_val = primary_objects[other_cls][primary_attr]
+
                 else:
                     attr_val = attr.from_builtin(attr_json)
                 setattr(sub_obj, attr_name, attr_val)
@@ -3755,6 +3776,31 @@ class RelatedAttribute(Attribute):
         """
         pass  # pragma: no cover
 
+    def serialize(self, value, encoded=None):
+        """ Serialize related object
+
+        Args:
+            value (:obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        pass  # pragma: no cover
+
+    def deserialize(self, value, objects, decoded=None):
+        """ Deserialize value
+
+        Args:
+            values (:obj:`object`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        pass  # pragma: no cover
+
     def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
         that is compatible with JSON and YAML
@@ -3922,27 +3968,34 @@ class OneToOneAttribute(RelatedAttribute):
             return InvalidAttribute(self, errors, related=True)
         return None
 
-    def serialize(self, value):
+    def serialize(self, value, encoded=None):
         """ Serialize related object
 
         Args:
             value (:obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
             :obj:`str`: simple Python representation
         """
-        if value is None:
-            return ''
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
+                              indent=8)
 
-        primary_attr = value.__class__.Meta.primary_attribute
-        return primary_attr.serialize(getattr(value, primary_attr.name))
+        else:
+            if value is None:
+                return ''
 
-    def deserialize(self, value, objects):
+            primary_attr = value.__class__.Meta.primary_attribute
+            return primary_attr.serialize(getattr(value, primary_attr.name))
+
+    def deserialize(self, value, objects, decoded=None):
         """ Deserialize value
 
         Args:
             value (:obj:`str`): String representation
             objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
             :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
@@ -3950,22 +4003,33 @@ class OneToOneAttribute(RelatedAttribute):
         if not value:
             return (None, None)
 
-        related_objs = set()
-        related_classes = chain([self.related_class],
-                                get_subclasses(self.related_class))
-        for related_class in related_classes:
-            if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                related_objs.add(objects[related_class][value])
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            try:
+                obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
+                                                   primary_objects=objects, decoded=decoded)
+                error = None
+            except Exception as exception:
+                obj = None
+                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
+            return (obj, error)
 
-        if len(related_objs) == 0:
-            primary_attr = self.related_class.Meta.primary_attribute
-            return (None, InvalidAttribute(self, ['Unable to find {} with {}={}'.format(
-                self.related_class.__name__, primary_attr.name, quote(value))]))
+        else:
+            related_objs = set()
+            related_classes = chain([self.related_class],
+                                    get_subclasses(self.related_class))
+            for related_class in related_classes:
+                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                    related_objs.add(objects[related_class][value])
 
-        if len(related_objs) == 1:
-            return (related_objs.pop(), None)
+            if len(related_objs) == 0:
+                primary_attr = self.related_class.Meta.primary_attribute
+                return (None, InvalidAttribute(self, ['Unable to find {} with {}={}'.format(
+                    self.related_class.__name__, primary_attr.name, quote(value))]))
 
-        return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
+            if len(related_objs) == 1:
+                return (related_objs.pop(), None)
+
+            return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
 
 
 class ManyToOneAttribute(RelatedAttribute):
@@ -4127,27 +4191,34 @@ class ManyToOneAttribute(RelatedAttribute):
             return InvalidAttribute(self, errors, related=True)
         return None
 
-    def serialize(self, value):
+    def serialize(self, value, encoded=None):
         """ Serialize related object
 
         Args:
             value (:obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
             :obj:`str`: simple Python representation
         """
-        if value is None:
-            return ''
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
+                              indent=8)
 
-        primary_attr = value.__class__.Meta.primary_attribute
-        return primary_attr.serialize(getattr(value, primary_attr.name))
+        else:
+            if value is None:
+                return ''
 
-    def deserialize(self, value, objects):
+            primary_attr = value.__class__.Meta.primary_attribute
+            return primary_attr.serialize(getattr(value, primary_attr.name))
+
+    def deserialize(self, value, objects, decoded=None):
         """ Deserialize value
 
         Args:
             value (:obj:`str`): String representation
             objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
             :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
@@ -4155,22 +4226,33 @@ class ManyToOneAttribute(RelatedAttribute):
         if not value:
             return (None, None)
 
-        related_objs = set()
-        related_classes = chain([self.related_class],
-                                get_subclasses(self.related_class))
-        for related_class in related_classes:
-            if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                related_objs.add(objects[related_class][value])
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            try:
+                obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
+                                                   primary_objects=objects, decoded=decoded)
+                error = None
+            except Exception as exception:
+                obj = None
+                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
+            return (obj, error)
 
-        if len(related_objs) == 0:
-            primary_attr = self.related_class.Meta.primary_attribute
-            return (None, InvalidAttribute(self, ['Unable to find {} with {}={}'.format(
-                self.related_class.__name__, primary_attr.name, quote(value))]))
+        else:
+            related_objs = set()
+            related_classes = chain([self.related_class],
+                                    get_subclasses(self.related_class))
+            for related_class in related_classes:
+                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                    related_objs.add(objects[related_class][value])
 
-        if len(related_objs) == 1:
-            return (related_objs.pop(), None)
+            if len(related_objs) == 0:
+                primary_attr = self.related_class.Meta.primary_attribute
+                return (None, InvalidAttribute(self, ['Unable to find {} with {}={}'.format(
+                    self.related_class.__name__, primary_attr.name, quote(value))]))
 
-        return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
+            if len(related_objs) == 1:
+                return (related_objs.pop(), None)
+
+            return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
 
 
 class OneToManyAttribute(RelatedAttribute):
@@ -4325,31 +4407,37 @@ class OneToManyAttribute(RelatedAttribute):
             return InvalidAttribute(self, errors, related=True)
         return None
 
-    def serialize(self, value):
+    def serialize(self, value, encoded=None):
         """ Serialize related object
 
         Args:
             value (:obj:`list` of `Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
             :obj:`str`: simple Python representation
         """
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
+                              indent=8)
 
-        serialized_vals = []
-        for v in value:
-            primary_attr = v.__class__.Meta.primary_attribute
-            serialized_vals.append(primary_attr.serialize(
-                getattr(v, primary_attr.name)))
+        else:
+            serialized_vals = []
+            for v in value:
+                primary_attr = v.__class__.Meta.primary_attribute
+                serialized_vals.append(primary_attr.serialize(
+                    getattr(v, primary_attr.name)))
 
-        serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
-        return ', '.join(serialized_vals)
+            serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
+            return ', '.join(serialized_vals)
 
-    def deserialize(self, values, objects):
+    def deserialize(self, values, objects, decoded=None):
         """ Deserialize value
 
         Args:
             values (:obj:`object`): String representation
             objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
             :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
@@ -4357,30 +4445,43 @@ class OneToManyAttribute(RelatedAttribute):
         if not values:
             return (list(), None)
 
-        deserialized_values = list()
-        errors = []
-        for value in values.split(','):
-            value = value.strip()
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            try:
+                objs = []
+                for v in json.loads(values):
+                    objs.append(self.related_class.from_dict(v, decode_primary_objects=False,
+                                                             primary_objects=objects, decoded=decoded))
+                error = None
+            except Exception as exception:
+                objs = None
+                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
+            return (objs, error)
 
-            related_objs = set()
-            related_classes = chain(
-                [self.related_class], get_subclasses(self.related_class))
-            for related_class in related_classes:
-                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                    related_objs.add(objects[related_class][value])
+        else:
+            deserialized_values = list()
+            errors = []
+            for value in values.split(','):
+                value = value.strip()
 
-            if len(related_objs) == 1:
-                deserialized_values.append(related_objs.pop())
-            elif len(related_objs) == 0:
-                errors.append('Unable to find {} with {}={}'.format(
-                    self.related_class.__name__, self.related_class.Meta.primary_attribute.name, quote(value)))
-            else:
-                errors.append(
-                    'Multiple matching objects with primary attribute = {}'.format(value))
+                related_objs = set()
+                related_classes = chain(
+                    [self.related_class], get_subclasses(self.related_class))
+                for related_class in related_classes:
+                    if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                        related_objs.add(objects[related_class][value])
 
-        if errors:
-            return (None, InvalidAttribute(self, errors))
-        return (deserialized_values, None)
+                if len(related_objs) == 1:
+                    deserialized_values.append(related_objs.pop())
+                elif len(related_objs) == 0:
+                    errors.append('Unable to find {} with {}={}'.format(
+                        self.related_class.__name__, self.related_class.Meta.primary_attribute.name, quote(value)))
+                else:
+                    errors.append(
+                        'Multiple matching objects with primary attribute = {}'.format(value))
+
+            if errors:
+                return (None, InvalidAttribute(self, errors))
+            return (deserialized_values, None)
 
 
 class ManyToManyAttribute(RelatedAttribute):
@@ -4553,31 +4654,37 @@ class ManyToManyAttribute(RelatedAttribute):
             return InvalidAttribute(self, errors, related=True)
         return None
 
-    def serialize(self, value):
+    def serialize(self, value, encoded=None):
         """ Serialize related object
 
         Args:
             value (:obj:`list` of `Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
             :obj:`str`: simple Python representation
         """
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
+                              indent=8)
 
-        serialized_vals = []
-        for v in value:
-            primary_attr = v.__class__.Meta.primary_attribute
-            serialized_vals.append(primary_attr.serialize(
-                getattr(v, primary_attr.name)))
+        else:
+            serialized_vals = []
+            for v in value:
+                primary_attr = v.__class__.Meta.primary_attribute
+                serialized_vals.append(primary_attr.serialize(
+                    getattr(v, primary_attr.name)))
 
-        serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
-        return ', '.join(serialized_vals)
+            serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
+            return ', '.join(serialized_vals)
 
-    def deserialize(self, values, objects):
+    def deserialize(self, values, objects, decoded=None):
         """ Deserialize value
 
         Args:
             values (:obj:`object`): String representation
             objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
             :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
@@ -4585,31 +4692,44 @@ class ManyToManyAttribute(RelatedAttribute):
         if not values:
             return (list(), None)
 
-        deserialized_values = list()
-        errors = []
-        for value in values.split(','):
-            value = value.strip()
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            try:
+                objs = []
+                for v in json.loads(values):
+                    objs.append(self.related_class.from_dict(v, decode_primary_objects=False,
+                                                             primary_objects=objects, decoded=decoded))
+                error = None
+            except Exception as exception:
+                objs = None
+                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
+            return (objs, error)
 
-            related_objs = set()
-            related_classes = chain(
-                [self.related_class], get_subclasses(self.related_class))
-            for related_class in related_classes:
-                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                    related_objs.add(objects[related_class][value])
+        else:
+            deserialized_values = list()
+            errors = []
+            for value in values.split(','):
+                value = value.strip()
 
-            if len(related_objs) == 1:
-                deserialized_values.append(related_objs.pop())
-            elif len(related_objs) == 0:
-                primary_attr = self.related_class.Meta.primary_attribute
-                errors.append('Unable to find {} with {}={}'.format(
-                    self.related_class.__name__, primary_attr.name, quote(value)))
-            else:
-                errors.append(
-                    'Multiple matching objects with primary attribute = {}'.format(value))
+                related_objs = set()
+                related_classes = chain(
+                    [self.related_class], get_subclasses(self.related_class))
+                for related_class in related_classes:
+                    if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                        related_objs.add(objects[related_class][value])
 
-        if errors:
-            return (None, InvalidAttribute(self, errors))
-        return (deserialized_values, None)
+                if len(related_objs) == 1:
+                    deserialized_values.append(related_objs.pop())
+                elif len(related_objs) == 0:
+                    primary_attr = self.related_class.Meta.primary_attribute
+                    errors.append('Unable to find {} with {}={}'.format(
+                        self.related_class.__name__, primary_attr.name, quote(value)))
+                else:
+                    errors.append(
+                        'Multiple matching objects with primary attribute = {}'.format(value))
+
+            if errors:
+                return (None, InvalidAttribute(self, errors))
+            return (deserialized_values, None)
 
 
 class RelatedManager(list):
