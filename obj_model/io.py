@@ -221,6 +221,7 @@ class WorkbookWriter(Writer):
                             version=version, language=language, creator=creator)
         writer.initialize_workbook()
 
+        encoded = {}
         for model in chain(models, unordered_models):
             if model.Meta.tabular_orientation == TabularOrientation.inline:
                 continue
@@ -230,11 +231,11 @@ class WorkbookWriter(Writer):
             else:
                 objects = []
 
-            self.write_model(writer, model, objects, include_all_attributes=include_all_attributes)
+            self.write_model(writer, model, objects, include_all_attributes=include_all_attributes, encoded=encoded)
 
         writer.finalize_workbook()
 
-    def write_model(self, writer, model, objects, include_all_attributes=True):
+    def write_model(self, writer, model, objects, include_all_attributes=True, encoded=None):
         """ Write a list of model objects to a file
 
         Args:
@@ -243,6 +244,7 @@ class WorkbookWriter(Writer):
             objects (:obj:`list` of `Model`): list of instances of `model`
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
                 including those not explictly included in `Model.Meta.attribute_order`
+            encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
         """
 
         # attribute order
@@ -269,7 +271,10 @@ class WorkbookWriter(Writer):
         for obj in objects:
             obj_data = []
             for attr in attributes:
-                obj_data.append(attr.serialize(getattr(obj, attr.name)))
+                if isinstance(attr, RelatedAttribute):
+                    obj_data.append(attr.serialize(getattr(obj, attr.name), encoded=encoded))
+                else:
+                    obj_data.append(attr.serialize(getattr(obj, attr.name)))
             data.append(obj_data)
 
         # transpose data for column orientation
@@ -354,8 +359,7 @@ class Reader(six.with_metaclass(abc.ABCMeta, object)):
     """ Write model objects to file(s) """
 
     @abc.abstractmethod
-    def run(self, path, models=None, ignore_missing_attributes=False, ignore_extra_attributes=False,
-            group_objects_by_model=True):
+    def run(self, path, models=None, group_objects_by_model=False):
         """ Read a list of model objects from file(s) and validate them
 
         File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
@@ -364,11 +368,7 @@ class Reader(six.with_metaclass(abc.ABCMeta, object)):
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
-                of object to read or list of types of objects to read
-            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
-                worksheet/file doesn't contain all of attributes in a model in `models`
-            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
-                attributes in the data are not in the model
+                of object to read or list of types of objects to read            
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
 
@@ -381,20 +381,13 @@ class Reader(six.with_metaclass(abc.ABCMeta, object)):
 class JsonReader(Reader):
     """ Read model objects from a JSON or YAML file """
 
-    def run(self, path, models=None, ignore_extra_sheets=False, ignore_missing_attributes=False,
-            ignore_extra_attributes=False, group_objects_by_model=False):
+    def run(self, path, models=None, group_objects_by_model=False):
         """ Read model objects from file(s) and validate them
 
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type or list
                 of type of objects to read
-            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
-                other worksheets or files
-            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
-                worksheet/file doesn't contain all of attributes in a model in `models`
-            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
-                attributes in the data are not in the model
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
 
@@ -613,9 +606,10 @@ class WorkbookReader(Reader):
             objects_by_primary_attribute[model] = {obj.get_primary_attribute(): obj for obj in objects_model}
 
         errors = {}
+        decoded = {}
         for model, objects_model in objects.items():
             model_errors = self.link_model(model, attributes[model], data[model], objects_model,
-                                           objects_by_primary_attribute)
+                                           objects_by_primary_attribute, decoded=decoded)
             if model_errors:
                 errors[model] = model_errors
 
@@ -857,7 +851,7 @@ class WorkbookReader(Reader):
 
         return (data, row_headings, column_headings)
 
-    def link_model(self, model, attributes, data, objects, objects_by_primary_attribute):
+    def link_model(self, model, attributes, data, objects, objects_by_primary_attribute, decoded=None):
         """ Construct object graph
 
         Args:
@@ -866,6 +860,7 @@ class WorkbookReader(Reader):
             data (:obj:`list` of `list` of `object`): nested list of object data
             objects (:obj:`list`): list of model objects in order of `data`
             objects_by_primary_attribute (:obj:`dict`): dictionary of model objects grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
             :obj:`list` of `str`: list of parsing errors
@@ -875,7 +870,7 @@ class WorkbookReader(Reader):
         for obj_data, obj in zip(data, objects):
             for attr, attr_value in zip(attributes, obj_data):
                 if isinstance(attr, RelatedAttribute):
-                    value, error = attr.deserialize(attr_value, objects_by_primary_attribute)
+                    value, error = attr.deserialize(attr_value, objects_by_primary_attribute, decoded=decoded)
                     if error:
                         error.set_location_and_value(utils.source_report(obj, attr.name), attr_value)
                         errors.append(error)
@@ -1012,7 +1007,9 @@ def get_reader(ext):
         raise ValueError('Invalid export format: {}'.format(ext))
 
 
-def convert(source, destination, models):
+def convert(source, destination, models,
+            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
     """ Convert among comma separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
     tab separated formats (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
 
@@ -1020,13 +1017,36 @@ def convert(source, destination, models):
         source (:obj:`str`): path to source file
         destination (:obj:`str`): path to save converted file
         models (:obj:`list` of `class`): list of models
+        ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+            file is missing for one or more models
+        ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            other worksheets or files
+        ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
+            in the canonical order
+        include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+            not explictly included in `Model.Meta.attribute_order`
+        ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
+            worksheet/file doesn't contain all of attributes in a model in `models`
+        ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
+            attributes in the data are not in the model
+        ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+            in the canonical order
     """
-    reader = get_reader(splitext(source)[1])
-    writer = get_writer(splitext(destination)[1])
+    reader = get_reader(splitext(source)[1])()
+    writer = get_writer(splitext(destination)[1])()
 
-    objects = reader().run(source, models=models, group_objects_by_model=False)
+    kwargs = {}
+    if isinstance(reader, WorkbookReader):
+        kwargs['ignore_missing_sheets'] = ignore_missing_sheets
+        kwargs['ignore_extra_sheets'] = ignore_extra_sheets
+        kwargs['ignore_sheet_order'] = ignore_sheet_order
+        kwargs['include_all_attributes'] = include_all_attributes
+        kwargs['ignore_missing_attributes'] = ignore_missing_attributes
+        kwargs['ignore_extra_attributes'] = ignore_extra_attributes
+        kwargs['ignore_attribute_order'] = ignore_attribute_order
+    objects = reader.run(source, models=models, group_objects_by_model=False, **kwargs)
 
-    writer().run(destination, objects, models=models, get_related=False)
+    writer.run(destination, objects, models=models, get_related=False)
 
 
 def create_template(path, models, title=None, description=None, keywords=None,

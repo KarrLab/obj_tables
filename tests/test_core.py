@@ -581,6 +581,13 @@ class TestCore(unittest.TestCase):
         attr = core.EnumAttribute(TestEnum)
         self.assertEqual(attr.serialize(TestEnum.val0), 'val0')
 
+        # test validation of None values
+        attr = core.EnumAttribute(TestEnum, none=False)
+        self.assertNotEqual(attr.validate(None, None), None)
+
+        attr = core.EnumAttribute(TestEnum, none=True)
+        self.assertEqual(attr.validate(None, None), None)
+
     def test_boolean_attribute(self):
         with self.assertRaisesRegexp(ValueError, '`default` must be `None` or an instance of `bool`'):
             core.BooleanAttribute(default=0)
@@ -3958,12 +3965,12 @@ class TestCore(unittest.TestCase):
         self.assertEqual(parent.children.get(id='c_2'), [c_2])
         self.assertEqual(parent.children.get(id='c_3'), [c_3])
 
-        self.assertEqual(parent.children.get(_type=Child1), [c_1, c_2, c_3])
-        self.assertEqual(parent.children.get(_type=Child2), [c_2, c_3])
-        self.assertEqual(parent.children.get(_type=Child3), [c_3])
+        self.assertEqual(parent.children.get(__type=Child1), [c_1, c_2, c_3])
+        self.assertEqual(parent.children.get(__type=Child2), [c_2, c_3])
+        self.assertEqual(parent.children.get(__type=Child3), [c_3])
 
-        self.assertEqual(parent.children.get(_type=Child1, id='c_1'), [c_1])
-        self.assertEqual(parent.children.get(_type=Child2, id='c_1'), [])
+        self.assertEqual(parent.children.get(__type=Child1, id='c_1'), [c_1])
+        self.assertEqual(parent.children.get(__type=Child2, id='c_1'), [])
 
     def test_get_one_by_type(self):
         class Parent(core.Model):
@@ -3989,13 +3996,13 @@ class TestCore(unittest.TestCase):
         self.assertEqual(parent.children.get_one(id='c_3'), c_3)
 
         with self.assertRaises(ValueError):
-            parent.children.get_one(_type=Child1)
+            parent.children.get_one(__type=Child1)
         with self.assertRaises(ValueError):
-            parent.children.get_one(_type=Child2)
-        self.assertEqual(parent.children.get_one(_type=Child3), c_3)
+            parent.children.get_one(__type=Child2)
+        self.assertEqual(parent.children.get_one(__type=Child3), c_3)
 
-        self.assertEqual(parent.children.get_one(_type=Child1, id='c_1'), c_1)
-        self.assertEqual(parent.children.get_one(_type=Child2, id='c_1'), None)
+        self.assertEqual(parent.children.get_one(__type=Child1, id='c_1'), c_1)
+        self.assertEqual(parent.children.get_one(__type=Child2, id='c_1'), None)
 
 
 class ContextTestCase(unittest.TestCase):
@@ -4125,8 +4132,8 @@ class JsonTestCase(unittest.TestCase):
             '__id': 0,
             'id': 'p',
             'children': [
-                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
-                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
             ],
         })
 
@@ -4135,8 +4142,8 @@ class JsonTestCase(unittest.TestCase):
             '__id': 0,
             'id': 'p',
             'children': [
-                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
-                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
             ],
         })
 
@@ -4196,23 +4203,33 @@ class JsonTestCase(unittest.TestCase):
         c0 = p.children.create(id='c0')
         c1 = p.children.create(id='c1')
 
-        self.assertEqual(p.to_dict(max_depth=-1), {'__type': 'Parent', '__id': 0})
-        self.assertEqual(p.to_dict(max_depth=0), {
+        self.assertEqual(p.to_dict(max_depth=-1), {
+            '__type': 'Parent',
+            '__id': 0,
+            'id': 'p',
+        })
+
+        p_dict = p.to_dict(max_depth=0)
+        p_dict['children'].sort(key=lambda c: c['id'])
+        self.assertEqual(p_dict, {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
             'children': [
-                {'__type': 'Child', '__id': 1},
-                {'__type': 'Child', '__id': 2},
+                {'__type': 'Child', '__id': 1, 'id': 'c0'},
+                {'__type': 'Child', '__id': 2, 'id': 'c1'},
             ],
         })
-        self.assertEqual(p.to_dict(max_depth=1), {
+
+        p_dict = p.to_dict(max_depth=1)
+        p_dict['children'].sort(key=lambda c: c['id'])
+        self.assertEqual(p_dict, {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
             'children': [
-                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0}},
-                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0}},
+                {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
+                {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
             ],
         })
 
