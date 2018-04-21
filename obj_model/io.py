@@ -359,7 +359,7 @@ class Reader(six.with_metaclass(abc.ABCMeta, object)):
     """ Write model objects to file(s) """
 
     @abc.abstractmethod
-    def run(self, path, models=None, group_objects_by_model=False):
+    def run(self, path, models=None, group_objects_by_model=False, validate=True):
         """ Read a list of model objects from file(s) and validate them
 
         File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
@@ -371,6 +371,7 @@ class Reader(six.with_metaclass(abc.ABCMeta, object)):
                 of object to read or list of types of objects to read            
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
             :obj:`dict`: model objects grouped by `Model` class
@@ -381,7 +382,7 @@ class Reader(six.with_metaclass(abc.ABCMeta, object)):
 class JsonReader(Reader):
     """ Read model objects from a JSON or YAML file """
 
-    def run(self, path, models=None, group_objects_by_model=False):
+    def run(self, path, models=None, group_objects_by_model=False, validate=True):
         """ Read model objects from file(s) and validate them
 
         Args:
@@ -390,6 +391,7 @@ class JsonReader(Reader):
                 of type of objects to read
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
             :obj:`dict`: model objects grouped by `Model` class
@@ -436,6 +438,18 @@ class JsonReader(Reader):
             model = models_by_name[json_objs['__type']]
             objs = model.from_dict(json_objs)
 
+        # validate
+        if objs and validate:
+            if isinstance(objs, list):
+                to_validate = objs
+            else:
+                to_validate = [objs]
+            errors = Validator().validate(to_validate)
+            if errors:
+                raise ValueError(
+                    indent_forest(['The model cannot be loaded because it fails to validate:', [errors]]))
+        
+        # group objects by model
         if group_objects_by_model:
             grouped_objs = {}
             if objs is None:
@@ -457,7 +471,7 @@ class WorkbookReader(Reader):
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
-            group_objects_by_model=True):
+            group_objects_by_model=True, validate=True):
         """ Read a list of model objects from file(s) and validate them
 
         File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
@@ -483,6 +497,7 @@ class WorkbookReader(Reader):
                 in the canonical order
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
             :obj:`dict`: model objects grouped by `Model` class
@@ -637,10 +652,11 @@ class WorkbookReader(Reader):
         for model in models:
             all_objects.extend(objects[model])
 
-        errors = Validator().validate(all_objects)
-        if errors:
-            raise ValueError(
-                indent_forest(['The model cannot be loaded because it fails to validate:', [errors]]))
+        if validate:
+            errors = Validator().validate(all_objects)
+            if errors:
+                raise ValueError(
+                    indent_forest(['The model cannot be loaded because it fails to validate:', [errors]]))
 
         # return
         if group_objects_by_model:

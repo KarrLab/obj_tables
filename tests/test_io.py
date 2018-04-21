@@ -13,6 +13,7 @@ from obj_model.io import WorkbookReader, WorkbookWriter, convert, create_templat
 from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle,
                                   read as read_workbook, write as write_workbook, get_reader, get_writer)
 import enum
+import json
 import math
 import mock
 import obj_model.io
@@ -1478,6 +1479,7 @@ class JsonTestCase(unittest.TestCase):
     def test_write_read(self):
         class AA(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
+            val = core.IntegerAttribute(min=0)
 
         class BB(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -1488,9 +1490,9 @@ class JsonTestCase(unittest.TestCase):
             bbs = core.ManyToManyAttribute(BB, related_name='ccs')
             aas = core.ManyToManyAttribute(AA, related_name='ccs')
 
-        aa_0 = AA(id='aa_0')
-        aa_1 = AA(id='aa_1')
-        aa_2 = AA(id='aa_2')
+        aa_0 = AA(id='aa_0', val=1)
+        aa_1 = AA(id='aa_1', val=2)
+        aa_2 = AA(id='aa_2', val=3)
 
         bb_0_0 = aa_0.bbs.create(id='bb_0_0')
         bb_0_1 = aa_0.bbs.create(id='bb_0_1')
@@ -1514,6 +1516,14 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(len(aas), 2)
         self.assertTrue(aa_0.is_equal(aas[0]))
         self.assertTrue(aa_1.is_equal(aas[1]))
+
+        with open(path, 'r') as file:
+            objs = json.load(file)
+        objs[0]['val'] = -1
+        with open(path, 'w') as file:
+            json.dump(objs, file)
+        with self.assertRaisesRegexp(ValueError, 'fails to validate'):
+            obj_model.io.JsonReader().run(path, [AA])
 
         obj_model.io.JsonWriter().run(path, aa_0, models=AA)
         aa_0_2 = obj_model.io.JsonReader().run(path, models=AA)
@@ -1613,8 +1623,7 @@ class InlineJsonTestCase(unittest.TestCase):
         self.dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        # shutil.rmtree(self.dirname)
-        print(self.dirname)
+        shutil.rmtree(self.dirname)
 
     def test_no_primary(self):
         class OtherGrandChild(core.Model):
