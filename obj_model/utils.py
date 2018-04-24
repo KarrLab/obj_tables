@@ -12,6 +12,35 @@ from random import shuffle
 from obj_model.core import Model, Attribute, RelatedAttribute, InvalidObjectSet, InvalidObject, Validator
 
 
+def get_related_models(model):
+    """ Get the models that have relationships to a model
+
+    Args:
+        model (:obj:`type`): subclass of :obj:`Model`
+
+    Returns:
+        :obj:`list` of :obj:`type`: list of models that have relationships with :obj:`model`
+    """
+    related_models = [model]
+    to_check = [model]
+    while to_check:
+        cur_model = to_check.pop()
+
+        for attr in cur_model.Meta.attributes.values():
+            if isinstance(attr, RelatedAttribute) and attr.related_class not in related_models:
+                related_models.append(attr.related_class)
+                to_check.append(attr.related_class)
+
+        for attr in cur_model.Meta.related_attributes.values():
+            if attr.primary_class not in related_models:
+                related_models.append(attr.primary_class)
+                to_check.append(attr.primary_class)
+
+    related_models.pop(0)
+
+    return related_models
+
+
 def get_attribute_by_name(cls, name, case_insensitive=False):
     """ Return the attribute of `Model` class `cls` with name `name`
 

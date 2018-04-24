@@ -40,6 +40,20 @@ class TestUtils(unittest.TestCase):
             Leaf(node=self.nodes[1], id='leaf-1-1'),
         ]
 
+    def test_get_related_models(self):
+        class DisjointParent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class DisjointChild(core.Model):
+            parent = core.ManyToOneAttribute(DisjointParent, related_name='children')
+
+        self.assertEqual(set(utils.get_related_models(Root)), set([Node, Leaf]))
+        self.assertEqual(set(utils.get_related_models(Node)), set([Root, Leaf]))
+        self.assertEqual(set(utils.get_related_models(Leaf)), set([Root, Node]))
+
+        self.assertEqual(set(utils.get_related_models(DisjointParent)), set([DisjointChild]))
+        self.assertEqual(set(utils.get_related_models(DisjointChild)), set([DisjointParent]))
+
     def test_get_attribute_by_name(self):
         self.assertEqual(utils.get_attribute_by_name(Root, 'id'), Root.Meta.attributes['id'])
         self.assertEqual(utils.get_attribute_by_name(Root, 'id2'), None)
