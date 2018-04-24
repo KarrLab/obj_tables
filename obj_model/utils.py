@@ -12,17 +12,18 @@ from random import shuffle
 from obj_model.core import Model, Attribute, RelatedAttribute, InvalidObjectSet, InvalidObject, Validator
 
 
-def get_related_models(model):
+def get_related_models(root_model, include_root_model=False):
     """ Get the models that have relationships to a model
 
     Args:
-        model (:obj:`type`): subclass of :obj:`Model`
+        root_model (:obj:`type`): subclass of :obj:`Model`
+        include_root_model (:obj:`bool`, optional): include the root model in the returned list of models
 
     Returns:
-        :obj:`list` of :obj:`type`: list of models that have relationships with :obj:`model`
+        :obj:`list` of :obj:`type`: list of models that have relationships with :obj:`root_model`
     """
-    related_models = [model]
-    to_check = [model]
+    related_models = [root_model]
+    to_check = [root_model]
     while to_check:
         cur_model = to_check.pop()
 
@@ -36,7 +37,8 @@ def get_related_models(model):
                 related_models.append(attr.primary_class)
                 to_check.append(attr.primary_class)
 
-    related_models.pop(0)
+    if not include_root_model:
+        related_models.pop(0)
 
     return related_models
 

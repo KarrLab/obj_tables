@@ -50,9 +50,14 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(set(utils.get_related_models(Root)), set([Node, Leaf]))
         self.assertEqual(set(utils.get_related_models(Node)), set([Root, Leaf]))
         self.assertEqual(set(utils.get_related_models(Leaf)), set([Root, Node]))
+        self.assertEqual(set(utils.get_related_models(Root, include_root_model=True)), set([Root, Node, Leaf]))
+        self.assertEqual(set(utils.get_related_models(Node, include_root_model=True)), set([Root, Node, Leaf]))
+        self.assertEqual(set(utils.get_related_models(Leaf, include_root_model=True)), set([Root, Node, Leaf]))
 
         self.assertEqual(set(utils.get_related_models(DisjointParent)), set([DisjointChild]))
         self.assertEqual(set(utils.get_related_models(DisjointChild)), set([DisjointParent]))
+        self.assertEqual(set(utils.get_related_models(DisjointParent, include_root_model=True)), set([DisjointParent, DisjointChild]))
+        self.assertEqual(set(utils.get_related_models(DisjointChild, include_root_model=True)), set([DisjointChild, DisjointParent]))        
 
     def test_get_attribute_by_name(self):
         self.assertEqual(utils.get_attribute_by_name(Root, 'id'), Root.Meta.attributes['id'])
