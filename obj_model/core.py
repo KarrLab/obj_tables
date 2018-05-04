@@ -1760,8 +1760,8 @@ class Model(with_metaclass(ModelMeta, object)):
 
             if rep_vals:
                 msg = ("Combinations of ({}) must be unique across all instances of this class. "
-                "The following combinations are repeated:".format(
-                    ', '.join(unique_together)))
+                       "The following combinations are repeated:".format(
+                           ', '.join(unique_together)))
                 for rep_val in rep_vals:
                     msg += '\n  {}'.format(', '.join((str(x)
                                                       for x in rep_val)))
@@ -4760,10 +4760,11 @@ class RelatedManager(list):
         self.attribute = attribute
         self.related = related
 
-    def create(self, **kwargs):
+    def create(self, __type=None, **kwargs):
         """ Create instance of primary class and add to list
 
         Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
             kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
 
         Returns:
@@ -4772,17 +4773,22 @@ class RelatedManager(list):
         Raises:
             :obj:`ValueError`: if keyword argument is not an attribute of the class
         """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
         if self.related:
             if self.attribute.name in kwargs:
                 raise TypeError("'{}' is an invalid keyword argument for {}.create for {}".format(
                     self.attribute.name, self.__class__.__name__, self.attribute.primary_class.__name__))
-            obj = self.attribute.primary_class(**kwargs)
+            cls = __type or self.attribute.primary_class
+            obj = cls(**kwargs)
 
         else:
             if self.attribute.related_name in kwargs:
                 raise TypeError("'{}' is an invalid keyword argument for {}.create for {}".format(
                     self.attribute.related_name, self.__class__.__name__, self.attribute.primary_class.__name__))
-            obj = self.attribute.related_class(**kwargs)
+            cls = __type or self.attribute.related_class
+            obj = cls(**kwargs)
 
         self.append(obj)
 
@@ -4929,6 +4935,27 @@ class RelatedManager(list):
                 self.add(value)
 
         return self
+
+    def get_or_create(self, __type=None, **kwargs):
+        """ Get or create a related object by attribute/value pairs. Optionally, only get or create instances of 
+        :obj:`Model` subclass :obj:`__type`.
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+                object or create new object
+
+        Returns:
+            :obj:`Model`: existing or new object
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        obj = self.get_one(__type=__type, **kwargs)
+        if obj:
+            return obj
+        else:
+            return self.create(__type=__type, **kwargs)
 
     def get_one(self, __type=None, **kwargs):
         """ Get a related object by attribute/value pairs; report an error if multiple objects match and,

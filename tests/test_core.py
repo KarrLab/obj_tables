@@ -4004,6 +4004,40 @@ class TestCore(unittest.TestCase):
         self.assertEqual(parent.children.get_one(__type=Child1, id='c_1'), c_1)
         self.assertEqual(parent.children.get_one(__type=Child2, id='c_1'), None)
 
+    def test_get_or_create(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class Child(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+
+        p = Parent(id='p')
+        c0 = p.children.get_or_create(id='c0')
+        self.assertEqual(p.children.get_or_create(id='c0'), c0)
+        self.assertNotEqual(p.children.get_or_create(id='c1'), c0)
+
+    def test_get_or_create_with_type(self):
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+
+        class BaseChild(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+
+        class Child1(BaseChild):
+            pass
+
+        class Child2(BaseChild):
+            pass
+
+        p = Parent(id='p')
+        c0 = p.children.get_or_create(__type=Child1, id='c0')
+        self.assertIsInstance(c0, Child1)
+        self.assertEqual(p.children.get_or_create(__type=Child1, id='c0'), c0)
+        self.assertNotEqual(p.children.get_or_create(__type=Child1, id='c1'), c0)
+        self.assertNotEqual(p.children.get_or_create(__type=Child2, id='c0'), c0)
+
 
 class ContextTestCase(unittest.TestCase):
     def test(self):
