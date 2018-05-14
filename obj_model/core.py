@@ -2200,7 +2200,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return obj
 
-    def has_attr_values(self, __type=None, **kwargs):
+    def has_attr_vals(self, __type=None, **kwargs):
         """ Check if the type and values of the attributes of an object match a set of conditions
 
         Args:
@@ -2217,7 +2217,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
         if __type and not isinstance(self, __type):
             return False
-        
+
         for attr, val in kwargs.items():
             if getattr(self, attr) != val:
                 return False
@@ -5028,7 +5028,7 @@ class RelatedManager(list):
 
         matches = []
         for obj in self:
-            if obj.has_attr_values(__type=__type, **kwargs):
+            if obj.has_attr_vals(__type=__type, **kwargs):
                 matches.append(obj)
         return matches
 
