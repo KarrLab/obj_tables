@@ -2044,7 +2044,7 @@ class Model(with_metaclass(ModelMeta, object)):
                                     attr.primary_class.__name__, related_class.__name__), SchemaWarning)
                             else:
                                 return False
-                        elif not related_class.Meta.primary_attribute.unique:
+                        elif not related_class.Meta.primary_attribute.unique and not related_class.Meta.unique_together:
                             if related_class.Meta.tabular_orientation == TabularOrientation.inline:
                                 warnings.warn('Primary attribute {} of related class {} must be unique'.format(
                                     related_class.Meta.primary_attribute.name, related_class.__name__), SchemaWarning)
