@@ -2200,6 +2200,30 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return obj
 
+    def has_attr_values(self, __type=None, **kwargs):
+        """ Check if the type and values of the attributes of an object match a set of conditions
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+                object or create new object
+
+        Returns:
+            :obj:`bool`: :obj:`True` if the object is an instance of :obj:`__type` and the 
+                the values of the attributes of the object match :obj:`kwargs`
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        if __type and not isinstance(self, __type):
+            return False
+        
+        for attr, val in kwargs.items():
+            if getattr(self, attr) != val:
+                return False
+
+        return True
+
 
 class ModelSource(object):
     """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
@@ -5002,23 +5026,10 @@ class RelatedManager(list):
         if '__type' in kwargs:
             __type = kwargs.pop('__type')
 
-        # filter based on properties
         matches = []
-
         for obj in self:
-            is_match = True
-            for attr_name, value in kwargs.items():
-                if getattr(obj, attr_name) != value:
-                    is_match = False
-                    break
-
-            if is_match:
+            if obj.has_attr_values(__type=__type, **kwargs):
                 matches.append(obj)
-
-        # filter based on type
-        if __type is not None:
-            matches = list(filter(lambda m: isinstance(m, __type), matches))
-
         return matches
 
     def index(self, *args, **kwargs):
