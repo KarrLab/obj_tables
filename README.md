@@ -1,5 +1,5 @@
 [![PyPI package](https://img.shields.io/pypi/v/obj_model.svg)](https://pypi.python.org/pypi/obj_model)
-[![Documentation](https://img.shields.io/badge/docs-latest-green.svg)](http://docs.karrlab.org/obj_model)
+[![Documentation](https://readthedocs.org/projects/obj-model/badge/?version=latest)](http://docs.karrlab.org/obj_model)
 [![Test results](https://circleci.com/gh/KarrLab/obj_model.svg?style=shield)](https://circleci.com/gh/KarrLab/obj_model)
 [![Test coverage](https://coveralls.io/repos/github/KarrLab/obj_model/badge.svg)](https://coveralls.io/github/KarrLab/obj_model)
 [![Code analysis](https://api.codeclimate.com/v1/badges/2c4b64abc8bef2ea4e22/maintainability)](https://codeclimate.com/github/KarrLab/obj_model)
