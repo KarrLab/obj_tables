@@ -3903,9 +3903,12 @@ class OneToOneAttribute(RelatedAttribute):
             return new_value
 
         if new_value and getattr(new_value, self.related_name):
-            raise ValueError("Attribute '{}' of '{}' must be `None`".format(
-                getattr(new_value, self.related_name),
-                new_value))
+            old_related = getattr(new_value, self.related_name)
+            old_related_cls = old_related.__class__
+            new_cls = new_value.__class__
+            raise ValueError("Attribute '{}:{}' of '{}:{}' must be `None`".format(
+                old_related_cls.__name__, old_related.serialize(),
+                new_cls.__name__, new_value.serialize()))
 
         if self.related_name:
             if cur_value:

@@ -2127,7 +2127,8 @@ class TestCore(unittest.TestCase):
         parent_2 = TestParent(id='parent_2')
         child_0 = TestChild(id='child_0', parent=parent_0)
         child_1 = TestChild(id='child_1', parent=parent_1)
-        with self.assertRaisesRegexp(ValueError, ' must be `None`'):
+        with self.assertRaisesRegexp(ValueError, "'{}:{}' of '{}:{}' must be `None`".format(
+            'TestChild', 'child_1', 'TestParent', 'parent_1')):
             child_0.parent = parent_1
         self.assertEqual(child_0.parent, parent_0)
         child_0.parent = parent_2
