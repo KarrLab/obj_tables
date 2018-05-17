@@ -1464,7 +1464,12 @@ class StrictReadingTestCase(unittest.TestCase):
         ws.append(Row(['Id', 'Attr2', 'Attr1']))
         ws.append(Row(['m1', '2', '1']))
         writer.run(wb)
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegexp(ValueError, (
+            "The columns of worksheet 'Models' must be defined in this order:"
+            "\n      A1: Id"
+            "\n      B1: Attr1"
+            "\n      C1: Attr2"
+        )):
             WorkbookReader().run(filename, [Model])
         WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
 

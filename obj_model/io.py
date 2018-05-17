@@ -30,6 +30,7 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose
+from wc_utils.workbook.core import get_column_letter
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle
 from wc_utils.util.list import is_sorted
 from wc_utils.util.misc import quote
@@ -448,7 +449,7 @@ class JsonReader(Reader):
             if errors:
                 raise ValueError(
                     indent_forest(['The model cannot be loaded because it fails to validate:', [errors]]))
-        
+
         # group objects by model
         if group_objects_by_model:
             grouped_objs = {}
@@ -764,8 +765,13 @@ class WorkbookReader(Reader):
             canonical_attr_order = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
             canonical_attr_order = list(filter(lambda attr: attr in attributes, canonical_attr_order))
             if attributes != canonical_attr_order:
-                error = 'The attributes must be defined in this order:\n  {}'.format(
-                    '\n  '.join(attr.verbose_name for attr in canonical_attr_order))
+                column_headings = []
+                for i_attr, attr in enumerate(canonical_attr_order):
+                    column_headings.append('{}1: {}'.format(
+                        get_column_letter(i_attr + 1),
+                        attr.verbose_name))
+                error = "The columns of worksheet '{}' must be defined in this order:\n  {}".format(
+                    sheet_name, '\n  '.join(column_headings))
                 return ([], [], [error], [])
 
         # save model location in file
