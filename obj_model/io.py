@@ -94,10 +94,11 @@ class JsonWriter(Writer):
             models = [models]
 
         # validate
-        error = Validator().run(objects, get_related=get_related)
-        if error:
-            warn('Some data will not be written because objects are not valid:\n  {}'.format(
-                str(error).replace('\n', '\n  ').rstrip()), IoWarning)
+        if objects:
+            error = Validator().run(objects, get_related=get_related)
+            if error:
+                warn('Some data will not be written because objects are not valid:\n  {}'.format(
+                    str(error).replace('\n', '\n  ').rstrip()), IoWarning)
 
         # convert object(s) (and their relatives) to Python dicts and lists
         if objects is None:

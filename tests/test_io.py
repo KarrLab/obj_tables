@@ -1630,7 +1630,8 @@ class JsonTestCase(unittest.TestCase):
         self.assertNotEqual(core.Validator().run(node), None)
         with pytest.warns(IoWarning, match='objects are not valid'):
             writer = obj_model.io.JsonWriter()
-            writer.run('test.json', [node], models=[Node])
+            filename = os.path.join(self.dirname, 'test.json')
+            writer.run(filename, [node], models=[Node])
 
 
 class InlineJsonTestCase(unittest.TestCase):
