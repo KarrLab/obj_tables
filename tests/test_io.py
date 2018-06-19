@@ -1622,6 +1622,16 @@ class JsonTestCase(unittest.TestCase):
         root2 = objects2[MainRoot][0]
         self.assertTrue(root.is_equal(root2))
 
+    def test_write_invalid(self):
+        class Node(core.Model):
+            id = core.StringAttribute(min_length=3)
+
+        node = Node(id='a')
+        self.assertNotEqual(core.Validator().run(node), None)
+        with pytest.warns(IoWarning, match='objects are not valid'):
+            writer = obj_model.io.JsonWriter()
+            writer.run('test.json', [node], models=[Node])
+
 
 class InlineJsonTestCase(unittest.TestCase):
     def setUp(self):

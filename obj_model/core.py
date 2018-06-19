@@ -5496,7 +5496,7 @@ class Validator(object):
             objects = [objects]
 
         if get_related:
-            all_objects = []
+            all_objects = copy.copy(objects)
             for obj in objects:
                 all_objects.extend(obj.get_related())
             objects = list(set(all_objects))
