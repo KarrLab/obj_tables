@@ -23,7 +23,7 @@ class FeatureLocationAttribute(core.Attribute):
     """ Bio.SeqFeature.FeatureLocation attribute
 
     Attributes:
-        default (:obj:`Bio.SeqFeature.FeatureLocation`): defaultl value
+        default (:obj:`Bio.SeqFeature.FeatureLocation`): default value
     """
 
     def __init__(self, default=None, verbose_name='', help='',
