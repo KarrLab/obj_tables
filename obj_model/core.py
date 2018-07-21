@@ -306,7 +306,7 @@ class ModelMeta(type):
 
         if num_primary_attributes > 1:
             raise ValueError('Model {} cannot have more than one primary attribute'.format(
-                cls.__name__))  # pragma: no cover
+                metacls.__name__))  # pragma: no cover
 
     @classmethod
     def validate_attribute_inheritance(metacls, name, bases, namespace):
@@ -3226,6 +3226,7 @@ class SlugAttribute(RegexAttribute):
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
+            unique (:obj:`bool`, optional): indicate whether attribute must be unique
         """
         if help is None:
             help = ("Enter a unique string identifier that (1) starts with a letter, (2) is composed "
