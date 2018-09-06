@@ -588,6 +588,10 @@ class TestCore(unittest.TestCase):
         attr = core.EnumAttribute(TestEnum, none=True)
         self.assertEqual(attr.validate(None, None), None)
 
+        attr = core.EnumAttribute(TestEnum, none=True, default_cleaned_value=TestEnum.val0)
+        self.assertEqual(attr.get_default_cleaned_value(), TestEnum.val0)
+        self.assertEqual(attr.clean(None), (TestEnum.val0, None))
+
     def test_boolean_attribute(self):
         with self.assertRaisesRegexp(ValueError, '`default` must be `None` or an instance of `bool`'):
             core.BooleanAttribute(default=0)
