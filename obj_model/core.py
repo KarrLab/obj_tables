@@ -931,7 +931,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
         Attributes:
             attributes (:obj:`collections.OrderedDict` of `Attribute`): attributes
-            related_attributes (:obj:`set` of `Attribute`): attributes declared in related objects
+            related_attributes (:obj:`collections.OrderedDict` of `Attribute`): attributes declared in related objects
             primary_attribute (:obj:`Attribute`): attribute with `primary` = `True`
             unique_together (:obj:`tuple` of :obj:`tuple`'s of attribute names): controls what tuples of
                 attribute values must be unique
