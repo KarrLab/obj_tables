@@ -29,7 +29,7 @@ class TestExtraAttribute(unittest.TestCase):
         attr = extra_attributes.FeatureLocationAttribute(default=Bio.SeqFeature.FeatureLocation(10, 10, 1))
         self.assertEqual(attr.get_default(), Bio.SeqFeature.FeatureLocation(10, 10, 1))
 
-        with self.assertRaisesRegexp(ValueError, '`default` must be a `Bio.SeqFeature.FeatureLocation`'):
+        with self.assertRaisesRegex(ValueError, '`default` must be a `Bio.SeqFeature.FeatureLocation`'):
             extra_attributes.FeatureLocationAttribute(default='')
 
         # deserialize
@@ -112,13 +112,13 @@ class TestExtraAttribute(unittest.TestCase):
         attr2 = extra_attributes.BioSeqAttribute(default=Bio.Seq.Seq('acgt'))
         self.assertEqual(attr2.get_default(), Bio.Seq.Seq('acgt'))
 
-        with self.assertRaisesRegexp(ValueError, '`default` must be a `Bio.Seq.Seq` or `None`'):
+        with self.assertRaisesRegex(ValueError, '`default` must be a `Bio.Seq.Seq` or `None`'):
             extra_attributes.BioSeqAttribute(default='acgt')
 
-        with self.assertRaisesRegexp(ValueError, '`min_length` must be a non-negative integer'):
+        with self.assertRaisesRegex(ValueError, '`min_length` must be a non-negative integer'):
             extra_attributes.BioSeqAttribute(min_length=-1)
 
-        with self.assertRaisesRegexp(ValueError, '`max_length` must be an integer greater than or equal to `min_length`'):
+        with self.assertRaisesRegex(ValueError, '`max_length` must be an integer greater than or equal to `min_length`'):
             extra_attributes.BioSeqAttribute(min_length=10, max_length=5)
 
         # deserialize
@@ -384,7 +384,7 @@ class TestExtraAttribute(unittest.TestCase):
         attr2 = extra_attributes.SympyBasicAttribute(default=sympy.Basic('x'))
         self.assertEqual(attr2.get_default(), sympy.Basic('x'))
 
-        with self.assertRaisesRegexp(ValueError, 'Default must be a '):
+        with self.assertRaisesRegex(ValueError, 'Default must be a '):
             extra_attributes.SympyBasicAttribute(default='x')
 
         # deserialize
@@ -438,13 +438,13 @@ class TestExtraAttribute(unittest.TestCase):
         attr = extra_attributes.NumpyArrayAttribute(default=numpy.array([1, 2]))
         numpy.testing.assert_equal(attr.get_default(), numpy.array([1, 2]))
 
-        with self.assertRaisesRegexp(ValueError, '`default` must be a `numpy.array` or `None`'):
+        with self.assertRaisesRegex(ValueError, '`default` must be a `numpy.array` or `None`'):
             extra_attributes.NumpyArrayAttribute(default=[1, 2])
 
-        with self.assertRaisesRegexp(ValueError, '`min_length` must be a non-negative integer'):
+        with self.assertRaisesRegex(ValueError, '`min_length` must be a non-negative integer'):
             extra_attributes.NumpyArrayAttribute(min_length=-1)
 
-        with self.assertRaisesRegexp(ValueError, '`max_length` must be an integer greater than or equal to `min_length`'):
+        with self.assertRaisesRegex(ValueError, '`max_length` must be an integer greater than or equal to `min_length`'):
             extra_attributes.NumpyArrayAttribute(min_length=10, max_length=5)
 
         # deserialize

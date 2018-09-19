@@ -391,18 +391,18 @@ class TestCore(unittest.TestCase):
         class TestModel(core.Model):
             id = core.StringAttribute()
         model = TestModel()
-        self.assertRegexpMatches(str(model), 'object at 0x')
+        self.assertRegex(str(model), 'object at 0x')
 
     def test_model_constructor(self):
         class TestModel(core.Model):
             id = core.StringAttribute()
-        with self.assertRaisesRegexp(TypeError, 'is an invalid keyword argument for'):
+        with self.assertRaisesRegex(TypeError, 'is an invalid keyword argument for'):
             TestModel(name='x')
 
     def test_model_validate_related_attributes(self):
         class TestParent(core.Model):
             children = core.OneToManyAttribute('__undefined__', related_name='parent')
-        with self.assertRaisesRegexp(ValueError, 'must be defined'):
+        with self.assertRaisesRegex(ValueError, 'must be defined'):
             TestParent.validate_related_attributes()
 
         class TestChild(core.Model):
@@ -413,7 +413,7 @@ class TestCore(unittest.TestCase):
 
         class TestParent(core.Model):
             pass
-        with self.assertRaisesRegexp(ValueError, 'should have at least one one-to-one or one-to-many attribute'):
+        with self.assertRaisesRegex(ValueError, 'should have at least one one-to-one or one-to-many attribute'):
             TestChild.validate_related_attributes()
 
     def test_validate_attributes(self):
@@ -569,13 +569,13 @@ class TestCore(unittest.TestCase):
         class TestEnum(enum.Enum):
             val0 = 0
 
-        with self.assertRaisesRegexp(ValueError, 'must be a subclass of `Enum`'):
+        with self.assertRaisesRegex(ValueError, 'must be a subclass of `Enum`'):
             core.EnumAttribute(int)
 
-        with self.assertRaisesRegexp(ValueError, '`default` must be `None` or an instance of `enum_class`'):
+        with self.assertRaisesRegex(ValueError, '`default` must be `None` or an instance of `enum_class`'):
             core.EnumAttribute(TestEnum, default=0)
 
-        with self.assertRaisesRegexp(ValueError, '`default_cleaned_value` must be `None` or an instance of `enum_class`'):
+        with self.assertRaisesRegex(ValueError, '`default_cleaned_value` must be `None` or an instance of `enum_class`'):
             core.EnumAttribute(TestEnum, default_cleaned_value=0)
 
         attr = core.EnumAttribute(TestEnum)
@@ -593,10 +593,10 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.clean(None), (TestEnum.val0, None))
 
     def test_boolean_attribute(self):
-        with self.assertRaisesRegexp(ValueError, '`default` must be `None` or an instance of `bool`'):
+        with self.assertRaisesRegex(ValueError, '`default` must be `None` or an instance of `bool`'):
             core.BooleanAttribute(default=0)
 
-        with self.assertRaisesRegexp(ValueError, '`default_cleaned_value` must be `None` or an instance of `bool`'):
+        with self.assertRaisesRegex(ValueError, '`default_cleaned_value` must be `None` or an instance of `bool`'):
             core.BooleanAttribute(default_cleaned_value=0)
 
         attr = core.BooleanAttribute()
@@ -617,7 +617,7 @@ class TestCore(unittest.TestCase):
         self.assertNotEqual(attr.validate(None, 1.), None)
 
     def test_float_attribute(self):
-        with self.assertRaisesRegexp(ValueError, '`max` must be at least `min`'):
+        with self.assertRaisesRegex(ValueError, '`max` must be at least `min`'):
             core.FloatAttribute(min=10., max=1.)
 
         attr = core.FloatAttribute()
@@ -631,7 +631,7 @@ class TestCore(unittest.TestCase):
         self.assertIsInstance(attr.default, int)
         self.assertEqual(attr.default, 1)
 
-        with self.assertRaisesRegexp(ValueError, '`max` must be at least `min`'):
+        with self.assertRaisesRegex(ValueError, '`max` must be at least `min`'):
             core.IntegerAttribute(min=10, max=1)
 
         attr = core.IntegerAttribute(min=5)
@@ -652,16 +652,16 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.serialize(1), 1.)
 
     def test_string_attribute(self):
-        with self.assertRaisesRegexp(ValueError, '`min_length` must be a non-negative integer'):
+        with self.assertRaisesRegex(ValueError, '`min_length` must be a non-negative integer'):
             core.StringAttribute(min_length=-1)
 
-        with self.assertRaisesRegexp(ValueError, '`max_length` must be at least `min_length` or `None`'):
+        with self.assertRaisesRegex(ValueError, '`max_length` must be at least `min_length` or `None`'):
             core.StringAttribute(max_length=-1)
 
-        with self.assertRaisesRegexp(ValueError, '`default` must be a string'):
+        with self.assertRaisesRegex(ValueError, '`default` must be a string'):
             core.StringAttribute(default=None)
 
-        with self.assertRaisesRegexp(ValueError, '`default_cleaned_value` must be a string'):
+        with self.assertRaisesRegex(ValueError, '`default_cleaned_value` must be a string'):
             core.StringAttribute(default_cleaned_value=None)
 
         attr = core.StringAttribute()
@@ -1116,19 +1116,19 @@ class TestCore(unittest.TestCase):
             def deserialize(self):
                 pass
 
-        with self.assertRaisesRegexp(ValueError, '`default` must be `None`, a list, or a callable'):
+        with self.assertRaisesRegex(ValueError, '`default` must be `None`, a list, or a callable'):
             ConcreteRelatedAttribute(None, default='')
 
-        with self.assertRaisesRegexp(ValueError, '`default_cleaned_value` must be `None`, a list, or a callable'):
+        with self.assertRaisesRegex(ValueError, '`default_cleaned_value` must be `None`, a list, or a callable'):
             ConcreteRelatedAttribute(None, default_cleaned_value='')
 
-        with self.assertRaisesRegexp(ValueError, 'Related default must be `None`, a list, or a callable'):
+        with self.assertRaisesRegex(ValueError, 'Related default must be `None`, a list, or a callable'):
             ConcreteRelatedAttribute(None, related_default='')
 
         attr = ConcreteRelatedAttribute(None)
-        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+        with self.assertRaisesRegex(ValueError, 'Related property is not defined'):
             attr.get_related_init_value(None)
-        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+        with self.assertRaisesRegex(ValueError, 'Related property is not defined'):
             attr.get_related_default(None)
 
     @unittest.expectedFailure
@@ -2131,7 +2131,7 @@ class TestCore(unittest.TestCase):
         parent_2 = TestParent(id='parent_2')
         child_0 = TestChild(id='child_0', parent=parent_0)
         child_1 = TestChild(id='child_1', parent=parent_1)
-        with self.assertRaisesRegexp(ValueError, "'{}:{}' of '{}:{}' must be `None`".format(
+        with self.assertRaisesRegex(ValueError, "'{}:{}' of '{}:{}' must be `None`".format(
             'TestChild', 'child_1', 'TestParent', 'parent_1')):
             child_0.parent = parent_1
         self.assertEqual(child_0.parent, parent_0)
@@ -2143,7 +2143,7 @@ class TestCore(unittest.TestCase):
         class TestChild(core.Model):
             id = core.StringAttribute(primary=True)
             parent = core.OneToOneAttribute('TestParent')
-        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+        with self.assertRaisesRegex(ValueError, 'Related property is not defined'):
             TestChild.Meta.attributes['parent'].set_related_value(None, None)
 
         class TestParent(core.Model):
@@ -2161,7 +2161,7 @@ class TestCore(unittest.TestCase):
         child_0 = TestChild(parent=parent_0)
         child_1 = TestChild(parent=parent_1)
         child_2 = TestChild()
-        with self.assertRaisesRegexp(ValueError, 'Attribute of `new_value` must be `None`'):
+        with self.assertRaisesRegex(ValueError, 'Attribute of `new_value` must be `None`'):
             parent_0.child = child_1
         self.assertEqual(parent_0.child, child_0)
         parent_0.child = child_2
@@ -2215,9 +2215,9 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True)
             parent = core.ManyToOneAttribute(TestParent)
         attr = TestChild.Meta.attributes['parent']
-        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+        with self.assertRaisesRegex(ValueError, 'Related property is not defined'):
             attr.get_related_init_value(None)
-        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+        with self.assertRaisesRegex(ValueError, 'Related property is not defined'):
             attr.set_related_value(None, None)
 
         class TestParent(core.Model):
@@ -2268,7 +2268,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True)
             children = core.OneToManyAttribute(TestChild)
         attr = TestParent.Meta.attributes['children']
-        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+        with self.assertRaisesRegex(ValueError, 'Related property is not defined'):
             attr.set_related_value(None, None)
 
         class TestChild(core.Model):
@@ -2315,9 +2315,9 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True)
             parents = core.ManyToManyAttribute(TestParent)
         attr = TestChild.Meta.attributes['parents']
-        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+        with self.assertRaisesRegex(ValueError, 'Related property is not defined'):
             attr.get_related_init_value(None)
-        with self.assertRaisesRegexp(ValueError, 'Related property is not defined'):
+        with self.assertRaisesRegex(ValueError, 'Related property is not defined'):
             attr.set_related_value(None, None)
 
         class TestParent(core.Model):
@@ -2373,11 +2373,11 @@ class TestCore(unittest.TestCase):
             parents = core.ManyToManyAttribute(TestParent, related_name='children')
 
         parent = TestParent()
-        with self.assertRaisesRegexp(TypeError, 'is an invalid keyword argument for'):
+        with self.assertRaisesRegex(TypeError, 'is an invalid keyword argument for'):
             parent.children.create(parents='child_0')
 
         child = TestChild()
-        with self.assertRaisesRegexp(TypeError, 'is an invalid keyword argument for'):
+        with self.assertRaisesRegex(TypeError, 'is an invalid keyword argument for'):
             child.parents.create(children='parent_0')
 
         parent_0 = TestParent()
@@ -2404,13 +2404,13 @@ class TestCore(unittest.TestCase):
         self.assertEqual(child_0.parents.get_one(id='parent_2'), None)
         self.assertEqual(child_0.parents.index(parent_0), 0)
         self.assertEqual(child_0.parents.index(id='parent_0'), 0)
-        with self.assertRaisesRegexp(ValueError, 'Argument and keyword arguments cannot both be provided'):
+        with self.assertRaisesRegex(ValueError, 'Argument and keyword arguments cannot both be provided'):
             child_0.parents.index(parent_0, id='parent_0')
-        with self.assertRaisesRegexp(ValueError, 'At least one argument must be provided'):
+        with self.assertRaisesRegex(ValueError, 'At least one argument must be provided'):
             child_0.parents.index()
-        with self.assertRaisesRegexp(ValueError, 'At most one argument can be provided'):
+        with self.assertRaisesRegex(ValueError, 'At most one argument can be provided'):
             child_0.parents.index(parent_0, parent_1)
-        with self.assertRaisesRegexp(ValueError, 'No matching object'):
+        with self.assertRaisesRegex(ValueError, 'No matching object'):
             child_0.parents.index(id='parent_2')
 
     def test_validator(self):
@@ -2450,7 +2450,7 @@ class TestCore(unittest.TestCase):
                          0].attribute.name, 'label')
         self.assertEqual(
             len(errors.invalid_models[0].attributes[0].messages), 1)
-        self.assertRegexpMatches(errors.invalid_models[0].attributes[
+        self.assertRegex(errors.invalid_models[0].attributes[
                                  0].messages[0], 'values must be unique')
 
     def test_validator_related(self):
@@ -2954,7 +2954,7 @@ class TestCore(unittest.TestCase):
         child = TestChild(id='child')
 
         error = child.validate().attributes[0]
-        self.assertRegexpMatches(str(error), "parent':\n  Value cannot be `None`")
+        self.assertRegex(str(error), "parent':\n  Value cannot be `None`")
 
     def test_invalid_object_str(self):
         attrs = [
@@ -3281,7 +3281,7 @@ class TestCore(unittest.TestCase):
             context.exception))
 
         t = Example0()
-        with self.assertRaisesRegexp(ValueError, "Can't _update an instance of "):
+        with self.assertRaisesRegex(ValueError, "Can't _update an instance of "):
             mgr0._update(t)
 
         # test _update
@@ -3858,12 +3858,12 @@ class TestCore(unittest.TestCase):
     def test_serialization(self):
         class TestParent(core.Model):
             children = core.OneToManyAttribute('__undefined__', related_name='parent')
-        with self.assertRaisesRegexp(ValueError, ' must be a `Model`'):
+        with self.assertRaisesRegex(ValueError, ' must be a `Model`'):
             TestParent.is_serializable()
 
         class TestParent(core.Model):
             children = core.OneToManyAttribute(int, related_name='parent')
-        with self.assertRaisesRegexp(ValueError, ' must be a `Model`'):
+        with self.assertRaisesRegex(ValueError, ' must be a `Model`'):
             TestParent.is_serializable()
 
         class TestChild(core.Model):
@@ -3933,11 +3933,11 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute()
 
         model = TestModel()
-        with self.assertRaisesRegexp(ValueError, 'TestModel was not loaded from a file'):
+        with self.assertRaisesRegex(ValueError, 'TestModel was not loaded from a file'):
             self.assertEqual(model.get_source('id'), None)
 
         model._source = core.ModelSource('path.xlsx', 'sheet', [], 2)
-        with self.assertRaisesRegexp(ValueError, 'TestModel.id was not loaded from a file'):
+        with self.assertRaisesRegex(ValueError, 'TestModel.id was not loaded from a file'):
             self.assertEqual(model.get_source('id'), None)
 
         model._source = core.ModelSource('path.xlsx', 'sheet', ['id'], 2)
@@ -4145,12 +4145,12 @@ class JsonTestCase(unittest.TestCase):
         })))
 
     def test_invalid_attr_name(self):
-        with self.assertRaisesRegexp(ValueError, 'Attribute cannot have reserved name `__type`'):
+        with self.assertRaisesRegex(ValueError, 'Attribute cannot have reserved name `__type`'):
             class TestModel(core.Model):
                 id = core.StringAttribute()
                 __type = core.StringAttribute()
 
-        with self.assertRaisesRegexp(ValueError, 'Attribute cannot have reserved name `__id`'):
+        with self.assertRaisesRegex(ValueError, 'Attribute cannot have reserved name `__id`'):
             class TestModel(core.Model):
                 id = core.StringAttribute()
                 __id = core.FloatAttribute()
@@ -4188,10 +4188,10 @@ class JsonTestCase(unittest.TestCase):
 
         self.assertTrue(p.is_equal(p2))
 
-        with self.assertRaisesRegexp(Exception, 'This function should not be executed'):
+        with self.assertRaisesRegex(Exception, 'This function should not be executed'):
             Child.Meta.attributes['parent'].to_builtin(None)
 
-        with self.assertRaisesRegexp(Exception, 'This function should not be executed'):
+        with self.assertRaisesRegex(Exception, 'This function should not be executed'):
             Child.Meta.attributes['parent'].from_builtin(None)
 
     def test_one_to_many_attr(self):
@@ -4280,7 +4280,7 @@ class TestErrors(unittest.TestCase):
             id = core.StringAttribute(primary=True)
             children1 = core.StringAttribute()
 
-        with self.assertRaisesRegexp(ValueError, 'cannot use the same related name as'):
+        with self.assertRaisesRegex(ValueError, 'cannot use the same related name as'):
             class Child1(core.Model):
                 id = core.StringAttribute(primary=True)
                 parent1 = core.ManyToOneAttribute(
@@ -4295,7 +4295,7 @@ class TestErrors(unittest.TestCase):
             parent2 = core.ManyToOneAttribute(
                 Parent2, related_name='children2')
 
-        with self.assertRaisesRegexp(ValueError, 'cannot use the same related attribute name'):
+        with self.assertRaisesRegex(ValueError, 'cannot use the same related attribute name'):
             class Child2b(core.Model):
                 id = core.StringAttribute(primary=True)
                 parent2 = core.ManyToOneAttribute(

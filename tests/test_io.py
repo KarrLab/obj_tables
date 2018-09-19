@@ -346,7 +346,7 @@ class TestIo(unittest.TestCase):
         for msg in expected_messages:
             if not use_re:
                 msg = re.escape(msg)
-            self.assertRegexpMatches(str(context.exception), msg)
+            self.assertRegex(str(context.exception), msg)
 
     def test_location_of_attrs(self):
         class Normal(core.Model):
@@ -569,26 +569,26 @@ class TestIo(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             # raises extra attribute exception
             WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True)
-        self.assertRegexpMatches(str(context.exception),
+        self.assertRegex(str(context.exception),
                                  "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
             col = 'B'
         elif 'csv' in fixture_file:
             col = '2'
-        self.assertRegexpMatches(str(context.exception),
+        self.assertRegex(str(context.exception),
                                  ".*Header 'extra' in row 1, col {} does not match any attribute.*".format(col))
 
         with self.assertRaises(ValueError) as context:
             # raises validation exception on 'too short'
             WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True,
                                  ignore_extra_attributes=True)
-        self.assertRegexpMatches(str(context.exception),
+        self.assertRegex(str(context.exception),
                                  "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
             location = 'A3'
         elif 'csv' in fixture_file:
             location = '3,1'
-        self.assertRegexpMatches(str(context.exception),
+        self.assertRegex(str(context.exception),
                                  ".*'val':'too short'\n.*test_run_options.*:'Simple models':{}\n.*"
                                  "Value must be at least 10 characters".format(location))
 
@@ -741,7 +741,7 @@ class TestIo(unittest.TestCase):
         xslx_writer = get_writer('.xlsx')(filename)
         xslx_writer.run(workbook)
 
-        with self.assertRaisesRegexp(ValueError, 'The model cannot be loaded'):
+        with self.assertRaisesRegex(ValueError, 'The model cannot be loaded'):
             WorkbookReader().run(filename, [TestModel])
 
 
@@ -816,7 +816,7 @@ class TestMisc(unittest.TestCase):
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = WorkbookWriter()
 
-        with self.assertRaisesRegexp(ValueError, 'cannot be serialized'):
+        with self.assertRaisesRegex(ValueError, 'cannot be serialized'):
             writer.run(filename, [parent], [Parent3, Child3])
 
     def test_reader_error_if_not_serializable(self):
@@ -864,7 +864,7 @@ class TestMisc(unittest.TestCase):
         writer = WorkbookWriter()
         writer.run(filename, [parent], [WriterParent, WriterChild])
 
-        with self.assertRaisesRegexp(ValueError, 'cannot be serialized'):
+        with self.assertRaisesRegex(ValueError, 'cannot be serialized'):
             WorkbookReader().run(filename, [ReaderParent, ReaderChild])
 
     def test_abiguous_sheet_names_error(self):
@@ -889,7 +889,7 @@ class TestMisc(unittest.TestCase):
         with pytest.warns(IoWarning):
             writer.run(filename, [node1, node2], [Node4, Node5])
 
-        with self.assertRaisesRegexp(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):
+        with self.assertRaisesRegex(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):
             WorkbookReader().run(filename, [Node4, Node5])
 
     def test_read_missing_sheet(self):
@@ -932,7 +932,7 @@ class TestMisc(unittest.TestCase):
         with pytest.warns(IoWarning):
             writer.run(filename, nodes, [Node8])
 
-        with self.assertRaisesRegexp(ValueError, 'Duplicate, case insensitive, header fields:'):
+        with self.assertRaisesRegex(ValueError, 'Duplicate, case insensitive, header fields:'):
             WorkbookReader().run(filename, [Node8])
 
     def test_row_and_column_headings(self):
@@ -973,7 +973,7 @@ class TestMisc(unittest.TestCase):
             class Meta(core.Model.Meta):
                 verbose_name_plural = 'Nodes'
 
-        with self.assertRaisesRegexp(ValueError, 'matches multiple sheets'):
+        with self.assertRaisesRegex(ValueError, 'matches multiple sheets'):
             WorkbookReader.get_model_sheet_name(['Nodes', 'nodes'], Node9)
 
     def test_unclean_data(self):
@@ -991,7 +991,7 @@ class TestMisc(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True, verbose_name='Id')
             value = core.FloatAttribute(verbose_name='Value')
 
-        with self.assertRaisesRegexp(ValueError, 'Value must be a `float`'):
+        with self.assertRaisesRegex(ValueError, 'Value must be a `float`'):
             WorkbookReader().run(filename, [Node10])
 
     def test_write_read_subset_of_attributes(self):
@@ -1070,7 +1070,7 @@ class TestMisc(unittest.TestCase):
             self.assertEqual(g.parent, None)
 
         ######
-        with self.assertRaisesRegexp(ValueError, 'At least one `Model` must be provided'):
+        with self.assertRaisesRegex(ValueError, 'At least one `Model` must be provided'):
             WorkbookWriter().run(filename, None, models=None)
 
         objs2 = WorkbookReader().run(filename, models=None, ignore_extra_sheets=True)
@@ -1352,7 +1352,7 @@ class StrictReadingTestCase(unittest.TestCase):
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         writer.run(wb)
-        with self.assertRaisesRegexp(ValueError, 'must have 1 header row\(s\)'):
+        with self.assertRaisesRegex(ValueError, 'must have 1 header row\(s\)'):
             WorkbookReader().run(filename, [Model])
 
     def test_no_header_cols(self):
@@ -1378,7 +1378,7 @@ class StrictReadingTestCase(unittest.TestCase):
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         writer.run(wb)
-        with self.assertRaisesRegexp(ValueError, 'must have 1 header column\(s\)'):
+        with self.assertRaisesRegex(ValueError, 'must have 1 header column\(s\)'):
             WorkbookReader().run(filename, [Model])
 
     def test_missing_attribute(self):
@@ -1464,7 +1464,7 @@ class StrictReadingTestCase(unittest.TestCase):
         ws.append(Row(['Id', 'Attr2', 'Attr1']))
         ws.append(Row(['m1', '2', '1']))
         writer.run(wb)
-        with self.assertRaisesRegexp(ValueError, (
+        with self.assertRaisesRegex(ValueError, (
             "The columns of worksheet 'Models' must be defined in this order:"
             "\n      A1: Id"
             "\n      B1: Attr1"
@@ -1527,7 +1527,7 @@ class JsonTestCase(unittest.TestCase):
         objs[0]['val'] = -1
         with open(path, 'w') as file:
             json.dump(objs, file)
-        with self.assertRaisesRegexp(ValueError, 'fails to validate'):
+        with self.assertRaisesRegex(ValueError, 'fails to validate'):
             obj_model.io.JsonReader().run(path, [AA])
 
         obj_model.io.JsonWriter().run(path, aa_0, models=AA)
@@ -1552,9 +1552,9 @@ class JsonTestCase(unittest.TestCase):
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
         path = os.path.join(self.dirname, 'out.abc')
-        with self.assertRaisesRegexp(ValueError, 'Unsupported format'):
+        with self.assertRaisesRegex(ValueError, 'Unsupported format'):
             obj_model.io.JsonWriter().run(path, aa_0)
-        with self.assertRaisesRegexp(ValueError, 'Unsupported format'):
+        with self.assertRaisesRegex(ValueError, 'Unsupported format'):
             obj_model.io.JsonReader().run(path, [AA])
 
         old_AA = AA
@@ -1562,9 +1562,9 @@ class JsonTestCase(unittest.TestCase):
         class AA(core.Model):
             id = core.StringAttribute()
         path = os.path.join(self.dirname, 'out.yml')
-        with self.assertRaisesRegexp(ValueError, 'Model names must be unique to decode objects'):
+        with self.assertRaisesRegex(ValueError, 'Model names must be unique to decode objects'):
             obj_model.io.JsonWriter().run(path, aa_0, models=[AA, old_AA])
-        with self.assertRaisesRegexp(ValueError, 'Model names must be unique to decode objects'):
+        with self.assertRaisesRegex(ValueError, 'Model names must be unique to decode objects'):
             obj_model.io.JsonReader().run(path, models=[AA, old_AA])
 
     def test_convert(self):
@@ -1722,7 +1722,7 @@ class InlineJsonTestCase(unittest.TestCase):
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
         write_workbook(path, wb)
-        with self.assertRaisesRegexp(Exception, 'test.xlsx:Parents:B2'):
+        with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
     def test_one_to_one(self):
@@ -1763,7 +1763,7 @@ class InlineJsonTestCase(unittest.TestCase):
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
         write_workbook(path, wb)
-        with self.assertRaisesRegexp(Exception, 'test.xlsx:Parents:B2'):
+        with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
     def test_many_to_one(self):
@@ -1804,7 +1804,7 @@ class InlineJsonTestCase(unittest.TestCase):
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
         write_workbook(path, wb)
-        with self.assertRaisesRegexp(Exception, 'test.xlsx:Parents:B2'):
+        with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
     def test_many_to_many(self):
@@ -1845,7 +1845,7 @@ class InlineJsonTestCase(unittest.TestCase):
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
         write_workbook(path, wb)
-        with self.assertRaisesRegexp(Exception, 'test.xlsx:Parents:B2'):
+        with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
 
