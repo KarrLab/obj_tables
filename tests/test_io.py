@@ -486,11 +486,11 @@ class TestIo(unittest.TestCase):
                                  use_re=True)
 
         RE_msgs = [
-            "The model cannot be loaded because 'invalid-data-\*.csv' contains error",
-            "Leaf *\n +'id':''\n +invalid-data-\*.csv:Leaves:6,1\n +StringAttribute value for "
-            "primary attribute cannot be empty",
-            "Transposed\n +'val':'x'\n +invalid-data-\*.csv:Transposed:2,3\n +Value must be at "
-            "least 2 characters",
+            r"The model cannot be loaded because 'invalid-data-\*.csv' contains error",
+            r"Leaf *\n +'id':''\n +invalid-data-\*.csv:Leaves:6,1\n +StringAttribute value for "
+            r"primary attribute cannot be empty",
+            r"Transposed\n +'val':'x'\n +invalid-data-\*.csv:Transposed:2,3\n +Value must be at "
+            r"least 2 characters",
         ]
         self.check_reader_errors('invalid-data-*.csv', RE_msgs, [Leaf, NormalRecord, Transposed],
                                  use_re=True)
@@ -1352,7 +1352,7 @@ class StrictReadingTestCase(unittest.TestCase):
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         writer.run(wb)
-        with self.assertRaisesRegex(ValueError, 'must have 1 header row\(s\)'):
+        with self.assertRaisesRegex(ValueError, r'must have 1 header row\(s\)'):
             WorkbookReader().run(filename, [Model])
 
     def test_no_header_cols(self):
@@ -1378,7 +1378,7 @@ class StrictReadingTestCase(unittest.TestCase):
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         writer.run(wb)
-        with self.assertRaisesRegex(ValueError, 'must have 1 header column\(s\)'):
+        with self.assertRaisesRegex(ValueError, r'must have 1 header column\(s\)'):
             WorkbookReader().run(filename, [Model])
 
     def test_missing_attribute(self):

@@ -58,7 +58,7 @@ class ModelMeta(type):
         Args:
             metacls (:obj:`Model`): `Model`, or a subclass of `Model`
             name (:obj:`str`): `Model` class name
-            bases (:obj: `tuple`): tuple of superclasses
+            bases (:obj:`tuple`): tuple of superclasses
             namespace (:obj:`dict`): namespace of `Model` class definition
 
         Returns:
@@ -3250,14 +3250,14 @@ class UrlAttribute(RegexAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
-        core_pattern = ('(?:http|ftp)s?://'
-                        '(?:'
-                        '(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+'
-                        '(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
-                        ')'
-                        '(?::\d+)?'
-                        '(?:/?|[/?]\S+)')
-        pattern = '^(|{})$'.format(core_pattern)
+        core_pattern = (r'(?:http|ftp)s?://'
+                        r'(?:'
+                        r'(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+'
+                        r'(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+                        r')'
+                        r'(?::\d+)?'
+                        r'(?:/?|[/?]\S+)')
+        pattern = r'^(|{})$'.format(core_pattern)
 
         super(UrlAttribute, self).__init__(pattern=pattern,
                                            flags=re.I,
@@ -3440,7 +3440,7 @@ class TimeAttribute(LiteralAttribute):
             return (value, None)
 
         if isinstance(value, string_types):
-            if re.match('^\d{1,2}:\d{1,2}(:\d{1,2})*$', value):
+            if re.match(r'^\d{1,2}:\d{1,2}(:\d{1,2})*$', value):
                 try:
                     datetime_value = dateutil.parser.parse(value)
                     return (datetime_value.time(), None)
