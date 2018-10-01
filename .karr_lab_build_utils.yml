@@ -1,5 +1,5 @@
 downstream_dependencies:
-  - kinetic_datanator
+  - datanator
   - wc_kb
   - wc_lang
   - wc_rules
