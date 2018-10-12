@@ -2759,10 +2759,14 @@ class FloatAttribute(NumericAttribute):
         Raises:
             :obj:`ValueError`: if `max` is less than `min`
         """
-        min = float(min)
-        max = float(max)
-        default = float(default)
-        default_cleaned_value = float(default_cleaned_value)
+        if min is not None:
+            min = float(min)
+        if max is not None:
+            max = float(max)
+        if default is not None:
+            default = float(default)
+        if default_cleaned_value is not None:
+            default_cleaned_value = float(default_cleaned_value)
         if not isnan(min) and not isnan(max) and max < min:
             raise ValueError('`max` must be at least `min`')
 
@@ -3062,9 +3066,9 @@ class StringAttribute(LiteralAttribute):
             raise ValueError('`min_length` must be a non-negative integer')
         if (max_length is not None) and (not isinstance(max_length, integer_types) or max_length < min_length):
             raise ValueError('`max_length` must be at least `min_length` or `None`')
-        if not isinstance(default, string_types):
+        if default is not None and not isinstance(default, string_types):
             raise ValueError('`default` must be a string')
-        if not isinstance(default_cleaned_value, string_types):
+        if default_cleaned_value is not None and not isinstance(default_cleaned_value, string_types):
             raise ValueError('`default_cleaned_value` must be a string')
 
         super(StringAttribute, self).__init__(default=default,
