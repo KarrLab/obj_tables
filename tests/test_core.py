@@ -659,10 +659,10 @@ class TestCore(unittest.TestCase):
             core.StringAttribute(max_length=-1)
 
         with self.assertRaisesRegex(ValueError, '`default` must be a string'):
-            core.StringAttribute(default=None)
+            core.StringAttribute(default=123)
 
         with self.assertRaisesRegex(ValueError, '`default_cleaned_value` must be a string'):
-            core.StringAttribute(default_cleaned_value=None)
+            core.StringAttribute(default_cleaned_value=123)
 
         attr = core.StringAttribute()
         self.assertEqual(attr.clean(None), ('', None))
