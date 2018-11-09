@@ -3998,8 +3998,8 @@ class OneToOneAttribute(RelatedAttribute):
                 errors.append('Value cannot be `None`')
         elif value and self.related_name:
             if not isinstance(value, self.primary_class):
-                errors.append('Related value must be an instance of "{:s}"'.format(
-                    self.primary_class.__name__))
+                errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
+                    self.primary_class.__name__, value.__class__.__name__))
             elif getattr(value, self.name) is not obj:
                 errors.append('Object must be related value')
 
@@ -4221,8 +4221,8 @@ class ManyToOneAttribute(RelatedAttribute):
             else:
                 for v in value:
                     if not isinstance(v, self.primary_class):
-                        errors.append('Related value must be an instance of "{:s}"'.format(
-                            self.primary_class.__name__))
+                        errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
+                            self.primary_class.__name__, v.__class__.__name__))
                     elif getattr(v, self.name) is not obj:
                         errors.append('Object must be related value')
 
@@ -4684,8 +4684,8 @@ class ManyToManyAttribute(RelatedAttribute):
             else:
                 for v in value:
                     if not isinstance(v, self.primary_class):
-                        errors.append('Related value must be an instance of "{:s}"'.format(
-                            self.primary_class.__name__))
+                        errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
+                            self.primary_class.__name__, v.__class__.__name__))
                     elif obj not in getattr(v, self.name):
                         errors.append('Object must be in related values')
 
