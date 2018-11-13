@@ -2032,9 +2032,16 @@ class Model(with_metaclass(ModelMeta, object)):
                         [attr.related_class], get_subclasses(attr.related_class))
                     for related_class in related_classes:
                         # check that related class has primary attributes
-                        if isinstance(attr, (OneToManyAttribute, ManyToManyAttribute)) and \
-                                attr.__class__ is not OneToManyAttribute and \
-                                attr.__class__ is not ManyToManyAttribute and \
+                        if isinstance(attr, (
+                            OneToOneAttribute,
+                            OneToManyAttribute,
+                            ManyToOneAttribute,
+                            ManyToManyAttribute)) and \
+                                attr.__class__ not in (
+                                    OneToOneAttribute,
+                                    OneToManyAttribute,
+                                    ManyToOneAttribute,
+                                    ManyToManyAttribute) and \
                                 'serialize' in attr.__class__.__dict__ and \
                                 'deserialize' in attr.__class__.__dict__:
                             pass
