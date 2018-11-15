@@ -309,9 +309,9 @@ class WorkbookWriter(Writer):
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             sheet_name (:obj:`str`): sheet name
-            data (:obj:`list` of :obj:`list` of `object`): list of list of cell values
-            row_headings (:obj:`list` of :obj:`list` of `str`, optional): list of list of row headings
-            column_headings (:obj:`list` of :obj:`list` of `str`, optional): list of list of column headings
+            data (:obj:`list` of :obj:`list` of :obj:`object`): list of list of cell values
+            row_headings (:obj:`list` of :obj:`list` of :obj:`str`, optional): list of list of row headings
+            column_headings (:obj:`list` of :obj:`list` of :obj:`str`, optional): list of list of column headings
             style (:obj:`WorksheetStyle`, optional): worksheet style
         """
         row_headings = row_headings or []
@@ -887,7 +887,7 @@ class WorkbookReader(Reader):
         Args:
             model (:obj:`Model`): an `obj_model.core.Model`
             attributes (:obj:`list` of :obj:`Attribute`): attribute order of `data`
-            data (:obj:`list` of :obj:`list` of `object`): nested list of object data
+            data (:obj:`list` of :obj:`list` of :obj:`object`): nested list of object data
             objects (:obj:`list`): list of model objects in order of `data`
             objects_by_primary_attribute (:obj:`dict`): dictionary of model objects grouped by model
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
