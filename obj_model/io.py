@@ -295,6 +295,7 @@ class WorkbookWriter(Writer):
                              style=style,
                              )
         else:
+            style.auto_filter = False
             self.write_sheet(writer,
                              sheet_name=model.Meta.verbose_name,
                              data=transpose(data),
