@@ -93,7 +93,7 @@ def group_objects_by_model(objects):
     """ Group objects by their models
 
     Args:
-        objects (:obj:`list` of `Model`): list of model objects
+        objects (:obj:`list` of :obj:`Model`): list of model objects
 
     Returns:
         :obj:`dict`: dictionary with object grouped by their class

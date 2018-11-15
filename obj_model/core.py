@@ -787,7 +787,7 @@ class Manager(object):
         """ Provide all instances of the `Model` managed by this `Manager`
 
         Returns:
-            :obj:`list` of `Model`: a list of all instances of the managed `Model`
+            :obj:`list` of :obj:`Model`: a list of all instances of the managed `Model`
             or `None` if the `Model` is not indexed
         """
         if self.cls.Meta.indexed_attrs_tuples:
@@ -850,7 +850,7 @@ class Manager(object):
             kwargs (:obj:`dict`): keyword args mapping from attribute name(s) to value(s)
 
         Returns:
-            :obj:`list` of `Model`: a list of `Model` instances whose indexed attribute tuples have the
+            :obj:`list` of :obj:`Model`: a list of `Model` instances whose indexed attribute tuples have the
             values in `kwargs`; otherwise `None`, indicating no match
 
         Raises:
@@ -1364,10 +1364,10 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Sort list of `Model` objects
 
         Args:
-            objects (:obj:`list` of `Model`): list of objects
+            objects (:obj:`list` of :obj:`Model`): list of objects
 
         Returns:
-            :obj:`list` of `Model`: sorted list of objects
+            :obj:`list` of :obj:`Model`: sorted list of objects
         """
         if cls.Meta.ordering:
             for attr_name in reversed(cls.Meta.ordering):
@@ -1719,7 +1719,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Validate attribute uniqueness
 
         Args:
-            objects (:obj:`list` of `Model`): list of objects
+            objects (:obj:`list` of :obj:`Model`): list of objects
 
         Returns:
             :obj:`InvalidModel` or `None`: list of invalid attributes and their errors
@@ -1830,7 +1830,7 @@ class Model(with_metaclass(ModelMeta, object)):
             max_depth (:obj:`int`): the maximum depth to which related `Model`'s should be printed
 
         Returns:
-            :obj:`list` of `list`: a nested list of string representations of this Model
+            :obj:`list` of :obj:`list`: a nested list of string representations of this Model
 
         Raises:
             :obj:`ValueError`: if an attribute cannot be represented as a string, or a
@@ -2381,7 +2381,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of `Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
             values (:obj:`list`): list of values
 
         Returns:
@@ -3993,7 +3993,7 @@ class OneToOneAttribute(RelatedAttribute):
 
         Args:
             obj (:obj:`Model`): object being validated
-            value (:obj:`list` of `Model`): value to validate
+            value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
@@ -4209,7 +4209,7 @@ class ManyToOneAttribute(RelatedAttribute):
 
         Args:
             obj (:obj:`Model`): object being validated
-            value (:obj:`list` of `Model`): value to validate
+            value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
@@ -4395,7 +4395,7 @@ class OneToManyAttribute(RelatedAttribute):
 
         Args:
             obj (:obj:`Model`): object being validated
-            value (:obj:`list` of `Model`): value to validate
+            value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
@@ -4457,7 +4457,7 @@ class OneToManyAttribute(RelatedAttribute):
         """ Serialize related object
 
         Args:
-            value (:obj:`list` of `Model`): Python representation
+            value (:obj:`list` of :obj:`Model`): Python representation
             encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
@@ -4633,7 +4633,7 @@ class ManyToManyAttribute(RelatedAttribute):
 
         Args:
             obj (:obj:`Model`): object being validated
-            value (:obj:`list` of `Model`): value of attribute to validate
+            value (:obj:`list` of :obj:`Model`): value of attribute to validate
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
@@ -4672,7 +4672,7 @@ class ManyToManyAttribute(RelatedAttribute):
 
         Args:
             obj (:obj:`Model`): object being validated
-            value (:obj:`list` of `Model`): value to validate
+            value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
@@ -4704,7 +4704,7 @@ class ManyToManyAttribute(RelatedAttribute):
         """ Serialize related object
 
         Args:
-            value (:obj:`list` of `Model`): Python representation
+            value (:obj:`list` of :obj:`Model`): Python representation
             encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
@@ -5036,7 +5036,7 @@ class RelatedManager(list):
                 objects
 
         Returns:
-            :obj:`list` of `Model`: matching instances of `Model`
+            :obj:`list` of :obj:`Model`: matching instances of `Model`
         """
         if '__type' in kwargs:
             __type = kwargs.pop('__type')
@@ -5251,15 +5251,15 @@ class InvalidObjectSet(object):
     """ Represents a list of invalid objects and invalid models
 
     Attributes:
-        invalid_objects (:obj:`list` of `InvalidObject`): list of invalid objects
-        invalid_models (:obj:`list` of `InvalidModel`): list of invalid models
+        invalid_objects (:obj:`list` of :obj:`InvalidObject`): list of invalid objects
+        invalid_models (:obj:`list` of :obj:`InvalidModel`): list of invalid models
     """
 
     def __init__(self, invalid_objects, invalid_models):
         """
         Args:
-            invalid_objects (:obj:`list` of `InvalidObject`): list of invalid objects
-            invalid_models (:obj:`list` of `InvalidModel`): list of invalid models
+            invalid_objects (:obj:`list` of :obj:`InvalidObject`): list of invalid objects
+            invalid_models (:obj:`list` of :obj:`InvalidModel`): list of invalid models
 
         Raises:
             :obj:`ValueError`: `invalid_models` is not unique
@@ -5328,14 +5328,14 @@ class InvalidModel(object):
 
     Attributes:
         model (:obj:`class`): `Model` class
-        attributes (:obj:`list` of `InvalidAttribute`): list of invalid attributes and their errors
+        attributes (:obj:`list` of :obj:`InvalidAttribute`): list of invalid attributes and their errors
     """
 
     def __init__(self, model, attributes):
         """
         Args:
             model (:obj:`class`): `Model` class
-            attributes (:obj:`list` of `InvalidAttribute`): list of invalid attributes and their errors
+            attributes (:obj:`list` of :obj:`InvalidAttribute`): list of invalid attributes and their errors
         """
         self.model = model
         self.attributes = attributes
@@ -5356,14 +5356,14 @@ class InvalidObject(object):
 
     Attributes:
         object (:obj:`object`): invalid object
-        attributes (:obj:`list` of `InvalidAttribute`): list of invalid attributes and their errors
+        attributes (:obj:`list` of :obj:`InvalidAttribute`): list of invalid attributes and their errors
     """
 
     def __init__(self, object, attributes):
         """
         Args:
             object (:obj:`Model`): invalid object
-            attributes (:obj:`list` of `InvalidAttribute`): list of invalid attributes and their errors
+            attributes (:obj:`list` of :obj:`InvalidAttribute`): list of invalid attributes and their errors
         """
         self.object = object
         self.attributes = attributes
@@ -5385,7 +5385,7 @@ class InvalidAttribute(object):
 
     Attributes:
         attribute (:obj:`Attribute`): invalid attribute
-        messages (:obj:`list` of `str`): list of error messages
+        messages (:obj:`list` of :obj:`str`): list of error messages
         related (:obj:`bool`): indicates if error is about value or related value
         location (:obj:`str`, optional): a string representation of the attribute's location in an input file
         value (:obj:`str`, optional): invalid input value
@@ -5395,7 +5395,7 @@ class InvalidAttribute(object):
         """
         Args:
             attribute (:obj:`Attribute`): invalid attribute
-            message (:obj:`list` of `str`): list of error messages
+            message (:obj:`list` of :obj:`str`): list of error messages
             related (:obj:`bool`, optional): indicates if error is about value or related value
             location (:obj:`str`, optional): a string representation of the attribute's location in an
                 input file
@@ -5453,7 +5453,7 @@ def get_models(module=None, inline=True):
         inline (:obj:`bool`, optional): if true, return inline models
 
     Returns:
-        :obj:`list` of `class`: list of model classes
+        :obj:`list` of :obj:`class`: list of model classes
     """
     if module:
         models = []
@@ -5522,7 +5522,7 @@ class Validator(object):
         """ Clean a list of objects and return their errors
 
         Args:
-            object (:obj:`list` of `Model`): list of objects
+            object (:obj:`list` of :obj:`Model`): list of objects
 
         Returns:
             :obj:`InvalidObjectSet` or `None`: list of invalid objects/models and their errors
@@ -5543,7 +5543,7 @@ class Validator(object):
         """ Validate a list of objects and return their errors
 
         Args:
-            object (:obj:`list` of `Model`): list of Model instances
+            object (:obj:`list` of :obj:`Model`): list of Model instances
 
         Returns:
             :obj:`InvalidObjectSet` or `None`: list of invalid objects/models and their errors

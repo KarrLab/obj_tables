@@ -101,7 +101,7 @@ class FeatureLocationAttribute(core.Attribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of `Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
             values (:obj:`list` of :obj:`Bio.SeqFeature.FeatureLocation`): list of values
 
         Returns:
@@ -255,7 +255,7 @@ class BioSeqAttribute(core.Attribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of `Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
             values (:obj:`list` of :obj:`Bio.Seq.Seq`): list of values
 
         Returns:
@@ -621,7 +621,7 @@ class NumpyArrayAttribute(core.Attribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of `Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
             values (:obj:`list` of :obj:`numpy.array`): list of values
 
         Returns:
@@ -752,7 +752,7 @@ class SympyBasicAttribute(core.Attribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of `Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
             values (:obj:`list` of :obj:`sympy.Basic`): list of values
 
         Returns:

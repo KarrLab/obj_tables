@@ -49,7 +49,7 @@ class Writer(six.with_metaclass(abc.ABCMeta, object)):
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            models (:obj:`list` of `Model`, optional): models in the order that they should
+            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
             title (:obj:`str`, optional): title
@@ -73,7 +73,7 @@ class JsonWriter(Writer):
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            models (:obj:`list` of `Model`, optional): models in the order that they should
+            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
             title (:obj:`str`, optional): title
@@ -143,7 +143,7 @@ class WorkbookWriter(Writer):
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            models (:obj:`list` of `Model`, optional): models in the order that they should
+            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
             title (:obj:`str`, optional): title
@@ -249,7 +249,7 @@ class WorkbookWriter(Writer):
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             model (:obj:`class`): model
-            objects (:obj:`list` of `Model`): list of instances of `model`
+            objects (:obj:`list` of :obj:`Model`): list of instances of `model`
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
                 including those not explictly included in `Model.Meta.attribute_order`
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
@@ -309,9 +309,9 @@ class WorkbookWriter(Writer):
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             sheet_name (:obj:`str`): sheet name
-            data (:obj:`list` of `list` of `object`): list of list of cell values
-            row_headings (:obj:`list` of `list` of `str`, optional): list of list of row headings
-            column_headings (:obj:`list` of `list` of `str`, optional): list of list of column headings
+            data (:obj:`list` of :obj:`list` of `object`): list of list of cell values
+            row_headings (:obj:`list` of :obj:`list` of `str`, optional): list of list of row headings
+            column_headings (:obj:`list` of :obj:`list` of `str`, optional): list of list of column headings
             style (:obj:`WorksheetStyle`, optional): worksheet style
         """
         row_headings = row_headings or []
@@ -886,14 +886,14 @@ class WorkbookReader(Reader):
 
         Args:
             model (:obj:`Model`): an `obj_model.core.Model`
-            attributes (:obj:`list` of `Attribute`): attribute order of `data`
-            data (:obj:`list` of `list` of `object`): nested list of object data
+            attributes (:obj:`list` of :obj:`Attribute`): attribute order of `data`
+            data (:obj:`list` of :obj:`list` of `object`): nested list of object data
             objects (:obj:`list`): list of model objects in order of `data`
             objects_by_primary_attribute (:obj:`dict`): dictionary of model objects grouped by model
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`list` of `str`: list of parsing errors
+            :obj:`list` of :obj:`str`: list of parsing errors
         """
 
         errors = []
@@ -1046,7 +1046,7 @@ def convert(source, destination, models,
     Args:
         source (:obj:`str`): path to source file
         destination (:obj:`str`): path to save converted file
-        models (:obj:`list` of `class`): list of models
+        models (:obj:`list` of :obj:`class`): list of models
         ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
             file is missing for one or more models
         ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
