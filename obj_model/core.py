@@ -1632,7 +1632,7 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
-        if value in objects[cls]:
+        if value in objects.get(cls, {}):
             return (objects[cls][value], None)
 
         attr = cls.Meta.primary_attribute
