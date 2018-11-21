@@ -1010,14 +1010,14 @@ class Model(with_metaclass(ModelMeta, object)):
         self.__class__.objects._register_obj(self)
 
     @classmethod
-    def get_attrs(cls, type=None, related=True):
+    def get_attrs(cls, type=None, reverse=True):
         """ Get attributes of a type, optionally including attributes
-        from related classe. By default, return all attributes.
+        from related classes. By default, return all attributes.
 
         Args:
             type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional): 
                 type of attributes to get
-            related (:obj:`bool`, optional): if :obj:`True`, include 
+            reverse (:obj:`bool`, optional): if :obj:`True`, include 
                 attributes from related classes
 
         Returns:
@@ -1026,7 +1026,7 @@ class Model(with_metaclass(ModelMeta, object)):
         type = type or Attribute
 
         attrs_to_search = cls.Meta.attributes.values()
-        if related:
+        if reverse:
             attrs_to_search = chain(attrs_to_search, cls.Meta.related_attributes.values())
 
         matching_attrs = []
@@ -1036,7 +1036,29 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return matching_attrs
 
-    def get_attrs_by_val(self, type=None, related=True,
+    @classmethod
+    def get_literal_attrs(cls):
+        """ Get literal attributes
+
+        Returns:
+            :obj:`list` of :obj:`Attribute`: literal attributes
+        """
+        return cls.get_attrs(type=LiteralAttribute)
+
+    @classmethod
+    def get_related_attrs(cls, reverse=True):
+        """ Get related attributes
+
+        Args:
+            reverse (:obj:`bool`, optional): if :obj:`True`, include 
+                attributes from related classes
+
+        Returns:
+            :obj:`list` of :obj:`Attribute`: related attributes
+        """
+        return cls.get_attrs(type=RelatedAttribute, reverse=reverse)
+
+    def get_attrs_by_val(self, type=None, reverse=True,
                          include=None, exclude=None):
         """ Get attributes whose type is `type` and values are 
         in `include` and not `exclude`, optionally including attributes
@@ -1045,7 +1067,7 @@ class Model(with_metaclass(ModelMeta, object)):
         Args:
             type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional): 
                 type of attributes to get
-            related (:obj:`bool`, optional): if :obj:`True`, include 
+            reverse (:obj:`bool`, optional): if :obj:`True`, include 
                 attributes from related classes
             include (:obj:`list`, optional): list of values to filter for
             exclude (:obj:`list`, optional): list of values to filter out
@@ -1054,7 +1076,7 @@ class Model(with_metaclass(ModelMeta, object)):
             :obj:`list` of :obj:`Attribute`: attributes
         """
         attrs_to_search = self.__class__.get_attrs(type=type,
-                                                   related=related)
+                                                   reverse=reverse)
 
         include_nan = include is not None and next((True for i in include if isinstance(i, numbers.Number) and math.isnan(i)), False)
         exclude_nan = exclude is not None and next((True for e in exclude if isinstance(e, numbers.Number) and math.isnan(e)), False)
@@ -1071,6 +1093,52 @@ class Model(with_metaclass(ModelMeta, object)):
                                       math.isnan(value))))):
                 matching_attrs.append(attr)
         return matching_attrs
+
+    def get_empty_literal_attrs(self):
+        """ Get empty (:obj:`None`, '', or NaN) literal attributes
+
+        Returns:
+            :obj:`list` of :obj:`Attribute`: empty literal attributes
+        """
+        return self.get_attrs_by_val(type=LiteralAttribute,
+                                     include=(None, '', float('nan')))
+
+    def get_non_empty_literal_attrs(self):
+        """ Get non-empty (:obj:`None`, '', or NaN) literal attributes
+
+        Returns:
+            :obj:`list` of :obj:`Attribute`: non-empty literal attributes
+        """
+        return self.get_attrs_by_val(type=LiteralAttribute,
+                                     exclude=(None, '', float('nan')))
+
+    def get_empty_related_attrs(self, reverse=True):
+        """ Get empty (:obj:`None` or []) related attributes
+
+        Args:
+            reverse (:obj:`bool`, optional): if :obj:`True`, include 
+                attributes from related classes
+
+        Returns:
+            :obj:`list` of :obj:`Attribute`: empty related attributes
+        """
+        return self.get_attrs_by_val(type=RelatedAttribute,
+                                     reverse=reverse,
+                                     include=(None, []))
+
+    def get_non_empty_related_attrs(self, reverse=True):
+        """ Get non-empty (:obj:`None` or []) related attributes
+
+        Args:
+            reverse (:obj:`bool`, optional): if :obj:`True`, include 
+                attributes from related classes
+
+        Returns:
+            :obj:`list` of :obj:`Attribute`: non-empty related attributes
+        """
+        return self.get_attrs_by_val(type=RelatedAttribute,
+                                     reverse=reverse,
+                                     exclude=(None, []))
 
     @classmethod
     def validate_related_attributes(cls):

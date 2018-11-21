@@ -4079,14 +4079,33 @@ class TestCore(unittest.TestCase):
             TestChild.Meta.attributes['parent'],
         ]))
 
-        self.assertEqual(set(TestParent.get_attrs(type=core.RelatedAttribute, related=False)), set([
+        self.assertEqual(set(TestParent.get_attrs(type=core.RelatedAttribute, reverse=False)), set([
         ]))
-        self.assertEqual(set(TestChild.get_attrs(type=core.RelatedAttribute, related=False)), set([
+        self.assertEqual(set(TestChild.get_attrs(type=core.RelatedAttribute, reverse=False)), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(TestParent.get_literal_attrs()), set([
+            TestParent.Meta.attributes['name'],
+            TestParent.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(TestChild.get_literal_attrs()), set([
+            TestChild.Meta.attributes['id'],
+            TestChild.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(TestParent.get_related_attrs()), set([
+            TestParent.Meta.related_attributes['children'],
+        ]))
+        self.assertEqual(set(TestChild.get_related_attrs()), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(TestParent.get_related_attrs(reverse=False)), set([
+        ]))
+        self.assertEqual(set(TestChild.get_related_attrs(reverse=False)), set([
             TestChild.Meta.attributes['parent'],
         ]))
 
-        test_child_1 = TestChild(id='test_child_1')
-        test_child_2 = TestChild(age=10, parent=TestParent(name='parent_2'))
+        test_child_1=TestChild(id='test_child_1')
+        test_child_2=TestChild(age=10, parent=TestParent(name='parent_2'))
         self.assertEqual(set(test_child_1.get_attrs_by_val()), set([
             test_child_1.Meta.attributes['id'],
             test_child_1.Meta.attributes['age'],
@@ -4122,20 +4141,42 @@ class TestCore(unittest.TestCase):
             TestChild.Meta.attributes['age'],
             TestChild.Meta.attributes['parent'],
         ]))
+        self.assertEqual(set(test_child_1.get_empty_literal_attrs()), set([
+            TestChild.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(test_child_2.get_empty_literal_attrs()), set([
+            TestChild.Meta.attributes['id'],
+        ]))
+        self.assertEqual(set(test_child_1.get_non_empty_literal_attrs()), set([
+            TestChild.Meta.attributes['id'],
+        ]))
+        self.assertEqual(set(test_child_2.get_non_empty_literal_attrs()), set([
+            TestChild.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(test_child_1.get_empty_related_attrs()), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_non_empty_related_attrs()), set([
+        ]))
+        self.assertEqual(set(test_child_2.get_empty_related_attrs()), set([
+        ]))
+        self.assertEqual(set(test_child_2.get_non_empty_related_attrs()), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
 
 
 class ContextTestCase(unittest.TestCase):
     def test(self):
         class Parent(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
+            id=core.StringAttribute(primary=True, unique=True)
 
         class Child(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
-            parent = core.ManyToOneAttribute(Parent, related_name='children')
+            id=core.StringAttribute(primary=True, unique=True)
+            parent=core.ManyToOneAttribute(Parent, related_name='children')
 
         class GrandChild(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
-            parent = core.ManyToOneAttribute(Child, related_name='children')
+            id=core.StringAttribute(primary=True, unique=True)
+            parent=core.ManyToOneAttribute(Child, related_name='children')
 
         with Parent(id='parent') as parent:
             with parent.children.create(id='child_1') as child:
@@ -4152,52 +4193,52 @@ class ContextTestCase(unittest.TestCase):
 
 class JsonTestCase(unittest.TestCase):
     def test_bool_attr(self):
-        attr = core.BooleanAttribute()
+        attr=core.BooleanAttribute()
         self.assertEqual(attr.to_builtin(True), True)
         self.assertEqual(attr.from_builtin(True), True)
         self.assertEqual(attr.from_builtin(attr.to_builtin(True)), True)
 
     def test_int_attr(self):
-        attr = core.IntegerAttribute()
+        attr=core.IntegerAttribute()
         self.assertEqual(attr.to_builtin(1), 1.)
         self.assertEqual(attr.from_builtin(1.), 1)
         self.assertEqual(attr.from_builtin(attr.to_builtin(1)), 1)
 
     def test_float_attr(self):
-        attr = core.FloatAttribute()
+        attr=core.FloatAttribute()
         self.assertEqual(attr.to_builtin(1.1), 1.1)
         self.assertEqual(attr.from_builtin(1.1), 1.1)
         self.assertEqual(attr.from_builtin(attr.to_builtin(1.1)), 1.1)
 
     def test_str_attr(self):
-        attr = core.StringAttribute()
+        attr=core.StringAttribute()
         self.assertEqual(attr.to_builtin('abc'), 'abc')
         self.assertEqual(attr.from_builtin('abc'), 'abc')
         self.assertEqual(attr.from_builtin(attr.to_builtin('abc')), 'abc')
 
     def test_enum_attr(self):
         class TestEnum(enum.Enum):
-            abc = 0
-            xyz = 1
-        attr = core.EnumAttribute(TestEnum)
+            abc=0
+            xyz=1
+        attr=core.EnumAttribute(TestEnum)
         self.assertEqual(attr.to_builtin(TestEnum.abc), 'abc')
         self.assertEqual(attr.from_builtin('abc'), TestEnum.abc)
         self.assertEqual(attr.from_builtin(attr.to_builtin(TestEnum.abc)), TestEnum.abc)
 
     def test_date_attr(self):
-        attr = core.DateAttribute()
+        attr=core.DateAttribute()
         self.assertEqual(attr.to_builtin(date(year=1985, month=4, day=11)), '1985-04-11')
         self.assertEqual(attr.from_builtin('1985-04-11'), date(year=1985, month=4, day=11))
         self.assertEqual(attr.from_builtin(attr.to_builtin(date(year=1985, month=4, day=11))), date(year=1985, month=4, day=11))
 
     def test_time_attr(self):
-        attr = core.TimeAttribute()
+        attr=core.TimeAttribute()
         self.assertEqual(attr.to_builtin(time(12, 4, 13, 0)), '12:04:13')
         self.assertEqual(attr.from_builtin('12:04:13'), time(12, 4, 13, 0))
         self.assertEqual(attr.from_builtin(attr.to_builtin(time(12, 4, 13, 0))), time(12, 4, 13, 0))
 
     def test_datetime_attr(self):
-        attr = core.DateTimeAttribute()
+        attr=core.DateTimeAttribute()
         self.assertEqual(attr.to_builtin(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13)), '1985-04-11 12:04:13')
         self.assertEqual(attr.from_builtin('1985-04-11 12:04:13'), datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
         self.assertEqual(attr.from_builtin(attr.to_builtin(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))),
@@ -4205,10 +4246,10 @@ class JsonTestCase(unittest.TestCase):
 
     def test_model(self):
         class TestModel(core.Model):
-            bool_attr = core.FloatAttribute()
-            float_attr = core.FloatAttribute()
-            str_attr = core.StringAttribute()
-        model = TestModel(bool_attr=False, float_attr=-1.2, str_attr='uvw')
+            bool_attr=core.FloatAttribute()
+            float_attr=core.FloatAttribute()
+            str_attr=core.StringAttribute()
+        model=TestModel(bool_attr=False, float_attr=-1.2, str_attr='uvw')
         self.assertEqual(model.to_dict(), {
             '__type': 'TestModel',
             '__id': 0,
@@ -4227,22 +4268,22 @@ class JsonTestCase(unittest.TestCase):
     def test_invalid_attr_name(self):
         with self.assertRaisesRegex(ValueError, 'Attribute cannot have reserved name `__type`'):
             class TestModel(core.Model):
-                id = core.StringAttribute()
-                __type = core.StringAttribute()
+                id=core.StringAttribute()
+                __type=core.StringAttribute()
 
         with self.assertRaisesRegex(ValueError, 'Attribute cannot have reserved name `__id`'):
             class TestModel(core.Model):
-                id = core.StringAttribute()
-                __id = core.FloatAttribute()
+                id=core.StringAttribute()
+                __id=core.FloatAttribute()
 
     def test_many_to_one_attr(self):
         class Parent(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
+            id=core.StringAttribute(primary=True, unique=True)
 
         class Child(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
-            parent = core.ManyToOneAttribute(Parent, related_name='children')
-        p = Parent(id='p')
+            id=core.StringAttribute(primary=True, unique=True)
+            parent=core.ManyToOneAttribute(Parent, related_name='children')
+        p=Parent(id='p')
         p.children.create(id='c0')
         p.children.create(id='c1')
 
@@ -4256,7 +4297,7 @@ class JsonTestCase(unittest.TestCase):
             ],
         })
 
-        p2 = p.from_dict({
+        p2=p.from_dict({
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
@@ -4276,15 +4317,15 @@ class JsonTestCase(unittest.TestCase):
 
     def test_one_to_many_attr(self):
         class Parent(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
+            id=core.StringAttribute(primary=True, unique=True)
 
         class Child(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
-            parents = core.OneToManyAttribute(Parent, related_name='child')
+            id=core.StringAttribute(primary=True, unique=True)
+            parents=core.OneToManyAttribute(Parent, related_name='child')
 
-        c = Child(id='c')
-        p0 = c.parents.create(id='p0')
-        p1 = c.parents.create(id='p1')
+        c=Child(id='c')
+        p0=c.parents.create(id='p0')
+        p1=c.parents.create(id='p1')
 
         self.assertTrue(c.is_equal(c.from_dict(c.to_dict())))
         self.assertTrue(p0.is_equal(p0.from_dict(p0.to_dict())))
@@ -4292,35 +4333,35 @@ class JsonTestCase(unittest.TestCase):
 
     def test_one_to_one_attr(self):
         class Parent(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
+            id=core.StringAttribute(primary=True, unique=True)
 
         class Child(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
-            parent = core.OneToOneAttribute(Parent, related_name='child')
+            id=core.StringAttribute(primary=True, unique=True)
+            parent=core.OneToOneAttribute(Parent, related_name='child')
 
-        p = Parent(id='p')
+        p=Parent(id='p')
         self.assertTrue(p.is_equal(p.from_dict(p.to_dict())))
 
-        c = Child(id='c')
+        c=Child(id='c')
         self.assertTrue(c.is_equal(c.from_dict(c.to_dict())))
 
     def test_already_decoded(self):
         class Model(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
-        model = Model(id='m')
+            id=core.StringAttribute(primary=True, unique=True)
+        model=Model(id='m')
         self.assertEqual(model.from_dict(model.to_dict(), decoded={0: 'already decoded'}), 'already decoded')
 
     def test_max_depth(self):
         class Parent(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
+            id=core.StringAttribute(primary=True, unique=True)
 
         class Child(core.Model):
-            id = core.StringAttribute(primary=True, unique=True)
-            parent = core.ManyToOneAttribute(Parent, related_name='children')
+            id=core.StringAttribute(primary=True, unique=True)
+            parent=core.ManyToOneAttribute(Parent, related_name='children')
 
-        p = Parent(id='p')
-        c0 = p.children.create(id='c0')
-        c1 = p.children.create(id='c1')
+        p=Parent(id='p')
+        c0=p.children.create(id='c0')
+        c1=p.children.create(id='c1')
 
         self.assertEqual(p.to_dict(max_depth=-1), {
             '__type': 'Parent',
@@ -4328,7 +4369,7 @@ class JsonTestCase(unittest.TestCase):
             'id': 'p',
         })
 
-        p_dict = p.to_dict(max_depth=0)
+        p_dict=p.to_dict(max_depth=0)
         p_dict['children'].sort(key=lambda c: c['id'])
         self.assertEqual(p_dict, {
             '__type': 'Parent',
@@ -4340,7 +4381,7 @@ class JsonTestCase(unittest.TestCase):
             ],
         })
 
-        p_dict = p.to_dict(max_depth=1)
+        p_dict=p.to_dict(max_depth=1)
         p_dict['children'].sort(key=lambda c: c['id'])
         self.assertEqual(p_dict, {
             '__type': 'Parent',
@@ -4357,26 +4398,26 @@ class TestErrors(unittest.TestCase):
 
     def test_error_related_attribute_with_same_name_as_primary_attribute(self):
         class Parent1(core.Model):
-            id = core.StringAttribute(primary=True)
-            children1 = core.StringAttribute()
+            id=core.StringAttribute(primary=True)
+            children1=core.StringAttribute()
 
         with self.assertRaisesRegex(ValueError, 'cannot use the same related name as'):
             class Child1(core.Model):
-                id = core.StringAttribute(primary=True)
-                parent1 = core.ManyToOneAttribute(
+                id=core.StringAttribute(primary=True)
+                parent1=core.ManyToOneAttribute(
                     Parent1, related_name='children1')
 
     def test_error_related_attribute_with_same_name_as_related_attribute(self):
         class Parent2(core.Model):
-            id = core.StringAttribute(primary=True)
+            id=core.StringAttribute(primary=True)
 
         class Child2a(core.Model):
-            id = core.StringAttribute(primary=True)
-            parent2 = core.ManyToOneAttribute(
+            id=core.StringAttribute(primary=True)
+            parent2=core.ManyToOneAttribute(
                 Parent2, related_name='children2')
 
         with self.assertRaisesRegex(ValueError, 'cannot use the same related attribute name'):
             class Child2b(core.Model):
-                id = core.StringAttribute(primary=True)
-                parent2 = core.ManyToOneAttribute(
+                id=core.StringAttribute(primary=True)
+                parent2=core.ManyToOneAttribute(
                     Parent2, related_name='children2')
