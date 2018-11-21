@@ -39,6 +39,8 @@ import copy
 import dateutil.parser
 import inflect
 import json
+import math
+import numbers
 import queue
 import re
 import six
@@ -1008,6 +1010,69 @@ class Model(with_metaclass(ModelMeta, object)):
         self.__class__.objects._register_obj(self)
 
     @classmethod
+    def get_attrs(cls, type=None, related=True):
+        """ Get attributes of a type, optionally including attributes
+        from related classe. By default, return all attributes.
+
+        Args:
+            type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional): 
+                type of attributes to get
+            related (:obj:`bool`, optional): if :obj:`True`, include 
+                attributes from related classes
+
+        Returns:
+            :obj:`list` of :obj:`Attribute`: matching attributes
+        """
+        type = type or Attribute
+
+        attrs_to_search = cls.Meta.attributes.values()
+        if related:
+            attrs_to_search = chain(attrs_to_search, cls.Meta.related_attributes.values())
+
+        matching_attrs = []
+        for attr in attrs_to_search:
+            if isinstance(attr, type):
+                matching_attrs.append(attr)
+
+        return matching_attrs
+
+    def get_attrs_by_val(self, type=None, related=True,
+                         include=None, exclude=None):
+        """ Get attributes whose type is `type` and values are 
+        in `include` and not `exclude`, optionally including attributes
+        from related classes. By default, get all attributes.
+
+        Args:
+            type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional): 
+                type of attributes to get
+            related (:obj:`bool`, optional): if :obj:`True`, include 
+                attributes from related classes
+            include (:obj:`list`, optional): list of values to filter for
+            exclude (:obj:`list`, optional): list of values to filter out
+
+        Returns:
+            :obj:`list` of :obj:`Attribute`: attributes
+        """
+        attrs_to_search = self.__class__.get_attrs(type=type,
+                                                   related=related)
+
+        include_nan = include is not None and next((True for i in include if isinstance(i, numbers.Number) and math.isnan(i)), False)
+        exclude_nan = exclude is not None and next((True for e in exclude if isinstance(e, numbers.Number) and math.isnan(e)), False)
+        matching_attrs = []
+        for attr in attrs_to_search:
+            value = getattr(self, attr.name)
+            if (include is None or (value in include or
+                                    (include_nan and
+                                     (isinstance(value, numbers.Number) and
+                                      math.isnan(value))))) and \
+               (exclude is None or (value not in exclude and
+                                    (not exclude_nan or not
+                                     (isinstance(value, numbers.Number) and
+                                      math.isnan(value))))):
+                matching_attrs.append(attr)
+        return matching_attrs
+
+    @classmethod
     def validate_related_attributes(cls):
         """ Validate attribute values
 
@@ -1630,7 +1695,8 @@ class Model(with_metaclass(ModelMeta, object)):
             objects (:obj:`dict`): dictionary of objects, grouped by model
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value 
+                and cleaning error
         """
         if value in objects.get(cls, {}):
             return (objects[cls][value], None)
@@ -5611,4 +5677,6 @@ class ObjModelWarning(UserWarning):
 
 class SchemaWarning(ObjModelWarning):
     """ Schema warning """
+    pass
+
     pass

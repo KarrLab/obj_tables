@@ -2132,7 +2132,7 @@ class TestCore(unittest.TestCase):
         child_0 = TestChild(id='child_0', parent=parent_0)
         child_1 = TestChild(id='child_1', parent=parent_1)
         with self.assertRaisesRegex(ValueError, "'{}:{}' of '{}:{}' must be `None`".format(
-            'TestChild', 'child_1', 'TestParent', 'parent_1')):
+                'TestChild', 'child_1', 'TestParent', 'parent_1')):
             child_0.parent = parent_1
         self.assertEqual(child_0.parent, parent_0)
         child_0.parent = parent_2
@@ -2451,7 +2451,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(
             len(errors.invalid_models[0].attributes[0].messages), 1)
         self.assertRegex(errors.invalid_models[0].attributes[
-                                 0].messages[0], 'values must be unique')
+            0].messages[0], 'values must be unique')
 
     def test_validator_related(self):
         class TestParent(core.Model):
@@ -4042,6 +4042,86 @@ class TestCore(unittest.TestCase):
         self.assertEqual(p.children.get_or_create(__type=Child1, id='c0'), c0)
         self.assertNotEqual(p.children.get_or_create(__type=Child1, id='c1'), c0)
         self.assertNotEqual(p.children.get_or_create(__type=Child2, id='c0'), c0)
+
+    def test_get_attrs(self):
+        class TestParent(core.Model):
+            name = core.StringAttribute()
+            age = core.FloatAttribute()
+
+        class TestChild(core.Model):
+            id = core.StringAttribute()
+            age = core.FloatAttribute()
+            parent = core.ManyToOneAttribute(TestParent, related_name='children')
+
+        self.assertEqual(set(TestParent.get_attrs()), set([
+            TestParent.Meta.attributes['name'],
+            TestParent.Meta.attributes['age'],
+            TestParent.Meta.related_attributes['children'],
+        ]))
+        self.assertEqual(set(TestChild.get_attrs()), set([
+            TestChild.Meta.attributes['id'],
+            TestChild.Meta.attributes['age'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+
+        self.assertEqual(set(TestParent.get_attrs(type=core.LiteralAttribute)), set([
+            TestParent.Meta.attributes['name'],
+            TestParent.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(TestChild.get_attrs(type=core.LiteralAttribute)), set([
+            TestChild.Meta.attributes['id'],
+            TestChild.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(TestParent.get_attrs(type=core.RelatedAttribute)), set([
+            TestParent.Meta.related_attributes['children'],
+        ]))
+        self.assertEqual(set(TestChild.get_attrs(type=core.RelatedAttribute)), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+
+        self.assertEqual(set(TestParent.get_attrs(type=core.RelatedAttribute, related=False)), set([
+        ]))
+        self.assertEqual(set(TestChild.get_attrs(type=core.RelatedAttribute, related=False)), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+
+        test_child_1 = TestChild(id='test_child_1')
+        test_child_2 = TestChild(age=10, parent=TestParent(name='parent_2'))
+        self.assertEqual(set(test_child_1.get_attrs_by_val()), set([
+            test_child_1.Meta.attributes['id'],
+            test_child_1.Meta.attributes['age'],
+            test_child_1.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_2.get_attrs_by_val()), set([
+            test_child_2.Meta.attributes['id'],
+            test_child_2.Meta.attributes['age'],
+            test_child_2.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(include=('test_child_1',))), set([
+            TestChild.Meta.attributes['id'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(exclude=('test_child_1',))), set([
+            TestChild.Meta.attributes['age'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(include=(None, []))), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(include=(None, float('nan'), []))), set([
+            TestChild.Meta.attributes['age'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(exclude=(float('nan'),))), set([
+            TestChild.Meta.attributes['id'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_2.get_attrs_by_val(include=(None, '', []))), set([
+            TestChild.Meta.attributes['id'],
+        ]))
+        self.assertEqual(set(test_child_2.get_attrs_by_val(exclude=(None, '', []))), set([
+            TestChild.Meta.attributes['age'],
+            TestChild.Meta.attributes['parent'],
+        ]))
 
 
 class ContextTestCase(unittest.TestCase):
