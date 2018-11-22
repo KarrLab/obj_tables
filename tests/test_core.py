@@ -2767,7 +2767,7 @@ class TestCore(unittest.TestCase):
         root.date = date(2000, 10, 1)
         root.datetime = datetime(1900, 1, 1, 0, 0, 0, 0)
         root.time = time(0, 0, 0, 0)
-        self.assertIn('time: 0.0', root.pformat())
+        self.assertIn('time: 00:00:00', root.pformat())
 
     def test_difference(self):
         g = [
@@ -4231,11 +4231,17 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin('1985-04-11'), date(year=1985, month=4, day=11))
         self.assertEqual(attr.from_builtin(attr.to_builtin(date(year=1985, month=4, day=11))), date(year=1985, month=4, day=11))
 
+        val = date(year=1985, month=4, day=11)
+        self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
+
     def test_time_attr(self):
         attr=core.TimeAttribute()
         self.assertEqual(attr.to_builtin(time(12, 4, 13, 0)), '12:04:13')
         self.assertEqual(attr.from_builtin('12:04:13'), time(12, 4, 13, 0))
         self.assertEqual(attr.from_builtin(attr.to_builtin(time(12, 4, 13, 0))), time(12, 4, 13, 0))
+
+        val = time(12, 4, 13, 0)
+        self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
 
     def test_datetime_attr(self):
         attr=core.DateTimeAttribute()
@@ -4243,6 +4249,9 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin('1985-04-11 12:04:13'), datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
         self.assertEqual(attr.from_builtin(attr.to_builtin(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))),
                          datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
+
+        val = datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13)
+        self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
 
     def test_model(self):
         class TestModel(core.Model):

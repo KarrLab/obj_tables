@@ -3514,9 +3514,9 @@ class DateAttribute(LiteralAttribute):
             value (:obj:`date`): Python representation
 
         Returns:
-            :obj:`float`: simple Python representation
+            :obj:`str`: simple Python representation
         """
-        return value.toordinal() - date(1900, 1, 1).toordinal() + 1.
+        return '{0:04d}-{1:02d}-{2:02d}'.format(value.year, value.month, value.day)
 
     def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
@@ -3640,9 +3640,9 @@ class TimeAttribute(LiteralAttribute):
             value (:obj:`time`): Python representation
 
         Returns:
-            :obj:`float`: simple Python representation
+            :obj:`str`: simple Python representation
         """
-        return (value.hour * 60. * 60. + value.minute * 60. + value.second) / (24. * 60. * 60.)
+        return '{0:02d}:{1:02d}:{2:02d}'.format(value.hour, value.minute, value.second)
 
     def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
@@ -3776,14 +3776,14 @@ class DateTimeAttribute(LiteralAttribute):
             value (:obj:`datetime`): Python representation
 
         Returns:
-            :obj:`float`: simple Python representation
+            :obj:`str`: simple Python representation
         """
         date_value = value.date()
         time_value = value.time()
 
-        return date_value.toordinal() - date(1900, 1, 1).toordinal() + 1 \
-            + (time_value.hour * 60. * 60. + time_value.minute *
-               60. + time_value.second) / (24. * 60. * 60.)
+        return '{0:04d}-{1:02d}-{2:02d} {3:02d}:{4:02d}:{5:02d}'.format(
+            date_value.year, date_value.month, date_value.day,
+            time_value.hour, time_value.minute, time_value.second)
 
     def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
