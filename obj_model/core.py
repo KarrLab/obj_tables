@@ -3447,7 +3447,7 @@ class DateAttribute(LiteralAttribute):
         Returns:
             :obj:`tuple`: (`date`, `None`), or (`None`, `InvalidAttribute`) reporting error
         """
-        if value is None:
+        if value in (None, ''):
             return (self.get_default_cleaned_value(), None)
 
         if isinstance(value, datetime):
@@ -3516,6 +3516,8 @@ class DateAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
+        if value is None:
+            return ''
         return '{0:04d}-{1:02d}-{2:02d}'.format(value.year, value.month, value.day)
 
     def to_builtin(self, value):
@@ -3578,7 +3580,7 @@ class TimeAttribute(LiteralAttribute):
         Returns:
             :obj:`tuple` of `time`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
-        if value is None:
+        if value in (None, ''):
             return (self.get_default_cleaned_value(), None)
 
         if isinstance(value, time):
@@ -3642,6 +3644,8 @@ class TimeAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
+        if value is None:
+            return ''
         return '{0:02d}:{1:02d}:{2:02d}'.format(value.hour, value.minute, value.second)
 
     def to_builtin(self, value):
@@ -3705,7 +3709,7 @@ class DateTimeAttribute(LiteralAttribute):
         Returns:
             :obj:`tuple` of `datetime`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
-        if value is None:
+        if value in (None, ''):
             return (self.get_default_cleaned_value(), None)
 
         if isinstance(value, datetime):
@@ -3778,6 +3782,9 @@ class DateTimeAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
+        if value is None:
+            return ''
+
         date_value = value.date()
         time_value = value.time()
 

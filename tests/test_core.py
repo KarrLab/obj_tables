@@ -4233,6 +4233,9 @@ class JsonTestCase(unittest.TestCase):
 
         val = date(year=1985, month=4, day=11)
         self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(attr.serialize(None))[0], None)
 
     def test_time_attr(self):
         attr=core.TimeAttribute()
@@ -4242,6 +4245,9 @@ class JsonTestCase(unittest.TestCase):
 
         val = time(12, 4, 13, 0)
         self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(attr.serialize(None))[0], None)
 
     def test_datetime_attr(self):
         attr=core.DateTimeAttribute()
@@ -4252,6 +4258,9 @@ class JsonTestCase(unittest.TestCase):
 
         val = datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13)
         self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(attr.serialize(None))[0], None)
 
     def test_model(self):
         class TestModel(core.Model):
