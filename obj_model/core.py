@@ -2399,7 +2399,9 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         name (:obj:`str`): name
         init_value(:obj:`object`): initial value
         default (:obj:`object`): default value
-        default_cleaned_value (:obj:`object`): value to replace None values with during cleaning
+        default_cleaned_value (:obj:`object`): value to replace 
+            :obj:`None` values with during cleaning, or function 
+            which computes the value to replace :obj:`None` values
         verbose_name (:obj:`str`): verbose name
         help (:obj:`str`): help string
         primary (:obj:`bool`): indicate if attribute is primary attribute
@@ -2413,7 +2415,9 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Args:
             init_value(:obj:`object`, optional): initial value
             default (:obj:`object`, optional): default value
-            default_cleaned_value (:obj:`object`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`object`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -2452,13 +2456,14 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         return copy.deepcopy(self.default)
 
     def get_default_cleaned_value(self):
-        """ Get value to replace None values with during cleaning
+        """ Get value to replace :obj:`None` values with during cleaning
 
         Returns:
             :obj:`object`: initial value
         """
-        if isinstance(self.default_cleaned_value, (
-                six.types.FunctionType, six.types.MethodType, six.types.LambdaType)):
+        if callable(self.default_cleaned_value):
+            print(self.default_cleaned_value.__class__)
+            print(callable(self.default_cleaned_value.__class__))
             return self.default_cleaned_value()
 
         return copy.deepcopy(self.default_cleaned_value)
@@ -2670,7 +2675,8 @@ class EnumAttribute(LiteralAttribute):
             enum_class (:obj:`type`): subclass of `Enum`
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`object`, optional): default value
-            default_cleaned_value (:obj:`object`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`Enum`, optional): value to replace 
+                :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -2796,14 +2802,14 @@ class BooleanAttribute(LiteralAttribute):
 
     Attributes:
         default (:obj:`bool`): default value
-        default_cleaned_value (:obj:`bool`): value to replace None values with during cleaning
+        default_cleaned_value (:obj:`bool`): value to replace :obj:`None` values with during cleaning
     """
 
     def __init__(self, default=False, default_cleaned_value=None, verbose_name='', help='Enter a Boolean value'):
         """
         Args:
             default (:obj:`bool`, optional): default value
-            default_cleaned_value (:obj:`bool`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`bool`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
 
@@ -2876,7 +2882,7 @@ class FloatAttribute(NumericAttribute):
 
     Attributes:
         default (:obj:`float`): default value
-        default_cleaned_value (:obj:`float`): value to replace None values with during cleaning
+        default_cleaned_value (:obj:`float`): value to replace :obj:`None` values with during cleaning
         min (:obj:`float`): minimum value
         max (:obj:`float`): maximum value
         nan (:obj:`bool`): if true, allow nan values
@@ -2891,7 +2897,7 @@ class FloatAttribute(NumericAttribute):
             max (:obj:`float`, optional): maximum value
             nan (:obj:`bool`, optional): if true, allow nan values
             default (:obj:`float`, optional): default value
-            default_cleaned_value (:obj:`float`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`float`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -2997,7 +3003,7 @@ class IntegerAttribute(NumericAttribute):
 
     Attributes:
         default (:obj:`int`): default value
-        default_cleaned_value (:obj:`int`): value to replace None values with during cleaning
+        default_cleaned_value (:obj:`int`): value to replace :obj:`None` values with during cleaning
         min (:obj:`int`): minimum value
         max (:obj:`int`): maximum value
     """
@@ -3009,7 +3015,7 @@ class IntegerAttribute(NumericAttribute):
             min (:obj:`int`, optional): minimum value
             max (:obj:`int`, optional): maximum value
             default (:obj:`int`, optional): default value
-            default_cleaned_value (:obj:`int`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`int`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3136,7 +3142,7 @@ class PositiveIntegerAttribute(IntegerAttribute):
             min (:obj:`int`, optional): minimum value
             max (:obj:`int`, optional): maximum value
             default (:obj:`int`, optional): default value
-            default_cleaned_value (:obj:`int`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`int`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3178,7 +3184,7 @@ class StringAttribute(LiteralAttribute):
 
     Attributes:
         default (:obj:`str`): default value
-        default_cleaned_value (:obj:`str`): value to replace None values with during cleaning
+        default_cleaned_value (:obj:`str`): value to replace :obj:`None` values with during cleaning
         min_length (:obj:`int`): minimum length
         max_length (:obj:`int`): maximum length
     """
@@ -3191,7 +3197,7 @@ class StringAttribute(LiteralAttribute):
             min_length (:obj:`int`, optional): minimum length
             max_length (:obj:`int`, optional): maximum length
             default (:obj:`str`, optional): default value
-            default_cleaned_value (:obj:`str`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3289,7 +3295,7 @@ class LongStringAttribute(StringAttribute):
             min_length (:obj:`int`, optional): minimum length
             max_length (:obj:`int`, optional): maximum length
             default (:obj:`str`, optional): default value
-            default_cleaned_value (:obj:`str`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3322,7 +3328,7 @@ class RegexAttribute(StringAttribute):
             min_length (:obj:`int`, optional): minimum length
             max_length (:obj:`int`, optional): maximum length
             default (:obj:`str`, optional): default value
-            default_cleaned_value (:obj:`str`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3417,7 +3423,9 @@ class DateAttribute(LiteralAttribute):
     Attributes:
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`date`): default date
-        default_cleaned_value (:obj:`date`): value to replace None values with during cleaning
+        default_cleaned_value (:obj:`date`): value to replace 
+            :obj:`None` values with during cleaning, or function 
+            which computes the value to replace :obj:`None` values
     """
 
     def __init__(self, none=True, default=None, default_cleaned_value=None,
@@ -3426,7 +3434,9 @@ class DateAttribute(LiteralAttribute):
         Args:
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`date`, optional): default date
-            default_cleaned_value (:obj:`date`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`date`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3551,7 +3561,9 @@ class TimeAttribute(LiteralAttribute):
     Attributes:
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`time`): default time
-        default_cleaned_value (:obj:`time`): value to replace None values with during cleaning
+        default_cleaned_value (:obj:`time`): value to replace 
+            :obj:`None` values with during cleaning, or function 
+            which computes the value to replace :obj:`None` values
     """
 
     def __init__(self, none=True, default=None, default_cleaned_value=None, verbose_name='', help='', primary=False, unique=False):
@@ -3559,7 +3571,9 @@ class TimeAttribute(LiteralAttribute):
         Args:
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`time`, optional): default time
-            default_cleaned_value (:obj:`time`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`time`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3679,7 +3693,9 @@ class DateTimeAttribute(LiteralAttribute):
     Attributes:
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`datetime`): default datetime
-        default_cleaned_value (:obj:`datetime`): value to replace None values with during cleaning
+        default_cleaned_value (:obj:`datetime`): value to replace 
+            :obj:`None` values with during cleaning, or function 
+            which computes the value to replace :obj:`None` values
     """
 
     def __init__(self, none=True, default=None, default_cleaned_value=None,
@@ -3688,7 +3704,9 @@ class DateTimeAttribute(LiteralAttribute):
         Args:
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`datetime`, optional): default datetime
-            default_cleaned_value (:obj:`datetime`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`datetime`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3844,7 +3862,9 @@ class RelatedAttribute(Attribute):
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             init_value (:obj:`object`, optional): initial value
             default (:obj:`object`, optional): default value
-            default_cleaned_value (:obj:`object`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`object`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             related_init_value (:obj:`object`, optional): related initial value
             related_default (:obj:`object`, optional): related default value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
@@ -4022,7 +4042,9 @@ class OneToOneAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): callable which returns default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`callable`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): callable which returns default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
@@ -4233,7 +4255,9 @@ class ManyToOneAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): callable which returns the default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`callable`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): callable which returns the default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
@@ -4456,7 +4480,9 @@ class OneToManyAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): function which returns the default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`callable`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): function which returns the default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
@@ -4683,7 +4709,9 @@ class ManyToManyAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): function which returns the default values
-            default_cleaned_value (:obj:`callable`, optional): value to replace None values with during cleaning
+            default_cleaned_value (:obj:`callable`, optional): value to replace 
+                :obj:`None` values with during cleaning, or function 
+                which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): function which returns the default related values
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
