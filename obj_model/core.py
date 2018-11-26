@@ -1015,9 +1015,9 @@ class Model(with_metaclass(ModelMeta, object)):
         from related classes. By default, return all attributes.
 
         Args:
-            type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional): 
+            type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional):
                 type of attributes to get
-            reverse (:obj:`bool`, optional): if :obj:`True`, include 
+            reverse (:obj:`bool`, optional): if :obj:`True`, include
                 attributes from related classes
 
         Returns:
@@ -1050,7 +1050,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get related attributes
 
         Args:
-            reverse (:obj:`bool`, optional): if :obj:`True`, include 
+            reverse (:obj:`bool`, optional): if :obj:`True`, include
                 attributes from related classes
 
         Returns:
@@ -1060,14 +1060,14 @@ class Model(with_metaclass(ModelMeta, object)):
 
     def get_attrs_by_val(self, type=None, reverse=True,
                          include=None, exclude=None):
-        """ Get attributes whose type is `type` and values are 
+        """ Get attributes whose type is `type` and values are
         in `include` and not `exclude`, optionally including attributes
         from related classes. By default, get all attributes.
 
         Args:
-            type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional): 
+            type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional):
                 type of attributes to get
-            reverse (:obj:`bool`, optional): if :obj:`True`, include 
+            reverse (:obj:`bool`, optional): if :obj:`True`, include
                 attributes from related classes
             include (:obj:`list`, optional): list of values to filter for
             exclude (:obj:`list`, optional): list of values to filter out
@@ -1116,7 +1116,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get empty (:obj:`None` or []) related attributes
 
         Args:
-            reverse (:obj:`bool`, optional): if :obj:`True`, include 
+            reverse (:obj:`bool`, optional): if :obj:`True`, include
                 attributes from related classes
 
         Returns:
@@ -1130,7 +1130,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get non-empty (:obj:`None` or []) related attributes
 
         Args:
-            reverse (:obj:`bool`, optional): if :obj:`True`, include 
+            reverse (:obj:`bool`, optional): if :obj:`True`, include
                 attributes from related classes
 
         Returns:
@@ -1763,7 +1763,7 @@ class Model(with_metaclass(ModelMeta, object)):
             objects (:obj:`dict`): dictionary of objects, grouped by model
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value 
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value
                 and cleaning error
         """
         if value in objects.get(cls, {}):
@@ -2350,7 +2350,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 object or create new object
 
         Returns:
-            :obj:`bool`: :obj:`True` if the object is an instance of :obj:`__type` and the 
+            :obj:`bool`: :obj:`True` if the object is an instance of :obj:`__type` and the
                 the values of the attributes of the object match :obj:`kwargs`
         """
         if '__type' in kwargs:
@@ -2399,8 +2399,8 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         name (:obj:`str`): name
         init_value(:obj:`object`): initial value
         default (:obj:`object`): default value
-        default_cleaned_value (:obj:`object`): value to replace 
-            :obj:`None` values with during cleaning, or function 
+        default_cleaned_value (:obj:`object`): value to replace
+            :obj:`None` values with during cleaning, or function
             which computes the value to replace :obj:`None` values
         verbose_name (:obj:`str`): verbose name
         help (:obj:`str`): help string
@@ -2415,8 +2415,8 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Args:
             init_value(:obj:`object`, optional): initial value
             default (:obj:`object`, optional): default value
-            default_cleaned_value (:obj:`object`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`object`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
@@ -2675,7 +2675,7 @@ class EnumAttribute(LiteralAttribute):
             enum_class (:obj:`type`): subclass of `Enum`
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`object`, optional): default value
-            default_cleaned_value (:obj:`Enum`, optional): value to replace 
+            default_cleaned_value (:obj:`Enum`, optional): value to replace
                 :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
@@ -2998,8 +2998,55 @@ class FloatAttribute(NumericAttribute):
         return value
 
 
+class PositiveFloatAttribute(FloatAttribute):
+    """ Positive float attribute """
+
+    def __init__(self, max=float('nan'), nan=True, default=float('nan'), default_cleaned_value=float('nan'),
+                 verbose_name='', help='', primary=False, unique=False):
+        """
+        Args:
+            max (:obj:`float`, optional): maximum value
+            nan (:obj:`bool`, optional): if true, allow nan values
+            default (:obj:`float`, optional): default value
+            default_cleaned_value (:obj:`float`, optional): value to replace :obj:`None` values with during cleaning
+            verbose_name (:obj:`str`, optional): verbose name
+            help (:obj:`str`, optional): help string
+            primary (:obj:`bool`, optional): indicate if attribute is primary attribute
+            unique (:obj:`bool`, optional): indicate if attribute value must be unique
+        """
+        super(PositiveFloatAttribute, self).__init__(min=0., max=max, nan=nan,
+                                                     default=default,
+                                                     default_cleaned_value=default_cleaned_value,
+                                                     verbose_name=verbose_name, help=help,
+                                                     primary=primary, unique=unique)
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`object`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+
+        error = super(PositiveFloatAttribute, self).validate(obj, value)
+        if error:
+            errors = error.messages
+        else:
+            errors = []
+
+        if not isnan(value) and value <= 0:
+            errors.append('Value must be positive')
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
+
+
 class IntegerAttribute(NumericAttribute):
-    """ Interger attribute
+    """ Integer attribute
 
     Attributes:
         default (:obj:`int`): default value
@@ -3095,7 +3142,7 @@ class IntegerAttribute(NumericAttribute):
         return None
 
     def serialize(self, value):
-        """ Serialize interger
+        """ Serialize integer
 
         Args:
             value (:obj:`int`): Python representation
@@ -3133,7 +3180,7 @@ class IntegerAttribute(NumericAttribute):
 
 
 class PositiveIntegerAttribute(IntegerAttribute):
-    """ Positive interger attribute """
+    """ Positive integer attribute """
 
     def __init__(self, max=None, default=None, default_cleaned_value=None,
                  verbose_name='', help='', primary=False, unique=False):
@@ -3423,8 +3470,8 @@ class DateAttribute(LiteralAttribute):
     Attributes:
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`date`): default date
-        default_cleaned_value (:obj:`date`): value to replace 
-            :obj:`None` values with during cleaning, or function 
+        default_cleaned_value (:obj:`date`): value to replace
+            :obj:`None` values with during cleaning, or function
             which computes the value to replace :obj:`None` values
     """
 
@@ -3434,8 +3481,8 @@ class DateAttribute(LiteralAttribute):
         Args:
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`date`, optional): default date
-            default_cleaned_value (:obj:`date`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`date`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
@@ -3561,8 +3608,8 @@ class TimeAttribute(LiteralAttribute):
     Attributes:
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`time`): default time
-        default_cleaned_value (:obj:`time`): value to replace 
-            :obj:`None` values with during cleaning, or function 
+        default_cleaned_value (:obj:`time`): value to replace
+            :obj:`None` values with during cleaning, or function
             which computes the value to replace :obj:`None` values
     """
 
@@ -3571,8 +3618,8 @@ class TimeAttribute(LiteralAttribute):
         Args:
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`time`, optional): default time
-            default_cleaned_value (:obj:`time`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`time`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
@@ -3693,8 +3740,8 @@ class DateTimeAttribute(LiteralAttribute):
     Attributes:
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`datetime`): default datetime
-        default_cleaned_value (:obj:`datetime`): value to replace 
-            :obj:`None` values with during cleaning, or function 
+        default_cleaned_value (:obj:`datetime`): value to replace
+            :obj:`None` values with during cleaning, or function
             which computes the value to replace :obj:`None` values
     """
 
@@ -3704,8 +3751,8 @@ class DateTimeAttribute(LiteralAttribute):
         Args:
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`datetime`, optional): default datetime
-            default_cleaned_value (:obj:`datetime`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`datetime`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
@@ -3862,8 +3909,8 @@ class RelatedAttribute(Attribute):
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             init_value (:obj:`object`, optional): initial value
             default (:obj:`object`, optional): default value
-            default_cleaned_value (:obj:`object`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`object`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_init_value (:obj:`object`, optional): related initial value
             related_default (:obj:`object`, optional): related default value
@@ -4042,8 +4089,8 @@ class OneToOneAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): callable which returns default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`callable`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): callable which returns default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
@@ -4255,8 +4302,8 @@ class ManyToOneAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): callable which returns the default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`callable`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): callable which returns the default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
@@ -4480,8 +4527,8 @@ class OneToManyAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): function which returns the default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`callable`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): function which returns the default related value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
@@ -4709,8 +4756,8 @@ class ManyToManyAttribute(RelatedAttribute):
             related_class (:obj:`class`): related class
             related_name (:obj:`str`, optional): name of related attribute on `related_class`
             default (:obj:`callable`, optional): function which returns the default values
-            default_cleaned_value (:obj:`callable`, optional): value to replace 
-                :obj:`None` values with during cleaning, or function 
+            default_cleaned_value (:obj:`callable`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): function which returns the default related values
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
@@ -5145,7 +5192,7 @@ class RelatedManager(list):
         return self
 
     def get_or_create(self, __type=None, **kwargs):
-        """ Get or create a related object by attribute/value pairs. Optionally, only get or create instances of 
+        """ Get or create a related object by attribute/value pairs. Optionally, only get or create instances of
         :obj:`Model` subclass :obj:`__type`.
 
         Args:

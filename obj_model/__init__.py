@@ -6,7 +6,8 @@ with open(pkg_resources.resource_filename('obj_model', 'VERSION'), 'r') as file:
 
 # API
 from .core import (Model, Attribute,
-                   LiteralAttribute, NumericAttribute, EnumAttribute, BooleanAttribute, FloatAttribute,
+                   LiteralAttribute, NumericAttribute, EnumAttribute, BooleanAttribute,
+                   FloatAttribute, PositiveFloatAttribute,
                    IntegerAttribute, PositiveIntegerAttribute, StringAttribute, LongStringAttribute,
                    RegexAttribute, SlugAttribute, UrlAttribute, DateAttribute, TimeAttribute,
                    DateTimeAttribute, RelatedAttribute, OneToOneAttribute, OneToManyAttribute,

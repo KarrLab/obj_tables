@@ -775,6 +775,12 @@ class TestCore(unittest.TestCase):
         self.assertIn(
             'float3', [x.attribute.name for x in leaf.validate().attributes])
 
+    def test_validate_positive_float_attribute(self):
+        attr = core.PositiveFloatAttribute()
+        self.assertEqual(attr.validate(None, 1.), None)
+        self.assertNotEqual(attr.validate(None, -1.), None)
+        self.assertNotEqual(attr.validate(None, 0.), None)
+
     def test_validate_int_attribute(self):
         root = UniqueRoot(int_attr='1.0.')
         root.clean()
