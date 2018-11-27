@@ -144,6 +144,7 @@ class TestMigration(unittest.TestCase):
             self.assertRegex(inconsistency, expected_inconsistency)
 
     def test_get_model_order(self):
+        # todo: including ambiguous_sheet_names
         pass
 
     def test_prepare(self):
@@ -337,6 +338,7 @@ class TestMigration(unittest.TestCase):
         source = read_workbook(self.example_old_model)
         migrated = read_workbook(self.example_migrated_model)
         self.assertEqual(source, migrated)
+        # todo: custom migrate_suffix and ValueError
 
     def test_migrate(self):
 
@@ -375,27 +377,24 @@ class TestRunMigration(unittest.TestCase):
         self.example_old_model = os.path.join(self.tmp_model_dir, 'example_old_model.xlsx')
 
     def tearDown(self):
-        # shutil.rmtree(self.tmp_model_dir)
-        pass
+        shutil.rmtree(self.tmp_model_dir)
 
     def test_parse_args(self):
-        old_model_definitions = 'dir/file1.py'
+        existing_model_definitions = 'dir/file1.py'
         new_model_definitions = 'dir/file2.py'
         files = 'dir1/m1.xlsx dir1/m1.xlsx'
-        cl = "{} {} {}".format(old_model_definitions, new_model_definitions, files)
+        cl = "{} {} {}".format(existing_model_definitions, new_model_definitions, files)
         args = RunMigration.parse_args(cli_args=cl.split())
-        self.assertEqual(args.old_model_definitions, old_model_definitions)
+        self.assertEqual(args.existing_model_definitions, existing_model_definitions)
         self.assertEqual(args.new_model_definitions, new_model_definitions)
         self.assertEqual(args.files, files.split())
 
     def run_migration(self, old_models, new_models, biomodel_file):
-        args = Namespace(old_model_definitions=old_models, new_model_definitions=new_models,
+        args = Namespace(existing_model_definitions=old_models, new_model_definitions=new_models,
             files=[biomodel_file])
         return RunMigration.main(args)
 
     def test_run_migration(self):
         migrated_example_model = self.run_migration(self.old_model_defs_path, self.new_model_defs_path,
             self.example_old_model)
-        # print('migrated_example_model', migrated_example_model)
-        # todo: test rel filename
         # todo: make unittest

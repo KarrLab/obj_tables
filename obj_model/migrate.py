@@ -41,7 +41,7 @@ class Migrator(object):
     """
 
     # default suffix for a migrated model file
-    MIGRATE_SUFFIX = ' migrate'
+    MIGRATE_SUFFIX = '_migrate'
 
     # modules being used for migration, indexed by full pathname
     # Migrator does not need or support packages
@@ -305,7 +305,7 @@ class Migrator(object):
             :obj:`list` of `obj_model.core.ModelMeta`: migrated models in the same order as the worksheets
                 for the corresponding old models, concatenated with new models sorted by name
         """
-        # todo: clean up naming: old models, migrated models, new models, source models, dest models
+        # todo: clean up naming: old models, existing, migrated models, new models, source models, dest models
         # use sheet_names in old file to determine order of model types in old source file, and use them in migrated file
         _, ext = os.path.splitext(source_file)
         utils_reader = wc_utils.workbook.io.get_reader(ext)(source_file)
@@ -361,8 +361,7 @@ class Migrator(object):
             :obj:`str`: name of migrated file
 
         Raises:
-            :obj:`ValueError`: if writing the migrated file would overwrite an existing file,
-                or ...
+            :obj:`ValueError`: if writing the migrated file would overwrite an existing file
         """
         # read models from source_file
         root, ext = os.path.splitext(source_file)
@@ -492,7 +491,7 @@ class Migrator(object):
     def run(self):
         migrated_files = []
         for file in self.files:
-            # todo: provide means to give migrated_file=None, migrate_suffix
+            # todo: provide CL means to supply migrated_file and migrate_suffix
             migrated_files.append(self.migrate(self._normalize_filename(file)))
         return migrated_files
 
@@ -510,20 +509,20 @@ class RunMigration(object):
             :obj:`argparse.Namespace`: parsed command line arguements
         """
         parser = argparse.ArgumentParser(
-            description="Migrate model file(s) from an old wc_lang version to a new one")
-        parser.add_argument('old_model_definitions',
-            help="Python file containing old obj_model.Model definitions")
+            description="Migrate model file(s) from an existing schema to a new one")
+        parser.add_argument('existing_model_definitions',
+            help="Python file containing existing obj_model.Model definitions")
         parser.add_argument('new_model_definitions',
             help="Python file containing new obj_model.Model definitions")
         parser.add_argument('files', nargs='+',
-            help="Files(s) to migrate from old to new obj_model.Model definitions; "
-            "new files will be written with a '_new' suffix")
+            help="Files(s) to migrate from existing to new obj_model.Model definitions; "
+            "new files will be written with a '_migrate' suffix")
         args = parser.parse_args(cli_args)
         return args
 
     @staticmethod
     def main(args):
-        migrator = Migrator(args.old_model_definitions, args.new_model_definitions, args.files)
+        migrator = Migrator(args.existing_model_definitions, args.new_model_definitions, args.files)
         migrator.prepare()
         return migrator.run()
 
@@ -533,13 +532,3 @@ if __name__ == '__main__':  # pragma: no cover     # reachable only from command
         RunMigration.main(args)
     except KeyboardInterrupt:
         pass
-
-
-
-
-
-
-
-
-
-
