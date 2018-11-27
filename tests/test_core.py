@@ -775,6 +775,12 @@ class TestCore(unittest.TestCase):
         self.assertIn(
             'float3', [x.attribute.name for x in leaf.validate().attributes])
 
+    def test_validate_positive_float_attribute(self):
+        attr = core.PositiveFloatAttribute()
+        self.assertEqual(attr.validate(None, 1.), None)
+        self.assertNotEqual(attr.validate(None, -1.), None)
+        self.assertNotEqual(attr.validate(None, 0.), None)
+
     def test_validate_int_attribute(self):
         root = UniqueRoot(int_attr='1.0.')
         root.clean()
@@ -912,6 +918,15 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.clean(now)[0], None)
         self.assertNotEqual(attr.clean(now)[1], None)
 
+        attr = core.DateAttribute(default_cleaned_value=lambda: datetime.now().date())
+        val, invalid = attr.clean(None)
+        self.assertEqual(invalid, None)
+
+        val = datetime(year=val.year, month=val.month, day=val.day)
+        now = datetime.now()
+        now = datetime(year=now.year, month=now.month, day=now.day)
+        self.assertLess((now - val).total_seconds(), 24 * 60 * 60)
+
     def test_validate_date_attribute(self):
         root = DateRoot()
 
@@ -1032,6 +1047,15 @@ class TestCore(unittest.TestCase):
         root.clean()
         self.assertNotEqual(root.validate(), None)
 
+        attr = core.TimeAttribute(default_cleaned_value=lambda: datetime.now().time())
+        val, invalid = attr.clean(None)
+        self.assertEqual(invalid, None)
+
+        val = datetime(year=1900, month=1, day=1, hour=val.hour, minute=val.minute, second=val.second)
+        now = datetime.now()
+        now = datetime(year=1900, month=1, day=1, hour=now.hour, minute=now.minute, second=now.second)
+        self.assertLess((now - val).total_seconds(), 10)
+
     def test_datetime_attribute(self):
         root = DateRoot()
 
@@ -1097,6 +1121,11 @@ class TestCore(unittest.TestCase):
         root.datetime = None
         root.clean()
         self.assertNotEqual(root.validate(), None)
+
+        attr = core.DateTimeAttribute(default_cleaned_value=datetime.now)
+        val, invalid = attr.clean(None)
+        self.assertEqual(invalid, None)
+        self.assertLess((datetime.now() - val).total_seconds(), 10.)
 
     def test_related_attribute(self):
         class ConcreteRelatedAttribute(core.RelatedAttribute):
@@ -2132,7 +2161,7 @@ class TestCore(unittest.TestCase):
         child_0 = TestChild(id='child_0', parent=parent_0)
         child_1 = TestChild(id='child_1', parent=parent_1)
         with self.assertRaisesRegex(ValueError, "'{}:{}' of '{}:{}' must be `None`".format(
-            'TestChild', 'child_1', 'TestParent', 'parent_1')):
+                'TestChild', 'child_1', 'TestParent', 'parent_1')):
             child_0.parent = parent_1
         self.assertEqual(child_0.parent, parent_0)
         child_0.parent = parent_2
@@ -2451,7 +2480,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(
             len(errors.invalid_models[0].attributes[0].messages), 1)
         self.assertRegex(errors.invalid_models[0].attributes[
-                                 0].messages[0], 'values must be unique')
+            0].messages[0], 'values must be unique')
 
     def test_validator_related(self):
         class TestParent(core.Model):
@@ -2767,7 +2796,7 @@ class TestCore(unittest.TestCase):
         root.date = date(2000, 10, 1)
         root.datetime = datetime(1900, 1, 1, 0, 0, 0, 0)
         root.time = time(0, 0, 0, 0)
-        self.assertIn('time: 0.0', root.pformat())
+        self.assertIn('time: 00:00:00', root.pformat())
 
     def test_difference(self):
         g = [
@@ -4043,6 +4072,127 @@ class TestCore(unittest.TestCase):
         self.assertNotEqual(p.children.get_or_create(__type=Child1, id='c1'), c0)
         self.assertNotEqual(p.children.get_or_create(__type=Child2, id='c0'), c0)
 
+    def test_get_attrs(self):
+        class TestParent(core.Model):
+            name = core.StringAttribute()
+            age = core.FloatAttribute()
+
+        class TestChild(core.Model):
+            id = core.StringAttribute()
+            age = core.FloatAttribute()
+            parent = core.ManyToOneAttribute(TestParent, related_name='children')
+
+        self.assertEqual(set(TestParent.get_attrs()), set([
+            TestParent.Meta.attributes['name'],
+            TestParent.Meta.attributes['age'],
+            TestParent.Meta.related_attributes['children'],
+        ]))
+        self.assertEqual(set(TestChild.get_attrs()), set([
+            TestChild.Meta.attributes['id'],
+            TestChild.Meta.attributes['age'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+
+        self.assertEqual(set(TestParent.get_attrs(type=core.LiteralAttribute)), set([
+            TestParent.Meta.attributes['name'],
+            TestParent.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(TestChild.get_attrs(type=core.LiteralAttribute)), set([
+            TestChild.Meta.attributes['id'],
+            TestChild.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(TestParent.get_attrs(type=core.RelatedAttribute)), set([
+            TestParent.Meta.related_attributes['children'],
+        ]))
+        self.assertEqual(set(TestChild.get_attrs(type=core.RelatedAttribute)), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+
+        self.assertEqual(set(TestParent.get_attrs(type=core.RelatedAttribute, reverse=False)), set([
+        ]))
+        self.assertEqual(set(TestChild.get_attrs(type=core.RelatedAttribute, reverse=False)), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(TestParent.get_literal_attrs()), set([
+            TestParent.Meta.attributes['name'],
+            TestParent.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(TestChild.get_literal_attrs()), set([
+            TestChild.Meta.attributes['id'],
+            TestChild.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(TestParent.get_related_attrs()), set([
+            TestParent.Meta.related_attributes['children'],
+        ]))
+        self.assertEqual(set(TestChild.get_related_attrs()), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(TestParent.get_related_attrs(reverse=False)), set([
+        ]))
+        self.assertEqual(set(TestChild.get_related_attrs(reverse=False)), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+
+        test_child_1 = TestChild(id='test_child_1')
+        test_child_2 = TestChild(age=10, parent=TestParent(name='parent_2'))
+        self.assertEqual(set(test_child_1.get_attrs_by_val()), set([
+            test_child_1.Meta.attributes['id'],
+            test_child_1.Meta.attributes['age'],
+            test_child_1.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_2.get_attrs_by_val()), set([
+            test_child_2.Meta.attributes['id'],
+            test_child_2.Meta.attributes['age'],
+            test_child_2.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(include=('test_child_1',))), set([
+            TestChild.Meta.attributes['id'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(exclude=('test_child_1',))), set([
+            TestChild.Meta.attributes['age'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(include=(None, []))), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(include=(None, float('nan'), []))), set([
+            TestChild.Meta.attributes['age'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_attrs_by_val(exclude=(float('nan'),))), set([
+            TestChild.Meta.attributes['id'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_2.get_attrs_by_val(include=(None, '', []))), set([
+            TestChild.Meta.attributes['id'],
+        ]))
+        self.assertEqual(set(test_child_2.get_attrs_by_val(exclude=(None, '', []))), set([
+            TestChild.Meta.attributes['age'],
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_empty_literal_attrs()), set([
+            TestChild.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(test_child_2.get_empty_literal_attrs()), set([
+            TestChild.Meta.attributes['id'],
+        ]))
+        self.assertEqual(set(test_child_1.get_non_empty_literal_attrs()), set([
+            TestChild.Meta.attributes['id'],
+        ]))
+        self.assertEqual(set(test_child_2.get_non_empty_literal_attrs()), set([
+            TestChild.Meta.attributes['age'],
+        ]))
+        self.assertEqual(set(test_child_1.get_empty_related_attrs()), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+        self.assertEqual(set(test_child_1.get_non_empty_related_attrs()), set([
+        ]))
+        self.assertEqual(set(test_child_2.get_empty_related_attrs()), set([
+        ]))
+        self.assertEqual(set(test_child_2.get_non_empty_related_attrs()), set([
+            TestChild.Meta.attributes['parent'],
+        ]))
+
 
 class ContextTestCase(unittest.TestCase):
     def test(self):
@@ -4110,11 +4260,23 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin('1985-04-11'), date(year=1985, month=4, day=11))
         self.assertEqual(attr.from_builtin(attr.to_builtin(date(year=1985, month=4, day=11))), date(year=1985, month=4, day=11))
 
+        val = date(year=1985, month=4, day=11)
+        self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(attr.serialize(None))[0], None)
+
     def test_time_attr(self):
         attr = core.TimeAttribute()
         self.assertEqual(attr.to_builtin(time(12, 4, 13, 0)), '12:04:13')
         self.assertEqual(attr.from_builtin('12:04:13'), time(12, 4, 13, 0))
         self.assertEqual(attr.from_builtin(attr.to_builtin(time(12, 4, 13, 0))), time(12, 4, 13, 0))
+
+        val = time(12, 4, 13, 0)
+        self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(attr.serialize(None))[0], None)
 
     def test_datetime_attr(self):
         attr = core.DateTimeAttribute()
@@ -4122,6 +4284,12 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin('1985-04-11 12:04:13'), datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
         self.assertEqual(attr.from_builtin(attr.to_builtin(datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))),
                          datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13))
+
+        val = datetime(year=1985, month=4, day=11, hour=12, minute=4, second=13)
+        self.assertEqual(attr.deserialize(attr.serialize(val))[0], val)
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(attr.serialize(None))[0], None)
 
     def test_model(self):
         class TestModel(core.Model):

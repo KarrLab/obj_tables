@@ -377,7 +377,7 @@ class Reader(six.with_metaclass(abc.ABCMeta, object)):
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
-                of object to read or list of types of objects to read            
+                of object to read or list of types of objects to read
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
