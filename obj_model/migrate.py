@@ -62,10 +62,13 @@ class Migrator(object):
         modules (:obj:`dict`): modules being used for migration, indexed by full pathname
         old_model_defs (:obj:`dict`): `obj_model.Model` definitions of the old models, keyed by name
         new_model_defs (:obj:`dict`): `obj_model.Model` definitions of the new models, keyed by name
-        new_attributes (:obj:`list`): new attribute names, in (model name, attribute name) pairs
-        new_models (:obj:`set`): model types defined in the new models but not the old models
         deleted_models (:obj:`set`): model types defined in the old models but not the new models
         deleted_attributes (:obj:`str`): deleted attribute names, in (model name, attribute name) pairs
+        renamed_models (:obj:`list` of :obj:`tuple`): model types renamed from the existing to the migrated schema
+        renamed_models_map (:obj:`dict`): map of model types renamed from the existing to the migrated schema
+        renamed_attributes (:obj:`list` of :obj:`tuple`): attribute names renamed from the existing to the migrated schema;
+            provided as ((existing model, existing attribute), (migrated model, migrated attribute))
+        renamed_attributes_map (:obj:`dict`): map of attribute names renamed from the existing to the migrated schema
         _migrated_copy_attr_name (:obj:`str`): attribute name used to point old models to corresponding
             new models; not used in any old model definitions
         files (:obj:`list`): names of model files to migrate
@@ -81,7 +84,8 @@ class Migrator(object):
     # prefix of attribute name used to connect old and new models during migration
     MIGRATED_COPY_ATTR_PREFIX = '__migrated_copy'
 
-    def __init__(self, old_model_defs_file, new_model_defs_file, files):
+    def __init__(self, old_model_defs_file, new_model_defs_file, files, renamed_models=None,
+        renamed_attributes=None):
         """ Initialize a Migrator
 
         Args:
@@ -96,6 +100,8 @@ class Migrator(object):
         self.new_model_defs_path = self._normalize_filename(new_model_defs_file)
         self._valid_python_path(self.old_model_defs_path)
         self._valid_python_path(self.new_model_defs_path)
+        self.renamed_models = [] if renamed_models is None else renamed_models
+        self.renamed_attributes = [] if renamed_attributes is None else renamed_attributes
         self.files = files
 
     @staticmethod
@@ -200,23 +206,6 @@ class Migrator(object):
         return os.path.abspath(filename)
 
     @staticmethod
-    def _new_attributes(old_model, new_model):
-        """ Returns attributes which are in new_model but are not in old_model
-
-        Args:
-            old_model (:obj:`obj_model.core.Model`): an original model
-            new_model (:obj:`obj_model.core.Model`): a new model
-
-        Returns:
-            :obj:`list`: names of new attributes
-        """
-        new_attributes = []
-        for attr in new_model.Meta.attributes:
-            if attr not in old_model.Meta.attributes:
-                new_attributes.append(attr)
-        return new_attributes
-
-    @staticmethod
     def _deleted_attributes(old_model, new_model):
         """ Returns attributes which are in old_model but are not in new_model
 
@@ -233,33 +222,126 @@ class Migrator(object):
                 deleted_attributes.append(attr)
         return deleted_attributes
 
+    @staticmethod
+    # todo: put in or get from utils
+    def _get_duplicates(iter):
+        """ Obtain duplicates in iterable `iter`; assumes items in `iter` are hashable
+
+        Args:
+            module (:obj:`iter`): an iterable
+
+        Returns:
+            :obj:`set`: duplicated items in `l`
+        """
+        seen = set()
+        dupes = set()
+
+        for item in iter:
+            if item not in seen:
+                seen.add(item)
+            else:
+                dupes.add(item)
+        return dupes
+
+    def _verify_renamings(self):
+        """ Verify that renamed models and attributes refer to the existing schema and migrated schema
+
+        Also verify no renaming inconsistencies and create maps from existing to migrated renamed
+        models and attributes.
+
+        Raises:
+            :obj:`ValueError`: if models or attributes do not exist in the specified schema
+        """
+        errors = []
+
+        # check renamed models
+        for existing_model, migrated_model in self.renamed_models:
+            if existing_model not in self.old_model_defs:
+                errors.append("'{}' in renamed models not an existing model".format(existing_model))
+            if migrated_model not in self.new_model_defs:
+                errors.append("'{}' in renamed models not a migrated model".format(migrated_model))
+        duped_existing_models = self._get_duplicates([existing_model for existing_model, _ in self.renamed_models])
+        if duped_existing_models:
+                errors.append("duplicated existing models in renamed models: '{}'".format(duped_existing_models))
+        duped_migrated_models = self._get_duplicates([migrated_model for _, migrated_model in self.renamed_models])
+        if duped_migrated_models:
+                errors.append("duplicated migrated models in renamed models: '{}'".format(duped_migrated_modelss))
+
+        # check renamed attributes
+        for (existing_model, existing_attr), (migrated_model, migrated_attr) in self.renamed_attributes:
+            if existing_model not in self.old_model_defs or \
+                existing_attr not in self.old_model_defs[existing_model].Meta.attributes:
+                errors.append("'{}.{}' in renamed attributes not an existing model.attribute".format(
+                    existing_model, existing_attr))
+            if migrated_model not in self.new_model_defs or \
+                migrated_attr not in self.new_model_defs[migrated_model].Meta.attributes:
+                errors.append("'{}.{}' in renamed attributes not a migrated model.attribute".format(
+                    migrated_model, migrated_attr))
+            # renamed attributes must be consistent with renamed models
+            # i.e., if an attribute is renamed A.x -> B.y then the model A must be renamed A -> B
+            if existing_model not in self.renamed_models_map or \
+                migrated_model != self.renamed_models_map[existing_model]:
+                errors.append("model renaming '{} -> {}' in renamed attributes not renamed models".format(
+                    existing_model, migrated_model))
+        duped_existing_attributes = self._get_duplicates([existing_attr for existing_attr, _ in self.renamed_attributes])
+        if duped_existing_attributes:
+                errors.append("duplicated existing attributes in renamed attributes: '{}'".format(duped_existing_attributes))
+        duped_migrated_attributes = self._get_duplicates([migrated_attr for _, migrated_attr in self.renamed_attributes])
+        if duped_migrated_attributes:
+                errors.append("duplicated migrated attributes in renamed attributes: '{}'".format(duped_migrated_attributes))
+
+        if errors:
+            raise ValueError('\n'.join(errors))
+
+        self.renamed_models_map = dict(self.renamed_models)
+        self.renamed_attributes_map = dict(self.renamed_attributes)
+
+    def _get_paired_models(self):
+        """ Obtain names of mapped pairs of existing and migrated models
+
+        Assumes that models with the same name are paired unless they're specified in `self.renamed_models`
+
+        Returns:
+            :obj:`list` of `tuple`: (existing_model, migrated_model) pairs for all models that are migrated
+        """
+        paired_models = []
+
+        for model in self.old_model_defs:
+            if model in self.renamed_models_map:
+                paired_models.append((model, self.renamed_models_map[model]))
+            if model in self.new_model_defs:
+                paired_models.append((model, model))
+        return paired_models
+
     def prepare(self):
         """ Prepare for migration
 
         Raises:
-            :obj:`ValueError`: if inconsistencies exist between corresponding old and migrated classes
+            :obj:`ValueError`: if renamings are not valid, or
+                inconsistencies exist between corresponding old and migrated classes
         """
         self._get_all_model_defs()
+
+        # verify that renaming specification refers to existing and migrated models & attributes
+        self._verify_renamings()
+
         # compare models
-        self.new_models = set(self.new_model_defs).difference(self.old_model_defs)
+        # fix: use model renaming
         self.deleted_models = set(self.old_model_defs).difference(self.new_model_defs)
 
-        # lists of (model name, attribute name) pairs
-        self.new_attributes = []
+        # list of (model name, attribute name) pairs
         self.deleted_attributes = []
-
         # compare models that are both old and new
-        for model_name in set(self.new_model_defs).intersection(self.old_model_defs):
-            for attr in self._new_attributes(self.old_model_defs[model_name], self.new_model_defs[model_name]):
-                self.new_attributes.append((model_name, attr))
-            for attr in self._deleted_attributes(self.old_model_defs[model_name], self.new_model_defs[model_name]):
-                self.deleted_attributes.append((model_name, attr))
+        # fix or discard
+        for existing_model, migrated_model in self._get_paired_models():
+            for attr in self._deleted_attributes(self.old_model_defs[existing_model], self.new_model_defs[migrated_model]):
+                self.deleted_attributes.append((migrated_model, attr))
 
-        # check that models in old and new have are consistent
+        # check that models in old and new are consistent
         inconsistencies = []
-        for model_name in set(self.new_model_defs).intersection(self.old_model_defs):
-            inconsistencies.extend(self._get_inconsistencies(self.old_model_defs[model_name],
-                self.new_model_defs[model_name]))
+        for existing_model, migrated_model in self._get_paired_models():
+            inconsistencies.extend(self._get_inconsistencies(self.old_model_defs[existing_model],
+                self.new_model_defs[migrated_model]))
         if inconsistencies:
             raise ValueError('\n'.join(inconsistencies))
 
@@ -271,8 +353,8 @@ class Migrator(object):
         """ Returns inconsistencies between old_model_cls and new_model_cls
 
         Args:
-            old_model_cls (:obj:`obj_model.core.ModelMeta`): an original model class
-            new_model_cls (:obj:`obj_model.core.ModelMeta`): a new model class
+            old_model_cls (:obj:`obj_model.core.ModelMeta`): an old model class
+            new_model_cls (:obj:`obj_model.core.ModelMeta`): the corresponding new model class
 
         Returns:
             :obj:`list`: inconsistencies between old_model_cls and new_model_cls; an empty list if
@@ -292,6 +374,7 @@ class Migrator(object):
         cls_name = old_model_cls.__name__
 
         # check types and values of attributes with the same name in old_model_cls and new_model_cls
+        # fix: use attr renaming
         related_attrs_to_check = ['name', 'related_name', 'verbose_related_name']
         related_attrs_names_to_check = ['primary_class', 'related_class']
         scalar_attrs_to_check = ['name', 'primary', 'unique', 'unique_case_insensitive']
@@ -345,6 +428,7 @@ class Migrator(object):
 
         old_models_migrating = []
         new_models_migrated = []
+        # fix: use model renaming
         for migrated_model_name in set(old_models).intersection(new_models):
             old_models_migrating.append(old_models[migrated_model_name])
             new_models_migrated.append(new_models[migrated_model_name])
@@ -454,6 +538,7 @@ class Migrator(object):
         model_name = old_model_def.__name__
         new_model = new_model_def()
 
+        # fix: use attr renaming
         # copy non-Related attributes from old_model to new_model
         for attr in old_model_def.Meta.attributes.values():
             val = getattr(old_model, attr.name)
@@ -495,6 +580,7 @@ class Migrator(object):
         new_schema = self.new_model_defs
 
         all_models = []
+        # fix: use model renaming
         for old_model in old_models:
             cls_name = old_model.__class__.__name__
 
@@ -516,6 +602,7 @@ class Migrator(object):
         """
         for old_model, new_model in all_models:
             new_model_cls = new_model.__class__
+            # fix: use attr renaming
             for attr in new_model_cls.Meta.attributes.values():
 
                 if isinstance(attr, obj_model.RelatedAttribute):

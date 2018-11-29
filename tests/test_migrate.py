@@ -93,13 +93,6 @@ class TestMigration(unittest.TestCase):
         self.assertTrue(self.migrator._get_migrated_copy_attr_name().startswith(
             Migrator.MIGRATED_COPY_ATTR_PREFIX))
 
-    def test_new_attributes(self):
-        migrator = self.migrator
-        model_name = 'Test'
-        self.assertEqual(['new_attr'],
-            migrator._new_attributes(migrator.old_model_defs[model_name],
-                migrator.new_model_defs[model_name]))
-
     def test_deleted_attributes(self):
         migrator = self.migrator
         model_name = 'Test'
@@ -150,9 +143,7 @@ class TestMigration(unittest.TestCase):
     def test_prepare(self):
         migrator = self.migrator
         migrator.prepare()
-        self.assertEqual(migrator.new_models, {'NewModel'})
         self.assertEqual(migrator.deleted_models, {'DeletedModel'})
-        self.assertEqual(migrator.new_attributes, [('Test', 'new_attr')])
         self.assertEqual(migrator.deleted_attributes, [('Test', 'old_attr')])
 
     def test_migrate_model(self):
@@ -326,7 +317,6 @@ class TestMigration(unittest.TestCase):
         self.assertTrue(old_model.is_equal(migrated_model))
 
     def test_migrate_without_changes(self):
-        print()
         no_change_migrator = self.no_change_migrator
         no_change_migrator.prepare()
         no_change_migrator.migrate(self.example_old_model, migrated_file=self.example_migrated_model)
