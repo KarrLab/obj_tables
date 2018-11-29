@@ -16,12 +16,43 @@ from enum import Enum
 from warnings import warn
 
 import obj_model
+from obj_model import TabularOrientation
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
 
 
 # todo: confirm this works for all model file formats: csv, tsv, json, etc.
 # todo: error if adding or deleting models or attrs create inconsistencies, as when deleting primary key attr referenced by a foreign key
+# todo: support sequence of migrations
+#       __init__ (or somewhere else): input list of sequence of schemas
+#       _get_all_model_defs: load the sequence of schemas
+#       prepare: prepare for a seq of migrations
+#       migrate: operate on the sequence of migrations; only write final file to disk
+# todo: support renaming of models
+#       __init__ (or somewhere else): input model renaming mapping
+#       prepare: use mapping when comparing models and checking consistency
+#       _get_model_order: use mapping to track model orders
+#       deep_migrate & connect_models: use mapping
+# todo: support renaming of attributes
+#       __init__ (or somewhere else): input attribute renaming mapping, which must be consistent w model renaming mapping
+#       _get_inconsistencies, _new_attributes, _deleted_attributes, deep_migrate & connect_models: use mapping
+# todo: support arbitrary transformations
+# todo: support data driven migration of many files in a repo
+#       config file provides: locations of schema files, renaming steps, locations of data files, [dir of migrated files]
+#       drive migration from the config file
+# todo: support high-level, WC wc_lang specific migration of a repo
+#       use case:
+#           1 change wc_lang/core.py
+#           2 in some repo migrate all model files over multiple wc_lang versions to the new version
+#           3 this migration may require arbitrary transformations
+#       implementation:
+#           each WC repo that has model files maintains a migrate.yml config file with: list of model files to migrate; migration options
+#           wc_lang contains migration_transformations.py, which provides all arbitrary transformations
+#           "migrate_repo repo" uses repo's migrate.yml and migration_transformations.py to migrate all model files in repo
+# todo: support migration in place
+# todo: use Model.revision to label git commit of wc_lang and automatically migrate models to current schema
+# and to report inconsistency between a schema and model file
+# todo: add Meta indicator to models (like Species previously) that are not inline and not stored in their own worksheet
 class Migrator(object):
     """ Support schema migration
 
@@ -115,7 +146,7 @@ class Migrator(object):
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             self.modules[model_defs_file] = module
-        except (SyntaxError, ImportError, AttributeError) as e:
+        except (SyntaxError, ImportError, AttributeError, ValueError) as e:
             raise ValueError("'{}' cannot be imported and exec'ed: {}".format(model_defs_file, e))
         return module
 
@@ -141,7 +172,7 @@ class Migrator(object):
         self.new_model_defs = self._get_model_defs(self._load_model_defs_file(self.new_model_defs_path))
 
     def _get_migrated_copy_attr_name(self):
-        """ Obtain attribute name for a migrated copy
+        """ Obtain name of attribute used to reference a migrated copy
 
         Returns:
             :obj:`str`: attribute name for a migrated copy
@@ -348,6 +379,20 @@ class Migrator(object):
         migrated_model_order.extend(newly_created_models)
         return migrated_model_order
 
+    @staticmethod
+    def _get_models_with_worksheets(models):
+        """ Select subset of `models` that are stored in a worksheet or file
+
+        Args:
+            models (:obj:`dict` of `obj_model.core.ModelMeta`): model classes keyed by name
+
+        Returns:
+            :obj:`str`: name of migrated file
+        """
+        # todo: remove this hack that ignores Species after Species are stored in their own worksheet
+        return [model for model in models.values() if model.Meta.tabular_orientation != TabularOrientation.inline
+            and model.__name__ != 'Species']
+
     def migrate(self, source_file, migrated_file=None, migrate_suffix=None):
         """ Migrate data in `source_file`
 
@@ -367,7 +412,8 @@ class Migrator(object):
         root, ext = os.path.splitext(source_file)
         reader = obj_model.io.get_reader(ext)()
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
-        old_models = reader.run(source_file, models=list(self.old_model_defs.values()), ignore_sheet_order=True)
+        old_models = reader.run(source_file, models=self._get_models_with_worksheets(self.old_model_defs),
+            ignore_attribute_order=True, ignore_sheet_order=True)
         models_read = []
         for models in old_models.values():
             models_read.extend(models)
