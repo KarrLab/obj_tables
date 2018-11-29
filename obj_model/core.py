@@ -50,7 +50,6 @@ import warnings
 # todo: improve memory efficiency
 # todo: improve run-time
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
-# todo: implement schema migration
 
 
 class ModelMeta(type):
@@ -2397,7 +2396,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
 
     Attributes:
         name (:obj:`str`): name
-        init_value(:obj:`object`): initial value
+        init_value (:obj:`object`): initial value
         default (:obj:`object`): default value
         default_cleaned_value (:obj:`object`): value to replace
             :obj:`None` values with during cleaning, or function
@@ -2413,7 +2412,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
-            init_value(:obj:`object`, optional): initial value
+            init_value (:obj:`object`, optional): initial value
             default (:obj:`object`, optional): default value
             default_cleaned_value (:obj:`object`, optional): value to replace
                 :obj:`None` values with during cleaning, or function

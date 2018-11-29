@@ -532,7 +532,7 @@ class WorkbookReader(Reader):
         reader = reader_cls(path)
 
         # initialize reading
-        workbook = reader.initialize_workbook()
+        reader.initialize_workbook()
 
         # check that at least one model is defined
         if models is None:
