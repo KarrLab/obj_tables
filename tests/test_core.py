@@ -581,6 +581,9 @@ class TestCore(unittest.TestCase):
         attr = core.EnumAttribute(TestEnum)
         self.assertEqual(attr.serialize(TestEnum.val0), 'val0')
 
+        attr = core.EnumAttribute(TestEnum, none=True)
+        self.assertEqual(attr.serialize(None), '')
+
         # test validation of None values
         attr = core.EnumAttribute(TestEnum, none=False)
         self.assertNotEqual(attr.validate(None, None), None)

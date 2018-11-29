@@ -2770,7 +2770,9 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        return value.name
+        if value:
+            return value.name
+        return ''
 
     def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
