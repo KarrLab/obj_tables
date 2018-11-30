@@ -4196,6 +4196,18 @@ class TestCore(unittest.TestCase):
             TestChild.Meta.attributes['parent'],
         ]))
 
+    def test_get_attrs_2(self):
+        class A(core.Model):
+            x = core.OneToOneAttribute('X', related_name='a')
+        class X(core.Model):
+            pass
+
+        a = A()
+        x = X()
+        a.x = x
+        self.assertEqual(a.get_non_empty_related_attrs(), [A.Meta.attributes['x']])
+        self.assertEqual(x.get_non_empty_related_attrs(), [X.Meta.related_attributes['a']])
+
 
 class ContextTestCase(unittest.TestCase):
     def test(self):

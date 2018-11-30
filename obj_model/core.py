@@ -1009,13 +1009,15 @@ class Model(with_metaclass(ModelMeta, object)):
         self.__class__.objects._register_obj(self)
 
     @classmethod
-    def get_attrs(cls, type=None, reverse=True):
+    def get_attrs(cls, type=None, forward=True, reverse=True):
         """ Get attributes of a type, optionally including attributes
         from related classes. By default, return all attributes.
 
         Args:
             type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional):
                 type of attributes to get
+            forward (:obj:`bool`, optional): if :obj:`True`, include
+                attributes from class
             reverse (:obj:`bool`, optional): if :obj:`True`, include
                 attributes from related classes
 
@@ -1024,7 +1026,9 @@ class Model(with_metaclass(ModelMeta, object)):
         """
         type = type or Attribute
 
-        attrs_to_search = cls.Meta.attributes.values()
+        attrs_to_search = []
+        if forward:
+            attrs_to_search = chain(attrs_to_search, cls.Meta.attributes.values())
         if reverse:
             attrs_to_search = chain(attrs_to_search, cls.Meta.related_attributes.values())
 
@@ -1074,23 +1078,27 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:`list` of :obj:`Attribute`: attributes
         """
-        attrs_to_search = self.__class__.get_attrs(type=type,
-                                                   reverse=reverse)
-
         include_nan = include is not None and next((True for i in include if isinstance(i, numbers.Number) and math.isnan(i)), False)
         exclude_nan = exclude is not None and next((True for e in exclude if isinstance(e, numbers.Number) and math.isnan(e)), False)
         matching_attrs = []
-        for attr in attrs_to_search:
-            value = getattr(self, attr.name)
-            if (include is None or (value in include or
-                                    (include_nan and
-                                     (isinstance(value, numbers.Number) and
-                                      math.isnan(value))))) and \
-               (exclude is None or (value not in exclude and
-                                    (not exclude_nan or not
-                                     (isinstance(value, numbers.Number) and
-                                      math.isnan(value))))):
-                matching_attrs.append(attr)
+        for is_for, is_rev in ((True, False), (False, reverse)):
+            attrs_to_search = self.__class__.get_attrs(type=type,
+                                                       forward=is_for,
+                                                       reverse=is_rev)
+            for attr in attrs_to_search:
+                if is_for:
+                    value = getattr(self, attr.name)
+                else:
+                    value = getattr(self, attr.related_name)
+                if (include is None or (value in include or
+                                        (include_nan and
+                                         (isinstance(value, numbers.Number) and
+                                          math.isnan(value))))) and \
+                   (exclude is None or (value not in exclude and
+                                        (not exclude_nan or not
+                                         (isinstance(value, numbers.Number) and
+                                          math.isnan(value))))):
+                    matching_attrs.append(attr)
         return matching_attrs
 
     def get_empty_literal_attrs(self):
