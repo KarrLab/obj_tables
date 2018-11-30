@@ -29,7 +29,7 @@ from six import integer_types, string_types, with_metaclass
 from stringcase import sentencecase
 from os.path import basename, dirname, splitext
 from weakref import WeakSet, WeakKeyDictionary
-from wc_utils.util.list import is_sorted
+from wc_utils.util.list import det_dedupe, is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
@@ -5728,7 +5728,7 @@ class Validator(object):
             all_objects = copy.copy(objects)
             for obj in objects:
                 all_objects.extend(obj.get_related())
-            objects = list(set(all_objects))
+            objects = det_dedupe(all_objects)
 
         error = self.clean(objects)
         if error:
