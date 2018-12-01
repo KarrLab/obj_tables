@@ -114,7 +114,7 @@ class ModelMeta(type):
         cls.Meta.related_attributes = collections.OrderedDict()
         cls.Meta.local_attributes = collections.OrderedDict()
         for attr in cls.Meta.attributes.values():
-            cls.Meta.local_attributes[attr.name] = LocalAttribute(cls, attr)
+            cls.Meta.local_attributes[attr.name] = LocalAttribute(attr, cls)
         for model in get_subclasses(Model):
             metacls.init_related_attributes(cls, model)
         metacls.init_attribute_order(cls)
@@ -379,7 +379,7 @@ class ModelMeta(type):
                         related_class.Meta.related_attributes[
                             attr.related_name] = attr
                         related_class.Meta.local_attributes[attr.related_name] = LocalAttribute(
-                            related_class, attr, related=True)
+                            attr, related_class, is_primary=False)
 
     def init_primary_attribute(cls):
         """ Initialize the primary attribute of a model """
@@ -2610,7 +2610,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
 
 
 class LocalAttribute(object):
-    """ Meta data about an attribute in a class
+    """ Meta data about an local attribute in a class
 
     Attributes:
         attr (:obj:`Attribute`): attribute
@@ -2627,13 +2627,13 @@ class LocalAttribute(object):
         is_iterable (obj:`bool`): :obj:`True` if the value of this attribute is a list (*-to-many relationship)
     """
 
-    def __init__(self, cls, attr, related=False):
+    def __init__(self, attr, primary_class, is_primary=True):
         """
-        Args:
-            cls
-            attr
-            related (:obj:`bool`, optional): :obj:`True` indicates that the attribute is defined in
-                a related class
+        Args:            
+            attr (obj:`Attribute`): attribute
+            primary_class (:obj:`type`): class in which :obj:`attr` was defined
+            is_primary (:obj:`bool`, optional): :obj:`True` indicates that a local attribute should be created
+                for the related class of :obj:`attr`
         """
         self.attr = attr
         self.primary_name = attr.name
@@ -2643,19 +2643,13 @@ class LocalAttribute(object):
             self.secondary_class = attr.related_class
             self.secondary_name = attr.related_name
         else:
-            self.primary_class = cls
+            self.primary_class = primary_class
             self.is_related = False
             self.secondary_class = None
             self.secondary_name = None
 
-        if related:
-            self.cls = attr.related_class
-            self.name = attr.related_name
-            self.related_class = attr.primary_class
-            self.related_name = attr.name
-            self.is_iterable = isinstance(attr, (ManyToOneAttribute, ManyToManyAttribute))
-        else:
-            self.cls = cls
+        if is_primary:
+            self.cls = primary_class
             self.name = attr.name
             if isinstance(attr, RelatedAttribute):
                 self.related_class = attr.related_class
@@ -2664,7 +2658,13 @@ class LocalAttribute(object):
                 self.related_class = None
                 self.related_name = None
             self.is_iterable = isinstance(attr, (OneToManyAttribute, ManyToManyAttribute))
-        self.is_primary = not related
+        else:
+            self.cls = attr.related_class
+            self.name = attr.related_name
+            self.related_class = attr.primary_class
+            self.related_name = attr.name
+            self.is_iterable = isinstance(attr, (ManyToOneAttribute, ManyToManyAttribute))
+        self.is_primary = is_primary
 
 
 class LiteralAttribute(Attribute):
