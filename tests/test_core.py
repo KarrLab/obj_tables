@@ -4232,7 +4232,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestParent.Meta.local_attributes['id'].secondary_name, None)
         self.assertEqual(TestParent.Meta.local_attributes['id'].is_primary, True)
         self.assertEqual(TestParent.Meta.local_attributes['id'].is_related, False)
-        self.assertEqual(TestParent.Meta.local_attributes['id'].is_iterable, False)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].is_related_to_many, False)
         self.assertEqual(TestParent.Meta.local_attributes['children'].attr, TestParent.Meta.related_attributes['children'])
         self.assertEqual(TestParent.Meta.local_attributes['children'].cls, TestParent)
         self.assertEqual(TestParent.Meta.local_attributes['children'].name, 'children')
@@ -4244,7 +4244,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestParent.Meta.local_attributes['children'].secondary_name, 'children')
         self.assertEqual(TestParent.Meta.local_attributes['children'].is_primary, False)
         self.assertEqual(TestParent.Meta.local_attributes['children'].is_related, True)
-        self.assertEqual(TestParent.Meta.local_attributes['children'].is_iterable, True)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].is_related_to_many, True)
 
         self.assertEqual(set(TestChild.Meta.local_attributes.keys()), set(['name', 'parents']))
         self.assertEqual(TestChild.Meta.local_attributes['name'].attr, TestChild.Meta.attributes['name'])
@@ -4258,7 +4258,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestChild.Meta.local_attributes['name'].secondary_name, None)
         self.assertEqual(TestChild.Meta.local_attributes['name'].is_primary, True)
         self.assertEqual(TestChild.Meta.local_attributes['name'].is_related, False)
-        self.assertEqual(TestChild.Meta.local_attributes['name'].is_iterable, False)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].is_related_to_many, False)
         self.assertEqual(TestChild.Meta.local_attributes['parents'].attr, TestChild.Meta.attributes['parents'])
         self.assertEqual(TestChild.Meta.local_attributes['parents'].cls, TestChild)
         self.assertEqual(TestChild.Meta.local_attributes['parents'].name, 'parents')
@@ -4270,7 +4270,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestChild.Meta.local_attributes['parents'].secondary_name, 'children')
         self.assertEqual(TestChild.Meta.local_attributes['parents'].is_primary, True)
         self.assertEqual(TestChild.Meta.local_attributes['parents'].is_related, True)
-        self.assertEqual(TestChild.Meta.local_attributes['parents'].is_iterable, True)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].is_related_to_many, True)
 
 
 class ContextTestCase(unittest.TestCase):

@@ -2624,7 +2624,7 @@ class LocalAttribute(object):
         secondary_name (:obj:`str`): name of this attribute in :obj:`secondary_cls`
         is_primary (:obj:`bool`): :obj:`True` if this :obj:`attr` was defined in :obj:`cls` (:obj:`cls`=:obj:`primary_cls`)
         is_related (:obj:`bool`): :obj:`True` if this attribute is an instance of :obj:`RelatedAttribute`
-        is_iterable (obj:`bool`): :obj:`True` if the value of this attribute is a list (*-to-many relationship)
+        is_related_to_many (obj:`bool`): :obj:`True` if the value of this attribute is a list (*-to-many relationship)
     """
 
     def __init__(self, attr, primary_class, is_primary=True):
@@ -2657,13 +2657,13 @@ class LocalAttribute(object):
             else:
                 self.related_class = None
                 self.related_name = None
-            self.is_iterable = isinstance(attr, (OneToManyAttribute, ManyToManyAttribute))
+            self.is_related_to_many = isinstance(attr, (OneToManyAttribute, ManyToManyAttribute))
         else:
             self.cls = attr.related_class
             self.name = attr.related_name
             self.related_class = attr.primary_class
             self.related_name = attr.name
-            self.is_iterable = isinstance(attr, (ManyToOneAttribute, ManyToManyAttribute))
+            self.is_related_to_many = isinstance(attr, (ManyToOneAttribute, ManyToManyAttribute))
         self.is_primary = is_primary
 
 
