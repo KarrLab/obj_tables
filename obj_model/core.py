@@ -112,9 +112,9 @@ class ModelMeta(type):
         metacls.init_primary_attribute(cls)
 
         cls.Meta.related_attributes = collections.OrderedDict()
+        cls.Meta.all_attributes = collections.OrderedDict(cls.Meta.attributes)
         for model in get_subclasses(Model):
             metacls.init_related_attributes(cls, model)
-
         metacls.init_attribute_order(cls)
 
         metacls.init_ordering(cls)
@@ -376,9 +376,9 @@ class ModelMeta(type):
                         # add attribute to dictionary of related attributes
                         related_class.Meta.related_attributes[
                             attr.related_name] = attr
-                        related_class.Meta.related_attributes = collections.OrderedDict(
-                            sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))
-
+                        related_class.Meta.all_attributes[
+                            attr.related_name] = attr
+                            
     def init_primary_attribute(cls):
         """ Initialize the primary attribute of a model """
         primary_attributes = [
@@ -931,8 +931,12 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Meta data for :class:`Model`
 
         Attributes:
-            attributes (:obj:`collections.OrderedDict` of `Attribute`): attributes
-            related_attributes (:obj:`collections.OrderedDict` of `Attribute`): attributes declared in related objects
+            attributes (:obj:`collections.OrderedDict` of :obj:`str`, `Attribute`): attributes
+            related_attributes (:obj:`collections.OrderedDict` of :obj:`str, `Attribute`): attributes
+                declared in related objects
+            all_attributes (:obj:`collections.OrderedDict` of :obj:`str`, :obj:`Attribute`): dictionary
+                that maps the names of all attributes to their instances, including attributes defined
+                in this class and attributes defined in related classes
             primary_attribute (:obj:`Attribute`): attribute with `primary` = `True`
             unique_together (:obj:`tuple` of :obj:`tuple`'s of attribute names): controls what tuples of
                 attribute values must be unique

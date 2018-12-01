@@ -4209,6 +4209,27 @@ class TestCore(unittest.TestCase):
         self.assertEqual(a.get_non_empty_related_attrs(), {'x': A.Meta.attributes['x']})
         self.assertEqual(x.get_non_empty_related_attrs(), {'a': X.Meta.related_attributes['a']})
 
+    def test_all_attributes(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+
+        class Child(core.Model):
+            name = core.SlugAttribute()
+            parents = core.ManyToManyAttribute(Parent, related_name='children')
+
+        p = Parent()
+        c = Child()
+
+        print(Parent.Meta.all_attributes)
+        self.assertEqual(Parent.Meta.all_attributes, collections.OrderedDict([
+            ('id', Parent.Meta.attributes['id']),
+            ('children', Parent.Meta.related_attributes['children']),
+        ]))
+        self.assertEqual(dict(Child.Meta.all_attributes), {
+            'name': Child.Meta.attributes['name'],
+            'parents': Child.Meta.attributes['parents'],
+        })
+
 
 class ContextTestCase(unittest.TestCase):
     def test(self):
