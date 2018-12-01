@@ -4209,26 +4209,68 @@ class TestCore(unittest.TestCase):
         self.assertEqual(a.get_non_empty_related_attrs(), {'x': A.Meta.attributes['x']})
         self.assertEqual(x.get_non_empty_related_attrs(), {'a': X.Meta.related_attributes['a']})
 
-    def test_all_attributes(self):
-        class Parent(core.Model):
+    def test_local_attributes(self):
+        class TestParent(core.Model):
             id = core.SlugAttribute()
 
-        class Child(core.Model):
+        class TestChild(core.Model):
             name = core.SlugAttribute()
-            parents = core.ManyToManyAttribute(Parent, related_name='children')
+            parents = core.ManyToManyAttribute(TestParent, related_name='children')
 
-        p = Parent()
-        c = Child()
+        p = TestParent()
+        c = TestChild()
 
-        print(Parent.Meta.all_attributes)
-        self.assertEqual(Parent.Meta.all_attributes, collections.OrderedDict([
-            ('id', Parent.Meta.attributes['id']),
-            ('children', Parent.Meta.related_attributes['children']),
-        ]))
-        self.assertEqual(dict(Child.Meta.all_attributes), {
-            'name': Child.Meta.attributes['name'],
-            'parents': Child.Meta.attributes['parents'],
-        })
+        self.assertEqual(set(TestParent.Meta.local_attributes.keys()), set(['id', 'children']))
+        self.assertEqual(TestParent.Meta.local_attributes['id'].attr, TestParent.Meta.attributes['id'])
+        self.assertEqual(TestParent.Meta.local_attributes['id'].cls, TestParent)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].name, 'id')
+        self.assertEqual(TestParent.Meta.local_attributes['id'].related_class, None)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].related_name, None)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].primary_class, TestParent)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].primary_name, 'id')
+        self.assertEqual(TestParent.Meta.local_attributes['id'].secondary_class, None)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].secondary_name, None)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].is_primary, True)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].is_related, False)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].is_iterable, False)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].attr, TestParent.Meta.related_attributes['children'])
+        self.assertEqual(TestParent.Meta.local_attributes['children'].cls, TestParent)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].name, 'children')
+        self.assertEqual(TestParent.Meta.local_attributes['children'].related_class, TestChild)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].related_name, 'parents')
+        self.assertEqual(TestParent.Meta.local_attributes['children'].primary_class, TestChild)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].primary_name, 'parents')
+        self.assertEqual(TestParent.Meta.local_attributes['children'].secondary_class, TestParent)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].secondary_name, 'children')
+        self.assertEqual(TestParent.Meta.local_attributes['children'].is_primary, False)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].is_related, True)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].is_iterable, True)
+
+        self.assertEqual(set(TestChild.Meta.local_attributes.keys()), set(['name', 'parents']))
+        self.assertEqual(TestChild.Meta.local_attributes['name'].attr, TestChild.Meta.attributes['name'])
+        self.assertEqual(TestChild.Meta.local_attributes['name'].cls, TestChild)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].name, 'name')
+        self.assertEqual(TestChild.Meta.local_attributes['name'].related_class, None)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].related_name, None)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].primary_class, TestChild)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].primary_name, 'name')
+        self.assertEqual(TestChild.Meta.local_attributes['name'].secondary_class, None)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].secondary_name, None)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].is_primary, True)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].is_related, False)
+        self.assertEqual(TestChild.Meta.local_attributes['name'].is_iterable, False)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].attr, TestChild.Meta.attributes['parents'])
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].cls, TestChild)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].name, 'parents')
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].related_class, TestParent)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].related_name, 'children')
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].primary_class, TestChild)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].primary_name, 'parents')
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].secondary_class, TestParent)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].secondary_name, 'children')
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].is_primary, True)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].is_related, True)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].is_iterable, True)
 
 
 class ContextTestCase(unittest.TestCase):

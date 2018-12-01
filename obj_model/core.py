@@ -112,7 +112,9 @@ class ModelMeta(type):
         metacls.init_primary_attribute(cls)
 
         cls.Meta.related_attributes = collections.OrderedDict()
-        cls.Meta.all_attributes = collections.OrderedDict(cls.Meta.attributes)
+        cls.Meta.local_attributes = collections.OrderedDict()
+        for attr in cls.Meta.attributes.values():
+            cls.Meta.local_attributes[attr.name] = LocalAttribute(cls, attr)
         for model in get_subclasses(Model):
             metacls.init_related_attributes(cls, model)
         metacls.init_attribute_order(cls)
@@ -376,9 +378,9 @@ class ModelMeta(type):
                         # add attribute to dictionary of related attributes
                         related_class.Meta.related_attributes[
                             attr.related_name] = attr
-                        related_class.Meta.all_attributes[
-                            attr.related_name] = attr
-                            
+                        related_class.Meta.local_attributes[attr.related_name] = LocalAttribute(
+                            related_class, attr, related=True)
+
     def init_primary_attribute(cls):
         """ Initialize the primary attribute of a model """
         primary_attributes = [
@@ -934,8 +936,8 @@ class Model(with_metaclass(ModelMeta, object)):
             attributes (:obj:`collections.OrderedDict` of :obj:`str`, `Attribute`): attributes
             related_attributes (:obj:`collections.OrderedDict` of :obj:`str, `Attribute`): attributes
                 declared in related objects
-            all_attributes (:obj:`collections.OrderedDict` of :obj:`str`, :obj:`Attribute`): dictionary
-                that maps the names of all attributes to their instances, including attributes defined
+            local_attributes (:obj:`collections.OrderedDict` of :obj:`str`, :obj:`Attribute`): dictionary
+                that maps the names of all local attributes to their instances, including attributes defined
                 in this class and attributes defined in related classes
             primary_attribute (:obj:`Attribute`): attribute with `primary` = `True`
             unique_together (:obj:`tuple` of :obj:`tuple`'s of attribute names): controls what tuples of
@@ -2605,6 +2607,64 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             :obj:`object`: decoded value of the attribute
         """
         pass  # pragma: no cover
+
+
+class LocalAttribute(object):
+    """ Meta data about an attribute in a class
+
+    Attributes:
+        attr (:obj:`Attribute`): attribute
+        cls (:obj:`type`): class which owns this attribute
+        name (:obj:`str`: name of the :obj:`attr` in :obj:`cls`
+        related_class (:obj:`type`): other class which is related to this attribute
+        related_name (:obj:`str`): name of this attribute in :obj:`related_cls`
+        primary_class (:obj:`type`): class in which this attribute was defined
+        primary_name (:obj:`str`): name of this attribute in :obj:`primary_cls`
+        secondary_class (:obj:`type`): related class to :obj:`primary_cls`
+        secondary_name (:obj:`str`): name of this attribute in :obj:`secondary_cls`
+        is_primary (:obj:`bool`): :obj:`True` if this :obj:`attr` was defined in :obj:`cls` (:obj:`cls`=:obj:`primary_cls`)
+        is_related (:obj:`bool`): :obj:`True` if this attribute is an instance of :obj:`RelatedAttribute`
+        is_iterable (obj:`bool`): :obj:`True` if the value of this attribute is a list (*-to-many relationship)
+    """
+
+    def __init__(self, cls, attr, related=False):
+        """
+        Args:
+            cls
+            attr
+            related (:obj:`bool`, optional): :obj:`True` indicates that the attribute is defined in
+                a related class
+        """
+        self.attr = attr
+        self.primary_name = attr.name
+        if isinstance(attr, RelatedAttribute):
+            self.primary_class = attr.primary_class
+            self.is_related = True
+            self.secondary_class = attr.related_class
+            self.secondary_name = attr.related_name
+        else:
+            self.primary_class = cls
+            self.is_related = False
+            self.secondary_class = None
+            self.secondary_name = None
+
+        if related:
+            self.cls = attr.related_class
+            self.name = attr.related_name
+            self.related_class = attr.primary_class
+            self.related_name = attr.name
+            self.is_iterable = isinstance(attr, (ManyToOneAttribute, ManyToManyAttribute))
+        else:
+            self.cls = cls
+            self.name = attr.name
+            if isinstance(attr, RelatedAttribute):
+                self.related_class = attr.related_class
+                self.related_name = attr.related_name
+            else:
+                self.related_class = None
+                self.related_name = None
+            self.is_iterable = isinstance(attr, (OneToManyAttribute, ManyToManyAttribute))
+        self.is_primary = not related
 
 
 class LiteralAttribute(Attribute):
