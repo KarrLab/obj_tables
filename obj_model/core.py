@@ -1022,20 +1022,21 @@ class Model(with_metaclass(ModelMeta, object)):
                 attributes from related classes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: matching attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of matching attributes
         """
         type = type or Attribute
 
         attrs_to_search = []
         if forward:
-            attrs_to_search = chain(attrs_to_search, cls.Meta.attributes.values())
+            attrs_to_search = chain(attrs_to_search, cls.Meta.attributes.items())
         if reverse:
-            attrs_to_search = chain(attrs_to_search, cls.Meta.related_attributes.values())
+            attrs_to_search = chain(attrs_to_search, cls.Meta.related_attributes.items())
 
-        matching_attrs = []
-        for attr in attrs_to_search:
+        matching_attrs = {}
+        for attr_name, attr in attrs_to_search:
             if isinstance(attr, type):
-                matching_attrs.append(attr)
+                matching_attrs[attr_name] = attr
 
         return matching_attrs
 
@@ -1044,7 +1045,8 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get literal attributes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: literal attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of literal attributes
         """
         return cls.get_attrs(type=LiteralAttribute)
 
@@ -1057,7 +1059,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 attributes from related classes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: related attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of related attributes
         """
         return cls.get_attrs(type=RelatedAttribute, reverse=reverse)
 
@@ -1076,36 +1079,33 @@ class Model(with_metaclass(ModelMeta, object)):
             exclude (:obj:`list`, optional): list of values to filter out
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of matching attributes
         """
         include_nan = include is not None and next((True for i in include if isinstance(i, numbers.Number) and math.isnan(i)), False)
         exclude_nan = exclude is not None and next((True for e in exclude if isinstance(e, numbers.Number) and math.isnan(e)), False)
-        matching_attrs = []
-        for is_for, is_rev in ((True, False), (False, reverse)):
-            attrs_to_search = self.__class__.get_attrs(type=type,
-                                                       forward=is_for,
-                                                       reverse=is_rev)
-            for attr in attrs_to_search:
-                if is_for:
-                    value = getattr(self, attr.name)
-                else:
-                    value = getattr(self, attr.related_name)
-                if (include is None or (value in include or
-                                        (include_nan and
-                                         (isinstance(value, numbers.Number) and
-                                          math.isnan(value))))) and \
-                   (exclude is None or (value not in exclude and
-                                        (not exclude_nan or not
-                                         (isinstance(value, numbers.Number) and
-                                          math.isnan(value))))):
-                    matching_attrs.append(attr)
+        matching_attrs = {}
+
+        attrs_to_search = self.__class__.get_attrs(type=type, reverse=reverse)
+        for attr_name, attr in attrs_to_search.items():
+            value = getattr(self, attr_name)
+            if (include is None or (value in include or
+                                    (include_nan and
+                                     (isinstance(value, numbers.Number) and
+                                      math.isnan(value))))) and \
+               (exclude is None or (value not in exclude and
+                                    (not exclude_nan or not
+                                     (isinstance(value, numbers.Number) and
+                                      math.isnan(value))))):
+                matching_attrs[attr_name] = attr
         return matching_attrs
 
     def get_empty_literal_attrs(self):
         """ Get empty (:obj:`None`, '', or NaN) literal attributes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: empty literal attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of empty literal attributes
         """
         return self.get_attrs_by_val(type=LiteralAttribute,
                                      include=(None, '', float('nan')))
@@ -1114,7 +1114,8 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get non-empty (:obj:`None`, '', or NaN) literal attributes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: non-empty literal attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of non-empty literal attributes
         """
         return self.get_attrs_by_val(type=LiteralAttribute,
                                      exclude=(None, '', float('nan')))
@@ -1127,7 +1128,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 attributes from related classes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: empty related attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of empty related attributes
         """
         return self.get_attrs_by_val(type=RelatedAttribute,
                                      reverse=reverse,
@@ -1141,7 +1143,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 attributes from related classes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: non-empty related attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of non-empty related attributes
         """
         return self.get_attrs_by_val(type=RelatedAttribute,
                                      reverse=reverse,
