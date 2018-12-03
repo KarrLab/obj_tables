@@ -32,7 +32,7 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
 from wc_utils.util.list import transpose
 from wc_utils.workbook.core import get_column_letter
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle
-from wc_utils.util.list import is_sorted
+from wc_utils.util.list import det_dedupe, is_sorted
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
@@ -167,7 +167,7 @@ class WorkbookWriter(Writer):
                 more_objects.extend(obj.get_related())
 
         # clean objects
-        all_objects = list(set(objects + more_objects))
+        all_objects = det_dedupe(objects + more_objects)
         error = Validator().run(all_objects)
 
         if error:
@@ -441,7 +441,7 @@ class JsonReader(Reader):
             for json_obj in json_objs:
                 model = models_by_name[json_obj['__type']]
                 objs.append(model.from_dict(json_obj, decoded=decoded))
-            objs = list(set(objs))
+            objs = det_dedupe(objs)
 
         else:
             model = models_by_name[json_objs['__type']]
@@ -654,7 +654,7 @@ class WorkbookReader(Reader):
         for model, model_objects in objects_by_primary_attribute.items():
             if model not in objects:
                 objects[model] = []
-            objects[model] = list(set(objects[model] + list(model_objects.values())))
+            objects[model] = det_dedupe(objects[model] + list(model_objects.values()))
 
         # validate
         all_objects = []
@@ -951,7 +951,7 @@ class WorkbookReader(Reader):
                     used_sheet_names.append(sheet_name)
                     break
 
-        used_sheet_names = list(set(used_sheet_names))
+        used_sheet_names = det_dedupe(used_sheet_names)
         if len(used_sheet_names) == 1:
             return used_sheet_names[0]
         if len(used_sheet_names) > 1:

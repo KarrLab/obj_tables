@@ -29,7 +29,7 @@ from six import integer_types, string_types, with_metaclass
 from stringcase import sentencecase
 from os.path import basename, dirname, splitext
 from weakref import WeakSet, WeakKeyDictionary
-from wc_utils.util.list import is_sorted
+from wc_utils.util.list import det_dedupe, is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
@@ -112,9 +112,11 @@ class ModelMeta(type):
         metacls.init_primary_attribute(cls)
 
         cls.Meta.related_attributes = collections.OrderedDict()
+        cls.Meta.local_attributes = collections.OrderedDict()
+        for attr in cls.Meta.attributes.values():
+            cls.Meta.local_attributes[attr.name] = LocalAttribute(attr, cls)
         for model in get_subclasses(Model):
             metacls.init_related_attributes(cls, model)
-
         metacls.init_attribute_order(cls)
 
         metacls.init_ordering(cls)
@@ -376,8 +378,8 @@ class ModelMeta(type):
                         # add attribute to dictionary of related attributes
                         related_class.Meta.related_attributes[
                             attr.related_name] = attr
-                        related_class.Meta.related_attributes = collections.OrderedDict(
-                            sorted(related_class.Meta.related_attributes.items(), key=lambda x: x[0]))
+                        related_class.Meta.local_attributes[attr.related_name] = LocalAttribute(
+                            attr, related_class, is_primary=False)
 
     def init_primary_attribute(cls):
         """ Initialize the primary attribute of a model """
@@ -931,8 +933,12 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Meta data for :class:`Model`
 
         Attributes:
-            attributes (:obj:`collections.OrderedDict` of `Attribute`): attributes
-            related_attributes (:obj:`collections.OrderedDict` of `Attribute`): attributes declared in related objects
+            attributes (:obj:`collections.OrderedDict` of :obj:`str`, `Attribute`): attributes
+            related_attributes (:obj:`collections.OrderedDict` of :obj:`str, `Attribute`): attributes
+                declared in related objects
+            local_attributes (:obj:`collections.OrderedDict` of :obj:`str`, :obj:`Attribute`): dictionary
+                that maps the names of all local attributes to their instances, including attributes defined
+                in this class and attributes defined in related classes
             primary_attribute (:obj:`Attribute`): attribute with `primary` = `True`
             unique_together (:obj:`tuple` of :obj:`tuple`'s of attribute names): controls what tuples of
                 attribute values must be unique
@@ -1009,29 +1015,34 @@ class Model(with_metaclass(ModelMeta, object)):
         self.__class__.objects._register_obj(self)
 
     @classmethod
-    def get_attrs(cls, type=None, reverse=True):
+    def get_attrs(cls, type=None, forward=True, reverse=True):
         """ Get attributes of a type, optionally including attributes
         from related classes. By default, return all attributes.
 
         Args:
             type (:obj:`type` or :obj:`tuple` of :obj:`type`, optional):
                 type of attributes to get
+            forward (:obj:`bool`, optional): if :obj:`True`, include
+                attributes from class
             reverse (:obj:`bool`, optional): if :obj:`True`, include
                 attributes from related classes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: matching attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of matching attributes
         """
         type = type or Attribute
 
-        attrs_to_search = cls.Meta.attributes.values()
+        attrs_to_search = []
+        if forward:
+            attrs_to_search = chain(attrs_to_search, cls.Meta.attributes.items())
         if reverse:
-            attrs_to_search = chain(attrs_to_search, cls.Meta.related_attributes.values())
+            attrs_to_search = chain(attrs_to_search, cls.Meta.related_attributes.items())
 
-        matching_attrs = []
-        for attr in attrs_to_search:
+        matching_attrs = {}
+        for attr_name, attr in attrs_to_search:
             if isinstance(attr, type):
-                matching_attrs.append(attr)
+                matching_attrs[attr_name] = attr
 
         return matching_attrs
 
@@ -1040,7 +1051,8 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get literal attributes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: literal attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of literal attributes
         """
         return cls.get_attrs(type=LiteralAttribute)
 
@@ -1053,7 +1065,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 attributes from related classes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: related attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of related attributes
         """
         return cls.get_attrs(type=RelatedAttribute, reverse=reverse)
 
@@ -1072,16 +1085,16 @@ class Model(with_metaclass(ModelMeta, object)):
             exclude (:obj:`list`, optional): list of values to filter out
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of matching attributes
         """
-        attrs_to_search = self.__class__.get_attrs(type=type,
-                                                   reverse=reverse)
-
         include_nan = include is not None and next((True for i in include if isinstance(i, numbers.Number) and math.isnan(i)), False)
         exclude_nan = exclude is not None and next((True for e in exclude if isinstance(e, numbers.Number) and math.isnan(e)), False)
-        matching_attrs = []
-        for attr in attrs_to_search:
-            value = getattr(self, attr.name)
+        matching_attrs = {}
+
+        attrs_to_search = self.__class__.get_attrs(type=type, reverse=reverse)
+        for attr_name, attr in attrs_to_search.items():
+            value = getattr(self, attr_name)
             if (include is None or (value in include or
                                     (include_nan and
                                      (isinstance(value, numbers.Number) and
@@ -1090,14 +1103,15 @@ class Model(with_metaclass(ModelMeta, object)):
                                     (not exclude_nan or not
                                      (isinstance(value, numbers.Number) and
                                       math.isnan(value))))):
-                matching_attrs.append(attr)
+                matching_attrs[attr_name] = attr
         return matching_attrs
 
     def get_empty_literal_attrs(self):
         """ Get empty (:obj:`None`, '', or NaN) literal attributes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: empty literal attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of empty literal attributes
         """
         return self.get_attrs_by_val(type=LiteralAttribute,
                                      include=(None, '', float('nan')))
@@ -1106,7 +1120,8 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get non-empty (:obj:`None`, '', or NaN) literal attributes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: non-empty literal attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of non-empty literal attributes
         """
         return self.get_attrs_by_val(type=LiteralAttribute,
                                      exclude=(None, '', float('nan')))
@@ -1119,7 +1134,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 attributes from related classes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: empty related attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of empty related attributes
         """
         return self.get_attrs_by_val(type=RelatedAttribute,
                                      reverse=reverse,
@@ -1133,7 +1149,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 attributes from related classes
 
         Returns:
-            :obj:`list` of :obj:`Attribute`: non-empty related attributes
+            :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
+                of non-empty related attributes
         """
         return self.get_attrs_by_val(type=RelatedAttribute,
                                      reverse=reverse,
@@ -2592,6 +2609,64 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         pass  # pragma: no cover
 
 
+class LocalAttribute(object):
+    """ Meta data about an local attribute in a class
+
+    Attributes:
+        attr (:obj:`Attribute`): attribute
+        cls (:obj:`type`): class which owns this attribute
+        name (:obj:`str`: name of the :obj:`attr` in :obj:`cls`
+        related_class (:obj:`type`): other class which is related to this attribute
+        related_name (:obj:`str`): name of this attribute in :obj:`related_cls`
+        primary_class (:obj:`type`): class in which this attribute was defined
+        primary_name (:obj:`str`): name of this attribute in :obj:`primary_cls`
+        secondary_class (:obj:`type`): related class to :obj:`primary_cls`
+        secondary_name (:obj:`str`): name of this attribute in :obj:`secondary_cls`
+        is_primary (:obj:`bool`): :obj:`True` if this :obj:`attr` was defined in :obj:`cls` (:obj:`cls`=:obj:`primary_cls`)
+        is_related (:obj:`bool`): :obj:`True` if this attribute is an instance of :obj:`RelatedAttribute`
+        is_related_to_many (obj:`bool`): :obj:`True` if the value of this attribute is a list (*-to-many relationship)
+    """
+
+    def __init__(self, attr, primary_class, is_primary=True):
+        """
+        Args:            
+            attr (obj:`Attribute`): attribute
+            primary_class (:obj:`type`): class in which :obj:`attr` was defined
+            is_primary (:obj:`bool`, optional): :obj:`True` indicates that a local attribute should be created
+                for the related class of :obj:`attr`
+        """
+        self.attr = attr
+        self.primary_name = attr.name
+        if isinstance(attr, RelatedAttribute):
+            self.primary_class = attr.primary_class
+            self.is_related = True
+            self.secondary_class = attr.related_class
+            self.secondary_name = attr.related_name
+        else:
+            self.primary_class = primary_class
+            self.is_related = False
+            self.secondary_class = None
+            self.secondary_name = None
+
+        if is_primary:
+            self.cls = primary_class
+            self.name = attr.name
+            if isinstance(attr, RelatedAttribute):
+                self.related_class = attr.related_class
+                self.related_name = attr.related_name
+            else:
+                self.related_class = None
+                self.related_name = None
+            self.is_related_to_many = isinstance(attr, (OneToManyAttribute, ManyToManyAttribute))
+        else:
+            self.cls = attr.related_class
+            self.name = attr.related_name
+            self.related_class = attr.primary_class
+            self.related_name = attr.name
+            self.is_related_to_many = isinstance(attr, (ManyToOneAttribute, ManyToManyAttribute))
+        self.is_primary = is_primary
+
+
 class LiteralAttribute(Attribute):
     """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
 
@@ -2769,7 +2844,9 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        return value.name
+        if value:
+            return value.name
+        return ''
 
     def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
@@ -5726,7 +5803,7 @@ class Validator(object):
             all_objects = copy.copy(objects)
             for obj in objects:
                 all_objects.extend(obj.get_related())
-            objects = list(set(all_objects))
+            objects = det_dedupe(all_objects)
 
         error = self.clean(objects)
         if error:
