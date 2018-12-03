@@ -60,6 +60,8 @@ class Migrator(object):
     """ Support schema migration
 
     Attributes:
+        old_model_defs_file (:obj:`str`): file name of Python file containing old model definitions
+        new_model_defs_file (:obj:`str`): file name of Python file containing new model definitions
         old_model_defs_path (:obj:`str`): pathname of Python file containing old model definitions
         new_model_defs_path (:obj:`str`): pathname of Python file containing new model definitions
         modules (:obj:`dict`): modules being used for migration, indexed by full pathname
@@ -88,7 +90,7 @@ class Migrator(object):
 
     def __init__(self, old_model_defs_file, new_model_defs_file, files, renamed_models=None,
         renamed_attributes=None):
-        """ Initialize a Migrator
+        """ Construct a Migrator
 
         Args:
             old_model_defs_file (:obj:`str`): path of a file containing old Model definitions
@@ -98,13 +100,19 @@ class Migrator(object):
         Raises:
             :obj:`ValueError`: if one of the defs files is not a python file
         """
-        self.old_model_defs_path = self._normalize_filename(old_model_defs_file)
-        self.new_model_defs_path = self._normalize_filename(new_model_defs_file)
-        self._valid_python_path(self.old_model_defs_path)
-        self._valid_python_path(self.new_model_defs_path)
+        self.old_model_defs_file = old_model_defs_file
+        self.new_model_defs_file = new_model_defs_file
         self.renamed_models = [] if renamed_models is None else renamed_models
         self.renamed_attributes = [] if renamed_attributes is None else renamed_attributes
         self.files = files
+
+    def initialize(self):
+        """ Initialize a Migrator
+        """
+        self.old_model_defs_path = self._normalize_filename(self.old_model_defs_file)
+        self.new_model_defs_path = self._normalize_filename(self.new_model_defs_file)
+        self._valid_python_path(self.old_model_defs_path)
+        self._valid_python_path(self.new_model_defs_path)
 
     @staticmethod
     def _valid_python_path(filename):
@@ -376,21 +384,21 @@ class Migrator(object):
             inconsistencies.append("new model {} corresponding to old model {} not found in '{}'".format(
                 new_model, old_model, self.new_model_defs_path))
         if inconsistencies:
-            # return these inconsistencies because checks below cannot run
+            # return these inconsistencies because they prevent checks below from running accurately
             return inconsistencies
 
         # check types
         old_model_cls = self.old_model_defs[old_model]
         new_model_cls = self.new_model_defs[new_model]
-        if type(old_model_cls) != type(new_model_cls): # pragma: no cover: types other than obj_model.core.ModelMeta don't get loaded
-            inconsistencies.append("types differ: old model '{}' != new model '{}'".format(
+        if type(old_model_cls) != type(new_model_cls):
+            inconsistencies.append("type of old model '{}' doesn't equal type of new model '{}'".format(
                 type(old_model_cls).__name__, type(new_model_cls).__name__))
 
         # check class names
         expected_migrated_model_name = self.models_map[old_model]
         if new_model_cls.__name__ != expected_migrated_model_name:
-            inconsistencies.append("map indicates that {} migrates to {}, but _get_inconsistencies called "
-                "with {} migrating to {}".format(old_model, expected_migrated_model_name, old_model,
+            inconsistencies.append("models map says '{}' migrates to '{}', but _get_inconsistencies parameters "
+                "say '{}' migrates to '{}'".format(old_model, expected_migrated_model_name, old_model,
                     new_model))
         if inconsistencies:
             # return these inconsistencies because checks below would not be informative
@@ -402,19 +410,28 @@ class Migrator(object):
         scalar_attrs_to_check = ['primary', 'unique', 'unique_case_insensitive']
         for old_attr_name, old_attr in old_model_cls.Meta.attributes.items():
             migrated_class, migrated_attr = self._get_mapped_attribute(old_model, old_attr_name)
-            # continue if the attr isn't migrated
+            # skip if the attr isn't migrated
             if migrated_attr:
                 new_attr = new_model_cls.Meta.attributes[migrated_attr]
                 if type(old_attr) != type(new_attr):
-                    inconsistencies.append("{}: types differ for '{}': old model '{}' != new model '{}'".format(
-                        old_model, old_attr_name, type(old_attr).__name__, type(new_attr).__name__))
+                    inconsistencies.append("migrated attribute type mismatch: "
+                        "type of {}.{}, {}, doesn't equal type of {}.{}, {}".format(old_model, old_attr_name,
+                        type(old_attr).__name__, migrated_class, migrated_attr, type(new_attr).__name__))
                 if isinstance(old_attr, obj_model.RelatedAttribute):
                     for related_attrs_class in related_attrs_classes_to_check:
+                        print('attrs: {}.{} -> {}.{}'.format(old_model, old_attr_name, migrated_class, migrated_attr))
+                        # print('related_attrs_class', related_attrs_class)
                         old_val = getattr(old_attr, related_attrs_class)
-                        old_val_name = getattr(old_val, '__name__')
+                        # print('old_val', old_val)
+                        # old_val_name = getattr(old_val, '__name__')
+                        old_val_name = getattr(old_val, '__name__') if hasattr(old_val, '__name__') else old_val
+                        # print('old_val_name', old_val_name)
                         new_val = getattr(new_attr, related_attrs_class)
-                        new_val_name = getattr(new_val, '__name__')
+                        # print('new_val', new_val)
+                        # new_val_name = getattr(new_val, '__name__')
+                        new_val_name = getattr(new_val, '__name__') if hasattr(new_val, '__name__') else new_val
                         expected_migrated_model_name = self.models_map[old_val_name]
+                        print('new_val_name, expected_migrated_model_name', new_val_name, expected_migrated_model_name)
                         if new_val_name != expected_migrated_model_name:
                             inconsistencies.append(
                             "migrated attribute {}.{}.{} is {} but the model map says {}.{}.{} migrates to {}".format(
@@ -428,7 +445,7 @@ class Migrator(object):
                         if old_val != new_val:
                             inconsistencies.append("migrated attribute {}.{}.{} is {} but the existing {}.{}.{} is {}".format(
                                 migrated_class, migrated_attr, attr_name, new_val,
-                                old_model_cls, old_attr_name, attr_name, old_val))
+                                old_model, old_attr_name, attr_name, old_val))
 
         return inconsistencies
 
@@ -682,6 +699,7 @@ class RunMigration(object):
     @staticmethod
     def main(args):
         migrator = Migrator(args.existing_model_definitions, args.new_model_definitions, args.files)
+        migrator.initialize()
         migrator.prepare()
         return migrator.run()
 
