@@ -57,20 +57,25 @@ class TestMigration(unittest.TestCase):
         self.example_migrated_model = os.path.join(self.tmp_model_dir, 'example_migrated_model.xlsx')
 
         # create migrator with renaming that doesn't use models in files
+        # existing models
         class RelatedObj(obj_model.Model):
             id = SlugAttribute()
 
         class TestExisting(obj_model.Model):
             id = SlugAttribute()
             attr_a = StringAttribute()
+            unmigrated_attr = StringAttribute()
             extra_attr_1 = extra_attributes.NumpyArrayAttribute()
             other_attr = StringAttribute()
             related = OneToOneAttribute(RelatedObj, related_name='test')
-            # related2 = OneToOneAttribute(RelatedObj, related_name='test2')
         self.TestExisting = TestExisting
 
         class TestNotMigrated(obj_model.Model):
             id_2 = SlugAttribute()
+
+        # migrated models
+        class NewRelatedObj(obj_model.Model):
+            id = SlugAttribute()
 
         class TestMigrated(obj_model.Model):
             id = SlugAttribute()
@@ -78,11 +83,7 @@ class TestMigration(unittest.TestCase):
             new_attr = BooleanAttribute()
             extra_attr_2 = extra_attributes.NumpyArrayAttribute()
             other_attr = StringAttribute(unique=True)
-            related = OneToOneAttribute(RelatedObj, related_name='not_test')
-            # related2 = OneToOneAttribute('RelatedObj2', related_name='not_test2')
-
-        class RelatedObj2(obj_model.Model):
-            id = SlugAttribute()
+            related = OneToOneAttribute(NewRelatedObj, related_name='not_test')
 
         self.test_migrator = test_migrator = Migrator('old_model_defs_file', 'new_model_defs_file', [])
         test_migrator.old_model_defs = {
@@ -91,8 +92,7 @@ class TestMigration(unittest.TestCase):
             'TestNotMigrated': TestNotMigrated}
         test_migrator.new_model_defs = {
             'RelatedObj': RelatedObj,
-            'TestMigrated': TestMigrated,
-            'RelatedObj2': RelatedObj2}
+            'TestMigrated': TestMigrated}
         test_migrator.renamed_models = [('TestExisting', 'TestMigrated')]
         test_migrator.renamed_attributes = [
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
@@ -241,29 +241,11 @@ class TestMigration(unittest.TestCase):
         del test_migrator.models_map['A']
 
         inconsistencies = test_migrator._get_inconsistencies('TestExisting', 'TestMigrated')
-        self.assertRegex(inconsistencies[0], "migrated attribute type mismatch: type of .*, doesn't equal type of .*,")
+        self.assertRegex(inconsistencies[0],
+            "migrated attribute type mismatch: type of .*, doesn't equal type of .*,")
         self.assertRegex(inconsistencies[1], "migrated attribute .* is .* but the existing .* is ")
-
-        inconsistencies = test_migrator._get_inconsistencies('RelatedObj', 'RelatedObj')
-        print(inconsistencies)
-        '''
-        migrator.prepare()
-        for model_name in migrator.old_model_defs:
-            if model_name in migrator.new_model_defs:
-                inconsistencies = migrator._get_inconsistencies(model_name, model_name)
-                self.assertEqual([], inconsistencies)
-
-        # todo: rewrite
-        inconsistencies = Migrator._get_inconsistencies(TestOld, TestNew)
-        expected_inconsistencies = [
-            "names differ: old model '.*' != new model '.*'",
-            "types differ for '.*': old model '.*' != new model '.*'",
-            "'.*' differs for '.*': old model '.*' != new model '.*'",
-            "names differ for 'related.primary_class': old model '.*' != new model '.*'",
-            "'.*' differs for '.*': old model '.*' != new model '.*'"]
-        for inconsistency, expected_inconsistency in zip(inconsistencies, expected_inconsistencies):
-            self.assertRegex(inconsistency, expected_inconsistency)
-        '''
+        self.assertRegex(inconsistencies[2],
+            "migrated attribute .* is .* but the model map says .* migrates to ")
 
     def test_get_model_order(self):
         # todo: including ambiguous_sheet_names

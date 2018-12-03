@@ -418,25 +418,18 @@ class Migrator(object):
                         "type of {}.{}, {}, doesn't equal type of {}.{}, {}".format(old_model, old_attr_name,
                         type(old_attr).__name__, migrated_class, migrated_attr, type(new_attr).__name__))
                 if isinstance(old_attr, obj_model.RelatedAttribute):
+                    # ensure that corresponding related attrs have same values of attrs in related_attrs_classes_to_check
                     for related_attrs_class in related_attrs_classes_to_check:
-                        print('attrs: {}.{} -> {}.{}'.format(old_model, old_attr_name, migrated_class, migrated_attr))
-                        # print('related_attrs_class', related_attrs_class)
                         old_val = getattr(old_attr, related_attrs_class)
-                        # print('old_val', old_val)
-                        # old_val_name = getattr(old_val, '__name__')
                         old_val_name = getattr(old_val, '__name__') if hasattr(old_val, '__name__') else old_val
-                        # print('old_val_name', old_val_name)
                         new_val = getattr(new_attr, related_attrs_class)
-                        # print('new_val', new_val)
-                        # new_val_name = getattr(new_val, '__name__')
                         new_val_name = getattr(new_val, '__name__') if hasattr(new_val, '__name__') else new_val
                         expected_migrated_model_name = self.models_map[old_val_name]
-                        print('new_val_name, expected_migrated_model_name', new_val_name, expected_migrated_model_name)
                         if new_val_name != expected_migrated_model_name:
                             inconsistencies.append(
                             "migrated attribute {}.{}.{} is {} but the model map says {}.{}.{} migrates to {}".format(
                             migrated_class, migrated_attr, related_attrs_class, new_val_name,
-                            old_model_cls, old_attr_name, related_attrs_class, expected_migrated_model_name))
+                            old_model, old_attr_name, related_attrs_class, expected_migrated_model_name))
 
                 else:
                     for attr_name in scalar_attrs_to_check:
