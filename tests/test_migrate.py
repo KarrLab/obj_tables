@@ -38,7 +38,7 @@ class TestMigration(unittest.TestCase):
         shutil.rmtree(cls.tmp_model_dir)
 
     def setUp(self):
-        fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
+        self.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
         self.old_model_defs_path = os.path.join(fixtures_path, 'core_old.py')
         self.new_model_defs_path = os.path.join(fixtures_path, 'core_new.py')
 
@@ -299,7 +299,24 @@ class TestMigration(unittest.TestCase):
         migrator = self.migrator
         migrator.prepare()
         self.assertEqual(migrator.deleted_models, {'DeletedModel'})
-        # todo next: expand
+
+        migrator.renamed_models = [('Test', 'NoSuchModel')]
+        with self.assertRaisesRegex(ValueError, "'.*' in renamed models not a migrated model"):
+            migrator.prepare()
+        migrator.renamed_models = []
+
+        migrator.renamed_attributes = [(('Test', 'name'), ('Test', 'no_such_name'))]
+        with self.assertRaisesRegex(ValueError, "'.*' in renamed attributes not a migrated model.attribute"):
+            migrator.prepare()
+        migrator.renamed_attributes = []
+
+        # triggering inconsistencies in prepare() requires inconsistent model definitions on disk
+        inconsistent_new_model_defs_path = os.path.join(self.fixtures_path, 'core_new_inconsistent.py')
+        inconsistent_migrator = Migrator(self.old_model_defs_path, inconsistent_new_model_defs_path, None)
+        inconsistent_migrator.initialize()
+        with self.assertRaisesRegex(ValueError,
+            "migrated attribute type mismatch: type of .*, doesn't equal type of .*, .*"):
+            inconsistent_migrator.prepare()
 
     def test_migrate_model(self):
         good_migrator = self.good_migrator
@@ -350,7 +367,7 @@ class TestMigration(unittest.TestCase):
         property_value = 7
         OldProperty = old_model_defs['Property']
         property = OldProperty(id=property_id,
-            test=test,
+            test=None,
             value=property_value)
 
         OldReference = old_model_defs['Reference']
@@ -413,7 +430,7 @@ class TestMigration(unittest.TestCase):
         new_test = NewTest(id=test_id, new_attr=new_attr_default)
         expected_new_models_2.append(new_test)
         expected_new_models_2.append(
-            NewProperty(id=property_id, value=property_value, test=new_test))
+            NewProperty(id=property_id, value=property_value, test=None))
         new_references = []
         for n in range(num_references):
             new_references.append(

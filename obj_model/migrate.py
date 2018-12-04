@@ -101,6 +101,8 @@ class Migrator(object):
 
     def initialize(self):
         """ Initialize a Migrator
+
+        Separate from prepare() so most of Migrator can be tested with models defined in code
         """
         self.old_model_defs_path = self._normalize_filename(self.old_model_defs_file)
         self.new_model_defs_path = self._normalize_filename(self.new_model_defs_file)
