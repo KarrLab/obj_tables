@@ -292,14 +292,14 @@ class TestMigration(unittest.TestCase):
             "migrated attribute .* is .* but the model map says .* migrates to ")
 
     def test_get_model_order(self):
-        # todo: including ambiguous_sheet_names
+        # todo next: including ambiguous_sheet_names
         pass
 
     def test_prepare(self):
         migrator = self.migrator
         migrator.prepare()
         self.assertEqual(migrator.deleted_models, {'DeletedModel'})
-        # todo: expand
+        # todo next: expand
 
     def test_migrate_model(self):
         good_migrator = self.good_migrator
@@ -433,8 +433,8 @@ class TestMigration(unittest.TestCase):
 
         self.assertEqual(len(new_models), len(expected_new_models_2))
         for new_model, expected_new_model in zip(new_models, expected_new_models_2):
+            # todo: why don't these produce symmetrical representations?
             '''
-            todo: why don't these produce symmetrical representations?
             print('\nnew_model:')
             new_model.pprint(max_depth=2)
             print('expected_new_model:')
@@ -472,7 +472,7 @@ class TestMigration(unittest.TestCase):
         source = read_workbook(self.example_old_model)
         migrated = read_workbook(self.example_migrated_model)
         self.assertEqual(source, migrated)
-        # todo: custom migrate_suffix and ValueError
+        # todo next: custom migrate_suffix and ValueError
 
     def test_migrate(self):
 

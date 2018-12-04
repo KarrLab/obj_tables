@@ -22,6 +22,15 @@ import wc_utils
 from wc_utils.util.list import det_find_dupes
 
 
+# todo next: support migration in place, with saving backup
+# todo next: support arbitrary transformations with attribute change by an optional function on each migrated instance
+# todo next: support data driven migration of many files in a repo
+#       config file provides: locations of schema file pair, renaming steps between them, locations of data files, [dir of migrated files]
+#       drive migration from the config file
+# todo next: make work with full wc_lang core.py
+# todo next: add Meta indicator to models (like Species previously) that are not inline and not stored in their own worksheet
+# todo next: separately specified default value for attribute
+# todo next: move remaining todos to GitHub issues
 # todo: confirm this works for all model file formats: csv, tsv, json, etc.
 # todo: error if adding or deleting models or attrs create inconsistencies, as when deleting primary key attr referenced by a foreign key
 # todo: support sequence of migrations
@@ -29,13 +38,6 @@ from wc_utils.util.list import det_find_dupes
 #       _get_all_model_defs: load the sequence of schemas
 #       prepare: prepare for a seq of migrations
 #       migrate: operate on the sequence of migrations; only write final file to disk
-# todo: support renaming of models
-#       deep_migrate & connect_models: use mapping
-# todo: support renaming of attributes
-# todo: support arbitrary transformations
-# todo: support data driven migration of many files in a repo
-#       config file provides: locations of schema files, renaming steps, locations of data files, [dir of migrated files]
-#       drive migration from the config file
 # todo: support high-level, WC wc_lang specific migration of a repo
 #       use case:
 #           1 change wc_lang/core.py
@@ -45,12 +47,8 @@ from wc_utils.util.list import det_find_dupes
 #           each WC repo that has model files maintains a migrate.yml config file with: list of model files to migrate; migration options
 #           wc_lang contains migration_transformations.py, which provides all arbitrary transformations
 #           "migrate_repo repo" uses repo's migrate.yml and migration_transformations.py to migrate all model files in repo
-# todo: support migration in place
 # todo: use Model.revision to label git commit of wc_lang and automatically migrate models to current schema
 # and to report inconsistency between a schema and model file
-# todo: add Meta indicator to models (like Species previously) that are not inline and not stored in their own worksheet
-# separately specified default value for attribute
-# change attribute with function on each migrated instance
 class Migrator(object):
     """ Support schema migration
 
