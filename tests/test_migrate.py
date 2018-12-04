@@ -57,6 +57,7 @@ class TestMigration(unittest.TestCase):
         self.example_migrated_model = os.path.join(self.tmp_model_dir, 'example_migrated_model.xlsx')
 
         # create migrator with renaming that doesn't use models in files
+        # these classes contain migration errors for validation tests
         # existing models
         class RelatedObj(obj_model.Model):
             id = SlugAttribute()
@@ -85,23 +86,65 @@ class TestMigration(unittest.TestCase):
             other_attr = StringAttribute(unique=True)
             related = OneToOneAttribute(NewRelatedObj, related_name='not_test')
 
-        self.test_migrator = test_migrator = Migrator('old_model_defs_file', 'new_model_defs_file', [])
-        test_migrator.old_model_defs = {
+        self.migrator_for_error_tests = migrator_for_error_tests = Migrator(
+            'old_model_defs_file', 'new_model_defs_file', [])
+        migrator_for_error_tests.old_model_defs = {
             'RelatedObj': RelatedObj,
             'TestExisting': TestExisting,
             'TestNotMigrated': TestNotMigrated}
-        test_migrator.new_model_defs = {
+        migrator_for_error_tests.new_model_defs = {
             'RelatedObj': RelatedObj,
             'TestMigrated': TestMigrated}
-        test_migrator.renamed_models = [('TestExisting', 'TestMigrated')]
-        test_migrator.renamed_attributes = [
+        migrator_for_error_tests.renamed_models = [('TestExisting', 'TestMigrated')]
+        migrator_for_error_tests.renamed_attributes = [
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
             (('TestExisting', 'extra_attr_1'), ('TestMigrated', 'extra_attr_2'))]
 
         # run _validate_renamed_models and _validate_renamed_attrs to create
-        # test_migrator.models_map and test_migrator.renamed_attributes_map
-        test_migrator._validate_renamed_models()
-        test_migrator._validate_renamed_attrs()
+        # migrator_for_error_tests.models_map and migrator_for_error_tests.renamed_attributes_map
+        migrator_for_error_tests._validate_renamed_models()
+        migrator_for_error_tests._validate_renamed_attrs()
+
+        # create migrator with renaming that doesn't use models in files and doesn't have errors
+        # existing models
+        class GoodRelatedCls(obj_model.Model):
+            id = SlugAttribute()
+            num = IntegerAttribute()
+        self.GoodRelatedCls = GoodRelatedCls
+
+        class GoodExisting(obj_model.Model):
+            id = SlugAttribute()
+            attr_a = StringAttribute() # renamed to attr_b
+            unmigrated_attr = StringAttribute()
+            np_array = extra_attributes.NumpyArrayAttribute()
+            related = OneToOneAttribute(GoodRelatedCls, related_name='test')
+        self.GoodExisting = GoodExisting
+
+        class GoodNotMigrated(obj_model.Model):
+            id_2 = SlugAttribute()
+        self.GoodNotMigrated = GoodNotMigrated
+
+        # migrated models
+        class GoodMigrated(obj_model.Model):
+            id = SlugAttribute()
+            attr_b = StringAttribute()
+            np_array = extra_attributes.NumpyArrayAttribute()
+            related = OneToOneAttribute(RelatedObj, related_name='test_2')
+        self.GoodMigrated = GoodMigrated
+
+        self.good_migrator = good_migrator = Migrator('old_model_defs_file', 'new_model_defs_file', [])
+        good_migrator
+        good_migrator.old_model_defs = {
+            'GoodRelatedCls': GoodRelatedCls,
+            'GoodExisting': GoodExisting,
+            'GoodNotMigrated': GoodNotMigrated}
+        good_migrator.new_model_defs = {
+            'GoodMigrated': GoodMigrated}
+        good_migrator.renamed_models = [('GoodExisting', 'GoodMigrated')]
+        good_migrator.renamed_attributes = [
+            (('GoodExisting', 'attr_a'), ('GoodMigrated', 'attr_b'))]
+        good_migrator._validate_renamed_models()
+        good_migrator._validate_renamed_attrs()
 
     def tearDown(self):
         shutil.rmtree(self.tmp_dir)
@@ -131,82 +174,83 @@ class TestMigration(unittest.TestCase):
         # todo: test sym links
 
     def test_validate_renamed_models(self):
-        test_migrator = self.test_migrator
-        self.assertEqual(test_migrator._validate_renamed_models(), [])
-        self.assertEqual(test_migrator.models_map,
+        migrator_for_error_tests = self.migrator_for_error_tests
+        self.assertEqual(migrator_for_error_tests._validate_renamed_models(), [])
+        self.assertEqual(migrator_for_error_tests.models_map,
             {'TestExisting': 'TestMigrated', 'RelatedObj': 'RelatedObj'})
 
         # test errors
-        test_migrator.renamed_models = [('NotExisting', 'TestMigrated')]
+        migrator_for_error_tests.renamed_models = [('NotExisting', 'TestMigrated')]
         self.assertIn('in renamed models not an existing model',
-            test_migrator._validate_renamed_models()[0])
-        self.assertEqual(test_migrator.models_map, {})
+            migrator_for_error_tests._validate_renamed_models()[0])
+        self.assertEqual(migrator_for_error_tests.models_map, {})
 
-        test_migrator.renamed_models = [('TestExisting', 'NotMigrated')]
+        migrator_for_error_tests.renamed_models = [('TestExisting', 'NotMigrated')]
         self.assertIn('in renamed models not a migrated model',
-            test_migrator._validate_renamed_models()[0])
+            migrator_for_error_tests._validate_renamed_models()[0])
 
-        test_migrator.renamed_models = [
+        migrator_for_error_tests.renamed_models = [
             ('TestExisting', 'TestMigrated'),
             ('TestExisting', 'TestMigrated')]
-        errors = test_migrator._validate_renamed_models()
+        errors = migrator_for_error_tests._validate_renamed_models()
         self.assertIn('duplicated existing models in renamed models:', errors[0])
         self.assertIn('duplicated migrated models in renamed models:', errors[1])
 
     def test_validate_renamed_attrs(self):
-        test_migrator = self.test_migrator
+        migrator_for_error_tests = self.migrator_for_error_tests
 
-        self.assertEqual(test_migrator._validate_renamed_attrs(), [])
-        self.assertEqual(test_migrator.renamed_attributes_map,
-            dict(test_migrator.renamed_attributes))
+        self.assertEqual(migrator_for_error_tests._validate_renamed_attrs(), [])
+        self.assertEqual(migrator_for_error_tests.renamed_attributes_map,
+            dict(migrator_for_error_tests.renamed_attributes))
 
         # test errors
         for renamed_attributes in [
             [(('NotExisting', 'attr_a'), ('TestMigrated', 'attr_b'))],
             [(('TestExisting', 'no_such_attr'), ('TestMigrated', 'attr_b'))]]:
-            test_migrator.renamed_attributes = renamed_attributes
+            migrator_for_error_tests.renamed_attributes = renamed_attributes
             self.assertIn('in renamed attributes not an existing model.attribute',
-                test_migrator._validate_renamed_attrs()[0])
-        self.assertEqual(test_migrator.renamed_attributes_map, {})
+                migrator_for_error_tests._validate_renamed_attrs()[0])
+        self.assertEqual(migrator_for_error_tests.renamed_attributes_map, {})
 
         for renamed_attributes in [
             [(('TestExisting', 'attr_a'), ('NotMigrated', 'attr_b'))],
             [(('TestExisting', 'attr_a'), ('TestMigrated', 'no_such_attr'))]]:
-            test_migrator.renamed_attributes = renamed_attributes
+            migrator_for_error_tests.renamed_attributes = renamed_attributes
             self.assertIn('in renamed attributes not a migrated model.attribute',
-                test_migrator._validate_renamed_attrs()[0])
+                migrator_for_error_tests._validate_renamed_attrs()[0])
 
         for renamed_attributes in [
             [(('NotExisting', 'attr_a'), ('TestMigrated', 'attr_b'))],
             [(('TestExisting', 'attr_a'), ('NotMigrated', 'attr_b'))]]:
-            test_migrator.renamed_attributes = renamed_attributes
-            self.assertRegex(test_migrator._validate_renamed_attrs()[1],
+            migrator_for_error_tests.renamed_attributes = renamed_attributes
+            self.assertRegex(migrator_for_error_tests._validate_renamed_attrs()[1],
                 "renamed attribute '.*' not consistent with renamed models")
 
-        test_migrator.renamed_attributes = [
+        migrator_for_error_tests.renamed_attributes = [
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b'))]
         self.assertIn('duplicated existing attributes in renamed attributes:',
-            test_migrator._validate_renamed_attrs()[0])
+            migrator_for_error_tests._validate_renamed_attrs()[0])
         self.assertIn('duplicated migrated attributes in renamed attributes:',
-            test_migrator._validate_renamed_attrs()[1])
+            migrator_for_error_tests._validate_renamed_attrs()[1])
 
     def test_get_mapped_attribute(self):
-        test_migrator = self.test_migrator
+        migrator_for_error_tests = self.migrator_for_error_tests
 
-        self.assertEqual(test_migrator._get_mapped_attribute('TestExisting', 'attr_a'),
+        self.assertEqual(migrator_for_error_tests._get_mapped_attribute('TestExisting', 'attr_a'),
             ('TestMigrated', 'attr_b'))
 
-        self.assertEqual(test_migrator._get_mapped_attribute(
+        self.assertEqual(migrator_for_error_tests._get_mapped_attribute(
             self.TestExisting, self.TestExisting.Meta.attributes['id']), ('TestMigrated', 'id'))
 
-        self.assertEqual(test_migrator._get_mapped_attribute('TestExisting', 'no_attr'), (None, None))
+        self.assertEqual(migrator_for_error_tests._get_mapped_attribute('TestExisting', 'no_attr'),
+            (None, None))
 
-        self.assertEqual(test_migrator._get_mapped_attribute('NotExisting', 'id'), (None, None))
+        self.assertEqual(migrator_for_error_tests._get_mapped_attribute('NotExisting', 'id'), (None, None))
 
-        self.assertEqual(test_migrator._get_mapped_attribute('RelatedObj', 'id'), ('RelatedObj', 'id'))
+        self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'id'), ('RelatedObj', 'id'))
 
-        self.assertEqual(test_migrator._get_mapped_attribute('RelatedObj', 'no_attr'), (None, None))
+        self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'no_attr'), (None, None))
 
     def test_get_model_defs(self):
         migrator = self.migrator
@@ -220,27 +264,27 @@ class TestMigration(unittest.TestCase):
             Migrator.MIGRATED_COPY_ATTR_PREFIX))
 
     def test_get_inconsistencies(self):
-        test_migrator = self.test_migrator
+        migrator_for_error_tests = self.migrator_for_error_tests
 
-        # prep test_migrator
-        test_migrator.old_model_defs_path = 'old_model_defs_path'
-        test_migrator.new_model_defs_path = 'new_model_defs_path'
-        inconsistencies = test_migrator._get_inconsistencies('NotExistingModel', 'NotMigratedModel')
+        # prep migrator_for_error_tests
+        migrator_for_error_tests.old_model_defs_path = 'old_model_defs_path'
+        migrator_for_error_tests.new_model_defs_path = 'new_model_defs_path'
+        inconsistencies = migrator_for_error_tests._get_inconsistencies('NotExistingModel', 'NotMigratedModel')
         self.assertRegex(inconsistencies[0], "old model .* not found in")
         self.assertRegex(inconsistencies[1], "new model .* corresponding to old model .* not found in")
 
         class A(object): pass
-        test_migrator.old_model_defs['A'] = A
-        test_migrator.models_map['A'] = 'X'
-        inconsistencies = test_migrator._get_inconsistencies('A', 'RelatedObj')
+        migrator_for_error_tests.old_model_defs['A'] = A
+        migrator_for_error_tests.models_map['A'] = 'X'
+        inconsistencies = migrator_for_error_tests._get_inconsistencies('A', 'RelatedObj')
         self.assertRegex(inconsistencies[0], "type of old model '.*' doesn't equal type of new model '.*'")
         self.assertRegex(inconsistencies[1],
             "models map says '.*' migrates to '.*', but _get_inconsistencies parameters say '.*' migrates to '.*'")
         # clean up
-        del test_migrator.old_model_defs['A']
-        del test_migrator.models_map['A']
+        del migrator_for_error_tests.old_model_defs['A']
+        del migrator_for_error_tests.models_map['A']
 
-        inconsistencies = test_migrator._get_inconsistencies('TestExisting', 'TestMigrated')
+        inconsistencies = migrator_for_error_tests._get_inconsistencies('TestExisting', 'TestMigrated')
         self.assertRegex(inconsistencies[0],
             "migrated attribute type mismatch: type of .*, doesn't equal type of .*,")
         self.assertRegex(inconsistencies[1], "migrated attribute .* is .* but the existing .* is ")
@@ -255,53 +299,39 @@ class TestMigration(unittest.TestCase):
         migrator = self.migrator
         migrator.prepare()
         self.assertEqual(migrator.deleted_models, {'DeletedModel'})
+        # todo: expand
 
     def test_migrate_model(self):
+        good_migrator = self.good_migrator
+        good_migrator._migrated_copy_attr_name = good_migrator._get_migrated_copy_attr_name()
 
-        pass
-        '''
-        # todo: fix
-        class TestOld(obj_model.Model):
-            id = SlugAttribute()
-            old_attr = StringAttribute()
-            attr1 = StringAttribute()
-            extra_attribute = extra_attributes.NumpyArrayAttribute()
+        # create good model(s) and migrate them
+        grc_1 = self.GoodRelatedCls(id='grc_1', num=3)
+        id = 'id_1'
+        attr_a_b = 'string attr'
+        np_array_val = numpy.array([1, 2])
+        good_existing_1 = self.GoodExisting(
+            id=id,
+            attr_a=attr_a_b,
+            unmigrated_attr='hi',
+            np_array=np_array_val,
+            related=grc_1
+        )
+        migrated_model = self.good_migrator.migrate_model(good_existing_1, self.GoodExisting, self.GoodMigrated)
+        self.assertEqual(migrated_model.id, id)
+        self.assertEqual(migrated_model.attr_b, attr_a_b)
+        numpy.testing.assert_equal(migrated_model.np_array, np_array_val)
 
-        class RelatedObj(obj_model.Model):
-            id = SlugAttribute()
-
-        default_new_attr = 'foo'
-        class TestNew(obj_model.Model):
-            id = SlugAttribute()
-            new_attr = StringAttribute(default=default_new_attr)
-            attr1 = StringAttribute()
-            extra_attribute = extra_attributes.NumpyArrayAttribute()
-
-        # force equivalent names for TestOld and TestNew since the are not loaded with importlib
-        class_name = 'Test'
-        for model in [TestOld, TestNew]:
-            model.__name__ = class_name
-
-        id = 'test_id'
-        attr1 = None
-        extra_attribute = numpy.array([1, 2])
-        old_model = TestOld(id=id, old_attr='old_attr_val', attr1=attr1,
-            extra_attribute=extra_attribute)
-
-        test_migrator = mock.Mock(spec=Migrator)
-        test_migrator.new_attributes = [(class_name, TestNew.Meta.attributes['new_attr'])]
-        test_migrator._migrated_copy_attr_name = Migrator.MIGRATED_COPY_ATTR_PREFIX
-        test_migrator.migrate_model = Migrator.migrate_model
-
-        new_model = test_migrator.migrate_model(old_model, TestOld, TestNew)
-
-        self.assertTrue(isinstance(new_model, TestNew))
-        self.assertFalse(hasattr(new_model, 'old_attr'))
-        self.assertEqual(new_model.id, id)
-        self.assertEqual(new_model.attr1, attr1)
-        self.assertEqual(new_model.new_attr, default_new_attr)
-        self.assertTrue(numpy.all(numpy.equal(new_model.extra_attribute, extra_attribute)))
-        '''
+        id = None
+        good_existing_2 = self.GoodExisting(
+            id=id,
+            attr_a=attr_a_b,
+            np_array=np_array_val
+        )
+        migrated_model = self.good_migrator.migrate_model(good_existing_2, self.GoodExisting, self.GoodMigrated)
+        self.assertEqual(migrated_model.id, id)
+        self.assertEqual(migrated_model.attr_b, attr_a_b)
+        numpy.testing.assert_equal(migrated_model.np_array, np_array_val)
 
     def test_deep_migrate_and_connect_models(self):
         # test both deep_migrate and connect_models because they need a similar test state

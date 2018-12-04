@@ -30,13 +30,8 @@ from wc_utils.util.list import det_find_dupes
 #       prepare: prepare for a seq of migrations
 #       migrate: operate on the sequence of migrations; only write final file to disk
 # todo: support renaming of models
-#       __init__ (or somewhere else): input model renaming mapping
-#       prepare: use mapping when comparing models and checking consistency
-#       _get_model_order: use mapping to track model orders
 #       deep_migrate & connect_models: use mapping
 # todo: support renaming of attributes
-#       __init__ (or somewhere else): input attribute renaming mapping, which must be consistent w model renaming mapping
-#       _get_inconsistencies, _new_attributes, deep_migrate & connect_models: use mapping
 # todo: support arbitrary transformations
 # todo: support data driven migration of many files in a repo
 #       config file provides: locations of schema files, renaming steps, locations of data files, [dir of migrated files]
@@ -559,7 +554,7 @@ class Migrator(object):
         return migrated_file
 
     def migrate_model(self, old_model, old_model_def, new_model_def):
-        """ Migrate a Model instance's non-related attributes
+        """ Migrate a model instance's non-related attributes
 
         Args:
             old_model (:obj:`obj_model.Model`): the old model
@@ -575,7 +570,7 @@ class Migrator(object):
         for attr in old_model_def.Meta.attributes.values():
             val = getattr(old_model, attr.name)
 
-            # skip attributes that are not in new_model_def
+            # skip attributes that do not get migrated to new_model_def
             _, migrated_attr = self._get_mapped_attribute(old_model_def, attr)
             if migrated_attr is None:
                 continue
@@ -590,7 +585,7 @@ class Migrator(object):
 
                 setattr(new_model, migrated_attr, copy_val)
 
-        # save reference to the new model in old_model, which is used by connect_models()
+        # save a reference to new_model in old_model, which is used by connect_models()
         setattr(old_model, self._migrated_copy_attr_name, new_model)
         return new_model
 
