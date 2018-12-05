@@ -207,7 +207,7 @@ class WorkbookWriter(Writer):
                 sheet_names.append(model.Meta.verbose_name)
         ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, models)
         if ambiguous_sheet_names:
-            msg = 'The following sheets will not be able to be unambiguously mapped to models:'
+            msg = 'The following sheets cannot be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
                 msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
             warn(msg, IoWarning)

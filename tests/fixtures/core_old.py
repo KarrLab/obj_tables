@@ -47,7 +47,6 @@ class Subtest(obj_model.Model):
     references = ManyToManyAttribute('Reference', related_name='subtests')
 
     class Meta(obj_model.Model.Meta):
-        #attribute_order = ('id', 'test', )
         attribute_order = ('id', 'test', 'references')
 
 

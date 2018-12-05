@@ -27,8 +27,10 @@ from wc_utils.util.list import det_find_dupes
 # todo next: support data driven migration of many files in a repo
 #       config file provides: locations of schema file pair, renaming steps between them, locations of data files, [dir of migrated files]
 #       drive migration from the config file
+# todo next: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: make work with full wc_lang core.py
 # todo next: add Meta indicator to models (like Species previously) that are not inline and not stored in their own worksheet
+#   and remove Species hack
 # todo next: separately specified default value for attribute
 # todo next: move remaining todos to GitHub issues
 # todo: confirm this works for all model file formats: csv, tsv, json, etc.
@@ -49,6 +51,7 @@ from wc_utils.util.list import det_find_dupes
 #           "migrate_repo repo" uses repo's migrate.yml and migration_transformations.py to migrate all model files in repo
 # todo: use Model.revision to label git commit of wc_lang and automatically migrate models to current schema
 # and to report inconsistency between a schema and model file
+# todo: support generic conversion of migrated data by plug-in functions provided by a users
 class Migrator(object):
     """ Support schema migration
 
@@ -437,59 +440,61 @@ class Migrator(object):
 
         return inconsistencies
 
-    def _get_model_order(self, source_file, old_models, new_models):
-        """ Returns sequence of models in source_file
+    def _get_model_order(self, source_file):
+        """ Provide the sequence in which models should appear in the migrated file
+
+        First determine the order of existing model types in worksheets in the source file. However, the
+        mapping of some worksheets to models may be ambiguous. Then map the order to the migrated models,
+        which is used to sequence worksheets or files in the migrated file(s).
 
         Args:
             source_file (:obj:`str`): pathname of file being migrated
-            old_models (:obj:`dict` of `obj_model.core.ModelMeta`): the original model classes
-            new_models (:obj:`dict` of `obj_model.core.ModelMeta`): the new model classes
 
         Returns:
-            :obj:`list` of `obj_model.core.ModelMeta`: migrated models in the same order as the worksheets
-                for the corresponding old models, concatenated with new models sorted by name
+            :obj:`list` of `obj_model.core.ModelMeta`: migrated models in the same order as worksheets
+                for the corresponding old models, followed by migrated models with ambiguous sheet
+                names, followed by new models sorted by name
         """
-        # todo: clean up naming: old models, existing, migrated models, new models, source models, dest models
-        # use sheet_names in old file to determine order of model types in old source file, and use them in migrated file
         _, ext = os.path.splitext(source_file)
         utils_reader = wc_utils.workbook.io.get_reader(ext)(source_file)
         utils_reader.initialize_workbook()
         sheet_names = utils_reader.get_sheet_names()
 
-        old_models_migrating = []
-        new_models_migrated = []
+        existing_models_migrating = []
+        migrated_models = []
         for existing_model, migrated_model in self.models_map.items():
-            old_models_migrating.append(old_models[existing_model])
-            new_models_migrated.append(new_models[migrated_model])
+            existing_models_migrating.append(self.old_model_defs[existing_model])
+            migrated_models.append(self.new_model_defs[migrated_model])
 
         # detect sheets that cannot be unambiguously mapped
-        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, old_models_migrating)
+        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, existing_models_migrating)
         if ambiguous_sheet_names:
             msg = 'The following sheets cannot be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
                 msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
             warn(msg, IoWarning)
 
-        # use the source_file sheet names to establish order of old models that get migrated
-        tmp = []
-        for old_model_migrating, new_model_migrated in zip(old_models_migrating, new_models_migrated):
+        # use the source_file sheet names to establish order of existing models that get migrated
+        migrated_model_order = [None]*len(sheet_names)
+        ambiguous_migrated_models = []
+        for existing_model, migrated_model in zip(existing_models_migrating, migrated_models):
             try:
-                sheet_name = WorkbookReader.get_model_sheet_name(sheet_names, old_model_migrating)
+                sheet_name = WorkbookReader.get_model_sheet_name(sheet_names, existing_model)
                 if sheet_name is not None:
-                    tmp.append((sheet_names.index(sheet_name), new_model_migrated))
+                    migrated_model_order[sheet_names.index(sheet_name)] = migrated_model
             except ValueError:
-                pass
-        tmp.sort(key=lambda position_n_model: position_n_model[0])
-        migrated_model_order = [position_n_model[1] for position_n_model in tmp]
+                ambiguous_migrated_models.append(migrated_model)
+        migrated_model_order = [element for element in migrated_model_order if element is not None]
+
+        # append migrated models with ambiguous sheet
+        migrated_model_order.extend(ambiguous_migrated_models)
 
         # append newly created models
-        newly_created_model_names = []
-        for newly_created_model_name in set(new_models).difference(old_models):
-            newly_created_model_names.append(newly_created_model_name)
-        newly_created_model_names.sort()
-        newly_created_models = [new_models[name] for name in newly_created_model_names]
+        new_model_names = [new_model_name
+            for new_model_name in set(self.new_model_defs).difference(self.models_map.values())]
+        new_models = [self.new_model_defs[name] for name in sorted(new_model_names)]
+        migrated_model_order.extend(new_models)
 
-        migrated_model_order.extend(newly_created_models)
         return migrated_model_order
 
     @staticmethod
@@ -546,7 +551,7 @@ class Migrator(object):
             raise ValueError("migrated file '{}' already exists".format(migrated_file))
 
         # get sequence of migrated models in workbook
-        models = self._get_model_order(source_file, self.old_model_defs, self.new_model_defs)
+        models = self._get_model_order(source_file)
 
         # write migrated models to disk
         writer = obj_model.io.get_writer(ext)()

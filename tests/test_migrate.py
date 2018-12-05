@@ -13,6 +13,7 @@ import getpass
 import tempfile
 import shutil
 import numpy
+import copy
 import warnings
 from argparse import Namespace
 
@@ -21,8 +22,7 @@ import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-    TabularOrientation)
-from obj_model import migrate, extra_attributes
+    TabularOrientation, migrate, extra_attributes)
 from wc_utils.workbook.io import read as read_workbook
 
 
@@ -292,8 +292,56 @@ class TestMigration(unittest.TestCase):
             "migrated attribute .* is .* but the model map says .* migrates to ")
 
     def test_get_model_order(self):
-        # todo next: including ambiguous_sheet_names
-        pass
+        migrator = self.migrator
+        migrator.prepare()
+        model_order = migrator._get_model_order(self.example_old_model)
+        expected_model_order = [migrator.new_model_defs[model]
+            for model in ['Test', 'Property', 'Subtest', 'Reference', 'NewModel']]
+        self.assertEqual(model_order, expected_model_order)
+
+        # test ambiguous_sheet_names
+        class FirstUnambiguousModel(obj_model.Model): pass
+
+        class SecondUnambiguousModel(obj_model.Model): pass
+
+        # models with ambiguous sheet names
+        class TestModel(obj_model.Model): pass
+
+        class TestModels(obj_model.Model): pass
+
+        class TestModels3(obj_model.Model):
+            class Meta(obj_model.Model.Meta):
+                verbose_name = 'TestModel'
+
+        class RenamedModel(obj_model.Model): pass
+
+        class NewModel(obj_model.Model): pass
+
+        migrator_2 = Migrator('', '', None)
+        migrated_models = dict(
+            TestModel=TestModel,
+            TestModels=TestModels,
+            TestModels3=TestModels3,
+            FirstUnambiguousModel=FirstUnambiguousModel)
+        migrator_2.old_model_defs = copy.deepcopy(migrated_models)
+        migrator_2.old_model_defs['SecondUnambiguousModel'] = SecondUnambiguousModel
+
+        migrator_2.new_model_defs = copy.deepcopy(migrated_models)
+        migrator_2.new_model_defs['RenamedModel'] = RenamedModel
+        migrator_2.new_model_defs['NewModel'] = NewModel
+        migrator_2.models_map = dict(
+            FirstUnambiguousModel='FirstUnambiguousModel',
+            TestModel='TestModel',
+            TestModels='TestModels',
+            TestModels3='TestModels3',
+            SecondUnambiguousModel='RenamedModel'
+        )
+        example_ambiguous_sheets = os.path.join(self.fixtures_path, 'example_ambiguous_sheets.xlsx')
+        expected_order = ['FirstUnambiguousModel', 'RenamedModel', 'TestModel', 'TestModels', 'TestModels3', 'NewModel']
+        with self.assertWarnsRegex(obj_model.io.IoWarning,
+            "The following sheets cannot be unambiguously mapped to models:"):
+            model_order = migrator_2._get_model_order(example_ambiguous_sheets)
+        self.assertEqual([m.__name__ for m in model_order], expected_order)
 
     def test_prepare(self):
         migrator = self.migrator
