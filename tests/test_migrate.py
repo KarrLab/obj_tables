@@ -17,7 +17,7 @@ import copy
 import warnings
 from argparse import Namespace
 
-from obj_model.migrate import Migrator, RunMigration
+from obj_model.migrate import Migrator, MigrationController, RunMigration
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -601,12 +601,51 @@ class TestRunMigration(unittest.TestCase):
         self.assertEqual(args.new_model_definitions, new_model_definitions)
         self.assertEqual(args.files, files.split())
 
-    def run_migration(self, old_models, new_models, biomodel_file):
-        args = Namespace(existing_model_definitions=old_models, new_model_definitions=new_models,
-            files=[biomodel_file])
-        return RunMigration.main(args)
+    def test_main(self):
+        args = Namespace(existing_model_definitions=self.old_model_defs_path,
+            new_model_definitions=self.new_model_defs_path, files=[self.example_old_model])
+        migrated_files = RunMigration.main(args)
+        root, ext = os.path.splitext(self.example_old_model)
+        self.assertEqual(migrated_files[0], "{}{}{}".format(root, Migrator.MIGRATE_SUFFIX, ext))
+        # todo: test content of migrated_files[0]
 
-    def test_run_migration(self):
-        migrated_example_model = self.run_migration(self.old_model_defs_path, self.new_model_defs_path,
-            self.example_old_model)
-        # todo: make unittest
+
+class TestMigrationController(unittest.TestCase):
+
+    def setUp(self):
+        self.migration_controller = MigrationController()
+
+    def test_migrate_over_schema_sequence(self):
+        pass
+
+    def test_check_params(self):
+        # test migrate_over_schema_sequence params
+        good_params = dict(
+            model_defs_files=['schema_1.py', 'schema_2.py', 'schema_3.py'],
+            renamed_models=None,
+            renamed_attributes=None)
+        self.assertEqual(MigrationController._check_params('migrate_over_schema_sequence', **good_params),
+            (good_params['model_defs_files'], good_params['renamed_models'], good_params['renamed_attributes']))
+
+        good_params['renamed_models'] = [[], [('A', 'B')]]
+        good_params['renamed_attributes'] = [[], [(('A', 'x'), ('B', 'y'))]]
+        self.assertEqual(MigrationController._check_params('migrate_over_schema_sequence', **good_params),
+            (good_params['model_defs_files'], good_params['renamed_models'], good_params['renamed_attributes']))
+
+        bad_model_defs_files = copy.deepcopy(good_params)
+        bad_model_defs_files['model_defs_files'] = ['schema_1.py']
+        with self.assertRaisesRegex(ValueError,
+            "model_defs_files must contain at least 2 model definitions, but it has only .+"):
+            MigrationController._check_params('migrate_over_schema_sequence', **bad_model_defs_files)
+
+        bad_renamed_models = copy.deepcopy(good_params)
+        bad_renamed_models['renamed_models'] = [[], [('A', 'B')], [('A', 'B')]]
+        with self.assertRaisesRegex(ValueError,
+            r"model_defs_files specifies . migration\(s\), but renamed_models contains . rename mapping\(s\)"):
+            MigrationController._check_params('migrate_over_schema_sequence', **bad_renamed_models)
+
+        bad_renamed_attributes = copy.deepcopy(good_params)
+        bad_renamed_attributes['renamed_attributes'] = [[], [(('A', 'x'), ('B', 'y'))], []]
+        with self.assertRaisesRegex(ValueError,
+            r"model_defs_files specifies . migration\(s\), but renamed_attributes contains . rename mapping\(s\)"):
+            MigrationController._check_params('migrate_over_schema_sequence', **bad_renamed_attributes)

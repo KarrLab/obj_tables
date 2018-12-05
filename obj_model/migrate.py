@@ -22,23 +22,24 @@ import wc_utils
 from wc_utils.util.list import det_find_dupes
 
 
-# todo next: support arbitrary transformations with attribute change by an optional function on each migrated instance
-# todo next: support data driven migration of many files in a repo
-#       config file provides: locations of schema file pair, renaming steps between them, locations of data files, [dir of migrated files]
-#       drive migration from the config file
+# local
+# todo next: confirm this works for all model file formats: csv, tsv, json, etc.
+# todo next: support sequence of migrations: in a new class; also, migrate without writing file
 # todo next: clean up naming: old models, existing, migrated models, new models, source models, dest models
+# todo next: support data driven migration of many files [in a repo]
+#       config file provides: locations of schema file pair, renaming steps between them, locations of data & migrated files
+#       drive migration from the config file
+# todo next: support arbitrary transformations by an optional function on each migrated instance
+
+# global
 # todo next: make work with full wc_lang core.py
+
+# Model change
+# todo next: separately specified default value for attribute
 # todo next: add Meta indicator to models (like Species previously) that are not inline and not stored in their own worksheet
 #   and remove Species hack
-# todo next: separately specified default value for attribute
+
 # todo next: move remaining todos to GitHub issues
-# todo: confirm this works for all model file formats: csv, tsv, json, etc.
-# todo: error if adding or deleting models or attrs create inconsistencies, as when deleting primary key attr referenced by a foreign key
-# todo: support sequence of migrations
-#       __init__ (or somewhere else): input list of sequence of schemas
-#       _get_all_model_defs: load the sequence of schemas
-#       prepare: prepare for a seq of migrations
-#       migrate: operate on the sequence of migrations; only write final file to disk
 # todo: support high-level, WC wc_lang specific migration of a repo
 #       use case:
 #           1 change wc_lang/core.py
@@ -50,7 +51,7 @@ from wc_utils.util.list import det_find_dupes
 #           "migrate_repo repo" uses repo's migrate.yml and migration_transformations.py to migrate all model files in repo
 # todo: use Model.revision to label git commit of wc_lang and automatically migrate models to current schema
 # and to report inconsistency between a schema and model file
-# todo: support generic conversion of migrated data by plug-in functions provided by a users
+# todo: support generic type conversion of migrated data by plug-in functions provided by a users
 class Migrator(object):
     """ Support schema migration
 
@@ -65,8 +66,8 @@ class Migrator(object):
         deleted_models (:obj:`set`): model types defined in the old models but not the new models
         renamed_models (:obj:`list` of :obj:`tuple`): model types renamed from the existing to the migrated schema
         models_map (:obj:`dict`): map from existing model names to migrated model names
-        renamed_attributes (:obj:`list` of :obj:`tuple`): attribute names renamed from the existing to the migrated schema;
-            provided as ((existing model, existing attribute), (migrated model, migrated attribute))
+        renamed_attributes (:obj:`list` of :obj:`tuple`): attribute names renamed from the existing to
+            the migrated schema
         renamed_attributes_map (:obj:`dict`): map of attribute names renamed from the existing to the migrated schema
         _migrated_copy_attr_name (:obj:`str`): attribute name used to point old models to corresponding
             new models; not used in any old model definitions
@@ -91,6 +92,15 @@ class Migrator(object):
             old_model_defs_file (:obj:`str`): path of a file containing old Model definitions
             new_model_defs_file (:obj:`str`): path of a file containing new Model definitions
             files (:obj:`list`): file(s) to migrate from old to new Model definitions
+            renamed_models (:obj:`list` of :obj:`tuple`): model types renamed from the existing to the
+                migrated schema; has the form '[('Existing_1', 'Migrated_1'), ..., ('Existing_n', 'Migrated_n')]',
+                where `('Existing_i', 'Migrated_i')` indicates that existing model `Existing_i` is
+                being renamed into migrated model `Migrated_i`.
+            renamed_attributes (:obj:`list` of :obj:`tuple`): attribute names renamed from the existing
+                to the migrated schema; a list of tuples of the form
+                `(('Existing_Model_i', 'Existing_Attr_x'), ('Migrated_Model_j', 'Migrated_Attr_y'))`,
+                which indicates that `Existing_Model_i.Existing_Attr_x` will migrate to
+                `Migrated_Model_j.Migrated_Attr_y`.
 
         Raises:
             :obj:`ValueError`: if one of the defs files is not a python file
@@ -526,7 +536,8 @@ class Migrator(object):
             :obj:`str`: name of migrated file
 
         Raises:
-            :obj:`ValueError`: if writing the migrated file would overwrite an existing file
+            :obj:`ValueError`: if migrate_in_place is False and writing the migrated file would
+                overwrite an existing file
         """
         # read models from source_file
         root, ext = os.path.splitext(source_file)
@@ -668,6 +679,66 @@ class Migrator(object):
         for file in self.files:
             migrated_files.append(self.migrate(self._normalize_filename(file)))
         return migrated_files
+
+
+class MigrationController(object):
+    """ Manage multiple migrations and underspecified migrations
+
+    Manage migrations on several dimensions:
+    * Migrate a single model file through a sequence of schemas
+    * Perform migrations parameterized by a configuration file
+    """
+
+    def __init__(self):
+        """ Construct a MigrationController
+        """
+        pass
+
+    def migrate_over_schema_sequence(self, source_file, model_defs_files,
+        renamed_models=None, renamed_attributes=None,
+        migrated_file=None, migrate_suffix=None, migrate_in_place=False):
+        """ Migrate a model file over a sequence of schemas
+
+        Args:
+            x (:obj:`list`): y
+            ...
+
+        Returns:
+            :obj:`str`: name of migrated file
+
+        Raises:
+            :obj:`ValueError`: if `model_defs_files`, `renamed_models`, and `renamed_attributes`
+                are not consistent with each other;
+        """
+        model_defs_files, renamed_models, renamed_attributes = self._check_params('migrate_over_schema_sequence',
+            dict(model_defs_files=model_defs_files, renamed_models=renamed_models, renamed_attributes=renamed_attributes))
+
+    @staticmethod
+    def _check_params(param_set, **kwargs):
+        if param_set == 'migrate_over_schema_sequence':
+            model_defs_files = kwargs['model_defs_files']
+            renamed_models = kwargs['renamed_models']
+            renamed_attributes = kwargs['renamed_attributes']
+            model_defs_files = list(model_defs_files)
+            if len(model_defs_files) < 2:
+                raise ValueError("model_defs_files must contain at least 2 model definitions, but "
+                    "it has only {}".format(len(model_defs_files)))
+            if renamed_models is not None:
+                renamed_models = list(renamed_models)
+                if len(renamed_models) != len(model_defs_files) - 1:
+                    raise ValueError("model_defs_files specifies {} migration(s), but renamed_models "
+                        "contains {} rename mapping(s)".format(
+                            len(model_defs_files) - 1, len(renamed_models)))
+            if renamed_attributes is not None:
+                renamed_attributes = list(renamed_attributes)
+                if len(renamed_attributes) != len(model_defs_files) - 1:
+                    raise ValueError("model_defs_files specifies {} migration(s), but renamed_attributes "
+                        "contains {} rename mapping(s)".format(
+                            len(model_defs_files) - 1, len(renamed_attributes)))
+            return (model_defs_files, renamed_models, renamed_attributes)
+
+    def migrate_from_configuration_file(self):
+        pass
 
 
 class RunMigration(object):
