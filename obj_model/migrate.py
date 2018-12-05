@@ -75,7 +75,7 @@ class Migrator(object):
     """
 
     # default suffix for a migrated model file
-    MIGRATE_SUFFIX = '_migrate'
+    MIGRATE_SUFFIX = '_migrated'
 
     # modules being used for migration, indexed by full pathname
     # Migrator does not need or support packages
@@ -518,7 +518,8 @@ class Migrator(object):
             source_file (:obj:`str`): pathname of file to migrate
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
                 save migrated file with new suffix in same directory as source file
-            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
+                default is `Migrator.MIGRATE_SUFFIX`
 
         Returns:
             :obj:`str`: name of migrated file

@@ -537,7 +537,14 @@ class TestMigration(unittest.TestCase):
         source = read_workbook(self.example_old_model)
         migrated = read_workbook(self.example_migrated_model)
         self.assertEqual(source, migrated)
-        # todo next: custom migrate_suffix and ValueError
+
+        test_suffix = '_MIGRATED_FILE'
+        migrated_filename = no_change_migrator.migrate(self.example_old_model, migrate_suffix=test_suffix)
+        root, _ = os.path.splitext(self.example_old_model)
+        self.assertEqual(migrated_filename, "{}{}.xlsx".format(root, test_suffix))
+
+        with self.assertRaisesRegex(ValueError, "migrated file '.*' already exists"):
+            no_change_migrator.migrate(self.example_old_model, migrated_file=self.example_migrated_model)
 
     def test_migrate(self):
 
