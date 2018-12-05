@@ -22,7 +22,6 @@ import wc_utils
 from wc_utils.util.list import det_find_dupes
 
 
-# todo next: support migration in place, with saving backup
 # todo next: support arbitrary transformations with attribute change by an optional function on each migrated instance
 # todo next: support data driven migration of many files in a repo
 #       config file provides: locations of schema file pair, renaming steps between them, locations of data files, [dir of migrated files]
@@ -511,7 +510,7 @@ class Migrator(object):
         return [model for model in models.values() if model.Meta.tabular_orientation != TabularOrientation.inline
             and model.__name__ != 'Species']
 
-    def migrate(self, source_file, migrated_file=None, migrate_suffix=None):
+    def migrate(self, source_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
         """ Migrate data in `source_file`
 
         Args:
@@ -520,6 +519,8 @@ class Migrator(object):
                 save migrated file with new suffix in same directory as source file
             migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
                 default is `Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite `source_file` with the
+                migrated file and ignore `migrated_file` and `migrate_suffix`
 
         Returns:
             :obj:`str`: name of migrated file
@@ -543,13 +544,16 @@ class Migrator(object):
         new_models = [new_model for _, new_model in all_models]
 
         # determine pathname of migrated file
-        if migrate_suffix is None:
-            migrate_suffix = Migrator.MIGRATE_SUFFIX
-        if migrated_file is None:
-            migrated_file = os.path.join(os.path.dirname(source_file),
-                os.path.basename(root) + migrate_suffix + ext)
-        if os.path.exists(migrated_file):
-            raise ValueError("migrated file '{}' already exists".format(migrated_file))
+        if migrate_in_place:
+            migrated_file = source_file
+        else:
+            if migrate_suffix is None:
+                migrate_suffix = Migrator.MIGRATE_SUFFIX
+            if migrated_file is None:
+                migrated_file = os.path.join(os.path.dirname(source_file),
+                    os.path.basename(root) + migrate_suffix + ext)
+            if os.path.exists(migrated_file):
+                raise ValueError("migrated file '{}' already exists".format(migrated_file))
 
         # get sequence of migrated models in workbook
         models = self._get_model_order(source_file)

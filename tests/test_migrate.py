@@ -562,6 +562,10 @@ class TestMigration(unittest.TestCase):
         models = list(old_2_new_migrator.old_model_defs.values())
         self.compare_model(OldTest, models, self.example_old_model, new_2_old_migrated_file)
 
+        migrated_filename = old_2_new_migrator.migrate(self.example_old_model, migrate_in_place=True)
+        self.assertEqual(migrated_filename, self.example_old_model)
+        # todo: use tsv files and compare content of migrated_filename and self.example_old_model
+
     def test_exceptions(self):
         bad_module = os.path.join(self.tmp_dir, 'bad_module.py')
         f = open(bad_module, "w")
