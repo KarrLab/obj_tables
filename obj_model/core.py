@@ -368,6 +368,7 @@ class ModelMeta(type):
                     related_class = get_model(related_class_name)
                     if related_class:
                         attr.related_class = related_class
+                        model_cls.Meta.local_attributes[attr.name].related_class = related_class
 
                 # setup related attributes on related classes
                 if attr.name in model_cls.__dict__ and attr.related_name and \
