@@ -24,7 +24,7 @@ from wc_utils.util.list import det_find_dupes
 
 # local
 # todo next: changes for migrate_over_schema_sequence
-# todo next: confirm this works for all model file formats: csv, tsv, json, etc.
+# todo next: combine initialize and prepare in one method
 # todo next: support sequence of migrations: in a new class; also, migrate without writing file
 # todo next: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: support data driven migration of many files [in a repo]

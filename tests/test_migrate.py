@@ -56,7 +56,7 @@ class TestMigration(unittest.TestCase):
         # copy test models to tmp dir
         self.tmp_model_dir = self.__class__.tmp_model_dir
         shutil.copy(os.path.join(fixtures_path, 'example_old_model.xlsx'), self.tmp_model_dir)
-        self.example_old_model = os.path.join(self.tmp_model_dir, 'example_old_model.xlsx')
+        self.example_old_model_copy = os.path.join(self.tmp_model_dir, 'example_old_model.xlsx')
         self.example_migrated_model = os.path.join(self.tmp_model_dir, 'example_migrated_model.xlsx')
         dst = os.path.join(self.tmp_model_dir, 'tsv_example')
         self.tsv_dir = shutil.copytree(os.path.join(fixtures_path, 'tsv_example'), dst)
@@ -301,7 +301,7 @@ class TestMigration(unittest.TestCase):
     def test_get_model_order(self):
         migrator = self.migrator
         migrator.prepare()
-        model_order = migrator._get_model_order(self.example_old_model)
+        model_order = migrator._get_model_order(self.example_old_model_copy)
         expected_model_order = [migrator.new_model_defs[model]
             for model in ['Test', 'Property', 'Subtest', 'Reference', 'NewModel']]
         self.assertEqual(model_order, expected_model_order)
@@ -535,23 +535,23 @@ class TestMigration(unittest.TestCase):
     def test_migrate_without_changes(self):
         no_change_migrator = self.no_change_migrator
         no_change_migrator.prepare()
-        no_change_migrator.migrate(self.example_old_model, migrated_file=self.example_migrated_model)
+        no_change_migrator.migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
         OldTest = no_change_migrator.old_model_defs['Test']
         models = list(no_change_migrator.old_model_defs.values())
-        # this compares all Models in self.example_old_model and self.example_migrated_model because it follows the refs from Test
-        self.compare_model(OldTest, models, self.example_old_model, self.example_migrated_model)
+        # this compares all Models in self.example_old_model_copy and self.example_migrated_model because it follows the refs from Test
+        self.compare_model(OldTest, models, self.example_old_model_copy, self.example_migrated_model)
 
-        source = read_workbook(self.example_old_model)
+        source = read_workbook(self.example_old_model_copy)
         migrated = read_workbook(self.example_migrated_model)
         self.assertEqual(source, migrated)
 
         test_suffix = '_MIGRATED_FILE'
-        migrated_filename = no_change_migrator.migrate(self.example_old_model, migrate_suffix=test_suffix)
-        root, _ = os.path.splitext(self.example_old_model)
+        migrated_filename = no_change_migrator.migrate(self.example_old_model_copy, migrate_suffix=test_suffix)
+        root, _ = os.path.splitext(self.example_old_model_copy)
         self.assertEqual(migrated_filename, "{}{}.xlsx".format(root, test_suffix))
 
         with self.assertRaisesRegex(ValueError, "migrated file '.*' already exists"):
-            no_change_migrator.migrate(self.example_old_model, migrated_file=self.example_migrated_model)
+            no_change_migrator.migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
 
     @staticmethod
     def invert_renaming(renaming):
@@ -600,14 +600,27 @@ class TestMigration(unittest.TestCase):
         self.assertEqual(existing, round_trip_migrated)
 
         # round trip test of model in xlsx file
-        old_2_new_xlsx_file = os.path.join(self.tmp_model_dir, 'old_2_new_xlsx_file.xlsx')
         example_old_rt_model = os.path.join(self.fixtures_path, 'example_old_model_rt.xlsx')
+        old_2_new_xlsx_file = os.path.join(self.tmp_model_dir, 'old_2_new_xlsx_file.xlsx')
         old_2_new_migrator.migrate(example_old_rt_model, migrated_file=old_2_new_xlsx_file)
         round_trip_migrated_xlsx_file = new_2_old_migrator.migrate(old_2_new_xlsx_file)
 
         existing = read_workbook(example_old_rt_model)
         round_trip_migrated = read_workbook(round_trip_migrated_xlsx_file)
         self.assertEqual(existing, round_trip_migrated)
+
+    def test_migrate_in_place(self):
+        self.migrator.prepare()
+        # migrate to example_migrated_model
+        example_migrated_model = os.path.join(tempfile.mkdtemp(dir=self.tmp_model_dir), 'example_migrated_model.xlsx')
+        self.migrator.migrate(self.example_old_model_copy, migrated_file=example_migrated_model)
+        # migrate to self.example_old_model_copy
+        self.migrator.migrate(self.example_old_model_copy, migrate_in_place=True)
+
+        # compare
+        migrated = read_workbook(example_migrated_model)
+        migrated_in_place = read_workbook(self.example_old_model_copy)
+        self.assertEqual(migrated, migrated_in_place)
 
     def test_exceptions(self):
         bad_module = os.path.join(self.tmp_dir, 'bad_module.py')
@@ -629,7 +642,7 @@ class TestRunMigration(unittest.TestCase):
 
         self.tmp_model_dir = tempfile.mkdtemp()
         shutil.copy(os.path.join(fixtures_path, 'example_old_model.xlsx'), self.tmp_model_dir)
-        self.example_old_model = os.path.join(self.tmp_model_dir, 'example_old_model.xlsx')
+        self.example_old_model_copy = os.path.join(self.tmp_model_dir, 'example_old_model.xlsx')
 
     def tearDown(self):
         shutil.rmtree(self.tmp_model_dir)
@@ -646,9 +659,9 @@ class TestRunMigration(unittest.TestCase):
 
     def test_main(self):
         args = Namespace(existing_model_definitions=self.old_model_defs_path,
-            new_model_definitions=self.new_model_defs_path, files=[self.example_old_model])
+            new_model_definitions=self.new_model_defs_path, files=[self.example_old_model_copy])
         migrated_files = RunMigration.main(args)
-        root, ext = os.path.splitext(self.example_old_model)
+        root, ext = os.path.splitext(self.example_old_model_copy)
         self.assertEqual(migrated_files[0], "{}{}{}".format(root, Migrator.MIGRATE_SUFFIX, ext))
 
 
