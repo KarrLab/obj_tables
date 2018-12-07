@@ -23,7 +23,6 @@ from wc_utils.util.list import det_find_dupes
 
 
 # local
-# todo next: rename these to local methods: migrate_model, deep_migrate, connect_models,
 # todo next: changes for migrate_over_schema_sequence
 # todo next: confirm this works for all model file formats: csv, tsv, json, etc.
 # todo next: support sequence of migrations: in a new class; also, migrate without writing file
@@ -552,8 +551,8 @@ class Migrator(object):
             models_read.extend(models)
 
         # migrate model instances to new schema
-        all_models = self.deep_migrate(models_read)
-        self.connect_models(all_models)
+        all_models = self._deep_migrate(models_read)
+        self._connect_models(all_models)
         new_models = [new_model for _, new_model in all_models]
 
         # determine pathname of migrated file
@@ -576,7 +575,7 @@ class Migrator(object):
         writer.run(migrated_file, new_models, models=models)
         return migrated_file
 
-    def migrate_model(self, old_model, old_model_def, new_model_def):
+    def _migrate_model(self, old_model, old_model_def, new_model_def):
         """ Migrate a model instance's non-related attributes
 
         Args:
@@ -608,11 +607,11 @@ class Migrator(object):
 
                 setattr(new_model, migrated_attr, copy_val)
 
-        # save a reference to new_model in old_model, which is used by connect_models()
+        # save a reference to new_model in old_model, which is used by _connect_models()
         setattr(old_model, self._migrated_copy_attr_name, new_model)
         return new_model
 
-    def deep_migrate(self, old_models):
+    def _deep_migrate(self, old_models):
         """ Migrate all model instances from old to new model definitions
 
         Supports:
@@ -639,11 +638,11 @@ class Migrator(object):
                 continue
 
             migrated_class_name = self.models_map[existing_class_name]
-            new_model = self.migrate_model(old_model, old_schema[existing_class_name], new_schema[migrated_class_name])
+            new_model = self._migrate_model(old_model, old_schema[existing_class_name], new_schema[migrated_class_name])
             all_models.append((old_model, new_model))
         return all_models
 
-    def connect_models(self, all_models):
+    def _connect_models(self, all_models):
         """ Connect migrated model instances
 
         Migrate `obj_model.RelatedAttribute` connections among old models to new models

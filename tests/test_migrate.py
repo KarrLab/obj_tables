@@ -389,7 +389,7 @@ class TestMigration(unittest.TestCase):
             np_array=np_array_val,
             related=grc_1
         )
-        migrated_model = self.good_migrator.migrate_model(good_existing_1, self.GoodExisting, self.GoodMigrated)
+        migrated_model = self.good_migrator._migrate_model(good_existing_1, self.GoodExisting, self.GoodMigrated)
         self.assertEqual(migrated_model.id, id)
         self.assertEqual(migrated_model.attr_b, attr_a_b)
         numpy.testing.assert_equal(migrated_model.np_array, np_array_val)
@@ -400,13 +400,13 @@ class TestMigration(unittest.TestCase):
             attr_a=attr_a_b,
             np_array=np_array_val
         )
-        migrated_model = self.good_migrator.migrate_model(good_existing_2, self.GoodExisting, self.GoodMigrated)
+        migrated_model = self.good_migrator._migrate_model(good_existing_2, self.GoodExisting, self.GoodMigrated)
         self.assertEqual(migrated_model.id, id)
         self.assertEqual(migrated_model.attr_b, attr_a_b)
         numpy.testing.assert_equal(migrated_model.np_array, np_array_val)
 
     def test_deep_migrate_and_connect_models(self):
-        # test both deep_migrate and connect_models because they need a similar test state
+        # test both _deep_migrate and _connect_models because they need a similar test state
         migrator = self.migrator
         migrator.prepare()
         old_model_defs = migrator.old_model_defs
@@ -474,7 +474,7 @@ class TestMigration(unittest.TestCase):
             expected_new_models.append(
                 NewSubtest(id="subtest_{}".format(n)))
 
-        all_models = migrator.deep_migrate(old_models)
+        all_models = migrator._deep_migrate(old_models)
 
         new_models = [new_model for _, new_model in all_models]
         self.assertEqual(len(new_models), len(expected_new_models))
@@ -501,7 +501,7 @@ class TestMigration(unittest.TestCase):
                     references=new_references[n:n + 2]))
         expected_new_models_2.extend(new_subtests)
 
-        migrator.connect_models(all_models)
+        migrator._connect_models(all_models)
 
         self.assertEqual(len(new_models), len(expected_new_models_2))
         for new_model, expected_new_model in zip(new_models, expected_new_models_2):
