@@ -15,6 +15,7 @@ import shutil
 import numpy
 import copy
 import warnings
+import filecmp
 from argparse import Namespace
 
 from obj_model.migrate import Migrator, MigrationController, RunMigration
@@ -30,15 +31,16 @@ class TestMigration(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # create tmp dir in 'fixtures/tmp' so it can be accessed from Docker container's host
-        cls.tmp_model_dir = tempfile.mkdtemp(dir=os.path.join(os.path.dirname(__file__), 'fixtures', 'tmp'))
+        # create tmp dir in 'fixtures/migrate/tmp' so it can be accessed from Docker container's host
+        cls.tmp_model_dir = tempfile.mkdtemp(dir=os.path.join(os.path.dirname(__file__), 'fixtures',
+            'migrate', 'tmp'))
 
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_model_dir)
 
     def setUp(self):
-        self.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
+        self.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
         self.old_model_defs_path = os.path.join(fixtures_path, 'core_old.py')
         self.new_model_defs_path = os.path.join(fixtures_path, 'core_new.py')
 
@@ -51,10 +53,15 @@ class TestMigration(unittest.TestCase):
 
         self.tmp_dir = tempfile.mkdtemp()
 
+        # copy test models to tmp dir
         self.tmp_model_dir = self.__class__.tmp_model_dir
         shutil.copy(os.path.join(fixtures_path, 'example_old_model.xlsx'), self.tmp_model_dir)
         self.example_old_model = os.path.join(self.tmp_model_dir, 'example_old_model.xlsx')
         self.example_migrated_model = os.path.join(self.tmp_model_dir, 'example_migrated_model.xlsx')
+        dst = os.path.join(self.tmp_model_dir, 'tsv_example')
+        self.tsv_dir = shutil.copytree(os.path.join(fixtures_path, 'tsv_example'), dst)
+        self.tsv_test_model = 'test-*.tsv'
+        self.example_old_model_tsv = os.path.join(self.tsv_dir, self.tsv_test_model)
 
         # create migrator with renaming that doesn't use models in files
         # these classes contain migration errors for validation tests
@@ -148,6 +155,7 @@ class TestMigration(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.tmp_dir)
+        shutil.rmtree(self.tsv_dir)
 
     def test_valid_python_path(self):
         with self.assertRaisesRegex(ValueError, "must be Python filename ending in '.py'"):
@@ -171,7 +179,6 @@ class TestMigration(unittest.TestCase):
         cur_dir = os.path.dirname(__file__)
         self.assertEqual(cur_dir,
             _normalize_filename(os.path.join(cur_dir, '..', os.path.basename(cur_dir))))
-        # todo: test sym links
 
     def test_validate_renamed_models(self):
         migrator_for_error_tests = self.migrator_for_error_tests
@@ -546,25 +553,61 @@ class TestMigration(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "migrated file '.*' already exists"):
             no_change_migrator.migrate(self.example_old_model, migrated_file=self.example_migrated_model)
 
+    @staticmethod
+    def invert_renaming(renaming):
+        # invert a list of renamed_models or renamed_attributes
+        inverted_renaming = []
+        for entry in renaming:
+            existing, migrated = entry
+            inverted_renaming.append((migrated, existing))
+        return inverted_renaming
+
     def test_migrate(self):
 
         # test round-trip old -> new -> old
-        old_2_new_migrator = self.migrator
-        old_2_new_migrator.prepare()
-        old_2_new_migrated_file = old_2_new_migrator.migrate(self.example_old_model)
+        # use schemas with no deleted or new models so model files are identical
+        # but include model and attr renamng so that old != new
+        old_model_defs_path = os.path.join(self.fixtures_path, 'core_old_rt.py')
+        new_model_defs_path = os.path.join(self.fixtures_path, 'core_new_rt.py')
 
-        new_2_old_migrator = Migrator(self.new_model_defs_path, self.old_model_defs_path, None)
+        # make old -> new migrator
+        old_2_new_renamed_models = [('Test', 'MigratedTest')]
+        old_2_new_renamed_attributes = [
+            (('Test', 'old_attr'), ('MigratedTest', 'new_attr')),
+            (('Property', 'value'), ('Property', 'new_value')),
+            (('Subtest', 'references'), ('Subtest', 'migrated_references'))]
+        old_2_new_migrator = Migrator(old_model_defs_path, new_model_defs_path, None,
+            renamed_models=old_2_new_renamed_models, renamed_attributes=old_2_new_renamed_attributes)
+        old_2_new_migrator.initialize()
+        old_2_new_migrator.prepare()
+
+        # make new -> old migrator
+        new_2_old_migrator = Migrator(new_model_defs_path, old_model_defs_path, None,
+            renamed_models=self.invert_renaming(old_2_new_renamed_models),
+            renamed_attributes=self.invert_renaming(old_2_new_renamed_attributes))
         new_2_old_migrator.initialize()
         new_2_old_migrator.prepare()
-        new_2_old_migrated_file = new_2_old_migrator.migrate(old_2_new_migrated_file)
 
-        OldTest = old_2_new_migrator.old_model_defs['Test']
-        models = list(old_2_new_migrator.old_model_defs.values())
-        self.compare_model(OldTest, models, self.example_old_model, new_2_old_migrated_file)
+        # round trip test of model in tsv file
+        # put each tsv in separate dir so globs don't match erroneously
+        old_2_new_migrated_tsv_file = os.path.join(tempfile.mkdtemp(dir=self.tmp_model_dir), self.tsv_test_model)
+        old_2_new_migrator.migrate(self.example_old_model_tsv, migrated_file=old_2_new_migrated_tsv_file)
+        round_trip_migrated_tsv_file = os.path.join(tempfile.mkdtemp(dir=self.tmp_model_dir), self.tsv_test_model)
+        new_2_old_migrator.migrate(old_2_new_migrated_tsv_file, migrated_file=round_trip_migrated_tsv_file)
 
-        migrated_filename = old_2_new_migrator.migrate(self.example_old_model, migrate_in_place=True)
-        self.assertEqual(migrated_filename, self.example_old_model)
-        # todo: use tsv files and compare content of migrated_filename and self.example_old_model
+        existing = read_workbook(self.example_old_model_tsv)
+        round_trip_migrated = read_workbook(round_trip_migrated_tsv_file)
+        self.assertEqual(existing, round_trip_migrated)
+
+        # round trip test of model in xlsx file
+        old_2_new_xlsx_file = os.path.join(self.tmp_model_dir, 'old_2_new_xlsx_file.xlsx')
+        example_old_rt_model = os.path.join(self.fixtures_path, 'example_old_model_rt.xlsx')
+        old_2_new_migrator.migrate(example_old_rt_model, migrated_file=old_2_new_xlsx_file)
+        round_trip_migrated_xlsx_file = new_2_old_migrator.migrate(old_2_new_xlsx_file)
+
+        existing = read_workbook(example_old_rt_model)
+        round_trip_migrated = read_workbook(round_trip_migrated_xlsx_file)
+        self.assertEqual(existing, round_trip_migrated)
 
     def test_exceptions(self):
         bad_module = os.path.join(self.tmp_dir, 'bad_module.py')
@@ -580,7 +623,7 @@ class TestMigration(unittest.TestCase):
 class TestRunMigration(unittest.TestCase):
 
     def setUp(self):
-        fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures')
+        fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
         self.old_model_defs_path = os.path.join(fixtures_path, 'core_old.py')
         self.new_model_defs_path = os.path.join(fixtures_path, 'core_new.py')
 
@@ -607,7 +650,6 @@ class TestRunMigration(unittest.TestCase):
         migrated_files = RunMigration.main(args)
         root, ext = os.path.splitext(self.example_old_model)
         self.assertEqual(migrated_files[0], "{}{}{}".format(root, Migrator.MIGRATE_SUFFIX, ext))
-        # todo: test content of migrated_files[0]
 
 
 class TestMigrationController(unittest.TestCase):

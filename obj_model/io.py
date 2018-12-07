@@ -1040,8 +1040,8 @@ def get_reader(ext):
 def convert(source, destination, models,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
-    """ Convert among comma separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
-    tab separated formats (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
+    """ Convert among comma-separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
+    tab-separated (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
 
     Args:
         source (:obj:`str`): path to source file

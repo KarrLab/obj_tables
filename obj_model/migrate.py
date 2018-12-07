@@ -23,6 +23,8 @@ from wc_utils.util.list import det_find_dupes
 
 
 # local
+# todo next: rename these to local methods: migrate_model, deep_migrate, connect_models,
+# todo next: changes for migrate_over_schema_sequence
 # todo next: confirm this works for all model file formats: csv, tsv, json, etc.
 # todo next: support sequence of migrations: in a new class; also, migrate without writing file
 # todo next: clean up naming: old models, existing, migrated models, new models, source models, dest models
@@ -40,6 +42,8 @@ from wc_utils.util.list import det_find_dupes
 #   and remove Species hack
 
 # todo next: move remaining todos to GitHub issues
+# todo: confirm this works for json, etc.
+# todo: test sym links in Migrator._normalize_filename
 # todo: support high-level, WC wc_lang specific migration of a repo
 #       use case:
 #           1 change wc_lang/core.py
@@ -157,10 +161,8 @@ class Migrator(object):
         """
         # avoid re-loading file containing Model definitions, which would fail with
         # 'cannot use the same related attribute name' error if its Models have related attributes
-        try:
+        if model_defs_file in self.modules:
             return self.modules[model_defs_file]
-        except KeyError:
-            pass
 
         root, _ = os.path.splitext(model_defs_file)
         module_name = os.path.basename(root)
@@ -712,6 +714,23 @@ class MigrationController(object):
         """
         model_defs_files, renamed_models, renamed_attributes = self._check_params('migrate_over_schema_sequence',
             dict(model_defs_files=model_defs_files, renamed_models=renamed_models, renamed_attributes=renamed_attributes))
+        num_migrations = len(model_defs_files) - 1
+        for i in range(len(model_defs_files)):
+            # todo: move files elsewhere
+            # create Migrator for each pair of schemas
+            migrator = Migrator(model_defs_files[i], model_defs_files[i+1], [], renamed_models[i], renamed_attributes[i])
+            migrator.initialize()
+            migrator.prepare()
+            # todo: return_models option on migrate(), separate out '# migrate model instances to new schema' to 'migrate'
+            # add 'read_existing_model', 'write_migrated_file'
+            # migrate in memory until the last migration
+            if i == 0:
+                models = migrator.read_existing_model(source_file)
+            models = migrator.migrate(models)
+            if i == num_migrations - 1:
+                # done migrating, write to file
+                migrated_filename = migrator.write_migrated_file(models, migrated_file=migrated_file,
+                    migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
 
     @staticmethod
     def _check_params(param_set, **kwargs):
