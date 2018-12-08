@@ -44,11 +44,11 @@ class TestMigration(unittest.TestCase):
         self.old_model_defs_path = os.path.join(fixtures_path, 'core_old.py')
         self.new_model_defs_path = os.path.join(fixtures_path, 'core_new.py')
 
-        self.migrator = Migrator(self.old_model_defs_path, self.new_model_defs_path, None)
+        self.migrator = Migrator(self.old_model_defs_path, self.new_model_defs_path)
         self.migrator.initialize()
         self.migrator._get_all_model_defs()
 
-        self.no_change_migrator = Migrator(self.old_model_defs_path, self.old_model_defs_path, None)
+        self.no_change_migrator = Migrator(self.old_model_defs_path, self.old_model_defs_path)
         self.no_change_migrator.initialize()
 
         self.tmp_dir = tempfile.mkdtemp()
@@ -94,7 +94,7 @@ class TestMigration(unittest.TestCase):
             related = OneToOneAttribute(NewRelatedObj, related_name='not_test')
 
         self.migrator_for_error_tests = migrator_for_error_tests = Migrator(
-            'old_model_defs_file', 'new_model_defs_file', [])
+            'old_model_defs_file', 'new_model_defs_file')
         migrator_for_error_tests.old_model_defs = {
             'RelatedObj': RelatedObj,
             'TestExisting': TestExisting,
@@ -139,7 +139,7 @@ class TestMigration(unittest.TestCase):
             related = OneToOneAttribute(RelatedObj, related_name='test_2')
         self.GoodMigrated = GoodMigrated
 
-        self.good_migrator = good_migrator = Migrator('old_model_defs_file', 'new_model_defs_file', [])
+        self.good_migrator = good_migrator = Migrator('old_model_defs_file', 'new_model_defs_file')
         good_migrator
         good_migrator.old_model_defs = {
             'GoodRelatedCls': GoodRelatedCls,
@@ -324,7 +324,7 @@ class TestMigration(unittest.TestCase):
 
         class NewModel(obj_model.Model): pass
 
-        migrator_2 = Migrator('', '', None)
+        migrator_2 = Migrator('', '')
         migrated_models = dict(
             TestModel=TestModel,
             TestModels=TestModels,
@@ -367,7 +367,7 @@ class TestMigration(unittest.TestCase):
 
         # triggering inconsistencies in prepare() requires inconsistent model definitions on disk
         inconsistent_new_model_defs_path = os.path.join(self.fixtures_path, 'core_new_inconsistent.py')
-        inconsistent_migrator = Migrator(self.old_model_defs_path, inconsistent_new_model_defs_path, None)
+        inconsistent_migrator = Migrator(self.old_model_defs_path, inconsistent_new_model_defs_path)
         inconsistent_migrator.initialize()
         with self.assertRaisesRegex(ValueError,
             "migrated attribute type mismatch: type of .*, doesn't equal type of .*, .*"):
@@ -514,6 +514,18 @@ class TestMigration(unittest.TestCase):
             '''
             self.assertTrue(new_model.is_equal(expected_new_model))
 
+    def test_read_existing_model(self):
+        pass
+        # todo
+
+    def test_migrate(self):
+        pass
+        # todo
+
+    def test_write_migrated_file(self):
+        pass
+        # todo
+
     @staticmethod
     def read_model_file(model_file, models):
         _, ext = os.path.splitext(model_file)
@@ -535,7 +547,7 @@ class TestMigration(unittest.TestCase):
     def test_migrate_without_changes(self):
         no_change_migrator = self.no_change_migrator
         no_change_migrator.prepare()
-        no_change_migrator.migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
+        no_change_migrator.full_migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
         OldTest = no_change_migrator.old_model_defs['Test']
         models = list(no_change_migrator.old_model_defs.values())
         # this compares all Models in self.example_old_model_copy and self.example_migrated_model because it follows the refs from Test
@@ -546,12 +558,12 @@ class TestMigration(unittest.TestCase):
         self.assertEqual(source, migrated)
 
         test_suffix = '_MIGRATED_FILE'
-        migrated_filename = no_change_migrator.migrate(self.example_old_model_copy, migrate_suffix=test_suffix)
+        migrated_filename = no_change_migrator.full_migrate(self.example_old_model_copy, migrate_suffix=test_suffix)
         root, _ = os.path.splitext(self.example_old_model_copy)
         self.assertEqual(migrated_filename, "{}{}.xlsx".format(root, test_suffix))
 
         with self.assertRaisesRegex(ValueError, "migrated file '.*' already exists"):
-            no_change_migrator.migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
+            no_change_migrator.full_migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
 
     @staticmethod
     def invert_renaming(renaming):
@@ -562,7 +574,7 @@ class TestMigration(unittest.TestCase):
             inverted_renaming.append((migrated, existing))
         return inverted_renaming
 
-    def test_migrate(self):
+    def test_full_migrate(self):
 
         # test round-trip old -> new -> old
         # use schemas with no deleted or new models so model files are identical
@@ -576,13 +588,13 @@ class TestMigration(unittest.TestCase):
             (('Test', 'old_attr'), ('MigratedTest', 'new_attr')),
             (('Property', 'value'), ('Property', 'new_value')),
             (('Subtest', 'references'), ('Subtest', 'migrated_references'))]
-        old_2_new_migrator = Migrator(old_model_defs_path, new_model_defs_path, None,
+        old_2_new_migrator = Migrator(old_model_defs_path, new_model_defs_path,
             renamed_models=old_2_new_renamed_models, renamed_attributes=old_2_new_renamed_attributes)
         old_2_new_migrator.initialize()
         old_2_new_migrator.prepare()
 
         # make new -> old migrator
-        new_2_old_migrator = Migrator(new_model_defs_path, old_model_defs_path, None,
+        new_2_old_migrator = Migrator(new_model_defs_path, old_model_defs_path,
             renamed_models=self.invert_renaming(old_2_new_renamed_models),
             renamed_attributes=self.invert_renaming(old_2_new_renamed_attributes))
         new_2_old_migrator.initialize()
@@ -591,9 +603,9 @@ class TestMigration(unittest.TestCase):
         # round trip test of model in tsv file
         # put each tsv in separate dir so globs don't match erroneously
         old_2_new_migrated_tsv_file = os.path.join(tempfile.mkdtemp(dir=self.tmp_model_dir), self.tsv_test_model)
-        old_2_new_migrator.migrate(self.example_old_model_tsv, migrated_file=old_2_new_migrated_tsv_file)
+        old_2_new_migrator.full_migrate(self.example_old_model_tsv, migrated_file=old_2_new_migrated_tsv_file)
         round_trip_migrated_tsv_file = os.path.join(tempfile.mkdtemp(dir=self.tmp_model_dir), self.tsv_test_model)
-        new_2_old_migrator.migrate(old_2_new_migrated_tsv_file, migrated_file=round_trip_migrated_tsv_file)
+        new_2_old_migrator.full_migrate(old_2_new_migrated_tsv_file, migrated_file=round_trip_migrated_tsv_file)
 
         existing = read_workbook(self.example_old_model_tsv)
         round_trip_migrated = read_workbook(round_trip_migrated_tsv_file)
@@ -602,8 +614,8 @@ class TestMigration(unittest.TestCase):
         # round trip test of model in xlsx file
         example_old_rt_model = os.path.join(self.fixtures_path, 'example_old_model_rt.xlsx')
         old_2_new_xlsx_file = os.path.join(self.tmp_model_dir, 'old_2_new_xlsx_file.xlsx')
-        old_2_new_migrator.migrate(example_old_rt_model, migrated_file=old_2_new_xlsx_file)
-        round_trip_migrated_xlsx_file = new_2_old_migrator.migrate(old_2_new_xlsx_file)
+        old_2_new_migrator.full_migrate(example_old_rt_model, migrated_file=old_2_new_xlsx_file)
+        round_trip_migrated_xlsx_file = new_2_old_migrator.full_migrate(old_2_new_xlsx_file)
 
         existing = read_workbook(example_old_rt_model)
         round_trip_migrated = read_workbook(round_trip_migrated_xlsx_file)
@@ -613,9 +625,9 @@ class TestMigration(unittest.TestCase):
         self.migrator.prepare()
         # migrate to example_migrated_model
         example_migrated_model = os.path.join(tempfile.mkdtemp(dir=self.tmp_model_dir), 'example_migrated_model.xlsx')
-        self.migrator.migrate(self.example_old_model_copy, migrated_file=example_migrated_model)
+        self.migrator.full_migrate(self.example_old_model_copy, migrated_file=example_migrated_model)
         # migrate to self.example_old_model_copy
-        self.migrator.migrate(self.example_old_model_copy, migrate_in_place=True)
+        self.migrator.full_migrate(self.example_old_model_copy, migrate_in_place=True)
 
         # compare
         migrated = read_workbook(example_migrated_model)
@@ -627,7 +639,7 @@ class TestMigration(unittest.TestCase):
         f = open(bad_module, "w")
         f.write('bad python')
         f.close()
-        migrator = Migrator(bad_module, self.new_model_defs_path, None)
+        migrator = Migrator(bad_module, self.new_model_defs_path)
         migrator.initialize()
         with self.assertRaisesRegex(ValueError, "cannot be imported and exec'ed"):
             migrator._load_model_defs_file(migrator.old_model_defs_path)

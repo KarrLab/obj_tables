@@ -74,7 +74,6 @@ class Migrator(object):
         renamed_attributes_map (:obj:`dict`): map of attribute names renamed from the existing to the migrated schema
         _migrated_copy_attr_name (:obj:`str`): attribute name used to point old models to corresponding
             new models; not used in any old model definitions
-        files (:obj:`list`): names of model files to migrate
     """
 
     # default suffix for a migrated model file
@@ -87,14 +86,13 @@ class Migrator(object):
     # prefix of attribute name used to connect old and new models during migration
     MIGRATED_COPY_ATTR_PREFIX = '__migrated_copy'
 
-    def __init__(self, old_model_defs_file, new_model_defs_file, files, renamed_models=None,
+    def __init__(self, old_model_defs_file, new_model_defs_file, renamed_models=None,
         renamed_attributes=None):
         """ Construct a Migrator
 
         Args:
             old_model_defs_file (:obj:`str`): path of a file containing old Model definitions
             new_model_defs_file (:obj:`str`): path of a file containing new Model definitions
-            files (:obj:`list`): file(s) to migrate from old to new Model definitions
             renamed_models (:obj:`list` of :obj:`tuple`): model types renamed from the existing to the
                 migrated schema; has the form '[('Existing_1', 'Migrated_1'), ..., ('Existing_n', 'Migrated_n')]',
                 where `('Existing_i', 'Migrated_i')` indicates that existing model `Existing_i` is
@@ -112,7 +110,6 @@ class Migrator(object):
         self.new_model_defs_file = new_model_defs_file
         self.renamed_models = [] if renamed_models is None else renamed_models
         self.renamed_attributes = [] if renamed_attributes is None else renamed_attributes
-        self.files = files
 
     def initialize(self):
         """ Initialize a Migrator
@@ -521,11 +518,49 @@ class Migrator(object):
         return [model for model in models.values() if model.Meta.tabular_orientation != TabularOrientation.inline
             and model.__name__ != 'Species']
 
-    def migrate(self, source_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
-        """ Migrate data in `source_file`
+    def read_existing_model(self, existing_file):
+        """ Read models from existing file
 
         Args:
-            source_file (:obj:`str`): pathname of file to migrate
+            existing_file (:obj:`str`): pathname of file to migrate
+
+        Returns:
+            :obj:`list` of `obj_model.Model`: the models in `existing_file`
+        """
+        root, ext = os.path.splitext(existing_file)
+        reader = obj_model.io.get_reader(ext)()
+        # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
+        old_models = reader.run(existing_file, models=self._get_models_with_worksheets(self.old_model_defs),
+            ignore_attribute_order=True, ignore_sheet_order=True)
+        models_read = []
+        for models in old_models.values():
+            models_read.extend(models)
+        return models_read
+
+    def migrate(self, existing_models):
+        """ Migrate existing model instances to new schema
+
+        Args:
+            existing_models (:obj:`list` of `obj_model.Model`:) the models being migrated
+
+        Returns:
+            :obj:`list` of `obj_model.Model`: the migrated models
+        """
+
+        all_models = self._deep_migrate(existing_models)
+        self._connect_models(all_models)
+        migrated_models = [migrated_model for _, migrated_model in all_models]
+        return migrated_models
+
+    def write_migrated_file(self, migrated_models, model_order, existing_file, migrated_file=None,
+        migrate_suffix=None, migrate_in_place=False):
+        """ Write migrated models to an external representation
+
+        Args:
+            migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
+            model_order (:obj:`list` of `obj_model.core.ModelMeta`:) migrated models in the order
+                they should appear in a workbook
+            existing_file (:obj:`str`): pathname of file to migrate
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
                 save migrated file with new suffix in same directory as source file
             migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
@@ -540,39 +575,49 @@ class Migrator(object):
             :obj:`ValueError`: if migrate_in_place is False and writing the migrated file would
                 overwrite an existing file
         """
-        # read models from source_file
-        root, ext = os.path.splitext(source_file)
-        reader = obj_model.io.get_reader(ext)()
-        # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
-        old_models = reader.run(source_file, models=self._get_models_with_worksheets(self.old_model_defs),
-            ignore_attribute_order=True, ignore_sheet_order=True)
-        models_read = []
-        for models in old_models.values():
-            models_read.extend(models)
-
-        # migrate model instances to new schema
-        all_models = self._deep_migrate(models_read)
-        self._connect_models(all_models)
-        new_models = [new_model for _, new_model in all_models]
-
+        root, ext = os.path.splitext(existing_file)
         # determine pathname of migrated file
         if migrate_in_place:
-            migrated_file = source_file
+            migrated_file = existing_file
         else:
             if migrate_suffix is None:
                 migrate_suffix = Migrator.MIGRATE_SUFFIX
             if migrated_file is None:
-                migrated_file = os.path.join(os.path.dirname(source_file),
+                migrated_file = os.path.join(os.path.dirname(existing_file),
                     os.path.basename(root) + migrate_suffix + ext)
             if os.path.exists(migrated_file):
                 raise ValueError("migrated file '{}' already exists".format(migrated_file))
 
-        # get sequence of migrated models in workbook
-        models = self._get_model_order(source_file)
-
         # write migrated models to disk
         writer = obj_model.io.get_writer(ext)()
-        writer.run(migrated_file, new_models, models=models)
+        writer.run(migrated_file, migrated_models, models=model_order)
+        return migrated_file
+
+    def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
+        """ Migrate data from an existing file to a migrated file
+
+        Args:
+            existing_file (:obj:`str`): pathname of file to migrate
+            migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
+                save migrated file with new suffix in same directory as existing file
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
+                default is `Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
+                migrated file and ignore `migrated_file` and `migrate_suffix`
+
+        Returns:
+            :obj:`str`: name of migrated file
+
+        Raises:
+            :obj:`ValueError`: if migrate_in_place is False and writing the migrated file would
+                overwrite an existing file
+        """
+        existing_models = self.read_existing_model(existing_file)
+        migrated_models = self.migrate(existing_models)
+        # get sequence of migrated models in workbook of existing file
+        model_order = self._get_model_order(existing_file)
+        migrated_file = self.write_migrated_file(migrated_models, model_order, existing_file,
+            migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
         return migrated_file
 
     def _migrate_model(self, old_model, old_model_def, new_model_def):
@@ -675,10 +720,15 @@ class Migrator(object):
 
                     setattr(new_model, migrated_attr, migrated_val)
 
-    def run(self):
+    def run(self, files):
+        """ Migrate some files
+
+        Args:
+            files (:obj:`list`): names of model files to migrate
+        """
         migrated_files = []
-        for file in self.files:
-            migrated_files.append(self.migrate(self._normalize_filename(file)))
+        for file in files:
+            migrated_files.append(self.full_migrate(self._normalize_filename(file)))
         return migrated_files
 
 
@@ -715,13 +765,10 @@ class MigrationController(object):
             dict(model_defs_files=model_defs_files, renamed_models=renamed_models, renamed_attributes=renamed_attributes))
         num_migrations = len(model_defs_files) - 1
         for i in range(len(model_defs_files)):
-            # todo: move files elsewhere
             # create Migrator for each pair of schemas
-            migrator = Migrator(model_defs_files[i], model_defs_files[i+1], [], renamed_models[i], renamed_attributes[i])
+            migrator = Migrator(model_defs_files[i], model_defs_files[i+1], renamed_models[i], renamed_attributes[i])
             migrator.initialize()
             migrator.prepare()
-            # todo: return_models option on migrate(), separate out '# migrate model instances to new schema' to 'migrate'
-            # add 'read_existing_model', 'write_migrated_file'
             # migrate in memory until the last migration
             if i == 0:
                 models = migrator.read_existing_model(source_file)
@@ -785,10 +832,10 @@ class RunMigration(object):
 
     @staticmethod
     def main(args):
-        migrator = Migrator(args.existing_model_definitions, args.new_model_definitions, args.files)
+        migrator = Migrator(args.existing_model_definitions, args.new_model_definitions)
         migrator.initialize()
         migrator.prepare()
-        return migrator.run()
+        return migrator.run(args.files)
 
 if __name__ == '__main__':  # pragma: no cover     # reachable only from command line
     try:
