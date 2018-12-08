@@ -23,20 +23,21 @@ from wc_utils.util.list import det_find_dupes
 
 
 # local
-# todo next: combine initialize and prepare in one method
-# todo next: clean up naming: old models, existing, migrated models, new models, source models, dest models
-# todo next: support data driven migration of many files [in a repo]
-#       config file provides: locations of schema file pair, renaming steps between them, locations of data & migrated files
+# todo next: small: combine initialize and prepare in one method
+# todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
+# todo next: large: support data driven migration of many files [in a repo]
+#   config file provides: locations of schema files, renaming steps, locations of existing & migrated files
 #       drive migration from the config file
-# todo next: support arbitrary transformations by an optional function on each migrated instance
-# todo next: make work with full wc_lang core.py
+# todo next: medium: support arbitrary transformations by an optional function on each migrated instance
+# todo next: medium: make work with full wc_lang core.py
+# todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 
 # Model change
-# todo next: separately specified default value for attribute
-# todo next: add Meta indicator to models (like Species previously) that are not inline and not stored in their own worksheet
+# todo next: small: separately specified default value for attribute
+# todo next: medium: add Meta attribute indicator to models (like Species previously) that don't have a worksheet
 #   and remove Species hack
 
-# todo next: move remaining todos to GitHub issues
+# todo next: small: move remaining todos to GitHub issues
 # todo: confirm this works for json, etc.
 # todo: test sym links in Migrator._normalize_filename
 # todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
