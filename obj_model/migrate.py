@@ -23,7 +23,6 @@ from wc_utils.util.list import det_find_dupes
 
 
 # local
-# todo next: small: combine initialize and prepare in one method
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: large: support data driven migration of many files [in a repo]
 #   config file provides: locations of schema files, renaming steps, locations of existing & migrated files
@@ -118,6 +117,7 @@ class Migrator(object):
         self.new_model_defs_path = self._normalize_filename(self.new_model_defs_file)
         self._valid_python_path(self.old_model_defs_path)
         self._valid_python_path(self.new_model_defs_path)
+        return self
 
     @staticmethod
     def _valid_python_path(filename):
@@ -795,8 +795,7 @@ class MigrationController(object):
             # create Migrator for each pair of schemas
             migrator = Migrator(model_defs_files[i], model_defs_files[i+1], renamed_models[i],
                 renamed_attributes[i])
-            migrator.initialize()
-            migrator.prepare()
+            migrator.initialize().prepare()
             # migrate in memory until the last migration
             if i == 0:
                 models = migrator.read_existing_model(existing_file)
@@ -865,8 +864,7 @@ class RunMigration(object):
     @staticmethod
     def main(args):
         migrator = Migrator(args.existing_model_definitions, args.new_model_definitions)
-        migrator.initialize()
-        migrator.prepare()
+        migrator.initialize().prepare()
         return migrator.run(args.files)
 
 if __name__ == '__main__':  # pragma: no cover     # reachable only from command line

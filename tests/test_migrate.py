@@ -587,15 +587,13 @@ class TestMigration(unittest.TestCase):
         old_2_new_renamed_models, old_2_new_renamed_attributes = self.get_roundtrip_renaming()
         old_2_new_migrator = Migrator(old_model_defs_path, new_model_defs_path,
             renamed_models=old_2_new_renamed_models, renamed_attributes=old_2_new_renamed_attributes)
-        old_2_new_migrator.initialize()
-        old_2_new_migrator.prepare()
+        old_2_new_migrator.initialize().prepare()
 
         # make new -> old migrator
         new_2_old_migrator = Migrator(new_model_defs_path, old_model_defs_path,
             renamed_models=self.invert_renaming(old_2_new_renamed_models),
             renamed_attributes=self.invert_renaming(old_2_new_renamed_attributes))
-        new_2_old_migrator.initialize()
-        new_2_old_migrator.prepare()
+        new_2_old_migrator.initialize().prepare()
 
         # round trip test of model in tsv file
         # put each tsv in separate dir so globs don't match erroneously
