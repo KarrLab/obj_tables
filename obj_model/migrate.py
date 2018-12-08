@@ -23,16 +23,12 @@ from wc_utils.util.list import det_find_dupes
 
 
 # local
-# todo next: changes for migrate_over_schema_sequence
 # todo next: combine initialize and prepare in one method
-# todo next: support sequence of migrations: in a new class; also, migrate without writing file
 # todo next: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: support data driven migration of many files [in a repo]
 #       config file provides: locations of schema file pair, renaming steps between them, locations of data & migrated files
 #       drive migration from the config file
 # todo next: support arbitrary transformations by an optional function on each migrated instance
-
-# global
 # todo next: make work with full wc_lang core.py
 
 # Model change
@@ -43,6 +39,7 @@ from wc_utils.util.list import det_find_dupes
 # todo next: move remaining todos to GitHub issues
 # todo: confirm this works for json, etc.
 # todo: test sym links in Migrator._normalize_filename
+# todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
 # todo: support high-level, WC wc_lang specific migration of a repo
 #       use case:
 #           1 change wc_lang/core.py
@@ -811,7 +808,6 @@ class MigrationController(object):
                 return migrator.write_migrated_file(models, model_order, existing_file,
                     migrated_file=migrated_file, migrate_suffix=migrate_suffix,
                     migrate_in_place=migrate_in_place)
-
 
     @staticmethod
     def _check_params(param_set, **kwargs):

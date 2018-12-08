@@ -518,18 +518,6 @@ class TestMigration(unittest.TestCase):
             '''
             self.assertTrue(new_model.is_equal(expected_new_model))
 
-    def test_read_existing_model(self):
-        pass
-        # todo
-
-    def test_migrate(self):
-        pass
-        # todo
-
-    def test_write_migrated_file(self):
-        pass
-        # todo
-
     @staticmethod
     def read_model_file(model_file, models):
         _, ext = os.path.splitext(model_file)
