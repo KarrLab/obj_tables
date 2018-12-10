@@ -11,9 +11,11 @@ import argparse
 import importlib
 import inspect
 import copy
+import yaml
 from six import integer_types, string_types
 from enum import Enum
 from warnings import warn
+from pprint import pprint, pformat
 
 import obj_model
 from obj_model import TabularOrientation
@@ -22,22 +24,25 @@ import wc_utils
 from wc_utils.util.list import det_find_dupes
 
 
-# todo next: support migration in place, with saving backup
-# todo next: support arbitrary transformations with attribute change by an optional function on each migrated instance
-# todo next: support data driven migration of many files in a repo
-#       config file provides: locations of schema file pair, renaming steps between them, locations of data files, [dir of migrated files]
-#       drive migration from the config file
-# todo next: make work with full wc_lang core.py
-# todo next: add Meta indicator to models (like Species previously) that are not inline and not stored in their own worksheet
-# todo next: separately specified default value for attribute
+# local
+# todo: define & use MigrationError
+# todo: test_migrate_from_config
+# todo next: large: make work with full wc_lang core.py
+# todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
+# todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
+# Model change
+# todo next: medium: add Meta attribute indicator to models (like Species previously) that don't have a worksheet
+#   and remove Species hack
+
 # todo next: move remaining todos to GitHub issues
-# todo: confirm this works for all model file formats: csv, tsv, json, etc.
-# todo: error if adding or deleting models or attrs create inconsistencies, as when deleting primary key attr referenced by a foreign key
-# todo: support sequence of migrations
-#       __init__ (or somewhere else): input list of sequence of schemas
-#       _get_all_model_defs: load the sequence of schemas
-#       prepare: prepare for a seq of migrations
-#       migrate: operate on the sequence of migrations; only write final file to disk
+# todo: separately specified default value for attribute
+# todo: support arbitrary transformations by an optional function on each migrated instance
+# todo: confirm this works for json, etc.
+# todo: test sym links in Migrator._normalize_filename
+# todo: make the yaml config files more convenient: map filenames to the directory containing the config file;
+# provide a well-documented example;
+# todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
+# refactor and simplify _get_inconsistencies, and fully test it with test_get_inconsistencies
 # todo: support high-level, WC wc_lang specific migration of a repo
 #       use case:
 #           1 change wc_lang/core.py
@@ -49,6 +54,7 @@ from wc_utils.util.list import det_find_dupes
 #           "migrate_repo repo" uses repo's migrate.yml and migration_transformations.py to migrate all model files in repo
 # todo: use Model.revision to label git commit of wc_lang and automatically migrate models to current schema
 # and to report inconsistency between a schema and model file
+# todo: support generic type conversion of migrated data by plug-in functions provided by a users
 class Migrator(object):
     """ Support schema migration
 
@@ -63,16 +69,15 @@ class Migrator(object):
         deleted_models (:obj:`set`): model types defined in the old models but not the new models
         renamed_models (:obj:`list` of :obj:`tuple`): model types renamed from the existing to the migrated schema
         models_map (:obj:`dict`): map from existing model names to migrated model names
-        renamed_attributes (:obj:`list` of :obj:`tuple`): attribute names renamed from the existing to the migrated schema;
-            provided as ((existing model, existing attribute), (migrated model, migrated attribute))
+        renamed_attributes (:obj:`list` of :obj:`tuple`): attribute names renamed from the existing to
+            the migrated schema
         renamed_attributes_map (:obj:`dict`): map of attribute names renamed from the existing to the migrated schema
         _migrated_copy_attr_name (:obj:`str`): attribute name used to point old models to corresponding
             new models; not used in any old model definitions
-        files (:obj:`list`): names of model files to migrate
     """
 
     # default suffix for a migrated model file
-    MIGRATE_SUFFIX = '_migrate'
+    MIGRATE_SUFFIX = '_migrated'
 
     # modules being used for migration, indexed by full pathname
     # Migrator does not need or support packages
@@ -81,14 +86,22 @@ class Migrator(object):
     # prefix of attribute name used to connect old and new models during migration
     MIGRATED_COPY_ATTR_PREFIX = '__migrated_copy'
 
-    def __init__(self, old_model_defs_file, new_model_defs_file, files, renamed_models=None,
+    def __init__(self, old_model_defs_file, new_model_defs_file, renamed_models=None,
         renamed_attributes=None):
         """ Construct a Migrator
 
         Args:
             old_model_defs_file (:obj:`str`): path of a file containing old Model definitions
             new_model_defs_file (:obj:`str`): path of a file containing new Model definitions
-            files (:obj:`list`): file(s) to migrate from old to new Model definitions
+            renamed_models (:obj:`list` of :obj:`tuple`): model types renamed from the existing to the
+                migrated schema; has the form '[('Existing_1', 'Migrated_1'), ..., ('Existing_n', 'Migrated_n')]',
+                where `('Existing_i', 'Migrated_i')` indicates that existing model `Existing_i` is
+                being renamed into migrated model `Migrated_i`.
+            renamed_attributes (:obj:`list` of :obj:`tuple`): attribute names renamed from the existing
+                to the migrated schema; a list of tuples of the form
+                `(('Existing_Model_i', 'Existing_Attr_x'), ('Migrated_Model_j', 'Migrated_Attr_y'))`,
+                which indicates that `Existing_Model_i.Existing_Attr_x` will migrate to
+                `Migrated_Model_j.Migrated_Attr_y`.
 
         Raises:
             :obj:`ValueError`: if one of the defs files is not a python file
@@ -97,15 +110,17 @@ class Migrator(object):
         self.new_model_defs_file = new_model_defs_file
         self.renamed_models = [] if renamed_models is None else renamed_models
         self.renamed_attributes = [] if renamed_attributes is None else renamed_attributes
-        self.files = files
 
     def initialize(self):
         """ Initialize a Migrator
+
+        Separate from prepare() so most of Migrator can be tested with models defined in code
         """
         self.old_model_defs_path = self._normalize_filename(self.old_model_defs_file)
         self.new_model_defs_path = self._normalize_filename(self.new_model_defs_file)
         self._valid_python_path(self.old_model_defs_path)
         self._valid_python_path(self.new_model_defs_path)
+        return self
 
     @staticmethod
     def _valid_python_path(filename):
@@ -143,10 +158,8 @@ class Migrator(object):
         """
         # avoid re-loading file containing Model definitions, which would fail with
         # 'cannot use the same related attribute name' error if its Models have related attributes
-        try:
+        if model_defs_file in self.modules:
             return self.modules[model_defs_file]
-        except KeyError:
-            pass
 
         root, _ = os.path.splitext(model_defs_file)
         module_name = os.path.basename(root)
@@ -394,7 +407,7 @@ class Migrator(object):
                 "say '{}' migrates to '{}'".format(old_model, expected_migrated_model_name, old_model,
                     new_model))
         if inconsistencies:
-            # return these inconsistencies because checks below would not be informative
+            # given these inconsistencies the checks below would not be informative
             return inconsistencies
 
         # check types and values of corresponding attributes in old_model and new_model
@@ -415,14 +428,20 @@ class Migrator(object):
                     for related_attrs_class in related_attrs_classes_to_check:
                         old_val = getattr(old_attr, related_attrs_class)
                         old_val_name = getattr(old_val, '__name__') if hasattr(old_val, '__name__') else old_val
-                        new_val = getattr(new_attr, related_attrs_class)
-                        new_val_name = getattr(new_val, '__name__') if hasattr(new_val, '__name__') else new_val
-                        expected_migrated_model_name = self.models_map[old_val_name]
-                        if new_val_name != expected_migrated_model_name:
-                            inconsistencies.append(
-                            "migrated attribute {}.{}.{} is {} but the model map says {}.{}.{} migrates to {}".format(
-                            migrated_class, migrated_attr, related_attrs_class, new_val_name,
-                            old_model, old_attr_name, related_attrs_class, expected_migrated_model_name))
+                        if old_val_name in self.deleted_models:
+                            inconsistencies.append("'{}' is a deleted model, but the migrated attribute '{}.{}' "
+                                "refers to it; check model and attribute renaming".format(old_val_name,
+                                old_model, old_attr_name))
+                        else:
+                            new_val = getattr(new_attr, related_attrs_class)
+                            new_val_name = getattr(new_val, '__name__') if hasattr(new_val, '__name__') else new_val
+                            expected_migrated_model_name = self.models_map[old_val_name]
+                            if new_val_name != expected_migrated_model_name:
+                                inconsistencies.append(
+                                "migrated attribute {}.{}.{} is {} but the model map says {}.{}.{} migrates "
+                                    "to {}".format(
+                                migrated_class, migrated_attr, related_attrs_class, new_val_name,
+                                old_model, old_attr_name, related_attrs_class, expected_migrated_model_name))
 
                 else:
                     for attr_name in scalar_attrs_to_check:
@@ -435,59 +454,84 @@ class Migrator(object):
 
         return inconsistencies
 
-    def _get_model_order(self, source_file, old_models, new_models):
-        """ Returns sequence of models in source_file
+    def _get_existing_model_order(self, existing_file):
+        """ Obtain the sequence in which models appear in the source file
+
+        First determine the order of existing model types in worksheets in the source file. However, the
+        mapping of some worksheets to models may be ambiguous. Then map the order to the existing models
+        that will migrate.
 
         Args:
-            source_file (:obj:`str`): pathname of file being migrated
-            old_models (:obj:`dict` of `obj_model.core.ModelMeta`): the original model classes
-            new_models (:obj:`dict` of `obj_model.core.ModelMeta`): the new model classes
+            existing_file (:obj:`str`): pathname of file being migrated
 
         Returns:
-            :obj:`list` of `obj_model.core.ModelMeta`: migrated models in the same order as the worksheets
-                for the corresponding old models, concatenated with new models sorted by name
+            :obj:`list` of `obj_model.core.ModelMeta`: existing models in the same order as worksheets
+                in `existing_file`, followed by existing models with ambiguous sheet names
         """
-        # todo: clean up naming: old models, existing, migrated models, new models, source models, dest models
-        # use sheet_names in old file to determine order of model types in old source file, and use them in migrated file
-        _, ext = os.path.splitext(source_file)
-        utils_reader = wc_utils.workbook.io.get_reader(ext)(source_file)
+        _, ext = os.path.splitext(existing_file)
+        utils_reader = wc_utils.workbook.io.get_reader(ext)(existing_file)
         utils_reader.initialize_workbook()
         sheet_names = utils_reader.get_sheet_names()
 
-        old_models_migrating = []
-        new_models_migrated = []
-        for existing_model, migrated_model in self.models_map.items():
-            old_models_migrating.append(old_models[existing_model])
-            new_models_migrated.append(new_models[migrated_model])
+        existing_models_migrating = [self.old_model_defs[model_name] for model_name in self.models_map.keys()]
 
         # detect sheets that cannot be unambiguously mapped
-        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, old_models_migrating)
+        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, existing_models_migrating)
         if ambiguous_sheet_names:
             msg = 'The following sheets cannot be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
                 msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
             warn(msg, IoWarning)
 
-        # use the source_file sheet names to establish order of old models that get migrated
-        tmp = []
-        for old_model_migrating, new_model_migrated in zip(old_models_migrating, new_models_migrated):
+        # use the existing_file sheet names to establish the order of existing models
+        model_order = [None]*len(sheet_names)
+        ambiguous_models = []
+        for existing_model in existing_models_migrating:
             try:
-                sheet_name = WorkbookReader.get_model_sheet_name(sheet_names, old_model_migrating)
+                sheet_name = WorkbookReader.get_model_sheet_name(sheet_names, existing_model)
                 if sheet_name is not None:
-                    tmp.append((sheet_names.index(sheet_name), new_model_migrated))
+                    model_order[sheet_names.index(sheet_name)] = existing_model
             except ValueError:
-                pass
-        tmp.sort(key=lambda position_n_model: position_n_model[0])
-        migrated_model_order = [position_n_model[1] for position_n_model in tmp]
+                ambiguous_models.append(existing_model)
+        model_order = [element for element in model_order if element is not None]
+
+        # append models with ambiguous sheets
+        model_order.extend(ambiguous_models)
+
+        return model_order
+
+    def _migrate_model_order(self, model_order):
+        """ Migrate the sequence of models from the existing order to a migrated order
+
+        Map the order of existing models to an order for migrated models. The new order can be
+        used to sequence worksheets or files in migrated file(s).
+
+        Args:
+            model_order (:obj:`list` of `obj_model.core.ModelMeta`:): order of existing models
+
+        Returns:
+            :obj:`list` of `obj_model.core.ModelMeta`: migrated models in the same order as
+                the corresponding existing models, followed by new models sorted by name
+        """
+
+        model_type_map = {}
+        for existing_model, migrated_model in self.models_map.items():
+            model_type_map[self.old_model_defs[existing_model]] = self.new_model_defs[migrated_model]
+
+        migrated_model_order = []
+        for existing_model in model_order:
+            try:
+                migrated_model_order.append(model_type_map[existing_model])
+            except KeyError:
+                raise ValueError("model '{}' not found in the model map".format(
+                    existing_model.__name__))
 
         # append newly created models
-        newly_created_model_names = []
-        for newly_created_model_name in set(new_models).difference(old_models):
-            newly_created_model_names.append(newly_created_model_name)
-        newly_created_model_names.sort()
-        newly_created_models = [new_models[name] for name in newly_created_model_names]
+        new_model_names = [new_model_name
+            for new_model_name in set(self.new_model_defs).difference(self.models_map.values())]
+        new_models = [self.new_model_defs[model_name] for model_name in sorted(new_model_names)]
+        migrated_model_order.extend(new_models)
 
-        migrated_model_order.extend(newly_created_models)
         return migrated_model_order
 
     @staticmethod
@@ -504,54 +548,110 @@ class Migrator(object):
         return [model for model in models.values() if model.Meta.tabular_orientation != TabularOrientation.inline
             and model.__name__ != 'Species']
 
-    def migrate(self, source_file, migrated_file=None, migrate_suffix=None):
-        """ Migrate data in `source_file`
+    def read_existing_model(self, existing_file):
+        """ Read models from existing file
 
         Args:
-            source_file (:obj:`str`): pathname of file to migrate
+            existing_file (:obj:`str`): pathname of file to migrate
+
+        Returns:
+            :obj:`list` of `obj_model.Model`: the models in `existing_file`
+        """
+        root, ext = os.path.splitext(existing_file)
+        reader = obj_model.io.get_reader(ext)()
+        # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
+        old_models = reader.run(existing_file, models=self._get_models_with_worksheets(self.old_model_defs),
+            ignore_attribute_order=True, ignore_sheet_order=True)
+        models_read = []
+        for models in old_models.values():
+            models_read.extend(models)
+        return models_read
+
+    def migrate(self, existing_models):
+        """ Migrate existing model instances to new schema
+
+        Args:
+            existing_models (:obj:`list` of `obj_model.Model`:) the models being migrated
+
+        Returns:
+            :obj:`list` of `obj_model.Model`: the migrated models
+        """
+
+        all_models = self._deep_migrate(existing_models)
+        self._connect_models(all_models)
+        migrated_models = [migrated_model for _, migrated_model in all_models]
+        return migrated_models
+
+    def write_migrated_file(self, migrated_models, model_order, existing_file, migrated_file=None,
+        migrate_suffix=None, migrate_in_place=False):
+        """ Write migrated models to an external representation
+
+        Args:
+            migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
+            model_order (:obj:`list` of `obj_model.core.ModelMeta`:) migrated models in the order
+                they should appear in a workbook
+            existing_file (:obj:`str`): pathname of file to migrate
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
                 save migrated file with new suffix in same directory as source file
-            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
+                default is `Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite `source_file` with the
+                migrated file and ignore `migrated_file` and `migrate_suffix`
 
         Returns:
             :obj:`str`: name of migrated file
 
         Raises:
-            :obj:`ValueError`: if writing the migrated file would overwrite an existing file
+            :obj:`ValueError`: if migrate_in_place is False and writing the migrated file would
+                overwrite an existing file
         """
-        # read models from source_file
-        root, ext = os.path.splitext(source_file)
-        reader = obj_model.io.get_reader(ext)()
-        # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
-        old_models = reader.run(source_file, models=self._get_models_with_worksheets(self.old_model_defs),
-            ignore_attribute_order=True, ignore_sheet_order=True)
-        models_read = []
-        for models in old_models.values():
-            models_read.extend(models)
-
-        # migrate model instances to new schema
-        all_models = self.deep_migrate(models_read)
-        self.connect_models(all_models)
-        new_models = [new_model for _, new_model in all_models]
-
+        root, ext = os.path.splitext(existing_file)
         # determine pathname of migrated file
-        if migrate_suffix is None:
-            migrate_suffix = Migrator.MIGRATE_SUFFIX
-        if migrated_file is None:
-            migrated_file = os.path.join(os.path.dirname(source_file),
-                os.path.basename(root) + migrate_suffix + ext)
-        if os.path.exists(migrated_file):
-            raise ValueError("migrated file '{}' already exists".format(migrated_file))
-
-        # get sequence of migrated models in workbook
-        models = self._get_model_order(source_file, self.old_model_defs, self.new_model_defs)
+        if migrate_in_place:
+            migrated_file = existing_file
+        else:
+            if migrate_suffix is None:
+                migrate_suffix = Migrator.MIGRATE_SUFFIX
+            if migrated_file is None:
+                migrated_file = os.path.join(os.path.dirname(existing_file),
+                    os.path.basename(root) + migrate_suffix + ext)
+            if os.path.exists(migrated_file):
+                raise ValueError("migrated file '{}' already exists".format(migrated_file))
 
         # write migrated models to disk
         writer = obj_model.io.get_writer(ext)()
-        writer.run(migrated_file, new_models, models=models)
+        writer.run(migrated_file, migrated_models, models=model_order)
         return migrated_file
 
-    def migrate_model(self, old_model, old_model_def, new_model_def):
+    def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
+        """ Migrate data from an existing file to a migrated file
+
+        Args:
+            existing_file (:obj:`str`): pathname of file to migrate
+            migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
+                save migrated file with new suffix in same directory as existing file
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
+                default is `Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
+                migrated file and ignore `migrated_file` and `migrate_suffix`
+
+        Returns:
+            :obj:`str`: name of migrated file
+
+        Raises:
+            :obj:`ValueError`: if migrate_in_place is False and writing the migrated file would
+                overwrite an existing file
+        """
+        existing_models = self.read_existing_model(existing_file)
+        migrated_models = self.migrate(existing_models)
+        # get sequence of migrated models in workbook of existing file
+        existing_model_order = self._get_existing_model_order(existing_file)
+        migrated_model_order = self._migrate_model_order(existing_model_order)
+        migrated_file = self.write_migrated_file(migrated_models, migrated_model_order, existing_file,
+            migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
+        return migrated_file
+
+    def _migrate_model(self, old_model, old_model_def, new_model_def):
         """ Migrate a model instance's non-related attributes
 
         Args:
@@ -583,11 +683,11 @@ class Migrator(object):
 
                 setattr(new_model, migrated_attr, copy_val)
 
-        # save a reference to new_model in old_model, which is used by connect_models()
+        # save a reference to new_model in old_model, which is used by _connect_models()
         setattr(old_model, self._migrated_copy_attr_name, new_model)
         return new_model
 
-    def deep_migrate(self, old_models):
+    def _deep_migrate(self, old_models):
         """ Migrate all model instances from old to new model definitions
 
         Supports:
@@ -614,11 +714,11 @@ class Migrator(object):
                 continue
 
             migrated_class_name = self.models_map[existing_class_name]
-            new_model = self.migrate_model(old_model, old_schema[existing_class_name], new_schema[migrated_class_name])
+            new_model = self._migrate_model(old_model, old_schema[existing_class_name], new_schema[migrated_class_name])
             all_models.append((old_model, new_model))
         return all_models
 
-    def connect_models(self, all_models):
+    def _connect_models(self, all_models):
         """ Connect migrated model instances
 
         Migrate `obj_model.RelatedAttribute` connections among old models to new models
@@ -651,11 +751,228 @@ class Migrator(object):
 
                     setattr(new_model, migrated_attr, migrated_val)
 
-    def run(self):
+    def run(self, files):
+        """ Migrate some files
+
+        Args:
+            files (:obj:`list`): names of model files to migrate
+        """
         migrated_files = []
-        for file in self.files:
-            migrated_files.append(self.migrate(self._normalize_filename(file)))
+        for file in files:
+            migrated_files.append(self.full_migrate(self._normalize_filename(file)))
         return migrated_files
+
+    def __str__(self):
+        rv = []
+        scalar_attrs = ['old_model_defs_file', 'new_model_defs_file', 'old_model_defs_path',
+            'new_model_defs_path', 'deleted_models', '_migrated_copy_attr_name']
+        collections_attrs = ['old_model_defs', 'new_model_defs', 'renamed_models', 'models_map',
+            'renamed_attributes', 'renamed_attributes_map']
+        for attr in scalar_attrs:
+            if hasattr(self, attr):
+                rv.append("{}: {}".format(attr, getattr(self, attr)))
+        for attr in collections_attrs:
+            if hasattr(self, attr):
+                rv.append("{}:\n{}".format(attr, pformat(getattr(self, attr))))
+        return '\n'.join(rv)
+
+
+class MigrationDesc(object):
+    """ Description of a sequence of migrations from an existing file
+    """
+
+    _required_attrs = ['name', 'existing_file', 'model_defs_files']
+    _renaming_lists = ['renamed_models', 'renamed_attributes']
+    _allowed_attrs = _required_attrs + _renaming_lists + ['migrated_file', 'migrate_suffix', 'migrate_in_place']
+
+    def __init__(self, name, existing_file=None, model_defs_files=None, renamed_models=None,
+        renamed_attributes=None, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
+        self.name = name
+        self.existing_file = existing_file
+        self.model_defs_files = model_defs_files
+        self.renamed_models = renamed_models
+        self.renamed_attributes = renamed_attributes
+        self.migrated_file = migrated_file
+        self.migrate_suffix = migrate_suffix
+        self.migrate_in_place = migrate_in_place
+
+    def validate(self):
+        """ Validate the attributes and relative cardinality of a migration description
+        """
+        errors = []
+        members = inspect.getmembers(self, lambda a: not(inspect.isclass(a) or inspect.ismethod(a)))
+        members = [attr for attr, value in members if not attr.startswith('_')]
+        extra_attrs = set(members).difference(self._allowed_attrs)
+        if extra_attrs:
+            errors.append("disallowed attribute(s) found: {}".format(extra_attrs))
+
+        for required_attr in self._required_attrs:
+            if getattr(self, required_attr) is None:
+                errors.append("missing required attribute '{}'".format(required_attr))
+        if errors:
+            return errors
+
+        if len(self.model_defs_files) < 2:
+            return ["model_defs_files must contain at least 2 model definitions, but it has only {}".format(
+                len(self.model_defs_files))]
+
+        for renaming_list in self._renaming_lists:
+            if getattr(self, renaming_list) is not None:
+                if len(getattr(self, renaming_list)) != len(self.model_defs_files) - 1:
+                    errors.append("model_defs_files specifies {} migration(s), but {} contains {} mapping(s)".format(
+                        len(self.model_defs_files) - 1, renaming_list, len(getattr(self, renaming_list))))
+        if not errors:
+            self.standardize()
+        return errors
+
+    def standardize(self):
+        """ Standardize
+        """
+        # convert [model, attr] pairs in renamed_attributes into tuples; needed for hashing
+        if self.renamed_attributes:
+            new_renamed_attributes = []
+            for renamed_attrs_in_a_migration in self.renamed_attributes:
+                if renamed_attrs_in_a_migration is None:
+                    new_renamed_attributes.append(None)
+                    continue
+                a_migration_renaming = []
+                for existing, migrated in renamed_attrs_in_a_migration:
+                    a_migration_renaming.append((tuple(existing), tuple(migrated)))
+                new_renamed_attributes.append(a_migration_renaming)
+            self.renamed_attributes = new_renamed_attributes
+
+        # if a renaming_list isn't provided, replace it with a list of None indicating no renaming
+        empty_per_migration_list = [None]*(len(self.model_defs_files) - 1)
+        for renaming_list in self._renaming_lists:
+            if getattr(self, renaming_list) is None:
+                setattr(self, renaming_list, empty_per_migration_list)
+
+    def get_kwargs(self):
+        # get kwargs for optional args
+        optional_args = ['existing_file', 'model_defs_files', 'renamed_models', 'renamed_attributes',
+            'migrated_file', 'migrate_suffix', 'migrate_in_place']
+        kwargs = {}
+        for arg in optional_args:
+            kwargs[arg] = getattr(self, arg)
+        return kwargs
+
+    def __str__(self):
+        rv = []
+        for attr in self._allowed_attrs:
+            rv.append("{}: {}".format(attr, getattr(self, attr)))
+        return '\n'.join(rv)
+
+
+class MigrationController(object):
+    """ Manage migrations
+
+    Manage migrations on several dimensions:
+    * Migrate a single model file through a sequence of schemas
+    * Perform migrations parameterized by a configuration file
+    """
+
+    @staticmethod
+    def migrate_over_schema_sequence(migration_desc):
+        """ Migrate a model file over a sequence of schemas
+
+        Args:
+            migration_desc (:obj:`MigrationDesc`): a migration description
+
+        Returns:
+            :obj:`str`: name of migrated file
+
+        Raises:
+            :obj:`ValueError`: if `model_defs_files`, `renamed_models`, and `renamed_attributes`
+                are not consistent with each other;
+        """
+        validate_errors = migration_desc.validate()
+        if validate_errors:
+            raise ValueError('\n'.join(validate_errors))
+
+        md = migration_desc
+        num_migrations = len(md.model_defs_files) - 1
+        for i in range(len(md.model_defs_files)):
+            # create Migrator for each pair of schemas
+            migrator = Migrator(md.model_defs_files[i], md.model_defs_files[i+1], md.renamed_models[i],
+                md.renamed_attributes[i])
+            migrator.initialize().prepare()
+            # migrate in memory until the last migration
+            if i == 0:
+                models = migrator.read_existing_model(md.existing_file)
+                existing_model_order = migrator._get_existing_model_order(md.existing_file)
+                model_order = existing_model_order
+            models = migrator.migrate(models)
+            model_order = migrator._migrate_model_order(model_order)
+            if i == num_migrations - 1:
+                # done migrating, write to file
+                return migrator.write_migrated_file(models, model_order, md.existing_file,
+                    migrated_file=md.migrated_file, migrate_suffix=md.migrate_suffix,
+                    migrate_in_place=md.migrate_in_place)
+
+    @staticmethod
+    def get_migrations_config(migrations_config_file):
+        """ Read and initially validate migrations configuration file
+
+        Args:
+            migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
+
+        Returns:
+            :obj:`list` of :obj:`MigrationDesc`: migration descriptions
+
+        Raises:
+            :obj:`ValueError`: if `migrations_config_file` cannot be read, or the migration descriptions in
+                `migrations_config_file` are not valid
+        """
+        try:
+            fd = open(migrations_config_file, 'r')
+        except FileNotFoundError as e:
+            raise ValueError("could not read migration config file: '{}'".format(migrations_config_file))
+        config = yaml.load(fd)
+
+        # parse the config
+        migration_descs = {}
+        for migration_name, migration_desc in config.items():
+            migration_desc_obj = MigrationDesc(migration_name)
+            for param, value in migration_desc.items():
+                setattr(migration_desc_obj, param, value)
+            migration_descs[migration_name] = migration_desc_obj
+        migration_errors = []
+        for migration_name, migration_desc_obj in migration_descs.items():
+            validate_errors = migration_desc_obj.validate()
+            if validate_errors:
+                migration_errors.extend(validate_errors)
+        if migration_errors:
+            raise ValueError('\n'.join(migration_errors))
+        return migration_descs
+
+    @staticmethod
+    def migrate_from_desc(migration_desc):
+        """ Perform a migration described in a `MigrationDesc`
+
+        Args:
+            migration_desc (:obj:`MigrationDesc`): a migration description
+
+        Returns:
+            :obj:`str`: migrated filename
+        """
+        return MigrationController.migrate_over_schema_sequence(migration_desc)
+
+    @staticmethod
+    def migrate_from_config(migrations_config_file):
+        """ Perform the migrations specified in a config file
+
+        Args:
+            migrations_config_file (:obj:`str`): migrations specified in a YAML file
+
+        Returns:
+            :obj:`list` of :obj:`str`: migrated filenames
+        """
+        # todo: document exceptions
+        migration_descs = MigrationController.get_migrations_config(migrations_config_file)
+        results = []
+        for migration_desc in migration_descs.values():
+            results.append(MigrationController.migrate_from_desc(migration_desc))
+        return results
 
 
 class RunMigration(object):
@@ -684,10 +1001,9 @@ class RunMigration(object):
 
     @staticmethod
     def main(args):
-        migrator = Migrator(args.existing_model_definitions, args.new_model_definitions, args.files)
-        migrator.initialize()
-        migrator.prepare()
-        return migrator.run()
+        migrator = Migrator(args.existing_model_definitions, args.new_model_definitions)
+        migrator.initialize().prepare()
+        return migrator.run(args.files)
 
 if __name__ == '__main__':  # pragma: no cover     # reachable only from command line
     try:

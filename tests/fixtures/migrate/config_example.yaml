@@ -1,0 +1,21 @@
+ # a migration configuration
+migration_with_renaming:
+    model_defs_files: [tests/fixtures/migrate/core_old_rt.py,
+        tests/fixtures/migrate/core_new_rt.py, tests/fixtures/migrate/core_old_rt.py]
+    renamed_models: [[[Test, MigratedTest]], [[MigratedTest, Test]]]
+    renamed_attributes: [
+        # for 1st migration:
+        [[[Test, old_attr], [MigratedTest, new_attr]],
+        [[Property, value], [Property, new_value]],
+        [[Subtest, references], [Subtest, migrated_references]]],
+
+        # for 2nd migration:
+        [[[MigratedTest, new_attr], [Test, old_attr]],
+        [[Property, new_value], [Property, value]],
+        [[Subtest, migrated_references], [Subtest, references]]]
+        ]
+    existing_file: tests/fixtures/migrate/example_old_model_rt.xlsx
+
+migration:
+    model_defs_files: [tests/fixtures/migrate/core_old.py, tests/fixtures/migrate/core_new.py]
+    existing_file: tests/fixtures/migrate/example_old_model.xlsx

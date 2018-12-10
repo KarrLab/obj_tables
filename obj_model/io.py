@@ -67,15 +67,12 @@ class JsonWriter(Writer):
 
     def run(self, path, objects, models=None, get_related=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None):
-        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
-                a set of .csv or .tsv files, with one file for each model.
+        """ Write a list of model classes to a JSON or YAML file
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
-                appear as worksheets; all models which are not in `models` will
-                follow in alphabetical order
+            models (:obj:`list` of :obj:`Model`, optional): models
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
             keywords (:obj:`str`, optional): keywords
@@ -207,7 +204,7 @@ class WorkbookWriter(Writer):
                 sheet_names.append(model.Meta.verbose_name)
         ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, models)
         if ambiguous_sheet_names:
-            msg = 'The following sheets will not be able to be unambiguously mapped to models:'
+            msg = 'The following sheets cannot be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
                 msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
             warn(msg, IoWarning)
@@ -1040,8 +1037,8 @@ def get_reader(ext):
 def convert(source, destination, models,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
-    """ Convert among comma separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
-    tab separated formats (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
+    """ Convert among comma-separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
+    tab-separated (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
 
     Args:
         source (:obj:`str`): path to source file

@@ -1,4 +1,3 @@
-# todo: also test OneToManyAttribute
 import re
 
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
@@ -9,7 +8,7 @@ from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerA
 import obj_model
 
 
-class Test(obj_model.Model):
+class MigratedTest(obj_model.Model):
     """ Test
 
     Related attributes:
@@ -20,21 +19,17 @@ class Test(obj_model.Model):
     name = StringAttribute(default='test')
     version = RegexAttribute(min_length=1, pattern=r'^[0-9]+\.[0-9+]\.[0-9]+', flags=re.I)
     revision = StringAttribute(default='0.0')
-    old_attr = StringAttribute(default='old_attr_val')
+    new_attr = obj_model.core.StringAttribute(default='foo')
 
     class Meta(obj_model.Model.Meta):
-        attribute_order = ('id', 'name', 'version', 'revision', 'old_attr')
+        attribute_order = ('id', 'name', 'version', 'revision', 'new_attr')
         tabular_orientation = TabularOrientation.column
-
-
-class DeletedModel(obj_model.Model):
-    id = SlugAttribute()
 
 
 class Property(obj_model.Model):
     id = SlugAttribute()
-    test = OneToOneAttribute(Test, related_name='property')
-    value = PositiveIntegerAttribute()
+    test = OneToOneAttribute(MigratedTest, related_name='property')
+    new_value = PositiveIntegerAttribute()
 
     class Meta(obj_model.Model.Meta):
         attribute_order = ('id', 'test')
@@ -43,12 +38,11 @@ class Property(obj_model.Model):
 
 class Subtest(obj_model.Model):
     id = SlugAttribute()
-    test = ManyToOneAttribute(Test, related_name='subtests')
-    references = ManyToManyAttribute('Reference', related_name='subtests')
+    test = ManyToOneAttribute(MigratedTest, related_name='subtests')
+    migrated_references = ManyToManyAttribute('Reference', related_name='subtests')
 
     class Meta(obj_model.Model.Meta):
-        #attribute_order = ('id', 'test', )
-        attribute_order = ('id', 'test', 'references')
+        attribute_order = ('id', 'test', 'migrated_references')
 
 
 class Reference(obj_model.Model):
