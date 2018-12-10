@@ -5792,7 +5792,7 @@ class Validator(object):
 
         Args:
             objects (:obj:`Model` or `list` of `Model`): object or list of objects
-            get_related (:obj:`bool`): if true, get all related objects
+            get_related (:obj:`bool`, optional): if true, get all related objects
 
         Returns:
             :obj:`InvalidObjectSet` or `None`: list of invalid objects/models and their errors
