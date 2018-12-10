@@ -11,9 +11,11 @@ import argparse
 import importlib
 import inspect
 import copy
+import yaml
 from six import integer_types, string_types
 from enum import Enum
 from warnings import warn
+from pprint import pprint, pformat
 
 import obj_model
 from obj_model import TabularOrientation
@@ -23,23 +25,24 @@ from wc_utils.util.list import det_find_dupes
 
 
 # local
+# todo: define & use MigrationError
+# todo: test_migrate_from_config
+# todo next: large: make work with full wc_lang core.py
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
-# todo next: large: support data driven migration of many files [in a repo]
-#   config file provides: locations of schema files, renaming steps, locations of existing & migrated files
-#       drive migration from the config file
-# todo next: medium: support arbitrary transformations by an optional function on each migrated instance
-# todo next: medium: make work with full wc_lang core.py
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
-
 # Model change
-# todo next: small: separately specified default value for attribute
 # todo next: medium: add Meta attribute indicator to models (like Species previously) that don't have a worksheet
 #   and remove Species hack
 
-# todo next: small: move remaining todos to GitHub issues
+# todo next: move remaining todos to GitHub issues
+# todo: separately specified default value for attribute
+# todo: support arbitrary transformations by an optional function on each migrated instance
 # todo: confirm this works for json, etc.
 # todo: test sym links in Migrator._normalize_filename
+# todo: make the yaml config files more convenient: map filenames to the directory containing the config file;
+# provide a well-documented example;
 # todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
+# refactor and simplify _get_inconsistencies, and fully test it with test_get_inconsistencies
 # todo: support high-level, WC wc_lang specific migration of a repo
 #       use case:
 #           1 change wc_lang/core.py
@@ -404,7 +407,7 @@ class Migrator(object):
                 "say '{}' migrates to '{}'".format(old_model, expected_migrated_model_name, old_model,
                     new_model))
         if inconsistencies:
-            # return these inconsistencies because checks below would not be informative
+            # given these inconsistencies the checks below would not be informative
             return inconsistencies
 
         # check types and values of corresponding attributes in old_model and new_model
@@ -425,14 +428,20 @@ class Migrator(object):
                     for related_attrs_class in related_attrs_classes_to_check:
                         old_val = getattr(old_attr, related_attrs_class)
                         old_val_name = getattr(old_val, '__name__') if hasattr(old_val, '__name__') else old_val
-                        new_val = getattr(new_attr, related_attrs_class)
-                        new_val_name = getattr(new_val, '__name__') if hasattr(new_val, '__name__') else new_val
-                        expected_migrated_model_name = self.models_map[old_val_name]
-                        if new_val_name != expected_migrated_model_name:
-                            inconsistencies.append(
-                            "migrated attribute {}.{}.{} is {} but the model map says {}.{}.{} migrates to {}".format(
-                            migrated_class, migrated_attr, related_attrs_class, new_val_name,
-                            old_model, old_attr_name, related_attrs_class, expected_migrated_model_name))
+                        if old_val_name in self.deleted_models:
+                            inconsistencies.append("'{}' is a deleted model, but the migrated attribute '{}.{}' "
+                                "refers to it; check model and attribute renaming".format(old_val_name,
+                                old_model, old_attr_name))
+                        else:
+                            new_val = getattr(new_attr, related_attrs_class)
+                            new_val_name = getattr(new_val, '__name__') if hasattr(new_val, '__name__') else new_val
+                            expected_migrated_model_name = self.models_map[old_val_name]
+                            if new_val_name != expected_migrated_model_name:
+                                inconsistencies.append(
+                                "migrated attribute {}.{}.{} is {} but the model map says {}.{}.{} migrates "
+                                    "to {}".format(
+                                migrated_class, migrated_attr, related_attrs_class, new_val_name,
+                                old_model, old_attr_name, related_attrs_class, expected_migrated_model_name))
 
                 else:
                     for attr_name in scalar_attrs_to_check:
@@ -753,9 +762,109 @@ class Migrator(object):
             migrated_files.append(self.full_migrate(self._normalize_filename(file)))
         return migrated_files
 
+    def __str__(self):
+        rv = []
+        scalar_attrs = ['old_model_defs_file', 'new_model_defs_file', 'old_model_defs_path',
+            'new_model_defs_path', 'deleted_models', '_migrated_copy_attr_name']
+        collections_attrs = ['old_model_defs', 'new_model_defs', 'renamed_models', 'models_map',
+            'renamed_attributes', 'renamed_attributes_map']
+        for attr in scalar_attrs:
+            if hasattr(self, attr):
+                rv.append("{}: {}".format(attr, getattr(self, attr)))
+        for attr in collections_attrs:
+            if hasattr(self, attr):
+                rv.append("{}:\n{}".format(attr, pformat(getattr(self, attr))))
+        return '\n'.join(rv)
+
+
+class MigrationDesc(object):
+    """ Description of a sequence of migrations from an existing file
+    """
+
+    _required_attrs = ['name', 'existing_file', 'model_defs_files']
+    _renaming_lists = ['renamed_models', 'renamed_attributes']
+    _allowed_attrs = _required_attrs + _renaming_lists + ['migrated_file', 'migrate_suffix', 'migrate_in_place']
+
+    def __init__(self, name, existing_file=None, model_defs_files=None, renamed_models=None,
+        renamed_attributes=None, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
+        self.name = name
+        self.existing_file = existing_file
+        self.model_defs_files = model_defs_files
+        self.renamed_models = renamed_models
+        self.renamed_attributes = renamed_attributes
+        self.migrated_file = migrated_file
+        self.migrate_suffix = migrate_suffix
+        self.migrate_in_place = migrate_in_place
+
+    def validate(self):
+        """ Validate the attributes and relative cardinality of a migration description
+        """
+        errors = []
+        members = inspect.getmembers(self, lambda a: not(inspect.isclass(a) or inspect.ismethod(a)))
+        members = [attr for attr, value in members if not attr.startswith('_')]
+        extra_attrs = set(members).difference(self._allowed_attrs)
+        if extra_attrs:
+            errors.append("disallowed attribute(s) found: {}".format(extra_attrs))
+
+        for required_attr in self._required_attrs:
+            if getattr(self, required_attr) is None:
+                errors.append("missing required attribute '{}'".format(required_attr))
+        if errors:
+            return errors
+
+        if len(self.model_defs_files) < 2:
+            return ["model_defs_files must contain at least 2 model definitions, but it has only {}".format(
+                len(self.model_defs_files))]
+
+        for renaming_list in self._renaming_lists:
+            if getattr(self, renaming_list) is not None:
+                if len(getattr(self, renaming_list)) != len(self.model_defs_files) - 1:
+                    errors.append("model_defs_files specifies {} migration(s), but {} contains {} mapping(s)".format(
+                        len(self.model_defs_files) - 1, renaming_list, len(getattr(self, renaming_list))))
+        if not errors:
+            self.standardize()
+        return errors
+
+    def standardize(self):
+        """ Standardize
+        """
+        # convert [model, attr] pairs in renamed_attributes into tuples; needed for hashing
+        if self.renamed_attributes:
+            new_renamed_attributes = []
+            for renamed_attrs_in_a_migration in self.renamed_attributes:
+                if renamed_attrs_in_a_migration is None:
+                    new_renamed_attributes.append(None)
+                    continue
+                a_migration_renaming = []
+                for existing, migrated in renamed_attrs_in_a_migration:
+                    a_migration_renaming.append((tuple(existing), tuple(migrated)))
+                new_renamed_attributes.append(a_migration_renaming)
+            self.renamed_attributes = new_renamed_attributes
+
+        # if a renaming_list isn't provided, replace it with a list of None indicating no renaming
+        empty_per_migration_list = [None]*(len(self.model_defs_files) - 1)
+        for renaming_list in self._renaming_lists:
+            if getattr(self, renaming_list) is None:
+                setattr(self, renaming_list, empty_per_migration_list)
+
+    def get_kwargs(self):
+        # get kwargs for optional args
+        optional_args = ['existing_file', 'model_defs_files', 'renamed_models', 'renamed_attributes',
+            'migrated_file', 'migrate_suffix', 'migrate_in_place']
+        kwargs = {}
+        for arg in optional_args:
+            kwargs[arg] = getattr(self, arg)
+        return kwargs
+
+    def __str__(self):
+        rv = []
+        for attr in self._allowed_attrs:
+            rv.append("{}: {}".format(attr, getattr(self, attr)))
+        return '\n'.join(rv)
+
 
 class MigrationController(object):
-    """ Manage multiple migrations and underspecified migrations
+    """ Manage migrations
 
     Manage migrations on several dimensions:
     * Migrate a single model file through a sequence of schemas
@@ -763,21 +872,11 @@ class MigrationController(object):
     """
 
     @staticmethod
-    def migrate_over_schema_sequence(existing_file, model_defs_files, renamed_models=None,
-        renamed_attributes=None, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
+    def migrate_over_schema_sequence(migration_desc):
         """ Migrate a model file over a sequence of schemas
 
         Args:
-            existing_file (:obj:`str`): pathname of file to migrate
-            model_defs_files (:obj:`list` of :obj:`str`): sequence of schemas for migration
-            renamed_models (:obj:`list` of :obj:`list`, optional): sequence of lists of renamed model types
-            renamed_attributes (:obj:`list` of :obj:`list`, optional): sequence of lists of renamed attributes
-            migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
-                save migrated file with new suffix in same directory as existing file
-            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
-                default is `Migrator.MIGRATE_SUFFIX`
-            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
-                migrated file and ignore `migrated_file` and `migrate_suffix`
+            migration_desc (:obj:`MigrationDesc`): a migration description
 
         Returns:
             :obj:`str`: name of migrated file
@@ -786,55 +885,94 @@ class MigrationController(object):
             :obj:`ValueError`: if `model_defs_files`, `renamed_models`, and `renamed_attributes`
                 are not consistent with each other;
         """
-        model_defs_files, renamed_models, renamed_attributes = \
-            MigrationController._check_params('migrate_over_schema_sequence',
-                **dict(model_defs_files=model_defs_files, renamed_models=renamed_models,
-                renamed_attributes=renamed_attributes))
-        num_migrations = len(model_defs_files) - 1
-        for i in range(len(model_defs_files)):
+        validate_errors = migration_desc.validate()
+        if validate_errors:
+            raise ValueError('\n'.join(validate_errors))
+
+        md = migration_desc
+        num_migrations = len(md.model_defs_files) - 1
+        for i in range(len(md.model_defs_files)):
             # create Migrator for each pair of schemas
-            migrator = Migrator(model_defs_files[i], model_defs_files[i+1], renamed_models[i],
-                renamed_attributes[i])
+            migrator = Migrator(md.model_defs_files[i], md.model_defs_files[i+1], md.renamed_models[i],
+                md.renamed_attributes[i])
             migrator.initialize().prepare()
             # migrate in memory until the last migration
             if i == 0:
-                models = migrator.read_existing_model(existing_file)
-                existing_model_order = migrator._get_existing_model_order(existing_file)
+                models = migrator.read_existing_model(md.existing_file)
+                existing_model_order = migrator._get_existing_model_order(md.existing_file)
                 model_order = existing_model_order
             models = migrator.migrate(models)
             model_order = migrator._migrate_model_order(model_order)
             if i == num_migrations - 1:
                 # done migrating, write to file
-                return migrator.write_migrated_file(models, model_order, existing_file,
-                    migrated_file=migrated_file, migrate_suffix=migrate_suffix,
-                    migrate_in_place=migrate_in_place)
+                return migrator.write_migrated_file(models, model_order, md.existing_file,
+                    migrated_file=md.migrated_file, migrate_suffix=md.migrate_suffix,
+                    migrate_in_place=md.migrate_in_place)
 
     @staticmethod
-    def _check_params(param_set, **kwargs):
-        if param_set == 'migrate_over_schema_sequence':
-            model_defs_files = kwargs['model_defs_files']
-            renamed_models = kwargs['renamed_models']
-            renamed_attributes = kwargs['renamed_attributes']
-            model_defs_files = list(model_defs_files)
-            if len(model_defs_files) < 2:
-                raise ValueError("model_defs_files must contain at least 2 model definitions, but "
-                    "it has only {}".format(len(model_defs_files)))
-            if renamed_models is not None:
-                renamed_models = list(renamed_models)
-                if len(renamed_models) != len(model_defs_files) - 1:
-                    raise ValueError("model_defs_files specifies {} migration(s), but renamed_models "
-                        "contains {} rename mapping(s)".format(
-                            len(model_defs_files) - 1, len(renamed_models)))
-            if renamed_attributes is not None:
-                renamed_attributes = list(renamed_attributes)
-                if len(renamed_attributes) != len(model_defs_files) - 1:
-                    raise ValueError("model_defs_files specifies {} migration(s), but renamed_attributes "
-                        "contains {} rename mapping(s)".format(
-                            len(model_defs_files) - 1, len(renamed_attributes)))
-            return (model_defs_files, renamed_models, renamed_attributes)
+    def get_migrations_config(migrations_config_file):
+        """ Read and initially validate migrations configuration file
 
-    def migrate_from_configuration_file(self):
-        pass
+        Args:
+            migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
+
+        Returns:
+            :obj:`list` of :obj:`MigrationDesc`: migration descriptions
+
+        Raises:
+            :obj:`ValueError`: if `migrations_config_file` cannot be read, or the migration descriptions in
+                `migrations_config_file` are not valid
+        """
+        try:
+            fd = open(migrations_config_file, 'r')
+        except FileNotFoundError as e:
+            raise ValueError("could not read migration config file: '{}'".format(migrations_config_file))
+        config = yaml.load(fd)
+
+        # parse the config
+        migration_descs = {}
+        for migration_name, migration_desc in config.items():
+            migration_desc_obj = MigrationDesc(migration_name)
+            for param, value in migration_desc.items():
+                setattr(migration_desc_obj, param, value)
+            migration_descs[migration_name] = migration_desc_obj
+        migration_errors = []
+        for migration_name, migration_desc_obj in migration_descs.items():
+            validate_errors = migration_desc_obj.validate()
+            if validate_errors:
+                migration_errors.extend(validate_errors)
+        if migration_errors:
+            raise ValueError('\n'.join(migration_errors))
+        return migration_descs
+
+    @staticmethod
+    def migrate_from_desc(migration_desc):
+        """ Perform a migration described in a `MigrationDesc`
+
+        Args:
+            migration_desc (:obj:`MigrationDesc`): a migration description
+
+        Returns:
+            :obj:`str`: migrated filename
+        """
+        return MigrationController.migrate_over_schema_sequence(migration_desc)
+
+    @staticmethod
+    def migrate_from_config(migrations_config_file):
+        """ Perform the migrations specified in a config file
+
+        Args:
+            migrations_config_file (:obj:`str`): migrations specified in a YAML file
+
+        Returns:
+            :obj:`list` of :obj:`str`: migrated filenames
+        """
+        # todo: document exceptions
+        migration_descs = MigrationController.get_migrations_config(migrations_config_file)
+        results = []
+        for migration_desc in migration_descs.values():
+            results.append(MigrationController.migrate_from_desc(migration_desc))
+        return results
 
 
 class RunMigration(object):

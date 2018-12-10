@@ -67,15 +67,12 @@ class JsonWriter(Writer):
 
     def run(self, path, objects, models=None, get_related=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None):
-        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
-                a set of .csv or .tsv files, with one file for each model.
+        """ Write a list of model classes to a JSON or YAML file
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
-                appear as worksheets; all models which are not in `models` will
-                follow in alphabetical order
+            models (:obj:`list` of :obj:`Model`, optional): models
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
             keywords (:obj:`str`, optional): keywords
