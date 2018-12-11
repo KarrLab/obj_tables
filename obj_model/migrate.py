@@ -25,9 +25,9 @@ from wc_utils.util.list import det_find_dupes
 
 
 # local
-# todo: define & use MigrationError
 # todo: test_migrate_from_config
 # todo next: large: make work with full wc_lang core.py
+# todo: define & use MigrationError
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 # Model change
