@@ -27,7 +27,6 @@ from wc_utils.util.list import det_find_dupes
 # local
 # todo: test_migrate_from_config
 # todo next: large: make work with full wc_lang core.py
-# todo: define & use MigrationError
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 # Model change
@@ -55,6 +54,17 @@ from wc_utils.util.list import det_find_dupes
 # todo: use Model.revision to label git commit of wc_lang and automatically migrate models to current schema
 # and to report inconsistency between a schema and model file
 # todo: support generic type conversion of migrated data by plug-in functions provided by a users
+
+class MigratorError(Exception):
+    """ Exception raised for errors in obj_model.migrate
+
+    Attributes:
+        message (:obj:`str`): the exception's message
+    """
+    def __init__(self, message=None):
+        super().__init__(message)
+
+
 class Migrator(object):
     """ Support schema migration
 
@@ -104,7 +114,7 @@ class Migrator(object):
                 `Migrated_Model_j.Migrated_Attr_y`.
 
         Raises:
-            :obj:`ValueError`: if one of the defs files is not a python file
+            :obj:`MigratorError`: if one of the defs files is not a python file
         """
         self.old_model_defs_file = old_model_defs_file
         self.new_model_defs_file = new_model_defs_file
@@ -133,16 +143,16 @@ class Migrator(object):
             :obj:`Module`: the `Module` loaded from model_defs_file
 
         Raises:
-            :obj:`ValueError`: if `filename` doesn't end in '.py', or basename of `filename` contains
+            :obj:`MigratorError`: if `filename` doesn't end in '.py', or basename of `filename` contains
                 extra '.'s
         """
         # error if basename doesn't end in '.py' and contain exactly 1 '.'
         root, ext = os.path.splitext(filename)
         if ext != '.py':
-            raise ValueError("'{}' must be Python filename ending in '.py'".format(filename))
+            raise MigratorError("'{}' must be Python filename ending in '.py'".format(filename))
         module_name = os.path.basename(root)
         if '.' in module_name:
-            raise ValueError("module name '{}' in '{}' cannot contain a '.'".format(module_name, filename))
+            raise MigratorError("module name '{}' in '{}' cannot contain a '.'".format(module_name, filename))
 
     def _load_model_defs_file(self, model_defs_file):
         """ Import a Python file
@@ -154,7 +164,7 @@ class Migrator(object):
             :obj:`Module`: the `Module` loaded from model_defs_file
 
         Raises:
-            :obj:`ValueError`: if `model_defs_file` cannot be loaded
+            :obj:`MigratorError`: if `model_defs_file` cannot be loaded
         """
         # avoid re-loading file containing Model definitions, which would fail with
         # 'cannot use the same related attribute name' error if its Models have related attributes
@@ -169,7 +179,7 @@ class Migrator(object):
             spec.loader.exec_module(module)
             self.modules[model_defs_file] = module
         except (SyntaxError, ImportError, AttributeError, ValueError) as e:
-            raise ValueError("'{}' cannot be imported and exec'ed: {}".format(model_defs_file, e))
+            raise MigratorError("'{}' cannot be imported and exec'ed: {}".format(model_defs_file, e))
         return module
 
     @staticmethod
@@ -343,7 +353,7 @@ class Migrator(object):
         """ Prepare for migration
 
         Raises:
-            :obj:`ValueError`: if renamings are not valid, or
+            :obj:`MigratorError`: if renamings are not valid, or
                 inconsistencies exist between corresponding old and migrated classes
         """
         self._get_all_model_defs()
@@ -351,10 +361,10 @@ class Migrator(object):
         # validate that model and attribute rename specifications
         errors = self._validate_renamed_models()
         if errors:
-            raise ValueError('\n'.join(errors))
+            raise MigratorError('\n'.join(errors))
         errors = self._validate_renamed_attrs()
         if errors:
-            raise ValueError('\n'.join(errors))
+            raise MigratorError('\n'.join(errors))
 
         # find deleted models
         used_models = set([existing_model for existing_model in self.models_map])
@@ -365,7 +375,7 @@ class Migrator(object):
         for existing_model, migrated_model in self.models_map.items():
             inconsistencies.extend(self._get_inconsistencies(existing_model, migrated_model))
         if inconsistencies:
-            raise ValueError('\n'.join(inconsistencies))
+            raise MigratorError('\n'.join(inconsistencies))
 
         # get attribute name not used in old model definitions so that old models can point to new models
         self._migrated_copy_attr_name = self._get_migrated_copy_attr_name()
@@ -523,7 +533,7 @@ class Migrator(object):
             try:
                 migrated_model_order.append(model_type_map[existing_model])
             except KeyError:
-                raise ValueError("model '{}' not found in the model map".format(
+                raise MigratorError("model '{}' not found in the model map".format(
                     existing_model.__name__))
 
         # append newly created models
@@ -602,7 +612,7 @@ class Migrator(object):
             :obj:`str`: name of migrated file
 
         Raises:
-            :obj:`ValueError`: if migrate_in_place is False and writing the migrated file would
+            :obj:`MigratorError`: if migrate_in_place is False and writing the migrated file would
                 overwrite an existing file
         """
         root, ext = os.path.splitext(existing_file)
@@ -616,7 +626,7 @@ class Migrator(object):
                 migrated_file = os.path.join(os.path.dirname(existing_file),
                     os.path.basename(root) + migrate_suffix + ext)
             if os.path.exists(migrated_file):
-                raise ValueError("migrated file '{}' already exists".format(migrated_file))
+                raise MigratorError("migrated file '{}' already exists".format(migrated_file))
 
         # write migrated models to disk
         writer = obj_model.io.get_writer(ext)()
@@ -639,7 +649,7 @@ class Migrator(object):
             :obj:`str`: name of migrated file
 
         Raises:
-            :obj:`ValueError`: if migrate_in_place is False and writing the migrated file would
+            :obj:`MigratorError`: if migrate_in_place is False and writing the migrated file would
                 overwrite an existing file
         """
         existing_models = self.read_existing_model(existing_file)
@@ -747,7 +757,7 @@ class Migrator(object):
                             migrated_val.append(getattr(model, self._migrated_copy_attr_name))
                     else:
                         # unreachable due to other error checking
-                        raise ValueError('Invalid related attribute value')  # pragma: no cover
+                        raise MigratorError('Invalid related attribute value')  # pragma: no cover
 
                     setattr(new_model, migrated_attr, migrated_val)
 
@@ -882,12 +892,12 @@ class MigrationController(object):
             :obj:`str`: name of migrated file
 
         Raises:
-            :obj:`ValueError`: if `model_defs_files`, `renamed_models`, and `renamed_attributes`
+            :obj:`MigratorError`: if `model_defs_files`, `renamed_models`, and `renamed_attributes`
                 are not consistent with each other;
         """
         validate_errors = migration_desc.validate()
         if validate_errors:
-            raise ValueError('\n'.join(validate_errors))
+            raise MigratorError('\n'.join(validate_errors))
 
         md = migration_desc
         num_migrations = len(md.model_defs_files) - 1
@@ -920,13 +930,13 @@ class MigrationController(object):
             :obj:`list` of :obj:`MigrationDesc`: migration descriptions
 
         Raises:
-            :obj:`ValueError`: if `migrations_config_file` cannot be read, or the migration descriptions in
+            :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration descriptions in
                 `migrations_config_file` are not valid
         """
         try:
             fd = open(migrations_config_file, 'r')
         except FileNotFoundError as e:
-            raise ValueError("could not read migration config file: '{}'".format(migrations_config_file))
+            raise MigratorError("could not read migration config file: '{}'".format(migrations_config_file))
         config = yaml.load(fd)
 
         # parse the config
@@ -942,7 +952,7 @@ class MigrationController(object):
             if validate_errors:
                 migration_errors.extend(validate_errors)
         if migration_errors:
-            raise ValueError('\n'.join(migration_errors))
+            raise MigratorError('\n'.join(migration_errors))
         return migration_descs
 
     @staticmethod
@@ -967,7 +977,6 @@ class MigrationController(object):
         Returns:
             :obj:`list` of :obj:`str`: migrated filenames
         """
-        # todo: document exceptions
         migration_descs = MigrationController.get_migrations_config(migrations_config_file)
         results = []
         for migration_desc in migration_descs.values():

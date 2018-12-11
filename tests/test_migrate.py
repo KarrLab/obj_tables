@@ -19,7 +19,7 @@ import warnings
 import filecmp
 from argparse import Namespace
 
-from obj_model.migrate import Migrator, MigrationController, RunMigration, MigrationDesc
+from obj_model.migrate import MigratorError, Migrator, MigrationController, RunMigration, MigrationDesc
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -185,7 +185,7 @@ class MigrationFixtures(unittest.TestCase):
             inverted_renaming.append((migrated, existing))
         return inverted_renaming
 
-    def get_temp_output_pathname(testcase, name):
+    def get_temp_pathname(testcase, name):
         # create a pathname for a file called name in new temp dir; will be discarded by tearDown()
         return os.path.join(mkdtemp(dir=testcase.tmp_model_dir), name)
 
@@ -199,11 +199,11 @@ class TestMigration(MigrationFixtures):
         super().tearDown()
 
     def test_valid_python_path(self):
-        with self.assertRaisesRegex(ValueError, "must be Python filename ending in '.py'"):
+        with self.assertRaisesRegex(MigratorError, "must be Python filename ending in '.py'"):
             Migrator._valid_python_path('test/foo/x.csv')
-        with self.assertRaisesRegex(ValueError, "must be Python filename ending in '.py'"):
+        with self.assertRaisesRegex(MigratorError, "must be Python filename ending in '.py'"):
             Migrator._valid_python_path('foo/.py')
-        with self.assertRaisesRegex(ValueError, "module name '.*' in '.*' cannot contain a '.'"):
+        with self.assertRaisesRegex(MigratorError, "module name '.*' in '.*' cannot contain a '.'"):
             Migrator._valid_python_path('foo/module.with.periods.py')
 
     def test_load_model_defs_file(self):
@@ -348,7 +348,7 @@ class TestMigration(MigrationFixtures):
             for model in ['Test', 'Property', 'Subtest', 'Reference', 'NewModel']]
         self.assertEqual(migrated_model_order, expected_model_order)
         class NoSuchModel(obj_model.Model): pass
-        with self.assertRaisesRegex(ValueError, "model 'NoSuchModel' not found in the model map"):
+        with self.assertRaisesRegex(MigratorError, "model 'NoSuchModel' not found in the model map"):
             migrator._migrate_model_order([NoSuchModel])
 
         # test ambiguous_sheet_names
@@ -403,12 +403,12 @@ class TestMigration(MigrationFixtures):
         self.assertEqual(migrator.deleted_models, {'DeletedModel'})
 
         migrator.renamed_models = [('Test', 'NoSuchModel')]
-        with self.assertRaisesRegex(ValueError, "'.*' in renamed models not a migrated model"):
+        with self.assertRaisesRegex(MigratorError, "'.*' in renamed models not a migrated model"):
             migrator.prepare()
         migrator.renamed_models = []
 
         migrator.renamed_attributes = [(('Test', 'name'), ('Test', 'no_such_name'))]
-        with self.assertRaisesRegex(ValueError, "'.*' in renamed attributes not a migrated model.attribute"):
+        with self.assertRaisesRegex(MigratorError, "'.*' in renamed attributes not a migrated model.attribute"):
             migrator.prepare()
         migrator.renamed_attributes = []
 
@@ -416,7 +416,7 @@ class TestMigration(MigrationFixtures):
         inconsistent_new_model_defs_path = os.path.join(self.fixtures_path, 'core_new_inconsistent.py')
         inconsistent_migrator = Migrator(self.old_model_defs_path, inconsistent_new_model_defs_path)
         inconsistent_migrator.initialize()
-        with self.assertRaisesRegex(ValueError,
+        with self.assertRaisesRegex(MigratorError,
             "migrated attribute type mismatch: type of .*, doesn't equal type of .*, .*"):
             inconsistent_migrator.prepare()
 
@@ -597,7 +597,7 @@ class TestMigration(MigrationFixtures):
         root, _ = os.path.splitext(self.example_old_model_copy)
         self.assertEqual(migrated_filename, "{}{}.xlsx".format(root, test_suffix))
 
-        with self.assertRaisesRegex(ValueError, "migrated file '.*' already exists"):
+        with self.assertRaisesRegex(MigratorError, "migrated file '.*' already exists"):
             no_change_migrator.full_migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
 
     def test_full_migrate(self):
@@ -655,7 +655,7 @@ class TestMigration(MigrationFixtures):
         f.close()
         migrator = Migrator(bad_module, self.new_model_defs_path)
         migrator.initialize()
-        with self.assertRaisesRegex(ValueError, "cannot be imported and exec'ed"):
+        with self.assertRaisesRegex(MigratorError, "cannot be imported and exec'ed"):
             migrator._load_model_defs_file(migrator.old_model_defs_path)
 
     def test_str(self):
@@ -681,7 +681,7 @@ class TestMigrationController(MigrationFixtures):
         renamed_models = [old_2_new_renamed_models, [], new_2_old_renamed_models]
         renamed_attributes = [old_2_new_renamed_attributes, [], new_2_old_renamed_attributes]
 
-        migrated_filename = self.get_temp_output_pathname('example_old_model_rt_migrated.xlsx')
+        migrated_filename = self.get_temp_pathname('example_old_model_rt_migrated.xlsx')
         migration_desc = MigrationDesc('name',
             existing_file=self.example_old_rt_model_copy,
             model_defs_files=model_defs_files,
@@ -706,23 +706,23 @@ class TestMigrationController(MigrationFixtures):
         with open(temp_bad_config_example, 'w') as file:
             file.write(u'migration:\n')
             file.write(u'    obj_defs: [core_new_rt.py, core_old_rt.py]\n')
-        with self.assertRaisesRegex(ValueError, re.escape("disallowed attribute(s) found: {'obj_defs'}")):
+        with self.assertRaisesRegex(MigratorError, re.escape("disallowed attribute(s) found: {'obj_defs'}")):
             MigrationController.get_migrations_config(temp_bad_config_example)
 
-        with self.assertRaisesRegex(ValueError, "could not read migration config file: "):
+        with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
             MigrationController.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
 
     def test_migrate_from_desc(self):
         migration_descs = MigrationController.get_migrations_config(self.config_file)
 
         migration_desc = migration_descs['migration']
-        migrated_filename = self.get_temp_output_pathname('migration.xlsx')
+        migrated_filename = self.get_temp_pathname('migration.xlsx')
         migration_desc.migrated_file = migrated_filename
         migrated_file = MigrationController.migrate_from_desc(migration_desc)
         self.assertEqual(migrated_file, migrated_filename)
 
         migration_desc = migration_descs['migration_with_renaming']
-        round_trip_migrated_xlsx_file = self.get_temp_output_pathname('round_trip_migrated_xlsx_file.xlsx')
+        round_trip_migrated_xlsx_file = self.get_temp_pathname('round_trip_migrated_xlsx_file.xlsx')
         migration_desc.migrated_file = round_trip_migrated_xlsx_file
         MigrationController.migrate_from_desc(migration_desc)
         existing = read_workbook(migration_desc.existing_file)
@@ -731,6 +731,7 @@ class TestMigrationController(MigrationFixtures):
 
     def test_migrate_from_config(self):
         # MigrationController.migrate_from_config(self.config_file)
+        # add migrated_file entries to self.config_file, or load and dump it
         pass
 
     def test_str(self):
