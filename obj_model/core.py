@@ -1195,6 +1195,83 @@ class Model(with_metaclass(ModelMeta, object)):
 
         super(Model, self).__setattr__(attr_name, value)
 
+    def get_nested_attr(self, attr_path):
+        """ Get the value of an attribute or a nested attribute of a model 
+
+        Args:
+            attr_path (:obj:`list` of :obj:`list` of :obj:`str`): 
+                the path to an attribute or nested attribute of a model
+
+        Returns:
+            :obj:`Object`: value of the attribute or nested attribute
+        """
+
+        if not isinstance(attr_path, (tuple, list)):
+            attr_path = (attr_path,)
+
+        # traverse to the final attribute
+        value = self
+        for attr in attr_path:
+            if isinstance(attr, (tuple, list)):
+                if len(attr) == 1:
+                    attr_name = attr[0]
+                    attr_get_one_filter = None
+                elif len(attr) == 2:
+                    attr_name = attr[0]
+                    attr_get_one_filter = attr[1]
+                else:
+                    raise ValueError('Attribute specification must be a string, 1-tuple, or 2-tuple')
+            else:
+                attr_name = attr
+                attr_get_one_filter = None
+
+            value = getattr(value, attr_name)
+            if attr_get_one_filter:
+                value = value.get_one(**attr_get_one_filter)
+
+        # return value
+        return value
+
+    def set_nested_attr(self, attr_path, value):
+        """ Set the value of an attribute or a nested attribute of a model 
+
+        Args:
+            attr_path (:obj:`list` of :obj:`list` of :obj:`str`): 
+                the path to an attribute or nested attribute of a model
+            value (:obj:`object`): new value
+
+        Returns:
+            :obj:`Model`: the same model with the value of an attribute
+                modified
+        """
+        if not attr_path:
+            raise ValueError('Attribute specification must be a string or tuple')
+
+        if not isinstance(attr_path, (tuple, list)):
+            attr_path = (attr_path,)
+
+        # traverse to parent of final attribute
+        nested_obj = self.get_nested_attr(attr_path[0:-1])
+
+        # get name of final attribute
+        attr = attr_path[-1]
+        if isinstance(attr, (tuple, list)):
+            if len(attr) == 1:
+                attr_name = attr[0]
+            else:
+                raise ValueError('Specification of final attribute must be a string or 1-tuple')
+        else:
+            attr_name = attr
+
+        # change value
+        if hasattr(nested_obj, attr_name):
+            setattr(nested_obj, attr_name, value)
+        else:
+            raise AttributeError("'{}' object has no attribute '{}'".format(nested_obj.__class__.__name__, attr_name))
+
+        # return self
+        return self
+
     def normalize(self):
         """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers into a canonical order because their
         order has no semantic meaning. Importantly, this canonical form is reproducible. Thus, this canonical form facilitates reproducible

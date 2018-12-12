@@ -4272,6 +4272,125 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestChild.Meta.local_attributes['parents'].is_related, True)
         self.assertEqual(TestChild.Meta.local_attributes['parents'].is_related_to_many, True)
 
+    def test_get_nested_attr(self):
+        class Test1(core.Model):
+            id = core.SlugAttribute()
+
+        class Test2(core.Model):
+            id = core.SlugAttribute()
+            parent = core.ManyToOneAttribute(Test1, related_name='children')
+
+        class Test3(core.Model):
+            id = core.SlugAttribute()
+            parent = core.ManyToOneAttribute(Test2, related_name='children')
+
+        test_1 = Test1(id='test_1')
+        test_1.children = [Test2(id='test_1_1'), Test2(id='test_1_2')]
+        test_1.children[0].children = [Test3(id='test_1_1_1'), Test3(id='test_1_1_2')]
+        test_1.children[1].children = [Test3(id='test_1_2_1'), Test3(id='test_1_2_2')]
+
+        self.assertEqual(test_1.get_nested_attr(()), test_1)
+        self.assertEqual(test_1.get_nested_attr('id'), 'test_1')
+        self.assertEqual(test_1.get_nested_attr(('id',)), 'test_1')
+        self.assertEqual(test_1.get_nested_attr((('id',),)), 'test_1')
+        with self.assertRaisesRegex(TypeError, 'attribute name must be string'):
+            test_1.get_nested_attr(((('id',),),))
+        with self.assertRaisesRegex(AttributeError, "has no attribute 'id2'"):
+            test_1.get_nested_attr('id2')
+
+        self.assertEqual(test_1.get_nested_attr('children'), test_1.children)
+        self.assertEqual(test_1.get_nested_attr((('children', {'id': 'test_1_2'}),)), test_1.children[1])
+        with self.assertRaisesRegex(ValueError, 'must be a string, 1-tuple, or 2-tuple'):
+            test_1.get_nested_attr(((),))
+        with self.assertRaisesRegex(ValueError, 'must be a string, 1-tuple, or 2-tuple'):
+            test_1.get_nested_attr((('children', {'id': 'test_1_2'}, None),))
+        self.assertEqual(test_1.get_nested_attr((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1'}))),
+                         test_1.children[1].children[0])
+        self.assertEqual(test_1.get_nested_attr((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1'}), 'id')),
+                         test_1.children[1].children[0].id)
+        self.assertEqual(test_1.get_nested_attr((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1'}), ('id',))),
+                         test_1.children[1].children[0].id)
+        self.assertEqual(test_1.get_nested_attr((('children', {'id': 'test_1_2'}),
+                                                 ('children', {'id': 'test_1_2_1'}),
+                                                 'parent',
+                                                 'parent')),
+                         test_1)
+        self.assertEqual(test_1.get_nested_attr((('children', {'id': 'test_1_2'}),
+                                                 ('children', {'id': 'test_1_2_1'}),
+                                                 'parent',
+                                                 'parent',
+                                                 'id')),
+                         test_1.id)
+
+    def test_set_nested_attr(self):
+        class Test1(core.Model):
+            id = core.SlugAttribute()
+
+        class Test2(core.Model):
+            id = core.SlugAttribute()
+            parent = core.ManyToOneAttribute(Test1, related_name='children')
+
+        class Test3(core.Model):
+            id = core.SlugAttribute()
+            parent = core.ManyToOneAttribute(Test2, related_name='children')
+
+        test_1 = Test1(id='test_1')
+        test_2 = test_1.children = [Test2(id='test_1_1'), Test2(id='test_1_2')]
+        test_1.children[0].children = [Test3(id='test_1_1_1'), Test3(id='test_1_1_2')]
+        test_1.children[1].children = [Test3(id='test_1_2_1'), Test3(id='test_1_2_2')]
+        test_3 = test_1.children[0].children + test_1.children[1].children
+
+        with self.assertRaisesRegex(ValueError, 'must be a string or tuple'):
+            test_1.set_nested_attr((), 1)
+
+        test_1.set_nested_attr('id', 'new_id_1')
+        self.assertEqual(test_1.id, 'new_id_1')
+        test_1.set_nested_attr(('id',), 'new_id_2')
+        self.assertEqual(test_1.id, 'new_id_2')
+        test_1.set_nested_attr((('id',),), 'new_id_3')
+        self.assertEqual(test_1.id, 'new_id_3')
+        with self.assertRaisesRegex(TypeError, 'attribute name must be string'):
+            test_1.set_nested_attr(((('id',),),), 'new_id_4')
+        with self.assertRaisesRegex(AttributeError, "has no attribute 'id2'"):
+            test_1.set_nested_attr('id2', 'new_id_5')
+
+        test_1.set_nested_attr('children', [])
+        self.assertEqual(test_1.children, [])
+        test_1.set_nested_attr('children', test_2)
+        self.assertEqual(test_1.children, test_2)
+
+        with self.assertRaisesRegex(ValueError, 'final attribute must be a string or 1-tuple'):
+            test_1.set_nested_attr((('children', {'id': 'test_1_2'}),), None)
+        with self.assertRaisesRegex(ValueError, 'final attribute must be a string or 1-tuple'):
+            test_1.set_nested_attr(((),), None)
+        with self.assertRaisesRegex(ValueError, 'final attribute must be a string or 1-tuple'):
+            test_1.set_nested_attr((('children', {'id': 'test_1_2'}, None),), None)
+
+        self.assertEqual(test_2[1].children, test_3[2:4])
+        test_1.set_nested_attr((('children', {'id': 'test_1_2'}), 'children'), test_3[0:1])
+        self.assertEqual(test_2[1].children, test_3[0:1])
+        test_1.set_nested_attr((('children', {'id': 'test_1_2'}), ('children')), test_3[2:4])
+        self.assertEqual(test_2[1].children, test_3[2:4])
+
+        test_1.set_nested_attr((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1'}), 'id'), 'test_1_2_1-b')
+        self.assertEqual(test_3[2].id, 'test_1_2_1-b')
+        test_1.set_nested_attr((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1-b'}), ('id',)), 'test_1_2_1-c')
+        self.assertEqual(test_3[2].id, 'test_1_2_1-c')
+        test_1.set_nested_attr((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1-c'}), 'id',), 'test_1_2_1')
+        self.assertEqual(test_3[2].id, 'test_1_2_1')
+
+        self.assertEqual(test_1.children, test_2)
+        test_1.set_nested_attr((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1'}), 'parent', 'parent'), None)
+        self.assertEqual(test_1.children, test_2[0:1])
+        test_1.children = test_2
+
+        test_1.set_nested_attr((('children', {'id': 'test_1_2'}), ('children', {
+                               'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_6')
+        self.assertEqual(test_1.id, 'new_id_6')
+        test_1.set_nested_attr((('children', {'id': 'test_1_2'}), ('children', {
+                               'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_7')
+        self.assertEqual(test_1.id, 'new_id_7')
+
 
 class ContextTestCase(unittest.TestCase):
     def test(self):
