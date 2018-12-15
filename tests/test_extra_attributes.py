@@ -8,6 +8,7 @@
 
 from obj_model import core
 from obj_model import extra_attributes
+from wc_utils.util import chem
 import Bio.Alphabet
 import Bio.motifs.matrix
 import Bio.Seq
@@ -589,3 +590,66 @@ class TestExtraAttribute(unittest.TestCase):
         self.assertEqual(attr.from_builtin(None), None)
         self.assertEqual(attr.from_builtin('x'), sympy.Symbol('x'))
         self.assertEqual(attr.from_builtin(attr.to_builtin(sympy.Symbol('x'))), sympy.Symbol('x'))
+
+    def test_empirical_formula_attribute(self):
+        attr = extra_attributes.EmpiricalFormulaAttribute(default=None)
+        self.assertEqual(attr.default, None)
+
+        attr = extra_attributes.EmpiricalFormulaAttribute(default='C1H1O2')
+        self.assertEqual(attr.default, chem.EmpiricalFormula('C1H1O2'))
+
+        attr = extra_attributes.EmpiricalFormulaAttribute(default=chem.EmpiricalFormula('C1H1O2'))
+        self.assertEqual(attr.default, chem.EmpiricalFormula('C1H1O2'))
+
+        class Node(core.Model):
+            value = extra_attributes.EmpiricalFormulaAttribute()
+
+        attr = Node.Meta.attributes['value']
+
+        # deserialize
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize('X'), (chem.EmpiricalFormula('X'), None))
+        self.assertEqual(attr.deserialize('x')[0], None)
+        self.assertNotEqual(attr.deserialize('x')[1], None)
+
+        # serialize
+        self.assertEqual(attr.serialize(''), '')
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.serialize(chem.EmpiricalFormula('C1HO2')), 'CHO2')
+
+        # deserialize + serialize
+        self.assertEqual(attr.serialize(attr.deserialize('')[0]), '')
+        self.assertEqual(attr.serialize(attr.deserialize(None)[0]), '')
+        self.assertEqual(attr.serialize(attr.deserialize('CHO2')[0]), 'CHO2')
+
+        # validate
+        node = Node()
+        self.assertEqual(attr.validate(node, None), None)
+        self.assertEqual(attr.validate(node, chem.EmpiricalFormula('C1HO2')), None)
+        self.assertNotEqual(attr.validate(node, ''), None)
+        self.assertNotEqual(attr.validate(node, 'x'), None)
+        self.assertNotEqual(attr.validate(node, 1), None)
+
+        attr2 = extra_attributes.EmpiricalFormulaAttribute(primary=True)
+        self.assertEqual(attr.validate(None, None), None)
+        self.assertEqual(attr.validate(None, chem.EmpiricalFormula('C')), None)
+        self.assertNotEqual(attr2.validate(None, None), None)
+        self.assertEqual(attr2.validate(None, chem.EmpiricalFormula('C')), None)
+
+        # validate_unique
+        nodes = [Node(), Node()]
+        self.assertEqual(attr.validate_unique(nodes, [chem.EmpiricalFormula('CHO2'), chem.EmpiricalFormula('C2HO2')]), None)
+        self.assertNotEqual(attr.validate_unique(nodes, [chem.EmpiricalFormula('CHO2'), chem.EmpiricalFormula('C1HO2')]), None)
+
+        # to/from JSON
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(''), None)
+        self.assertEqual(attr.to_builtin(chem.EmpiricalFormula('CHO2')), {'C': 1, 'H': 1, 'O': 2})
+        self.assertEqual(attr.to_builtin(chem.EmpiricalFormula('C1HO2')), {'C': 1, 'H': 1, 'O': 2})
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin(''), None)
+        self.assertEqual(attr.from_builtin('CHO2'), chem.EmpiricalFormula('CHO2'))
+        self.assertEqual(attr.from_builtin('C1HO2'), chem.EmpiricalFormula('CHO2'))
+        self.assertEqual(attr.from_builtin({'C': 1, 'H': 1, 'O': 2}), chem.EmpiricalFormula('CHO2'))
+        self.assertEqual(attr.from_builtin({'C': 1, 'H': 1, 'O': 2}), chem.EmpiricalFormula('C1HO2'))
