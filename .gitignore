@@ -17,7 +17,6 @@ dist/
 __pycache__/
 .cache/
 .pytest_cache/
-pytest.ini
 
 # documentation files
 README.rst
