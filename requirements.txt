@@ -10,3 +10,4 @@ stringcase
 sympy
 git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils-0.0.1a5
 weakreflist
+git+https://github.com/KarrLab/wc_lang.git#egg=wc_lang-0.0.1
