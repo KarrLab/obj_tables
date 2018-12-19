@@ -55,35 +55,6 @@ LexMatch.obj_model_tokens.__doc__ = "List of ObjModelToken's created"
 LexMatch.num_py_tokens.__doc__ = 'Number of Python tokens consumed'
 
 
-class ExpressionManyToOneAttribute(ManyToOneAttribute):
-    """ Expresion many-to-one attribute """
-
-    def serialize(self, expression, encoded=None):
-        """ Serialize related object
-
-        Args:
-            expression (:obj:`Expression`): the related `Expression`
-            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
-
-        Returns:
-            :obj:`str`: simple Python representation of the rate law expression
-        """
-        return expression.serialize()
-
-    def deserialize(self, value, objects, decoded=None):
-        """ Deserialize value
-
-        Args:
-            value (:obj:`str`): String representation
-            objects (:obj:`dict`): dictionary of objects, grouped by model
-            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
-
-        Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
-        """
-        return self.related_class.deserialize(value, objects)
-
-
 class ExpressionOneToOneAttribute(OneToOneAttribute):
     """ Expression one-to-one attribute """
 
@@ -96,6 +67,40 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
 
         Returns:
             :obj:`str`: simple Python representation
+        """
+        if expression:
+            return expression.serialize()
+        else:
+            return ''
+
+    def deserialize(self, value, objects, decoded=None):
+        """ Deserialize value
+
+        Args:
+            value (:obj:`str`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        if value:
+            return self.related_class.deserialize(value, objects)
+        return (None, None)
+
+
+class ExpressionManyToOneAttribute(ManyToOneAttribute):
+    """ Expresion many-to-one attribute """
+
+    def serialize(self, expression, encoded=None):
+        """ Serialize related object
+
+        Args:
+            expression (:obj:`Expression`): the related `Expression`
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: simple Python representation of the rate law expression
         """
         if expression:
             return expression.serialize()
@@ -169,11 +174,15 @@ class Expression(object):
         Attributes:
             expression_term_models (:obj:`tuple` of :obj:`str`): names of classes
                 which can appear as terms in the expression
-            valid_functions (:obj:`tuple` of :obj:`types.FunctionType`): Python
+            expression_valid_functions (:obj:`tuple` of :obj:`types.FunctionType`): Python
                 functions which can appear in the expression
+            expression_is_linear (:obj:`bool`): if :obj:`True`, validate that the expression is linear
+            expression_type (:obj:`type`): type of the expression
         """
         expression_term_models = ()
         expression_valid_functions = (float, ceil, floor, exp, pow, log, log10, min, max)
+        expression_is_linear = False
+        expression_type = None
 
     def serialize(self):
         """ Generate string representation
@@ -276,15 +285,12 @@ class Expression(object):
                 lin_coeffs[token.model_type][token.model] += sense * cur_coeff
 
     @classmethod
-    def validate(cls, model_obj, parent_obj, return_type=None, check_linear=False):
+    def validate(cls, model_obj, parent_obj):
         """ Determine whether an expression model is valid by eval'ing its deserialized expression
 
         Args:
             model_obj (:obj:`Expression`): expression object
             parent_obj (:obj:`Model`): parent of expression object
-            return_type (:obj:`type`, optional): if provided, an expression's required return type
-            check_linear (:obj:`bool`, optional): if :obj:`True`, validate that the expression is a
-                linear function
 
         Returns:
             :obj:`InvalidObject` or None: `None` if the object is valid,
@@ -342,13 +348,13 @@ class Expression(object):
         # check expression is valid
         try:
             rv = model_obj._parsed_expression.test_eval()
-            if return_type is not None:
-                if not isinstance(rv, return_type):
+            if model_obj.Meta.expression_type:
+                if not isinstance(rv, model_obj.Meta.expression_type):
                     attr = model_cls.Meta.attributes['expression']
                     attr_err = InvalidAttribute(attr,
                                                 ["Evaluating '{}', a {} expression, should return a {} but it returns a {}".format(
                                                     model_obj.expression, model_obj.__class__.__name__,
-                                                    return_type.__name__, type(rv).__name__)])
+                                                    model_obj.Meta.expression_type.__name__, type(rv).__name__)])
                     return InvalidObject(model_obj, [attr_err])
         except ParsedExpressionError as e:
             attr = model_cls.Meta.attributes['expression']
@@ -356,7 +362,7 @@ class Expression(object):
             return InvalidObject(model_obj, [attr_err])
 
         # check expression is linear
-        if check_linear and not model_obj._parsed_expression.is_linear:
+        if model_obj.Meta.expression_is_linear and not model_obj._parsed_expression.is_linear:
             attr = model_cls.Meta.attributes['expression']
             attr_err = InvalidAttribute(attr, ['Expression must be linear'])
             return InvalidObject(model_obj, [attr_err])
@@ -383,7 +389,7 @@ class Expression(object):
         return expr_model_type.deserialize(expression, objs)
 
     @classmethod
-    def make_obj(cls, model, model_type, id, expression, objs, allow_invalid_objects=False):
+    def make_obj(cls, model, model_type, primary_attr, expression, objs, allow_invalid_objects=False):
         """ Make a model that contains an expression by using its expression helper class
 
         For example, this uses `FunctionExpression` to make a `Function`.
@@ -392,7 +398,7 @@ class Expression(object):
             model (:obj:`Model`): an instance of :obj:`Model` which is the root model
             model_type (:obj:`type`): a subclass of :obj:`Model` that uses a mathemetical expression, like
                 `Function` and `Observable`
-            id (:obj:`str`): the id of the `model_type` being created
+            primary_attr (:obj:`object`): the primary attribute of the `model_type` being created
             expression (:obj:`str`): the expression used by the `model_type` being created
             objs (:obj:`dict` of `dict`): all objects that are referenced in `expression`
             allow_invalid_objects (:obj:`bool`, optional): if set, return object - not error - if
@@ -410,7 +416,8 @@ class Expression(object):
             return error_or_none
         related_name = model_type.Meta.attributes['model'].related_name
         related_in_model = getattr(model, related_name)
-        new_obj = related_in_model.create(id=id, expression=expr_model_obj)
+        new_obj = related_in_model.create(expression=expr_model_obj)
+        setattr(new_obj, model_type.Meta.primary_attribute.name, primary_attr)
         return new_obj
 
 
@@ -525,14 +532,16 @@ class ParsedExpression(object):
                 model_cls.__name__))
         self.term_models = set()
         for expression_term_model_type_name in model_cls.Meta.expression_term_models:
+            related_class = None
             for attr in model_cls.Meta.attributes.values():
                 if isinstance(attr, RelatedAttribute) \
                         and attr.related_class.__name__ == expression_term_model_type_name:
-                    self.term_models.add(attr.related_class)
-        for obj_type in self.term_models:
-            if not issubclass(obj_type, Model):   # pragma: no cover
-                raise ParsedExpressionError("objs entry '{}' is not a subclass of Model".format(
-                    obj_type.__name__))
+                    related_class = attr.related_class
+                    break
+            if related_class:
+                self.term_models.add(related_class)
+            else:
+                raise ParsedExpressionError('Expression term {} must have a relationship to {}'.format(expression_term_model_type_name, model_cls.__name__))
         self.valid_functions = set()
         if hasattr(model_cls.Meta, 'expression_valid_functions'):
             self.valid_functions.update(model_cls.Meta.expression_valid_functions)
@@ -886,7 +895,11 @@ class ParsedExpression(object):
 
         if self.errors:
             return (None, None, self.errors)
-        self._compiled_expression, self._compiled_namespace = self._compile()
+        try:
+            self._compiled_expression, self._compiled_namespace = self._compile()
+        except SyntaxError as error:
+            return (None, None, ['SyntaxError: ' + str(error)])
+
         self._compiled_expression_with_units, self._compiled_namespace_with_units = self._compile(with_units=True)
         return (self._obj_model_tokens, self.related_objects, None)
 
