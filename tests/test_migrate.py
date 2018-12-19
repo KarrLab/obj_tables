@@ -24,7 +24,8 @@ import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-    TabularOrientation, migrate, extra_attributes)
+    TabularOrientation, migrate, 
+    math)
 from wc_utils.workbook.io import read as read_workbook
 
 
@@ -75,7 +76,7 @@ class MigrationFixtures(unittest.TestCase):
             id = SlugAttribute()
             attr_a = StringAttribute()
             unmigrated_attr = StringAttribute()
-            extra_attr_1 = extra_attributes.NumpyArrayAttribute()
+            extra_attr_1 = math.NumpyArrayAttribute()
             other_attr = StringAttribute()
             related = OneToOneAttribute(RelatedObj, related_name='test')
         self.TestExisting = TestExisting
@@ -91,7 +92,7 @@ class MigrationFixtures(unittest.TestCase):
             id = SlugAttribute()
             attr_b = IntegerAttribute()
             new_attr = BooleanAttribute()
-            extra_attr_2 = extra_attributes.NumpyArrayAttribute()
+            extra_attr_2 = math.NumpyArrayAttribute()
             other_attr = StringAttribute(unique=True)
             related = OneToOneAttribute(NewRelatedObj, related_name='not_test')
 
@@ -129,7 +130,7 @@ class MigrationFixtures(unittest.TestCase):
             id = SlugAttribute()
             attr_a = StringAttribute() # renamed to attr_b
             unmigrated_attr = StringAttribute()
-            np_array = extra_attributes.NumpyArrayAttribute()
+            np_array = math.NumpyArrayAttribute()
             related = OneToOneAttribute(GoodRelatedCls, related_name='test')
         self.GoodExisting = GoodExisting
 
@@ -141,7 +142,7 @@ class MigrationFixtures(unittest.TestCase):
         class GoodMigrated(obj_model.Model):
             id = SlugAttribute()
             attr_b = StringAttribute()
-            np_array = extra_attributes.NumpyArrayAttribute()
+            np_array = math.NumpyArrayAttribute()
             related = OneToOneAttribute(RelatedObj, related_name='test_2')
         self.GoodMigrated = GoodMigrated
 
