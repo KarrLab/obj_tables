@@ -17,6 +17,7 @@ from .core import (Model, Attribute,
                    ModelSource, TabularOrientation,
                    get_models, get_model, excel_col_name)
 from . import abstract
+from . import expression
 from . import extra_attributes
 from . import io
 from . import utils
