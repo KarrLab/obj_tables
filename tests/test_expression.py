@@ -16,6 +16,7 @@ from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToO
                                   Expression, ParsedExpression,
                                   ParsedExpressionValidator, LinearParsedExpressionValidator,
                                   ParsedExpressionError)
+from wc_utils.util.units import unit_registry
 import mock
 import re
 import token
@@ -245,6 +246,14 @@ class ExpressionTestCase(unittest.TestCase):
         self.assertEqual(rv[0], None)
         self.assertRegex(str(rv[1]), 'SyntaxError:')
 
+        rv = Expression.deserialize(FunctionExpression, '1 * ', {})
+        self.assertEqual(rv[0], None)
+        self.assertRegex(str(rv[1]), 'SyntaxError:')
+
+        rv = Expression.deserialize(Function, '1 * ', {})
+        self.assertEqual(rv[0], None)
+        self.assertRegex(str(rv[1]), "doesn't have a 'Meta.expression_term_models' attribute")
+
     def test_validate(self):
         objects = {
             Parameter: {
@@ -274,6 +283,16 @@ class ExpressionTestCase(unittest.TestCase):
         self.assertNotEqual(expr.validate(), None)
         expr, error = SubFunctionExpression.deserialize('p_1 > p_2', objects)
         self.assertEqual(expr.validate(), None)
+
+        expr, error = FunctionExpression.deserialize('p_1 + p_2 + p_3', objects)
+        expr.expression = '1['
+        rv = Expression.validate(expr, None)
+        self.assertRegex(str(rv), 'Python syntax error')
+
+        expr, error = FunctionExpression.deserialize('p_1 + p_2 + p_3', objects)
+        expr.expression = 'p_1 + p_2 + p_3 + 1 / 0'
+        rv = Expression.validate(expr, None)
+        self.assertRegex(str(rv), 'cannot eval expression')
 
     def test_make_expression_obj(self):
         objects = {
@@ -352,6 +371,17 @@ class ParsedExpressionTestCase(unittest.TestCase):
                 ParsedExpressionError,
                 "model_cls 'Species' doesn't have a 'Meta.expression_term_models' attribute"):
             ParsedExpression(Species, 'attr', '', {})
+
+    def test_parsed_expression_ambiguous(self):
+        func, error = FunctionExpression.deserialize('min(p_1, p_2)', {
+            Parameter: {
+                'min': Parameter(id='min', value=1.),
+                'p_1': Parameter(id='p_1', value=2.),
+                'p_2': Parameter(id='p_2', value=3.),
+            }
+        })
+        self.assertEqual(func, None)
+        self.assertRegex(str(error), 'is ambiguous. ObjModelToken matches')
 
     def test__get_model_type(self):
         expr = '3 + 5 * 6'
@@ -732,6 +762,16 @@ class ParsedExpressionTestCase(unittest.TestCase):
             [["contains the identifier(s) '{}', which aren't the id(s) of an object".format(bad_id)],
              ["contains '{}', but '{}'".format(bad_fn_name, bad_fn_name.split('.')[1]), "is not the id of a"]])
 
+        expr, error = FunctionExpression.deserialize('p_1 + p_2', {
+            Parameter: {'p_1': Parameter(id='p_1'), 'p_2': Parameter(id='p_2'), }
+        })
+        assert error is None, str(error)
+        expr._parsed_expression.expression = ''
+        rv = expr._parsed_expression.tokenize()
+        self.assertEqual(rv[0], None)
+        self.assertEqual(rv[1], None)
+        self.assertIn('Expression cannot be empty', rv[2])
+
     def test_str(self):
         expr = 'func_1 + LinearSubFunction.func_2'
         parsed_expr = self.make_parsed_expr(expr, objects={
@@ -830,6 +870,82 @@ class ParsedExpressionTestCase(unittest.TestCase):
                                     re.escape("Cannot evaluate '{}', as it not been "
                                               "successfully compiled".format(expr))):
             parsed_expr.test_eval()
+
+    def test_eval_with_units(self):
+        func = Function(id='func', units='g l^-1')
+        func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
+            Parameter: {
+                'p_1': Parameter(id='p_1', value=2., units='g'),
+                'p_2': Parameter(id='p_2', value=5., units='l'),
+            }
+        })
+        assert error is None, str(error)
+
+        rv = func.expression._parsed_expression.eval({}, with_units=True)
+        self.assertEqual(rv.magnitude, 0.4)
+        self.assertEqual(rv.to_base_units().units, unit_registry.parse_expression('g l^-1').to_base_units().units)
+
+        class Units(Enum):
+            g = 1
+            l = 2
+        func.expression.parameters.get_one(id='p_1').units = Units.g
+        func.expression.parameters.get_one(id='p_2').units = Units.l
+        rv = func.expression._parsed_expression.eval({}, with_units=True)
+        self.assertEqual(rv.magnitude, 0.4)
+        self.assertEqual(rv.to_base_units().units, unit_registry.parse_expression('g l^-1').to_base_units().units)
+
+    def test_eval_with_units_and_boolean(self):
+        func_1 = SubFunction(id='func_1', units='dimensionless')
+        func_1.expression, error = SubFunctionExpression.deserialize('p_1 < p_2', {
+            Parameter: {
+                'p_1': Parameter(id='p_1', value=2., units='g'),
+                'p_2': Parameter(id='p_2', value=5., units='l'),
+            }
+        })
+        assert error is None, str(error)
+
+        func_2 = Function(id='func_2', units='g l^-1')
+        func_2.expression, error = FunctionExpression.deserialize('(p_3 / p_4) * func_1', {
+            Parameter: {
+                'p_3': Parameter(id='p_3', value=2., units='g'),
+                'p_4': Parameter(id='p_4', value=5., units='l'),
+            },
+            SubFunction: {
+                func_1.id: func_1,
+            },
+        })
+        assert error is None, str(error)
+
+        rv = func_2.expression._parsed_expression.eval({}, with_units=True)
+        self.assertEqual(rv.magnitude, 0.4)
+        self.assertEqual(rv.to_base_units().units, unit_registry.parse_expression('g l^-1').to_base_units().units)
+
+        func_1.expression.parameters.get_one(id='p_1').value = 10.
+        rv = func_2.expression._parsed_expression.eval({}, with_units=True)
+        self.assertEqual(rv.magnitude, 0.)
+        self.assertEqual(rv.to_base_units().units, unit_registry.parse_expression('g l^-1').to_base_units().units)
+
+    def test_eval_error(self):
+        func = Function(id='func', units='g l^-1')
+        func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
+            Parameter: {
+                'p_1': Parameter(id='p_1', value=2., units='g'),
+                'p_2': Parameter(id='p_2', value=5., units='l'),
+            }
+        })
+        assert error is None, str(error)
+
+        func.expression._parsed_expression._compiled_expression = '1 *'
+        with self.assertRaisesRegex(ParsedExpressionError, 'SyntaxError'):
+            func.expression._parsed_expression.eval({})
+
+        func.expression._parsed_expression._compiled_expression = 'p_3'
+        with self.assertRaisesRegex(ParsedExpressionError, 'NameError'):
+            func.expression._parsed_expression.eval({})
+
+        func.expression._parsed_expression._compiled_expression = '1 / 0'
+        with self.assertRaisesRegex(ParsedExpressionError, 'Exception'):
+            func.expression._parsed_expression.eval({})
 
 
 class ParsedExpressionErrorTestCase(unittest.TestCase):

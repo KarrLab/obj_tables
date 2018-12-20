@@ -541,7 +541,8 @@ class ParsedExpression(object):
             if related_class:
                 self.term_models.add(related_class)
             else:
-                raise ParsedExpressionError('Expression term {} must have a relationship to {}'.format(expression_term_model_type_name, model_cls.__name__))
+                raise ParsedExpressionError('Expression term {} must have a relationship to {}'.format(
+                    expression_term_model_type_name, model_cls.__name__))
         self.valid_functions = set()
         if hasattr(model_cls.Meta, 'expression_valid_functions'):
             self.valid_functions.update(model_cls.Meta.expression_valid_functions)
@@ -1002,9 +1003,9 @@ class ParsedExpression(object):
             return eval(expression, {}, namespace)
         except SyntaxError as error:
             raise ParsedExpressionError("SyntaxError:" + error_suffix + str(error))
-        except NameError as error:  # pragma: no cover
+        except NameError as error:
             raise ParsedExpressionError("NameError:" + error_suffix + str(error))
-        except Exception as error:  # pragma: no cover
+        except Exception as error:
             raise ParsedExpressionError("Exception:" + error_suffix + str(error))
 
     def _compile(self, with_units=False):
