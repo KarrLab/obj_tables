@@ -8,7 +8,7 @@
 
 from abc import ABCMeta, abstractmethod
 from six import with_metaclass
-from wc_lang import Model
+from tests.fixtures.migrate.wc_lang import Model
 import sys
 
 

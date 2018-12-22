@@ -17,8 +17,8 @@ from os.path import split, join
 from six import iteritems
 
 from obj_model import Validator
-from wc_lang.sbml.util import (init_sbml_model, create_sbml_doc_w_fbc)
-import wc_lang
+from tests.fixtures.migrate.wc_lang.sbml.util import (init_sbml_model, create_sbml_doc_w_fbc)
+import tests.fixtures.migrate.wc_lang
 
 '''
 wc_lang to SBML mapping to support FBA modeling
@@ -103,7 +103,7 @@ class Writer(object):
                 otherwise a list of SBML file(s) created
         """
         if algorithms is None:
-            algorithms = [wc_lang.SubmodelAlgorithm.dfba]
+            algorithms = [tests.fixtures.migrate.wc_lang.SubmodelAlgorithm.dfba]
         sbml_documents = {}
         for submodel in model.get_submodels():
             if submodel.algorithm in algorithms:
@@ -192,13 +192,13 @@ class SBMLExchange(object):
         #     DfbaNetReaction must precede DfbaObjective
         # This partial order is satisfied by this sequence:
         model_order = [
-            wc_lang.Submodel,
-            wc_lang.Compartment,
-            wc_lang.Parameter,
-            wc_lang.Species,
-            wc_lang.Reaction,
-            wc_lang.DfbaNetReaction,
-            wc_lang.DfbaObjective,
+            tests.fixtures.migrate.wc_lang.Submodel,
+            tests.fixtures.migrate.wc_lang.Compartment,
+            tests.fixtures.migrate.wc_lang.Parameter,
+            tests.fixtures.migrate.wc_lang.Species,
+            tests.fixtures.migrate.wc_lang.Reaction,
+            tests.fixtures.migrate.wc_lang.DfbaNetReaction,
+            tests.fixtures.migrate.wc_lang.DfbaObjective,
         ]
 
         # add objects into libsbml.SBMLDocument

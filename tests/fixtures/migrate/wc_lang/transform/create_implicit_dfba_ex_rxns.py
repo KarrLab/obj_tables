@@ -8,8 +8,8 @@
 """
 
 from .core import Transform
-from wc_lang.core import SubmodelAlgorithm, ReactionFluxBoundUnit
-import wc_lang.config.core
+from tests.fixtures.migrate.wc_lang.core import SubmodelAlgorithm, ReactionFluxBoundUnit
+import tests.fixtures.migrate.wc_lang.config.core
 
 
 class CreateImplicitDfbaExchangeReactionsTransform(Transform):
@@ -35,7 +35,7 @@ class CreateImplicitDfbaExchangeReactionsTransform(Transform):
         Returns:
             :obj:`Model`: same model, but transformed
         """
-        config = wc_lang.config.core.get_config()['wc_lang']
+        config = tests.fixtures.migrate.wc_lang.config.core.get_config()['wc_lang']
         ext_comp = model.compartments.get_one(id=config['EXTRACELLULAR_COMPARTMENT_ID'])
         rxn_id_template = config['dfba']['exchange_reaction_id_template']
         rxn_name_template = config['dfba']['exchange_reaction_name_template']

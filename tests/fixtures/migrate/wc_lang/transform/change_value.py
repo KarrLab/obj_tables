@@ -7,7 +7,7 @@
 """
 
 from .core import Transform
-from wc_lang.core import Model
+from tests.fixtures.migrate.wc_lang.core import Model
 import json
 
 

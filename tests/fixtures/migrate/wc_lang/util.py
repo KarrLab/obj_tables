@@ -7,7 +7,7 @@
 """
 
 from obj_model import get_models as base_get_models
-from wc_lang import core
+from tests.fixtures.migrate.wc_lang import core
 from wc_utils.util import git
 
 

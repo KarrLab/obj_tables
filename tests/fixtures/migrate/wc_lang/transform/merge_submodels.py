@@ -7,7 +7,7 @@
 """
 
 from .core import Transform
-from wc_lang.core import (Model, Submodel, SubmodelAlgorithm, Reaction,
+from tests.fixtures.migrate.wc_lang.core import (Model, Submodel, SubmodelAlgorithm, Reaction,
                           DfbaObjective, DfbaObjectiveExpression, DfbaNetReaction,
                           Evidence, DatabaseReference, Reference)
 import copy

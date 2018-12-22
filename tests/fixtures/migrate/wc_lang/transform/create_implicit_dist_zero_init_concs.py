@@ -8,7 +8,7 @@
 """
 
 from .core import Transform
-from wc_lang.core import DistributionInitConcentration, ConcentrationUnit
+from tests.fixtures.migrate.wc_lang.core import DistributionInitConcentration, ConcentrationUnit
 
 
 class CreateImplicitDistributionZeroInitConcentrationsTransform(Transform):

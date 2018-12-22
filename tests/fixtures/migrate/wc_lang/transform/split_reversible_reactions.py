@@ -7,7 +7,7 @@
 """
 
 from .core import Transform
-from wc_lang import Model, Reaction, RateLawDirection, SubmodelAlgorithm
+from tests.fixtures.migrate.wc_lang import Model, Reaction, RateLawDirection, SubmodelAlgorithm
 import copy
 import re
 

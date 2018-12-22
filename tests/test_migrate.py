@@ -846,8 +846,6 @@ class TestMigrationController(MigrationFixtures):
 
     @unittest.skip('skipping')
     def test_wc_lang_migration(self):
-        # add to migration:
-        #   support filenames related to directory of config file
         # needed to read model file:
         #   path
         #   options

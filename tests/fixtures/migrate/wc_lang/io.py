@@ -12,13 +12,13 @@ Supported file types:
 :License: MIT
 """
 
-from wc_lang import core
-from wc_lang import util
+from tests.fixtures.migrate.wc_lang import core
+from tests.fixtures.migrate.wc_lang import util
 from wc_utils.util.string import indent_forest
 import obj_model
 import os
-import wc_lang
-import wc_lang.config.core
+import tests.fixtures.migrate.wc_lang
+import tests.fixtures.migrate.wc_lang.config.core
 
 
 class Writer(object):
@@ -104,7 +104,7 @@ class Reader(object):
         Raises:
             :obj:`ValueError`: if :obj:`path` defines multiple models
         """
-        config = wc_lang.config.core.get_config()
+        config = tests.fixtures.migrate.wc_lang.config.core.get_config()
 
         Writer.validate_implicit_relationships()
 
@@ -183,5 +183,5 @@ def create_template(path, set_repo_metadata_from_path=True):
         set_repo_metadata_from_path (:obj:`bool`, optional): if :obj:`True`, set the Git repository metadata (URL,
             branch, revision) for the model from the parent directory of :obj:`core_path`
     """
-    model = core.Model(id='template', name='Template', version=wc_lang.__version__)
+    model = core.Model(id='template', name='Template', version=tests.fixtures.migrate.wc_lang.__version__)
     Writer().run(model, path, set_repo_metadata_from_path=set_repo_metadata_from_path)

@@ -17,7 +17,7 @@ from libsbml import (LIBSBML_OPERATION_SUCCESS, OperationReturnValue_toString,
 from warnings import warn
 import libsbml
 import six
-import wc_lang.core
+import tests.fixtures.migrate.wc_lang.core
 
 # Centralize code that depends on levels and versions
 # SBML level and version
@@ -275,7 +275,7 @@ def init_sbml_model(sbml_document):
     wrap_libsbml(per_second.setIdAttribute, 'per_second')
     add_sbml_unit(per_second, libsbml.UNIT_KIND_SECOND, exponent=-1)
 
-    for unit_def, unit_def_meta in wc_lang.core.ConcentrationUnit.Meta.items():
+    for unit_def, unit_def_meta in tests.fixtures.migrate.wc_lang.core.ConcentrationUnit.Meta.items():
         sbml_unit_def = wrap_libsbml(sbml_model.createUnitDefinition)
         wrap_libsbml(sbml_unit_def.setIdAttribute, unit_def_meta['xml_id'])
         substance_unit = unit_def_meta['substance_units']
