@@ -167,8 +167,9 @@ class MigrationFixtures(unittest.TestCase):
         self.new_rt_model_defs_path = os.path.join(self.fixtures_path, 'core_new_rt.py')
 
         # set up wc_lang migration testing fixtures
-        self.wc_lang_schema_existing = os.path.join(self.fixtures_path, 'wc_lang_core.py')
-        self.wc_lang_schema_modified = os.path.join(self.fixtures_path, 'wc_lang_core_modified.py')
+        self.wc_lang_fixtures_path = os.path.join(self.fixtures_path, 'wc_lang')
+        self.wc_lang_schema_existing = os.path.join(self.wc_lang_fixtures_path, 'core.py')
+        self.wc_lang_schema_modified = os.path.join(self.wc_lang_fixtures_path, 'core_modified.py')
         self.wc_lang_model_copy = self.copy_fixtures_file_to_tmp('example-wc_lang-model.xlsx')
 
         # set up expressions testing fixtures

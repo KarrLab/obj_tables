@@ -49,7 +49,8 @@ from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToO
                                   ExpressionExpressionTermMeta, Expression,
                                   ParsedExpression, ParsedExpressionError)
 from six import with_metaclass
-from wc_lang.sbml.util import (wrap_libsbml, str_to_xmlstr, LibSBMLError,
+# rename wc_lang so it can be used as a fixture in obj_model
+from tests.fixtures.migrate.wc_lang.sbml.util import (wrap_libsbml, str_to_xmlstr, LibSBMLError,
                                create_sbml_parameter)
 from wc_utils.util.chem import EmpiricalFormula
 from wc_utils.util.enumerate import CaseInsensitiveEnum, CaseInsensitiveEnumMeta
@@ -77,7 +78,7 @@ import warnings
 warnings.filterwarnings('ignore', '', obj_model.SchemaWarning, 'obj_model')
 
 # configuration
-import wc_lang.config.core
+import tests.fixtures.migrate.wc_lang.config.core
 
 
 class TimeUnit(int, Enum):
@@ -603,7 +604,7 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
             return InvalidAttribute(self, ['LHS and RHS must be different'])
 
         # check element and charge balance
-        validate_element_charge_balance = wc_lang.config.core.get_config()[
+        validate_element_charge_balance = tests.fixtures.migrate.wc_lang.config.core.get_config()[
             'wc_lang']['validation']['validate_element_charge_balance']
         if validate_element_charge_balance:
             delta_formula = EmpiricalFormula()
