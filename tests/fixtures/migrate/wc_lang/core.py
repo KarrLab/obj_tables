@@ -67,7 +67,7 @@ import six
 import stringcase
 import token
 
-with open(pkg_resources.resource_filename('wc_lang', 'VERSION'), 'r') as file:
+with open(pkg_resources.resource_filename('tests.fixtures.migrate.wc_lang', 'VERSION'), 'r') as file:
     wc_lang_version = file.read().strip()
 
 # wc_lang generates obj_model SchemaWarning warnings because some Models lack primary attributes.

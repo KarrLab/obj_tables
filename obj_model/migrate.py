@@ -24,10 +24,10 @@ import wc_utils
 from wc_utils.util.list import det_find_dupes
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-# todo next: large: make work with full wc_lang core.py
 # todo next: refactor _get_inconsistencies()
+# todo next: large: make work with full wc_lang core.py
+# todo next: address perf. problem with wc_lang migration, perhaps
 # todo next: refactor test_migrate_expression() & test_migrate_analyzed_expr() to not use wc_lang core
-# todo next: address perf. problem with wc_lang migration
 # todo next: method to provide 'expression._parsed_expression'
 # todo next: test OneToManyAttribute
 # todo: test_migrate_from_config
@@ -395,6 +395,14 @@ class Migrator(object):
             :obj:`list`: inconsistencies between old_model_cls and new_model_cls; an empty list if
                 no inconsistencies exist
         """
+        '''
+        expected invariants:
+        old_model and new_model available in their respective model definitions
+        ensure old_model and new_model are consistent with the renaming rules for the names of their
+            attributes and the names of their related models
+        ensure the scalar types of their attributes match
+        ensure the cardinality of their related attributes match
+        '''
         inconsistencies = []
 
         # check existence
