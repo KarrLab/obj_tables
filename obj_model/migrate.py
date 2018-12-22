@@ -22,16 +22,18 @@ from obj_model import TabularOrientation
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
 from wc_utils.util.list import det_find_dupes
+from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-
-# local
-# todo: test_migrate_from_config
 # todo next: large: make work with full wc_lang core.py
+# todo next: refactor _get_inconsistencies()
+# todo next: refactor test_migrate_expression() & test_migrate_analyzed_expr() to not use wc_lang core
+# todo next: address perf. problem with wc_lang migration
+# todo next: method to provide 'expression._parsed_expression'
+# todo next: test OneToManyAttribute
+# todo: test_migrate_from_config
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 # Model change
-# todo next: medium: add Meta attribute indicator to models (like Species previously) that don't have a worksheet
-#   and remove Species hack
 
 # todo next: move remaining todos to GitHub issues
 # todo: separately specified default value for attribute
@@ -96,6 +98,9 @@ class Migrator(object):
     # prefix of attribute name used to connect old and new models during migration
     MIGRATED_COPY_ATTR_PREFIX = '__migrated_copy'
 
+    # the name of the attribute used in expression Models to hold their ParsedExpressions
+    PARSED_EXPR = '_parsed_expression'
+
     def __init__(self, old_model_defs_file, new_model_defs_file, renamed_models=None,
         renamed_attributes=None):
         """ Construct a Migrator
@@ -112,9 +117,6 @@ class Migrator(object):
                 `(('Existing_Model_i', 'Existing_Attr_x'), ('Migrated_Model_j', 'Migrated_Attr_y'))`,
                 which indicates that `Existing_Model_i.Existing_Attr_x` will migrate to
                 `Migrated_Model_j.Migrated_Attr_y`.
-
-        Raises:
-            :obj:`MigratorError`: if one of the defs files is not a python file
         """
         self.old_model_defs_file = old_model_defs_file
         self.new_model_defs_file = new_model_defs_file
@@ -204,7 +206,7 @@ class Migrator(object):
         self.new_model_defs = self._get_model_defs(self._load_model_defs_file(self.new_model_defs_path))
 
     def _get_migrated_copy_attr_name(self):
-        """ Obtain name of attribute used to reference a migrated copy
+        """ Obtain name of attribute used in an existing model to reference its migrated model
 
         Returns:
             :obj:`str`: attribute name for a migrated copy
@@ -372,8 +374,10 @@ class Migrator(object):
 
         # check that corresponding models in old and new are consistent
         inconsistencies = []
+        '''
         for existing_model, migrated_model in self.models_map.items():
             inconsistencies.extend(self._get_inconsistencies(existing_model, migrated_model))
+        '''
         if inconsistencies:
             raise MigratorError('\n'.join(inconsistencies))
 
@@ -429,7 +433,7 @@ class Migrator(object):
             # skip if the attr isn't migrated
             if migrated_attr:
                 new_attr = new_model_cls.Meta.attributes[migrated_attr]
-                if type(old_attr) != type(new_attr):
+                if type(old_attr).__name__ != type(new_attr).__name__:
                     inconsistencies.append("migrated attribute type mismatch: "
                         "type of {}.{}, {}, doesn't equal type of {}.{}, {}".format(old_model, old_attr_name,
                         type(old_attr).__name__, migrated_class, migrated_attr, type(new_attr).__name__))
@@ -554,9 +558,7 @@ class Migrator(object):
         Returns:
             :obj:`str`: name of migrated file
         """
-        # todo: remove this hack that ignores Species after Species are stored in their own worksheet
-        return [model for model in models.values() if model.Meta.tabular_orientation != TabularOrientation.inline
-            and model.__name__ != 'Species']
+        return [model for model in models.values() if model.Meta.tabular_orientation != TabularOrientation.inline]
 
     def read_existing_model(self, existing_file):
         """ Read models from existing file
@@ -568,10 +570,10 @@ class Migrator(object):
             :obj:`list` of `obj_model.Model`: the models in `existing_file`
         """
         root, ext = os.path.splitext(existing_file)
-        reader = obj_model.io.get_reader(ext)()
+        obj_model_reader = obj_model.io.get_reader(ext)()
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
-        old_models = reader.run(existing_file, models=self._get_models_with_worksheets(self.old_model_defs),
-            ignore_attribute_order=True, ignore_sheet_order=True)
+        old_models = obj_model_reader.run(existing_file, models=self._get_models_with_worksheets(self.old_model_defs),
+            ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False)
         models_read = []
         for models in old_models.values():
             models_read.extend(models)
@@ -629,8 +631,8 @@ class Migrator(object):
                 raise MigratorError("migrated file '{}' already exists".format(migrated_file))
 
         # write migrated models to disk
-        writer = obj_model.io.get_writer(ext)()
-        writer.run(migrated_file, migrated_models, models=model_order)
+        obj_model_writer = obj_model.io.get_writer(ext)()
+        obj_model_writer.run(migrated_file, migrated_models, models=model_order)
         return migrated_file
 
     def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
@@ -697,6 +699,105 @@ class Migrator(object):
         setattr(old_model, self._migrated_copy_attr_name, new_model)
         return new_model
 
+    def _migrate_expression(self, existing_analyzed_expr):
+        """ Migrate a model instance's `ParsedExpression.expression`
+
+        The ParsedExpression syntax supports model type names in a ModelName.model_id notation.
+        If a model type name changes then these must be migrated.
+
+        Args:
+            existing_analyzed_expr (:obj:`ParsedExpression`): an existing model's `ParsedExpression`
+
+        Returns:
+            :obj:`str`: a migrated `existing_analyzed_expr.expression`
+        """
+        types_of_referenced_models = existing_analyzed_expr.related_objects.keys()
+        changed_model_types = {}
+        for existing_model_type in existing_analyzed_expr.related_objects.keys():
+            existing_model_type_name = existing_model_type.__name__
+            if existing_model_type_name != self.models_map[existing_model_type_name]:
+                changed_model_types[existing_model_type_name] = self.models_map[existing_model_type_name]
+
+        if not changed_model_types:
+            # migration doesn't change data; if model type names didn't change then expression hasn't either
+            return existing_analyzed_expr.expression
+        else:
+            # rename changed model type names used in ModelType.id notation
+            wc_token_strings = []
+            for wc_token in existing_analyzed_expr._obj_model_tokens:
+                wc_token_string = wc_token.token_string
+                if wc_token.code == ObjModelTokenCodes.obj_id and \
+                    wc_token.model_type.__name__ in changed_model_types and \
+                    wc_token_string.startswith(wc_token.model_type.__name__ + '.'):
+
+                    # disambiguated referenced model
+                    migrated_model_type_name = changed_model_types[wc_token.model_type.__name__]
+                    migrated_wc_token_string = wc_token_string.replace(wc_token.model_type.__name__ + '.',
+                        migrated_model_type_name + '.')
+                    wc_token_strings.append(migrated_wc_token_string)
+                else:
+                    wc_token_strings.append(wc_token_string)
+
+            migrated_expr_wo_spaces = ''.join(wc_token_strings)
+            return existing_analyzed_expr.recreate_whitespace(migrated_expr_wo_spaces)
+
+    def _migrate_analyzed_expr(self, old_model, new_model, new_models):
+        """ Migrate a model instance's `ParsedExpression` attribute, if it has one
+
+        This must be done after all new models have been created. The migrated `ParsedExpression`
+        is assigned to the appropriate attribute in `new_model`.
+
+        Args:
+            old_model (:obj:`obj_model.Model`): the old model
+            new_model (:obj:`obj_model.Model`): the corresponding new model
+            new_models (:obj:`dict`): dict of Models; maps new model type to a dict mapping
+                new model ids to new model instances
+
+        Raises:
+            :obj:`MigratorError`: if the `ParsedExpression` in `old_model` cannot be migrated
+        """
+        if hasattr(old_model, self.PARSED_EXPR):
+            existing_analyzed_expr = getattr(old_model, self.PARSED_EXPR)
+            new_attribute = self.PARSED_EXPR
+            new_expression = self._migrate_expression(existing_analyzed_expr)
+            new_given_model_types = []
+            for existing_model_type in existing_analyzed_expr.related_objects.keys():
+                new_given_model_types.append(self.new_model_defs[self.models_map[existing_model_type.__name__]])
+            parsed_expr = ParsedExpression(new_model.__class__, new_attribute, new_expression, new_models)
+            _, _, errors = parsed_expr.tokenize()
+            if errors:
+                raise MigratorError('\n'.join(errors))
+            setattr(new_model, self.PARSED_EXPR, parsed_expr)
+
+    def _migrate_all_analyzed_exprs(self, all_models):
+        """ Migrate all model instances' `ParsedExpression`s
+
+        This must be done after all new models have been created.
+
+        Args:
+            all_models (:obj:`list` of `tuple`): pairs of corresponding old and new model instances
+
+        Raises:
+            :obj:`MigratorError`: if multiple instances of a model type have the same id
+        """
+        errors = []
+        new_models = {}
+        for _, new_model in all_models:
+            if new_model.__class__ not in new_models:
+                new_models[new_model.__class__] = {}
+            # ignore models that do not have an 'id' attribute
+            if hasattr(new_model, 'id'):
+                id = new_model.id
+                if id in new_models[new_model.__class__]:
+                    errors.append("model type '{}' has duplicated id: '{}' ".format(
+                        new_model.__class__.__name__, id))
+                new_models[new_model.__class__][id] = new_model
+        if errors:
+            raise MigratorError('\n'.join(errors))
+
+        for old_model, new_model in all_models:
+            self._migrate_analyzed_expr(old_model, new_model, new_models)
+
     def _deep_migrate(self, old_models):
         """ Migrate all model instances from old to new model definitions
 
@@ -704,6 +805,7 @@ class Migrator(object):
             * delete attributes from old schema
             * add attributes in new schema
             * add model definitions in new schema
+            * models with expressions
         Assumes that otherwise the schemas are identical
 
         Args:
@@ -724,8 +826,10 @@ class Migrator(object):
                 continue
 
             migrated_class_name = self.models_map[existing_class_name]
-            new_model = self._migrate_model(old_model, old_schema[existing_class_name], new_schema[migrated_class_name])
+            new_model = self._migrate_model(old_model, old_schema[existing_class_name],
+                new_schema[migrated_class_name])
             all_models.append((old_model, new_model))
+        self._migrate_all_analyzed_exprs(all_models)
         return all_models
 
     def _connect_models(self, all_models):
@@ -760,6 +864,10 @@ class Migrator(object):
                         raise MigratorError('Invalid related attribute value')  # pragma: no cover
 
                     setattr(new_model, migrated_attr, migrated_val)
+
+        for old_model, new_model in all_models:
+            # delete the reference to new_model in old_model
+            delattr(old_model, self._migrated_copy_attr_name)
 
     def run(self, files):
         """ Migrate some files

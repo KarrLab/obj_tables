@@ -1,4 +1,3 @@
-# todo: also test OneToManyAttribute
 import re
 
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,

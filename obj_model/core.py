@@ -2556,8 +2556,6 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             :obj:`object`: initial value
         """
         if callable(self.default_cleaned_value):
-            print(self.default_cleaned_value.__class__)
-            print(callable(self.default_cleaned_value.__class__))
             return self.default_cleaned_value()
 
         return copy.deepcopy(self.default_cleaned_value)
