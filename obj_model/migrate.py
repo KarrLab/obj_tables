@@ -374,10 +374,8 @@ class Migrator(object):
 
         # check that corresponding models in old and new are consistent
         inconsistencies = []
-        '''
         for existing_model, migrated_model in self.models_map.items():
             inconsistencies.extend(self._get_inconsistencies(existing_model, migrated_model))
-        '''
         if inconsistencies:
             raise MigratorError('\n'.join(inconsistencies))
 
@@ -385,7 +383,11 @@ class Migrator(object):
         self._migrated_copy_attr_name = self._get_migrated_copy_attr_name()
 
     def _get_inconsistencies(self, old_model, new_model):
-        """ Detect inconsistencies between old_model and new_model model classes
+        """ Detect inconsistencies between `old_model` and `new_model` model classes
+
+        Detect inconsistencies between `old_model` and `new_model`. Inconsistencies arise if the loaded `old_model`
+        or `new_model` definitions are not consistent with their model or attribute renaming specifications
+        or with each other.
 
         Args:
             old_model (:obj:`str`): name of an old model class
@@ -395,17 +397,9 @@ class Migrator(object):
             :obj:`list`: inconsistencies between old_model_cls and new_model_cls; an empty list if
                 no inconsistencies exist
         """
-        '''
-        expected invariants:
-        old_model and new_model available in their respective model definitions
-        ensure old_model and new_model are consistent with the renaming rules for the names of their
-            attributes and the names of their related models
-        ensure the scalar types of their attributes match
-        ensure the cardinality of their related attributes match
-        '''
         inconsistencies = []
 
-        # check existence
+        # invariant: old_model and new_model must be available in their respective model definitions
         if old_model not in self.old_model_defs:
             inconsistencies.append("old model {} not found in '{}'".format(old_model, self.old_model_defs_path))
         if new_model not in self.new_model_defs:
@@ -415,14 +409,21 @@ class Migrator(object):
             # return these inconsistencies because they prevent checks below from running accurately
             return inconsistencies
 
-        # check types
+        # invariant: old_model and new_model must be have the same type, which will be obj_model.core.ModelMeta
         old_model_cls = self.old_model_defs[old_model]
         new_model_cls = self.new_model_defs[new_model]
         if type(old_model_cls) != type(new_model_cls):
             inconsistencies.append("type of old model '{}' doesn't equal type of new model '{}'".format(
                 type(old_model_cls).__name__, type(new_model_cls).__name__))
 
-        # check class names
+        # invariant: names of old_model and new_model classes must match their names in the models map
+        if old_model_cls.__name__ != old_model:
+            inconsistencies.append("name of old model class '{}' not equal to its name in the models map '{}'".format(
+                old_model_cls.__name__, old_model))
+        if new_model_cls.__name__ != new_model:
+            inconsistencies.append("name of new model class '{}' not equal to its name in the models map '{}'".format(
+                new_model_cls.__name__, new_model))
+        new_model_cls = self.new_model_defs[new_model]
         expected_migrated_model_name = self.models_map[old_model]
         if new_model_cls.__name__ != expected_migrated_model_name:
             inconsistencies.append("models map says '{}' migrates to '{}', but _get_inconsistencies parameters "
@@ -432,48 +433,44 @@ class Migrator(object):
             # given these inconsistencies the checks below would not be informative
             return inconsistencies
 
-        # check types and values of corresponding attributes in old_model and new_model
-        # given attr in existing model, need corresponding attr in migrated model
-        related_attrs_classes_to_check = ['primary_class', 'related_class']
-        scalar_attrs_to_check = ['primary', 'unique', 'unique_case_insensitive']
+        # invariant: the types of attributes in old_model and new_model classes must match
         for old_attr_name, old_attr in old_model_cls.Meta.attributes.items():
             migrated_class, migrated_attr = self._get_mapped_attribute(old_model, old_attr_name)
             # skip if the attr isn't migrated
             if migrated_attr:
                 new_attr = new_model_cls.Meta.attributes[migrated_attr]
                 if type(old_attr).__name__ != type(new_attr).__name__:
-                    inconsistencies.append("migrated attribute type mismatch: "
-                        "type of {}.{}, {}, doesn't equal type of {}.{}, {}".format(old_model, old_attr_name,
+                    inconsistencies.append("existing attribute {}.{} type {} differs from its "
+                        "migrated attribute {}.{} type {}".format(old_model, old_attr_name,
                         type(old_attr).__name__, migrated_class, migrated_attr, type(new_attr).__name__))
-                if isinstance(old_attr, obj_model.RelatedAttribute):
-                    # ensure that corresponding related attrs have same values of attrs in related_attrs_classes_to_check
-                    for related_attrs_class in related_attrs_classes_to_check:
-                        old_val = getattr(old_attr, related_attrs_class)
-                        old_val_name = getattr(old_val, '__name__') if hasattr(old_val, '__name__') else old_val
-                        if old_val_name in self.deleted_models:
-                            inconsistencies.append("'{}' is a deleted model, but the migrated attribute '{}.{}' "
-                                "refers to it; check model and attribute renaming".format(old_val_name,
-                                old_model, old_attr_name))
-                        else:
-                            new_val = getattr(new_attr, related_attrs_class)
-                            new_val_name = getattr(new_val, '__name__') if hasattr(new_val, '__name__') else new_val
-                            expected_migrated_model_name = self.models_map[old_val_name]
-                            if new_val_name != expected_migrated_model_name:
-                                inconsistencies.append(
-                                "migrated attribute {}.{}.{} is {} but the model map says {}.{}.{} migrates "
-                                    "to {}".format(
-                                migrated_class, migrated_attr, related_attrs_class, new_val_name,
-                                old_model, old_attr_name, related_attrs_class, expected_migrated_model_name))
+        if inconsistencies:
+            # given these inconsistencies the checks below would not be informative
+            return inconsistencies
 
-                else:
-                    for attr_name in scalar_attrs_to_check:
-                        old_val = getattr(old_attr, attr_name, None)
-                        new_val = getattr(new_attr, attr_name, None)
-                        if old_val != new_val:
-                            inconsistencies.append("migrated attribute {}.{}.{} is {} but the existing {}.{}.{} is {}".format(
-                                migrated_class, migrated_attr, attr_name, new_val,
-                                old_model, old_attr_name, attr_name, old_val))
-
+        # invariant: related names and types of related attributes in old_model and new_model classes must match
+        related_attrs_to_check = ['related_name', 'primary_class', 'related_class']
+        for old_attr_name, old_attr in old_model_cls.Meta.attributes.items():
+            migrated_class, migrated_attr = self._get_mapped_attribute(old_model, old_attr_name)
+            if migrated_attr and isinstance(old_attr, obj_model.RelatedAttribute):
+                new_attr = new_model_cls.Meta.attributes[migrated_attr]
+                for rel_attr in related_attrs_to_check:
+                    old_rel_attr = getattr(old_attr, rel_attr)
+                    new_rel_attr = getattr(new_attr, rel_attr)
+                    if isinstance(old_rel_attr, str) and isinstance(new_rel_attr, str):
+                        if old_rel_attr != new_rel_attr:
+                            inconsistencies.append("{}.{}.{} is '{}', which differs from the migrated value "
+                                "of {}.{}.{}, which is '{}'".format(old_model, old_attr_name, rel_attr,
+                                old_rel_attr, migrated_class, migrated_attr, rel_attr, new_rel_attr))
+                    else:
+                        # the attributes are models
+                        old_rel_attr_name = old_rel_attr.__name__
+                        new_rel_attr_name = new_rel_attr.__name__
+                        expected_new_rel_attr = self.models_map[old_rel_attr_name]
+                        if new_rel_attr_name != expected_new_rel_attr:
+                            inconsistencies.append("{}.{}.{} is '{}', which migrates to '{}', but it "
+                                "differs from {}.{}.{}, which is '{}'".format(
+                                old_model, old_attr_name, rel_attr, old_rel_attr_name, expected_new_rel_attr,
+                                migrated_class, migrated_attr, rel_attr, new_rel_attr_name))
         return inconsistencies
 
     def _get_existing_model_order(self, existing_file):

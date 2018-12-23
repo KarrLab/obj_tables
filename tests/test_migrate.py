@@ -70,10 +70,14 @@ class MigrationFixtures(unittest.TestCase):
         self.config_file = os.path.join(self.fixtures_path, 'config_example.yaml')
 
         ### create migrator with renaming that doesn't use models in files
-        ### these classes contain migration errors for validation tests
-        # existing models
+        self.migrator_for_error_tests = migrator_for_error_tests = Migrator(
+            'old_model_defs_file', 'new_model_defs_file')
+
+        ### these classes contain migration errors for validation tests ###
+        ### existing models
         class RelatedObj(obj_model.Model):
             id = SlugAttribute()
+        self.RelatedObj = RelatedObj
 
         class TestExisting(obj_model.Model):
             id = SlugAttribute()
@@ -81,15 +85,24 @@ class MigrationFixtures(unittest.TestCase):
             unmigrated_attr = StringAttribute()
             extra_attr_1 = math.NumpyArrayAttribute()
             other_attr = StringAttribute()
-            related = OneToOneAttribute(RelatedObj, related_name='test')
         self.TestExisting = TestExisting
+
+        class TestExisting2(obj_model.Model):
+            related = OneToOneAttribute(RelatedObj, related_name='test')
 
         class TestNotMigrated(obj_model.Model):
             id_2 = SlugAttribute()
 
-        # migrated models
+        migrator_for_error_tests.old_model_defs = {
+            'RelatedObj': RelatedObj,
+            'TestExisting': TestExisting,
+            'TestExisting2': TestExisting2,
+            'TestNotMigrated': TestNotMigrated}
+
+        ### migrated models
         class NewRelatedObj(obj_model.Model):
             id = SlugAttribute()
+        self.NewRelatedObj = NewRelatedObj
 
         class TestMigrated(obj_model.Model):
             id = SlugAttribute()
@@ -97,18 +110,20 @@ class MigrationFixtures(unittest.TestCase):
             new_attr = BooleanAttribute()
             extra_attr_2 = math.NumpyArrayAttribute()
             other_attr = StringAttribute(unique=True)
-            related = OneToOneAttribute(NewRelatedObj, related_name='not_test')
 
-        self.migrator_for_error_tests = migrator_for_error_tests = Migrator(
-            'old_model_defs_file', 'new_model_defs_file')
-        migrator_for_error_tests.old_model_defs = {
-            'RelatedObj': RelatedObj,
-            'TestExisting': TestExisting,
-            'TestNotMigrated': TestNotMigrated}
+        class TestMigrated2(obj_model.Model):
+            related = OneToOneAttribute(RelatedObj, related_name='not_test')
+
         migrator_for_error_tests.new_model_defs = {
-            'RelatedObj': RelatedObj,
-            'TestMigrated': TestMigrated}
-        migrator_for_error_tests.renamed_models = [('TestExisting', 'TestMigrated')]
+            'NewRelatedObj': NewRelatedObj,
+            'TestMigrated': TestMigrated,
+            'TestMigrated2': TestMigrated2}
+
+        ### renaming maps
+        migrator_for_error_tests.renamed_models = [
+            ('RelatedObj', 'NewRelatedObj'),
+            ('TestExisting', 'TestMigrated'),
+            ('TestExisting2', 'TestMigrated2')]
         migrator_for_error_tests.renamed_attributes = [
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
             (('TestExisting', 'extra_attr_1'), ('TestMigrated', 'extra_attr_2'))]
@@ -270,7 +285,7 @@ class TestMigration(MigrationFixtures):
         migrator_for_error_tests = self.migrator_for_error_tests
         self.assertEqual(migrator_for_error_tests._validate_renamed_models(), [])
         self.assertEqual(migrator_for_error_tests.models_map,
-            {'TestExisting': 'TestMigrated', 'RelatedObj': 'RelatedObj'})
+            {'TestExisting': 'TestMigrated', 'RelatedObj': 'NewRelatedObj', 'TestExisting2': 'TestMigrated2'})
 
         # test errors
         migrator_for_error_tests.renamed_models = [('NotExisting', 'TestMigrated')]
@@ -341,7 +356,7 @@ class TestMigration(MigrationFixtures):
 
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('NotExisting', 'id'), (None, None))
 
-        self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'id'), ('RelatedObj', 'id'))
+        self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'id'), ('NewRelatedObj', 'id'))
 
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'no_attr'), (None, None))
 
@@ -369,20 +384,32 @@ class TestMigration(MigrationFixtures):
         class A(object): pass
         migrator_for_error_tests.old_model_defs['A'] = A
         migrator_for_error_tests.models_map['A'] = 'X'
-        inconsistencies = migrator_for_error_tests._get_inconsistencies('A', 'RelatedObj')
+        inconsistencies = migrator_for_error_tests._get_inconsistencies('A', 'NewRelatedObj')
         self.assertRegex(inconsistencies[0], "type of old model '.*' doesn't equal type of new model '.*'")
         self.assertRegex(inconsistencies[1],
             "models map says '.*' migrates to '.*', but _get_inconsistencies parameters say '.*' migrates to '.*'")
+        A.__name__ = 'foo'
+        self.NewRelatedObj.__name__ = 'foo'
+        inconsistencies = migrator_for_error_tests._get_inconsistencies('A', 'NewRelatedObj')
+        self.assertRegex(inconsistencies[1],
+            "name of old model class '.+' not equal to its name in the models map '.+'")
+        self.assertRegex(inconsistencies[2],
+            "name of new model class '.+' not equal to its name in the models map '.+'")
         # clean up
         del migrator_for_error_tests.old_model_defs['A']
         del migrator_for_error_tests.models_map['A']
+        A.__name__ = 'A'
+        self.NewRelatedObj.__name__ = 'NewRelatedObj'
 
         inconsistencies = migrator_for_error_tests._get_inconsistencies('TestExisting', 'TestMigrated')
         self.assertRegex(inconsistencies[0],
-            "migrated attribute type mismatch: type of .*, doesn't equal type of .*,")
-        self.assertRegex(inconsistencies[1], "migrated attribute .* is .* but the existing .* is ")
-        self.assertRegex(inconsistencies[2],
-            "migrated attribute .* is .* but the model map says .* migrates to ")
+            "existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+")
+
+        inconsistencies = migrator_for_error_tests._get_inconsistencies('TestExisting2', 'TestMigrated2')
+        self.assertRegex(inconsistencies[0],
+            ".+\..+\..+ is '.+', which differs from the migrated value of .+\..+\..+, which is '.+'")
+        self.assertRegex(inconsistencies[1],
+            ".+\..+\..+ is '.+', which migrates to '.+', but it differs from .+\..+\..+, which is '.+'")
 
     def test_get_model_order(self):
         migrator = self.migrator
@@ -442,7 +469,6 @@ class TestMigration(MigrationFixtures):
         migrated_model_order = migrator_2._migrate_model_order(existing_model_order)
         self.assertEqual([m.__name__ for m in migrated_model_order], expected_order)
 
-    # @unittest.skip('skipping until _get_inconsistencies() is refactored')
     def test_prepare(self):
         migrator = self.migrator
         migrator.prepare()
@@ -459,14 +485,12 @@ class TestMigration(MigrationFixtures):
         migrator.renamed_attributes = []
 
         # triggering inconsistencies in prepare() requires inconsistent model definitions on disk
-        '''
         inconsistent_new_model_defs_path = os.path.join(self.fixtures_path, 'core_new_inconsistent.py')
         inconsistent_migrator = Migrator(self.old_model_defs_path, inconsistent_new_model_defs_path)
         inconsistent_migrator.initialize()
         with self.assertRaisesRegex(MigratorError,
-            "migrated attribute type mismatch: type of .*, doesn't equal type of .*, .*"):
+            "existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+"):
             inconsistent_migrator.prepare()
-        '''
 
     def test_migrate_model(self):
         good_migrator = self.good_migrator
