@@ -570,7 +570,7 @@ class WorkbookReader(Reader):
         if not ignore_missing_sheets:
             missing_sheet_names = set(expected_sheet_names).difference(set(used_sheet_names))
             if missing_sheet_names:
-                raise ValueError("Worksheets/files {} / '{}' must be defined".format(
+                raise ValueError("Files/worksheets {} / '{}' must be defined".format(
                     basename(path), "', '".join(sorted(missing_sheet_names))))
 
         if not ignore_extra_sheets:

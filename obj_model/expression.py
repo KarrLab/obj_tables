@@ -497,13 +497,12 @@ class ParsedExpression(object):
 
     # enumerate and detect Python tokens that are illegal in obj_model expressions
     ILLEGAL_TOKENS_NAMES = ('ENDMARKER', 'NEWLINE', 'INDENT', 'DEDENT', 'COLON', 'LBRACE', 'RBRACE',
-                            'PLUSEQUAL', 'MINEQUAL', 'STAREQUAL', 'SLASHEQUAL', 'PERCENTEQUAL', 'AMPEREQUAL', 'VBAREQUAL',
-                            'CIRCUMFLEXEQUAL', 'LEFTSHIFTEQUAL', 'RIGHTSHIFTEQUAL', 'DOUBLESTAREQUAL', 'DOUBLESLASHEQUAL',
-                            'ATEQUAL', 'RARROW', 'ELLIPSIS', 'AWAIT', 'ASYNC', 'ERRORTOKEN', 'N_TOKENS', 'NT_OFFSET',
-                            'PERCENT', 'DOUBLESLASH',
-                            'CIRCUMFLEX', 'RIGHTSHIFT', 'LEFTSHIFT', 'VBAR', 'AMPER', 'TILDE',
-                            'EQEQUAL',
-                            'SEMI', 'AT')
+                            'PLUSEQUAL', 'MINEQUAL', 'STAREQUAL', 'SLASHEQUAL', 'PERCENTEQUAL', 'AMPEREQUAL',
+                            'VBAREQUAL', 'CIRCUMFLEXEQUAL', 'LEFTSHIFTEQUAL', 'RIGHTSHIFTEQUAL',
+                            'DOUBLESTAREQUAL', 'DOUBLESLASHEQUAL', 'ATEQUAL', 'RARROW', 'ELLIPSIS', 'AWAIT',
+                            'ASYNC', 'ERRORTOKEN', 'N_TOKENS', 'NT_OFFSET',
+                            'PERCENT', 'DOUBLESLASH', 'CIRCUMFLEX', 'RIGHTSHIFT', 'LEFTSHIFT', 'VBAR',
+                            'AMPER', 'TILDE', 'EQEQUAL', 'SEMI', 'AT')
     ILLEGAL_TOKENS = set()
     for illegal_token_name in ILLEGAL_TOKENS_NAMES:
         illegal_token = getattr(token, illegal_token_name)
@@ -578,6 +577,53 @@ class ParsedExpression(object):
         self._compiled_expression_with_units = ''
         self._compiled_namespace = {}
         self._compiled_namespace_with_units = {}
+
+    def _get_trailing_whitespace(self, idx):
+        """ Get the number of trailing spaces following a Python token
+
+        Args:
+            idx (:obj:`int`): index of the token in `self._py_tokens`
+        """
+        if len(self._py_tokens)-1 <= idx:
+            return 0
+        # get distance between the next token's scol and ecol of the token at idx
+        # assumes that an expression uses only one line
+        return self._py_tokens[idx+1].start[1] - self._py_tokens[idx].end[1]
+
+    def recreate_whitespace(self, expr):
+        """ Insert the whitespace in this object's `expression` into an expression with the same token count
+
+        Used to migrate an expression to a different set of model type names.
+
+        Args:
+            expr (:obj:`str`): a syntactically correct Python expression
+
+        Returns:
+            :obj:`str`: `expr` with the whitespace in this instance's `expression` inserted between
+                its Python tokens
+
+        Raises:
+            :obj:`ParsedExpressionError`: if tokenizing `expr` raises an exception,
+                or if `expr` doesn't have the same number of Python tokens as `self.expression`
+        """
+        try:
+            g = tokenize.tokenize(BytesIO(expr.encode('utf-8')).readline)
+            # strip the leading ENCODING and trailing ENDMARKER tokens
+            tokens = list(g)[1:-1]
+        except tokenize.TokenError as e:
+            raise ParsedExpressionError("parsing '{}' creates a Python syntax error: '{}'".format(
+                expr, str(e)))
+        if len(tokens) != len(self._py_tokens):
+            raise ParsedExpressionError("can't recreate whitespace in '{}', as it has {} instead "
+                "of {} tokens expected".format(expr, len(tokens), len(self._py_tokens)))
+
+        expanded_expr = []
+        for i in range(len(tokens)):
+            token = tokens[i]
+            expanded_expr.append(token.string)
+            ws = ' '*self._get_trailing_whitespace(i)
+            expanded_expr.append(ws)
+        return ''.join(expanded_expr)
 
     def _get_model_type(self, name):
         """ Find the `obj_model` model type corresponding to `name`
@@ -792,7 +838,7 @@ class ParsedExpression(object):
                 identifier keys in `self._objs` must already be casefold'ed; default = False
 
         Returns:
-            * :obj:`list`: list of :obj:`ObjModelToken`s
+            * :obj:`list`: of :obj:`ObjModelToken`s
             * :obj:`dict`: dict of Model instances used by this list, grouped by Model type
             * :obj:`list` of :obj:`str`: list of errors
 

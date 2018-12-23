@@ -372,6 +372,34 @@ class ParsedExpressionTestCase(unittest.TestCase):
                 "model_cls 'Species' doesn't have a 'Meta.expression_term_models' attribute"):
             ParsedExpression(Species, 'attr', '', {})
 
+    def test_trailing_whitespace(self):
+        # whitespace lengths = 0, 1, ...:
+        expr = '1* 2  +   8 '
+        wc_lang_expr = self.make_parsed_expr(expr)
+        for idx in range(4):
+            self.assertEqual(wc_lang_expr._get_trailing_whitespace(idx), idx)
+        self.assertEqual(wc_lang_expr._get_trailing_whitespace(4), 0)
+        self.assertEqual(self.make_parsed_expr('')._get_trailing_whitespace(0), 0)
+
+    def test_recreate_whitespace(self):
+        # whitespace lengths = 0, 1, ...:
+        expr = 'param_id- Observable.obs_id  *   Function.fun_1()    +     1'
+        wc_lang_expr = self.make_parsed_expr(expr)
+        expr_new = expr.replace('Observable', 'NewObservable').replace('Function', 'NoFun')
+        expr_no_whitespace = expr_new.replace(' ', '')
+        expr_w_same_whitespace = wc_lang_expr.recreate_whitespace(expr_no_whitespace)
+        ws_len = 1
+        for spaces in re.findall(' +', expr_w_same_whitespace):
+            self.assertEqual(len(spaces), ws_len)
+            ws_len += 1
+
+        with self.assertRaisesRegex(ParsedExpressionError,
+            "parsing '.*' creates a Python syntax error: '.*'"):
+            wc_lang_expr.recreate_whitespace(expr_no_whitespace + ' x[y')
+        with self.assertRaisesRegex(ParsedExpressionError,
+            "can't recreate whitespace in '.*', as it has .* instead of .* tokens expected"):
+            wc_lang_expr.recreate_whitespace(expr_no_whitespace + ' +1')
+
     def test_parsed_expression_ambiguous(self):
         func, error = FunctionExpression.deserialize('min(p_1, p_2)', {
             Parameter: {
@@ -727,7 +755,6 @@ class ParsedExpressionTestCase(unittest.TestCase):
         self.assertEqual(len(errors), len(expected_errors),
                          "Counts differ: num errors {} != Num expected errors {}".format(
             len(errors), len(expected_errors)))
-        print(errors)
         expected_errors_found = {}
         for expected_error in expected_errors:
             expected_errors_found[expected_error] = False
