@@ -1020,3 +1020,28 @@ class ParsedExpressionValidatorTestCase(unittest.TestCase):
         for invalid_wc_token in invalid_wc_tokens:
             error = linear_expression_verifier._make_dfsa_messages(invalid_wc_token)
             self.assertTrue(error is None)
+
+
+class CopyTestCase(unittest.TestCase):
+    def test(self):
+        p_1 = Parameter(id='p_1', value=1.5, units='g')
+        p_2 = Parameter(id='p_2', value=2.5, units='l')
+        func_1 = Function(id='func_1')
+        func_1.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
+            Parameter: {p_1.id: p_1, p_2.id: p_2}
+        })
+        assert error is None, str(error)
+
+        func_2 = func_1.copy()
+
+        self.assertTrue(func_2.is_equal(func_1))
+        self.assertEqual(func_2.expression._parsed_expression.related_objects, {
+            LinearSubFunction: {},
+            Species: {},
+            SubFunction: {},
+            Parameter: {
+                'p_1': func_2.expression.parameters.get_one(id='p_1'),
+                'p_2': func_2.expression.parameters.get_one(id='p_2'),
+            },
+        }
+        )

@@ -2167,6 +2167,22 @@ class Model(with_metaclass(ModelMeta, object)):
         for obj, copy in objects_and_copies.items():
             obj._copy_attributes(copy, objects_and_copies)
 
+        # copy expressions
+        for o in objects_and_copies.values():
+            if isinstance(o, expression.Expression):
+                objs = {o.__class__: {o.serialize(): o}}
+                for attr_name, attr in o.Meta.attributes.items():
+                    if isinstance(attr, RelatedAttribute) and \
+                        attr.related_class.__name__ in o.Meta.expression_term_models:
+                        objs[attr.related_class] = {}
+                        for oo in getattr(o, attr_name):
+                            objs[attr.related_class][oo.serialize()] = oo
+
+                ((attr_name, attr),) = o.Meta.related_attributes.items()
+                expr, error = o.deserialize(o.expression, objs)
+                assert error is None, str(error)
+                setattr(getattr(o, attr_name), attr.name, expr)
+
         # return copy
         return objects_and_copies[self]
 
@@ -5984,3 +6000,5 @@ class SchemaWarning(ObjModelWarning):
     pass
 
     pass
+
+from . import expression
