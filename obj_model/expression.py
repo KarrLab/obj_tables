@@ -1041,7 +1041,7 @@ class ParsedExpression(object):
                     namespace[model_type.__name__][id] *= unit_registry.parse_expression(units)
 
         # prepare error message
-        error_suffix = " cannot eval expression '{}' in {}; ".format(expression,
+        error_suffix = " cannot eval expression '{}' in {}; ".format(self.expression,
                                                                      self.model_cls.__name__)
 
         # evaluate compiled expression
