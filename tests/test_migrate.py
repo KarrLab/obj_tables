@@ -70,6 +70,7 @@ class MigrationFixtures(unittest.TestCase):
         self.config_file = os.path.join(self.fixtures_path, 'config_example.yaml')
 
         ### create migrator with renaming that doesn't use models in files
+        # todo: make possible to create Migrator wo specifying model defs files
         self.migrator_for_error_tests = migrator_for_error_tests = Migrator(
             'old_model_defs_file', 'new_model_defs_file')
 
@@ -128,6 +129,7 @@ class MigrationFixtures(unittest.TestCase):
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
             (('TestExisting', 'extra_attr_1'), ('TestMigrated', 'extra_attr_2'))]
 
+        # todo: use prepare() here
         # run _validate_renamed_models and _validate_renamed_attrs to create
         # migrator_for_error_tests.models_map and migrator_for_error_tests.renamed_attributes_map
         migrator_for_error_tests._validate_renamed_models()
@@ -411,6 +413,29 @@ class TestMigration(MigrationFixtures):
             ".+\..+\..+ is '.+', which differs from the migrated value of .+\..+\..+, which is '.+'")
         self.assertRegex(inconsistencies[1],
             ".+\..+\..+ is '.+', which migrates to '.+', but it differs from .+\..+\..+, which is '.+'")
+
+        migrator_for_error_tests_2 = Migrator('old_defs_file', 'new_defs_file')
+        migrator_for_error_tests_2.old_model_defs = migrator_for_error_tests.old_model_defs
+        migrator_for_error_tests_2.new_model_defs = migrator_for_error_tests.new_model_defs
+        ### renaming maps
+        migrator_for_error_tests_2.renamed_models = [
+            ('TestExisting', 'TestMigrated'),
+            ('TestExisting2', 'TestMigrated2')]
+        migrator_for_error_tests_2.renamed_attributes = [
+            (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
+            (('TestExisting', 'extra_attr_1'), ('TestMigrated', 'extra_attr_2'))]
+        # todo: use prepare() here
+        # run _validate_renamed_models and _validate_renamed_attrs to create
+        # migrator_for_error_tests_2.models_map and migrator_for_error_tests_2.renamed_attributes_map
+        migrator_for_error_tests_2._validate_renamed_models()
+        migrator_for_error_tests_2._validate_renamed_attrs()
+        # find deleted models
+        used_models = set([existing_model for existing_model in migrator_for_error_tests_2.models_map])
+        migrator_for_error_tests_2.deleted_models = \
+            set(migrator_for_error_tests_2.old_model_defs).difference(used_models)
+        inconsistencies = migrator_for_error_tests_2._get_inconsistencies('TestExisting2', 'TestMigrated2')
+        self.assertRegex(inconsistencies[1],
+            "existing model '.+' is not migrated, but is referenced by migrated attribute .+\..+")
 
     def test_get_model_order(self):
         migrator = self.migrator
@@ -905,6 +930,7 @@ class TestMigrationController(MigrationFixtures):
         self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
 
     def test_wc_lang_migration(self):
+        print()
         wc_lang_model_migrated = self.get_temp_pathname('example-wc_lang-model-migrated.xlsx')
         # self.wc_lang_model_copy
         # wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
@@ -925,6 +951,7 @@ class TestMigrationController(MigrationFixtures):
                 return root_models[0]
             return root_models
 
+        # validate in memory models
         initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
         initial_migrator.initialize().prepare()
         Model = initial_migrator.old_model_defs['Model']
@@ -932,7 +959,18 @@ class TestMigrationController(MigrationFixtures):
         migrated_model = get_root_models(Model, migrated_models)
         self.assertTrue(existing_model.is_equal(migrated_model))
 
-        # validate
+        # validate spreadsheets
+        existing = read_workbook(self.wc_lang_small_model_copy)
+        round_trip_migrated = read_workbook(wc_lang_model_migrated)
+        self.assertEqual(existing, round_trip_migrated)
+
+        # round-trip migrate through changed schema
+        # todo: model change maps
+        migration_desc = MigrationDesc('round-trip migrate existing wc_lang core -> modified core -> existing core',
+            existing_file=self.wc_lang_small_model_copy,
+            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified, self.wc_lang_schema_existing],
+            migrated_file=wc_lang_model_migrated)
+        MigrationController.migrate_over_schema_sequence(migration_desc)
         existing = read_workbook(self.wc_lang_small_model_copy)
         round_trip_migrated = read_workbook(wc_lang_model_migrated)
         self.assertEqual(existing, round_trip_migrated)

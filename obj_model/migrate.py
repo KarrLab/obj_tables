@@ -44,7 +44,6 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # todo: make the yaml config files more convenient: map filenames to the directory containing the config file;
 # provide a well-documented example;
 # todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
-# refactor and simplify _get_inconsistencies, and fully test it with test_get_inconsistencies
 # todo: support high-level, WC wc_lang specific migration of a repo
 #       use case:
 #           1 change wc_lang/core.py
@@ -127,7 +126,7 @@ class Migrator(object):
     def initialize(self):
         """ Initialize a Migrator
 
-        Separate from prepare() so most of Migrator can be tested with models defined in code
+        Distinct from `prepare` so most of `Migrator` can be tested with models defined in code
         """
         self.old_model_defs_path = self._normalize_filename(self.old_model_defs_file)
         self.new_model_defs_path = self._normalize_filename(self.new_model_defs_file)
@@ -143,7 +142,7 @@ class Migrator(object):
             filename (:obj:`str`): path of a file containing some Model definitions
 
         Returns:
-            :obj:`Module`: the `Module` loaded from model_defs_file
+            :obj:`Module`: the `Module` loaded from a model definitions file
 
         Raises:
             :obj:`MigratorError`: if `filename` doesn't end in '.py', or basename of `filename` contains
@@ -271,6 +270,15 @@ class Migrator(object):
             if existing_model not in self.models_map and existing_model in self.new_model_defs:
                 self.models_map[existing_model] = existing_model
 
+        # constraint: all mappings in models_map must refer to models in the corresponding model definitions
+        for existing_model, migrated_model in self.models_map.items():
+            if existing_model not in self.old_model_defs:
+                errors.append("existing model '{}' not defined in '{}'".format(existing_model,
+                    self.old_model_defs_file))
+            if migrated_model not in self.new_model_defs:
+                errors.append("migrated model '{}' not defined in '{}'".format(migrated_model,
+                    self.new_model_defs_file))
+
         return errors
 
     def _validate_renamed_attrs(self):
@@ -359,9 +367,10 @@ class Migrator(object):
             :obj:`MigratorError`: if renamings are not valid, or
                 inconsistencies exist between corresponding old and migrated classes
         """
+        # todo: move this out of prepare, so prepare can run on migrations that don't use files; then use prepare in tests
         self._get_all_model_defs()
 
-        # validate that model and attribute rename specifications
+        # validate model and attribute rename specifications
         errors = self._validate_renamed_models()
         if errors:
             raise MigratorError('\n'.join(errors))
@@ -400,7 +409,7 @@ class Migrator(object):
         """
         inconsistencies = []
 
-        # invariant: old_model and new_model must be available in their respective model definitions
+        # constraint: old_model and new_model must be available in their respective model definitions
         if old_model not in self.old_model_defs:
             inconsistencies.append("old model {} not found in '{}'".format(old_model, self.old_model_defs_path))
         if new_model not in self.new_model_defs:
@@ -410,14 +419,14 @@ class Migrator(object):
             # return these inconsistencies because they prevent checks below from running accurately
             return inconsistencies
 
-        # invariant: old_model and new_model must be have the same type, which will be obj_model.core.ModelMeta
+        # constraint: old_model and new_model must be have the same type, which will be obj_model.core.ModelMeta
         old_model_cls = self.old_model_defs[old_model]
         new_model_cls = self.new_model_defs[new_model]
         if type(old_model_cls) != type(new_model_cls):
             inconsistencies.append("type of old model '{}' doesn't equal type of new model '{}'".format(
                 type(old_model_cls).__name__, type(new_model_cls).__name__))
 
-        # invariant: names of old_model and new_model classes must match their names in the models map
+        # constraint: names of old_model and new_model classes must match their names in the models map
         if old_model_cls.__name__ != old_model:
             inconsistencies.append("name of old model class '{}' not equal to its name in the models map '{}'".format(
                 old_model_cls.__name__, old_model))
@@ -434,7 +443,7 @@ class Migrator(object):
             # given these inconsistencies the checks below would not be informative
             return inconsistencies
 
-        # invariant: the types of attributes in old_model and new_model classes must match
+        # constraint: the types of attributes in old_model and new_model classes must match
         for old_attr_name, old_attr in old_model_cls.Meta.attributes.items():
             migrated_class, migrated_attr = self._get_mapped_attribute(old_model, old_attr_name)
             # skip if the attr isn't migrated
@@ -448,7 +457,7 @@ class Migrator(object):
             # given these inconsistencies the checks below would not be informative
             return inconsistencies
 
-        # invariant: related names and types of related attributes in old_model and new_model classes must match
+        # constraint: related names and types of related attributes in old_model and new_model classes must match
         related_attrs_to_check = ['related_name', 'primary_class', 'related_class']
         for old_attr_name, old_attr in old_model_cls.Meta.attributes.items():
             migrated_class, migrated_attr = self._get_mapped_attribute(old_model, old_attr_name)
@@ -466,12 +475,17 @@ class Migrator(object):
                         # the attributes are models
                         old_rel_attr_name = old_rel_attr.__name__
                         new_rel_attr_name = new_rel_attr.__name__
-                        expected_new_rel_attr = self.models_map[old_rel_attr_name]
-                        if new_rel_attr_name != expected_new_rel_attr:
-                            inconsistencies.append("{}.{}.{} is '{}', which migrates to '{}', but it "
-                                "differs from {}.{}.{}, which is '{}'".format(
-                                old_model, old_attr_name, rel_attr, old_rel_attr_name, expected_new_rel_attr,
-                                migrated_class, migrated_attr, rel_attr, new_rel_attr_name))
+                        if old_rel_attr_name in self.deleted_models:
+                            inconsistencies.append("existing model '{}' is not migrated, "
+                                "but is referenced by migrated attribute {}.{}".format(old_rel_attr_name,
+                                migrated_class, migrated_attr))
+                        else:
+                            expected_new_rel_attr = self.models_map[old_rel_attr_name]
+                            if new_rel_attr_name != expected_new_rel_attr:
+                                inconsistencies.append("{}.{}.{} is '{}', which migrates to '{}', but it "
+                                    "differs from {}.{}.{}, which is '{}'".format(
+                                    old_model, old_attr_name, rel_attr, old_rel_attr_name, expected_new_rel_attr,
+                                    migrated_class, migrated_attr, rel_attr, new_rel_attr_name))
         return inconsistencies
 
     def _get_existing_model_order(self, existing_file):
@@ -1064,6 +1078,7 @@ class MigrationController(object):
         md = migration_desc
         num_migrations = len(md.model_defs_files) - 1
         for i in range(len(md.model_defs_files)):
+            print(i, md.model_defs_files[i], md.model_defs_files[i+1])
             # create Migrator for each pair of schemas
             migrator = Migrator(md.model_defs_files[i], md.model_defs_files[i+1], md.renamed_models[i],
                 md.renamed_attributes[i])
