@@ -1477,11 +1477,6 @@ class Model(with_metaclass(ModelMeta, object)):
                         elif len(val) != len(other_val):
                             return False  # pragma: no cover # unreachable because already checked by :obj:`_is_equal_attributes`
                         else:
-                            if attr_name in obj.Meta.attributes:
-                                cls = attr.related_class
-                            else:
-                                cls = attr.primary_class
-
                             for v, ov in zip(val, other_val):
                                 pairs_to_check.append((v, ov, ))
 

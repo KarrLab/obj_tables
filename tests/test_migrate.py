@@ -186,6 +186,7 @@ class MigrationFixtures(unittest.TestCase):
         self.wc_lang_schema_existing = os.path.join(self.wc_lang_fixtures_path, 'core.py')
         self.wc_lang_schema_modified = os.path.join(self.wc_lang_fixtures_path, 'core_modified.py')
         self.wc_lang_model_copy = self.copy_fixtures_file_to_tmp('example-wc_lang-model.xlsx')
+        self.wc_lang_small_model_copy = self.copy_fixtures_file_to_tmp('2_species_1_reaction.xlsx')
 
         # set up expressions testing fixtures
         self.wc_lang_no_change_migrator = Migrator(self.wc_lang_schema_existing,
@@ -761,6 +762,41 @@ class TestMigration(MigrationFixtures):
         round_trip_migrated = read_workbook(round_trip_migrated_xlsx_file)
         self.assertEqual(existing, round_trip_migrated)
 
+    def run_validate_model_test(self, model, model_def, attr_name, default_value):
+        # test _validate_model() by setting an attribute to its default
+        model_copy = model.copy()
+        setattr(model_copy, attr_name, default_value)
+        self.assertIn("'{}' lacks '{}'".format(model_def.__name__, attr_name),
+            self.good_migrator._validate_model(model_copy, model_def)[0])
+        return model_copy
+
+    def test_validate_model_and_models(self):
+
+        good_related = self.GoodRelatedCls(
+            id='id_1',
+            num=123)
+        good_existing = self.GoodExisting(
+            id='id_2',
+            attr_a='hi mom',
+            unmigrated_attr='x',
+            np_array=numpy.array([1, 2]),
+            related=good_related
+        )
+        all_models = [good_related, good_existing]
+        self.assertEqual([], self.good_migrator._validate_model(good_related, self.GoodRelatedCls))
+        all_models.append(self.run_validate_model_test(good_related, self.GoodRelatedCls, 'id', ''))
+        all_models.append(self.run_validate_model_test(good_related, self.GoodRelatedCls, 'num', None))
+
+        self.assertEqual([], self.good_migrator._validate_model(good_existing, self.GoodExisting))
+        all_models.append(self.run_validate_model_test(good_existing, self.GoodExisting, 'np_array', None))
+        all_models.append(self.run_validate_model_test(good_existing, self.GoodExisting, 'related', None))
+        all_models.append(self.run_validate_model_test(good_existing, self.GoodExisting, 'related', None))
+
+        inconsistencies = self.good_migrator._validate_models(all_models)
+        self.assertEqual(len(inconsistencies), 4)
+        self.assertEqual(len([problem for problem in inconsistencies if problem.startswith('1')]), 3)
+        self.assertEqual(len([problem for problem in inconsistencies if problem.startswith('2')]), 1)
+
     def test_migrate_in_place(self):
         self.migrator.prepare()
         # migrate to example_migrated_model
@@ -814,7 +850,7 @@ class TestMigrationController(MigrationFixtures):
             renamed_models=renamed_models,
             renamed_attributes=renamed_attributes,
             migrated_file=migrated_filename)
-        migrated_filename = MigrationController.migrate_over_schema_sequence(migration_desc)
+        _, _, migrated_filename = MigrationController.migrate_over_schema_sequence(migration_desc)
 
         # validate
         existing = read_workbook(self.example_old_rt_model_copy)
@@ -868,24 +904,38 @@ class TestMigrationController(MigrationFixtures):
         self.assertIn(name, migration_desc_str)
         self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
 
-    @unittest.skip('skipping')
     def test_wc_lang_migration(self):
-        # needed to read model file:
-        #   path
-        #   options
-        #   schema validation
-        #   model order
-        #   implict relationships to add
-        #   post-reading validation
-        # tests:
-        #   X-- create and run Migrator from existing wc_lang core to itself
-
         wc_lang_model_migrated = self.get_temp_pathname('example-wc_lang-model-migrated.xlsx')
-        print('wc_lang_model_migrated', wc_lang_model_migrated)
+        # self.wc_lang_model_copy
+        # wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
         migration_desc = MigrationDesc('migrate from existing wc_lang core to itself',
-            existing_file=self.wc_lang_model_copy,
-            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing, self.wc_lang_schema_existing],
+            existing_file=self.wc_lang_small_model_copy,
+            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
             migrated_file=wc_lang_model_migrated)
+        existing_models, migrated_models, migrated_filename = \
+            MigrationController.migrate_over_schema_sequence(migration_desc)
+        self.assertEqual(migrated_filename, wc_lang_model_migrated)
+
+        def get_root_models(Model, models):
+            root_models = []
+            for model in models:
+                if isinstance(model, Model):
+                    root_models.append(model)
+            if len(root_models) == 1:
+                return root_models[0]
+            return root_models
+
+        initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
+        initial_migrator.initialize().prepare()
+        Model = initial_migrator.old_model_defs['Model']
+        existing_model = get_root_models(Model, existing_models)
+        migrated_model = get_root_models(Model, migrated_models)
+        self.assertTrue(existing_model.is_equal(migrated_model))
+
+        # validate
+        existing = read_workbook(self.wc_lang_small_model_copy)
+        round_trip_migrated = read_workbook(wc_lang_model_migrated)
+        self.assertEqual(existing, round_trip_migrated)
 
         '''
         # profiling:
@@ -899,13 +949,6 @@ class TestMigrationController(MigrationFixtures):
         print("Profile:")
         profile.strip_dirs().sort_stats('cumulative').print_stats(30)
         '''
-        migrated_filename = MigrationController.migrate_over_schema_sequence(migration_desc)
-        self.assertEqual(migrated_filename, wc_lang_model_migrated)
-
-        # validate
-        existing = read_workbook(self.wc_lang_model_copy)
-        round_trip_migrated = read_workbook(wc_lang_model_migrated)
-        self.assertEqual(existing, round_trip_migrated)
 
 
 class TestMigrationDesc(MigrationFixtures):

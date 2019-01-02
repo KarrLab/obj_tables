@@ -21,22 +21,23 @@ import obj_model
 from obj_model import TabularOrientation
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
-from wc_utils.util.list import det_find_dupes
+from wc_utils.util.list import det_find_dupes, det_count_elements
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-# todo next: refactor _get_inconsistencies()
-# todo next: large: make work with full wc_lang core.py
+
+# todo next: test big wc_lang model
+# todo next: more coverage
 # todo next: address perf. problem with wc_lang migration, perhaps
-# todo next: refactor test_migrate_expression() & test_migrate_analyzed_expr() to not use wc_lang core
-# todo next: method to provide 'expression._parsed_expression'
 # todo next: test OneToManyAttribute
 # todo: test_migrate_from_config
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
-# Model change
 
 # todo next: move remaining todos to GitHub issues
+# todo: have obj_model support required attributes, which have non-default values; e.g.
+# the Model attr in models in a wc_lang model should be required
 # todo: separately specified default value for attribute
+# todo: obtain sort order of sheets in existing model file and replicate in migrated model file
 # todo: support arbitrary transformations by an optional function on each migrated instance
 # todo: confirm this works for json, etc.
 # todo: test sym links in Migrator._normalize_filename
@@ -593,7 +594,6 @@ class Migrator(object):
         Returns:
             :obj:`list` of `obj_model.Model`: the migrated models
         """
-
         all_models = self._deep_migrate(existing_models)
         self._connect_models(all_models)
         migrated_models = [migrated_model for _, migrated_model in all_models]
@@ -660,6 +660,8 @@ class Migrator(object):
                 overwrite an existing file
         """
         existing_models = self.read_existing_model(existing_file)
+        for inconsistency in self._validate_models(existing_models):
+            warn(inconsistency)
         migrated_models = self.migrate(existing_models)
         # get sequence of migrated models in workbook of existing file
         existing_model_order = self._get_existing_model_order(existing_file)
@@ -667,6 +669,52 @@ class Migrator(object):
         migrated_file = self.write_migrated_file(migrated_models, migrated_model_order, existing_file,
             migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
         return migrated_file
+
+    def _validate_model(self, old_model, old_model_def):
+        """ Validate a model instance against its definition
+
+        Args:
+            old_model (:obj:`obj_model.Model`): the old model
+            old_model_def (:obj:`obj_model.core.ModelMeta`): type of the old model
+
+        Returns:
+            :obj:`list`: inconsistencies between `old_model` and `old_model_def`; an empty list if
+                no inconsistencies exist
+        """
+        inconsistencies = []
+
+        # are attributes in old_model_def missing or uninitialized in old_model
+        for attr_name, attr in old_model_def.Meta.attributes.items():
+            if not hasattr(old_model, attr_name) or \
+                getattr(old_model, attr_name) is attr.get_default_cleaned_value():
+                inconsistencies.append("instance(s) of old model '{}' lacks '{}' non-default value".format(
+                    old_model_def.__name__, attr_name))
+
+        return inconsistencies
+
+    def _validate_models(self, existing_models):
+        """ Validate existing model instances against their definitions
+
+        Args:
+            existing_models (:obj:`list` of `obj_model.Model`:) the models being migrated
+
+        Returns:
+            :obj:`list`: inconsistencies in `existing_models`; an empty list if no inconsistencies exist
+        """
+        existing_models_dict = {}
+        for existing_model in existing_models:
+            cls = existing_model.__class__
+            if cls not in existing_models_dict:
+                existing_models_dict[cls] = []
+            existing_models_dict[cls].append(existing_model)
+        inconsistencies = []
+        for old_model_def, old_models in existing_models_dict.items():
+            for old_model in old_models:
+                inconsistencies.extend(self._validate_model(old_model, old_model_def))
+        counted_inconsistencies = []
+        for inconsistency, count in det_count_elements(inconsistencies):
+            counted_inconsistencies.append("{} {}".format(count, inconsistency))
+        return counted_inconsistencies
 
     def _migrate_model(self, old_model, old_model_def, new_model_def):
         """ Migrate a model instance's non-related attributes
@@ -747,7 +795,7 @@ class Migrator(object):
             return existing_analyzed_expr.recreate_whitespace(migrated_expr_wo_spaces)
 
     def _migrate_analyzed_expr(self, old_model, new_model, new_models):
-        """ Migrate a model instance's `ParsedExpression` attribute, if it has one
+        """ Run the migration of a model instance's `ParsedExpression` attribute, if it has one
 
         This must be done after all new models have been created. The migrated `ParsedExpression`
         is assigned to the appropriate attribute in `new_model`.
@@ -1002,7 +1050,8 @@ class MigrationController(object):
             migration_desc (:obj:`MigrationDesc`): a migration description
 
         Returns:
-            :obj:`str`: name of migrated file
+            :obj:`tuple` of :obj:`dict`, :obj:`dict`, :obj:`str`: existing models, migrated models,
+                name of migrated file
 
         Raises:
             :obj:`MigratorError`: if `model_defs_files`, `renamed_models`, and `renamed_attributes`
@@ -1021,16 +1070,20 @@ class MigrationController(object):
             migrator.initialize().prepare()
             # migrate in memory until the last migration
             if i == 0:
-                models = migrator.read_existing_model(md.existing_file)
+                models = existing_models = migrator.read_existing_model(md.existing_file)
                 existing_model_order = migrator._get_existing_model_order(md.existing_file)
                 model_order = existing_model_order
+            for inconsistency in migrator._validate_models(existing_models):
+                warn(inconsistency)
             models = migrator.migrate(models)
             model_order = migrator._migrate_model_order(model_order)
             if i == num_migrations - 1:
                 # done migrating, write to file
-                return migrator.write_migrated_file(models, model_order, md.existing_file,
+                migrated_file = migrator.write_migrated_file(models, model_order, md.existing_file,
                     migrated_file=md.migrated_file, migrate_suffix=md.migrate_suffix,
                     migrate_in_place=md.migrate_in_place)
+                break
+        return existing_models, models, migrated_file
 
     @staticmethod
     def get_migrations_config(migrations_config_file):
@@ -1078,7 +1131,8 @@ class MigrationController(object):
         Returns:
             :obj:`str`: migrated filename
         """
-        return MigrationController.migrate_over_schema_sequence(migration_desc)
+        _, _, migrated_filename = MigrationController.migrate_over_schema_sequence(migration_desc)
+        return migrated_filename
 
     @staticmethod
     def migrate_from_config(migrations_config_file):

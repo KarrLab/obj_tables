@@ -49,6 +49,7 @@ from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToO
                                   ExpressionExpressionTermMeta, Expression,
                                   ParsedExpression, ParsedExpressionError)
 from six import with_metaclass
+
 # rename wc_lang so it can be used as a fixture in obj_model
 from tests.fixtures.migrate.wc_lang.sbml.util import (wrap_libsbml, str_to_xmlstr, LibSBMLError,
                                create_sbml_parameter)
@@ -141,6 +142,11 @@ class TaxonRank(with_metaclass(TaxonRankMeta, int, Enum)):
     genus = 8
     species = 9
     variety = 10
+
+
+class TemperatureUnit(int, Enum):
+    """ Temperature units """
+    C = 1
 
 
 class CompartmentBiologicalType(int, CaseInsensitiveEnum):
@@ -773,6 +779,7 @@ class Model(obj_model.Model):
 
     Related attributes:
         taxon (:obj:`Taxon`): taxon
+        env (:obj:`Environment`): environment
         submodels (:obj:`list` of :obj:`Submodel`): submodels
         compartments (:obj:`list` of :obj:`Compartment`): compartments
         species_types (:obj:`list` of :obj:`SpeciesType`): species types
@@ -1191,7 +1198,7 @@ class Taxon(obj_model.Model):
     """ Biological taxon (e.g. family, genus, species, strain, etc.)
 
     Attributes:
-        id (:obj:`str`): unique identifier
+        id (:obj:`str`): unique identifier equal to 'taxon'
         name (:obj:`str`): name
         model (:obj:`Model`): model
         rank (:obj:`TaxonRank`): rank
@@ -1199,7 +1206,7 @@ class Taxon(obj_model.Model):
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
     """
-    id = SlugAttribute()
+    id = RegexAttribute(pattern=r'^taxon$')
     name = StringAttribute()
     model = OneToOneAttribute(Model, related_name='taxon')
     rank = EnumAttribute(TaxonRank, default=TaxonRank.species)
@@ -1210,6 +1217,37 @@ class Taxon(obj_model.Model):
     class Meta(obj_model.Model.Meta):
         attribute_order = ('id', 'name',
                            'rank',
+                           'db_refs', 'comments', 'references')
+        tabular_orientation = TabularOrientation.column
+
+
+class Environment(obj_model.Model):
+    """ Environment
+
+    Attributes:
+        id (:obj:`str`): unique identifier equal to 'env'
+        name (:obj:`str`): name
+        model (:obj:`Model`): model
+        temp (:obj:`float`): temperature
+        temp_units (:obj:`TemperatureUnit`): temperature units
+        ph (:obj:`float`): pH
+        db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
+        comments (:obj:`str`): comments
+        references (:obj:`list` of :obj:`Reference`): references
+    """
+    id = RegexAttribute(pattern=r'^env$')
+    name = StringAttribute()
+    model = OneToOneAttribute(Model, related_name='env')
+    temp = FloatAttribute(verbose_name='Temperature')
+    temp_units = EnumAttribute(TemperatureUnit, default=TemperatureUnit.C, verbose_name='Temperature units')
+    ph = FloatAttribute(verbose_name='pH')
+    db_refs = DatabaseReferenceOneToManyAttribute(related_name='env')
+    comments = LongStringAttribute()
+    references = OneToManyAttribute('Reference', related_name='env')
+
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'name',
+                           'temp', 'temp_units', 'ph',
                            'db_refs', 'comments', 'references')
         tabular_orientation = TabularOrientation.column
 
@@ -2530,7 +2568,9 @@ class StopCondition(obj_model.Model):
             errors = []
 
         # check that units are valid
-        if self.expression and hasattr(self.expression, '_parsed_expression') and self.expression._parsed_expression:
+        if self.expression \
+                and hasattr(self.expression, '_parsed_expression') \
+                and self.expression._parsed_expression:
             try:
                 test_val = self.expression._parsed_expression.test_eval(with_units=True)
             except ParsedExpressionError as error:
@@ -2539,8 +2579,13 @@ class StopCondition(obj_model.Model):
                 if hasattr(test_val, 'units'):
                     errors.append(InvalidAttribute(self.Meta.attributes['units'], ['Units must be dimensionless']))
         else:
+            if self.expression:
+                expression = self.expression.expression
+            else:
+                expression = None
             errors.append(InvalidAttribute(self.Meta.attributes['expression'],
-                                           ['Expression for {} could not be parsed'.format(self.id)]))
+                                           ['Expression for {} could not be parsed: {}'.format(
+                                            self.id, expression)]))
 
         if self.units != StopConditionUnit.dimensionless:
             errors.append(InvalidAttribute(self.Meta.attributes['units'], ['Units must be dimensionless']))
@@ -3028,7 +3073,9 @@ class RateLaw(obj_model.Model):
             errors.append(InvalidAttribute(self.Meta.attributes['units'],
                                            ['Units must the same as reaction rate units']))
 
-        if self.expression and hasattr(self.expression, '_parsed_expression') and self.expression._parsed_expression:
+        if self.expression \
+                and hasattr(self.expression, '_parsed_expression') \
+                and self.expression._parsed_expression:
             exp_units = unit_registry.parse_expression(self.units.name).to_base_units().units
             try:
                 calc = self.expression._parsed_expression.test_eval(with_units=True)
@@ -3045,8 +3092,13 @@ class RateLaw(obj_model.Model):
                                                    ['Units of "{}" should be "{}" not "{}"'.format(
                                                     self.expression.expression, exp_units, calc_units)]))
         else:
+            if self.expression:
+                expression = self.expression.expression
+            else:
+                expression = None
             errors.append(InvalidAttribute(self.Meta.attributes['expression'],
-                                           ['Expression for {} could not be parsed'.format(self.id)]))
+                                           ['Expression for {} could not be parsed: {}'.format(
+                                            self.id, expression)]))
 
         """ return errors or `None` to indicate valid object """
         if errors:
@@ -3411,7 +3463,8 @@ class Reference(obj_model.Model):
         comments (:obj:`str`): comments
 
     Related attributes:
-        taxa (:obj:`list` of :obj:`Taxon`): taxa
+        taxon (:obj:`Taxon`): taxon
+        env (:obj:`Environment`): environment
         submodels (:obj:`list` of :obj:`Submodel`): submodels
         compartments (:obj:`list` of :obj:`Compartment`): compartments
         species_types (:obj:`list` of :obj:`SpeciesType`): species types
@@ -3465,6 +3518,7 @@ class DatabaseReference(obj_model.Model):
     Related attributes:
         model (:obj:`Model`): model
         taxon (:obj:`Taxon`): taxon
+        env (:obj:`Environment`): environment
         submodels (:obj:`list` of :obj:`Submodel`): submodels
         compartments (:obj:`list` of :obj:`Compartment`): compartments
         species_types (:obj:`list` of :obj:`SpeciesType`): species types
