@@ -273,18 +273,6 @@ class Migrator(object):
             if existing_model not in self.models_map and existing_model in self.new_model_defs:
                 self.models_map[existing_model] = existing_model
 
-        # todo: decide what do do with this block
-        # constraint: all mappings in models_map must refer to models in the corresponding model definitions
-        '''
-        for existing_model, migrated_model in self.models_map.items():
-            if existing_model not in self.old_model_defs:
-                errors.append("existing model '{}' not defined in '{}'".format(existing_model,
-                    self.old_model_defs_file))
-            if migrated_model not in self.new_model_defs:
-                errors.append("migrated model '{}' not defined in '{}'".format(migrated_model,
-                    self.new_model_defs_file))
-        '''
-
         return errors
 
     def _validate_renamed_attrs(self):
