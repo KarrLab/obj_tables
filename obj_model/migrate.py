@@ -25,15 +25,16 @@ from wc_utils.util.list import det_find_dupes, det_count_elements
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
+# todo next: fix if self.seq_of_renamed_models
 # todo next: test big wc_lang model
 # todo next: more coverage
-# todo next: address perf. problem with wc_lang migration, perhaps
+# todo next: address perf. problem with wc_lang migration, if they persist
 # todo next: test OneToManyAttribute
 # todo: test_migrate_from_config
-# todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 
 # todo next: move remaining todos to GitHub issues
+# todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo: have obj_model support required attributes, which have non-default values; e.g.
 # turn off coverage during unittest setUp, if possible
 # the Model attr in models in a wc_lang model should be required
@@ -958,19 +959,35 @@ class Migrator(object):
 
 class MigrationDesc(object):
     """ Description of a sequence of migrations from an existing file
+
+    Attributes:
+        _required_attrs (:obj:`list` of :obj:`str`): required attributes in a `MigrationDesc`
+        _renaming_lists (:obj:`list` of :obj:`str`): model and attribute renaming lists in a `MigrationDesc`
+        _allowed_attrs (:obj:`list` of :obj:`str`): attributes allowed in a `MigrationDesc`
+        name (:obj:`str`): name for this `MigrationDesc`
+        existing_file (:obj:`str`, optional): existing file to migrate from
+        model_defs_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
+            definitions for each state in a sequence of migrations
+        seq_of_renamed_models (:obj:`list` of :obj:`list`, optional): list of renamed models for use
+            by a `Migrator` for each migration in a sequence of migrations
+        seq_of_renamed_attributes (:obj:`list` of :obj:`list`, optional): list of renamed attributes
+            for use by a `Migrator` for each migration in a sequence of migrations
+        migrated_file (:obj:`str`, optional): destination file
+        migrate_suffix (:obj:`str`, optional): suffix added to destination file name, before the file type suffix
+        migrate_in_place (:obj:`bool`, optional): whether to migrate `existing_file` in place
     """
 
     _required_attrs = ['name', 'existing_file', 'model_defs_files']
-    _renaming_lists = ['renamed_models', 'renamed_attributes']
+    _renaming_lists = ['seq_of_renamed_models', 'seq_of_renamed_attributes']
     _allowed_attrs = _required_attrs + _renaming_lists + ['migrated_file', 'migrate_suffix', 'migrate_in_place']
 
-    def __init__(self, name, existing_file=None, model_defs_files=None, renamed_models=None,
-        renamed_attributes=None, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
+    def __init__(self, name, existing_file=None, model_defs_files=None, seq_of_renamed_models=None,
+        seq_of_renamed_attributes=None, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
         self.name = name
         self.existing_file = existing_file
         self.model_defs_files = model_defs_files
-        self.renamed_models = renamed_models
-        self.renamed_attributes = renamed_attributes
+        self.seq_of_renamed_models = seq_of_renamed_models
+        self.seq_of_renamed_attributes = seq_of_renamed_attributes
         self.migrated_file = migrated_file
         self.migrate_suffix = migrate_suffix
         self.migrate_in_place = migrate_in_place
@@ -1000,6 +1017,16 @@ class MigrationDesc(object):
                 if len(getattr(self, renaming_list)) != len(self.model_defs_files) - 1:
                     errors.append("model_defs_files specifies {} migration(s), but {} contains {} mapping(s)".format(
                         len(self.model_defs_files) - 1, renaming_list, len(getattr(self, renaming_list))))
+
+        '''
+        if self.seq_of_renamed_models:
+            for renaming in self.seq_of_renamed_models:
+                # constraint: renaming must be an iterator over pairs of str
+                for pair in renaming:
+                    if len(pair) != 2 or not isinstance(pair[0], str) or not isinstance(pair[1], str):
+                        errors.append("seq_of_renamed_models must be a list of lists of pairs of str")
+        '''
+
         if not errors:
             self.standardize()
         return errors
@@ -1007,10 +1034,10 @@ class MigrationDesc(object):
     def standardize(self):
         """ Standardize
         """
-        # convert [model, attr] pairs in renamed_attributes into tuples; needed for hashing
-        if self.renamed_attributes:
+        # convert [model, attr] pairs in seq_of_renamed_attributes into tuples; needed for hashing
+        if self.seq_of_renamed_attributes:
             new_renamed_attributes = []
-            for renamed_attrs_in_a_migration in self.renamed_attributes:
+            for renamed_attrs_in_a_migration in self.seq_of_renamed_attributes:
                 if renamed_attrs_in_a_migration is None:
                     new_renamed_attributes.append(None)
                     continue
@@ -1018,7 +1045,7 @@ class MigrationDesc(object):
                 for existing, migrated in renamed_attrs_in_a_migration:
                     a_migration_renaming.append((tuple(existing), tuple(migrated)))
                 new_renamed_attributes.append(a_migration_renaming)
-            self.renamed_attributes = new_renamed_attributes
+            self.seq_of_renamed_attributes = new_renamed_attributes
 
         # if a renaming_list isn't provided, replace it with a list of None indicating no renaming
         empty_per_migration_list = [None]*(len(self.model_defs_files) - 1)
@@ -1028,7 +1055,7 @@ class MigrationDesc(object):
 
     def get_kwargs(self):
         # get kwargs for optional args
-        optional_args = ['existing_file', 'model_defs_files', 'renamed_models', 'renamed_attributes',
+        optional_args = ['existing_file', 'model_defs_files', 'seq_of_renamed_models', 'seq_of_renamed_attributes',
             'migrated_file', 'migrate_suffix', 'migrate_in_place']
         kwargs = {}
         for arg in optional_args:
@@ -1062,7 +1089,7 @@ class MigrationController(object):
                 name of migrated file
 
         Raises:
-            :obj:`MigratorError`: if `model_defs_files`, `renamed_models`, and `renamed_attributes`
+            :obj:`MigratorError`: if `model_defs_files`, `renamed_models`, and `seq_of_renamed_attributes`
                 are not consistent with each other;
         """
         validate_errors = migration_desc.validate()
@@ -1072,10 +1099,9 @@ class MigrationController(object):
         md = migration_desc
         num_migrations = len(md.model_defs_files) - 1
         for i in range(len(md.model_defs_files)):
-            print(i, md.model_defs_files[i], md.model_defs_files[i+1])
             # create Migrator for each pair of schemas
-            migrator = Migrator(md.model_defs_files[i], md.model_defs_files[i+1], md.renamed_models[i],
-                md.renamed_attributes[i])
+            migrator = Migrator(md.model_defs_files[i], md.model_defs_files[i+1], md.seq_of_renamed_models[i],
+                md.seq_of_renamed_attributes[i])
             migrator.load_defs_from_files().prepare()
             # migrate in memory until the last migration
             if i == 0:

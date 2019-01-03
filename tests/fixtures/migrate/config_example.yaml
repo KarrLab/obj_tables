@@ -2,8 +2,8 @@
 migration_with_renaming:
     model_defs_files: [tests/fixtures/migrate/core_old_rt.py,
         tests/fixtures/migrate/core_new_rt.py, tests/fixtures/migrate/core_old_rt.py]
-    renamed_models: [[[Test, MigratedTest]], [[MigratedTest, Test]]]
-    renamed_attributes: [
+    seq_of_renamed_models: [[[Test, MigratedTest]], [[MigratedTest, Test]]]
+    seq_of_renamed_attributes: [
         # for 1st migration:
         [[[Test, old_attr], [MigratedTest, new_attr]],
         [[Property, value], [Property, new_value]],

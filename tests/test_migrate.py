@@ -849,15 +849,15 @@ class TestMigrationController(MigrationFixtures):
         old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
         new_2_old_renamed_models = self.invert_renaming(old_2_new_renamed_models)
         new_2_old_renamed_attributes = self.invert_renaming(old_2_new_renamed_attributes)
-        renamed_models = [old_2_new_renamed_models, [], new_2_old_renamed_models]
-        renamed_attributes = [old_2_new_renamed_attributes, [], new_2_old_renamed_attributes]
+        seq_of_renamed_models = [old_2_new_renamed_models, [], new_2_old_renamed_models]
+        seq_of_renamed_attributes = [old_2_new_renamed_attributes, [], new_2_old_renamed_attributes]
 
         migrated_filename = self.get_temp_pathname('example_old_model_rt_migrated.xlsx')
         migration_desc = MigrationDesc('name',
             existing_file=self.example_old_rt_model_copy,
             model_defs_files=model_defs_files,
-            renamed_models=renamed_models,
-            renamed_attributes=renamed_attributes,
+            seq_of_renamed_models=seq_of_renamed_models,
+            seq_of_renamed_attributes=seq_of_renamed_attributes,
             migrated_file=migrated_filename)
         _, _, migrated_filename = MigrationController.migrate_over_schema_sequence(migration_desc)
 
@@ -913,12 +913,8 @@ class TestMigrationController(MigrationFixtures):
         self.assertIn(name, migration_desc_str)
         self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
 
-    @unittest.skip('skipping')
     def test_wc_lang_migration(self):
-        print()
-        wc_lang_model_migrated = self.get_temp_pathname('example-wc_lang-model-migrated.xlsx')
-        # self.wc_lang_model_copy
-        # wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
+        wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
         migration_desc = MigrationDesc('migrate from existing wc_lang core to itself',
             existing_file=self.wc_lang_small_model_copy,
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
@@ -950,16 +946,18 @@ class TestMigrationController(MigrationFixtures):
         self.assertEqual(existing, round_trip_migrated)
 
         # round-trip migrate through changed schema
-        # todo: model change maps
+        wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
         migration_desc = MigrationDesc('round-trip migrate existing wc_lang core -> modified core -> existing core',
             existing_file=self.wc_lang_small_model_copy,
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified, self.wc_lang_schema_existing],
+            seq_of_renamed_models=[[('Parameter', 'ParameterRenamed')], [('ParameterRenamed', 'Parameter')]],
             migrated_file=wc_lang_model_migrated)
         MigrationController.migrate_over_schema_sequence(migration_desc)
         existing = read_workbook(self.wc_lang_small_model_copy)
         round_trip_migrated = read_workbook(wc_lang_model_migrated)
         self.assertEqual(existing, round_trip_migrated)
 
+        # wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
         '''
         # profiling:
         out_file = self.get_temp_pathname('profile.out')
@@ -985,8 +983,8 @@ class TestMigrationDesc(MigrationFixtures):
         self.migration_desc = MigrationDesc('name',
             existing_file=self.example_old_rt_model_copy,
             model_defs_files=[self.old_rt_model_defs_path, self.new_rt_model_defs_path],
-            renamed_models=self.old_2_new_renamed_models,
-            renamed_attributes= self.old_2_new_renamed_attributes)
+            seq_of_renamed_models=self.old_2_new_renamed_models,
+            seq_of_renamed_attributes= self.old_2_new_renamed_attributes)
 
     def tearDown(self):
         super().tearDown()
@@ -1020,24 +1018,24 @@ class TestMigrationDesc(MigrationFixtures):
         md = migration_descs['migration']
         for renaming in MigrationDesc._renaming_lists:
             self.assertEqual(len(getattr(md, renaming)), len(md.model_defs_files) - 1)
-        renamed_attributes = [
+        seq_of_renamed_attributes = [
             [[['Test', 'old_attr'], ['MigratedTest', 'new_attr']]],
             [[['Property', 'new_value'], ['Property', 'value']]]]
         migration_desc = MigrationDesc('name_2',
             model_defs_files=['x'],
-            renamed_attributes=renamed_attributes)
+            seq_of_renamed_attributes=seq_of_renamed_attributes)
         expected_renamed_attributes = [
             [(('Test', 'old_attr'), ('MigratedTest', 'new_attr'))],
             [(('Property', 'new_value'), ('Property', 'value'))]]
         migration_desc.standardize()
-        self.assertEqual(migration_desc.renamed_attributes, expected_renamed_attributes)
+        self.assertEqual(migration_desc.seq_of_renamed_attributes, expected_renamed_attributes)
 
     def test_get_kwargs(self):
         kwargs = self.migration_desc.get_kwargs()
         self.assertEqual(kwargs['existing_file'], self.example_old_rt_model_copy)
         self.assertEqual(kwargs['model_defs_files'], [self.old_rt_model_defs_path, self.new_rt_model_defs_path])
-        self.assertEqual(kwargs['renamed_models'], self.old_2_new_renamed_models)
-        self.assertEqual(kwargs['renamed_attributes'], self.old_2_new_renamed_attributes)
+        self.assertEqual(kwargs['seq_of_renamed_models'], self.old_2_new_renamed_models)
+        self.assertEqual(kwargs['seq_of_renamed_attributes'], self.old_2_new_renamed_attributes)
         self.assertEqual(kwargs['migrated_file'], None)
         self.migration_desc
 
