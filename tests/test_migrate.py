@@ -132,6 +132,20 @@ class MigrationFixtures(unittest.TestCase):
         except MigratorError:
             pass
 
+        self.migrator_for_error_tests_2 = migrator_for_error_tests_2 = Migrator()
+        migrator_for_error_tests_2.old_model_defs = migrator_for_error_tests.old_model_defs
+        migrator_for_error_tests_2.new_model_defs = migrator_for_error_tests.new_model_defs
+        ### renaming maps
+        migrator_for_error_tests_2.renamed_models = [
+            ('TestExisting', 'TestMigrated'),
+            ('TestExisting2', 'TestMigrated2')]
+        migrator_for_error_tests_2.renamed_attributes = migrator_for_error_tests.renamed_attributes
+        try:
+            # ignore errors what are tested in TestMigration.test_get_inconsistencies
+            migrator_for_error_tests_2.prepare()
+        except MigratorError:
+            pass
+
         # create migrator with renaming that doesn't use models in files and doesn't have errors
         # existing models
         class GoodRelatedCls(obj_model.Model):
@@ -404,24 +418,7 @@ class TestMigration(MigrationFixtures):
         self.assertRegex(inconsistencies[1],
             ".+\..+\..+ is '.+', which migrates to '.+', but it differs from .+\..+\..+, which is '.+'")
 
-        migrator_for_error_tests_2 = Migrator('old_defs_file', 'new_defs_file')
-        migrator_for_error_tests_2.old_model_defs = migrator_for_error_tests.old_model_defs
-        migrator_for_error_tests_2.new_model_defs = migrator_for_error_tests.new_model_defs
-        ### renaming maps
-        migrator_for_error_tests_2.renamed_models = [
-            ('TestExisting', 'TestMigrated'),
-            ('TestExisting2', 'TestMigrated2')]
-        migrator_for_error_tests_2.renamed_attributes = [
-            (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
-            (('TestExisting', 'extra_attr_1'), ('TestMigrated', 'extra_attr_2'))]
-        # todo: move this to setUp
-        try:
-            # ignore MigratorError exception which is tested below
-            migrator_for_error_tests_2.prepare()
-        except MigratorError:
-            pass
-
-        inconsistencies = migrator_for_error_tests_2._get_inconsistencies('TestExisting2', 'TestMigrated2')
+        inconsistencies = self.migrator_for_error_tests_2._get_inconsistencies('TestExisting2', 'TestMigrated2')
         self.assertRegex(inconsistencies[1],
             "existing model '.+' is not migrated, but is referenced by migrated attribute .+\..+")
 
