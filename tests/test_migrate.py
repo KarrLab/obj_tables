@@ -42,11 +42,10 @@ class MigrationFixtures(unittest.TestCase):
         self.new_model_defs_path = os.path.join(fixtures_path, 'core_new.py')
 
         self.migrator = Migrator(self.old_model_defs_path, self.new_model_defs_path)
-        self.migrator.initialize()
-        self.migrator._get_all_model_defs()
+        self.migrator.load_defs_from_files()
 
         self.no_change_migrator = Migrator(self.old_model_defs_path, self.old_model_defs_path)
-        self.no_change_migrator.initialize()
+        self.no_change_migrator.load_defs_from_files()
 
         self.tmp_dir = mkdtemp()
 
@@ -70,9 +69,7 @@ class MigrationFixtures(unittest.TestCase):
         self.config_file = os.path.join(self.fixtures_path, 'config_example.yaml')
 
         ### create migrator with renaming that doesn't use models in files
-        # todo: make possible to create Migrator wo specifying model defs files
-        self.migrator_for_error_tests = migrator_for_error_tests = Migrator(
-            'old_model_defs_file', 'new_model_defs_file')
+        self.migrator_for_error_tests = migrator_for_error_tests = Migrator()
 
         ### these classes contain migration errors for validation tests ###
         ### existing models
@@ -129,15 +126,11 @@ class MigrationFixtures(unittest.TestCase):
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
             (('TestExisting', 'extra_attr_1'), ('TestMigrated', 'extra_attr_2'))]
 
-        # todo: use prepare() here
-        # run _validate_renamed_models and _validate_renamed_attrs to create
-        # migrator_for_error_tests.models_map and migrator_for_error_tests.renamed_attributes_map
-        migrator_for_error_tests._validate_renamed_models()
-        migrator_for_error_tests._validate_renamed_attrs()
-        # find deleted models
-        used_models = set([existing_model for existing_model in migrator_for_error_tests.models_map])
-        migrator_for_error_tests.deleted_models = \
-            set(migrator_for_error_tests.old_model_defs).difference(used_models)
+        try:
+            # ignore MigratorError exception which will be tested later
+            migrator_for_error_tests.prepare()
+        except MigratorError:
+            pass
 
         # create migrator with renaming that doesn't use models in files and doesn't have errors
         # existing models
@@ -166,7 +159,7 @@ class MigrationFixtures(unittest.TestCase):
             related = OneToOneAttribute(RelatedObj, related_name='test_2')
         self.GoodMigrated = GoodMigrated
 
-        self.good_migrator = good_migrator = Migrator('old_model_defs_file', 'new_model_defs_file')
+        self.good_migrator = good_migrator = Migrator()
         good_migrator.old_model_defs = {
             'GoodRelatedCls': GoodRelatedCls,
             'GoodExisting': GoodExisting,
@@ -201,7 +194,7 @@ class MigrationFixtures(unittest.TestCase):
             self.set_up_fun_expr_fixtures(self.wc_lang_changes_migrator, 'Parameter', 'ParameterRenamed')
 
     def set_up_fun_expr_fixtures(self, migrator, existing_param_class, migrated_param_class):
-        migrator.initialize()
+        migrator.load_defs_from_files()
         migrator.prepare()
         Model = migrator.old_model_defs['Model']
         # define models in FunctionExpression.valid_used_models
@@ -377,9 +370,6 @@ class TestMigration(MigrationFixtures):
     def test_get_inconsistencies(self):
         migrator_for_error_tests = self.migrator_for_error_tests
 
-        # prep migrator_for_error_tests
-        migrator_for_error_tests.old_model_defs_path = 'old_model_defs_path'
-        migrator_for_error_tests.new_model_defs_path = 'new_model_defs_path'
         inconsistencies = migrator_for_error_tests._get_inconsistencies('NotExistingModel', 'NotMigratedModel')
         self.assertRegex(inconsistencies[0], "old model .* not found in")
         self.assertRegex(inconsistencies[1], "new model .* corresponding to old model .* not found in")
@@ -424,15 +414,13 @@ class TestMigration(MigrationFixtures):
         migrator_for_error_tests_2.renamed_attributes = [
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
             (('TestExisting', 'extra_attr_1'), ('TestMigrated', 'extra_attr_2'))]
-        # todo: use prepare() here
-        # run _validate_renamed_models and _validate_renamed_attrs to create
-        # migrator_for_error_tests_2.models_map and migrator_for_error_tests_2.renamed_attributes_map
-        migrator_for_error_tests_2._validate_renamed_models()
-        migrator_for_error_tests_2._validate_renamed_attrs()
-        # find deleted models
-        used_models = set([existing_model for existing_model in migrator_for_error_tests_2.models_map])
-        migrator_for_error_tests_2.deleted_models = \
-            set(migrator_for_error_tests_2.old_model_defs).difference(used_models)
+        # todo: move this to setUp
+        try:
+            # ignore MigratorError exception which is tested below
+            migrator_for_error_tests_2.prepare()
+        except MigratorError:
+            pass
+
         inconsistencies = migrator_for_error_tests_2._get_inconsistencies('TestExisting2', 'TestMigrated2')
         self.assertRegex(inconsistencies[1],
             "existing model '.+' is not migrated, but is referenced by migrated attribute .+\..+")
@@ -513,7 +501,7 @@ class TestMigration(MigrationFixtures):
         # triggering inconsistencies in prepare() requires inconsistent model definitions on disk
         inconsistent_new_model_defs_path = os.path.join(self.fixtures_path, 'core_new_inconsistent.py')
         inconsistent_migrator = Migrator(self.old_model_defs_path, inconsistent_new_model_defs_path)
-        inconsistent_migrator.initialize()
+        inconsistent_migrator.load_defs_from_files()
         with self.assertRaisesRegex(MigratorError,
             "existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+"):
             inconsistent_migrator.prepare()
@@ -762,13 +750,13 @@ class TestMigration(MigrationFixtures):
         old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
         old_2_new_migrator = Migrator(self.old_rt_model_defs_path, self.new_rt_model_defs_path,
             renamed_models=old_2_new_renamed_models, renamed_attributes=old_2_new_renamed_attributes)
-        old_2_new_migrator.initialize().prepare()
+        old_2_new_migrator.load_defs_from_files().prepare()
 
         # make new -> old migrator
         new_2_old_migrator = Migrator(self.new_rt_model_defs_path, self.old_rt_model_defs_path,
             renamed_models=self.invert_renaming(old_2_new_renamed_models),
             renamed_attributes=self.invert_renaming(old_2_new_renamed_attributes))
-        new_2_old_migrator.initialize().prepare()
+        new_2_old_migrator.load_defs_from_files().prepare()
 
         # round trip test of model in tsv file
         old_2_new_migrator.full_migrate(self.example_old_model_tsv, migrated_file=self.old_2_new_migrated_tsv_file)
@@ -841,9 +829,8 @@ class TestMigration(MigrationFixtures):
         f.write('bad python')
         f.close()
         migrator = Migrator(bad_module, self.new_model_defs_path)
-        migrator.initialize()
         with self.assertRaisesRegex(MigratorError, "cannot be imported and exec'ed"):
-            migrator._load_model_defs_file(migrator.old_model_defs_path)
+            migrator.load_defs_from_files()
 
     def test_str(self):
         self.assertIn('new_model_defs:', str(self.good_migrator))
@@ -929,6 +916,7 @@ class TestMigrationController(MigrationFixtures):
         self.assertIn(name, migration_desc_str)
         self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
 
+    @unittest.skip('skipping')
     def test_wc_lang_migration(self):
         print()
         wc_lang_model_migrated = self.get_temp_pathname('example-wc_lang-model-migrated.xlsx')
@@ -953,7 +941,7 @@ class TestMigrationController(MigrationFixtures):
 
         # validate in memory models
         initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
-        initial_migrator.initialize().prepare()
+        initial_migrator.load_defs_from_files().prepare()
         Model = initial_migrator.old_model_defs['Model']
         existing_model = get_root_models(Model, existing_models)
         migrated_model = get_root_models(Model, migrated_models)
