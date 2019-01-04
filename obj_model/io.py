@@ -604,7 +604,8 @@ class WorkbookReader(Reader):
                 include_all_attributes=include_all_attributes,
                 ignore_missing_attributes=ignore_missing_attributes,
                 ignore_extra_attributes=ignore_extra_attributes,
-                ignore_attribute_order=ignore_attribute_order)
+                ignore_attribute_order=ignore_attribute_order,
+                validate=validate)
             if model_attributes:
                 attributes[model] = model_attributes
             if model_data:
@@ -674,7 +675,8 @@ class WorkbookReader(Reader):
                 return None
 
     def read_model(self, reader, model, include_all_attributes=True,
-                   ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
+                   ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
+                   validate=True):
         """ Instantiate a list of objects from data in a table in a file
 
         Args:
@@ -688,6 +690,7 @@ class WorkbookReader(Reader):
                 in the data are not in the model
             ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided in the
                 canonical order
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
             :obj:`tuple` of
@@ -832,6 +835,8 @@ class WorkbookReader(Reader):
             objects.append(obj)
 
         model.get_manager().insert_all_new()
+        if not validate:
+            errors = []
         return (attributes, data, errors, objects)
 
     def read_sheet(self, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0):
