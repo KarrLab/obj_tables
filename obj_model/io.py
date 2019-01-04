@@ -42,7 +42,8 @@ class Writer(six.with_metaclass(abc.ABCMeta, object)):
 
     @abc.abstractmethod
     def run(self, path, objects, models=None, get_related=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+            title=None, description=None, keywords=None, version=None, language=None, creator=None,
+            validate=True):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -58,6 +59,7 @@ class Writer(six.with_metaclass(abc.ABCMeta, object)):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
         """
         pass  # pragma: no cover
 
@@ -66,7 +68,8 @@ class JsonWriter(Writer):
     """ Write model objects to a JSON or YAML file """
 
     def run(self, path, objects, models=None, get_related=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+            title=None, description=None, keywords=None, version=None, language=None, creator=None,
+            validate=True):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -79,9 +82,10 @@ class JsonWriter(Writer):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Raises:
-            :obj:`ValueError`: if zero or multiple objects are requested to be written
+            :obj:`ValueError`: if model names are not unique or output format is not supported
         """
         if models is None:
             models = []
@@ -91,7 +95,7 @@ class JsonWriter(Writer):
             models = [models]
 
         # validate
-        if objects:
+        if objects and validate:
             error = Validator().run(objects, get_related=get_related)
             if error:
                 warn('Some data will not be written because objects are not valid:\n  {}'.format(
@@ -133,7 +137,7 @@ class WorkbookWriter(Writer):
 
     def run(self, path, objects, models=None, get_related=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            include_all_attributes=True):
+            include_all_attributes=True, validate=True):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -151,6 +155,10 @@ class WorkbookWriter(Writer):
             creator (:obj:`str`, optional): creator
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
                 not explictly included in `Model.Meta.attribute_order`
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
+
+        Raises:
+            :obj:`ValueError`: if no model is provided or a class cannot be serialized
         """
         if objects is None:
             objects = []
@@ -165,11 +173,12 @@ class WorkbookWriter(Writer):
 
         # clean objects
         all_objects = det_dedupe(objects + more_objects)
-        error = Validator().run(all_objects)
 
-        if error:
-            warn('Some data will not be written because objects are not valid:\n  {}'.format(
-                str(error).replace('\n', '\n  ').rstrip()), IoWarning)
+        if validate:
+            error = Validator().run(all_objects)
+            if error:
+                warn('Some data will not be written because objects are not valid:\n  {}'.format(
+                    str(error).replace('\n', '\n  ').rstrip()), IoWarning)
 
         # group objects by class
         grouped_objects = {}
@@ -403,7 +412,8 @@ class JsonReader(Reader):
             :obj:`dict`: model objects grouped by `Model` class
 
         Raises:
-            :obj:`ValueError`: if zero or multiple models are requested to be read
+            :obj:`ValueError`: if the input format is not supported, model names are not unique, or the
+                data is invalid
         """
         # cast models to list
         if models is None:
@@ -854,6 +864,8 @@ class WorkbookReader(Reader):
                 * `list` of `list`: row headings
                 * `list` of `list`: column_headings
 
+        Raises:
+            :obj:`ValueError`: if worksheet doesn't have header rows or columns
         """
         data = reader.read_worksheet(sheet_name)
 
