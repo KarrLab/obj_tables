@@ -449,7 +449,7 @@ class ParsedExpression(object):
         iterator in the `expression_valid_functions` attribute of the `Meta` class of a model whose whose expression
         is being processed.
     * Currently (July, 2018), identifiers may refer to `Species`s, `Parameter`s, `Observable`s, `Reaction`s,
-        `Observable`'s and `DfbaNetReaction`s.
+        `Observable`'s and `DfbaObjReaction`s.
     * Cycles of references are illegal.
     * An identifier must unambiguously refer to exactly one related :obj:`Model` in a model.
     * Each :obj:`Model` that can be used in an expression must have an ID that is a simple Python identifier,
@@ -463,7 +463,7 @@ class ParsedExpression(object):
         * `Parameter`: its value, which is static
         * `Observable`: its current value, whose units depend on its definition
         * `Reaction`: its current flux
-        * `DfbaNetReaction`: its current flux
+        * `DfbaObjReaction`: its current flux
     * The modeller is responsible for ensuring that units in expressions are internally consistent and appropriate
         for the expression's use
 
