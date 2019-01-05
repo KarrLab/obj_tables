@@ -26,8 +26,7 @@ import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-    TabularOrientation, migrate, 
-    math)
+    TabularOrientation, migrate, math)
 from wc_utils.workbook.io import read as read_workbook
 from obj_model.expression import Expression
 
@@ -45,7 +44,7 @@ class MigrationFixtures(unittest.TestCase):
         self.migrator.load_defs_from_files()
 
         self.no_change_migrator = Migrator(self.old_model_defs_path, self.old_model_defs_path)
-        self.no_change_migrator.load_defs_from_files()
+        self.no_change_migrator.load_defs_from_files().prepare()
 
         self.tmp_dir = mkdtemp()
 
@@ -291,6 +290,22 @@ class TestMigration(MigrationFixtures):
         self.assertEqual(cur_dir,
             _normalize_filename(os.path.join(cur_dir, '..', os.path.basename(cur_dir))))
 
+    def test_validate_transformations(self):
+        migrator = Migrator()
+        self.assertEqual(migrator._validate_transformations(), [])
+        def a_callable(): pass
+        migrator = Migrator(transformations=dict.fromkeys(Migrator.SUPPORTED_TRANSFORMATIONS, a_callable))
+        self.assertEqual(migrator._validate_transformations(), [])
+        migrator = Migrator(transformations=3)
+        self.assertIn("transformations should be a dict", migrator._validate_transformations()[0])
+        migrator = Migrator(transformations={'FOO':3, Migrator.PREPARE_EXISTING_MODELS:2})
+        self.assertRegex(migrator._validate_transformations()[0],
+            "names of transformations .+ aren't a subset of the supported transformations")
+        migrator = Migrator(transformations=dict.fromkeys(Migrator.SUPPORTED_TRANSFORMATIONS, 3))
+        errors = migrator._validate_transformations()
+        for error in errors:
+            self.assertRegex(error, "value for transformation '.+' is a\(n\) '.+', which isn't callable")
+
     def test_validate_renamed_models(self):
         migrator_for_error_tests = self.migrator_for_error_tests
         self.assertEqual(migrator_for_error_tests._validate_renamed_models(), [])
@@ -357,25 +372,30 @@ class TestMigration(MigrationFixtures):
 
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('TestExisting', 'attr_a'),
             ('TestMigrated', 'attr_b'))
-
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute(
             self.TestExisting, self.TestExisting.Meta.attributes['id']), ('TestMigrated', 'id'))
-
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('TestExisting', 'no_attr'),
             (None, None))
-
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('NotExisting', 'id'), (None, None))
-
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'id'), ('NewRelatedObj', 'id'))
-
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'no_attr'), (None, None))
 
     def test_get_model_defs(self):
         migrator = self.migrator
         module = migrator._load_model_defs_file(self.old_model_defs_path)
         models = Migrator._get_model_defs(module)
-        self.assertEqual(set(models), {'DeletedModel', 'Reference', 'Subtest', 'Test', 'Property'})
+        self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
         self.assertEqual(models['Test'].__name__, 'Test')
+
+    def test_load_defs_from_files(self):
+        migrator = Migrator(self.old_model_defs_path, self.new_model_defs_path)
+        migrator.load_defs_from_files()
+        self.assertEqual(set(migrator.old_model_defs), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
+        self.assertEqual(set(migrator.new_model_defs), {'Test', 'NewModel', 'Property', 'Subtest', 'Reference'})
+        migrator_no_files = Migrator()
+        migrator_no_files.load_defs_from_files()
+        self.assertEqual(migrator_no_files.old_model_defs_path, None)
+        self.assertEqual(migrator_no_files.new_model_defs_path, None)
 
     def test_get_migrated_copy_attr_name(self):
         self.assertTrue(self.migrator._get_migrated_copy_attr_name().startswith(
@@ -718,7 +738,6 @@ class TestMigration(MigrationFixtures):
 
     def test_migrate_without_changes(self):
         no_change_migrator = self.no_change_migrator
-        no_change_migrator.prepare()
         no_change_migrator.full_migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
         OldTest = no_change_migrator.old_model_defs['Test']
         models = list(no_change_migrator.old_model_defs.values())
@@ -737,11 +756,38 @@ class TestMigration(MigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "migrated file '.*' already exists"):
             no_change_migrator.full_migrate(self.example_old_model_copy, migrated_file=self.example_migrated_model)
 
+    def test_transformations_in_full_migrate(self):
+        # make PREPARE_EXISTING_MODELS & MODIFY_MIGRATED_MODELS transformations that invert each other
+        def prepare_existing_models(migrator, existing_models):
+            # increment the value of Property models
+            for existing_model in existing_models:
+                if isinstance(existing_model, migrator.old_model_defs['Property']):
+                    existing_model.value += +1
+
+        def modify_migrated_models(migrator, migrated_models):
+            # decrement the value of Property models
+            for migrated_model in migrated_models:
+                if isinstance(migrated_model, migrator.old_model_defs['Property']):
+                    migrated_model.value += -1
+
+        transformations = {
+            Migrator.PREPARE_EXISTING_MODELS: prepare_existing_models,
+            Migrator.MODIFY_MIGRATED_MODELS: modify_migrated_models
+        }
+        migrator = Migrator(self.old_model_defs_path, self.old_model_defs_path, transformations=transformations)
+        migrator.load_defs_from_files().prepare()
+        migrated_file = migrator.full_migrate(self.example_old_model_copy)
+
+        # test that inverted transformations make no changes
+        source = read_workbook(self.example_old_model_copy)
+        migrated = read_workbook(migrated_file)
+        self.assertEqual(source, migrated)
+
     def test_full_migrate(self):
 
         # test round-trip old -> new -> old
         # use schemas with no deleted or new models so model files are identical
-        # but include model and attr renamng so that old != new
+        # but include model and attr renaming so that old != new
 
         # make old -> new migrator
         old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
@@ -810,7 +856,7 @@ class TestMigration(MigrationFixtures):
     def test_migrate_in_place(self):
         self.migrator.prepare()
         # migrate to example_migrated_model
-        example_migrated_model = os.path.join(mkdtemp(dir=self.tmp_model_dir), 'example_migrated_model.xlsx')
+        example_migrated_model = self.get_temp_pathname('example_migrated_model.xlsx')
         self.migrator.full_migrate(self.example_old_model_copy, migrated_file=example_migrated_model)
         # migrate to self.example_old_model_copy
         self.migrator.full_migrate(self.example_old_model_copy, migrate_in_place=True)
@@ -883,6 +929,7 @@ class TestMigrationController(MigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
             MigrationController.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
 
+    @unittest.skip('')
     def test_migrate_from_desc(self):
         migration_descs = MigrationController.get_migrations_config(self.config_file)
 
@@ -915,7 +962,7 @@ class TestMigrationController(MigrationFixtures):
 
     def test_wc_lang_migration(self):
         wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
-        migration_desc = MigrationDesc('migrate from existing wc_lang core to itself',
+        migration_desc = MigrationDesc('migrate small model from existing wc_lang core to itself',
             existing_file=self.wc_lang_small_model_copy,
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
             migrated_file=wc_lang_model_migrated)
@@ -932,7 +979,7 @@ class TestMigrationController(MigrationFixtures):
                 return root_models[0]
             return root_models
 
-        # validate in memory models
+        # validate memory resident models
         initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
         initial_migrator.load_defs_from_files().prepare()
         Model = initial_migrator.old_model_defs['Model']
@@ -942,8 +989,8 @@ class TestMigrationController(MigrationFixtures):
 
         # validate spreadsheets
         existing = read_workbook(self.wc_lang_small_model_copy)
-        round_trip_migrated = read_workbook(wc_lang_model_migrated)
-        self.assertEqual(existing, round_trip_migrated)
+        migrated = read_workbook(wc_lang_model_migrated)
+        self.assertEqual(existing, migrated)
 
         # round-trip migrate through changed schema
         wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
@@ -957,7 +1004,28 @@ class TestMigrationController(MigrationFixtures):
         round_trip_migrated = read_workbook(wc_lang_model_migrated)
         self.assertEqual(existing, round_trip_migrated)
 
-        # wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
+        '''
+        wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
+        migration_desc = MigrationDesc('migrate large model from existing wc_lang core to itself',
+            existing_file=self.wc_lang_model_copy,
+            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
+            migrated_file=wc_lang_model_migrated)
+        existing_models, migrated_models, migrated_filename = \
+            MigrationController.migrate_over_schema_sequence(migration_desc)
+        # review difference
+        existing_model = get_root_models(Model, existing_models)
+        migrated_model = get_root_models(Model, migrated_models)
+        # todo: link model to components
+        self.assertTrue(existing_model.is_equal(migrated_model))
+        print(existing_model.difference(migrated_model))
+
+        # validate spreadsheets
+        existing = read_workbook(self.wc_lang_model_copy)
+        migrated = read_workbook(wc_lang_model_migrated)
+        print(existing.difference(migrated))
+        self.assertEqual(existing, migrated)
+        '''
+
         '''
         # profiling:
         out_file = self.get_temp_pathname('profile.out')

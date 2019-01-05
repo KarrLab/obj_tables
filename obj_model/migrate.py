@@ -25,13 +25,13 @@ from wc_utils.util.list import det_find_dupes, det_count_elements
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
-# todo next: fix if self.seq_of_renamed_models
-# todo next: test big wc_lang model
+# todo next: test big wc_lang model, deal with implicit Model attributes
+# todo: test_migrate_from_config and test if self.seq_of_renamed_models
 # todo next: more coverage
 # todo next: address perf. problem with wc_lang migration, if they persist
 # todo next: test OneToManyAttribute
-# todo: test_migrate_from_config
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
+# todo next: medium: remove as much code as possible from tests/fixtures/migrate/wc_lang
 
 # todo next: move remaining todos to GitHub issues
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
@@ -40,17 +40,16 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # the Model attr in models in a wc_lang model should be required
 # todo: separately specified default value for attribute
 # todo: obtain sort order of sheets in existing model file and replicate in migrated model file
-# todo: support arbitrary transformations by an optional function on each migrated instance
 # todo: confirm this works for json, etc.
 # todo: test sym links in Migrator._normalize_filename
 # todo: make the yaml config files more convenient: map filenames to the directory containing the config file;
 # provide a well-documented example;
 # todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
+# todo: use PARSED_EXPR everywhere applicable
 # todo: support high-level, WC wc_lang specific migration of a repo
 #       use case:
 #           1 change wc_lang/core.py
 #           2 in some repo migrate all model files over multiple wc_lang versions to the new version
-#           3 this migration may require arbitrary transformations
 #       implementation:
 #           each WC repo that has model files maintains a migrate.yml config file with: list of model files to migrate; migration options
 #           wc_lang contains migration_transformations.py, which provides all arbitrary transformations
@@ -88,6 +87,7 @@ class Migrator(object):
         renamed_attributes_map (:obj:`dict`): map of attribute names renamed from the existing to the migrated schema
         _migrated_copy_attr_name (:obj:`str`): attribute name used to point old models to corresponding
             new models; not used in any old model definitions
+        transformations (:obj:`dict`): map of transformation types in `SUPPORTED_TRANSFORMATIONS` to callables
     """
 
     # default suffix for a migrated model file
@@ -103,28 +103,45 @@ class Migrator(object):
     # the name of the attribute used in expression Models to hold their ParsedExpressions
     PARSED_EXPR = '_parsed_expression'
 
+    # supported transformations
+    PREPARE_EXISTING_MODELS = 'PREPARE_EXISTING_MODELS'
+    MODIFY_MIGRATED_MODELS = 'MODIFY_MIGRATED_MODELS'
+    SUPPORTED_TRANSFORMATIONS = [
+        # A callable w the signature f(migrator, existing_models), where `migrator` is a Migrator doing
+        # a migration, and `existing_models` is a list of all existing models. It is executed immediately
+        # after the existing models have been read. The callable may alter any of the existing models.
+        PREPARE_EXISTING_MODELS,
+        # A callable w the signature f(migrator, migrated_models), where `migrator` is a Migrator doing
+        # a migration, and `migrated_models` is a list of all migrated models. It is executed immediately
+        # after all models have been migrated. The callable may alter any of the migrated models.
+        MODIFY_MIGRATED_MODELS
+    ]
+
     def __init__(self, old_model_defs_file=None, new_model_defs_file=None, renamed_models=None,
-        renamed_attributes=None):
+        renamed_attributes=None, transformations=None):
         """ Construct a Migrator
 
         Args:
             old_model_defs_file (:obj:`str`, optional): path of a file containing old Model definitions
             new_model_defs_file (:obj:`str`, optional): path of a file containing new Model definitions;
                 filenames optional so that `Migrator` can use models defined in memory
-            renamed_models (:obj:`list` of :obj:`tuple`): model types renamed from the existing to the
-                migrated schema; has the form '[('Existing_1', 'Migrated_1'), ..., ('Existing_n', 'Migrated_n')]',
+            renamed_models (:obj:`list` of :obj:`tuple`, optional): model types renamed from the existing to the
+                migrated schema; has the form `[('Existing_1', 'Migrated_1'), ..., ('Existing_n', 'Migrated_n')]`,
                 where `('Existing_i', 'Migrated_i')` indicates that existing model `Existing_i` is
                 being renamed into migrated model `Migrated_i`.
-            renamed_attributes (:obj:`list` of :obj:`tuple`): attribute names renamed from the existing
+            renamed_attributes (:obj:`list` of :obj:`tuple`, optional): attribute names renamed from the existing
                 to the migrated schema; a list of tuples of the form
                 `(('Existing_Model_i', 'Existing_Attr_x'), ('Migrated_Model_j', 'Migrated_Attr_y'))`,
                 which indicates that `Existing_Model_i.Existing_Attr_x` will migrate to
                 `Migrated_Model_j.Migrated_Attr_y`.
+            transformations (:obj:`dict`, optional): map of transformation types in `SUPPORTED_TRANSFORMATIONS`
+                to callables
         """
         self.old_model_defs_file = old_model_defs_file
         self.new_model_defs_file = new_model_defs_file
         self.renamed_models = [] if renamed_models is None else renamed_models
         self.renamed_attributes = [] if renamed_attributes is None else renamed_attributes
+        self.transformations = transformations
         self.old_model_defs_path = None
         self.new_model_defs_path = None
 
@@ -236,6 +253,28 @@ class Migrator(object):
         filename = os.path.expandvars(filename)
         filename = os.path.realpath(filename)
         return os.path.abspath(filename)
+
+    def _validate_transformations(self):
+        """ Validate transformations
+
+        Ensure that self.transformations is a dict of callables
+
+        Returns:
+            :obj:`list` of `str`: errors in the renamed models
+        """
+        errors = []
+        if self.transformations:
+            if not isinstance(self.transformations, dict):
+                return ["transformations should be a dict, but it is a(n) '{}'".format(type(
+                    self.transformations).__name__)]
+            if not set(self.transformations).issubset(self.SUPPORTED_TRANSFORMATIONS):
+                errors.append("names of transformations {} aren't a subset of the supported "
+                    "transformations {}".format(set(self.transformations), set(self.SUPPORTED_TRANSFORMATIONS)))
+            for transform_name, transformation in self.transformations.items():
+                if not callable(transformation):
+                    errors.append("value for transformation '{}' is a(n) '{}', which isn't callable".format(
+                        transform_name, type(transformation).__name__))
+        return errors
 
     def _validate_renamed_models(self):
         """ Validate renamed models
@@ -362,6 +401,9 @@ class Migrator(object):
             :obj:`MigratorError`: if renamings are not valid, or
                 inconsistencies exist between corresponding old and migrated classes
         """
+
+        # validate transformations
+        self._validate_transformations()
 
         # validate model and attribute rename specifications
         errors = self._validate_renamed_models()
@@ -669,9 +711,15 @@ class Migrator(object):
                 overwrite an existing file
         """
         existing_models = self.read_existing_model(existing_file)
+        # transformations: PREPARE_EXISTING_MODELS
+        if self.transformations and self.PREPARE_EXISTING_MODELS in self.transformations:
+            self.transformations[self.PREPARE_EXISTING_MODELS](self, existing_models)
         for inconsistency in self._validate_models(existing_models):
             warn(inconsistency)
         migrated_models = self.migrate(existing_models)
+        # transformations: MODIFY_MIGRATED_MODELS
+        if self.transformations and self.MODIFY_MIGRATED_MODELS in self.transformations:
+            self.transformations[self.MODIFY_MIGRATED_MODELS](self, migrated_models)
         # get sequence of migrated models in workbook of existing file
         existing_model_order = self._get_existing_model_order(existing_file)
         migrated_model_order = self._migrate_model_order(existing_model_order)
@@ -1018,14 +1066,33 @@ class MigrationDesc(object):
                     errors.append("model_defs_files specifies {} migration(s), but {} contains {} mapping(s)".format(
                         len(self.model_defs_files) - 1, renaming_list, len(getattr(self, renaming_list))))
 
-        '''
+        # print('self.seq_of_renamed_models')
+        # pprint(self.seq_of_renamed_models)
         if self.seq_of_renamed_models:
-            for renaming in self.seq_of_renamed_models:
-                # constraint: renaming must be an iterator over pairs of str
-                for pair in renaming:
-                    if len(pair) != 2 or not isinstance(pair[0], str) or not isinstance(pair[1], str):
-                        errors.append("seq_of_renamed_models must be a list of lists of pairs of str")
-        '''
+            required_structure = "seq_of_renamed_models must be a list of lists of pairs of strs"
+            try:
+                for renaming in self.seq_of_renamed_models:
+                    # constraint: renaming must be an iterator over pairs of str
+                    for pair in renaming:
+                        if len(pair) != 2 or not isinstance(pair[0], str) or not isinstance(pair[1], str):
+                            errors.append()
+            except TypeError as e:
+                errors.append(required_structure + ", but examinining it generates a '{}' error".format(str(e)))
+
+        # print('self.seq_of_renamed_attributes')
+        # pprint(self.seq_of_renamed_attributes)
+        if self.seq_of_renamed_attributes:
+            required_structure = "seq_of_renamed_attributes must be a list of lists of pairs of pairs of strs"
+            try:
+                for renamings in self.seq_of_renamed_attributes:
+                    # constraint: renamings must be a list of pairs of pairs of str
+                    for attribute_renaming in renamings:
+                        for attr_spec in attribute_renaming:
+                            if len(attr_spec) != 2 or not isinstance(attr_spec[0], str) or \
+                                not isinstance(attr_spec[1], str):
+                                errors.append(required_structure)
+            except TypeError as e:
+                errors.append(required_structure + ", but examinining it generates a '{}' error".format(str(e)))
 
         if not errors:
             self.standardize()
