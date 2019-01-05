@@ -22,8 +22,9 @@ from .core import (TimeUnit, TaxonRank,
                    StopCondition, StopConditionExpression, StopConditionUnit,
                    Evidence, DatabaseReference, Reference,
                    Validator)
-from . import config
-from . import io
-from . import sbml
-from . import transform
+# these modules and packages not needed
+# from . import config
+# from . import io
+# from . import sbml
+# from . import transform
 from . import util

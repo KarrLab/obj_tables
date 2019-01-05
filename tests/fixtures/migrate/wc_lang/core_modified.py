@@ -51,8 +51,11 @@ from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToO
 from six import with_metaclass
 
 # rename wc_lang so it can be used as a fixture in obj_model
+'''
+# imports not needed, as they're not executed when this file is imported or a model based on it is read or written
 from tests.fixtures.migrate.wc_lang.sbml.util import (wrap_libsbml, str_to_xmlstr, LibSBMLError,
                                create_sbml_parameter)
+'''
 from wc_utils.util.chem import EmpiricalFormula
 from wc_utils.util.enumerate import CaseInsensitiveEnum, CaseInsensitiveEnumMeta
 from wc_utils.util.list import det_dedupe

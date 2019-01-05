@@ -16,7 +16,6 @@ import shutil
 import numpy
 import copy
 import warnings
-import filecmp
 from argparse import Namespace
 import cProfile
 import pstats
@@ -1004,12 +1003,12 @@ class TestMigrationController(MigrationFixtures):
         round_trip_migrated = read_workbook(wc_lang_model_migrated)
         self.assertEqual(existing, round_trip_migrated)
 
-        '''
         wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
         migration_desc = MigrationDesc('migrate large model from existing wc_lang core to itself',
             existing_file=self.wc_lang_model_copy,
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
             migrated_file=wc_lang_model_migrated)
+        '''
         existing_models, migrated_models, migrated_filename = \
             MigrationController.migrate_over_schema_sequence(migration_desc)
         # review difference
