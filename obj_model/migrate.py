@@ -25,16 +25,16 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 # todo: have migrate_over_schema_sequence support wc_lang migration
-# todo next: test big wc_lang model, deal with implicit Model attributes
-# todo: move generate_wc_lang_migrator to wc_lang
 # todo: test_migrate_from_config and test if self.seq_of_renamed_models
 # todo next: more coverage
+# todo next: test big wc_lang model
+# todo: move generate_wc_lang_migrator to wc_lang
 # todo next: address perf. problem with wc_lang migration, if they persist
 # todo next: test OneToManyAttribute
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
-# todo next: medium: remove as much code as possible from tests/fixtures/migrate/wc_lang
 
 # todo next: move remaining todos to GitHub issues
+# enable wc_lang migration in RunMigration
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo: have obj_model support required attributes, which have non-default values; e.g.
 # turn off coverage during unittest setUp, if possible
@@ -1052,6 +1052,7 @@ class MigrationDesc(object):
         _renaming_lists (:obj:`list` of :obj:`str`): model and attribute renaming lists in a `MigrationDesc`
         _allowed_attrs (:obj:`list` of :obj:`str`): attributes allowed in a `MigrationDesc`
         name (:obj:`str`): name for this `MigrationDesc`
+        migrator (:obj:`callable`): the Migrator to use for migrations
         existing_file (:obj:`str`, optional): existing file to migrate from
         model_defs_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
             definitions for each state in a sequence of migrations
@@ -1068,9 +1069,11 @@ class MigrationDesc(object):
     _renaming_lists = ['seq_of_renamed_models', 'seq_of_renamed_attributes']
     _allowed_attrs = _required_attrs + _renaming_lists + ['migrated_file', 'migrate_suffix', 'migrate_in_place']
 
-    def __init__(self, name, existing_file=None, model_defs_files=None, seq_of_renamed_models=None,
-        seq_of_renamed_attributes=None, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
+    def __init__(self, name, migrator=Migrator, existing_file=None, model_defs_files=None,
+        seq_of_renamed_models=None, seq_of_renamed_attributes=None, migrated_file=None, migrate_suffix=None,
+        migrate_in_place=False):
         self.name = name
+        self.migrator = migrator
         self.existing_file = existing_file
         self.model_defs_files = model_defs_files
         self.seq_of_renamed_models = seq_of_renamed_models
@@ -1206,8 +1209,8 @@ class MigrationController(object):
         num_migrations = len(md.model_defs_files) - 1
         for i in range(len(md.model_defs_files)):
             # create Migrator for each pair of schemas
-            migrator = Migrator(md.model_defs_files[i], md.model_defs_files[i+1], md.seq_of_renamed_models[i],
-                md.seq_of_renamed_attributes[i])
+            migrator = migration_desc.migrator(md.model_defs_files[i], md.model_defs_files[i+1],
+                md.seq_of_renamed_models[i], md.seq_of_renamed_attributes[i])
             migrator.prepare()
             # migrate in memory until the last migration
             if i == 0:
