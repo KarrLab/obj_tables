@@ -37,62 +37,74 @@ from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
 
-class Writer(six.with_metaclass(abc.ABCMeta, object)):
-    """ Write model objects to file(s) """
+class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
+    """ Interface for classes which write model objects to file(s) 
+
+    Attributes:
+        MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which 
+            to export them
+    """
+
+    MODELS = ()
 
     @abc.abstractmethod
-    def run(self, path, objects, models=None, get_related=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            validate=True):
+    def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
+            title=None, description=None, keywords=None, version=None, language=None, creator=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
-                appear as worksheets; all models which are not in `models` will
-                follow in alphabetical order
+            models (:obj:`list` of :obj:`Model`, optional): models
+            get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
-            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
         """
         pass  # pragma: no cover
 
 
-class JsonWriter(Writer):
+class JsonWriter(WriterBase):
     """ Write model objects to a JSON or YAML file """
 
-    def run(self, path, objects, models=None, get_related=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            validate=True):
+    def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
+            title=None, description=None, keywords=None, version=None, language=None, creator=None):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             models (:obj:`list` of :obj:`Model`, optional): models
+            get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
-            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Raises:
             :obj:`ValueError`: if model names are not unique or output format is not supported
         """
         if models is None:
-            models = []
-        elif isinstance(models, (list, tuple)):
+            models = self.MODELS
+        if isinstance(models, (list, tuple)):
             models = list(models)
         else:
             models = [models]
+
+        if not include_all_attributes:
+            warn('`include_all_attributes=False` has no effect', IoWarning)
 
         # validate
         if objects and validate:
@@ -132,12 +144,11 @@ class JsonWriter(Writer):
                 raise ValueError('Unsupported format {}'.format(ext))
 
 
-class WorkbookWriter(Writer):
+class WorkbookWriter(WriterBase):
     """ Write model objects to an Excel file or CSV or TSV file(s) """
 
-    def run(self, path, objects, models=None, get_related=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            include_all_attributes=True, validate=True):
+    def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
+            title=None, description=None, keywords=None, version=None, language=None, creator=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -147,15 +158,16 @@ class WorkbookWriter(Writer):
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
+            get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
-            creator (:obj:`str`, optional): creator
-            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
-            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
+            creator (:obj:`str`, optional): creator            
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -190,8 +202,8 @@ class WorkbookWriter(Writer):
 
         # check that at least one model was provided
         if models is None:
-            models = []
-        elif isinstance(models, (list, tuple)):
+            models = self.MODELS
+        if isinstance(models, (list, tuple)):
             models = list(models)
         else:
             models = [models]
@@ -254,7 +266,7 @@ class WorkbookWriter(Writer):
 
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
-            model (:obj:`class`): model
+            model (:obj:`type`): model
             objects (:obj:`list` of :obj:`Model`): list of instances of `model`
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
                 including those not explictly included in `Model.Meta.attribute_order`
@@ -348,7 +360,7 @@ class WorkbookWriter(Writer):
         """ Create worksheet style for model
 
         Args:
-            model (:obj:`class`): model class
+            model (:obj:`type`): model class
 
         Returns:
             :obj:`WorksheetStyle`: worksheet style
@@ -370,20 +382,95 @@ class WorkbookWriter(Writer):
         return style
 
 
-class Reader(six.with_metaclass(abc.ABCMeta, object)):
-    """ Write model objects to file(s) """
+class Writer(WriterBase):
+    """ Write a list of model objects to file(s) """
+
+    @staticmethod
+    def get_writer(path):
+        """ Get writer
+
+        Args:
+            path (:obj:`str`): path to write file(s)
+
+        Returns:
+            :obj:`type`: writer class
+
+        Raises:
+            :obj:`ValueError`: if extension is not supported
+        """
+        _, ext = splitext(path)
+        ext = ext.lower()
+        if ext in ['.csv', '.tsv', '.xlsx']:
+            return WorkbookWriter
+        elif ext in ['.json', '.yaml', '.yml']:
+            return JsonWriter
+        else:
+            raise ValueError('Invalid export format: {}'.format(ext))
+
+    def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
+            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
+            a set of .csv or .tsv files, with one file for each model.
+
+        Args:
+            path (:obj:`str`): path to write file(s)
+            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
+            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
+                appear as worksheets; all models which are not in `models` will
+                follow in alphabetical order
+            get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
+            title (:obj:`str`, optional): title
+            description (:obj:`str`, optional): description
+            keywords (:obj:`str`, optional): keywords
+            version (:obj:`str`, optional): version
+            language (:obj:`str`, optional): language
+            creator (:obj:`str`, optional): creator            
+        """
+        Writer = self.get_writer(path)
+        Writer().run(path, objects, models=models, get_related=get_related,
+                     include_all_attributes=include_all_attributes, validate=validate,
+                     title=title, description=description, keywords=keywords,
+                     language=language, creator=creator)
+
+
+class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
+    """ Interface for classes which write model objects to file(s)
+
+    Attributes:
+        MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which 
+            to export them
+    """
+
+    MODELS = ()
 
     @abc.abstractmethod
-    def run(self, path, models=None, group_objects_by_model=False, validate=True):
-        """ Read a list of model objects from file(s) and validate them
-
-        File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
-        separated files encoded by a single path with a glob pattern.
+    def run(self, path, models=None,
+            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
+            group_objects_by_model=False, validate=True):
+        """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
                 of object to read or list of types of objects to read
+            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+                file is missing for one or more models
+            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+                other worksheets or files
+            ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
+                in the canonical order
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
+            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
+                worksheet/file doesn't contain all of attributes in a model in `models`
+            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
+                attributes in the data are not in the model
+            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+                in the canonical order
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -394,16 +481,33 @@ class Reader(six.with_metaclass(abc.ABCMeta, object)):
         pass  # pragma: no cover
 
 
-class JsonReader(Reader):
+class JsonReader(ReaderBase):
     """ Read model objects from a JSON or YAML file """
 
-    def run(self, path, models=None, group_objects_by_model=False, validate=True):
-        """ Read model objects from file(s) and validate them
+    def run(self, path, models=None,
+            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
+            group_objects_by_model=False, validate=True):
+        """ Read model objects from file(s) and, optionally, validate them
 
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type or list
                 of type of objects to read
+            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+                file is missing for one or more models
+            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+                other worksheets or files
+            ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
+                in the canonical order
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
+            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
+                worksheet/file doesn't contain all of attributes in a model in `models`
+            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
+                attributes in the data are not in the model
+            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+                in the canonical order
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -417,8 +521,8 @@ class JsonReader(Reader):
         """
         # cast models to list
         if models is None:
-            models = []
-        elif not isinstance(models, (list, tuple)):
+            models = self.MODELS
+        if not isinstance(models, (list, tuple)):
             models = [models]
 
         # read the object into standard Python objects (lists, dicts)
@@ -481,14 +585,14 @@ class JsonReader(Reader):
             return objs
 
 
-class WorkbookReader(Reader):
+class WorkbookReader(ReaderBase):
     """ Read model objects from an Excel file or CSV and TSV files """
 
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
             group_objects_by_model=True, validate=True):
-        """ Read a list of model objects from file(s) and validate them
+        """ Read a list of model objects from file(s) and, optionally, validate them
 
         File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
         separated files encoded by a single path with a glob pattern.
@@ -543,8 +647,8 @@ class WorkbookReader(Reader):
 
         # check that at least one model is defined
         if models is None:
-            models = []
-        elif not isinstance(models, (list, tuple)):
+            models = self.MODELS
+        if not isinstance(models, (list, tuple)):
             models = [models]
 
         # check that sheets can be unambiguously mapped to models
@@ -691,7 +795,7 @@ class WorkbookReader(Reader):
 
         Args:
             reader (:obj:`wc_utils.workbook.io.Reader`): reader
-            model (:obj:`class`): the model describing the objects' schema
+            model (:obj:`type`): the model describing the objects' schema
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
                 not explictly included in `Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if the worksheet/files
@@ -1009,46 +1113,71 @@ class WorkbookReader(Reader):
         return sheets_to_models
 
 
-def get_writer(ext):
-    """ Get writer
+class Reader(ReaderBase):
+    @staticmethod
+    def get_reader(path):
+        """ Get reader
 
-    Args:
-        ext (:obj:`str`): extension (.csv, .json, .tsv, .xlsx, .yaml, or .yml)
+        Args:
+            path (:obj:`str`): path to write file(s)
 
-    Returns:
-        :obj:`class`: writer class
+        Returns:
+            :obj:`type`: reader class
 
-    Raises:
-        :obj:`ValueError`: if extension is not supported
-    """
-    ext = ext.lower()
-    if ext in ['.csv', '.tsv', '.xlsx']:
-        return WorkbookWriter
-    elif ext in ['.json', '.yaml', '.yml']:
-        return JsonWriter
-    else:
-        raise ValueError('Invalid export format: {}'.format(ext))
+        Raises:
+            :obj:`ValueError`: if extension is not supported
+        """
+        _, ext = splitext(path)
+        ext = ext.lower()
+        if ext in ['.csv', '.tsv', '.xlsx']:
+            return WorkbookReader
+        elif ext in ['.json', '.yaml', '.yml']:
+            return JsonReader
+        else:
+            raise ValueError('Invalid export format: {}'.format(ext))
 
+    def run(self, path, models=None,
+            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
+            group_objects_by_model=False, validate=True):
+        """ Read a list of model objects from file(s) and, optionally, validate them
 
-def get_reader(ext):
-    """ Get reader
+        Args:
+            path (:obj:`str`): path to file(s)
+            models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
+                of object to read or list of types of objects to read
+            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+                file is missing for one or more models
+            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+                other worksheets or files
+            ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
+                in the canonical order
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
+            ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
+                worksheet/file doesn't contain all of attributes in a model in `models`
+            ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
+                attributes in the data are not in the model
+            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+                in the canonical order
+            group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
+                types
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
-    Args:
-        ext (:obj:`str`): extension (.csv, .json, .tsv, .xlsx, .yaml, or .yml)
-
-    Returns:
-        :obj:`class`: reader class
-
-    Raises:
-        :obj:`ValueError`: if extension is not supported
-    """
-    ext = ext.lower()
-    if ext in ['.csv', '.tsv', '.xlsx']:
-        return WorkbookReader
-    elif ext in ['.json', '.yaml', '.yml']:
-        return JsonReader
-    else:
-        raise ValueError('Invalid export format: {}'.format(ext))
+        Returns:
+            :obj:`dict`: model objects grouped by `Model` class
+        """
+        Reader = self.get_reader(path)
+        return Reader().run(path, models=models,
+                            ignore_missing_sheets=ignore_missing_sheets,
+                            ignore_extra_sheets=ignore_extra_sheets,
+                            ignore_sheet_order=ignore_sheet_order,
+                            include_all_attributes=include_all_attributes,
+                            ignore_missing_attributes=ignore_missing_attributes,
+                            ignore_extra_attributes=ignore_extra_attributes,
+                            ignore_attribute_order=ignore_attribute_order,
+                            group_objects_by_model=group_objects_by_model,
+                            validate=validate)
 
 
 def convert(source, destination, models,
@@ -1060,7 +1189,7 @@ def convert(source, destination, models,
     Args:
         source (:obj:`str`): path to source file
         destination (:obj:`str`): path to save converted file
-        models (:obj:`list` of :obj:`class`): list of models
+        models (:obj:`list` of :obj:`type`): list of models
         ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
             file is missing for one or more models
         ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
@@ -1076,8 +1205,8 @@ def convert(source, destination, models,
         ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
             in the canonical order
     """
-    reader = get_reader(splitext(source)[1])()
-    writer = get_writer(splitext(destination)[1])()
+    reader = Reader.get_reader(source)()
+    writer = Writer.get_writer(destination)()
 
     kwargs = {}
     if isinstance(reader, WorkbookReader):
@@ -1109,10 +1238,9 @@ def create_template(path, models, title=None, description=None, keywords=None,
         language (:obj:`str`, optional): language
         creator (:obj:`str`, optional): creator
     """
-    _, ext = splitext(path)
-    get_writer(ext)().run(path, [], models,
-                          title=title, description=description, keywords=keywords,
-                          version=version, language=language, creator=creator)
+    Writer.get_writer(path)().run(path, [], models,
+                                  title=title, description=description, keywords=keywords,
+                                  version=version, language=language, creator=creator)
 
 
 def get_ordered_attributes(cls, include_all_attributes=True):

@@ -628,8 +628,7 @@ class Migrator(object):
         Returns:
             :obj:`list` of `obj_model.Model`: the models in `existing_file`
         """
-        root, ext = os.path.splitext(existing_file)
-        obj_model_reader = obj_model.io.get_reader(ext)()
+        obj_model_reader = obj_model.io.Reader.get_reader(existing_file)()
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
         old_models = obj_model_reader.run(existing_file, models=self._get_models_with_worksheets(self.old_model_defs),
             ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False)
@@ -689,7 +688,7 @@ class Migrator(object):
                 raise MigratorError("migrated file '{}' already exists".format(migrated_file))
 
         # write migrated models to disk
-        obj_model_writer = obj_model.io.get_writer(ext)()
+        obj_model_writer = obj_model.io.Writer.get_writer(existing_file)()
         obj_model_writer.run(migrated_file, migrated_models, models=model_order)
         return migrated_file
 
