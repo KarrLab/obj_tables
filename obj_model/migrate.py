@@ -24,7 +24,6 @@ import wc_utils
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-# todo: add wc_lang package dependencies needed by obj_model
 # todo: have migrate_over_schema_sequence support wc_lang migration
 # todo: integrate load_defs_from_files into prepare
 # todo next: test big wc_lang model, deal with implicit Model attributes
