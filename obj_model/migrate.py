@@ -21,11 +21,14 @@ import obj_model
 from obj_model import TabularOrientation
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
-from wc_utils.util.list import det_find_dupes, det_count_elements
+from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-
+# todo: add wc_lang package dependencies needed by obj_model
+# todo: have migrate_over_schema_sequence support wc_lang migration
+# todo: integrate load_defs_from_files into prepare
 # todo next: test big wc_lang model, deal with implicit Model attributes
+# todo: move generate_wc_lang_migrator to wc_lang
 # todo: test_migrate_from_config and test if self.seq_of_renamed_models
 # todo next: more coverage
 # todo next: address perf. problem with wc_lang migration, if they persist
@@ -758,12 +761,7 @@ class Migrator(object):
         Returns:
             :obj:`list`: inconsistencies in `existing_models`; an empty list if no inconsistencies exist
         """
-        existing_models_dict = {}
-        for existing_model in existing_models:
-            cls = existing_model.__class__
-            if cls not in existing_models_dict:
-                existing_models_dict[cls] = []
-            existing_models_dict[cls].append(existing_model)
+        existing_models_dict = dict_by_class(existing_models)
         inconsistencies = []
         for old_model_def, old_models in existing_models_dict.items():
             for old_model in old_models:
@@ -978,6 +976,48 @@ class Migrator(object):
         for old_model, new_model in all_models:
             # delete the reference to new_model in old_model
             delattr(old_model, self._migrated_copy_attr_name)
+
+    @staticmethod
+    def generate_wc_lang_migrator(**kwargs):
+        """ Generate a `Migrator` for a WC-Lang (`wc_lang`) model
+
+        WC-Lang model files must contain exactly one `Model` instance, and as a convenience for users,
+        they allow uninitialized `model` attributes which reference the `Model` instance. Like
+        `wc_lang.io.Reader`, the `Migrator` generated here initializes these attributes.
+        This ensures that model files written by the `Migrator` contain initialized `Model` references,
+        and enables round-trip migrations of WC-Lang model files.
+
+        Args:
+            kwargs (:obj:`dict`) arguments for `Migrator()`, except `transformations`
+
+        Returns:
+            :obj:`Migrator`: a new `Migrator`, with a transformation that initializes `model`
+                attributes which reference the `Model` instance
+
+        Raises:
+            :obj:`MigratorError`: if `kwargs` contains `transformations`
+        """
+        if 'transformations' in kwargs:
+            raise MigratorError("'transformations' entry not allowed in kwargs:\n{}".format(pformat(kwargs)))
+        def prepare_existing_wc_lang_models(migrator, existing_models):
+            # reproduce the 'add implicit relationships to `Model`' code in wc_lang/io.py
+            existing_models_dict = dict_by_class(existing_models)
+            model_cls = migrator.old_model_defs['Model']
+            num_model_instances = 0
+            if model_cls in existing_models_dict:
+                num_model_instances = len(existing_models_dict[model_cls])
+            if num_model_instances != 1:
+                raise MigratorError("existing models must have 1 Model instance, but {} are present".format(
+                    num_model_instances))
+            root_model = existing_models_dict[model_cls][0]
+            for cls, cls_objects in existing_models_dict.items():
+                for attr in cls.Meta.attributes.values():
+                    if isinstance(attr, obj_model.RelatedAttribute) and attr.related_class == model_cls:
+                        for cls_obj in cls_objects:
+                            setattr(cls_obj, attr.name, root_model)
+
+        transformations = {Migrator.PREPARE_EXISTING_MODELS:prepare_existing_wc_lang_models}
+        return Migrator(**kwargs, transformations=transformations)
 
     def run(self, files):
         """ Migrate some files
