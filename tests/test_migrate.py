@@ -700,8 +700,7 @@ class TestMigration(MigrationFixtures):
 
     @staticmethod
     def read_model_file(model_file, models):
-        _, ext = os.path.splitext(model_file)
-        reader = obj_model.io.get_reader(ext)()
+        reader = obj_model.io.Reader.get_reader(model_file)()
         return reader.run(model_file, models=models, ignore_sheet_order=True)
 
     def compare_model(self, model_cls, models, old_file, migrated_file):

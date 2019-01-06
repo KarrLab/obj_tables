@@ -1602,12 +1602,12 @@ class JsonTestCase(unittest.TestCase):
 
         models = [MainRoot, Node, Leaf, OneToManyRow]
 
-        obj_model.io.get_writer('.xlsx')().run(filename_1_xlsx, [root], models=models)
+        obj_model.io.Writer.get_writer(filename_1_xlsx)().run(filename_1_xlsx, [root], models=models)
 
         # convert xlsx --> json
         convert(filename_1_xlsx, filename_2_json, models=models)
 
-        objects2 = obj_model.io.get_reader('.json')().run(filename_2_json, models=models,
+        objects2 = obj_model.io.Reader.get_reader(filename_2_json)().run(filename_2_json, models=models,
                                                           group_objects_by_model=True)
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
@@ -1616,7 +1616,7 @@ class JsonTestCase(unittest.TestCase):
         # convert json --> xlsx
         convert(filename_2_json, filename_3_xlsx, models=models)
 
-        objects2 = obj_model.io.get_reader('.xlsx')().run(filename_3_xlsx, models=models,
+        objects2 = obj_model.io.Reader.get_reader(filename_3_xlsx)().run(filename_3_xlsx, models=models,
                                                           group_objects_by_model=True)
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
@@ -1851,26 +1851,26 @@ class InlineJsonTestCase(unittest.TestCase):
 
 class UtilsTestCase(unittest.TestCase):
     def test_get_writer(self):
-        self.assertEqual(obj_model.io.get_writer('.csv'), obj_model.io.WorkbookWriter)
-        self.assertEqual(obj_model.io.get_writer('.tsv'), obj_model.io.WorkbookWriter)
-        self.assertEqual(obj_model.io.get_writer('.xlsx'), obj_model.io.WorkbookWriter)
-        self.assertEqual(obj_model.io.get_writer('.json'), obj_model.io.JsonWriter)
-        self.assertEqual(obj_model.io.get_writer('.yaml'), obj_model.io.JsonWriter)
-        self.assertEqual(obj_model.io.get_writer('.yml'), obj_model.io.JsonWriter)
+        self.assertEqual(obj_model.io.Writer.get_writer('test.csv'), obj_model.io.WorkbookWriter)
+        self.assertEqual(obj_model.io.Writer.get_writer('test.tsv'), obj_model.io.WorkbookWriter)
+        self.assertEqual(obj_model.io.Writer.get_writer('test.xlsx'), obj_model.io.WorkbookWriter)
+        self.assertEqual(obj_model.io.Writer.get_writer('test.json'), obj_model.io.JsonWriter)
+        self.assertEqual(obj_model.io.Writer.get_writer('test.yaml'), obj_model.io.JsonWriter)
+        self.assertEqual(obj_model.io.Writer.get_writer('test.yml'), obj_model.io.JsonWriter)
 
         with self.assertRaises(ValueError):
-            obj_model.io.get_writer('.abc')
+            obj_model.io.Writer.get_writer('test.abc')
 
     def test_get_reader(self):
-        self.assertEqual(obj_model.io.get_reader('.csv'), obj_model.io.WorkbookReader)
-        self.assertEqual(obj_model.io.get_reader('.tsv'), obj_model.io.WorkbookReader)
-        self.assertEqual(obj_model.io.get_reader('.xlsx'), obj_model.io.WorkbookReader)
-        self.assertEqual(obj_model.io.get_reader('.json'), obj_model.io.JsonReader)
-        self.assertEqual(obj_model.io.get_reader('.yaml'), obj_model.io.JsonReader)
-        self.assertEqual(obj_model.io.get_reader('.yml'), obj_model.io.JsonReader)
+        self.assertEqual(obj_model.io.Reader.get_reader('test.csv'), obj_model.io.WorkbookReader)
+        self.assertEqual(obj_model.io.Reader.get_reader('test.tsv'), obj_model.io.WorkbookReader)
+        self.assertEqual(obj_model.io.Reader.get_reader('test.xlsx'), obj_model.io.WorkbookReader)
+        self.assertEqual(obj_model.io.Reader.get_reader('test.json'), obj_model.io.JsonReader)
+        self.assertEqual(obj_model.io.Reader.get_reader('test.yaml'), obj_model.io.JsonReader)
+        self.assertEqual(obj_model.io.Reader.get_reader('test.yml'), obj_model.io.JsonReader)
 
         with self.assertRaises(ValueError):
-            obj_model.io.get_reader('.abc')
+            obj_model.io.Reader.get_reader('test.abc')
 
     def test_get_ordered_attributes(self):
         class Root(core.Model):
