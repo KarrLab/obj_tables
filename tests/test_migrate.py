@@ -40,10 +40,10 @@ class MigrationFixtures(unittest.TestCase):
         self.new_model_defs_path = os.path.join(fixtures_path, 'core_new.py')
 
         self.migrator = Migrator(self.old_model_defs_path, self.new_model_defs_path)
-        self.migrator.load_defs_from_files()
+        self.migrator._load_defs_from_files()
 
         self.no_change_migrator = Migrator(self.old_model_defs_path, self.old_model_defs_path)
-        self.no_change_migrator.load_defs_from_files().prepare()
+        self.no_change_migrator.prepare()
 
         self.tmp_dir = mkdtemp()
 
@@ -207,7 +207,6 @@ class MigrationFixtures(unittest.TestCase):
             self.set_up_fun_expr_fixtures(self.wc_lang_changes_migrator, 'Parameter', 'ParameterRenamed')
 
     def set_up_fun_expr_fixtures(self, migrator, existing_param_class, migrated_param_class):
-        migrator.load_defs_from_files()
         migrator.prepare()
         Model = migrator.old_model_defs['Model']
         # define models in FunctionExpression.valid_used_models
@@ -398,11 +397,11 @@ class TestMigration(MigrationFixtures):
 
     def test_load_defs_from_files(self):
         migrator = Migrator(self.old_model_defs_path, self.new_model_defs_path)
-        migrator.load_defs_from_files()
+        migrator._load_defs_from_files()
         self.assertEqual(set(migrator.old_model_defs), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
         self.assertEqual(set(migrator.new_model_defs), {'Test', 'NewModel', 'Property', 'Subtest', 'Reference'})
         migrator_no_files = Migrator()
-        migrator_no_files.load_defs_from_files()
+        migrator_no_files._load_defs_from_files()
         self.assertEqual(migrator_no_files.old_model_defs_path, None)
         self.assertEqual(migrator_no_files.new_model_defs_path, None)
 
@@ -527,7 +526,7 @@ class TestMigration(MigrationFixtures):
         # triggering inconsistencies in prepare() requires inconsistent model definitions on disk
         inconsistent_new_model_defs_path = os.path.join(self.fixtures_path, 'core_new_inconsistent.py')
         inconsistent_migrator = Migrator(self.old_model_defs_path, inconsistent_new_model_defs_path)
-        inconsistent_migrator.load_defs_from_files()
+        inconsistent_migrator._load_defs_from_files()
         with self.assertRaisesRegex(MigratorError,
             "existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+"):
             inconsistent_migrator.prepare()
@@ -780,7 +779,7 @@ class TestMigration(MigrationFixtures):
             Migrator.MODIFY_MIGRATED_MODELS: modify_migrated_models
         }
         migrator = Migrator(self.old_model_defs_path, self.old_model_defs_path, transformations=transformations)
-        migrator.load_defs_from_files().prepare()
+        migrator.prepare()
         migrated_file = migrator.full_migrate(self.example_old_model_copy)
 
         # test that inverted transformations make no changes
@@ -796,13 +795,13 @@ class TestMigration(MigrationFixtures):
         old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
         old_2_new_migrator = Migrator(self.old_rt_model_defs_path, self.new_rt_model_defs_path,
             renamed_models=old_2_new_renamed_models, renamed_attributes=old_2_new_renamed_attributes)
-        old_2_new_migrator.load_defs_from_files().prepare()
+        old_2_new_migrator.prepare()
 
         # make new -> old migrator
         new_2_old_migrator = Migrator(self.new_rt_model_defs_path, self.old_rt_model_defs_path,
             renamed_models=self.invert_renaming(old_2_new_renamed_models),
             renamed_attributes=self.invert_renaming(old_2_new_renamed_attributes))
-        new_2_old_migrator.load_defs_from_files().prepare()
+        new_2_old_migrator.prepare()
 
         # round trip test of model in tsv file
         old_2_new_migrator.full_migrate(self.example_old_model_tsv, migrated_file=self.old_2_new_migrated_tsv_file)
@@ -868,7 +867,7 @@ class TestMigration(MigrationFixtures):
         f.close()
         migrator = Migrator(bad_module, self.new_model_defs_path)
         with self.assertRaisesRegex(MigratorError, "cannot be imported and exec'ed"):
-            migrator.load_defs_from_files()
+            migrator._load_defs_from_files()
 
     def test_generate_wc_lang_migrator(self):
         migrator = Migrator.generate_wc_lang_migrator()
@@ -877,7 +876,7 @@ class TestMigration(MigrationFixtures):
 
         same_defs_migrator = Migrator.generate_wc_lang_migrator(old_model_defs_file=self.wc_lang_schema_existing,
             new_model_defs_file=self.wc_lang_schema_existing)
-        same_defs_migrator.load_defs_from_files().prepare()
+        same_defs_migrator.prepare()
         # migrate self.wc_lang_no_model_attrs twice with the generate_wc_lang_migrator
         # the 1st migration adds model attributes, & the 2nd tests that they exist
         wc_lang_model_with_model_attrs = same_defs_migrator.full_migrate(self.wc_lang_no_model_attrs)
@@ -1003,7 +1002,7 @@ class TestMigrationController(MigrationFixtures):
 
         # validate memory resident models
         initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
-        initial_migrator.load_defs_from_files().prepare()
+        initial_migrator.prepare()
         Model = initial_migrator.old_model_defs['Model']
         existing_model = get_root_models(Model, existing_models)
         migrated_model = get_root_models(Model, migrated_models)

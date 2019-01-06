@@ -25,7 +25,6 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 # todo: have migrate_over_schema_sequence support wc_lang migration
-# todo: integrate load_defs_from_files into prepare
 # todo next: test big wc_lang model, deal with implicit Model attributes
 # todo: move generate_wc_lang_migrator to wc_lang
 # todo: test_migrate_from_config and test if self.seq_of_renamed_models
@@ -147,7 +146,7 @@ class Migrator(object):
         self.old_model_defs_path = None
         self.new_model_defs_path = None
 
-    def load_defs_from_files(self):
+    def _load_defs_from_files(self):
         """ Initialize a `Migrator`s model definitions from files
 
         Distinct from `prepare` so most of `Migrator` can be tested with models defined in code
@@ -403,6 +402,8 @@ class Migrator(object):
             :obj:`MigratorError`: if renamings are not valid, or
                 inconsistencies exist between corresponding old and migrated classes
         """
+        # load schemas from files
+        self._load_defs_from_files()
 
         # validate transformations
         self._validate_transformations()
@@ -1207,7 +1208,7 @@ class MigrationController(object):
             # create Migrator for each pair of schemas
             migrator = Migrator(md.model_defs_files[i], md.model_defs_files[i+1], md.seq_of_renamed_models[i],
                 md.seq_of_renamed_attributes[i])
-            migrator.load_defs_from_files().prepare()
+            migrator.prepare()
             # migrate in memory until the last migration
             if i == 0:
                 models = existing_models = migrator.read_existing_model(md.existing_file)
@@ -1318,7 +1319,7 @@ class RunMigration(object):
     @staticmethod
     def main(args):
         migrator = Migrator(args.existing_model_definitions, args.new_model_definitions)
-        migrator.load_defs_from_files().prepare()
+        migrator.prepare()
         return migrator.run(args.files)
 
 if __name__ == '__main__':  # pragma: no cover     # reachable only from command line
