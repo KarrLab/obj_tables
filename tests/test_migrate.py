@@ -935,24 +935,8 @@ class TestMigrationController(MigrationFixtures):
         # validate
         self.assert_equal_workbooks(self.example_old_rt_model_copy, migrated_filename)
 
-    def test_get_migrations_config(self):
-        migration_descs = MigrationController.get_migrations_config(self.config_file)
-        self.assertIn('migration_with_renaming', migration_descs.keys())
-        self.assertEqual(migration_descs['migration_with_renaming'].existing_file,
-            'tests/fixtures/migrate/example_old_model_rt.xlsx')
-
-        temp_bad_config_example = os.path.join(self.tmp_dir, 'bad_config_example.yaml')
-        with open(temp_bad_config_example, 'w') as file:
-            file.write(u'migration:\n')
-            file.write(u'    obj_defs: [core_new_rt.py, core_old_rt.py]\n')
-        with self.assertRaisesRegex(MigratorError, re.escape("disallowed attribute(s) found: {'obj_defs'}")):
-            MigrationController.get_migrations_config(temp_bad_config_example)
-
-        with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
-            MigrationController.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
-
     def test_migrate_from_desc(self):
-        migration_descs = MigrationController.get_migrations_config(self.config_file)
+        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
 
         migration_desc = migration_descs['migration']
         migrated_filename = self.get_temp_pathname('migration.xlsx')
@@ -971,14 +955,6 @@ class TestMigrationController(MigrationFixtures):
         # results = MigrationController.migrate_from_config(self.config_file)
         # add migrated_file entries to self.config_file, or load and dump it
         pass
-
-    def test_str(self):
-        migration_descs = MigrationController.get_migrations_config(self.config_file)
-        name = 'migration_with_renaming'
-        migration_desc = migration_descs[name]
-        migration_desc_str = str(migration_desc)
-        self.assertIn(name, migration_desc_str)
-        self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
 
     @unittest.skip('')
     def test_wc_lang_migration(self):
@@ -1081,6 +1057,22 @@ class TestMigrationDesc(MigrationFixtures):
     def tearDown(self):
         super().tearDown()
 
+    def test_get_migrations_config(self):
+        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
+        self.assertIn('migration_with_renaming', migration_descs.keys())
+        self.assertEqual(migration_descs['migration_with_renaming'].existing_file,
+            'tests/fixtures/migrate/example_old_model_rt.xlsx')
+
+        temp_bad_config_example = os.path.join(self.tmp_dir, 'bad_config_example.yaml')
+        with open(temp_bad_config_example, 'w') as file:
+            file.write(u'migration:\n')
+            file.write(u'    obj_defs: [core_new_rt.py, core_old_rt.py]\n')
+        with self.assertRaisesRegex(MigratorError, re.escape("disallowed attribute(s) found: {'obj_defs'}")):
+            MigrationDesc.get_migrations_config(temp_bad_config_example)
+
+        with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
+            MigrationDesc.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
+
     def test_validate(self):
         self.assertFalse(self.migration_desc.validate())
         md = copy.deepcopy(self.migration_desc)
@@ -1137,7 +1129,7 @@ class TestMigrationDesc(MigrationFixtures):
                 "seq_of_renamed_attributes must be None, or a list of lists of pairs of pairs of strs"))
 
     def test_standardize(self):
-        migration_descs = MigrationController.get_migrations_config(self.config_file)
+        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
         md = migration_descs['migration']
         for renaming in MigrationDesc._renaming_lists:
             self.assertEqual(len(getattr(md, renaming)), len(md.model_defs_files) - 1)
@@ -1161,6 +1153,14 @@ class TestMigrationDesc(MigrationFixtures):
         self.assertEqual(kwargs['seq_of_renamed_attributes'], self.old_2_new_renamed_attributes)
         self.assertEqual(kwargs['migrated_file'], None)
         self.migration_desc
+
+    def test_str(self):
+        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
+        name = 'migration_with_renaming'
+        migration_desc = migration_descs[name]
+        migration_desc_str = str(migration_desc)
+        self.assertIn(name, migration_desc_str)
+        self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
 
 
 class TestRunMigration(MigrationFixtures):

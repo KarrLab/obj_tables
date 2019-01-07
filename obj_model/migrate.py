@@ -1081,12 +1081,55 @@ class MigrationDesc(object):
         self.migrate_suffix = migrate_suffix
         self.migrate_in_place = migrate_in_place
 
+    @staticmethod
+    def get_migrations_config(migrations_config_file):
+        """ Read and initially validate a migrations configuration file
+
+        Args:
+            migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
+
+        Returns:
+            :obj:`list` of :obj:`MigrationDesc`: migration descriptions
+
+        Raises:
+            :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration descriptions in
+                `migrations_config_file` are not valid
+        """
+        try:
+            fd = open(migrations_config_file, 'r')
+        except FileNotFoundError as e:
+            raise MigratorError("could not read migration config file: '{}'".format(migrations_config_file))
+        migrations_config = yaml.load(fd)
+
+        # parse the migrations config
+        migration_descs = {}
+        for migration_name, migration_desc in migrations_config.items():
+            migration_desc_obj = MigrationDesc(migration_name)
+            for param, value in migration_desc.items():
+                setattr(migration_desc_obj, param, value)
+            migration_descs[migration_name] = migration_desc_obj
+
+        migration_errors = []
+        for migration_name, migration_desc_obj in migration_descs.items():
+            validate_errors = migration_desc_obj.validate()
+            if validate_errors:
+                migration_errors.extend(validate_errors)
+        if migration_errors:
+            raise MigratorError('\n'.join(migration_errors))
+        return migration_descs
+
     def validate(self):
-        """ Validate the attributes and relative cardinality of a migration description
+        """ Validate the attributes of a migration description
+
+        Returns:
+            :obj:`list` of :obj:`str`: list of errors found
         """
         errors = []
-        members = inspect.getmembers(self, lambda a: not(inspect.isclass(a) or inspect.ismethod(a)))
+        # check all attributes of self that aren't classes, methods, functions, or private
+        members = inspect.getmembers(self, lambda a:
+            not(inspect.isclass(a) or inspect.ismethod(a) or inspect.isfunction(a)))
         members = [attr for attr, value in members if not attr.startswith('_')]
+
         extra_attrs = set(members).difference(self._allowed_attrs)
         if extra_attrs:
             errors.append("disallowed attribute(s) found: {}".format(extra_attrs))
@@ -1137,7 +1180,7 @@ class MigrationDesc(object):
         return errors
 
     def standardize(self):
-        """ Standardize
+        """ Standardize the attributes of a `MigrationDesc`
         """
         # convert [model, attr] pairs in seq_of_renamed_attributes into tuples; needed for hashing
         if self.seq_of_renamed_attributes:
@@ -1159,7 +1202,11 @@ class MigrationDesc(object):
                 setattr(self, renaming_list, empty_per_migration_list)
 
     def get_kwargs(self):
-        # get kwargs for optional args
+        """ Create a `kwargs` dictionary of a `MigrationDesc`'s optional arguments 
+
+        Returns:
+            :obj:`dict`: `kwargs` for this `MigrationDesc`'s optional arguments 
+        """
         optional_args = ['existing_file', 'model_defs_files', 'seq_of_renamed_models', 'seq_of_renamed_attributes',
             'migrated_file', 'migrate_suffix', 'migrate_in_place']
         kwargs = {}
@@ -1168,6 +1215,11 @@ class MigrationDesc(object):
         return kwargs
 
     def __str__(self):
+        """ Get str representation
+
+        Returns:
+            :obj:`str`: string representation of all allowed attributes in a `MigrationDesc`
+        """
         rv = []
         for attr in self._allowed_attrs:
             if attr in self._renaming_lists:
@@ -1230,43 +1282,6 @@ class MigrationController(object):
         return existing_models, models, migrated_file
 
     @staticmethod
-    def get_migrations_config(migrations_config_file):
-        """ Read and initially validate a migrations configuration file
-
-        Args:
-            migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
-
-        Returns:
-            :obj:`list` of :obj:`MigrationDesc`: migration descriptions
-
-        Raises:
-            :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration descriptions in
-                `migrations_config_file` are not valid
-        """
-        try:
-            fd = open(migrations_config_file, 'r')
-        except FileNotFoundError as e:
-            raise MigratorError("could not read migration config file: '{}'".format(migrations_config_file))
-        migrations_config = yaml.load(fd)
-
-        # parse the migrations config
-        migration_descs = {}
-        for migration_name, migration_desc in migrations_config.items():
-            migration_desc_obj = MigrationDesc(migration_name)
-            for param, value in migration_desc.items():
-                setattr(migration_desc_obj, param, value)
-            migration_descs[migration_name] = migration_desc_obj
-
-        migration_errors = []
-        for migration_name, migration_desc_obj in migration_descs.items():
-            validate_errors = migration_desc_obj.validate()
-            if validate_errors:
-                migration_errors.extend(validate_errors)
-        if migration_errors:
-            raise MigratorError('\n'.join(migration_errors))
-        return migration_descs
-
-    @staticmethod
     def migrate_from_desc(migration_desc):
         """ Perform a migration described in a `MigrationDesc`
 
@@ -1289,7 +1304,7 @@ class MigrationController(object):
         Returns:
             :obj:`list` of :obj:`str`: migrated filenames
         """
-        migration_descs = MigrationController.get_migrations_config(migrations_config_file)
+        migration_descs = MigrationDesc.get_migrations_config(migrations_config_file)
         results = []
         for migration_desc in migration_descs.values():
             results.append(MigrationController.migrate_from_desc(migration_desc))
