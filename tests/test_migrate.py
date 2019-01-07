@@ -267,7 +267,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-class TestMigration(MigrationFixtures):
+class TestMigrator(MigrationFixtures):
 
     def setUp(self):
         super().setUp()
@@ -905,6 +905,129 @@ class TestMigration(MigrationFixtures):
         self.assertIn(str(self.good_migrator.new_model_defs), str(self.good_migrator))
 
 
+class TestMigrationDesc(MigrationFixtures):
+
+    def setUp(self):
+        super().setUp()
+        old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
+        # since MigrationDesc describes a sequence of migrations, embed these in lists
+        self.old_2_new_renamed_models = [old_2_new_renamed_models]
+        self.old_2_new_renamed_attributes = [old_2_new_renamed_attributes]
+        self.migration_desc = MigrationDesc('name',
+            existing_file=self.example_old_rt_model_copy,
+            model_defs_files=[self.old_rt_model_defs_path, self.new_rt_model_defs_path],
+            seq_of_renamed_models=self.old_2_new_renamed_models,
+            seq_of_renamed_attributes= self.old_2_new_renamed_attributes)
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test_get_migrations_config(self):
+        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
+        self.assertIn('migration_with_renaming', migration_descs.keys())
+        self.assertEqual(migration_descs['migration_with_renaming'].existing_file,
+            'tests/fixtures/migrate/example_old_model_rt.xlsx')
+
+        temp_bad_config_example = os.path.join(self.tmp_dir, 'bad_config_example.yaml')
+        with open(temp_bad_config_example, 'w') as file:
+            file.write(u'migration:\n')
+            file.write(u'    obj_defs: [core_new_rt.py, core_old_rt.py]\n')
+        with self.assertRaisesRegex(MigratorError, re.escape("disallowed attribute(s) found: {'obj_defs'}")):
+            MigrationDesc.get_migrations_config(temp_bad_config_example)
+
+        with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
+            MigrationDesc.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
+
+    def test_validate(self):
+        self.assertFalse(self.migration_desc.validate())
+        md = copy.deepcopy(self.migration_desc)
+        setattr(md, 'disallowed_attr', 'bad')
+        self.assertEqual(md.validate(), ["disallowed attribute(s) found: {'disallowed_attr'}"])
+
+        for attr in MigrationDesc._required_attrs:
+            md = copy.deepcopy(self.migration_desc)
+            setattr(md, attr, None)
+            self.assertEqual(md.validate(), ["missing required attribute '{}'".format(attr)])
+
+        md = copy.deepcopy(self.migration_desc)
+        md.model_defs_files = []
+        self.assertEqual(md.validate(),
+            ["model_defs_files must contain at least 2 model definitions, but it has only 0"])
+
+        for renaming_list in MigrationDesc._renaming_lists:
+            md = copy.deepcopy(self.migration_desc)
+            setattr(md, renaming_list, [[], []])
+            error = md.validate()[0]
+            self.assertRegex(error,
+                "{} must have 1 .+ 1 migration.+ model_defs_files, but it has \d".format(renaming_list))
+
+        for renaming_list in MigrationDesc._renaming_lists:
+            md = copy.deepcopy(self.migration_desc)
+            setattr(md, renaming_list, None)
+            self.assertFalse(md.validate())
+
+        for renaming_list in MigrationDesc._renaming_lists:
+            md = copy.deepcopy(self.migration_desc)
+            setattr(md, renaming_list, [None])
+            self.assertEqual(md.validate(), [])
+
+        bad_renamed_models_examples = [3, [('foo')], [('foo', 1)], [(1, 'bar')]]
+        for bad_renamed_models in bad_renamed_models_examples:
+            md = copy.deepcopy(self.migration_desc)
+            md.seq_of_renamed_models = [bad_renamed_models]
+            error = md.validate()[0]
+            self.assertTrue(error.startswith(
+                "seq_of_renamed_models must be None, or a list of lists of pairs of strs"))
+
+        bad_renamed_attributes_examples = [
+            [[('A', 'att1'), ('B', 'att2', 'extra')]],
+            [[('A', 'att1'), ('B')]],
+            [[(1, 'att1'), ('B', 'att2')]],
+            [[('A', 2), ('B', 'att2')]],
+            [3],
+            ]
+        for bad_renamed_attributes in bad_renamed_attributes_examples:
+            md = copy.deepcopy(self.migration_desc)
+            md.seq_of_renamed_attributes = [bad_renamed_attributes]
+            error = md.validate()[0]
+            self.assertTrue(error.startswith(
+                "seq_of_renamed_attributes must be None, or a list of lists of pairs of pairs of strs"))
+
+    def test_standardize(self):
+        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
+        md = migration_descs['migration']
+        for renaming in MigrationDesc._renaming_lists:
+            self.assertEqual(len(getattr(md, renaming)), len(md.model_defs_files) - 1)
+        seq_of_renamed_attributes = [
+            [[['Test', 'old_attr'], ['MigratedTest', 'new_attr']]],
+            [[['Property', 'new_value'], ['Property', 'value']]]]
+        migration_desc = MigrationDesc('name_2',
+            model_defs_files=['x'],
+            seq_of_renamed_attributes=seq_of_renamed_attributes)
+        expected_renamed_attributes = [
+            [(('Test', 'old_attr'), ('MigratedTest', 'new_attr'))],
+            [(('Property', 'new_value'), ('Property', 'value'))]]
+        migration_desc.standardize()
+        self.assertEqual(migration_desc.seq_of_renamed_attributes, expected_renamed_attributes)
+
+    def test_get_kwargs(self):
+        kwargs = self.migration_desc.get_kwargs()
+        self.assertEqual(kwargs['existing_file'], self.example_old_rt_model_copy)
+        self.assertEqual(kwargs['model_defs_files'], [self.old_rt_model_defs_path, self.new_rt_model_defs_path])
+        self.assertEqual(kwargs['seq_of_renamed_models'], self.old_2_new_renamed_models)
+        self.assertEqual(kwargs['seq_of_renamed_attributes'], self.old_2_new_renamed_attributes)
+        self.assertEqual(kwargs['migrated_file'], None)
+        self.migration_desc
+
+    def test_str(self):
+        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
+        name = 'migration_with_renaming'
+        migration_desc = migration_descs[name]
+        migration_desc_str = str(migration_desc)
+        self.assertIn(name, migration_desc_str)
+        self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
+
+
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1038,129 +1161,6 @@ class TestMigrationController(MigrationFixtures):
         print("Profile:")
         profile.strip_dirs().sort_stats('cumulative').print_stats(30)
         '''
-
-
-class TestMigrationDesc(MigrationFixtures):
-
-    def setUp(self):
-        super().setUp()
-        old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
-        # since MigrationDesc describes a sequence of migrations, embed these in lists
-        self.old_2_new_renamed_models = [old_2_new_renamed_models]
-        self.old_2_new_renamed_attributes = [old_2_new_renamed_attributes]
-        self.migration_desc = MigrationDesc('name',
-            existing_file=self.example_old_rt_model_copy,
-            model_defs_files=[self.old_rt_model_defs_path, self.new_rt_model_defs_path],
-            seq_of_renamed_models=self.old_2_new_renamed_models,
-            seq_of_renamed_attributes= self.old_2_new_renamed_attributes)
-
-    def tearDown(self):
-        super().tearDown()
-
-    def test_get_migrations_config(self):
-        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
-        self.assertIn('migration_with_renaming', migration_descs.keys())
-        self.assertEqual(migration_descs['migration_with_renaming'].existing_file,
-            'tests/fixtures/migrate/example_old_model_rt.xlsx')
-
-        temp_bad_config_example = os.path.join(self.tmp_dir, 'bad_config_example.yaml')
-        with open(temp_bad_config_example, 'w') as file:
-            file.write(u'migration:\n')
-            file.write(u'    obj_defs: [core_new_rt.py, core_old_rt.py]\n')
-        with self.assertRaisesRegex(MigratorError, re.escape("disallowed attribute(s) found: {'obj_defs'}")):
-            MigrationDesc.get_migrations_config(temp_bad_config_example)
-
-        with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
-            MigrationDesc.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
-
-    def test_validate(self):
-        self.assertFalse(self.migration_desc.validate())
-        md = copy.deepcopy(self.migration_desc)
-        setattr(md, 'disallowed_attr', 'bad')
-        self.assertEqual(md.validate(), ["disallowed attribute(s) found: {'disallowed_attr'}"])
-
-        for attr in MigrationDesc._required_attrs:
-            md = copy.deepcopy(self.migration_desc)
-            setattr(md, attr, None)
-            self.assertEqual(md.validate(), ["missing required attribute '{}'".format(attr)])
-
-        md = copy.deepcopy(self.migration_desc)
-        md.model_defs_files = []
-        self.assertEqual(md.validate(),
-            ["model_defs_files must contain at least 2 model definitions, but it has only 0"])
-
-        for renaming_list in MigrationDesc._renaming_lists:
-            md = copy.deepcopy(self.migration_desc)
-            setattr(md, renaming_list, [[], []])
-            error = md.validate()[0]
-            self.assertRegex(error,
-                "{} must have 1 .+ 1 migration.+ model_defs_files, but it has \d".format(renaming_list))
-
-        for renaming_list in MigrationDesc._renaming_lists:
-            md = copy.deepcopy(self.migration_desc)
-            setattr(md, renaming_list, None)
-            self.assertFalse(md.validate())
-
-        for renaming_list in MigrationDesc._renaming_lists:
-            md = copy.deepcopy(self.migration_desc)
-            setattr(md, renaming_list, [None])
-            self.assertEqual(md.validate(), [])
-
-        bad_renamed_models_examples = [3, [('foo')], [('foo', 1)], [(1, 'bar')]]
-        for bad_renamed_models in bad_renamed_models_examples:
-            md = copy.deepcopy(self.migration_desc)
-            md.seq_of_renamed_models = [bad_renamed_models]
-            error = md.validate()[0]
-            self.assertTrue(error.startswith(
-                "seq_of_renamed_models must be None, or a list of lists of pairs of strs"))
-
-        bad_renamed_attributes_examples = [
-            [[('A', 'att1'), ('B', 'att2', 'extra')]],
-            [[('A', 'att1'), ('B')]],
-            [[(1, 'att1'), ('B', 'att2')]],
-            [[('A', 2), ('B', 'att2')]],
-            [3],
-            ]
-        for bad_renamed_attributes in bad_renamed_attributes_examples:
-            md = copy.deepcopy(self.migration_desc)
-            md.seq_of_renamed_attributes = [bad_renamed_attributes]
-            error = md.validate()[0]
-            self.assertTrue(error.startswith(
-                "seq_of_renamed_attributes must be None, or a list of lists of pairs of pairs of strs"))
-
-    def test_standardize(self):
-        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
-        md = migration_descs['migration']
-        for renaming in MigrationDesc._renaming_lists:
-            self.assertEqual(len(getattr(md, renaming)), len(md.model_defs_files) - 1)
-        seq_of_renamed_attributes = [
-            [[['Test', 'old_attr'], ['MigratedTest', 'new_attr']]],
-            [[['Property', 'new_value'], ['Property', 'value']]]]
-        migration_desc = MigrationDesc('name_2',
-            model_defs_files=['x'],
-            seq_of_renamed_attributes=seq_of_renamed_attributes)
-        expected_renamed_attributes = [
-            [(('Test', 'old_attr'), ('MigratedTest', 'new_attr'))],
-            [(('Property', 'new_value'), ('Property', 'value'))]]
-        migration_desc.standardize()
-        self.assertEqual(migration_desc.seq_of_renamed_attributes, expected_renamed_attributes)
-
-    def test_get_kwargs(self):
-        kwargs = self.migration_desc.get_kwargs()
-        self.assertEqual(kwargs['existing_file'], self.example_old_rt_model_copy)
-        self.assertEqual(kwargs['model_defs_files'], [self.old_rt_model_defs_path, self.new_rt_model_defs_path])
-        self.assertEqual(kwargs['seq_of_renamed_models'], self.old_2_new_renamed_models)
-        self.assertEqual(kwargs['seq_of_renamed_attributes'], self.old_2_new_renamed_attributes)
-        self.assertEqual(kwargs['migrated_file'], None)
-        self.migration_desc
-
-    def test_str(self):
-        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
-        name = 'migration_with_renaming'
-        migration_desc = migration_descs[name]
-        migration_desc_str = str(migration_desc)
-        self.assertIn(name, migration_desc_str)
-        self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
 
 
 class TestRunMigration(MigrationFixtures):
