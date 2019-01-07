@@ -31,6 +31,7 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # todo: move generate_wc_lang_migrator to wc_lang
 # todo next: test OneToManyAttribute
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
+# todo: save return values of get_roundtrip_renaming() as setUp variables
 
 # todo next: move remaining todos to GitHub issues
 # enable wc_lang migration in RunMigration
@@ -720,8 +721,8 @@ class Migrator(object):
         # transformations: PREPARE_EXISTING_MODELS
         if self.transformations and self.PREPARE_EXISTING_MODELS in self.transformations:
             self.transformations[self.PREPARE_EXISTING_MODELS](self, existing_models)
-        for inconsistency in self._validate_models(existing_models):
-            warn(inconsistency)
+        for count_uninitialized_attrs in self._check_models(existing_models):
+            warn(count_uninitialized_attrs)
         migrated_models = self.migrate(existing_models)
         # transformations: MODIFY_MIGRATED_MODELS
         if self.transformations and self.MODIFY_MIGRATED_MODELS in self.transformations:
@@ -733,46 +734,45 @@ class Migrator(object):
             migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
         return migrated_file
 
-    def _validate_model(self, old_model, old_model_def):
-        """ Validate a model instance against its definition
+    def _check_model(self, old_model, old_model_def):
+        """ Check a model instance against its definition
 
         Args:
             old_model (:obj:`obj_model.Model`): the old model
             old_model_def (:obj:`obj_model.core.ModelMeta`): type of the old model
 
         Returns:
-            :obj:`list`: inconsistencies between `old_model` and `old_model_def`; an empty list if
-                no inconsistencies exist
+            :obj:`list`: uninitialized attributes in `old_model`
         """
-        inconsistencies = []
+        uninitialized_attrs = []
 
         # are attributes in old_model_def missing or uninitialized in old_model
         for attr_name, attr in old_model_def.Meta.attributes.items():
             if not hasattr(old_model, attr_name) or \
                 getattr(old_model, attr_name) is attr.get_default_cleaned_value():
-                inconsistencies.append("instance(s) of old model '{}' lacks '{}' non-default value".format(
+                uninitialized_attrs.append("instance(s) of old model '{}' lacks '{}' non-default value".format(
                     old_model_def.__name__, attr_name))
 
-        return inconsistencies
+        return uninitialized_attrs
 
-    def _validate_models(self, existing_models):
-        """ Validate existing model instances against their definitions
+    def _check_models(self, existing_models):
+        """ Check existing model instances against their definitions
 
         Args:
             existing_models (:obj:`list` of `obj_model.Model`:) the models being migrated
 
         Returns:
-            :obj:`list`: inconsistencies in `existing_models`; an empty list if no inconsistencies exist
+            :obj:`list`: counts of uninitialized attributes in `existing_models`
         """
         existing_models_dict = dict_by_class(existing_models)
-        inconsistencies = []
+        uninitialized_attrs = []
         for old_model_def, old_models in existing_models_dict.items():
             for old_model in old_models:
-                inconsistencies.extend(self._validate_model(old_model, old_model_def))
-        counted_inconsistencies = []
-        for inconsistency, count in det_count_elements(inconsistencies):
-            counted_inconsistencies.append("{} {}".format(count, inconsistency))
-        return counted_inconsistencies
+                uninitialized_attrs.extend(self._check_model(old_model, old_model_def))
+        counts_uninitialized_attrs = []
+        for uninitialized_attr, count in det_count_elements(uninitialized_attrs):
+            counts_uninitialized_attrs.append("{} {}".format(count, uninitialized_attr))
+        return counts_uninitialized_attrs
 
     def _migrate_model(self, old_model, old_model_def, new_model_def):
         """ Migrate a model instance's non-related attributes
@@ -1142,7 +1142,7 @@ class MigrationDesc(object):
             errors.append("disallowed attribute(s) found: {}".format(extra_attrs))
 
         for required_attr in self._required_attrs:
-            if getattr(self, required_attr) is None:
+            if not hasattr(self, required_attr) or getattr(self, required_attr) is None:
                 errors.append("missing required attribute '{}'".format(required_attr))
         if errors:
             return errors
@@ -1265,6 +1265,8 @@ class MigrationController(object):
 
         md = migration_desc
         num_migrations = len(md.model_defs_files) - 1
+        # since 1 < len(md.model_defs_files) this loop always executes and branch coverage reports that
+        # the for line doesn't jump to return; this cannot be annotated with 'pragma: no cover'
         for i in range(len(md.model_defs_files)):
             # create Migrator for each pair of schemas
             migrator = migration_desc.migrator(old_model_defs_file=md.model_defs_files[i],
@@ -1276,8 +1278,8 @@ class MigrationController(object):
                 models = existing_models = migrator.read_existing_model(md.existing_file)
                 existing_model_order = migrator._get_existing_model_order(md.existing_file)
                 model_order = existing_model_order
-            for inconsistency in migrator._validate_models(existing_models):
-                warn(inconsistency)
+            for count_uninitialized_attrs in migrator._check_models(existing_models):
+                warn(count_uninitialized_attrs)
             models = migrator.migrate(models)
             model_order = migrator._migrate_model_order(model_order)
             if i == num_migrations - 1:

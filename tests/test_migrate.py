@@ -206,6 +206,16 @@ class MigrationFixtures(unittest.TestCase):
         self.changes_migrator_model = \
             self.set_up_fun_expr_fixtures(self.wc_lang_changes_migrator, 'Parameter', 'ParameterRenamed')
 
+        old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
+        # since MigrationDesc describes a sequence of migrations, embed these in lists
+        self.old_2_new_renamed_models = [old_2_new_renamed_models]
+        self.old_2_new_renamed_attributes = [old_2_new_renamed_attributes]
+        self.migration_desc = MigrationDesc('name',
+            existing_file=self.example_old_rt_model_copy,
+            model_defs_files=[self.old_rt_model_defs_path, self.new_rt_model_defs_path],
+            seq_of_renamed_models=self.old_2_new_renamed_models,
+            seq_of_renamed_attributes= self.old_2_new_renamed_attributes)
+
     def set_up_fun_expr_fixtures(self, migrator, existing_param_class, migrated_param_class):
         migrator.prepare()
         Model = migrator.old_model_defs['Model']
@@ -814,15 +824,15 @@ class TestMigrator(MigrationFixtures):
         round_trip_migrated_xlsx_file = new_2_old_migrator.full_migrate(tmp_old_2_new_xlsx_file)
         self.assert_equal_workbooks(self.example_old_rt_model_copy, round_trip_migrated_xlsx_file)
 
-    def run_validate_model_test(self, model, model_def, attr_name, default_value):
-        # test _validate_model() by setting an attribute to its default
+    def run_check_model_test(self, model, model_def, attr_name, default_value):
+        # test _check_model() by setting an attribute to its default
         model_copy = model.copy()
         setattr(model_copy, attr_name, default_value)
         self.assertIn("'{}' lacks '{}'".format(model_def.__name__, attr_name),
-            self.good_migrator._validate_model(model_copy, model_def)[0])
+            self.good_migrator._check_model(model_copy, model_def)[0])
         return model_copy
 
-    def test_validate_model_and_models(self):
+    def test_check_model_and_models(self):
 
         good_related = self.GoodRelatedCls(
             id='id_1',
@@ -835,16 +845,16 @@ class TestMigrator(MigrationFixtures):
             related=good_related
         )
         all_models = [good_related, good_existing]
-        self.assertEqual([], self.good_migrator._validate_model(good_related, self.GoodRelatedCls))
-        all_models.append(self.run_validate_model_test(good_related, self.GoodRelatedCls, 'id', ''))
-        all_models.append(self.run_validate_model_test(good_related, self.GoodRelatedCls, 'num', None))
+        self.assertEqual([], self.good_migrator._check_model(good_related, self.GoodRelatedCls))
+        all_models.append(self.run_check_model_test(good_related, self.GoodRelatedCls, 'id', ''))
+        all_models.append(self.run_check_model_test(good_related, self.GoodRelatedCls, 'num', None))
 
-        self.assertEqual([], self.good_migrator._validate_model(good_existing, self.GoodExisting))
-        all_models.append(self.run_validate_model_test(good_existing, self.GoodExisting, 'np_array', None))
-        all_models.append(self.run_validate_model_test(good_existing, self.GoodExisting, 'related', None))
-        all_models.append(self.run_validate_model_test(good_existing, self.GoodExisting, 'related', None))
+        self.assertEqual([], self.good_migrator._check_model(good_existing, self.GoodExisting))
+        all_models.append(self.run_check_model_test(good_existing, self.GoodExisting, 'np_array', None))
+        all_models.append(self.run_check_model_test(good_existing, self.GoodExisting, 'related', None))
+        all_models.append(self.run_check_model_test(good_existing, self.GoodExisting, 'related', None))
 
-        inconsistencies = self.good_migrator._validate_models(all_models)
+        inconsistencies = self.good_migrator._check_models(all_models)
         self.assertEqual(len(inconsistencies), 4)
         self.assertEqual(len([problem for problem in inconsistencies if problem.startswith('1')]), 3)
         self.assertEqual(len([problem for problem in inconsistencies if problem.startswith('2')]), 1)
@@ -920,15 +930,6 @@ class TestMigrationDesc(MigrationFixtures):
 
     def setUp(self):
         super().setUp()
-        old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
-        # since MigrationDesc describes a sequence of migrations, embed these in lists
-        self.old_2_new_renamed_models = [old_2_new_renamed_models]
-        self.old_2_new_renamed_attributes = [old_2_new_renamed_attributes]
-        self.migration_desc = MigrationDesc('name',
-            existing_file=self.example_old_rt_model_copy,
-            model_defs_files=[self.old_rt_model_defs_path, self.new_rt_model_defs_path],
-            seq_of_renamed_models=self.old_2_new_renamed_models,
-            seq_of_renamed_attributes= self.old_2_new_renamed_attributes)
 
     def tearDown(self):
         super().tearDown()
@@ -958,6 +959,8 @@ class TestMigrationDesc(MigrationFixtures):
         for attr in MigrationDesc._required_attrs:
             md = copy.deepcopy(self.migration_desc)
             setattr(md, attr, None)
+            self.assertEqual(md.validate(), ["missing required attribute '{}'".format(attr)])
+            delattr(md, attr)
             self.assertEqual(md.validate(), ["missing required attribute '{}'".format(attr)])
 
         md = copy.deepcopy(self.migration_desc)
@@ -1048,6 +1051,11 @@ class TestMigrationController(MigrationFixtures):
         super().tearDown()
 
     def test_migrate_over_schema_sequence(self):
+        bad_migration_desc = copy.deepcopy(self.migration_desc)
+        del bad_migration_desc.name
+        with self.assertRaises(MigratorError):
+            MigrationController.migrate_over_schema_sequence(bad_migration_desc)
+
         # round-trip test: existing -> migrated -> migrated -> existing
         model_defs_files = [self.old_rt_model_defs_path, self.new_rt_model_defs_path,
             self.new_rt_model_defs_path, self.old_rt_model_defs_path]
@@ -1065,9 +1073,11 @@ class TestMigrationController(MigrationFixtures):
             seq_of_renamed_attributes=seq_of_renamed_attributes,
             migrated_file=migrated_filename)
         _, _, migrated_filename = MigrationController.migrate_over_schema_sequence(migration_desc)
-
-        # validate
         self.assert_equal_workbooks(self.example_old_rt_model_copy, migrated_filename)
+
+        with self.assertWarnsRegex(UserWarning,
+            "\d+ instance\\(s\\) of old model '\S+' lacks '\S+' non-default value"):
+            MigrationController.migrate_over_schema_sequence(self.migration_desc)
 
     def test_migrate_from_desc(self):
         migration_descs = MigrationDesc.get_migrations_config(self.config_file)
