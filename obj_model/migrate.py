@@ -90,6 +90,11 @@ class Migrator(object):
         transformations (:obj:`dict`): map of transformation types in `SUPPORTED_TRANSFORMATIONS` to callables
     """
 
+    SCALAR_ATTRS = ['old_model_defs_file', 'new_model_defs_file', 'old_model_defs_path',
+        'new_model_defs_path', 'deleted_models', '_migrated_copy_attr_name']
+    COLLECTIONS_ATTRS = ['old_model_defs', 'new_model_defs', 'renamed_models', 'models_map',
+        'renamed_attributes', 'renamed_attributes_map']
+
     # default suffix for a migrated model file
     MIGRATE_SUFFIX = '_migrated'
 
@@ -1029,15 +1034,17 @@ class Migrator(object):
         return migrated_files
 
     def __str__(self):
+        """ Get str representation
+
+        Returns:
+            :obj:`str`: string representation of a `Migrator`; collections attributes are rendered
+                by `pformat`
+        """
         rv = []
-        scalar_attrs = ['old_model_defs_file', 'new_model_defs_file', 'old_model_defs_path',
-            'new_model_defs_path', 'deleted_models', '_migrated_copy_attr_name']
-        collections_attrs = ['old_model_defs', 'new_model_defs', 'renamed_models', 'models_map',
-            'renamed_attributes', 'renamed_attributes_map']
-        for attr in scalar_attrs:
+        for attr in self.SCALAR_ATTRS:
             if hasattr(self, attr) and getattr(self, attr) is not None:
                 rv.append("{}: {}".format(attr, getattr(self, attr)))
-        for attr in collections_attrs:
+        for attr in self.COLLECTIONS_ATTRS:
             if hasattr(self, attr):
                 rv.append("{}:\n{}".format(attr, pformat(getattr(self, attr))))
         return '\n'.join(rv)

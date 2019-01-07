@@ -901,8 +901,19 @@ class TestMigrator(MigrationFixtures):
             same_defs_migrator.full_migrate(self.wc_lang_no_model_attrs)
 
     def test_str(self):
-        self.assertIn('new_model_defs:', str(self.good_migrator))
-        self.assertIn(str(self.good_migrator.new_model_defs), str(self.good_migrator))
+        self.wc_lang_changes_migrator.prepare()
+        str_value = str(self.wc_lang_changes_migrator)
+        for attr in Migrator.SCALAR_ATTRS + Migrator.COLLECTIONS_ATTRS:
+            self.assertIn(attr, str_value)
+        for map_name in ['old_model_defs', 'new_model_defs', 'models_map']:
+            migrator_map = getattr(self.wc_lang_changes_migrator, map_name)
+            for key in migrator_map:
+                self.assertIn(key, str_value)
+
+        empty_migrator = Migrator()
+        str_value = str(empty_migrator)
+        for attr in Migrator.SCALAR_ATTRS:
+            self.assertNotRegex(str_value, '^' + attr + '$')
 
 
 class TestMigrationDesc(MigrationFixtures):
