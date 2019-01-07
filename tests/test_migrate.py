@@ -936,7 +936,6 @@ class TestMigrationController(MigrationFixtures):
         self.assert_equal_workbooks(self.example_old_rt_model_copy, migrated_filename)
 
     def test_get_migrations_config(self):
-
         migration_descs = MigrationController.get_migrations_config(self.config_file)
         self.assertIn('migration_with_renaming', migration_descs.keys())
         self.assertEqual(migration_descs['migration_with_renaming'].existing_file,
@@ -952,7 +951,6 @@ class TestMigrationController(MigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
             MigrationController.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
 
-    @unittest.skip('')
     def test_migrate_from_desc(self):
         migration_descs = MigrationController.get_migrations_config(self.config_file)
 
@@ -969,7 +967,8 @@ class TestMigrationController(MigrationFixtures):
         self.assert_equal_workbooks(migration_desc.existing_file, round_trip_migrated_xlsx_file)
 
     def test_migrate_from_config(self):
-        # MigrationController.migrate_from_config(self.config_file)
+        # todo: don't write to tests/fixtures/migrate/example_old_model_rt_migrated.xlsx
+        # results = MigrationController.migrate_from_config(self.config_file)
         # add migrated_file entries to self.config_file, or load and dump it
         pass
 
@@ -981,16 +980,8 @@ class TestMigrationController(MigrationFixtures):
         self.assertIn(name, migration_desc_str)
         self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
 
+    @unittest.skip('')
     def test_wc_lang_migration(self):
-        wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
-        migration_desc = MigrationDesc('migrate small model from existing wc_lang core to itself',
-            existing_file=self.wc_lang_small_model_copy,
-            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
-            migrated_file=wc_lang_model_migrated)
-        existing_models, migrated_models, migrated_filename = \
-            MigrationController.migrate_over_schema_sequence(migration_desc)
-        self.assertEqual(migrated_filename, wc_lang_model_migrated)
-
         def get_root_models(Model, models):
             root_models = []
             for model in models:
@@ -999,6 +990,17 @@ class TestMigrationController(MigrationFixtures):
             if len(root_models) == 1:
                 return root_models[0]
             return root_models
+
+        '''
+        wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
+        migration_desc = MigrationDesc('migrate small model from existing wc_lang core to itself',
+            migrator=Migrator.generate_wc_lang_migrator,
+            existing_file=self.wc_lang_small_model_copy,
+            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
+            migrated_file=wc_lang_model_migrated)
+        existing_models, migrated_models, migrated_filename = \
+            MigrationController.migrate_over_schema_sequence(migration_desc)
+        self.assertEqual(migrated_filename, wc_lang_model_migrated)
 
         # validate memory resident models
         initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
@@ -1010,10 +1012,16 @@ class TestMigrationController(MigrationFixtures):
 
         # validate spreadsheets
         self.assert_equal_workbooks(self.wc_lang_small_model_copy, wc_lang_model_migrated)
+        '''
+
+        initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
+        initial_migrator.prepare()
+        Model = initial_migrator.old_model_defs['Model']
 
         # round-trip migrate through changed schema
         wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
         migration_desc = MigrationDesc('round-trip migrate existing wc_lang core -> modified core -> existing core',
+            migrator=Migrator.generate_wc_lang_migrator,
             existing_file=self.wc_lang_small_model_copy,
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified, self.wc_lang_schema_existing],
             seq_of_renamed_models=[[('Parameter', 'ParameterRenamed')], [('ParameterRenamed', 'Parameter')]],
@@ -1023,16 +1031,16 @@ class TestMigrationController(MigrationFixtures):
 
         wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
         migration_desc = MigrationDesc('migrate large model from existing wc_lang core to itself',
+            migrator=Migrator.generate_wc_lang_migrator,
             existing_file=self.wc_lang_model_copy,
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
             migrated_file=wc_lang_model_migrated)
-        '''
+
         existing_models, migrated_models, migrated_filename = \
             MigrationController.migrate_over_schema_sequence(migration_desc)
         # review difference
         existing_model = get_root_models(Model, existing_models)
         migrated_model = get_root_models(Model, migrated_models)
-        # todo: link model to components
         self.assertTrue(existing_model.is_equal(migrated_model))
         print(existing_model.difference(migrated_model))
 
@@ -1041,7 +1049,6 @@ class TestMigrationController(MigrationFixtures):
         migrated = read_workbook(wc_lang_model_migrated)
         print(existing.difference(migrated))
         self.assertEqual(existing, migrated)
-        '''
 
         '''
         # profiling:
@@ -1084,19 +1091,50 @@ class TestMigrationDesc(MigrationFixtures):
             md = copy.deepcopy(self.migration_desc)
             setattr(md, attr, None)
             self.assertEqual(md.validate(), ["missing required attribute '{}'".format(attr)])
+
         md = copy.deepcopy(self.migration_desc)
         md.model_defs_files = []
         self.assertEqual(md.validate(),
             ["model_defs_files must contain at least 2 model definitions, but it has only 0"])
+
         for renaming_list in MigrationDesc._renaming_lists:
             md = copy.deepcopy(self.migration_desc)
             setattr(md, renaming_list, [[], []])
-            self.assertEqual(md.validate(),
-                ["model_defs_files specifies 1 migration(s), but {} contains 2 mapping(s)".format(renaming_list)])
+            error = md.validate()[0]
+            self.assertRegex(error,
+                "{} must have 1 .+ 1 migration.+ model_defs_files, but it has \d".format(renaming_list))
+
         for renaming_list in MigrationDesc._renaming_lists:
             md = copy.deepcopy(self.migration_desc)
             setattr(md, renaming_list, None)
             self.assertFalse(md.validate())
+
+        for renaming_list in MigrationDesc._renaming_lists:
+            md = copy.deepcopy(self.migration_desc)
+            setattr(md, renaming_list, [None])
+            self.assertEqual(md.validate(), [])
+
+        bad_renamed_models_examples = [3, [('foo')], [('foo', 1)], [(1, 'bar')]]
+        for bad_renamed_models in bad_renamed_models_examples:
+            md = copy.deepcopy(self.migration_desc)
+            md.seq_of_renamed_models = [bad_renamed_models]
+            error = md.validate()[0]
+            self.assertTrue(error.startswith(
+                "seq_of_renamed_models must be None, or a list of lists of pairs of strs"))
+
+        bad_renamed_attributes_examples = [
+            [[('A', 'att1'), ('B', 'att2', 'extra')]],
+            [[('A', 'att1'), ('B')]],
+            [[(1, 'att1'), ('B', 'att2')]],
+            [[('A', 2), ('B', 'att2')]],
+            [3],
+            ]
+        for bad_renamed_attributes in bad_renamed_attributes_examples:
+            md = copy.deepcopy(self.migration_desc)
+            md.seq_of_renamed_attributes = [bad_renamed_attributes]
+            error = md.validate()[0]
+            self.assertTrue(error.startswith(
+                "seq_of_renamed_attributes must be None, or a list of lists of pairs of pairs of strs"))
 
     def test_standardize(self):
         migration_descs = MigrationController.get_migrations_config(self.config_file)

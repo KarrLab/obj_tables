@@ -24,12 +24,11 @@ import wc_utils
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-# todo: have migrate_over_schema_sequence support wc_lang migration
 # todo: test_migrate_from_config and test if self.seq_of_renamed_models
 # todo next: more coverage
+# todo next: address perf. problem with wc_lang migration
 # todo next: test big wc_lang model
 # todo: move generate_wc_lang_migrator to wc_lang
-# todo next: address perf. problem with wc_lang migration, if they persist
 # todo next: test OneToManyAttribute
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 
@@ -1065,7 +1064,7 @@ class MigrationDesc(object):
         migrate_in_place (:obj:`bool`, optional): whether to migrate `existing_file` in place
     """
 
-    _required_attrs = ['name', 'existing_file', 'model_defs_files']
+    _required_attrs = ['name', 'migrator', 'existing_file', 'model_defs_files']
     _renaming_lists = ['seq_of_renamed_models', 'seq_of_renamed_attributes']
     _allowed_attrs = _required_attrs + _renaming_lists + ['migrated_file', 'migrate_suffix', 'migrate_in_place']
 
@@ -1105,36 +1104,33 @@ class MigrationDesc(object):
         for renaming_list in self._renaming_lists:
             if getattr(self, renaming_list) is not None:
                 if len(getattr(self, renaming_list)) != len(self.model_defs_files) - 1:
-                    errors.append("model_defs_files specifies {} migration(s), but {} contains {} mapping(s)".format(
-                        len(self.model_defs_files) - 1, renaming_list, len(getattr(self, renaming_list))))
+                    errors.append("{} must have 1 mapping for each of the {} migration(s) specified by "
+                        "model_defs_files, but it has {}".format(renaming_list,  len(self.model_defs_files) - 1,
+                        len(getattr(self, renaming_list))))
 
-        # print('self.seq_of_renamed_models')
-        # pprint(self.seq_of_renamed_models)
         if self.seq_of_renamed_models:
-            required_structure = "seq_of_renamed_models must be a list of lists of pairs of strs"
+            required_structure = "seq_of_renamed_models must be None, or a list of lists of pairs of strs"
             try:
                 for renaming in self.seq_of_renamed_models:
-                    # constraint: renaming must be an iterator over pairs of str
-                    for pair in renaming:
-                        if len(pair) != 2 or not isinstance(pair[0], str) or not isinstance(pair[1], str):
-                            errors.append()
-            except TypeError as e:
-                errors.append(required_structure + ", but examinining it generates a '{}' error".format(str(e)))
-
-        # print('self.seq_of_renamed_attributes')
-        # pprint(self.seq_of_renamed_attributes)
-        if self.seq_of_renamed_attributes:
-            required_structure = "seq_of_renamed_attributes must be a list of lists of pairs of pairs of strs"
-            try:
-                for renamings in self.seq_of_renamed_attributes:
-                    # constraint: renamings must be a list of pairs of pairs of str
-                    for attribute_renaming in renamings:
-                        for attr_spec in attribute_renaming:
-                            if len(attr_spec) != 2 or not isinstance(attr_spec[0], str) or \
-                                not isinstance(attr_spec[1], str):
+                    if renaming is not None:
+                        for pair in renaming:
+                            if len(pair) != 2 or not isinstance(pair[0], str) or not isinstance(pair[1], str):
                                 errors.append(required_structure)
             except TypeError as e:
-                errors.append(required_structure + ", but examinining it generates a '{}' error".format(str(e)))
+                errors.append(required_structure + ", but examining it raises a '{}' error".format(str(e)))
+
+        if self.seq_of_renamed_attributes:
+            required_structure = "seq_of_renamed_attributes must be None, or a list of lists of pairs of pairs of strs"
+            try:
+                for renamings in self.seq_of_renamed_attributes:
+                    if renamings is not None:
+                        for attribute_renaming in renamings:
+                            for attr_spec in attribute_renaming:
+                                if len(attr_spec) != 2 or not isinstance(attr_spec[0], str) or \
+                                    not isinstance(attr_spec[1], str):
+                                    errors.append(required_structure)
+            except TypeError as e:
+                errors.append(required_structure + ", but examining it raises a '{}' error".format(str(e)))
 
         if not errors:
             self.standardize()
@@ -1156,7 +1152,7 @@ class MigrationDesc(object):
                 new_renamed_attributes.append(a_migration_renaming)
             self.seq_of_renamed_attributes = new_renamed_attributes
 
-        # if a renaming_list isn't provided, replace it with a list of None indicating no renaming
+        # if a renaming_list isn't provided, replace it with a list of Nones indicating no renaming
         empty_per_migration_list = [None]*(len(self.model_defs_files) - 1)
         for renaming_list in self._renaming_lists:
             if getattr(self, renaming_list) is None:
@@ -1174,7 +1170,10 @@ class MigrationDesc(object):
     def __str__(self):
         rv = []
         for attr in self._allowed_attrs:
-            rv.append("{}: {}".format(attr, getattr(self, attr)))
+            if attr in self._renaming_lists:
+                rv.append("{}:\n{}".format(attr, pformat(getattr(self, attr))))
+            else:
+                rv.append("{}: {}".format(attr, getattr(self, attr)))
         return '\n'.join(rv)
 
 
@@ -1209,8 +1208,9 @@ class MigrationController(object):
         num_migrations = len(md.model_defs_files) - 1
         for i in range(len(md.model_defs_files)):
             # create Migrator for each pair of schemas
-            migrator = migration_desc.migrator(md.model_defs_files[i], md.model_defs_files[i+1],
-                md.seq_of_renamed_models[i], md.seq_of_renamed_attributes[i])
+            migrator = migration_desc.migrator(old_model_defs_file=md.model_defs_files[i],
+                new_model_defs_file=md.model_defs_files[i+1], renamed_models=md.seq_of_renamed_models[i],
+                renamed_attributes=md.seq_of_renamed_attributes[i])
             migrator.prepare()
             # migrate in memory until the last migration
             if i == 0:
@@ -1231,7 +1231,7 @@ class MigrationController(object):
 
     @staticmethod
     def get_migrations_config(migrations_config_file):
-        """ Read and initially validate migrations configuration file
+        """ Read and initially validate a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
@@ -1247,15 +1247,16 @@ class MigrationController(object):
             fd = open(migrations_config_file, 'r')
         except FileNotFoundError as e:
             raise MigratorError("could not read migration config file: '{}'".format(migrations_config_file))
-        config = yaml.load(fd)
+        migrations_config = yaml.load(fd)
 
-        # parse the config
+        # parse the migrations config
         migration_descs = {}
-        for migration_name, migration_desc in config.items():
+        for migration_name, migration_desc in migrations_config.items():
             migration_desc_obj = MigrationDesc(migration_name)
             for param, value in migration_desc.items():
                 setattr(migration_desc_obj, param, value)
             migration_descs[migration_name] = migration_desc_obj
+
         migration_errors = []
         for migration_name, migration_desc_obj in migration_descs.items():
             validate_errors = migration_desc_obj.validate()
