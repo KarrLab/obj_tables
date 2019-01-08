@@ -187,6 +187,12 @@ class MigrationFixtures(unittest.TestCase):
         # set up round-trip schema fixtures
         self.old_rt_model_defs_path = os.path.join(self.fixtures_path, 'core_old_rt.py')
         self.new_rt_model_defs_path = os.path.join(self.fixtures_path, 'core_new_rt.py')
+        # provide old -> new renaming for the round-trip tests
+        self.old_2_new_renamed_models = [('Test', 'MigratedTest')]
+        self.old_2_new_renamed_attributes = [
+            (('Test', 'old_attr'), ('MigratedTest', 'new_attr')),
+            (('Property', 'value'), ('Property', 'new_value')),
+            (('Subtest', 'references'), ('Subtest', 'migrated_references'))]
 
         # set up wc_lang migration testing fixtures
         self.wc_lang_fixtures_path = os.path.join(self.fixtures_path, 'wc_lang')
@@ -206,15 +212,12 @@ class MigrationFixtures(unittest.TestCase):
         self.changes_migrator_model = \
             self.set_up_fun_expr_fixtures(self.wc_lang_changes_migrator, 'Parameter', 'ParameterRenamed')
 
-        old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
-        # since MigrationDesc describes a sequence of migrations, embed these in lists
-        self.old_2_new_renamed_models = [old_2_new_renamed_models]
-        self.old_2_new_renamed_attributes = [old_2_new_renamed_attributes]
+        # since MigrationDesc describes a sequence of migrations, embed renamings in lists
         self.migration_desc = MigrationDesc('name',
             existing_file=self.example_old_rt_model_copy,
             model_defs_files=[self.old_rt_model_defs_path, self.new_rt_model_defs_path],
-            seq_of_renamed_models=self.old_2_new_renamed_models,
-            seq_of_renamed_attributes= self.old_2_new_renamed_attributes)
+            seq_of_renamed_models=[self.old_2_new_renamed_models],
+            seq_of_renamed_attributes=[self.old_2_new_renamed_attributes])
 
     def set_up_fun_expr_fixtures(self, migrator, existing_param_class, migrated_param_class):
         migrator.prepare()
@@ -238,16 +241,6 @@ class MigrationFixtures(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp_dir)
         shutil.rmtree(self.tmp_model_dir)
-
-    @staticmethod
-    def get_roundtrip_renaming():
-        # provide old -> new renaming for the round-trip tests
-        old_2_new_renamed_models = [('Test', 'MigratedTest')]
-        old_2_new_renamed_attributes = [
-            (('Test', 'old_attr'), ('MigratedTest', 'new_attr')),
-            (('Property', 'value'), ('Property', 'new_value')),
-            (('Subtest', 'references'), ('Subtest', 'migrated_references'))]
-        return (old_2_new_renamed_models, old_2_new_renamed_attributes)
 
     @staticmethod
     def invert_renaming(renaming):
@@ -802,15 +795,14 @@ class TestMigrator(MigrationFixtures):
         # but include model and attr renaming so that old != new
 
         # make old -> new migrator
-        old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
         old_2_new_migrator = Migrator(self.old_rt_model_defs_path, self.new_rt_model_defs_path,
-            renamed_models=old_2_new_renamed_models, renamed_attributes=old_2_new_renamed_attributes)
+            renamed_models=self.old_2_new_renamed_models, renamed_attributes=self.old_2_new_renamed_attributes)
         old_2_new_migrator.prepare()
 
         # make new -> old migrator
         new_2_old_migrator = Migrator(self.new_rt_model_defs_path, self.old_rt_model_defs_path,
-            renamed_models=self.invert_renaming(old_2_new_renamed_models),
-            renamed_attributes=self.invert_renaming(old_2_new_renamed_attributes))
+            renamed_models=self.invert_renaming(self.old_2_new_renamed_models),
+            renamed_attributes=self.invert_renaming(self.old_2_new_renamed_attributes))
         new_2_old_migrator.prepare()
 
         # round trip test of model in tsv file
@@ -1028,8 +1020,8 @@ class TestMigrationDesc(MigrationFixtures):
         kwargs = self.migration_desc.get_kwargs()
         self.assertEqual(kwargs['existing_file'], self.example_old_rt_model_copy)
         self.assertEqual(kwargs['model_defs_files'], [self.old_rt_model_defs_path, self.new_rt_model_defs_path])
-        self.assertEqual(kwargs['seq_of_renamed_models'], self.old_2_new_renamed_models)
-        self.assertEqual(kwargs['seq_of_renamed_attributes'], self.old_2_new_renamed_attributes)
+        self.assertEqual(kwargs['seq_of_renamed_models'], [self.old_2_new_renamed_models])
+        self.assertEqual(kwargs['seq_of_renamed_attributes'], [self.old_2_new_renamed_attributes])
         self.assertEqual(kwargs['migrated_file'], None)
         self.migration_desc
 
@@ -1059,11 +1051,10 @@ class TestMigrationController(MigrationFixtures):
         # round-trip test: existing -> migrated -> migrated -> existing
         model_defs_files = [self.old_rt_model_defs_path, self.new_rt_model_defs_path,
             self.new_rt_model_defs_path, self.old_rt_model_defs_path]
-        old_2_new_renamed_models, old_2_new_renamed_attributes = MigrationFixtures.get_roundtrip_renaming()
-        new_2_old_renamed_models = self.invert_renaming(old_2_new_renamed_models)
-        new_2_old_renamed_attributes = self.invert_renaming(old_2_new_renamed_attributes)
-        seq_of_renamed_models = [old_2_new_renamed_models, [], new_2_old_renamed_models]
-        seq_of_renamed_attributes = [old_2_new_renamed_attributes, [], new_2_old_renamed_attributes]
+        new_2_old_renamed_models = self.invert_renaming(self.old_2_new_renamed_models)
+        new_2_old_renamed_attributes = self.invert_renaming(self.old_2_new_renamed_attributes)
+        seq_of_renamed_models = [self.old_2_new_renamed_models, [], new_2_old_renamed_models]
+        seq_of_renamed_attributes = [self.old_2_new_renamed_attributes, [], new_2_old_renamed_attributes]
 
         migrated_filename = self.temp_pathname('example_old_model_rt_migrated.xlsx')
         migration_desc = MigrationDesc('name',

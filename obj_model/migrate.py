@@ -26,16 +26,15 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
 # todo next: address perf. problem with wc_lang migration
+# todo next: test big wc_lang model
 # todo next: documentation
 # todo next: more coverage
-# todo next: test big wc_lang model
-# todo: move generate_wc_lang_migrator to wc_lang
 # todo next: test OneToManyAttribute
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
-# todo: save return values of get_roundtrip_renaming() as setUp variables
+# enable wc_lang migration in RunMigration
 
 # todo next: move remaining todos to GitHub issues
-# enable wc_lang migration in RunMigration
+# todo: move generate_wc_lang_migrator to wc_lang
 # todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo: have obj_model support required attributes, which have non-default values; e.g.
 # turn off coverage during unittest setUp, if possible
@@ -1267,7 +1266,7 @@ class MigrationController(object):
         md = migration_desc
         num_migrations = len(md.model_defs_files) - 1
         # since 1 < len(md.model_defs_files) this loop always executes and branch coverage reports that
-        # the for line doesn't jump to return; this cannot be annotated with 'pragma: no cover'
+        # the 'for' line doesn't jump to return; this cannot be annotated with 'pragma: no cover'
         for i in range(len(md.model_defs_files)):
             # create Migrator for each pair of schemas
             migrator = migration_desc.migrator(old_model_defs_file=md.model_defs_files[i],
