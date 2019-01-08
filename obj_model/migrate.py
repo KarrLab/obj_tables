@@ -24,9 +24,10 @@ import wc_utils
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-# todo: test_migrate_from_config and test if self.seq_of_renamed_models
-# todo next: more coverage
+
 # todo next: address perf. problem with wc_lang migration
+# todo next: documentation
+# todo next: more coverage
 # todo next: test big wc_lang model
 # todo: move generate_wc_lang_migrator to wc_lang
 # todo next: test OneToManyAttribute
@@ -1311,12 +1312,12 @@ class MigrationController(object):
             migrations_config_file (:obj:`str`): migrations specified in a YAML file
 
         Returns:
-            :obj:`list` of :obj:`str`: migrated filenames
+            :obj:`list` of :obj:`tuple`: list of (`MigrationDesc`, migrated filename) pairs
         """
         migration_descs = MigrationDesc.get_migrations_config(migrations_config_file)
         results = []
         for migration_desc in migration_descs.values():
-            results.append(MigrationController.migrate_from_desc(migration_desc))
+            results.append((migration_desc, MigrationController.migrate_from_desc(migration_desc)))
         return results
 
 

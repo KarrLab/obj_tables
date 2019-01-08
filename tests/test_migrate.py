@@ -19,6 +19,8 @@ import warnings
 from argparse import Namespace
 import cProfile
 import pstats
+import yaml
+from pprint import pprint, pformat
 
 from obj_model.migrate import MigratorError, Migrator, MigrationController, RunMigration, MigrationDesc
 import obj_model
@@ -50,11 +52,9 @@ class MigrationFixtures(unittest.TestCase):
         # create tmp dir in 'fixtures/migrate/tmp' so it can be accessed from Docker container's host
         # copy test models to tmp dir
         self.tmp_model_dir = mkdtemp(dir=os.path.join(self.fixtures_path, 'tmp'))
-        shutil.copy(os.path.join(fixtures_path, 'example_old_model.xlsx'), self.tmp_model_dir)
-        self.example_old_model_copy = os.path.join(self.tmp_model_dir, 'example_old_model.xlsx')
+        self.example_old_model_copy = self.copy_fixtures_file_to_tmp('example_old_model.xlsx')
+        self.example_old_rt_model_copy = self.copy_fixtures_file_to_tmp('example_old_model_rt.xlsx')
         self.example_migrated_model = os.path.join(self.tmp_model_dir, 'example_migrated_model.xlsx')
-        shutil.copy(os.path.join(self.fixtures_path, 'example_old_model_rt.xlsx'), self.tmp_model_dir)
-        self.example_old_rt_model_copy = os.path.join(self.tmp_model_dir, 'example_old_model_rt.xlsx')
 
         dst = os.path.join(self.tmp_model_dir, 'tsv_example')
         self.tsv_dir = shutil.copytree(os.path.join(fixtures_path, 'tsv_example'), dst)
@@ -258,7 +258,7 @@ class MigrationFixtures(unittest.TestCase):
             inverted_renaming.append((migrated, existing))
         return inverted_renaming
 
-    def get_temp_pathname(testcase, name):
+    def temp_pathname(testcase, name):
         # create a pathname for a file called name in new temp dir; will be discarded by tearDown()
         return os.path.join(mkdtemp(dir=testcase.tmp_model_dir), name)
 
@@ -862,7 +862,7 @@ class TestMigrator(MigrationFixtures):
     def test_migrate_in_place(self):
         self.migrator.prepare()
         # migrate to example_migrated_model
-        example_migrated_model = self.get_temp_pathname('example_migrated_model.xlsx')
+        example_migrated_model = self.temp_pathname('example_migrated_model.xlsx')
         self.migrator.full_migrate(self.example_old_model_copy, migrated_file=example_migrated_model)
         # migrate to self.example_old_model_copy
         self.migrator.full_migrate(self.example_old_model_copy, migrate_in_place=True)
@@ -1065,7 +1065,7 @@ class TestMigrationController(MigrationFixtures):
         seq_of_renamed_models = [old_2_new_renamed_models, [], new_2_old_renamed_models]
         seq_of_renamed_attributes = [old_2_new_renamed_attributes, [], new_2_old_renamed_attributes]
 
-        migrated_filename = self.get_temp_pathname('example_old_model_rt_migrated.xlsx')
+        migrated_filename = self.temp_pathname('example_old_model_rt_migrated.xlsx')
         migration_desc = MigrationDesc('name',
             existing_file=self.example_old_rt_model_copy,
             model_defs_files=model_defs_files,
@@ -1079,26 +1079,40 @@ class TestMigrationController(MigrationFixtures):
             "\d+ instance\\(s\\) of old model '\S+' lacks '\S+' non-default value"):
             MigrationController.migrate_over_schema_sequence(self.migration_desc)
 
+    def put_tmp_migrated_file_in_migration_desc(self, migration_desc, name):
+        migrated_filename = self.temp_pathname(name)
+        migration_desc.migrated_file = migrated_filename
+        return migrated_filename
+
     def test_migrate_from_desc(self):
         migration_descs = MigrationDesc.get_migrations_config(self.config_file)
 
         migration_desc = migration_descs['migration']
-        migrated_filename = self.get_temp_pathname('migration.xlsx')
-        migration_desc.migrated_file = migrated_filename
-        migrated_file = MigrationController.migrate_from_desc(migration_desc)
-        self.assertEqual(migrated_file, migrated_filename)
+        tmp_migrated_filename = self.put_tmp_migrated_file_in_migration_desc(migration_desc, 'migration.xlsx')
+        migrated_filename = MigrationController.migrate_from_desc(migration_desc)
+        self.assertEqual(tmp_migrated_filename, migrated_filename)
+        self.assert_equal_workbooks(migration_desc.existing_file, migrated_filename)
 
         migration_desc = migration_descs['migration_with_renaming']
-        round_trip_migrated_xlsx_file = self.get_temp_pathname('round_trip_migrated_xlsx_file.xlsx')
-        migration_desc.migrated_file = round_trip_migrated_xlsx_file
-        MigrationController.migrate_from_desc(migration_desc)
+        self.put_tmp_migrated_file_in_migration_desc(migration_desc, 'round_trip_migrated_xlsx_file.xlsx')
+        round_trip_migrated_xlsx_file = MigrationController.migrate_from_desc(migration_desc)
         self.assert_equal_workbooks(migration_desc.existing_file, round_trip_migrated_xlsx_file)
 
     def test_migrate_from_config(self):
-        # todo: don't write to tests/fixtures/migrate/example_old_model_rt_migrated.xlsx
-        # results = MigrationController.migrate_from_config(self.config_file)
-        # add migrated_file entries to self.config_file, or load and dump it
-        pass
+        # create a YAML config file with temp migrated filenames into avoid writing to tests/fixtures/migrate
+        fd = open(self.config_file, 'r')
+        migrations_config = yaml.load(fd)
+        # add a migrated filename (migrated_file) to each migration description
+        for migration_name, migration_desc in migrations_config.items():
+            migration_desc['migrated_file'] = self.temp_pathname("migrated_file_4_{}.xlsx".format(migration_name))
+        config_w_temp_migrated_filename = self.temp_pathname('config_w_temp_migrated_filename.yaml')
+        stream = open(config_w_temp_migrated_filename, 'w')
+        yaml.dump(migrations_config, stream)
+
+        results = MigrationController.migrate_from_config(config_w_temp_migrated_filename)
+        for migration_desc, migrated_file in results:
+            self.assertEqual(migration_desc.migrated_file, migrated_file)
+            self.assert_equal_workbooks(migration_desc.existing_file, migrated_file)
 
     @unittest.skip('')
     def test_wc_lang_migration(self):
@@ -1112,7 +1126,7 @@ class TestMigrationController(MigrationFixtures):
             return root_models
 
         '''
-        wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
+        wc_lang_model_migrated = self.temp_pathname('wc_lang_small_model-migrated.xlsx')
         migration_desc = MigrationDesc('migrate small model from existing wc_lang core to itself',
             migrator=Migrator.generate_wc_lang_migrator,
             existing_file=self.wc_lang_small_model_copy,
@@ -1139,7 +1153,7 @@ class TestMigrationController(MigrationFixtures):
         Model = initial_migrator.old_model_defs['Model']
 
         # round-trip migrate through changed schema
-        wc_lang_model_migrated = self.get_temp_pathname('wc_lang_small_model-migrated.xlsx')
+        wc_lang_model_migrated = self.temp_pathname('wc_lang_small_model-migrated.xlsx')
         migration_desc = MigrationDesc('round-trip migrate existing wc_lang core -> modified core -> existing core',
             migrator=Migrator.generate_wc_lang_migrator,
             existing_file=self.wc_lang_small_model_copy,
@@ -1149,7 +1163,7 @@ class TestMigrationController(MigrationFixtures):
         MigrationController.migrate_over_schema_sequence(migration_desc)
         self.assert_equal_workbooks(self.wc_lang_small_model_copy, wc_lang_model_migrated)
 
-        wc_lang_model_migrated = self.get_temp_pathname('wc_lang_model_migrated.xlsx')
+        wc_lang_model_migrated = self.temp_pathname('wc_lang_model_migrated.xlsx')
         migration_desc = MigrationDesc('migrate large model from existing wc_lang core to itself',
             migrator=Migrator.generate_wc_lang_migrator,
             existing_file=self.wc_lang_model_copy,
@@ -1172,7 +1186,7 @@ class TestMigrationController(MigrationFixtures):
 
         '''
         # profiling:
-        out_file = self.get_temp_pathname('profile.out')
+        out_file = self.temp_pathname('profile.out')
         print('out_file', out_file)
         locals = {'MigrationController':MigrationController,
             'migration_desc':migration_desc}

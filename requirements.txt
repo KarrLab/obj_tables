@@ -4,6 +4,7 @@ inflect
 natsort
 numpy
 python_dateutil
+pyyaml
 setuptools
 six
 stringcase

@@ -1,4 +1,9 @@
- # a migration configuration
+ # a migrations configuration
+ # two round-trip migrations, which transform an obj_model model file to itself
+migration:
+    model_defs_files: [tests/fixtures/migrate/core_old.py, tests/fixtures/migrate/core_old.py]
+    existing_file: tests/fixtures/migrate/example_old_model.xlsx
+
 migration_with_renaming:
     model_defs_files: [tests/fixtures/migrate/core_old_rt.py,
         tests/fixtures/migrate/core_new_rt.py, tests/fixtures/migrate/core_old_rt.py]
@@ -15,7 +20,3 @@ migration_with_renaming:
         [[Subtest, migrated_references], [Subtest, references]]]
         ]
     existing_file: tests/fixtures/migrate/example_old_model_rt.xlsx
-
-migration:
-    model_defs_files: [tests/fixtures/migrate/core_old.py, tests/fixtures/migrate/core_new.py]
-    existing_file: tests/fixtures/migrate/example_old_model.xlsx
