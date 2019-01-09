@@ -25,20 +25,18 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
-# todo next: address perf. problem with wc_lang migration
-# todo next: test big wc_lang model
 # todo next: documentation
 # todo next: more coverage
 # todo next: test OneToManyAttribute
+# todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 # enable wc_lang migration in RunMigration
+# todo: carefully use Model.get_related() in WorkbookWriter.run(); currently takes O(n**2) time for n models
+# when all models are connected; add optional param to get_related that contains models that are already known
 
 # todo next: move remaining todos to GitHub issues
-# todo: move generate_wc_lang_migrator to wc_lang
-# todo next: medium: clean up naming: old models, existing, migrated models, new models, source models, dest models
-# todo: have obj_model support required attributes, which have non-default values; e.g.
+# todo: move generate_wc_lang_migrator() to wc_lang
 # turn off coverage during unittest setUp, if possible
-# the Model attr in models in a wc_lang model should be required
 # todo: separately specified default value for attribute
 # todo: obtain sort order of sheets in existing model file and replicate in migrated model file
 # todo: confirm this works for json, etc.
@@ -430,7 +428,7 @@ class Migrator(object):
         for existing_model, migrated_model in self.models_map.items():
             inconsistencies.extend(self._get_inconsistencies(existing_model, migrated_model))
         if inconsistencies:
-            raise MigratorError('\n'.join(inconsistencies))
+            raise MigratorError('\n' + '\n'.join(inconsistencies))
 
         # get attribute name not used in old model definitions so that old models can point to new models
         self._migrated_copy_attr_name = self._get_migrated_copy_attr_name()
@@ -695,7 +693,7 @@ class Migrator(object):
 
         # write migrated models to disk
         obj_model_writer = obj_model.io.Writer.get_writer(existing_file)()
-        obj_model_writer.run(migrated_file, migrated_models, models=model_order)
+        obj_model_writer.run(migrated_file, migrated_models, models=model_order, get_related=False)
         return migrated_file
 
     def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
@@ -1209,10 +1207,10 @@ class MigrationDesc(object):
                 setattr(self, renaming_list, empty_per_migration_list)
 
     def get_kwargs(self):
-        """ Create a `kwargs` dictionary of a `MigrationDesc`'s optional arguments 
+        """ Create a `kwargs` dictionary of a `MigrationDesc`'s optional arguments
 
         Returns:
-            :obj:`dict`: `kwargs` for this `MigrationDesc`'s optional arguments 
+            :obj:`dict`: `kwargs` for this `MigrationDesc`'s optional arguments
         """
         optional_args = ['existing_file', 'model_defs_files', 'seq_of_renamed_models', 'seq_of_renamed_attributes',
             'migrated_file', 'migrate_suffix', 'migrate_in_place']

@@ -1105,43 +1105,7 @@ class TestMigrationController(MigrationFixtures):
             self.assertEqual(migration_desc.migrated_file, migrated_file)
             self.assert_equal_workbooks(migration_desc.existing_file, migrated_file)
 
-    @unittest.skip('')
     def test_wc_lang_migration(self):
-        def get_root_models(Model, models):
-            root_models = []
-            for model in models:
-                if isinstance(model, Model):
-                    root_models.append(model)
-            if len(root_models) == 1:
-                return root_models[0]
-            return root_models
-
-        '''
-        wc_lang_model_migrated = self.temp_pathname('wc_lang_small_model-migrated.xlsx')
-        migration_desc = MigrationDesc('migrate small model from existing wc_lang core to itself',
-            migrator=Migrator.generate_wc_lang_migrator,
-            existing_file=self.wc_lang_small_model_copy,
-            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
-            migrated_file=wc_lang_model_migrated)
-        existing_models, migrated_models, migrated_filename = \
-            MigrationController.migrate_over_schema_sequence(migration_desc)
-        self.assertEqual(migrated_filename, wc_lang_model_migrated)
-
-        # validate memory resident models
-        initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
-        initial_migrator.prepare()
-        Model = initial_migrator.old_model_defs['Model']
-        existing_model = get_root_models(Model, existing_models)
-        migrated_model = get_root_models(Model, migrated_models)
-        self.assertTrue(existing_model.is_equal(migrated_model))
-
-        # validate spreadsheets
-        self.assert_equal_workbooks(self.wc_lang_small_model_copy, wc_lang_model_migrated)
-        '''
-
-        initial_migrator = Migrator(self.wc_lang_schema_existing, self.wc_lang_schema_existing)
-        initial_migrator.prepare()
-        Model = initial_migrator.old_model_defs['Model']
 
         # round-trip migrate through changed schema
         wc_lang_model_migrated = self.temp_pathname('wc_lang_small_model-migrated.xlsx')
@@ -1154,34 +1118,39 @@ class TestMigrationController(MigrationFixtures):
         MigrationController.migrate_over_schema_sequence(migration_desc)
         self.assert_equal_workbooks(self.wc_lang_small_model_copy, wc_lang_model_migrated)
 
-        wc_lang_model_migrated = self.temp_pathname('wc_lang_model_migrated.xlsx')
-        migration_desc = MigrationDesc('migrate large model from existing wc_lang core to itself',
+        '''
+        Process for round-trip migration of wc_lang model that lacks 'model' attributes
+        1. to create model with 'model' attributes, migrate to tmp file w generate_wc_lang_migrator
+        2. start with the tmp migrated file to test round-trip modification
+        '''
+        fully_instantiated_wc_lang_model = self.temp_pathname('fully_instantiated_wc_lang_model.xlsx')
+        fully_instantiate_migration = MigrationDesc(
+            "create fully instantiated model with 'model' attributes: migrate model from existing wc_lang core to itself",
             migrator=Migrator.generate_wc_lang_migrator,
             existing_file=self.wc_lang_model_copy,
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
-            migrated_file=wc_lang_model_migrated)
+            migrated_file=fully_instantiated_wc_lang_model)
+        MigrationController.migrate_over_schema_sequence(fully_instantiate_migration)
 
-        existing_models, migrated_models, migrated_filename = \
-            MigrationController.migrate_over_schema_sequence(migration_desc)
-        # review difference
-        existing_model = get_root_models(Model, existing_models)
-        migrated_model = get_root_models(Model, migrated_models)
-        self.assertTrue(existing_model.is_equal(migrated_model))
-        print(existing_model.difference(migrated_model))
+        rt_through_changes_migration = MigrationDesc(
+            "round trip migration though changes",
+            existing_file=fully_instantiated_wc_lang_model,
+            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified,
+                self.wc_lang_schema_existing],
+            seq_of_renamed_models=[[('Parameter', 'ParameterRenamed')], [('ParameterRenamed', 'Parameter')]])
+        _, _, rt_through_changes_wc_lang_model = \
+            MigrationController.migrate_over_schema_sequence(rt_through_changes_migration)
+        # validate round trip
+        self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_model)
 
-        # validate spreadsheets
-        existing = read_workbook(self.wc_lang_model_copy)
-        migrated = read_workbook(wc_lang_model_migrated)
-        print(existing.difference(migrated))
-        self.assertEqual(existing, migrated)
-
+        # todo: remove
         '''
-        # profiling:
-        out_file = self.temp_pathname('profile.out')
+        # profile:
+        out_file = self.temp_pathname('profile_new.out')
         print('out_file', out_file)
         locals = {'MigrationController':MigrationController,
-            'migration_desc':migration_desc}
-        cProfile.runctx('MigrationController.migrate_over_schema_sequence(migration_desc)',
+            'rt_through_changes_migration':rt_through_changes_migration}
+        cProfile.runctx('MigrationController.migrate_over_schema_sequence(rt_through_changes_migration)',
             {}, locals, filename=out_file)
         profile = pstats.Stats(out_file)
         print("Profile:")
