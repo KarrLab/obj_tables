@@ -19,15 +19,11 @@ class Test(obj_model.Model):
     name = StringAttribute(default='test')
     version = RegexAttribute(min_length=1, pattern=r'^[0-9]+\.[0-9+]\.[0-9]+', flags=re.I)
     revision = StringAttribute(default='0.0')
-    new_attr = obj_model.core.StringAttribute(default='foo')
+    existing_attr = StringAttribute(default='existing_attr_val')
 
     class Meta(obj_model.Model.Meta):
-        attribute_order = ('id', 'name', 'version', 'revision', 'new_attr')
+        attribute_order = ('id', 'name', 'version', 'revision', 'existing_attr')
         tabular_orientation = TabularOrientation.column
-
-
-class NewModel(obj_model.Model):
-    id = SlugAttribute()
 
 
 class Property(obj_model.Model):

@@ -1,22 +1,22 @@
  # a migrations configuration
  # two round-trip migrations, which transform an obj_model model file to itself
 migration:
-    model_defs_files: [tests/fixtures/migrate/core_old.py, tests/fixtures/migrate/core_old.py]
-    existing_file: tests/fixtures/migrate/example_old_model.xlsx
+    model_defs_files: [tests/fixtures/migrate/core_existing.py, tests/fixtures/migrate/core_existing.py]
+    existing_file: tests/fixtures/migrate/example_existing_model.xlsx
 
 migration_with_renaming:
-    model_defs_files: [tests/fixtures/migrate/core_old_rt.py,
-        tests/fixtures/migrate/core_new_rt.py, tests/fixtures/migrate/core_old_rt.py]
+    model_defs_files: [tests/fixtures/migrate/core_existing_rt.py,
+        tests/fixtures/migrate/core_migrated_rt.py, tests/fixtures/migrate/core_existing_rt.py]
     seq_of_renamed_models: [[[Test, MigratedTest]], [[MigratedTest, Test]]]
     seq_of_renamed_attributes: [
         # for 1st migration:
-        [[[Test, old_attr], [MigratedTest, new_attr]],
-        [[Property, value], [Property, new_value]],
+        [[[Test, existing_attr], [MigratedTest, migrated_attr]],
+        [[Property, value], [Property, migrated_value]],
         [[Subtest, references], [Subtest, migrated_references]]],
 
         # for 2nd migration:
-        [[[MigratedTest, new_attr], [Test, old_attr]],
-        [[Property, new_value], [Property, value]],
+        [[[MigratedTest, migrated_attr], [Test, existing_attr]],
+        [[Property, migrated_value], [Property, value]],
         [[Subtest, migrated_references], [Subtest, references]]]
         ]
-    existing_file: tests/fixtures/migrate/example_old_model_rt.xlsx
+    existing_file: tests/fixtures/migrate/example_existing_model_rt.xlsx
