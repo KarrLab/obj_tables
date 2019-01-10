@@ -13,7 +13,7 @@ import json
 import six
 
 
-class NumpyArrayAttribute(core.Attribute):
+class NumpyArrayAttribute(core.LiteralAttribute):
     """ numpy.array attribute
 
     Attributes:
@@ -185,7 +185,7 @@ class NumpyArrayAttribute(core.Attribute):
             return numpy.array(json, dtype)
 
 
-class SympyBasicAttribute(core.Attribute):
+class SympyBasicAttribute(core.LiteralAttribute):
     """ Base class for SymPy expression, symbol attributes
 
     Attributes:

@@ -17,7 +17,7 @@ import json
 import six
 
 
-class FeatureLocationAttribute(core.Attribute):
+class FeatureLocationAttribute(core.LiteralAttribute):
     """ Bio.SeqFeature.FeatureLocation attribute
 
     Attributes:
@@ -155,7 +155,7 @@ class FeatureLocationAttribute(core.Attribute):
             return Bio.SeqFeature.FeatureLocation(json['start'], json['end'], json['strand'])
 
 
-class BioSeqAttribute(core.Attribute):
+class BioSeqAttribute(core.LiteralAttribute):
     """ Bio.Seq.Seq attribute
 
     Attributes:
@@ -391,7 +391,7 @@ class BioRnaSeqAttribute(BioSeqAttribute):
         self.alphabet = Bio.Alphabet.RNAAlphabet()
 
 
-class FrequencyPositionMatrixAttribute(core.Attribute):
+class FrequencyPositionMatrixAttribute(core.LiteralAttribute):
     """ Bio.motif.matrix.FrequencyPositionMatrix attribute """
 
     def __init__(self, verbose_name='', help=''):

@@ -10,7 +10,7 @@ from . import core
 from wc_utils.util import chem
 
 
-class EmpiricalFormulaAttribute(core.Attribute):
+class EmpiricalFormulaAttribute(core.LiteralAttribute):
     """ Empirical formula attribute """
 
     def __init__(self, default=None, verbose_name='', help='', primary=False, unique=False):
