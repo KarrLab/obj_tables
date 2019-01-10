@@ -29,10 +29,9 @@ from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning)
-from wc_utils.util.list import transpose
+from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.workbook.core import get_column_letter
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle
-from wc_utils.util.list import det_dedupe, is_sorted
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
@@ -189,13 +188,7 @@ class WorkbookWriter(WriterBase):
                     str(error).replace('\n', '\n  ').rstrip()), IoWarning)
 
         # group objects by class
-        # todo: use dict_by_class
-        grouped_objects = {}
-        for obj in all_objects:
-            if obj.__class__ not in grouped_objects:
-                grouped_objects[obj.__class__] = []
-            if obj not in grouped_objects[obj.__class__]:
-                grouped_objects[obj.__class__].append(obj)
+        grouped_objects = dict_by_class(all_objects)
 
         # check that at least one model was provided
         if models is None:
@@ -568,16 +561,11 @@ class JsonReader(ReaderBase):
 
         # group objects by model
         if group_objects_by_model:
-            grouped_objs = {}
             if objs is None:
                 objs = []
             elif not isinstance(objs, list):
                 objs = [objs]
-            for obj in objs:
-                if obj.__class__ not in grouped_objs:
-                    grouped_objs[obj.__class__] = []
-                grouped_objs[obj.__class__].append(obj)
-            return grouped_objs
+            return dict_by_class(objs)
         else:
             return objs
 
