@@ -26,12 +26,14 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
 # todo next: documentation
+# used dict in wc_utils dup removal
 # todo next: more coverage
 # todo next: test OneToManyAttribute
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 # enable wc_lang migration in RunMigration
 # todo: carefully use Model.get_related() in WorkbookWriter.run(); currently takes O(n**2) time for n models
 # when all models are connected; add optional param to get_related that contains models that are already known
+# todo: prepare lab meeting
 
 # todo next: move remaining todos to GitHub issues
 # todo: move generate_wc_lang_migrator() to wc_lang
@@ -692,7 +694,7 @@ class Migrator(object):
 
         # write migrated models to disk
         obj_model_writer = obj_model.io.Writer.get_writer(existing_file)()
-        obj_model_writer.run(migrated_file, migrated_models, models=model_order, get_related=False)
+        obj_model_writer.run(migrated_file, migrated_models, models=model_order)
         return migrated_file
 
     def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):

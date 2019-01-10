@@ -158,7 +158,7 @@ class WorkbookWriter(WriterBase):
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
-            get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
+            get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
                 not explictly included in `Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -178,13 +178,9 @@ class WorkbookWriter(WriterBase):
             objects = [objects]
 
         # get related objects
-        more_objects = []
+        all_objects = objects
         if get_related:
-            for obj in objects:
-                more_objects.extend(obj.get_related())
-
-        # clean objects
-        all_objects = det_dedupe(objects + more_objects)
+            all_objects = Model.get_all_related(objects)
 
         if validate:
             error = Validator().run(all_objects)
@@ -193,6 +189,7 @@ class WorkbookWriter(WriterBase):
                     str(error).replace('\n', '\n  ').rstrip()), IoWarning)
 
         # group objects by class
+        # todo: use dict_by_class
         grouped_objects = {}
         for obj in all_objects:
             if obj.__class__ not in grouped_objects:

@@ -1861,20 +1861,53 @@ class Model(with_metaclass(ModelMeta, object)):
         attr = cls.Meta.primary_attribute
         return (None, InvalidAttribute(attr, ['No object with primary attribute value "{}"'.format(value)]))
 
-    def get_related(self):
-        """ Get all related objects
+    @staticmethod
+    def get_all_related(objs):
+        """ Optimally obtain all objects related to objects in `objs`
+
+        The set of all :obj:`Model`s can be viewed as a graph whose nodes are :obj:`Model` instances
+        and whose edges are related connections. Because related edges are bi-directional, this graph
+        is a set of strongly connected components and no edges connect the components.
+
+        The algorithm here finds all :obj:`Model`s that are reachable from a set of instances
+        in `O(n)`, where `n` is the size of the reachable set. This algorithm is optimal.
+        It achieves this performance because `get_related(obj)` takes `O(n(c))` where `n(c)` is the
+        number of nodes in the component containing `obj`, and each component is only explored
+        once because all of a component's nodes are stored in `found_objs` when the component is first
+        explored.
+
+        In addition, this method is deterministic because ordered dictionaries preserve insertion order.
+
+        Args:
+            objs (:obj:`iterator` of :obj:`Model`, optional): some objects
 
         Returns:
-            :obj:`set` of `Model`: related objects
+            :obj:`list` of :obj:`Model`: all objects in `objs` and all objects related to them,
+            without any duplicates
         """
-        related_objs = list()
+        found_objs = collections.OrderedDict()
+        for obj in objs:
+            if obj not in found_objs:
+                found_objs[obj] = None
+                for related_obj in obj.get_related():
+                    if related_obj not in found_objs:
+                        found_objs[related_obj] = None
+        return list(found_objs)
+
+    def get_related(self):
+        """ Get all related objects reachable from `self`
+
+        Returns:
+            :obj:`set` of `Model`: related objects, without any duplicates
+        """
+        related_objs = collections.OrderedDict()
         objs_to_explore = [self]
         init_iter = True
         while objs_to_explore:
             obj = objs_to_explore.pop()
             if obj not in related_objs:
                 if not init_iter:
-                    related_objs.append(obj)
+                    related_objs[obj] = None
                 init_iter = False
 
                 cls = obj.__class__
@@ -1887,7 +1920,7 @@ class Model(with_metaclass(ModelMeta, object)):
                         elif value is not None:
                             objs_to_explore.append(value)
 
-        return related_objs
+        return list(related_objs)
 
     def clean(self):
         """ Clean all of this `Model`'s attributes
@@ -2697,7 +2730,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
 
 
 class LocalAttribute(object):
-    """ Meta data about an local attribute in a class
+    """ Meta data about a local attribute in a class
 
     Attributes:
         attr (:obj:`Attribute`): attribute
@@ -5887,10 +5920,7 @@ class Validator(object):
             objects = [objects]
 
         if get_related:
-            all_objects = copy.copy(objects)
-            for obj in objects:
-                all_objects.extend(obj.get_related())
-            objects = det_dedupe(all_objects)
+            objects = Model.get_all_related(objects)
 
         error = self.clean(objects)
         if error:
