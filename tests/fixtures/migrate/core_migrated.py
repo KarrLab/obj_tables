@@ -19,11 +19,15 @@ class Test(obj_model.Model):
     name = StringAttribute(default='test')
     version = RegexAttribute(min_length=1, pattern=r'^[0-9]+\.[0-9+]\.[0-9]+', flags=re.I)
     revision = StringAttribute(default='0.0')
-    old_attr = StringAttribute(default='old_attr_val')
+    migrated_attr = obj_model.core.StringAttribute(default='foo')
 
     class Meta(obj_model.Model.Meta):
-        attribute_order = ('id', 'name', 'version', 'revision', 'old_attr')
+        attribute_order = ('id', 'name', 'version', 'revision', 'migrated_attr')
         tabular_orientation = TabularOrientation.column
+
+
+class NewModel(obj_model.Model):
+    id = SlugAttribute()
 
 
 class Property(obj_model.Model):

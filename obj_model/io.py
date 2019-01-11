@@ -29,10 +29,9 @@ from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning)
-from wc_utils.util.list import transpose
+from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.workbook.core import get_column_letter
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle
-from wc_utils.util.list import det_dedupe, is_sorted
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
@@ -158,7 +157,7 @@ class WorkbookWriter(WriterBase):
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
-            get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
+            get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
                 not explictly included in `Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -178,13 +177,9 @@ class WorkbookWriter(WriterBase):
             objects = [objects]
 
         # get related objects
-        more_objects = []
+        all_objects = objects
         if get_related:
-            for obj in objects:
-                more_objects.extend(obj.get_related())
-
-        # clean objects
-        all_objects = det_dedupe(objects + more_objects)
+            all_objects = Model.get_all_related(objects)
 
         if validate:
             error = Validator().run(all_objects)
@@ -193,12 +188,7 @@ class WorkbookWriter(WriterBase):
                     str(error).replace('\n', '\n  ').rstrip()), IoWarning)
 
         # group objects by class
-        grouped_objects = {}
-        for obj in all_objects:
-            if obj.__class__ not in grouped_objects:
-                grouped_objects[obj.__class__] = []
-            if obj not in grouped_objects[obj.__class__]:
-                grouped_objects[obj.__class__].append(obj)
+        grouped_objects = dict_by_class(all_objects)
 
         # check that at least one model was provided
         if models is None:
@@ -571,16 +561,11 @@ class JsonReader(ReaderBase):
 
         # group objects by model
         if group_objects_by_model:
-            grouped_objs = {}
             if objs is None:
                 objs = []
             elif not isinstance(objs, list):
                 objs = [objs]
-            for obj in objs:
-                if obj.__class__ not in grouped_objs:
-                    grouped_objs[obj.__class__] = []
-                grouped_objs[obj.__class__].append(obj)
-            return grouped_objs
+            return dict_by_class(objs)
         else:
             return objs
 

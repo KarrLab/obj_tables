@@ -323,7 +323,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(leaf4.root, root1)
         self.assertEqual(set(root1.leaves), set((leaf1, leaf3, leaf4)))
 
-    def test_get_related(self):
+    def test_get_related_and_get_all_related(self):
+        # a strongly connected component of Models
         g0 = Grandparent(id='root-0')
         p0 = [
             Parent(grandparent=g0, id='node-0-0'),
@@ -335,7 +336,22 @@ class TestCore(unittest.TestCase):
             Child(parent=p0[1], id='leaf-0-1-0'),
             Child(parent=p0[1], id='leaf-0-1-1'),
         ]
+        connected_models_0 = set((g0,)) | set(p0) | set(c0)
 
+        self.assertEqual(set(g0.get_related()), connected_models_0)
+        self.assertEqual(set(p0[0].get_related()), connected_models_0)
+        self.assertEqual(set(c0[0].get_related()), connected_models_0)
+
+        orphan = Child(parent=None, id='orphan')
+        self.assertEqual(set(orphan.get_related()), set())
+
+        self.assertEqual(set(core.Model.get_all_related([])), set())
+        self.assertEqual(set(core.Model.get_all_related([g0])), connected_models_0)
+        self.assertEqual(set(core.Model.get_all_related([p0[0]])), connected_models_0)
+        self.assertEqual(set(core.Model.get_all_related(c0)), connected_models_0)
+        self.assertEqual(set(core.Model.get_all_related(p0)), connected_models_0)
+
+        # another strongly connected component of Models
         g1 = Grandparent(id='root-1')
         p1 = [
             Parent(grandparent=g1, id='node-1-0'),
@@ -347,18 +363,10 @@ class TestCore(unittest.TestCase):
             Child(parent=p1[1], id='leaf-1-1-0'),
             Child(parent=p1[1], id='leaf-1-1-1'),
         ]
+        connected_models_1 = set((g1,)) | set(p1) | set(c1)
 
-        self.assertEqual(set(g0.get_related()), set((g0,)) | set(p0) | set(c0))
-        self.assertEqual(set(p0[0].get_related()),
-                         set((g0,)) | set(p0) | set(c0))
-        self.assertEqual(set(c0[0].get_related()),
-                         set((g0,)) | set(p0) | set(c0))
-
-        self.assertEqual(set(g1.get_related()), set((g1,)) | set(p1) | set(c1))
-        self.assertEqual(set(p1[0].get_related()),
-                         set((g1,)) | set(p1) | set(c1))
-        self.assertEqual(set(c1[0].get_related()),
-                         set((g1,)) | set(p1) | set(c1))
+        self.assertEqual(set(core.Model.get_all_related([g0, g1])),
+            connected_models_0 | connected_models_1)
 
     def test_equal(self):
         root1 = Root(label='a')

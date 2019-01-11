@@ -1,5 +1,12 @@
 abduct
 attrdict
+configobj
 mock
+natsort
+networkx
+numpy
 openpyxl
 pytest
+pyyaml
+six
+stringcase
