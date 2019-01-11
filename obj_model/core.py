@@ -6046,9 +6046,9 @@ class InvalidObject(object):
         Returns:
             :obj:`str`: string representation of errors
         """
-        error_forest = []
+        error_forest = [str(self.object.serialize()) + ':']
         for attr in natsorted(self.attributes, key=lambda x: x.attribute.name, alg=ns.IGNORECASE):
-            error_forest.append(attr)
+            error_forest.append([attr])
         return indent_forest(error_forest)
 
 

@@ -3015,13 +3015,21 @@ class TestCore(unittest.TestCase):
         ]
         obj = Grandparent(id='gp')
         err = core.InvalidObject(obj, attr_errs)
+        print("{}:\n".format(obj.id) +
+            "  '{}':\n".format(attrs[0].name) +
+            "    {}\n".format(msgs[0]) +
+            "    {}\n".format(msgs[1].replace("\n", "\n    ")) +
+            "  '{}':\n".format(attrs[1].name) +
+            "    {}\n".format(msgs[2]) +
+            "    {}".format(msgs[3]))
         self.assertEqual(str(err), (
-            "'{}':\n".format(attrs[0].name) +
-            "  {}\n".format(msgs[0]) +
-            "  {}\n".format(msgs[1].replace("\n", "\n  ")) +
-            "'{}':\n".format(attrs[1].name) +
-            "  {}\n".format(msgs[2]) +
-            "  {}".format(msgs[3])
+            "{}:\n".format(obj.id) +
+            "  '{}':\n".format(attrs[0].name) +
+            "    {}\n".format(msgs[0]) +
+            "    {}\n".format(msgs[1].replace("\n", "\n    ")) +
+            "  '{}':\n".format(attrs[1].name) +
+            "    {}\n".format(msgs[2]) +
+            "    {}".format(msgs[3])
         ))
 
     def test_invalid_model_str(self):

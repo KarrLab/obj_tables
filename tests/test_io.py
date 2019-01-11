@@ -476,20 +476,26 @@ class TestIo(unittest.TestCase):
                 tabular_orientation = core.TabularOrientation.column
 
         RE_msgs = [
-            "Leaf\n +'id':''\n +invalid-data.xlsx:Leaves:A6\n +StringAttribute value for primary "
-            "attribute cannot be empty",
+            "Leaf\n"
+            " +:\n"
+            " +'id':''\n"
+            " +invalid-data.xlsx:Leaves:A6\n"
+            " +StringAttribute value for primary attribute cannot be empty",
             "invalid-data.xlsx:'Normal records':B3",
-            "Transposed\n +'val':'x'\n +invalid-data.xlsx:Transposed:C2\n +Value must be at least "
-            "2 characters",
+            "Transposed\n"
+            " +t_2:\n"
+            " +'val':'x'\n"
+            " +invalid-data.xlsx:Transposed:C2\n"
+            " +Value must be at least 2 characters",
         ]
         self.check_reader_errors('invalid-data.xlsx', RE_msgs, [Leaf, NormalRecord, Transposed],
                                  use_re=True)
 
         RE_msgs = [
             r"The model cannot be loaded because 'invalid-data-\*.csv' contains error",
-            r"Leaf *\n +'id':''\n +invalid-data-\*.csv:Leaves:6,1\n +StringAttribute value for "
+            r"Leaf *\n +:\n +'id':''\n +invalid-data-\*.csv:Leaves:6,1\n +StringAttribute value for "
             r"primary attribute cannot be empty",
-            r"Transposed\n +'val':'x'\n +invalid-data-\*.csv:Transposed:2,3\n +Value must be at "
+            r"Transposed\n +t_2:\n +'val':'x'\n +invalid-data-\*.csv:Transposed:2,3\n +Value must be at "
             r"least 2 characters",
         ]
         self.check_reader_errors('invalid-data-*.csv', RE_msgs, [Leaf, NormalRecord, Transposed],
