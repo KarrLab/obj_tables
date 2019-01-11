@@ -15,7 +15,8 @@ from .core import (Model, Attribute,
                    InvalidObjectSet, InvalidModel, InvalidObject, InvalidAttribute, Validator,
                    ObjModelWarning, SchemaWarning,
                    ModelSource, TabularOrientation,
-                   get_models, get_model, excel_col_name)
+                   get_models, get_model, excel_col_name,
+                   ModelMerge)
 from . import abstract
 from . import expression
 from . import io

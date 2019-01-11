@@ -1108,6 +1108,9 @@ class ReadEmptyCellTestCase(unittest.TestCase):
             def from_builtin(self, json, decoded=None):
                 pass
 
+            def merge(self, other, validate=True):
+                pass
+
         attr = ConcreteAttribute(default_cleaned_value=lambda: 1.5)
         self.assertEqual(attr.get_default_cleaned_value(), 1.5)
 

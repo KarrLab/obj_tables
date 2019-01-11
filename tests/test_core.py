@@ -1148,6 +1148,9 @@ class TestCore(unittest.TestCase):
             def deserialize(self):
                 pass
 
+            def merge(self, other, validate=True):
+                pass
+
         with self.assertRaisesRegex(ValueError, '`default` must be `None`, a list, or a callable'):
             ConcreteRelatedAttribute(None, default='')
 
@@ -2699,6 +2702,8 @@ class TestCore(unittest.TestCase):
             def to_builtin(self, encoded=None): pass
 
             def from_builtin(self, json, decoded=None): pass
+
+            def merge(self, other, validate=True): pass
 
         class TestModel(core.Model):
             attr = TestAttribute()

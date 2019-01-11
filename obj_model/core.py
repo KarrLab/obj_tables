@@ -52,6 +52,12 @@ import warnings
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
 
 
+class ModelMerge(int, Enum):
+    """ Types of model merging operations """
+    join = 1
+    append = 2
+
+
 class ModelMeta(type):
 
     def __new__(metacls, name, bases, namespace):
@@ -90,6 +96,7 @@ class ModelMeta(type):
             Meta.tabular_orientation = bases[0].Meta.tabular_orientation
             Meta.frozen_columns = bases[0].Meta.frozen_columns
             Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
+            Meta.merge = bases[0].Meta.merge
 
         # validate attributes
         metacls.validate_attributes(name, bases, namespace)
@@ -952,6 +959,7 @@ class Model(with_metaclass(ModelMeta, object)):
             frozen_columns (:obj:`int`): number of Excel columns to freeze
             inheritance (:obj:`tuple` of `class`): tuple of all superclasses
             ordering (:obj:`tuple` of attribute names): controls the order in which objects should be printed when serialized
+            merge (:obj:`ModelMerge`): type of merging operation
         """
         attributes = None
         related_attributes = None
@@ -965,6 +973,7 @@ class Model(with_metaclass(ModelMeta, object)):
         frozen_columns = 1
         inheritance = None
         ordering = None
+        merge = ModelMerge.join
 
     def __init__(self, **kwargs):
         """
@@ -1196,10 +1205,10 @@ class Model(with_metaclass(ModelMeta, object)):
         super(Model, self).__setattr__(attr_name, value)
 
     def get_nested_attr(self, attr_path):
-        """ Get the value of an attribute or a nested attribute of a model 
+        """ Get the value of an attribute or a nested attribute of a model
 
         Args:
-            attr_path (:obj:`list` of :obj:`list` of :obj:`str`): 
+            attr_path (:obj:`list` of :obj:`list` of :obj:`str`):
                 the path to an attribute or nested attribute of a model
 
         Returns:
@@ -1233,10 +1242,10 @@ class Model(with_metaclass(ModelMeta, object)):
         return value
 
     def set_nested_attr(self, attr_path, value):
-        """ Set the value of an attribute or a nested attribute of a model 
+        """ Set the value of an attribute or a nested attribute of a model
 
         Args:
-            attr_path (:obj:`list` of :obj:`list` of :obj:`str`): 
+            attr_path (:obj:`list` of :obj:`list` of :obj:`str`):
                 the path to an attribute or nested attribute of a model
             value (:obj:`object`): new value
 
@@ -2168,7 +2177,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 objs = {o.__class__: {o.serialize(): o}}
                 for attr_name, attr in o.Meta.attributes.items():
                     if isinstance(attr, RelatedAttribute) and \
-                        attr.related_class.__name__ in o.Meta.expression_term_models:
+                            attr.related_class.__name__ in o.Meta.expression_term_models:
                         objs[attr.related_class] = {}
                         for oo in getattr(o, attr_name):
                             objs[attr.related_class][oo.serialize()] = oo
@@ -2470,6 +2479,116 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return True
 
+    def merge(self, other, validate=True):
+        """ Merge another model into a model
+
+        Args:
+            other (:obj:`Model`): other model
+            validate (:obj:`bool`, optional): if :obj:`True`, validate models and merged model
+        """
+        # validate models
+        if validate:
+            error = Validator().run(self, get_related=True)
+            assert error is None, str(error)
+
+            error = Validator().run(other, get_related=True)
+            assert error is None, str(error)
+
+        # normalize models so merging is reproducible
+        self.normalize()
+        other.normalize()
+
+        # generate mapping from self to other
+        other_objs_in_self, other_objs_not_in_self = self.gen_merge_map(other)
+        self_objs_in_other, self_objs_not_in_other = other.gen_merge_map(self)
+
+        # merge object graph
+        for other_child, self_child in other_objs_in_self.items():
+            if self_child != self:
+                self_child.merge_attrs(other_child, other_objs_in_self, self_objs_in_other)
+        for other_child in other_objs_not_in_self:
+            other_child.merge_attrs(other_child, other_objs_in_self, self_objs_in_other)
+
+        # merge attributes
+        self.merge_attrs(other, other_objs_in_self, self_objs_in_other)
+
+        # validate model
+        if validate:
+            error = Validator().run(self, get_related=True)
+            assert error is None, str(error)
+
+    def gen_merge_map(self, other):
+        """ Create a dictionary that maps instances of objects in another model to objects
+        in a model
+
+        Args:
+            other (:obj:`Model`): other model
+
+        Returns:
+            :obj:`dict`: dictionary that maps instances of objects in another model to objects
+                in a model
+            :obj:`list`: list of instances of objects in another model which have no parallel
+                in the model
+        """
+        self_objs_by_class = self.gen_serialized_val_obj_map()
+        other_objs_by_class = other.gen_serialized_val_obj_map()
+
+        other_objs_in_self = {}
+        other_objs_not_in_self = []
+        for type, other_type_objs in other_objs_by_class.items():
+            for serialized_val, other_obj in other_type_objs.items():
+                self_obj = self_objs_by_class.get(type, {}).get(serialized_val, None)
+                if self_obj:
+                    other_objs_in_self[other_obj] = self_obj
+                else:
+                    other_objs_not_in_self.append(other_obj)
+
+        # force mapping for other --> self
+        if other in other_objs_in_self:
+            if other_objs_in_self[other] != self:
+                raise ValueError('Other must map to self')
+        else:
+            other_objs_in_self[other] = self
+            other_objs_not_in_self.remove(other)
+
+        return (other_objs_in_self, other_objs_not_in_self)
+
+    def gen_serialized_val_obj_map(self):
+        """ Generate mappings from serialized values to objects
+
+        Returns:
+            :obj:`dict`: dictionary which maps types of models to dictionaries which serialized values to objects
+
+        Raises:
+            :obj:`ValueError`: if serialized values are not unique within each type
+        """
+        objs = self.get_related()
+        objs_by_class = {}
+        for obj in objs:
+            if obj.__class__ not in objs_by_class:
+                objs_by_class[obj.__class__] = {}
+            serialized_val = obj.serialize()
+            if serialized_val in objs_by_class[obj.__class__]:
+                raise ValueError('Serialized value "{}" is not unique for {}'.format(serialized_val, obj.__class__.__name__))
+            objs_by_class[obj.__class__][serialized_val] = obj
+        return objs_by_class
+
+    def merge_attrs(self, other, other_objs_in_self, self_objs_in_other):
+        """ Merge attributes of two objects
+
+        Args:
+            other (:obj:`Model`): other model
+            other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
+                in a model
+            self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
+                in another model
+        """
+        if self.Meta.merge == ModelMerge.append and self != other:
+            raise ValueError('{} cannot be joined'.format(self.Meta.verbose_name_plural))
+
+        for attr in self.Meta.attributes.values():
+            attr.merge(self, other, other_objs_in_self, self_objs_in_other)
+
 
 class ModelSource(object):
     """ Represents the file, sheet, columns, and row where a :obj:`Model` instance was defined
@@ -2695,6 +2814,18 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """
         pass  # pragma: no cover
 
+    @abc.abstractmethod
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+        """
+        pass  # pragma: no cover
+
 
 class LocalAttribute(object):
     """ Meta data about an local attribute in a class
@@ -2716,7 +2847,7 @@ class LocalAttribute(object):
 
     def __init__(self, attr, primary_class, is_primary=True):
         """
-        Args:            
+        Args:
             attr (obj:`Attribute`): attribute
             primary_class (:obj:`type`): class in which :obj:`attr` was defined
             is_primary (:obj:`bool`, optional): :obj:`True` indicates that a local attribute should be created
@@ -2814,6 +2945,23 @@ class LiteralAttribute(Attribute):
             :obj:`object`: decoded value of the attribute
         """
         return json
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        left_val = getattr(left, self.name)
+        right_val = getattr(right, self.name)
+        if left_val != right_val:
+            raise ValueError('{}.{} must be equal'.format(left.__class__.__name__, self.name))
 
 
 class NumericAttribute(LiteralAttribute):
@@ -3159,6 +3307,23 @@ class FloatAttribute(NumericAttribute):
         if isnan(value):
             return None
         return value
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        left_val = getattr(left, self.name)
+        right_val = getattr(right, self.name)
+        if (not isnan(left_val) or not isnan(right_val)) and left_val != right_val:
+            raise ValueError('{}.{} must be equal'.format(left.__class__.__name__, self.name))
 
 
 class PositiveFloatAttribute(FloatAttribute):
@@ -4450,6 +4615,41 @@ class OneToOneAttribute(RelatedAttribute):
 
             return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
 
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        right_child = getattr(right, self.name)
+        if not right_child:
+            return
+
+        cur_left_child = getattr(left, self.name)
+        new_left_child = right_objs_in_left.get(right_child, right_child)
+
+        new_left_child_parent = getattr(new_left_child, self.related_name)
+        new_right_child_parent = left_objs_in_right.get(new_left_child_parent, None)
+
+        if new_left_child != cur_left_child and \
+                ((left == right and new_left_child_parent) or (left != right and cur_left_child)):
+            raise ValueError('Cannot join "{}" {} and {} of {} "{}" and "{}"'.format(
+                self.related_name,
+                left,
+                new_left_child_parent,
+                self.related_class.__name__,
+                cur_left_child,
+                new_left_child))
+
+        setattr(right, self.name, None)
+        setattr(left, self.name, new_left_child)
+
 
 class ManyToOneAttribute(RelatedAttribute):
     """ Represents a many-to-one relationship between two types of objects.
@@ -4674,6 +4874,26 @@ class ManyToOneAttribute(RelatedAttribute):
                 return (related_objs.pop(), None)
 
             return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        right_child = getattr(right, self.name)
+        if not right_child:
+            return
+
+        new_left_child = right_objs_in_left.get(right_child, right_child)
+        setattr(right, self.name, None)
+        setattr(left, self.name, new_left_child)
 
 
 class OneToManyAttribute(RelatedAttribute):
@@ -4905,6 +5125,26 @@ class OneToManyAttribute(RelatedAttribute):
             if errors:
                 return (None, InvalidAttribute(self, errors))
             return (deserialized_values, None)
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        left_children = getattr(left, self.name)
+        right_children = getattr(right, self.name)
+
+        for right_child in list(right_children):
+            left_child = right_objs_in_left.get(right_child, right_child)
+            right_children.remove(right_child)
+            left_children.append(left_child)
 
 
 class ManyToManyAttribute(RelatedAttribute):
@@ -5155,6 +5395,26 @@ class ManyToManyAttribute(RelatedAttribute):
             if errors:
                 return (None, InvalidAttribute(self, errors))
             return (deserialized_values, None)
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        left_children = getattr(left, self.name)
+        right_children = getattr(right, self.name)
+
+        for right_child in list(right_children):
+            left_child = right_objs_in_left.get(right_child, right_child)
+            right_children.remove(right_child)
+            left_children.append(left_child)
 
 
 class RelatedManager(list):
@@ -5993,5 +6253,6 @@ class SchemaWarning(ObjModelWarning):
     pass
 
     pass
+
 
 from . import expression
