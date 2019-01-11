@@ -38,10 +38,10 @@ from wc_utils.util.string import indent_forest
 
 
 class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
-    """ Interface for classes which write model objects to file(s) 
+    """ Interface for classes which write model objects to file(s)
 
     Attributes:
-        MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which 
+        MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which
             to export them
     """
 
@@ -167,7 +167,7 @@ class WorkbookWriter(WriterBase):
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
-            creator (:obj:`str`, optional): creator            
+            creator (:obj:`str`, optional): creator
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -427,7 +427,7 @@ class Writer(WriterBase):
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
-            creator (:obj:`str`, optional): creator            
+            creator (:obj:`str`, optional): creator
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, models=models, get_related=get_related,
@@ -440,7 +440,7 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
     """ Interface for classes which write model objects to file(s)
 
     Attributes:
-        MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which 
+        MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which
             to export them
     """
 

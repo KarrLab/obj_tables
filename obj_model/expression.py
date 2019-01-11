@@ -124,7 +124,7 @@ class ExpressionManyToOneAttribute(ManyToOneAttribute):
 
 
 class ExpressionTermMeta(object):
-    """ Meta data for subclasses that can appear in expressions 
+    """ Meta data for subclasses that can appear in expressions
 
     Attributes:
         expression_term_token_pattern (:obj:`tuple`): token pattern for the name of the
@@ -443,7 +443,7 @@ class ParsedExpression(object):
 
     * They must be syntactically correct Python.
     * No Python keywords, strings, or tokens that do not belong in expressions are allowed.
-    * All Python identifiers must be the primary attribute of an obj_model object or the name of a 
+    * All Python identifiers must be the primary attribute of an obj_model object or the name of a
         function in the `math` package. Objects in the model
         are provided in `_objs`, and the allowed subset of functions in `math` must be provided in an
         iterator in the `expression_valid_functions` attribute of the `Meta` class of a model whose whose expression
@@ -615,7 +615,7 @@ class ParsedExpression(object):
                 expr, str(e)))
         if len(tokens) != len(self._py_tokens):
             raise ParsedExpressionError("can't recreate whitespace in '{}', as it has {} instead "
-                "of {} tokens expected".format(expr, len(tokens), len(self._py_tokens)))
+                                        "of {} tokens expected".format(expr, len(tokens), len(self._py_tokens)))
 
         expanded_expr = []
         for i in range(len(tokens)):
@@ -956,7 +956,7 @@ class ParsedExpression(object):
         This is used to validate this :obj:`ParsedExpression`, as well as for testing.
 
         Args:
-            values (:obj:`float` or :obj:`dict`, optional): value, dictionary that maps model types to 
+            values (:obj:`float` or :obj:`dict`, optional): value, dictionary that maps model types to
                 values, or dictionary that maps model types to dictionaries that map model ids
                 to values
             with_units (:obj:`bool`, optional): if :obj:`True`, evaluate units
@@ -985,7 +985,7 @@ class ParsedExpression(object):
         return self.eval(obj_values, with_units=with_units)
 
     def eval(self, values, with_units=False):
-        """ Evaluate the expression        
+        """ Evaluate the expression
 
         Approach:
 
@@ -995,7 +995,7 @@ class ParsedExpression(object):
             3. `eval` the Python expression
 
         Args:
-            values (:obj:`dict`): dictionary that maps model types to dictionaries that 
+            values (:obj:`dict`): dictionary that maps model types to dictionaries that
                 map model ids to values
             with_units (:obj:`bool`, optional): if :obj:`True`, include units
 
