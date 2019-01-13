@@ -184,9 +184,19 @@ class MergeTestCase(unittest.TestCase):
 
         c_2 = Child(id='c')
         p_2 = c_2.parent = Parent(id='p')
-        
+
         with self.assertRaisesRegex(ValueError, 'Cannot join'):
             attr.merge(c_1, c_2, {}, {})
+
+        # Ex 5
+        c_1 = Child(id='c')
+        p_1 = c_1.parent = Parent(id='p')
+
+        c_2 = Child(id='c')
+        p_2 = c_2.parent = Parent(id='p')
+
+        with self.assertRaisesRegex(ValueError, 'Cannot join'):
+            attr.merge(c_2, c_2, {p_2: p_1}, {p_1: p_2})
 
         # Ex 6
         c_1 = Child(id='c')
@@ -259,7 +269,7 @@ class MergeTestCase(unittest.TestCase):
 
         c_2 = Child(id='c')
         p_2 = c_2.parent = Parent(id='p')
-        
+
         with self.assertRaisesRegex(ValueError, 'Cannot join'):
             attr.merge(c_1, c_2, {}, {})
 
@@ -281,6 +291,16 @@ class MergeTestCase(unittest.TestCase):
         p_2 = Parent(id='p')
 
         attr.merge(c_1, c_2, {p_2: p_1}, {p_1: p_2})
+        self.assertEqual(c_1.parent, p_1)
+
+        # Ex 8
+        c_1 = Child(id='c_1')
+        p_1 = c_1.parent = Parent(id='p')
+
+        c_2 = Child(id='c_2')
+        p_2 = c_2.parent = Parent(id='p')
+
+        attr.merge(c_2, c_2, {p_2: p_1}, {p_1: p_2})
         self.assertEqual(c_1.parent, p_1)
 
     def test_merge_one_to_many_attribute(self):
@@ -328,7 +348,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_2, {}, {})
         self.assertEqual(c_1.parents, [p_1, p_2])
 
-        # Ex 5 
+        # Ex 5
         c_1 = Child(id='c_1')
         p_1 = c_1.parents.create(id='p_1')
 
@@ -338,7 +358,27 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_2, {p_2: p_1}, {p_1: p_2})
         self.assertEqual(c_1.parents, [p_1])
 
-        # Ex 5
+        # Ex 6
+        c_1 = Child(id='c_1')
+        p_1 = c_1.parents.create(id='p_1')
+
+        c_2 = Child(id='c_2')
+        p_2 = c_2.parents.create(id='p_2')
+
+        attr.merge(c_1, c_2, {}, {})
+        self.assertEqual(c_1.parents, [p_1, p_2])
+
+        # Ex 7
+        c_1 = Child(id='c_1')
+        p_1 = c_1.parents.create(id='p_1')
+
+        c_2 = Child(id='c_2')
+        p_2 = c_2.parents.create(id='p_1')
+
+        with self.assertRaisesRegex(ValueError, 'Cannot join'):
+            attr.merge(c_2, c_2, {p_2: p_1}, {p_1: p_2})
+
+        # Ex 8
         p_1 = Parent(id='p_1')
 
         p_2 = Parent(id='p_2')
@@ -347,7 +387,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_2, c_2, {}, {})
         self.assertEqual(p_1.child, None)
 
-        # Ex 6
+        # Ex 9
         p_1 = Parent(id='p_1')
         c_1 = Child(id='c_2')
 
@@ -357,7 +397,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_2, {p_2: p_1}, {p_1: p_2})
         self.assertEqual(p_1.child, c_1)
 
-        # Ex 7
+        # Ex 10
         p_1 = Parent(id='p_1')
         c_1 = p_1.child = Child(id='c_2')
 
@@ -367,7 +407,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_2, {p_2: p_1}, {p_1: p_2})
         self.assertEqual(p_1.child, c_1)
 
-        # Ex 8
+        # Ex 11
         p_1 = Parent(id='p_1')
         c_1 = p_1.child = Child(id='c_1')
 
@@ -376,7 +416,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_1, {}, {})
         self.assertEqual(p_1.child, c_1)
 
-        # Ex 9
+        # Ex 12
         c_1 = Child(id='c_1')
         p_1_1 = c_1.parents.create(id='p_1')
         p_1_2 = c_1.parents.create(id='p_2')
@@ -388,7 +428,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_2, {p_2_1: p_1_1}, {p_1_1: p_2_1})
         self.assertEqual(c_1.parents, [p_1_1, p_1_2, p_2_3])
 
-        # Ex 10
+        # Ex 13
         c_1 = Child(id='c_1')
         p_1_1 = c_1.parents.create(id='p_1')
         p_1_2 = c_1.parents.create(id='p_2')
@@ -400,7 +440,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_2, {p_2_1: p_1_1, p_2_2: p_1_2}, {p_1_1: p_2_1, p_1_2: p_2_2})
         self.assertEqual(c_1.parents, [p_1_1, p_1_2])
 
-        # Ex 11
+        # Ex 14
         c_1 = Child(id='c_1')
         p_1_1 = c_1.parents.create(id='p_1')
         p_1_2 = Parent(id='p_2')
@@ -457,7 +497,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_2, {}, {})
         self.assertEqual(c_1.parents, [p_1, p_2])
 
-        # Ex 5 
+        # Ex 5
         c_1 = Child(id='c_1')
         p_1 = c_1.parents.create(id='p_1')
 
@@ -477,7 +517,7 @@ class MergeTestCase(unittest.TestCase):
         attr.merge(c_1, c_2, {p_2: p_1}, {p_1: p_2})
         self.assertEqual(c_1.parents, [p_1])
 
-        # Ex 7 
+        # Ex 7
         c_1 = Child(id='c_1')
         p_1 = c_1.parents.create(id='p_1')
 
@@ -561,4 +601,3 @@ class MergeTestCase(unittest.TestCase):
 
         p_a_1.merge(p_b_1)
         self.assertTrue(p_a_1.is_equal(p_c_1))
-

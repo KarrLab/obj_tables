@@ -5190,6 +5190,15 @@ class OneToManyAttribute(RelatedAttribute):
 
         for right_child in list(right_children):
             left_child = right_objs_in_left.get(right_child, right_child)
+            cur_left_child_parent = getattr(left_child, self.related_name)
+
+            if left_child != right_child and cur_left_child_parent and cur_left_child_parent != left:
+                raise ValueError('Cannot join {} and {} of {}.{}'.format(
+                    left,
+                    cur_left_child_parent,
+                    left_child.__class__.__name__,
+                    self.related_name))
+
             right_children.remove(right_child)
             left_children.append(left_child)
 
