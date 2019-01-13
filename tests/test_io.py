@@ -187,6 +187,28 @@ class TestIo(unittest.TestCase):
         WorkbookWriter().run(filename, None, [MainRoot, Node, Leaf, ])
         objects2 = WorkbookReader().run(filename, [MainRoot, Node, Leaf, ], group_objects_by_model=False)
         self.assertEqual(objects2, None)
+        objects2 = obj_model.io.Reader().run(filename, models=[MainRoot, Node, Leaf, ], group_objects_by_model=False)
+        self.assertEqual(objects2, None)
+
+    def test_write_read_2(self):
+        # test obj_model.io.Writer, obj_model.io.Reader
+        root = self.root
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_model.io.Writer().run(filename, root, models=[MainRoot, Node, Leaf, OneToManyRow])
+        objects2 = obj_model.io.Reader().run(filename, models=[MainRoot, Node, Leaf, OneToManyRow],
+                                             group_objects_by_model=True)
+        self.assertTrue(root.is_equal(objects2[MainRoot][0]))
+
+        # test no validation
+        wb = read_workbook(filename)
+        wb['Nodes'][2][2] = 'node_0'
+        filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
+        write_workbook(filename2, wb)
+        with self.assertRaises(ValueError):
+            WorkbookReader().run(filename2, models=[MainRoot, Node, Leaf, OneToManyRow],
+                                 group_objects_by_model=True, validate=True)
+        WorkbookReader().run(filename2, models=[MainRoot, Node, Leaf, OneToManyRow],
+                             group_objects_by_model=True, validate=False)
 
     def test_manager(self):
 
@@ -576,27 +598,27 @@ class TestIo(unittest.TestCase):
             # raises extra attribute exception
             WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True)
         self.assertRegex(str(context.exception),
-                                 "The model cannot be loaded because 'test_run_options.*' contains error.*")
+                         "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
             col = 'B'
         elif 'csv' in fixture_file:
             col = '2'
         self.assertRegex(str(context.exception),
-                                 ".*Header 'extra' in row 1, col {} does not match any attribute.*".format(col))
+                         ".*Header 'extra' in row 1, col {} does not match any attribute.*".format(col))
 
         with self.assertRaises(ValueError) as context:
             # raises validation exception on 'too short'
             WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True,
                                  ignore_extra_attributes=True)
         self.assertRegex(str(context.exception),
-                                 "The model cannot be loaded because 'test_run_options.*' contains error.*")
+                         "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
             location = 'A3'
         elif 'csv' in fixture_file:
             location = '3,1'
         self.assertRegex(str(context.exception),
-                                 ".*'val':'too short'\n.*test_run_options.*:'Simple models':{}\n.*"
-                                 "Value must be at least 10 characters".format(location))
+                         ".*'val':'too short'\n.*test_run_options.*:'Simple models':{}\n.*"
+                         "Value must be at least 10 characters".format(location))
 
         class SimpleModel(core.Model):
             val = core.StringAttribute()
@@ -1560,6 +1582,15 @@ class JsonTestCase(unittest.TestCase):
         aa_0_2 = obj_model.io.JsonReader().run(path, [AA])
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
+        path = os.path.join(self.dirname, 'out.yml')
+        obj_model.io.Writer().run(path, aa_0)
+        aa_0_2 = obj_model.io.Reader().run(path, [AA])
+        self.assertTrue(aa_0.is_equal(aa_0_2))
+
+        path = os.path.join(self.dirname, 'out.yml')
+        with self.assertWarnsRegex(obj_model.io.IoWarning, 'has no effect'):
+            obj_model.io.JsonWriter().run(path, aa_0, include_all_attributes=False)
+
         path = os.path.join(self.dirname, 'out.abc')
         with self.assertRaisesRegex(ValueError, 'Unsupported format'):
             obj_model.io.JsonWriter().run(path, aa_0)
@@ -1617,7 +1648,7 @@ class JsonTestCase(unittest.TestCase):
         convert(filename_1_xlsx, filename_2_json, models=models)
 
         objects2 = obj_model.io.Reader.get_reader(filename_2_json)().run(filename_2_json, models=models,
-                                                          group_objects_by_model=True)
+                                                                         group_objects_by_model=True)
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
         self.assertTrue(root.is_equal(root2))
@@ -1626,7 +1657,7 @@ class JsonTestCase(unittest.TestCase):
         convert(filename_2_json, filename_3_xlsx, models=models)
 
         objects2 = obj_model.io.Reader.get_reader(filename_3_xlsx)().run(filename_3_xlsx, models=models,
-                                                          group_objects_by_model=True)
+                                                                         group_objects_by_model=True)
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
         self.assertTrue(root.is_equal(root2))
