@@ -2512,11 +2512,12 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return True
 
-    def merge(self, other, validate=True):
+    def merge(self, other, normalize=True, validate=True):
         """ Merge another model into a model
 
         Args:
             other (:obj:`Model`): other model
+            normalize (:obj:`bool`, optional): if :obj:`True`, normalize models and merged model
             validate (:obj:`bool`, optional): if :obj:`True`, validate models and merged model
         """
         # validate models
@@ -2528,8 +2529,9 @@ class Model(with_metaclass(ModelMeta, object)):
             assert error is None, str(error)
 
         # normalize models so merging is reproducible
-        self.normalize()
-        other.normalize()
+        if normalize:
+            self.normalize()
+            other.normalize()
 
         # generate mapping from self to other
         other_objs_in_self, other_objs_not_in_self = self.gen_merge_map(other)
@@ -2544,6 +2546,10 @@ class Model(with_metaclass(ModelMeta, object)):
 
         # merge attributes
         self.merge_attrs(other, other_objs_in_self, self_objs_in_other)
+
+        # normalize so left merge and right merge produce same results
+        if normalize:
+            self.normalize()
 
         # validate model
         if validate:
@@ -4924,7 +4930,14 @@ class ManyToOneAttribute(RelatedAttribute):
         if not right_child:
             return
 
+        cur_left_child = getattr(left, self.name)
         new_left_child = right_objs_in_left.get(right_child, right_child)
+        if cur_left_child and cur_left_child != new_left_child:
+            raise ValueError('Cannot join {} and {} of {}.{}'.format(
+                cur_left_child,
+                new_left_child,
+                left.__class__.__name__,
+                self.name))
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
 
