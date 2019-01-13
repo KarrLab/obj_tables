@@ -4932,7 +4932,8 @@ class ManyToOneAttribute(RelatedAttribute):
 
         cur_left_child = getattr(left, self.name)
         new_left_child = right_objs_in_left.get(right_child, right_child)
-        if cur_left_child and cur_left_child != new_left_child:
+
+        if left != right and cur_left_child and new_left_child and cur_left_child != new_left_child:
             raise ValueError('Cannot join {} and {} of {}.{}'.format(
                 cur_left_child,
                 new_left_child,
