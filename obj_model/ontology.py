@@ -68,6 +68,21 @@ class OntologyAttribute(core.LiteralAttribute):
         self.terms = terms
         self.none = none
 
+    def value_equal(self, val1, val2):
+        """ Determine if attribute values are equal
+
+        Args:
+            val1 (:obj:`pronto.term.Term`): first value
+            val2 (:obj:`pronto.term.Term`): second value
+
+        Returns:
+            :obj:`bool`: :obj:`True` if attribute values are equal
+        """
+        return (not val1 and not val2) or (\
+            isinstance(val1, pronto.term.Term) and \
+            isinstance(val2, pronto.term.Term) and \
+            val1.id == val2.id)
+
     def clean(self, value):
         """ Convert attribute value into the appropriate type
 
@@ -81,7 +96,7 @@ class OntologyAttribute(core.LiteralAttribute):
         error = None
 
         if value and isinstance(value, str):
-            value = self.ontology.get(value, None)
+            value = self.ontology.get(value.strip().partition(' ! ')[0], None)
             if value is None:
                 error = 'Value "{}" is not in `ontology`'.format(value)
 
@@ -132,7 +147,7 @@ class OntologyAttribute(core.LiteralAttribute):
             :obj:`str`: simple Python representation
         """
         if value:
-            return value.id
+            return value.id + ' ! ' + value.name
         return ''
 
     def to_builtin(self, value):
