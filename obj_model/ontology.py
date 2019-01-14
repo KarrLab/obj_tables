@@ -137,6 +137,18 @@ class OntologyAttribute(core.LiteralAttribute):
 
         return None
 
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`object`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`object`: copy of value
+        """
+        return value
+
     def serialize(self, value):
         """ Serialize ontology instance
 

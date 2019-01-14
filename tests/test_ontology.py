@@ -101,6 +101,11 @@ class OntologyAttributeTestCase(unittest.TestCase):
         attr = obj_model.ontology.OntologyAttribute(self.ontology, terms=[])
         self.assertNotEqual(attr.validate(None, self.term), None)
 
+    def test_copy_value(self):
+        attr = obj_model.ontology.OntologyAttribute(self.ontology)
+        self.assertEqual(attr.copy_value(self.term, {}), self.term)
+        self.assertEqual(attr.copy_value(self.term, {}).id, self.term.id)
+
     def test_serialize(self):
         attr = obj_model.ontology.OntologyAttribute(self.ontology)
         self.assertEqual(attr.serialize(self.term), 'SBO:0000000 ! systems biology representation')
