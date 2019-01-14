@@ -15,14 +15,16 @@ class OntologyAttribute(core.LiteralAttribute):
 
     Attributes:
         ontology (obj:`pronto.Ontology`): ontology
+        terms (:obj:`list` of :obj:`pronto.term.Term`): list of allowed terms. If :obj:`None`, all terms are allowed.
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
-    def __init__(self, ontology, none=True, default=None, default_cleaned_value=None, verbose_name='', help='',
+    def __init__(self, ontology, terms=None, none=True, default=None, default_cleaned_value=None, verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             ontology (:obj:`pronto.Ontology`): ontology
+            terms (:obj:`list` of :obj:`pronto.term.Term`, optional): list of allowed terms. If :obj:`None`, all terms are allowed.
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`pronto.term.Term`, optional): default value
             default_cleaned_value (:obj:`pronto.term.Term`, optional): value to replace
@@ -40,14 +42,22 @@ class OntologyAttribute(core.LiteralAttribute):
         """
         if not isinstance(ontology, pronto.Ontology):
             raise ValueError('`ontology` must be an instance of `pronto.Ontology`')
+        if isinstance(terms, list):
+            for term in terms:
+                if not isinstance(term, pronto.term.Term) or term not in ontology:
+                    raise ValueError('element {} of `terms` must be in `ontology`'.format(term))
         if default is not None and \
-                (not isinstance(default, pronto.term.Term) or default not in ontology):
+                (not isinstance(default, pronto.term.Term) or
+                    default not in ontology or
+                    (isinstance(terms, list) and default not in terms)):
             raise ValueError(
-                '`default` must be `None` or in `ontology`')
+                '`default` must be `None` or in `terms`')
         if default_cleaned_value is not None and \
-                (not isinstance(default_cleaned_value, pronto.term.Term) or default_cleaned_value not in ontology):
+                (not isinstance(default_cleaned_value, pronto.term.Term) or
+                    default_cleaned_value not in ontology or
+                    (isinstance(terms, list) and default_cleaned_value not in terms)):
             raise ValueError(
-                '`default_cleaned_value` must be `None` or in `ontology`')
+                '`default_cleaned_value` must be `None` or in `terms`')
 
         super(OntologyAttribute, self).__init__(default=default,
                                                 default_cleaned_value=default_cleaned_value,
@@ -55,6 +65,7 @@ class OntologyAttribute(core.LiteralAttribute):
                                                 primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
         self.ontology = ontology
+        self.terms = terms
         self.none = none
 
     def clean(self, value):
@@ -80,6 +91,9 @@ class OntologyAttribute(core.LiteralAttribute):
         elif not (isinstance(value, pronto.term.Term) and value in self.ontology):
             error = "Value '{}' must be in `ontology`".format(value)
 
+        elif isinstance(self.terms, list) and value not in self.terms:
+            error = "Value '{}' must be in `terms`".format(value)
+
         if error:
             return (None, core.InvalidAttribute(self, [error]))
         else:
@@ -102,6 +116,9 @@ class OntologyAttribute(core.LiteralAttribute):
 
         elif not isinstance(value, pronto.term.Term) or value not in self.ontology:
             return core.InvalidAttribute(self, ["Value '{}' must be in `ontology`".format(value)])
+
+        elif isinstance(self.terms, list) and value not in self.terms:
+            return core.InvalidAttribute(self, ["Value '{}' must be in `terms`".format(value)])
 
         return None
 

@@ -24,13 +24,27 @@ class OntologyAttributeTestCase(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'be an instance of `pronto.Ontology`'):
             attr = obj_model.ontology.OntologyAttribute('NOT_AN_ONTOLOGY')
 
+        attr = obj_model.ontology.OntologyAttribute(self.Ontology, terms=[self.Ontology['SBO:0000001']])
+        attr = obj_model.ontology.OntologyAttribute(self.Ontology, terms=self.Ontology['SBO:0000001'].rchildren())
+        attr = obj_model.ontology.OntologyAttribute(
+            self.Ontology, terms=[self.Ontology['SBO:0000001']] + self.Ontology['SBO:0000001'].rchildren())
+        with self.assertRaisesRegex(ValueError, 'must be in `ontology`'):
+            attr = obj_model.ontology.OntologyAttribute(self.Ontology, terms=['SBO:0000001'])
+
         attr = obj_model.ontology.OntologyAttribute(self.Ontology, default=self.term)
-        with self.assertRaisesRegex(ValueError, 'must be `None` or in `ontology`'):
+        attr = obj_model.ontology.OntologyAttribute(self.Ontology, default=self.term, terms=[self.Ontology['SBO:0000000']])
+        with self.assertRaisesRegex(ValueError, 'must be `None` or in `terms`'):
             attr = obj_model.ontology.OntologyAttribute(self.Ontology, default='NOT_A_TERM')
+        with self.assertRaisesRegex(ValueError, 'must be `None` or in `terms`'):
+            attr = obj_model.ontology.OntologyAttribute(self.Ontology, default=self.term, terms=[self.Ontology['SBO:0000001']])
 
         attr = obj_model.ontology.OntologyAttribute(self.Ontology, default_cleaned_value=self.term)
-        with self.assertRaisesRegex(ValueError, 'must be `None` or in `ontology`'):
+        attr = obj_model.ontology.OntologyAttribute(self.Ontology, default_cleaned_value=self.term, terms=[self.Ontology['SBO:0000000']])
+        with self.assertRaisesRegex(ValueError, 'must be `None` or in `terms`'):
             attr = obj_model.ontology.OntologyAttribute(self.Ontology, default_cleaned_value='NOT_A_TERM')
+        with self.assertRaisesRegex(ValueError, 'must be `None` or in `terms`'):
+            attr = obj_model.ontology.OntologyAttribute(
+                self.Ontology, default_cleaned_value=self.term, terms=[self.Ontology['SBO:0000001']])
 
     def test_clean(self):
         attr = obj_model.ontology.OntologyAttribute(self.Ontology)
@@ -44,6 +58,12 @@ class OntologyAttributeTestCase(unittest.TestCase):
 
         attr = obj_model.ontology.OntologyAttribute(self.Ontology)
         self.assertEqual(attr.clean(self.term)[1], None)
+
+        attr = obj_model.ontology.OntologyAttribute(self.Ontology, terms=[self.term])
+        self.assertEqual(attr.clean(self.term)[1], None)
+
+        attr = obj_model.ontology.OntologyAttribute(self.Ontology, terms=[])
+        self.assertNotEqual(attr.clean(self.term)[1], None)
 
         attr = obj_model.ontology.OntologyAttribute(self.Ontology, default_cleaned_value=self.term)
         self.assertEqual(attr.clean(None)[0].id, self.term.id)
@@ -62,6 +82,12 @@ class OntologyAttributeTestCase(unittest.TestCase):
 
         attr = obj_model.ontology.OntologyAttribute(self.Ontology, none=False)
         self.assertNotEqual(attr.validate(None, None), None)
+
+        attr = obj_model.ontology.OntologyAttribute(self.Ontology, terms=[self.term])
+        self.assertEqual(attr.validate(None, self.term), None)
+
+        attr = obj_model.ontology.OntologyAttribute(self.Ontology, terms=[])
+        self.assertNotEqual(attr.validate(None, self.term), None)
 
     def test_serialize(self):
         attr = obj_model.ontology.OntologyAttribute(self.Ontology)
