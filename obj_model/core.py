@@ -2240,26 +2240,7 @@ class Model(with_metaclass(ModelMeta, object)):
         # copy attributes
         for attr in cls.Meta.attributes.values():
             val = getattr(self, attr.name)
-
-            if isinstance(attr, RelatedAttribute):
-                if val is None:
-                    copy_val = val
-                elif isinstance(val, Model):
-                    copy_val = objects_and_copies[val]
-                elif isinstance(val, (set, list, tuple)):
-                    copy_val = []
-                    for v in val:
-                        copy_val.append(objects_and_copies[v])
-                else:
-                    raise ValueError('Invalid related attribute value')  # pragma: no cover # unreachable due to other error checking
-            else:
-                if val is None:
-                    copy_val = val
-                elif isinstance(val, (string_types, bool, integer_types, float, Enum, )):
-                    copy_val = val
-                else:
-                    copy_val = copy.deepcopy(val)
-
+            copy_val = attr.copy_value(val, objects_and_copies)
             setattr(other, attr.name, copy_val)
 
     @classmethod
@@ -2804,6 +2785,19 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             return InvalidAttribute(self, [message])
 
     @abc.abstractmethod
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`object`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`object`: copy of value
+        """
+        pass
+
+    @abc.abstractmethod
     def serialize(self, value):
         """ Serialize value
 
@@ -2938,6 +2932,23 @@ class LiteralAttribute(Attribute):
             :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
         """
         return None
+
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`object`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`object`: copy of value
+        """
+        if value is None:
+            return None
+        elif isinstance(value, (string_types, bool, integer_types, float, Enum, )):
+            return value
+        else:
+            return copy.deepcopy(value)
 
     def serialize(self, value):
         """ Serialize value
@@ -4591,6 +4602,21 @@ class OneToOneAttribute(RelatedAttribute):
             return InvalidAttribute(self, errors, related=True)
         return None
 
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`Model`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`Model`: copy of value
+        """
+        if value is None:
+            return None
+        else:
+            return objects_and_copies[value]
+
     def serialize(self, value, encoded=None):
         """ Serialize related object
 
@@ -4851,6 +4877,21 @@ class ManyToOneAttribute(RelatedAttribute):
             return InvalidAttribute(self, errors, related=True)
         return None
 
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`Model`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`Model`: copy of value
+        """
+        if value is None:
+            return None
+        else:
+            return objects_and_copies[value]
+
     def serialize(self, value, encoded=None):
         """ Serialize related object
 
@@ -5096,6 +5137,21 @@ class OneToManyAttribute(RelatedAttribute):
         if errors:
             return InvalidAttribute(self, errors, related=True)
         return None
+
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`list` of :obj:`Model`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`list` of :obj:`Model`: copy of value
+        """
+        copy_value = []
+        for v in value:
+            copy_value.append(objects_and_copies[v])
+        return copy_value
 
     def serialize(self, value, encoded=None):
         """ Serialize related object
@@ -5374,6 +5430,21 @@ class ManyToManyAttribute(RelatedAttribute):
         if errors:
             return InvalidAttribute(self, errors, related=True)
         return None
+
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`list` of :obj:`Model`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`list` of :obj:`Model`: copy of value
+        """
+        copy_value = []
+        for v in value:
+            copy_value.append(objects_and_copies[v])
+        return copy_value
 
     def serialize(self, value, encoded=None):
         """ Serialize related object

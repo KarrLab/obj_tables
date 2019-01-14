@@ -1139,6 +1139,9 @@ class ReadEmptyCellTestCase(unittest.TestCase):
             def merge(self, other, validate=True):
                 pass
 
+            def copy_value(self, value, objects_and_copies): 
+                pass
+
         attr = ConcreteAttribute(default_cleaned_value=lambda: 1.5)
         self.assertEqual(attr.get_default_cleaned_value(), 1.5)
 

@@ -1159,6 +1159,9 @@ class TestCore(unittest.TestCase):
             def merge(self, other, validate=True):
                 pass
 
+            def copy_value(self, value, objects_and_copies):
+                pass
+
         with self.assertRaisesRegex(ValueError, '`default` must be `None`, a list, or a callable'):
             ConcreteRelatedAttribute(None, default='')
 
@@ -2712,6 +2715,10 @@ class TestCore(unittest.TestCase):
             def from_builtin(self, json, decoded=None): pass
 
             def merge(self, other, validate=True): pass
+
+            def copy_value(self, value, objects_and_copies): 
+                import copy
+                return copy.deepcopy(value)
 
         class TestModel(core.Model):
             attr = TestAttribute()
