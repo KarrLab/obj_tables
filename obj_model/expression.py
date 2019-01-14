@@ -495,18 +495,21 @@ class ParsedExpression(object):
     MODEL_TYPE_DISAMBIG_PATTERN = (token.NAME, token.DOT, token.NAME)
     FUNC_PATTERN = (token.NAME, token.LPAR)
 
-    # enumerate and detect Python tokens that are illegal in obj_model expressions
-    ILLEGAL_TOKENS_NAMES = ('ENDMARKER', 'NEWLINE', 'INDENT', 'DEDENT', 'COLON', 'LBRACE', 'RBRACE',
-                            'PLUSEQUAL', 'MINEQUAL', 'STAREQUAL', 'SLASHEQUAL', 'PERCENTEQUAL', 'AMPEREQUAL',
-                            'VBAREQUAL', 'CIRCUMFLEXEQUAL', 'LEFTSHIFTEQUAL', 'RIGHTSHIFTEQUAL',
-                            'DOUBLESTAREQUAL', 'DOUBLESLASHEQUAL', 'ATEQUAL', 'RARROW', 'ELLIPSIS', 'AWAIT',
-                            'ASYNC', 'ERRORTOKEN', 'N_TOKENS', 'NT_OFFSET',
-                            'PERCENT', 'DOUBLESLASH', 'CIRCUMFLEX', 'RIGHTSHIFT', 'LEFTSHIFT', 'VBAR',
-                            'AMPER', 'TILDE', 'EQEQUAL', 'SEMI', 'AT')
-    ILLEGAL_TOKENS = set()
-    for illegal_token_name in ILLEGAL_TOKENS_NAMES:
-        illegal_token = getattr(token, illegal_token_name)
-        ILLEGAL_TOKENS.add(illegal_token)
+    # enumerate and detect Python tokens that are legal in obj_model expressions
+    LEGAL_TOKENS_NAMES = (
+        'NUMBER', # number
+        'NAME', # variable names
+        'LSQB', 'RSQB', # for compartment names
+        'DOT', # for disambiguating variable types
+        'COMMA', # for function arguments
+        'DOUBLESTAR', 'MINUS', 'PLUS', 'SLASH', 'STAR', # mathematical operators
+        'LPAR', 'RPAR', # for mathematical grouping        
+        'EQUAL', 'GREATER', 'GREATEREQUAL', 'LESS', 'LESSEQUAL', 'NOTEQUAL', # comparison operators
+        )
+    LEGAL_TOKENS = set()
+    for legal_token_name in LEGAL_TOKENS_NAMES:
+        legal_token = getattr(token, legal_token_name)
+        LEGAL_TOKENS.add(legal_token)
 
     def __init__(self, model_cls, attr, expression, objs):
         """ Create an instance of ParsedExpression
@@ -854,7 +857,7 @@ class ParsedExpression(object):
         # detect and report bad tokens
         bad_tokens = set()
         for tok in self._py_tokens:
-            if tok.exact_type in self.ILLEGAL_TOKENS:
+            if tok.exact_type not in self.LEGAL_TOKENS:
                 if tok.string and tok.string != ' ':
                     bad_tokens.add(tok.string)
                 else:
