@@ -7,6 +7,7 @@
 """
 
 from obj_model import core
+import copy
 import obj_model.ontology
 import pronto
 import unittest
@@ -129,3 +130,12 @@ class OntologyAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin('SBO:0000000').id, 'SBO:0000000')
         self.assertEqual(attr.from_builtin(None), None)
         self.assertEqual(attr.from_builtin(''), None)
+
+    def test_merge(self):
+        class Model(core.Model):
+            attr = obj_model.ontology.OntologyAttribute(self.ontology)
+
+        model_1 = Model(attr=self.ontology['SBO:0000000'])
+        model_2 = Model(attr=copy.deepcopy(model_1.attr))
+
+        Model.attr.merge(model_1, model_2, {}, {})

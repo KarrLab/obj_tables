@@ -3010,7 +3010,7 @@ class LiteralAttribute(Attribute):
         """
         left_val = getattr(left, self.name)
         right_val = getattr(right, self.name)
-        if left_val != right_val:
+        if not self.value_equal(left_val, right_val):
             raise ValueError('{}.{} must be equal'.format(left.__class__.__name__, self.name))
 
 

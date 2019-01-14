@@ -68,6 +68,33 @@ class OntologyAttribute(core.LiteralAttribute):
         self.terms = terms
         self.none = none
 
+    def get_init_value(self, obj):
+        """ Get initial value for attribute
+
+        Args:
+            obj (:obj:`Model`): object whose attribute is being initialized
+
+        Returns:
+            :obj:`object`: initial value
+        """
+        return self.init_value
+
+    def get_default(self):
+        """ Get default value for attribute
+
+        Returns:
+            :obj:`object`: initial value
+        """
+        return self.default
+
+    def get_default_cleaned_value(self):
+        """ Get value to replace :obj:`None` values with during cleaning
+
+        Returns:
+            :obj:`object`: initial value
+        """
+        return self.default_cleaned_value
+
     def value_equal(self, val1, val2):
         """ Determine if attribute values are equal
 
@@ -78,9 +105,9 @@ class OntologyAttribute(core.LiteralAttribute):
         Returns:
             :obj:`bool`: :obj:`True` if attribute values are equal
         """
-        return (not val1 and not val2) or (\
-            isinstance(val1, pronto.term.Term) and \
-            isinstance(val2, pronto.term.Term) and \
+        return (not val1 and not val2) or (
+            isinstance(val1, pronto.term.Term) and
+            isinstance(val2, pronto.term.Term) and
             val1.id == val2.id)
 
     def clean(self, value):
