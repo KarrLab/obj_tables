@@ -2795,7 +2795,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             :obj:`object`: copy of value
         """
-        pass
+        pass # pragma: no cover
 
     @abc.abstractmethod
     def serialize(self, value):

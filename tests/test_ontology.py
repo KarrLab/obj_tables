@@ -47,10 +47,18 @@ class OntologyAttributeTestCase(unittest.TestCase):
             attr = obj_model.ontology.OntologyAttribute(
                 self.ontology, default_cleaned_value=self.term, terms=[self.ontology['SBO:0000001']])
 
+    def test_get_default(self):
+        attr = obj_model.ontology.OntologyAttribute(self.ontology, default=self.term)
+        self.assertEqual(attr.get_default(), self.term)
+
+    def test_get_default_cleaned_value(self):
+        attr = obj_model.ontology.OntologyAttribute(self.ontology, default_cleaned_value=self.term)
+        self.assertEqual(attr.get_default_cleaned_value(), self.term)
+
     def test_value_equal(self):
         attr = obj_model.ontology.OntologyAttribute(self.ontology)
-        
-        self.assertTrue(attr.value_equal(self.ontology['SBO:0000000'], self.ontology['SBO:0000000']))        
+
+        self.assertTrue(attr.value_equal(self.ontology['SBO:0000000'], self.ontology['SBO:0000000']))
         self.assertTrue(attr.value_equal(None, None))
         self.assertTrue(attr.value_equal('', ''))
 

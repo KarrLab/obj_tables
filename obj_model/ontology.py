@@ -68,17 +68,6 @@ class OntologyAttribute(core.LiteralAttribute):
         self.terms = terms
         self.none = none
 
-    def get_init_value(self, obj):
-        """ Get initial value for attribute
-
-        Args:
-            obj (:obj:`Model`): object whose attribute is being initialized
-
-        Returns:
-            :obj:`object`: initial value
-        """
-        return self.init_value
-
     def get_default(self):
         """ Get default value for attribute
 
