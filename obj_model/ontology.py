@@ -15,15 +15,17 @@ class OntologyAttribute(core.LiteralAttribute):
 
     Attributes:
         ontology (obj:`pronto.Ontology`): ontology
+        namespace (:obj:`str`): prefix in term ids
         terms (:obj:`list` of :obj:`pronto.term.Term`): list of allowed terms. If :obj:`None`, all terms are allowed.
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
-    def __init__(self, ontology, terms=None, none=True, default=None, default_cleaned_value=None, verbose_name='', help='',
+    def __init__(self, ontology, namespace=None, terms=None, none=True, default=None, default_cleaned_value=None, verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             ontology (:obj:`pronto.Ontology`): ontology
+            namespace (:obj:`str`, optional): prefix in term ids
             terms (:obj:`list` of :obj:`pronto.term.Term`, optional): list of allowed terms. If :obj:`None`, all terms are allowed.
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`pronto.term.Term`, optional): default value
@@ -65,6 +67,7 @@ class OntologyAttribute(core.LiteralAttribute):
                                                 primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
         self.ontology = ontology
+        self.namespace = namespace
         self.terms = terms
         self.none = none
 
@@ -112,9 +115,14 @@ class OntologyAttribute(core.LiteralAttribute):
         error = None
 
         if value and isinstance(value, str):
-            value = self.ontology.get(value.partition('!')[0].strip(), None)
+            value = value.partition('!')[0].strip()
+            
+            if value and self.namespace:
+                value = self.namespace + ':' + value
+
+            value = self.ontology.get(value, None)
             if value is None:
-                error = 'Value "{}" is not in `ontology`'.format(value)
+                error = 'Value "{}" is not in `ontology`'.format(value)            
 
         elif value is None or value == '':
             value = self.get_default_cleaned_value()
@@ -175,7 +183,13 @@ class OntologyAttribute(core.LiteralAttribute):
             :obj:`str`: simple Python representation
         """
         if value:
-            return value.id
+            if self.namespace:
+                if value.id.startswith(self.namespace + ':'):
+                    return value.id[len(self.namespace) + 1:]
+                else:
+                    raise ValueError('Id {} must begin with namespace'.format(value.id))
+            else:
+                return value.id
         return ''
 
     def to_builtin(self, value):

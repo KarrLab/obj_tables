@@ -8,6 +8,7 @@
 
 from obj_model import core
 import copy
+import mock
 import obj_model.ontology
 import pronto
 import unittest
@@ -71,6 +72,12 @@ class OntologyAttributeTestCase(unittest.TestCase):
         attr = obj_model.ontology.OntologyAttribute(self.ontology)
         self.assertEqual(attr.clean('SBO:0000000 ! systems biology representation'), (self.term, None))
 
+        attr = obj_model.ontology.OntologyAttribute(self.ontology, namespace='SBO')
+        self.assertEqual(attr.clean('0000000 ! systems biology representation'), (self.term, None))
+
+        attr = obj_model.ontology.OntologyAttribute(self.ontology, namespace='SBO')
+        self.assertNotEqual(attr.clean('SBO:0000000 ! systems biology representation'), (self.term, None))
+
         attr = obj_model.ontology.OntologyAttribute(self.ontology)
         self.assertEqual(attr.clean(None), (None, None))
 
@@ -120,6 +127,14 @@ class OntologyAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.serialize(self.term), 'SBO:0000000')
         self.assertEqual(attr.serialize(None), '')
         self.assertEqual(attr.serialize(''), '')
+        self.assertEqual(attr.serialize(mock.Mock(id='0000000')), '0000000')
+
+        attr = obj_model.ontology.OntologyAttribute(self.ontology, namespace='SBO')
+        self.assertEqual(attr.serialize(self.term), '0000000')
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.serialize(''), '')
+        with self.assertRaisesRegex(ValueError, 'must begin with namespace'):
+            attr.serialize(mock.Mock(id='0000000'))
 
     def test_deserialize(self):
         attr = obj_model.ontology.OntologyAttribute(self.ontology)
