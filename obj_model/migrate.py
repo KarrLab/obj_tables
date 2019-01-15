@@ -25,13 +25,13 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
+# todo next: remove '/'s in test_migrate.py so it's OS portable
 # todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 '''
 1: identify all xlsx files, and the wc_lang commit that they use
 2: migrate them
 '''
 # todo next: documentation
-# todo next: remove '/'s in test_migrate.py so it's OS portable
 # todo next: final bit of coverage
 # todo next: test OneToManyAttribute
 # todo next: enable wc_lang migration in RunMigration
@@ -68,6 +68,11 @@ class MigratorError(Exception):
     """
     def __init__(self, message=None):
         super().__init__(message)
+
+
+class MigrateWarning(UserWarning):
+    """ Migrate warning """
+    pass
 
 
 class Migrator(object):
@@ -570,7 +575,7 @@ class Migrator(object):
             msg = 'The following sheets cannot be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
                 msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
-            warn(msg, IoWarning)
+            warn(msg, MigrateWarning)
 
         # use the existing_file sheet names to establish the order of existing models
         model_order = [None]*len(sheet_names)
@@ -675,7 +680,7 @@ class Migrator(object):
             migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
             model_order (:obj:`list` of `obj_model.core.ModelMeta`:) migrated models in the order
                 they should appear in a workbook
-            existing_file (:obj:`str`): pathname of file to migrate
+            existing_file (:obj:`str`): pathname of file that is being migrated
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
                 save migrated file with migrated suffix in same directory as source file
             migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
@@ -728,13 +733,13 @@ class Migrator(object):
                 overwrite an existing file
         """
         existing_models = self.read_existing_model(existing_file)
-        # transformations: PREPARE_EXISTING_MODELS
+        # execute PREPARE_EXISTING_MODELS transformations
         if self.transformations and self.PREPARE_EXISTING_MODELS in self.transformations:
             self.transformations[self.PREPARE_EXISTING_MODELS](self, existing_models)
         for count_uninitialized_attrs in self._check_models(existing_models):
-            warn(count_uninitialized_attrs)
+            warn(count_uninitialized_attrs, MigrateWarning)
         migrated_models = self.migrate(existing_models)
-        # transformations: MODIFY_MIGRATED_MODELS
+        # execute MODIFY_MIGRATED_MODELS transformations
         if self.transformations and self.MODIFY_MIGRATED_MODELS in self.transformations:
             self.transformations[self.MODIFY_MIGRATED_MODELS](self, migrated_models)
         # get sequence of migrated models in workbook of existing file
@@ -760,7 +765,7 @@ class Migrator(object):
         for attr_name, attr in existing_model_def.Meta.attributes.items():
             if not hasattr(existing_model, attr_name) or \
                 getattr(existing_model, attr_name) is attr.get_default_cleaned_value():
-                uninitialized_attrs.append("instance(s) of existing model '{}' lacks '{}' non-default value".format(
+                uninitialized_attrs.append("instance(s) of existing model '{}' lack(s) '{}' non-default value".format(
                     existing_model_def.__name__, attr_name))
 
         return uninitialized_attrs
@@ -1083,12 +1088,13 @@ class MigrationDesc(object):
         migrate_in_place (:obj:`bool`, optional): whether to migrate in place
         migrations_config_file (:obj:`str`, optional): path to migrations configuration file, if created
             from a configuration file
+        _prepared (:obj:`bool`, optional): whether this `MigrationDesc` has been prepared
     """
 
     _required_attrs = ['name', 'migrator', 'existing_files', 'model_defs_files']
     _renaming_lists = ['seq_of_renamed_models', 'seq_of_renamed_attributes']
     _allowed_attrs = _required_attrs + _renaming_lists + ['migrated_files', 'migrate_suffix',
-        'migrate_in_place', 'migrations_config_file']
+        'migrate_in_place', 'migrations_config_file', '_prepared']
 
     def __init__(self, name, migrator=Migrator, existing_files=None, model_defs_files=None,
         seq_of_renamed_models=None, seq_of_renamed_attributes=None, migrated_files=None, migrate_suffix=None,
@@ -1103,6 +1109,29 @@ class MigrationDesc(object):
         self.migrate_suffix = migrate_suffix
         self.migrate_in_place = migrate_in_place
         self.migrations_config_file = migrations_config_file
+        self._prepared = False
+
+    def prepare(self):
+        """ Validate and standardize this `MigrationDesc`
+
+        Raises:
+            :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration descriptions in
+                `migrations_config_file` are not valid
+        """
+        migration_errors = self.validate()
+        if migration_errors:
+            raise MigratorError('\n'.join(migration_errors))
+        self.standardize()
+        self._prepared = True
+
+    def is_prepared(self):
+        """ Check that this `MigrationDesc` has been prepared
+
+        Raises:
+            :obj:`MigratorError`: if this `MigrationDesc` has not been prepared
+        """
+        if not self._prepared:
+            raise MigratorError("MigrationDesc '{}' is not prepared".format(self.name))
 
     @classmethod
     def load(cls, migrations_config_file):
@@ -1128,7 +1157,9 @@ class MigrationDesc(object):
         if migration_errors:
             raise MigratorError('\n'.join(migration_errors))
         for migration_desc_obj in migration_descs.values():
-            validate_errors = migration_desc_obj.standardize()
+            migration_desc_obj.standardize()
+            migration_desc_obj._prepared = True
+
         return migration_descs
 
     @staticmethod
@@ -1328,11 +1359,9 @@ class MigrationController(object):
             :obj:`MigratorError`: if `model_defs_files`, `renamed_models`, and `seq_of_renamed_attributes`
                 are not consistent with each other;
         """
-        validate_errors = migration_desc.validate()
-        if validate_errors:
-            raise MigratorError('\n'.join(validate_errors))
-
         md = migration_desc
+        md.is_prepared()
+
         # iterate over existing_files & migrated_files
         migrated_files = md.migrated_files if md.migrated_files else [None] * len(md.existing_files)
         all_models, all_migrated_files = [], []
@@ -1346,15 +1375,14 @@ class MigrationController(object):
                     migrated_defs_file=md.model_defs_files[i+1], renamed_models=md.seq_of_renamed_models[i],
                     renamed_attributes=md.seq_of_renamed_attributes[i])
                 migrator.prepare()
-                # migrate in memory until the last migration
+                # the 1st iteration inits `models` from the existing file; iteration n+1 uses `models` set in n
                 if i == 0:
-                    # the 1st iteration inits `models` from the existing file; iteration n+1 uses `models` set in n
                     models = migrator.read_existing_model(existing_file)
                     all_models.append(models)
-                    existing_model_order = migrator._get_existing_model_order(existing_file)
-                    model_order = existing_model_order
+                    model_order = migrator._get_existing_model_order(existing_file)
                 for count_uninitialized_attrs in migrator._check_models(models):
-                    warn(count_uninitialized_attrs)
+                    warn(count_uninitialized_attrs, MigrateWarning)
+                # migrate in memory until the last migration
                 models = migrator.migrate(models)
                 all_models.append(models)
                 model_order = migrator._migrate_model_order(model_order)
@@ -1377,6 +1405,7 @@ class MigrationController(object):
         Returns:
             :obj:`list`: of :obj:`str`: migrated filenames
         """
+        migration_desc.is_prepared()
         _, migrated_filenames = MigrationController.migrate_over_schema_sequence(migration_desc)
         return migrated_filenames
 

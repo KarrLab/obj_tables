@@ -22,7 +22,8 @@ import pstats
 import yaml
 from pprint import pprint, pformat
 
-from obj_model.migrate import MigratorError, Migrator, MigrationController, RunMigration, MigrationDesc
+from obj_model.migrate import (MigratorError, MigrateWarning, Migrator, MigrationController,
+    RunMigration, MigrationDesc)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -511,7 +512,7 @@ class TestMigrator(MigrationFixtures):
         )
         example_ambiguous_sheets = os.path.join(self.fixtures_path, 'example_ambiguous_sheets.xlsx')
         expected_order = ['FirstUnambiguousModel', 'RenamedModel', 'TestModel', 'TestModels', 'TestModels3', 'NewModel']
-        with self.assertWarnsRegex(obj_model.io.IoWarning,
+        with self.assertWarnsRegex(MigrateWarning,
             "The following sheets cannot be unambiguously mapped to models:"):
             existing_model_order = migrator_2._get_existing_model_order(example_ambiguous_sheets)
 
@@ -831,7 +832,7 @@ class TestMigrator(MigrationFixtures):
         # test _check_model() by setting an attribute to its default
         model_copy = model.copy()
         setattr(model_copy, attr_name, default_value)
-        self.assertIn("'{}' lacks '{}'".format(model_def.__name__, attr_name),
+        self.assertIn("'{}' lack(s) '{}'".format(model_def.__name__, attr_name),
             self.good_migrator._check_model(model_copy, model_def)[0])
         return model_copy
 
@@ -940,8 +941,17 @@ class TestMigrationDesc(MigrationFixtures):
     def path_below_here(self, filename):
         return os.path.join(os.path.dirname(__file__), filename)
 
+    def test_prepare(self):
+        try:
+            self.migration_desc.prepare()
+        except MigratorError:
+            self.fail("prepare() raised MigratorError unexpectedly.")
+
+        setattr(self.migration_desc, 'disallowed_attr', 'bad')
+        with self.assertRaises(MigratorError):
+            self.migration_desc.prepare()
+
     def test_load(self):
-        # do:
         temp_bad_config_example = os.path.join(self.tmp_dir, 'bad_config_example.yaml')
         with open(temp_bad_config_example, 'w') as file:
             file.write(u'migration:\n')
@@ -1101,9 +1111,8 @@ class TestMigrationController(MigrationFixtures):
         super().tearDown()
 
     def test_migrate_over_schema_sequence(self):
-        # do: expand
         bad_migration_desc = copy.deepcopy(self.migration_desc)
-        del bad_migration_desc.name
+        del bad_migration_desc.migrator
         with self.assertRaises(MigratorError):
             MigrationController.migrate_over_schema_sequence(bad_migration_desc)
 
@@ -1122,11 +1131,13 @@ class TestMigrationController(MigrationFixtures):
             seq_of_renamed_models=seq_of_renamed_models,
             seq_of_renamed_attributes=seq_of_renamed_attributes,
             migrated_files=[migrated_filename])
+        migration_desc.prepare()
         _, migrated_filenames = MigrationController.migrate_over_schema_sequence(migration_desc)
         self.assert_equal_workbooks(self.example_existing_rt_model_copy, migrated_filenames[0])
 
+        self.migration_desc.prepare()
         with self.assertWarnsRegex(UserWarning,
-            "\d+ instance\\(s\\) of existing model '\S+' lacks '\S+' non-default value"):
+            "\d+ instance\\(s\\) of existing model '\S+' lack\\(s\\) '\S+' non-default value"):
             MigrationController.migrate_over_schema_sequence(self.migration_desc)
 
     def put_tmp_migrated_file_in_migration_desc(self, migration_desc, name):
@@ -1148,23 +1159,19 @@ class TestMigrationController(MigrationFixtures):
         round_trip_migrated_xlsx_files = MigrationController.migrate_from_desc(migration_desc)
         self.assert_equal_workbooks(migration_desc.existing_files[0], round_trip_migrated_xlsx_files[0])
 
-    # todo: to make this work with relative filenames in the yaml need to rewrite all its filenames or copy the files
     def test_migrate_from_config(self):
-        # create a YAML config file with temp migrated filenames into avoid writing to tests/fixtures/migrate
-        fd = open(self.config_file, 'r')
-        migrations_config = yaml.load(fd)
-        # add a list of migrated filenames (migrated_files) to each migration description
-        for migration_name, migration_desc in migrations_config.items():
-            migration_desc['migrated_files'] = [self.temp_pathname("migrated_file_4_{}.xlsx".format(migration_name))]
-        config_w_temp_migrated_filename = self.temp_pathname('config_w_temp_migrated_filename.yaml')
-        stream = open(config_w_temp_migrated_filename, 'w')
-        yaml.dump(migrations_config, stream)
-
         # these are round-trip migrations
-        results = MigrationController.migrate_from_config(config_w_temp_migrated_filename)
+        results = MigrationController.migrate_from_config(self.config_file)
         for migration_desc, migrated_files in results:
-            self.assertEqual(migration_desc.migrated_files, migrated_files)
             self.assert_equal_workbooks(migration_desc.existing_files[0], migrated_files[0])
+            # remove the migrated_files so they do not contaminate tests/fixtures/migrate
+            # an alternative but more complex approach would be to rewrite the YAML config file into
+            # a temp dir and modify all its filenames absolute paths
+            for migrated_file in migrated_files:
+                try:
+                    os.remove(migrated_file)
+                except OSError as e:
+                    pass
 
     def test_wc_lang_migration(self):
 
@@ -1176,6 +1183,7 @@ class TestMigrationController(MigrationFixtures):
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified, self.wc_lang_schema_existing],
             seq_of_renamed_models=[[('Parameter', 'ParameterRenamed')], [('ParameterRenamed', 'Parameter')]],
             migrated_files=[wc_lang_model_migrated])
+        migration_desc.prepare()
         MigrationController.migrate_over_schema_sequence(migration_desc)
         self.assert_equal_workbooks(self.wc_lang_small_model_copy, wc_lang_model_migrated)
 
@@ -1189,6 +1197,7 @@ class TestMigrationController(MigrationFixtures):
             existing_files=[self.wc_lang_model_copy],
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
             migrated_files=[fully_instantiated_wc_lang_model])
+        fully_instantiate_migration.prepare()
         MigrationController.migrate_over_schema_sequence(fully_instantiate_migration)
 
         rt_through_changes_migration = MigrationDesc(
@@ -1197,6 +1206,7 @@ class TestMigrationController(MigrationFixtures):
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified,
                 self.wc_lang_schema_existing],
             seq_of_renamed_models=[[('Parameter', 'ParameterRenamed')], [('ParameterRenamed', 'Parameter')]])
+        rt_through_changes_migration.prepare()
         _, rt_through_changes_wc_lang_models = \
             MigrationController.migrate_over_schema_sequence(rt_through_changes_migration)
         # validate round trip
