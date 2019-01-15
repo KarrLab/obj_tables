@@ -920,8 +920,7 @@ class WorkbookReader(ReaderBase):
                                 validation_error.set_location_and_value(utils.source_report(obj, attr.name),
                                                                         attr_value)
                                 obj_errors.append(validation_error)
-                        else:
-                            setattr(obj, attr.name, value)
+                        setattr(obj, attr.name, value)
 
                 except Exception as e:
                     error = InvalidAttribute(attr, ["{}".format(e)])

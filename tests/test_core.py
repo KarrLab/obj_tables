@@ -366,7 +366,7 @@ class TestCore(unittest.TestCase):
         connected_models_1 = set((g1,)) | set(p1) | set(c1)
 
         self.assertEqual(set(core.Model.get_all_related([g0, g1])),
-            connected_models_0 | connected_models_1)
+                         connected_models_0 | connected_models_1)
 
     def test_equal(self):
         root1 = Root(label='a')
@@ -619,7 +619,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.clean(1.), (True, None))
         self.assertEqual(attr.clean(0.), (False, None))
         self.assertEqual(attr.clean(None), (None, None))
-        self.assertEqual(attr.clean([])[0], None)
+        self.assertEqual(attr.clean([])[0], [])
         self.assertNotEqual(attr.clean([])[1], None)
 
         self.assertEqual(attr.validate(None, None), None)
@@ -908,7 +908,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.clean(now), (now.date(), None))
 
         now = datetime(year=1, month=1, day=1, hour=1)
-        self.assertEqual(attr.clean(now)[0], None)
+        self.assertEqual(attr.clean(now)[0], now)
         self.assertNotEqual(attr.clean(now)[1], None)
 
         now = date(year=1, month=1, day=1)
@@ -918,15 +918,15 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.clean(now), (date(year=2000, month=1, day=1), None))
 
         now = '2000-01-01 01:01:00'
-        self.assertEqual(attr.clean(now)[0], None)
+        self.assertEqual(attr.clean(now)[0], now)
         self.assertNotEqual(attr.clean(now)[1], None)
 
         now = 'x'
-        self.assertEqual(attr.clean(now)[0], None)
+        self.assertEqual(attr.clean(now)[0], 'x')
         self.assertNotEqual(attr.clean(now)[1], None)
 
         now = []
-        self.assertEqual(attr.clean(now)[0], None)
+        self.assertEqual(attr.clean(now)[0], now)
         self.assertNotEqual(attr.clean(now)[1], None)
 
         attr = core.DateAttribute(default_cleaned_value=lambda: datetime.now().date())
@@ -2716,7 +2716,7 @@ class TestCore(unittest.TestCase):
 
             def merge(self, other, validate=True): pass
 
-            def copy_value(self, value, objects_and_copies): 
+            def copy_value(self, value, objects_and_copies):
                 import copy
                 return copy.deepcopy(value)
 
@@ -3023,12 +3023,12 @@ class TestCore(unittest.TestCase):
         obj = Grandparent(id='gp')
         err = core.InvalidObject(obj, attr_errs)
         print("{}:\n".format(obj.id) +
-            "  '{}':\n".format(attrs[0].name) +
-            "    {}\n".format(msgs[0]) +
-            "    {}\n".format(msgs[1].replace("\n", "\n    ")) +
-            "  '{}':\n".format(attrs[1].name) +
-            "    {}\n".format(msgs[2]) +
-            "    {}".format(msgs[3]))
+              "  '{}':\n".format(attrs[0].name) +
+              "    {}\n".format(msgs[0]) +
+              "    {}\n".format(msgs[1].replace("\n", "\n    ")) +
+              "  '{}':\n".format(attrs[1].name) +
+              "    {}\n".format(msgs[2]) +
+              "    {}".format(msgs[3]))
         self.assertEqual(str(err), (
             "{}:\n".format(obj.id) +
             "  '{}':\n".format(attrs[0].name) +

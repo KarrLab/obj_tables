@@ -114,27 +114,29 @@ class OntologyAttribute(core.LiteralAttribute):
         """
         error = None
 
-        if value and isinstance(value, str):
+        if value is None or value == '':
+            value = self.get_default_cleaned_value()
+
+        elif isinstance(value, str):
             value = value.partition('!')[0].strip()
-            
+
             if value and self.namespace:
                 value = self.namespace + ':' + value
 
-            value = self.ontology.get(value, None)
-            if value is None:
-                error = 'Value "{}" is not in `ontology`'.format(value)            
+            str_value = value
+            value = self.ontology.get(value, str_value)
+            if isinstance(value, str):
+                error = 'Value "{}" is not in `ontology`'.format(value)
 
-        elif value is None or value == '':
-            value = self.get_default_cleaned_value()
+        elif isinstance(value, pronto.term.Term):
+            if value not in self.ontology:
+                error = "Value '{}' must be in `ontology`".format(value)
 
-        elif not (isinstance(value, pronto.term.Term) and value in self.ontology):
-            error = "Value '{}' must be in `ontology`".format(value)
-
-        elif isinstance(self.terms, list) and value not in self.terms:
+        if value and isinstance(self.terms, list) and value not in self.terms:
             error = "Value '{}' must be in `terms`".format(value)
 
         if error:
-            return (None, core.InvalidAttribute(self, [error]))
+            return (value, core.InvalidAttribute(self, [error]))
         else:
             return (value, None)
 
@@ -152,11 +154,13 @@ class OntologyAttribute(core.LiteralAttribute):
         if value is None:
             if not self.none:
                 return core.InvalidAttribute(self, ['Value cannot be `None`'])
+            else:
+                return None
 
-        elif not isinstance(value, pronto.term.Term) or value not in self.ontology:
+        if not isinstance(value, pronto.term.Term) or value not in self.ontology:
             return core.InvalidAttribute(self, ["Value '{}' must be in `ontology`".format(value)])
 
-        elif isinstance(self.terms, list) and value not in self.terms:
+        if isinstance(self.terms, list) and value not in self.terms:
             return core.InvalidAttribute(self, ["Value '{}' must be in `terms`".format(value)])
 
         return None

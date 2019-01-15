@@ -2795,7 +2795,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             :obj:`object`: copy of value
         """
-        pass # pragma: no cover
+        pass  # pragma: no cover
 
     @abc.abstractmethod
     def serialize(self, value):
@@ -3096,7 +3096,7 @@ class EnumAttribute(LiteralAttribute):
                 value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))
 
         if error:
-            return (None, InvalidAttribute(self, [error]))
+            return (value, InvalidAttribute(self, [error]))
         else:
             return (value, None)
 
@@ -3220,7 +3220,7 @@ class BooleanAttribute(LiteralAttribute):
 
         if (value is None) or isinstance(value, bool):
             return (value, None)
-        return (None, InvalidAttribute(self, ['Value must be a `bool` or `None`']))
+        return (value, InvalidAttribute(self, ['Value must be a `bool` or `None`']))
 
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
@@ -3315,7 +3315,7 @@ class FloatAttribute(NumericAttribute):
             value = float(value)
             return (value, None)
         except ValueError:
-            return (None, InvalidAttribute(self, ['Value must be a `float`']))
+            return (value, InvalidAttribute(self, ['Value must be a `float`']))
 
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
@@ -3486,7 +3486,7 @@ class IntegerAttribute(NumericAttribute):
                 return (int(float(value)), None, )
         except ValueError:
             pass
-        return (None, InvalidAttribute(self, ['Value must be an integer']), )
+        return (value, InvalidAttribute(self, ['Value must be an integer']), )
 
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
@@ -3889,7 +3889,7 @@ class DateAttribute(LiteralAttribute):
             if value.hour == 0 and value.minute == 0 and value.second == 0 and value.microsecond == 0:
                 return (value.date(), None)
             else:
-                return (None, InvalidAttribute(self, ['Time must be 0:0:0.0']))
+                return (value, InvalidAttribute(self, ['Time must be 0:0:0.0']))
 
         if isinstance(value, date):
             return (value, None)
@@ -3903,9 +3903,9 @@ class DateAttribute(LiteralAttribute):
                         datetime_value.microsecond == 0:
                     return (datetime_value.date(), None)
                 else:
-                    return (None, InvalidAttribute(self, ['Time must be 0:0:0.0']))
+                    return (value, InvalidAttribute(self, ['Time must be 0:0:0.0']))
             except ValueError:
-                return (None, InvalidAttribute(self, ['String must be a valid date']))
+                return (value, InvalidAttribute(self, ['String must be a valid date']))
 
         try:
             float_value = float(value)
@@ -3915,7 +3915,7 @@ class DateAttribute(LiteralAttribute):
         except (TypeError, ValueError):
             pass
 
-        return (None, 'Value must be an instance of `date`')
+        return (value, InvalidAttribute(self, ['Value must be an instance of `date`']))
 
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
@@ -4031,14 +4031,14 @@ class TimeAttribute(LiteralAttribute):
                     datetime_value = dateutil.parser.parse(value)
                     return (datetime_value.time(), None)
                 except ValueError:
-                    return (None, InvalidAttribute(self, ['String must be a valid time']))
+                    return (value, InvalidAttribute(self, ['String must be a valid time']))
             else:
-                return (None, InvalidAttribute(self, ['String must be a valid time']))
+                return (value, InvalidAttribute(self, ['String must be a valid time']))
 
         try:
             int_value = round(float(value) * 24 * 60 * 60)
             if int_value < 0 or int_value > 24 * 60 * 60 - 1:
-                return (None, InvalidAttribute(self, ['Number must be a valid time']))
+                return (value, InvalidAttribute(self, ['Number must be a valid time']))
 
             hour = int(int_value / (60. * 60.))
             minutes = int((int_value - hour * 60. * 60.) / 60.)
@@ -4047,7 +4047,7 @@ class TimeAttribute(LiteralAttribute):
         except (TypeError, ValueError):
             pass
 
-        return (None, 'Value must be an instance of `time`')
+        return (value, InvalidAttribute(self, ['Value must be an instance of `time`']))
 
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
@@ -4165,7 +4165,7 @@ class DateTimeAttribute(LiteralAttribute):
             try:
                 return (dateutil.parser.parse(value), None)
             except ValueError:
-                return (None, InvalidAttribute(self, ['String must be a valid datetime']))
+                return (value, InvalidAttribute(self, ['String must be a valid datetime']))
 
         try:
             float_value = float(value)
@@ -4187,7 +4187,7 @@ class DateTimeAttribute(LiteralAttribute):
         except (TypeError, ValueError):
             pass
 
-        return (None, 'Value must be an instance of `datetime`')
+        return (value, InvalidAttribute(self, ['Value must be an instance of `datetime`']))
 
     def validate(self, obj, value):
         """ Determine if `value` is a valid value of the attribute
