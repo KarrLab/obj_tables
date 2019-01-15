@@ -112,7 +112,7 @@ class OntologyAttribute(core.LiteralAttribute):
         error = None
 
         if value and isinstance(value, str):
-            value = self.ontology.get(value.strip().partition(' ! ')[0], None)
+            value = self.ontology.get(value.partition('!')[0].strip(), None)
             if value is None:
                 error = 'Value "{}" is not in `ontology`'.format(value)
 
@@ -175,7 +175,7 @@ class OntologyAttribute(core.LiteralAttribute):
             :obj:`str`: simple Python representation
         """
         if value:
-            return value.id + ' ! ' + value.name
+            return value.id
         return ''
 
     def to_builtin(self, value):

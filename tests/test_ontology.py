@@ -117,7 +117,7 @@ class OntologyAttributeTestCase(unittest.TestCase):
 
     def test_serialize(self):
         attr = obj_model.ontology.OntologyAttribute(self.ontology)
-        self.assertEqual(attr.serialize(self.term), 'SBO:0000000 ! systems biology representation')
+        self.assertEqual(attr.serialize(self.term), 'SBO:0000000')
         self.assertEqual(attr.serialize(None), '')
         self.assertEqual(attr.serialize(''), '')
 
