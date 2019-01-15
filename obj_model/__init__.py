@@ -26,3 +26,4 @@ from . import utils
 from . import bio
 from . import chem
 from . import math
+from . import ontology

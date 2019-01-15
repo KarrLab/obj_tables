@@ -3012,7 +3012,7 @@ class EnumAttribute(LiteralAttribute):
     """ Enumeration attribute
 
     Attributes:
-        enum_class (:obj:`type`): subclass of `Enum`
+        enum_class (:obj:`type`): subclass of :obj:`Enum`
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
@@ -3020,7 +3020,7 @@ class EnumAttribute(LiteralAttribute):
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
-            enum_class (:obj:`type`): subclass of `Enum`
+            enum_class (:obj:`type`): subclass of :obj:`Enum`
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`object`, optional): default value
             default_cleaned_value (:obj:`Enum`, optional): value to replace
@@ -3032,8 +3032,8 @@ class EnumAttribute(LiteralAttribute):
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
 
         Raises:
-            :obj:`ValueError`: if `enum_class` is not an instance of `Enum`, if `default` is not an instance
-                of `enum_class`, or if `default_cleaned_value` is not an instance of `enum_class`
+            :obj:`ValueError`: if :obj:`enum_class` is not a subclass of :obj:`Enum`, if :obj:`default` is not an instance
+                of :obj:`enum_class`, or if :obj:`default_cleaned_value` is not an instance of :obj:`enum_class`
         """
         if not issubclass(enum_class, Enum):
             raise ValueError('`enum_class` must be a subclass of `Enum`')
@@ -3063,7 +3063,7 @@ class EnumAttribute(LiteralAttribute):
         """
         error = None
 
-        if isinstance(value, string_types):
+        if value and isinstance(value, string_types):
             try:
                 value = self.enum_class[value]
             except KeyError:
@@ -3077,7 +3077,7 @@ class EnumAttribute(LiteralAttribute):
                 error = 'Value "{}" is not convertible to an instance of {}'.format(
                     value, self.enum_class.__name__)
 
-        elif value is None:
+        elif value is None or value == '':
             value = self.get_default_cleaned_value()
 
         elif not isinstance(value, self.enum_class):

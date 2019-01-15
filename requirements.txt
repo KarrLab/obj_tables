@@ -3,6 +3,7 @@ enum34
 inflect
 natsort
 numpy
+pronto
 python_dateutil
 pyyaml
 setuptools
