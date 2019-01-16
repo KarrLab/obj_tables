@@ -6419,7 +6419,5 @@ class SchemaWarning(ObjModelWarning):
     """ Schema warning """
     pass
 
-    pass
-
 
 from . import expression

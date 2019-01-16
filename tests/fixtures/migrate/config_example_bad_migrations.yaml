@@ -1,0 +1,12 @@
+# a migrations configuration
+
+migration_with_empty_renaming_n_migrated_files:
+    model_defs_files: [no_such_file_existing.py, no_such_file_migrated_rt.py,
+        no_such_file_existing.py]
+    seq_of_renamed_attributes: [
+        [[[Test, existing_attr], [MigratedTest, migrated_attr]]],
+        # empty renaming
+        []
+    ]
+    existing_files: [example_existing_model_rt.xlsx]
+    migrated_files: [example_existing_model_rt_cust_migr.xlsx]
