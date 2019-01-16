@@ -1203,7 +1203,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 value = attr.set_related_value(self, value)
 
         super(Model, self).__setattr__(attr_name, value)
-    
+
     @classmethod
     def get_nested_attr(cls, attr_path):
         """ Get the value of an attribute or a nested attribute of a model
@@ -1239,7 +1239,7 @@ class Model(with_metaclass(ModelMeta, object)):
             if i_attr < len(attr_path) - 1 or attr_get_one_filter:
                 value = value.related_class
             else:
-                value = value.attr                
+                value = value.attr
 
         # return value
         return value
@@ -3337,7 +3337,10 @@ class FloatAttribute(NumericAttribute):
         Returns:
             :obj:`bool`: True if attribute values are equal
         """
-        return val1 == val2 or (isnan(val1) and isnan(val2))
+        return val1 == val2 or \
+            (isnan(val1) and isnan(val2)) or \
+            (val1 == 0. and abs(val2) < 1e-10) or \
+            (val1 != 0. and abs((val1 - val2) / val1) < 1e-10)
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
