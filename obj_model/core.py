@@ -1203,8 +1203,48 @@ class Model(with_metaclass(ModelMeta, object)):
                 value = attr.set_related_value(self, value)
 
         super(Model, self).__setattr__(attr_name, value)
+    
+    @classmethod
+    def get_nested_attr(cls, attr_path):
+        """ Get the value of an attribute or a nested attribute of a model
 
-    def get_nested_attr(self, attr_path):
+        Args:
+            attr_path (:obj:`list` of :obj:`list` of :obj:`str`):
+                the path to an attribute or nested attribute of a model
+
+        Returns:
+            :obj:`Attribute`: nested attribute
+        """
+
+        if not isinstance(attr_path, (tuple, list)):
+            attr_path = (attr_path,)
+
+        # traverse to the final attribute
+        value = cls
+        for i_attr, attr in enumerate(attr_path):
+            if isinstance(attr, (tuple, list)):
+                if len(attr) == 1:
+                    attr_name = attr[0]
+                    attr_get_one_filter = None
+                elif len(attr) == 2:
+                    attr_name = attr[0]
+                    attr_get_one_filter = attr[1]
+                else:
+                    raise ValueError('Attribute specification must be a string, 1-tuple, or 2-tuple')
+            else:
+                attr_name = attr
+                attr_get_one_filter = None
+
+            value = value.Meta.local_attributes[attr_name]
+            if i_attr < len(attr_path) - 1 or attr_get_one_filter:
+                value = value.related_class
+            else:
+                value = value.attr                
+
+        # return value
+        return value
+
+    def get_nested_attr_val(self, attr_path):
         """ Get the value of an attribute or a nested attribute of a model
 
         Args:
@@ -1241,7 +1281,7 @@ class Model(with_metaclass(ModelMeta, object)):
         # return value
         return value
 
-    def set_nested_attr(self, attr_path, value):
+    def set_nested_attr_val(self, attr_path, value):
         """ Set the value of an attribute or a nested attribute of a model
 
         Args:
@@ -1260,7 +1300,7 @@ class Model(with_metaclass(ModelMeta, object)):
             attr_path = (attr_path,)
 
         # traverse to parent of final attribute
-        nested_obj = self.get_nested_attr(attr_path[0:-1])
+        nested_obj = self.get_nested_attr_val(attr_path[0:-1])
 
         # get name of final attribute
         attr = attr_path[-1]
@@ -3297,7 +3337,7 @@ class FloatAttribute(NumericAttribute):
         Returns:
             :obj:`bool`: True if attribute values are equal
         """
-        return val1 == val2 or (isnan(val1) and isnan(val2)) or abs((val1 - val2) / val1) < 1e-10
+        return val1 == val2 or (isnan(val1) and isnan(val2))
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
