@@ -25,11 +25,12 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
-# todo next: remove '/'s in test_migrate.py so it's OS portable
-# todo next: medium: use to migrate xlsx files in wc_sim to new wc_lang
 '''
-1: identify all xlsx files, and the wc_lang commit that they use
-2: migrate them
+migrate xlsx files in wc_sim to new wc_lang
+1: identify all wc model files in wc_sim, the wc_lang commits that they use, & get those wc_lang versions
+3. get the present wc_lang version
+4. create a config file for the wc model files
+5: migrate them
 '''
 # todo next: documentation
 # todo next: final bit of coverage
@@ -39,6 +40,7 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # use dict in wc_utils dup removal
 
 # todo next: move remaining todos to GitHub issues
+# todo: yaml config examples with multiple existing_files and multiple migrated_files
 # todo: move generate_wc_lang_migrator() to wc_lang
 # turn off coverage during unittest setUp, if possible
 # todo: separately specified default value for attribute
@@ -1034,7 +1036,7 @@ class Migrator(object):
                         for cls_obj in cls_objects:
                             setattr(cls_obj, attr.name, root_model)
 
-        transformations = {Migrator.PREPARE_EXISTING_MODELS:prepare_existing_wc_lang_models}
+        transformations = {Migrator.PREPARE_EXISTING_MODELS: prepare_existing_wc_lang_models}
         return Migrator(**kwargs, transformations=transformations)
 
     def run(self, files):
@@ -1069,11 +1071,12 @@ class MigrationDesc(object):
     """ Description of a sequence of migrations for a list of existing files
 
     Attributes:
-        _required_attrs (:obj:`list` of :obj:`str`): required attributes in a `MigrationDesc`
-        _renaming_lists (:obj:`list` of :obj:`str`): model and attribute renaming lists in a `MigrationDesc`
-        _allowed_attrs (:obj:`list` of :obj:`str`): attributes allowed in a `MigrationDesc`
+        _REQUIRED_ATTRS (:obj:`list` of :obj:`str`): required attributes in a `MigrationDesc`
+        _RENAMING_LISTS (:obj:`list` of :obj:`str`): model and attribute renaming lists in a `MigrationDesc`
+        _ALLOWED_ATTRS (:obj:`list` of :obj:`str`): attributes allowed in a `MigrationDesc`
         name (:obj:`str`): name for this `MigrationDesc`
-        migrator (:obj:`callable`): the Migrator to use for migrations
+        migrator (:obj:`str`): the name of a Migrator to use for migrations, which must be a key in
+            `self.MIGRATOR_CREATOR_MAP`; default = `standard_migrator`, which maps to `Migrator`
         existing_files (:obj:`list`: of :obj:`str`, optional): existing files to migrate
         model_defs_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
             definitions for each state in a sequence of migrations
@@ -1086,17 +1089,20 @@ class MigrationDesc(object):
             are migrated in place
         migrate_suffix (:obj:`str`, optional): suffix added to destination file name, before the file type suffix
         migrate_in_place (:obj:`bool`, optional): whether to migrate in place
-        migrations_config_file (:obj:`str`, optional): path to migrations configuration file, if created
-            from a configuration file
+        migrations_config_file (:obj:`str`, optional): if created from a configuration file, the file's
+            path
         _prepared (:obj:`bool`, optional): whether this `MigrationDesc` has been prepared
     """
 
-    _required_attrs = ['name', 'migrator', 'existing_files', 'model_defs_files']
-    _renaming_lists = ['seq_of_renamed_models', 'seq_of_renamed_attributes']
-    _allowed_attrs = _required_attrs + _renaming_lists + ['migrated_files', 'migrate_suffix',
-        'migrate_in_place', 'migrations_config_file', '_prepared']
+    # map migrator names to callables that create `Migrator`s
+    MIGRATOR_CREATOR_MAP = dict(standard_migrator=Migrator, wc_lang=Migrator.generate_wc_lang_migrator)
 
-    def __init__(self, name, migrator=Migrator, existing_files=None, model_defs_files=None,
+    _REQUIRED_ATTRS = ['name', 'migrator', 'existing_files', 'model_defs_files']
+    _RENAMING_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes']
+    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _RENAMING_LISTS + ['migrated_files', 'migrate_suffix',
+        'migrate_in_place', 'migrations_config_file', '_prepared', 'MIGRATOR_CREATOR_MAP']
+
+    def __init__(self, name, migrator='standard_migrator', existing_files=None, model_defs_files=None,
         seq_of_renamed_models=None, seq_of_renamed_attributes=None, migrated_files=None, migrate_suffix=None,
         migrate_in_place=False, migrations_config_file=None):
         self.name = name
@@ -1164,7 +1170,7 @@ class MigrationDesc(object):
 
     @staticmethod
     def get_migrations_config(migrations_config_file):
-        """ Create a `MigrationDesc` from a migrations configuration file
+        """ Create a list of `MigrationDesc`s from a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
@@ -1203,11 +1209,11 @@ class MigrationDesc(object):
             not(inspect.isclass(a) or inspect.ismethod(a) or inspect.isfunction(a)))
         members = [attr for attr, value in members if not attr.startswith('_')]
 
-        extra_attrs = set(members).difference(self._allowed_attrs)
+        extra_attrs = set(members).difference(self._ALLOWED_ATTRS)
         if extra_attrs:
             errors.append("disallowed attribute(s) found: {}".format(extra_attrs))
 
-        for required_attr in self._required_attrs:
+        for required_attr in self._REQUIRED_ATTRS:
             if not hasattr(self, required_attr) or getattr(self, required_attr) is None:
                 errors.append("missing required attribute '{}'".format(required_attr))
         if errors:
@@ -1217,7 +1223,7 @@ class MigrationDesc(object):
             return ["model_defs_files must contain at least 2 model definitions, but it has only {}".format(
                 len(self.model_defs_files))]
 
-        for renaming_list in self._renaming_lists:
+        for renaming_list in self._RENAMING_LISTS:
             if getattr(self, renaming_list) is not None:
                 if len(getattr(self, renaming_list)) != len(self.model_defs_files) - 1:
                     errors.append("{} must have 1 mapping for each of the {} migration(s) specified by "
@@ -1257,6 +1263,11 @@ class MigrationDesc(object):
                 "but they have {} and {} entries, respectively".format(len(self.existing_files),
                 len(self.migrated_files)))
 
+        # ensure a valid value of 'migrator'
+        if not hasattr(self, 'migrator') or self.migrator not in self.MIGRATOR_CREATOR_MAP:
+            errors.append("'migrator' must be an element of {}".format(
+                set(self.MIGRATOR_CREATOR_MAP.keys())))
+
         return errors
 
     @staticmethod
@@ -1277,7 +1288,9 @@ class MigrationDesc(object):
         return [Migrator._normalize_filename(filename, dir=dir) for filename in filenames]
 
     def standardize(self):
-        """ Standardize the attributes of a `MigrationDesc` that's read from a config file
+        """ Standardize the attributes of a `MigrationDesc`
+
+        In particular, standardize a `MigrationDesc` read from a YAML config file
         """
         # convert [model, attr] pairs in seq_of_renamed_attributes into tuples; needed for hashing
         if self.seq_of_renamed_attributes:
@@ -1294,7 +1307,7 @@ class MigrationDesc(object):
 
         # if a renaming_list isn't provided, replace it with a list of Nones indicating no renaming
         empty_per_migration_list = [None]*(len(self.model_defs_files) - 1)
-        for renaming_list in self._renaming_lists:
+        for renaming_list in self._RENAMING_LISTS:
             if getattr(self, renaming_list) is None:
                 setattr(self, renaming_list, empty_per_migration_list)
 
@@ -1308,18 +1321,13 @@ class MigrationDesc(object):
                 self.migrated_files = self._normalize_filenames(self.migrated_files,
                     relative_file=self.migrations_config_file)
 
-    def get_kwargs(self):
-        """ Create a `kwargs` dictionary of a `MigrationDesc`'s optional arguments
+    def get_migrator(self):
+        """ Obtain callable that creates `Migrator`s for this `MigrationDesc`
 
         Returns:
-            :obj:`dict`: `kwargs` for this `MigrationDesc`'s optional arguments
+            :obj:`callable`: a callable that creates `Migrator`s for this `MigrationDesc`
         """
-        optional_args = ['existing_files', 'model_defs_files', 'seq_of_renamed_models', 'seq_of_renamed_attributes',
-            'migrated_files', 'migrate_suffix', 'migrate_in_place', 'migrations_config_file']
-        kwargs = {}
-        for arg in optional_args:
-            kwargs[arg] = getattr(self, arg)
-        return kwargs
+        return self.MIGRATOR_CREATOR_MAP[self.migrator]
 
     def __str__(self):
         """ Get str representation
@@ -1328,8 +1336,8 @@ class MigrationDesc(object):
             :obj:`str`: string representation of all allowed attributes in a `MigrationDesc`
         """
         rv = []
-        for attr in self._allowed_attrs:
-            if attr in self._renaming_lists:
+        for attr in self._ALLOWED_ATTRS:
+            if attr in self._RENAMING_LISTS:
                 rv.append("{}:\n{}".format(attr, pformat(getattr(self, attr))))
             else:
                 rv.append("{}: {}".format(attr, getattr(self, attr)))
@@ -1371,7 +1379,8 @@ class MigrationController(object):
             # the 'for' line doesn't jump to return; this cannot be annotated with 'pragma: no cover'
             for i in range(num_migrations):
                 # create Migrator for each pair of schemas
-                migrator = migration_desc.migrator(existing_defs_file=md.model_defs_files[i],
+                migrator_creator = migration_desc.get_migrator()
+                migrator = migrator_creator(existing_defs_file=md.model_defs_files[i],
                     migrated_defs_file=md.model_defs_files[i+1], renamed_models=md.seq_of_renamed_models[i],
                     renamed_attributes=md.seq_of_renamed_attributes[i])
                 migrator.prepare()
