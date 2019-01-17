@@ -3,7 +3,7 @@ enum34
 inflect
 natsort
 numpy
-git+https://github.com/KarrLab/pronto.git#egg=pronto-0.12.0a >= 0.12.0a
+git+https://github.com/KarrLab/pronto.git#egg=pronto-0.12.1 >= 0.12.1
 python_dateutil
 pyyaml
 setuptools
