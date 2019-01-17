@@ -25,5 +25,5 @@ from . import utils
 # domain-specific attributes
 from . import bio
 from . import chem
-from . import math
+from . import obj_math
 from . import ontology
