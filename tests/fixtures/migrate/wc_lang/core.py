@@ -50,9 +50,12 @@ from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToO
                                   ParsedExpression, ParsedExpressionError)
 from six import with_metaclass
 
-from wc_lang.sbml.util import (wrap_libsbml, str_to_xmlstr, LibSBMLError,
+# rename wc_lang so it can be used as a fixture in obj_model
+'''
+# imports not needed, as they're not executed when this file is imported or a model based on it is read or written
+from tests.fixtures.migrate.wc_lang.sbml.util import (wrap_libsbml, str_to_xmlstr, LibSBMLError,
                                create_sbml_parameter)
-
+'''
 from wc_utils.util.chem import EmpiricalFormula
 from wc_utils.util.enumerate import CaseInsensitiveEnum, CaseInsensitiveEnumMeta
 from wc_utils.util.list import det_dedupe
@@ -68,7 +71,7 @@ import six
 import stringcase
 import token
 
-with open(pkg_resources.resource_filename('wc_lang', 'VERSION'), 'r') as file:
+with open(pkg_resources.resource_filename('tests.fixtures.migrate.wc_lang', 'VERSION'), 'r') as file:
     wc_lang_version = file.read().strip()
 
 # wc_lang generates obj_model SchemaWarning warnings because some Models lack primary attributes.
@@ -79,7 +82,7 @@ import warnings
 warnings.filterwarnings('ignore', '', obj_model.SchemaWarning, 'obj_model')
 
 # configuration
-from wc_lang.config import core
+import tests.fixtures.migrate.wc_lang.config.core
 
 
 class TimeUnit(int, Enum):
@@ -610,7 +613,7 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
             return InvalidAttribute(self, ['LHS and RHS must be different'])
 
         # check element and charge balance
-        validate_element_charge_balance = core.get_config()[
+        validate_element_charge_balance = tests.fixtures.migrate.wc_lang.config.core.get_config()[
             'wc_lang']['validation']['validate_element_charge_balance']
         if validate_element_charge_balance:
             delta_formula = EmpiricalFormula()
