@@ -5,13 +5,11 @@ with open(pkg_resources.resource_filename('tests.fixtures.migrate.wc_lang', 'VER
 # :obj:`str`: version
 
 # API
-from .core import (TimeUnit, TaxonRank,
+from .core import (TaxonRank,
                    CompartmentBiologicalType, CompartmentPhysicalType, CompartmentGeometry,
-                   MassUnit, VolumeUnit, DensityUnit,
-                   SubmodelAlgorithm, SpeciesTypeType, MoleculeCountUnit,
-                   RandomDistribution, ConcentrationUnit,
-                   ReactionParticipantUnit, RateLawDirection, RateLawType, ReactionRateUnit, ReactionFluxBoundUnit,
-                   DfbaObjectiveUnit, DfbaCellSizeUnit, DfbaObjectiveCoefficientUnit, DfbaNetComponentUnit,
+                   SubmodelAlgorithm, SpeciesTypeType,
+                   RandomDistribution,
+                   RateLawDirection, RateLawType,
                    ParameterType, EvidenceType, ReferenceType,
                    Model, Taxon, Submodel, Compartment,
                    SpeciesType, Species, DistributionInitConcentration, DfbaObjective, DfbaObjectiveExpression,
@@ -19,7 +17,7 @@ from .core import (TimeUnit, TaxonRank,
                    Function, FunctionExpression,
                    Reaction, SpeciesCoefficient, RateLaw, RateLawExpression,
                    DfbaNetSpecies, DfbaNetReaction, Parameter,
-                   StopCondition, StopConditionExpression, StopConditionUnit,
+                   StopCondition, StopConditionExpression,
                    Evidence, DatabaseReference, Reference,
                    Validator)
 # these modules and packages not needed
