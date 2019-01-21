@@ -95,8 +95,8 @@ class BooleanSubFunction(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='boolean_sub_functions')
     expression = ExpressionOneToOneAttribute(BooleanSubFunctionExpression, related_name='boolean_sub_function')
-    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('dimensionless'),), 
-        default=unit_registry.parse_units('dimensionless'))
+    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('dimensionless'),),
+                          default=unit_registry.parse_units('dimensionless'))
 
     class Meta(Model.Meta, ExpressionExpressionTermMeta):
         expression_term_model = BooleanSubFunctionExpression
@@ -162,8 +162,8 @@ class Function(Model):
 class ExpressionAttributesTestCase(unittest.TestCase):
     def test_one_to_one_serialize(self):
         expr = 'p_1 + p_2'
-        p_1 = Parameter(id='p_1', value=2., units='dimensionless')
-        p_2 = Parameter(id='p_2', value=3., units='dimensionless')
+        p_1 = Parameter(id='p_1', value=2., units=unit_registry.parse_units('dimensionless'))
+        p_2 = Parameter(id='p_2', value=3., units=unit_registry.parse_units('dimensionless'))
         expression, error = FunctionExpression.deserialize(expr, {
             Parameter: {p_1.id: p_1, p_2.id: p_2},
         })
@@ -174,8 +174,8 @@ class ExpressionAttributesTestCase(unittest.TestCase):
 
     def test_one_to_one_deserialize(self):
         expr = 'p_1 + p_2'
-        p_1 = Parameter(id='p_1', value=2., units='dimensionless')
-        p_2 = Parameter(id='p_2', value=3., units='dimensionless')
+        p_1 = Parameter(id='p_1', value=2., units=unit_registry.parse_units('dimensionless'))
+        p_2 = Parameter(id='p_2', value=3., units=unit_registry.parse_units('dimensionless'))
 
         expression, error = Function.expression.deserialize(expr, {
             Parameter: {p_1.id: p_1, p_2.id: p_2},
@@ -187,8 +187,8 @@ class ExpressionAttributesTestCase(unittest.TestCase):
 
     def test_many_to_one_serialize(self):
         expr = 'p_1 + p_2'
-        p_1 = Parameter(id='p_1', value=2., units='dimensionless')
-        p_2 = Parameter(id='p_2', value=3., units='dimensionless')
+        p_1 = Parameter(id='p_1', value=2., units=unit_registry.parse_units('dimensionless'))
+        p_2 = Parameter(id='p_2', value=3., units=unit_registry.parse_units('dimensionless'))
         expression, error = LinearSubFunctionExpression.deserialize(expr, {
             Parameter: {p_1.id: p_1, p_2.id: p_2},
         })
@@ -199,8 +199,8 @@ class ExpressionAttributesTestCase(unittest.TestCase):
 
     def test_many_to_one_deserialize(self):
         expr = 'p_1 + p_2'
-        p_1 = Parameter(id='p_1', value=2., units='dimensionless')
-        p_2 = Parameter(id='p_2', value=3., units='dimensionless')
+        p_1 = Parameter(id='p_1', value=2., units=unit_registry.parse_units('dimensionless'))
+        p_2 = Parameter(id='p_2', value=3., units=unit_registry.parse_units('dimensionless'))
 
         expression, error = LinearSubFunction.expression.deserialize(expr, {
             Parameter: {p_1.id: p_1, p_2.id: p_2},
@@ -396,10 +396,10 @@ class ParsedExpressionTestCase(unittest.TestCase):
             ws_len += 1
 
         with self.assertRaisesRegex(ParsedExpressionError,
-            "parsing '.*' creates a Python syntax error: '.*'"):
+                                    "parsing '.*' creates a Python syntax error: '.*'"):
             wc_lang_expr.recreate_whitespace(expr_no_whitespace + ' x[y')
         with self.assertRaisesRegex(ParsedExpressionError,
-            "can't recreate whitespace in '.*', as it has .* instead of .* tokens expected"):
+                                    "can't recreate whitespace in '.*', as it has .* instead of .* tokens expected"):
             wc_lang_expr.recreate_whitespace(expr_no_whitespace + ' +1')
 
     def test_parsed_expression_ambiguous(self):
@@ -902,11 +902,11 @@ class ParsedExpressionTestCase(unittest.TestCase):
             parsed_expr.test_eval()
 
     def test_eval_with_units(self):
-        func = Function(id='func', units='g l^-1')
+        func = Function(id='func', units=unit_registry.parse_units('g l^-1'))
         func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
             Parameter: {
-                'p_1': Parameter(id='p_1', value=2., units='g'),
-                'p_2': Parameter(id='p_2', value=5., units='l'),
+                'p_1': Parameter(id='p_1', value=2., units=unit_registry.parse_units('g')),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
             }
         })
         assert error is None, str(error)
@@ -922,20 +922,20 @@ class ParsedExpressionTestCase(unittest.TestCase):
         self.assertEqual(rv.units, unit_registry.parse_units('g l^-1'))
 
     def test_eval_with_units_and_boolean(self):
-        func_1 = SubFunction(id='func_1', units='dimensionless')
+        func_1 = SubFunction(id='func_1', units=unit_registry.parse_units('dimensionless'))
         func_1.expression, error = SubFunctionExpression.deserialize('p_1 < p_2', {
             Parameter: {
-                'p_1': Parameter(id='p_1', value=2., units='g'),
-                'p_2': Parameter(id='p_2', value=5., units='l'),
+                'p_1': Parameter(id='p_1', value=2., units=unit_registry.parse_units('g')),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
             }
         })
         assert error is None, str(error)
 
-        func_2 = Function(id='func_2', units='g l^-1')
+        func_2 = Function(id='func_2', units=unit_registry.parse_units('g l^-1'))
         func_2.expression, error = FunctionExpression.deserialize('(p_3 / p_4) * func_1', {
             Parameter: {
-                'p_3': Parameter(id='p_3', value=2., units='g'),
-                'p_4': Parameter(id='p_4', value=5., units='l'),
+                'p_3': Parameter(id='p_3', value=2., units=unit_registry.parse_units('g')),
+                'p_4': Parameter(id='p_4', value=5., units=unit_registry.parse_units('l')),
             },
             SubFunction: {
                 func_1.id: func_1,
@@ -953,11 +953,11 @@ class ParsedExpressionTestCase(unittest.TestCase):
         self.assertEqual(rv.units, unit_registry.parse_units('g l^-1'))
 
     def test_eval_error(self):
-        func = Function(id='func', units='g l^-1')
+        func = Function(id='func', units=unit_registry.parse_units('g l^-1'))
         func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
             Parameter: {
-                'p_1': Parameter(id='p_1', value=2., units='g'),
-                'p_2': Parameter(id='p_2', value=5., units='l'),
+                'p_1': Parameter(id='p_1', value=2., units=unit_registry.parse_units('g')),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
             }
         })
         assert error is None, str(error)
