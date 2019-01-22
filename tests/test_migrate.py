@@ -6,6 +6,7 @@
 :License: MIT
 """
 
+import capturer
 import os
 import sys
 import re
@@ -1193,11 +1194,11 @@ class TestMigrationController(MigrationFixtures):
         self.assert_equal_workbooks(self.wc_lang_small_model_copy, wc_lang_model_migrated)
 
         # Process for round-trip migration of wc_lang model that lacks 'model' attributes
-        # 1. to create model with 'model' attributes, migrate to tmp file w generate_wc_lang_migrator
-        # 2. start with the tmp migrated file to test round-trip modification
+        # 1: create model with 'model' attributes by migrating to tmp file w generate_wc_lang_migrator
+        # 2: starting with the tmp migrated file test round-trip migration with migrations that invert each other
         fully_instantiated_wc_lang_model = self.temp_pathname('fully_instantiated_wc_lang_model.xlsx')
         fully_instantiate_migration = MigrationDesc(
-            "create fully instantiated model with 'model' attributes: migrate model from existing wc_lang core to itself",
+            "1: create fully instantiated model with 'model' attributes: migrate model from existing wc_lang core to itself",
             migrator='wc_lang',
             existing_files=[self.wc_lang_model_copy],
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
@@ -1206,7 +1207,7 @@ class TestMigrationController(MigrationFixtures):
         MigrationController.migrate_over_schema_sequence(fully_instantiate_migration)
 
         rt_through_changes_migration = MigrationDesc(
-            "round trip migration though changes",
+            "2: round trip migration with migrations that invert each other",
             existing_files=[fully_instantiated_wc_lang_model],
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified,
                 self.wc_lang_schema_existing],
@@ -1237,25 +1238,27 @@ class TestRunMigration(MigrationFixtures):
     def setUp(self):
         super().setUp()
 
-    def tearDown(self):
-        super().tearDown()
-
-    @unittest.skip("being modified")
     def test_parse_args(self):
-        existing_model_definitions = os.path.join('dir', 'file1.py')
-        migrated_model_definitions = os.path.join('dir', 'file2.py')
-        file = os.path.join('dir1', 'm1.xlsx')
-        files = file + ' ' + file
-        cl = "{} {} {}".format(existing_model_definitions, migrated_model_definitions, files)
+        cl = "{}".format(self.config_file)
         args = RunMigration.parse_args(cli_args=cl.split())
-        self.assertEqual(args.existing_model_definitions, existing_model_definitions)
-        self.assertEqual(args.migrated_model_definitions, migrated_model_definitions)
-        self.assertEqual(args.files, files.split())
+        self.assertEqual(args.migrations_config_file, self.config_file)
 
-    @unittest.skip("being modified")
     def test_main(self):
-        args = Namespace(existing_model_definitions=self.existing_defs_path,
-            migrated_model_definitions=self.migrated_defs_path, files=[self.example_existing_model_copy])
-        migrated_files = RunMigration.main(args)
-        root, ext = os.path.splitext(self.example_existing_model_copy)
-        self.assertEqual(migrated_files[0], "{}{}{}".format(root, Migrator.MIGRATE_SUFFIX, ext))
+        args = Namespace(migrations_config_file=self.config_file, warnings=False)
+        with capturer.CaptureOutput(relay=False) as capture_output:
+            results = RunMigration.main(args)
+            for migration_disc, migrated_filenames in results:
+                self.assertIn(migration_disc.name, capture_output.get_text())
+                for migrated_file in migrated_filenames:
+                    self.assertIn(migrated_file, capture_output.get_text())
+
+        for migration_disc, migrated_filenames in results:
+            self.assertTrue(isinstance(migration_disc, MigrationDesc))
+            for migrated_file in migrated_filenames:
+                self.assertTrue(os.path.isfile(migrated_file))
+
+                # remove the migrated files so they do not contaminate tests/fixtures/migrate
+                try:
+                    os.remove(migrated_file)
+                except OSError as e:
+                    pass

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """ Support schema migration
 
 :Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
@@ -11,6 +12,7 @@ import argparse
 import importlib
 import inspect
 import copy
+import warnings
 import yaml
 from six import integer_types, string_types
 from enum import Enum
@@ -32,6 +34,7 @@ migrate xlsx files in wc_sim to new wc_lang
 4. create a config file for the wc model files
 5: migrate them
 '''
+# todo next: generic transformations in YAML config
 # todo next: documentation
 # todo next: final bit of coverage
 # todo next: test OneToManyAttribute
@@ -40,12 +43,16 @@ migrate xlsx files in wc_sim to new wc_lang
 # use dict in wc_utils dup removal
 
 # todo next: move remaining todos to GitHub issues
+# todo: migrate ontology terms
+# todo: automate transformation of wc_lang/core.py into migration schema, if needed
+# todo: associate schema pairs with renaming maps
 # todo: yaml config examples with multiple existing_files and multiple migrated_files
 # todo: move generate_wc_lang_migrator() to wc_lang
 # turn off coverage during unittest setUp, if possible
 # todo: separately specified default value for attribute
 # todo: obtain sort order of sheets in existing model file and replicate in migrated model file
 # todo: confirm this works for json, etc.
+# todo: use smaller model to speedup test_wc_lang_migration
 # todo: test sym links in Migrator._normalize_filename
 # provide a well-documented example;
 # todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
@@ -1449,21 +1456,21 @@ class RunMigration(object):
         """
         parser = argparse.ArgumentParser(
             description="Migrate model file(s) from an existing schema to a migrated one")
-        parser.add_argument('existing_model_definitions',
-            help="Python file containing existing obj_model.Model definitions")
-        parser.add_argument('migrated_model_definitions',
-            help="Python file containing migrated obj_model.Model definitions")
-        parser.add_argument('files', nargs='+',
-            help="Files(s) to migrate from existing to migrated obj_model.Model definitions; "
-            "migrated files will be written with a '_migrate' suffix")
+        parser.add_argument('migrations_config_file', help="migrations configured in YAML file")
+        parser.add_argument('-w', '--warnings', action='store_true', help="show MigrateWarning warnings")
         args = parser.parse_args(cli_args)
         return args
 
     @staticmethod
     def main(args):
-        migrator = Migrator(args.existing_model_definitions, args.migrated_model_definitions)
-        migrator.prepare()
-        return migrator.run(args.files)
+        if not args.warnings:
+            warnings.simplefilter("ignore", category=MigrateWarning)
+        results = MigrationController.migrate_from_config(args.migrations_config_file)
+        for migration_disc, migrated_filenames in results:
+            print("migrations in '{}':".format(migration_disc.name))
+            for existing_file, migrated_file in zip(migration_disc.existing_files, migrated_filenames):
+                print("    '{}' -> '{}'".format(existing_file, migrated_file))
+        return results
 
 if __name__ == '__main__':  # pragma: no cover     # reachable only from command line
     try:
