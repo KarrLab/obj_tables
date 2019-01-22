@@ -11,5 +11,6 @@ setuptools
 six
 stringcase
 sympy
+validate_email
 git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils-0.0.1a5
 weakreflist

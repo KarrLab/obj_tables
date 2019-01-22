@@ -731,6 +731,16 @@ class TestCore(unittest.TestCase):
         self.assertNotIn(
             'url', [x.attribute.name for x in root.validate().attributes])
 
+    def test_validate_email_attribute(self):
+        attr = core.EmailAttribute()
+
+        self.assertEqual(attr.validate(None, 'test@test.com'), None)
+        self.assertNotEqual(attr.validate(None, 'test$test.com'), None)
+        self.assertNotEqual(attr.validate(None, 'test@test,com'), None)
+
+        attr = core.EmailAttribute(primary=True)
+        self.assertNotEqual(attr.validate(None, ''), None)
+
     def test_validate_float_attribute(self):
         leaf = UnrootedLeaf()
 
@@ -4334,15 +4344,15 @@ class TestCore(unittest.TestCase):
         self.assertEqual(Test1.get_nested_attr((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1'}), ('id',))),
                          Test3.id)
         self.assertEqual(Test1.get_nested_attr((('children', {'id': 'test_1_2'}),
-                                                 ('children', {'id': 'test_1_2_1'}),
-                                                 'parent',
-                                                 'parent')),
+                                                ('children', {'id': 'test_1_2_1'}),
+                                                'parent',
+                                                'parent')),
                          Test2.parent)
         self.assertEqual(Test1.get_nested_attr((('children', {'id': 'test_1_2'}),
-                                                 ('children', {'id': 'test_1_2_1'}),
-                                                 'parent',
-                                                 'parent',
-                                                 'id')),
+                                                ('children', {'id': 'test_1_2_1'}),
+                                                'parent',
+                                                'parent',
+                                                'id')),
                          Test1.id)
 
     def test_get_nested_attr_val(self):
@@ -4384,15 +4394,15 @@ class TestCore(unittest.TestCase):
         self.assertEqual(test_1.get_nested_attr_val((('children', {'id': 'test_1_2'}), ('children', {'id': 'test_1_2_1'}), ('id',))),
                          test_1.children[1].children[0].id)
         self.assertEqual(test_1.get_nested_attr_val((('children', {'id': 'test_1_2'}),
-                                                 ('children', {'id': 'test_1_2_1'}),
-                                                 'parent',
-                                                 'parent')),
+                                                     ('children', {'id': 'test_1_2_1'}),
+                                                     'parent',
+                                                     'parent')),
                          test_1)
         self.assertEqual(test_1.get_nested_attr_val((('children', {'id': 'test_1_2'}),
-                                                 ('children', {'id': 'test_1_2_1'}),
-                                                 'parent',
-                                                 'parent',
-                                                 'id')),
+                                                     ('children', {'id': 'test_1_2_1'}),
+                                                     'parent',
+                                                     'parent',
+                                                     'id')),
                          test_1.id)
 
     def test_set_nested_attr_val(self):
@@ -4458,10 +4468,10 @@ class TestCore(unittest.TestCase):
         test_1.children = test_2
 
         test_1.set_nested_attr_val((('children', {'id': 'test_1_2'}), ('children', {
-                               'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_6')
+            'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_6')
         self.assertEqual(test_1.id, 'new_id_6')
         test_1.set_nested_attr_val((('children', {'id': 'test_1_2'}), ('children', {
-                               'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_7')
+            'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_7')
         self.assertEqual(test_1.id, 'new_id_7')
 
 
