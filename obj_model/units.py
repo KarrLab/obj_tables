@@ -7,6 +7,7 @@
 """
 
 from . import core
+from wc_utils.util.units import are_units_equivalent
 import pint
 
 
@@ -15,7 +16,7 @@ class UnitAttribute(core.LiteralAttribute):
 
     Attributes:
         registry (:obj:`pint.UnitRegistry`): unit registry
-        choices (:obj:`tuple` of :obj:registry.Unit): allowed values
+        choices (:obj:`tuple` of :obj:`pint.unit._Unit`): allowed values
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
@@ -25,7 +26,7 @@ class UnitAttribute(core.LiteralAttribute):
         """
         Args:
             registry (:obj:`pint.UnitRegistry`): unit registry
-            choices (:obj:`tuple` of :obj:registry.Unit, optional): allowed units
+            choices (:obj:`tuple` of :obj:`pint.unit._Unit`, optional): allowed units
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`str`, optional): default value
             default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
@@ -66,7 +67,7 @@ class UnitAttribute(core.LiteralAttribute):
         """ Get default value for attribute
 
         Returns:
-            :obj:registry.Unit: initial value
+            :obj:`pint.unit._Unit`: initial value
         """
         return self.default
 
@@ -74,7 +75,7 @@ class UnitAttribute(core.LiteralAttribute):
         """ Get value to replace :obj:`None` values with during cleaning
 
         Returns:
-            :obj:registry.Unit: initial value
+            :obj:`pint.unit._Unit`: initial value
         """
         return self.default_cleaned_value
 
@@ -82,32 +83,13 @@ class UnitAttribute(core.LiteralAttribute):
         """ Determine if attribute values are equal
 
         Args:
-            val1 (:obj:registry.Unit): first value
-            val2 (:obj:registry.Unit): second value
+            val1 (:obj:`pint.unit._Unit`): first value
+            val2 (:obj:`pint.unit._Unit`): second value
 
         Returns:
             :obj:`bool`: True if attribute values are equal
         """
-        if val1 is None:
-            if val2 is None:
-                return True
-            return False
-        else:
-            if val2 is None:
-                return False
-            else:
-                if not isinstance(val1, self.registry.Unit):
-                    return False
-                if not isinstance(val2, self.registry.Unit):
-                    return False
-                if val1 == val2:
-                    return True
-                val1_expr = self.registry.parse_expression(str(val1))
-                try:
-                    val2_expr = val1_expr.to(val2)
-                except pint.DimensionalityError:
-                    return False
-                return val2_expr.magnitude == 1 # remove to allow conversions to other magnitudes
+        return are_units_equivalent(val1, val2, check_same_magnitude=True)
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -136,11 +118,11 @@ class UnitAttribute(core.LiteralAttribute):
         """ Copy value
 
         Args:
-            value (:obj:registry.Unit): value
+            value (:obj:`pint.unit._Unit`): value
             objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
 
         Returns:
-            :obj:registry.Unit: copy of value
+            :obj:`pint.unit._Unit`: copy of value
         """
         return value
 
@@ -149,7 +131,7 @@ class UnitAttribute(core.LiteralAttribute):
 
         Args:
             obj (:obj:`Model`): class being validated
-            value (:obj:registry.Unit): value of attribute to validate
+            value (:obj:`pint.unit._Unit`): value of attribute to validate
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of
@@ -186,7 +168,7 @@ class UnitAttribute(core.LiteralAttribute):
         """ Serialize string
 
         Args:
-            value (:obj:registry.Unit): Python representation
+            value (:obj:`pint.unit._Unit`): Python representation
 
         Returns:
             :obj:`str`: simple Python representation
@@ -201,7 +183,7 @@ class UnitAttribute(core.LiteralAttribute):
         that is compatible with JSON and YAML
 
         Args:
-            value (:obj:registry.Unit): value of the attribute
+            value (:obj:`pint.unit._Unit`): value of the attribute
 
         Returns:
             :obj:`str`: simple Python representation of a value of the attribute
@@ -219,7 +201,7 @@ class UnitAttribute(core.LiteralAttribute):
             json (:obj:`str`): simple Python representation of a value of the attribute
 
         Returns:
-            :obj:registry.Unit: decoded value of the attribute
+            :obj:`pint.unit._Unit`: decoded value of the attribute
         """
         if json:
             return self.registry.parse_units(json)
