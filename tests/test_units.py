@@ -50,13 +50,16 @@ class UnitAttributeTestCase(unittest.TestCase):
         attr = units.UnitAttribute(unit_registry)
 
         self.assertTrue(attr.value_equal(registry1.parse_units('g'), registry1.parse_units('g')))
-        self.assertTrue(attr.value_equal(registry1.parse_units('g'), registry2.parse_units('g')))
+        self.assertFalse(attr.value_equal(registry1.parse_units('g'), registry2.parse_units('g')))
         self.assertTrue(attr.value_equal(registry1.parse_units('g'), registry1.parse_units('g / l * l')))
-        self.assertTrue(attr.value_equal(registry1.parse_units('g'), registry2.parse_units('g / l * l')))
+        self.assertFalse(attr.value_equal(registry1.parse_units('g'), registry2.parse_units('g / l * l')))
         self.assertTrue(attr.value_equal(registry1.parse_units('M'), registry1.parse_units('mol / l')))
         self.assertTrue(attr.value_equal(None, None))
         self.assertFalse(attr.value_equal(None, registry1.parse_units('mol / l')))
+        self.assertFalse(attr.value_equal('g', registry1.parse_units('mol / l')))
         self.assertFalse(attr.value_equal(registry1.parse_units('mol / l'), None))
+        self.assertFalse(attr.value_equal(registry1.parse_units('g'), registry1.parse_units('l')))
+        self.assertFalse(attr.value_equal(registry1.parse_units('ag'), registry1.parse_units('g')))
 
     def test_clean(self):
         registry = pint.UnitRegistry()

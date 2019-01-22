@@ -26,7 +26,6 @@ class UnitAttribute(core.LiteralAttribute):
         Args:
             registry (:obj:`pint.UnitRegistry`): unit registry
             choices (:obj:`tuple` of :obj:registry.Unit, optional): allowed units
-            _choices (:obj:`tuple` of :obj:registry.Unit, optional): base of allowed units
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`str`, optional): default value
             default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
@@ -49,15 +48,10 @@ class UnitAttribute(core.LiteralAttribute):
         if default_cleaned_value is not None and not isinstance(default_cleaned_value, registry.Unit):
             raise ValueError('`default_cleaned_value` must be an instance of `registry.Unit`')
 
-        if choices is None:
-            _choices = None
-        else:
-            _choices = []
+        if choices is not None:
             for choice in choices:
                 if not isinstance(choice, registry.Unit):
                     raise ValueError('choices must be instances of `registry.Unit`')
-                _choices.append(registry.parse_expression(str(choice)).to_base_units().units)
-            _choices = tuple(_choices)
 
         super(UnitAttribute, self).__init__(default=default,
                                             default_cleaned_value=default_cleaned_value,
@@ -66,7 +60,6 @@ class UnitAttribute(core.LiteralAttribute):
 
         self.registry = registry
         self.choices = choices
-        self._choices = _choices
         self.none = none
 
     def get_default(self):
@@ -103,9 +96,18 @@ class UnitAttribute(core.LiteralAttribute):
             if val2 is None:
                 return False
             else:
-                return (isinstance(val1, self.registry.Unit) and isinstance(val2, self.registry.Unit) and val1 == val2) or \
-                    self.registry.parse_expression(str(val1)).to_base_units().units == \
-                    self.registry.parse_expression(str(val2)).to_base_units().units
+                if not isinstance(val1, self.registry.Unit):
+                    return False
+                if not isinstance(val2, self.registry.Unit):
+                    return False
+                if val1 == val2:
+                    return True
+                val1_expr = self.registry.parse_expression(str(val1))
+                try:
+                    val2_expr = val1_expr.to(val2)
+                except pint.DimensionalityError:
+                    return False
+                return val2_expr.magnitude == 1 # remove to allow conversions to other magnitudes
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -163,9 +165,18 @@ class UnitAttribute(core.LiteralAttribute):
             error = 'Value must be an instance of `registry.Unit`'
 
         else:
-            value = self.registry.parse_expression(str(value)).to_base_units().units
-            if self.choices and value not in self._choices:
-                error = 'Value must be in `choices`'
+            value = self.registry.parse_expression(str(value))
+            if self.choices:
+                valid = False
+                for choice in self.choices:
+                    try:
+                        value.to(choice)
+                        valid = True
+                        break
+                    except pint.DimensionalityError:
+                        pass
+                if not valid:
+                    error = 'Value must be in `choices`'
 
         if error:
             return core.InvalidAttribute(self, [error])
