@@ -96,7 +96,7 @@ class Child(core.Model):
 
 class UniqueRoot(Root):
     label = core.SlugAttribute(verbose_name='Label')
-    url = core.UrlAttribute()
+    url = core.UrlAttribute(verbose_name='URL')
     int_attr = core.IntegerAttribute()
     pos_int_attr = core.PositiveIntegerAttribute()
 

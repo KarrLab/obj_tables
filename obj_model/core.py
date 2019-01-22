@@ -3861,7 +3861,7 @@ class SlugAttribute(RegexAttribute):
 class UrlAttribute(RegexAttribute):
     """ URL attribute to be used for URLs """
 
-    def __init__(self, verbose_name='URL', help='Enter a valid URL', primary=False, unique=False):
+    def __init__(self, verbose_name='', help='Enter a valid URL', primary=False, unique=False):
         """
         Args:
             verbose_name (:obj:`str`, optional): verbose name
