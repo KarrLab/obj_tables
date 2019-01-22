@@ -3895,7 +3895,7 @@ class EmailAttribute(StringAttribute):
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
-        """        
+        """
         super(EmailAttribute, self).__init__(verbose_name=verbose_name, help=help,
                                              primary=primary, unique=unique)
 
@@ -3914,7 +3914,7 @@ class EmailAttribute(StringAttribute):
             errors = error.messages
         else:
             errors = []
-        
+
         if not validate_email.validate_email(value):
             errors.append('Value must be a valid email address')
 
