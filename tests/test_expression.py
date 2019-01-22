@@ -974,6 +974,28 @@ class ParsedExpressionTestCase(unittest.TestCase):
         with self.assertRaisesRegex(ParsedExpressionError, 'Exception'):
             func.expression._parsed_expression.eval({})
 
+        func = Function(id='func', units=unit_registry.parse_units('g l^-1'))
+        func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
+            Parameter: {
+                'p_1': Parameter(id='p_1', value=2., units=None),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
+            }
+        })
+        assert error is None, str(error)
+        with self.assertRaisesRegex(ParsedExpressionError, 'Units must be defined'):
+            func.expression._parsed_expression.eval({}, with_units=True)
+
+        func = Function(id='func', units=unit_registry.parse_units('g l^-1'))
+        func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
+            Parameter: {
+                'p_1': Parameter(id='p_1', value=2., units='g'),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
+            }
+        })
+        assert error is None, str(error)
+        with self.assertRaisesRegex(ParsedExpressionError, 'Unsupported units'):
+            func.expression._parsed_expression.eval({}, with_units=True)
+
 
 class ParsedExpressionErrorTestCase(unittest.TestCase):
     def test___init__(self):

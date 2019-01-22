@@ -1045,6 +1045,8 @@ class ParsedExpression(object):
                     units = getattr(model, model.Meta.expression_term_units)
                     if units is None:
                         raise ParsedExpressionError('Units must be defined')
+                    if not isinstance(units, self.unit_registry.Unit):
+                        raise ParsedExpressionError('Unsupported units "{}"'.format(units))
                     namespace[model_type.__name__][id] *= self.unit_registry.parse_expression(str(units))
 
         # prepare error message
