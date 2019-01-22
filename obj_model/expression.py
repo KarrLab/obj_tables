@@ -7,13 +7,13 @@
 :License: MIT
 """
 import collections
+import math
 import pint
 import token
 import tokenize
 import types
 from enum import Enum
 from io import BytesIO
-from math import ceil, floor, exp, pow, log, log10
 from obj_model.core import (Model, RelatedAttribute, OneToOneAttribute, ManyToOneAttribute,
                             InvalidObject, InvalidAttribute)
 from wc_utils.util.misc import DFSMAcceptor
@@ -180,7 +180,39 @@ class Expression(object):
             expression_type (:obj:`type`): type of the expression
         """
         expression_term_models = ()
-        expression_valid_functions = (float, ceil, floor, exp, pow, log, log10, min, max)
+        expression_valid_functions = (
+            float,
+
+            math.fabs,
+            math.ceil,
+            math.floor,
+            round,
+
+            math.exp,
+            math.expm1,
+            math.pow,
+            math.sqrt,
+            math.log,
+            math.log1p,
+            math.log10,
+            math.log2,
+
+            math.factorial,
+
+            math.sin,
+            math.cos,
+            math.tan,
+            math.acos,
+            math.asin,
+            math.atan,
+            math.atan2,
+            math.hypot,
+
+            math.degrees,
+            math.radians,
+
+            min,
+            max)
         expression_is_linear = False
         expression_type = None
         expression_unit_registry = None
