@@ -409,6 +409,13 @@ class TestSchemaModule(MigrationFixtures):
         module = sm.import_module_for_migration()
         self.assertEquals(set(SchemaModule._get_model_defs(module)), {'Test', 'Reference', 'Foo'})
 
+        # put package in dir that's not on sys.path
+        test_package_copy = self.temp_pathname('copied_package')
+        shutil.copytree(self.test_package, test_package_copy)
+        sm = SchemaModule(os.path.join(test_package_copy, 'test_module.py'))
+        module = sm.import_module_for_migration()
+        self.assertIn(sm.module_path, SchemaModule.MODULES)
+
         # import a module with a syntax bug
         bad_module = os.path.join(self.tmp_dir, 'bad_module.py')
         f = open(bad_module, "w")
