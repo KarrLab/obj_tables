@@ -914,9 +914,10 @@ class TestMisc(unittest.TestCase):
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = WorkbookWriter()
 
-        with pytest.warns(IoWarning):
+        with self.assertRaisesRegex(ValueError, 'cannot be unambiguously mapped to models'):
             writer.run(filename, [node1, node2], [Node4, Node5])
 
+        writer.run(filename, [node1], [Node4])
         with self.assertRaisesRegex(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):
             WorkbookReader().run(filename, [Node4, Node5])
 

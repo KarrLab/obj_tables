@@ -218,7 +218,7 @@ class WorkbookWriter(WriterBase):
             msg = 'The following sheets cannot be unambiguously mapped to models:'
             for sheet_name, models in ambiguous_sheet_names.items():
                 msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
-            warn(msg, IoWarning)
+            raise ValueError(msg)
 
         # check that models are serializble
         for cls in grouped_objects.keys():
@@ -359,7 +359,9 @@ class WorkbookWriter(WriterBase):
             head_row_font_bold=True,
             head_row_fill_pattern='solid',
             head_row_fill_fgcolor='CCCCCC',
-            row_height=15,
+            extra_rows=10,
+            extra_columns=0,
+            row_height=15.01,
         )
 
         if model.Meta.tabular_orientation == TabularOrientation.row:
