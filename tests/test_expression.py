@@ -5,8 +5,7 @@
 :Copyright: 2016-2018, Karr Lab
 :License: MIT
 '''
-from enum import Enum
-from obj_model.core import (Model, SlugAttribute, FloatAttribute, StringAttribute, EnumAttribute,
+from obj_model.core import (Model, SlugAttribute, FloatAttribute, StringAttribute,
                             ManyToOneAttribute, ManyToManyAttribute,
                             InvalidObject, InvalidAttribute)
 from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
@@ -16,6 +15,7 @@ from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToO
                                   Expression, ParsedExpression,
                                   ParsedExpressionValidator, LinearParsedExpressionValidator,
                                   ParsedExpressionError)
+from obj_model.units import UnitAttribute
 from wc_utils.util.units import unit_registry
 import mock
 import re
@@ -31,7 +31,7 @@ class Parameter(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='parameters')
     value = FloatAttribute()
-    units = StringAttribute()
+    units = UnitAttribute(unit_registry)
 
     class Meta(Model.Meta, ExpressionStaticTermMeta):
         expression_term_value = 'value'
@@ -41,7 +41,7 @@ class Parameter(Model):
 class Species(Model):
     id = StringAttribute(primary=True, unique=True)
     model = ManyToOneAttribute(BaseModel, related_name='species')
-    units = StringAttribute()
+    units = UnitAttribute(unit_registry)
 
     class Meta(Model.Meta, ExpressionDynamicTermMeta):
         expression_term_token_pattern = (token.NAME, token.LSQB, token.NAME, token.RSQB)
@@ -55,6 +55,7 @@ class SubFunctionExpression(Model, Expression):
 
     class Meta(Model.Meta, Expression.Meta):
         expression_term_models = ('SubFunction', 'Parameter',)
+        expression_unit_registry = unit_registry
 
     def serialize(self): return Expression.serialize(self)
 
@@ -68,7 +69,7 @@ class SubFunction(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='sub_functions')
     expression = ExpressionOneToOneAttribute(SubFunctionExpression, related_name='parent_sub_function')
-    units = StringAttribute()
+    units = UnitAttribute(unit_registry)
 
     class Meta(Model.Meta, ExpressionExpressionTermMeta):
         expression_term_model = SubFunctionExpression
@@ -80,6 +81,7 @@ class BooleanSubFunctionExpression(Model, Expression):
 
     class Meta(Model.Meta, Expression.Meta):
         expression_term_models = ('Parameter',)
+        expression_unit_registry = unit_registry
 
     def serialize(self): return Expression.serialize(self)
 
@@ -89,15 +91,12 @@ class BooleanSubFunctionExpression(Model, Expression):
     def validate(self): return Expression.validate(self, self.boolean_sub_function)
 
 
-class BooleanUnit(int, Enum):
-    dimensionless = 1
-
-
 class BooleanSubFunction(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='boolean_sub_functions')
     expression = ExpressionOneToOneAttribute(BooleanSubFunctionExpression, related_name='boolean_sub_function')
-    units = EnumAttribute(BooleanUnit, default=BooleanUnit.dimensionless)
+    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('dimensionless'),),
+                          default=unit_registry.parse_units('dimensionless'))
 
     class Meta(Model.Meta, ExpressionExpressionTermMeta):
         expression_term_model = BooleanSubFunctionExpression
@@ -110,6 +109,7 @@ class LinearSubFunctionExpression(Model, Expression):
     class Meta(Model.Meta, Expression.Meta):
         expression_term_models = ('Parameter',)
         expression_is_linear = True
+        expression_unit_registry = unit_registry
 
     def serialize(self): return Expression.serialize(self)
 
@@ -123,7 +123,7 @@ class LinearSubFunction(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='linear_sub_functions')
     expression = ExpressionManyToOneAttribute(LinearSubFunctionExpression, related_name='linear_sub_function')
-    units = StringAttribute()
+    units = UnitAttribute(unit_registry)
 
     class Meta(Model.Meta, ExpressionExpressionTermMeta):
         expression_term_model = LinearSubFunctionExpression
@@ -139,6 +139,7 @@ class FunctionExpression(Model, Expression):
     class Meta(Model.Meta, Expression.Meta):
         expression_term_models = ('SubFunction', 'LinearSubFunction', 'Parameter', 'Species')
         expression_type = float
+        expression_unit_registry = unit_registry
 
     def serialize(self): return Expression.serialize(self)
 
@@ -152,7 +153,7 @@ class Function(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='functions')
     expression = ExpressionOneToOneAttribute(FunctionExpression, related_name='function')
-    units = StringAttribute()
+    units = UnitAttribute(unit_registry)
 
     class Meta(Model.Meta, ExpressionExpressionTermMeta):
         expression_term_model = FunctionExpression
@@ -161,8 +162,8 @@ class Function(Model):
 class ExpressionAttributesTestCase(unittest.TestCase):
     def test_one_to_one_serialize(self):
         expr = 'p_1 + p_2'
-        p_1 = Parameter(id='p_1', value=2., units='dimensionless')
-        p_2 = Parameter(id='p_2', value=3., units='dimensionless')
+        p_1 = Parameter(id='p_1', value=2., units=unit_registry.parse_units('dimensionless'))
+        p_2 = Parameter(id='p_2', value=3., units=unit_registry.parse_units('dimensionless'))
         expression, error = FunctionExpression.deserialize(expr, {
             Parameter: {p_1.id: p_1, p_2.id: p_2},
         })
@@ -173,8 +174,8 @@ class ExpressionAttributesTestCase(unittest.TestCase):
 
     def test_one_to_one_deserialize(self):
         expr = 'p_1 + p_2'
-        p_1 = Parameter(id='p_1', value=2., units='dimensionless')
-        p_2 = Parameter(id='p_2', value=3., units='dimensionless')
+        p_1 = Parameter(id='p_1', value=2., units=unit_registry.parse_units('dimensionless'))
+        p_2 = Parameter(id='p_2', value=3., units=unit_registry.parse_units('dimensionless'))
 
         expression, error = Function.expression.deserialize(expr, {
             Parameter: {p_1.id: p_1, p_2.id: p_2},
@@ -186,8 +187,8 @@ class ExpressionAttributesTestCase(unittest.TestCase):
 
     def test_many_to_one_serialize(self):
         expr = 'p_1 + p_2'
-        p_1 = Parameter(id='p_1', value=2., units='dimensionless')
-        p_2 = Parameter(id='p_2', value=3., units='dimensionless')
+        p_1 = Parameter(id='p_1', value=2., units=unit_registry.parse_units('dimensionless'))
+        p_2 = Parameter(id='p_2', value=3., units=unit_registry.parse_units('dimensionless'))
         expression, error = LinearSubFunctionExpression.deserialize(expr, {
             Parameter: {p_1.id: p_1, p_2.id: p_2},
         })
@@ -198,8 +199,8 @@ class ExpressionAttributesTestCase(unittest.TestCase):
 
     def test_many_to_one_deserialize(self):
         expr = 'p_1 + p_2'
-        p_1 = Parameter(id='p_1', value=2., units='dimensionless')
-        p_2 = Parameter(id='p_2', value=3., units='dimensionless')
+        p_1 = Parameter(id='p_1', value=2., units=unit_registry.parse_units('dimensionless'))
+        p_2 = Parameter(id='p_2', value=3., units=unit_registry.parse_units('dimensionless'))
 
         expression, error = LinearSubFunction.expression.deserialize(expr, {
             Parameter: {p_1.id: p_1, p_2.id: p_2},
@@ -348,6 +349,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
         class TestModelExpression(Model):
             class Meta(Model.Meta):
                 expression_term_models = ('Function',)
+                expression_unit_registry = unit_registry
         with self.assertRaisesRegex(ParsedExpressionError, 'must have a relationship to'):
             ParsedExpression(TestModelExpression, 'attr', expr, {})
 
@@ -394,10 +396,10 @@ class ParsedExpressionTestCase(unittest.TestCase):
             ws_len += 1
 
         with self.assertRaisesRegex(ParsedExpressionError,
-            "parsing '.*' creates a Python syntax error: '.*'"):
+                                    "parsing '.*' creates a Python syntax error: '.*'"):
             wc_lang_expr.recreate_whitespace(expr_no_whitespace + ' x[y')
         with self.assertRaisesRegex(ParsedExpressionError,
-            "can't recreate whitespace in '.*', as it has .* instead of .* tokens expected"):
+                                    "can't recreate whitespace in '.*', as it has .* instead of .* tokens expected"):
             wc_lang_expr.recreate_whitespace(expr_no_whitespace + ' +1')
 
     def test_parsed_expression_ambiguous(self):
@@ -560,6 +562,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
 
             class Meta(Model.Meta):
                 expression_term_models = ('Function',)
+                expression_unit_registry = unit_registry
         self.do_fun_call_error_test('foo(3)', ["contains the func name ",
                                                "but {}.Meta doesn't define 'expression_valid_functions'".format(
                                                    TestModelExpression.__name__)],
@@ -899,43 +902,40 @@ class ParsedExpressionTestCase(unittest.TestCase):
             parsed_expr.test_eval()
 
     def test_eval_with_units(self):
-        func = Function(id='func', units='g l^-1')
+        func = Function(id='func', units=unit_registry.parse_units('g l^-1'))
         func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
             Parameter: {
-                'p_1': Parameter(id='p_1', value=2., units='g'),
-                'p_2': Parameter(id='p_2', value=5., units='l'),
+                'p_1': Parameter(id='p_1', value=2., units=unit_registry.parse_units('g')),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
             }
         })
         assert error is None, str(error)
 
         rv = func.expression._parsed_expression.eval({}, with_units=True)
         self.assertEqual(rv.magnitude, 0.4)
-        self.assertEqual(rv.to_base_units().units, unit_registry.parse_expression('g l^-1').to_base_units().units)
+        self.assertEqual(rv.units, unit_registry.parse_units('g l^-1'))
 
-        class Units(Enum):
-            g = 1
-            l = 2
-        func.expression.parameters.get_one(id='p_1').units = Units.g
-        func.expression.parameters.get_one(id='p_2').units = Units.l
+        func.expression.parameters.get_one(id='p_1').units = unit_registry.parse_units('g')
+        func.expression.parameters.get_one(id='p_2').units = unit_registry.parse_units('l')
         rv = func.expression._parsed_expression.eval({}, with_units=True)
         self.assertEqual(rv.magnitude, 0.4)
-        self.assertEqual(rv.to_base_units().units, unit_registry.parse_expression('g l^-1').to_base_units().units)
+        self.assertEqual(rv.units, unit_registry.parse_units('g l^-1'))
 
     def test_eval_with_units_and_boolean(self):
-        func_1 = SubFunction(id='func_1', units='dimensionless')
+        func_1 = SubFunction(id='func_1', units=unit_registry.parse_units('dimensionless'))
         func_1.expression, error = SubFunctionExpression.deserialize('p_1 < p_2', {
             Parameter: {
-                'p_1': Parameter(id='p_1', value=2., units='g'),
-                'p_2': Parameter(id='p_2', value=5., units='l'),
+                'p_1': Parameter(id='p_1', value=2., units=unit_registry.parse_units('g')),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
             }
         })
         assert error is None, str(error)
 
-        func_2 = Function(id='func_2', units='g l^-1')
+        func_2 = Function(id='func_2', units=unit_registry.parse_units('g l^-1'))
         func_2.expression, error = FunctionExpression.deserialize('(p_3 / p_4) * func_1', {
             Parameter: {
-                'p_3': Parameter(id='p_3', value=2., units='g'),
-                'p_4': Parameter(id='p_4', value=5., units='l'),
+                'p_3': Parameter(id='p_3', value=2., units=unit_registry.parse_units('g')),
+                'p_4': Parameter(id='p_4', value=5., units=unit_registry.parse_units('l')),
             },
             SubFunction: {
                 func_1.id: func_1,
@@ -945,19 +945,19 @@ class ParsedExpressionTestCase(unittest.TestCase):
 
         rv = func_2.expression._parsed_expression.eval({}, with_units=True)
         self.assertEqual(rv.magnitude, 0.4)
-        self.assertEqual(rv.to_base_units().units, unit_registry.parse_expression('g l^-1').to_base_units().units)
+        self.assertEqual(rv.units, unit_registry.parse_units('g l^-1'))
 
         func_1.expression.parameters.get_one(id='p_1').value = 10.
         rv = func_2.expression._parsed_expression.eval({}, with_units=True)
         self.assertEqual(rv.magnitude, 0.)
-        self.assertEqual(rv.to_base_units().units, unit_registry.parse_expression('g l^-1').to_base_units().units)
+        self.assertEqual(rv.units, unit_registry.parse_units('g l^-1'))
 
     def test_eval_error(self):
-        func = Function(id='func', units='g l^-1')
+        func = Function(id='func', units=unit_registry.parse_units('g l^-1'))
         func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
             Parameter: {
-                'p_1': Parameter(id='p_1', value=2., units='g'),
-                'p_2': Parameter(id='p_2', value=5., units='l'),
+                'p_1': Parameter(id='p_1', value=2., units=unit_registry.parse_units('g')),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
             }
         })
         assert error is None, str(error)
@@ -973,6 +973,28 @@ class ParsedExpressionTestCase(unittest.TestCase):
         func.expression._parsed_expression._compiled_expression = '1 / 0'
         with self.assertRaisesRegex(ParsedExpressionError, 'Exception'):
             func.expression._parsed_expression.eval({})
+
+        func = Function(id='func', units=unit_registry.parse_units('g l^-1'))
+        func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
+            Parameter: {
+                'p_1': Parameter(id='p_1', value=2., units=None),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
+            }
+        })
+        assert error is None, str(error)
+        with self.assertRaisesRegex(ParsedExpressionError, 'Units must be defined'):
+            func.expression._parsed_expression.eval({}, with_units=True)
+
+        func = Function(id='func', units=unit_registry.parse_units('g l^-1'))
+        func.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
+            Parameter: {
+                'p_1': Parameter(id='p_1', value=2., units='g'),
+                'p_2': Parameter(id='p_2', value=5., units=unit_registry.parse_units('l')),
+            }
+        })
+        assert error is None, str(error)
+        with self.assertRaisesRegex(ParsedExpressionError, 'Unsupported units'):
+            func.expression._parsed_expression.eval({}, with_units=True)
 
 
 class ParsedExpressionErrorTestCase(unittest.TestCase):
@@ -1051,8 +1073,8 @@ class ParsedExpressionValidatorTestCase(unittest.TestCase):
 
 class CopyTestCase(unittest.TestCase):
     def test(self):
-        p_1 = Parameter(id='p_1', value=1.5, units='g')
-        p_2 = Parameter(id='p_2', value=2.5, units='l')
+        p_1 = Parameter(id='p_1', value=1.5, units=unit_registry.parse_units('g'))
+        p_2 = Parameter(id='p_2', value=2.5, units=unit_registry.parse_units('l'))
         func_1 = Function(id='func_1')
         func_1.expression, error = FunctionExpression.deserialize('p_1 / p_2', {
             Parameter: {p_1.id: p_1, p_2.id: p_2}

@@ -45,6 +45,7 @@ import queue
 import re
 import six
 import sys
+import validate_email
 import warnings
 # todo: simplify primary attributes, deserialization
 # todo: improve memory efficiency
@@ -3860,10 +3861,9 @@ class SlugAttribute(RegexAttribute):
 class UrlAttribute(RegexAttribute):
     """ URL attribute to be used for URLs """
 
-    def __init__(self, min_length=0, verbose_name='URL', help='Enter a valid URL', primary=False, unique=False):
+    def __init__(self, verbose_name='', help='Enter a valid URL', primary=False, unique=False):
         """
         Args:
-            min_length (:obj:`int`, optional): minimum length
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3880,9 +3880,47 @@ class UrlAttribute(RegexAttribute):
 
         super(UrlAttribute, self).__init__(pattern=pattern,
                                            flags=re.I,
-                                           min_length=min_length, max_length=2**16 - 1,
+                                           min_length=0, max_length=2**16 - 1,
                                            verbose_name=verbose_name, help=help,
                                            primary=primary, unique=unique)
+
+
+class EmailAttribute(StringAttribute):
+    """ Attribute for email addresses """
+
+    def __init__(self, verbose_name='', help='Enter a valid email address', primary=False, unique=False):
+        """
+        Args:
+            verbose_name (:obj:`str`, optional): verbose name
+            help (:obj:`str`, optional): help string
+            primary (:obj:`bool`, optional): indicate if attribute is primary attribute
+            unique (:obj:`bool`, optional): indicate if attribute value must be unique
+        """
+        super(EmailAttribute, self).__init__(verbose_name=verbose_name, help=help,
+                                             primary=primary, unique=unique)
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`date`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        error = super(EmailAttribute, self).validate(obj, value)
+        if error:
+            errors = error.messages
+        else:
+            errors = []
+
+        if not validate_email.validate_email(value):
+            errors.append('Value must be a valid email address')
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
 
 
 class DateAttribute(LiteralAttribute):

@@ -9,7 +9,7 @@ from .core import (Model, Attribute,
                    LiteralAttribute, NumericAttribute, EnumAttribute, BooleanAttribute,
                    FloatAttribute, PositiveFloatAttribute,
                    IntegerAttribute, PositiveIntegerAttribute, StringAttribute, LongStringAttribute,
-                   RegexAttribute, SlugAttribute, UrlAttribute, DateAttribute, TimeAttribute,
+                   RegexAttribute, SlugAttribute, UrlAttribute, EmailAttribute, DateAttribute, TimeAttribute,
                    DateTimeAttribute, RelatedAttribute, OneToOneAttribute, OneToManyAttribute,
                    ManyToOneAttribute, ManyToManyAttribute,
                    InvalidObjectSet, InvalidModel, InvalidObject, InvalidAttribute, Validator,
@@ -27,3 +27,4 @@ from . import bio
 from . import chem
 from . import obj_math
 from . import ontology
+from . import units

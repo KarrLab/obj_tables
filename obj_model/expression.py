@@ -7,16 +7,16 @@
 :License: MIT
 """
 import collections
+import math
+import pint
 import token
 import tokenize
 import types
 from enum import Enum
 from io import BytesIO
-from math import ceil, floor, exp, pow, log, log10
 from obj_model.core import (Model, RelatedAttribute, OneToOneAttribute, ManyToOneAttribute,
                             InvalidObject, InvalidAttribute)
 from wc_utils.util.misc import DFSMAcceptor
-from wc_utils.util.units import unit_registry
 
 
 class ObjModelTokenCodes(int, Enum):
@@ -180,9 +180,42 @@ class Expression(object):
             expression_type (:obj:`type`): type of the expression
         """
         expression_term_models = ()
-        expression_valid_functions = (float, ceil, floor, exp, pow, log, log10, min, max)
+        expression_valid_functions = (
+            float,
+
+            math.fabs,
+            math.ceil,
+            math.floor,
+            round,
+
+            math.exp,
+            math.expm1,
+            math.pow,
+            math.sqrt,
+            math.log,
+            math.log1p,
+            math.log10,
+            math.log2,
+
+            math.factorial,
+
+            math.sin,
+            math.cos,
+            math.tan,
+            math.acos,
+            math.asin,
+            math.atan,
+            math.atan2,
+            math.hypot,
+
+            math.degrees,
+            math.radians,
+
+            min,
+            max)
         expression_is_linear = False
         expression_type = None
+        expression_unit_registry = None
 
     def serialize(self):
         """ Generate string representation
@@ -478,6 +511,7 @@ class ParsedExpression(object):
             as indicated in `model_cls.Meta.expression_term_models`, intersected with `_objs.keys()`
             might be referenced in expression; maps
         valid_functions (:obj:`set`): the union of all `valid_functions` attributes for `_objs`
+        unit_registry (:obj:`pint.UnitRegistry`): unit registry
         related_objects (:obj:`dict`): models that are referenced in `expression`; maps model type to
             dict that maps model id to model instance
         lin_coeffs (:obj:`dict`): linear coefficients of models that are referenced in `expression`;
@@ -497,15 +531,15 @@ class ParsedExpression(object):
 
     # enumerate and detect Python tokens that are legal in obj_model expressions
     LEGAL_TOKENS_NAMES = (
-        'NUMBER', # number
-        'NAME', # variable names
-        'LSQB', 'RSQB', # for compartment names
-        'DOT', # for disambiguating variable types
-        'COMMA', # for function arguments
-        'DOUBLESTAR', 'MINUS', 'PLUS', 'SLASH', 'STAR', # mathematical operators
-        'LPAR', 'RPAR', # for mathematical grouping        
-        'EQUAL', 'GREATER', 'GREATEREQUAL', 'LESS', 'LESSEQUAL', 'NOTEQUAL', # comparison operators
-        )
+        'NUMBER',  # number
+        'NAME',  # variable names
+        'LSQB', 'RSQB',  # for compartment names
+        'DOT',  # for disambiguating variable types
+        'COMMA',  # for function arguments
+        'DOUBLESTAR', 'MINUS', 'PLUS', 'SLASH', 'STAR',  # mathematical operators
+        'LPAR', 'RPAR',  # for mathematical grouping
+        'EQUAL', 'GREATER', 'GREATEREQUAL', 'LESS', 'LESSEQUAL', 'NOTEQUAL',  # comparison operators
+    )
     LEGAL_TOKENS = set()
     for legal_token_name in LEGAL_TOKENS_NAMES:
         legal_token = getattr(token, legal_token_name)
@@ -548,6 +582,8 @@ class ParsedExpression(object):
         self.valid_functions = set()
         if hasattr(model_cls.Meta, 'expression_valid_functions'):
             self.valid_functions.update(model_cls.Meta.expression_valid_functions)
+
+        self.unit_registry = model_cls.Meta.expression_unit_registry
 
         self._objs = objs
         self.model_cls = model_cls
@@ -1039,9 +1075,11 @@ class ParsedExpression(object):
                     if isinstance(namespace[model_type.__name__][id], bool):
                         namespace[model_type.__name__][id] = float(namespace[model_type.__name__][id])
                     units = getattr(model, model.Meta.expression_term_units)
-                    if isinstance(units, Enum):
-                        units = units.name
-                    namespace[model_type.__name__][id] *= unit_registry.parse_expression(units)
+                    if units is None:
+                        raise ParsedExpressionError('Units must be defined')
+                    if not isinstance(units, self.unit_registry.Unit):
+                        raise ParsedExpressionError('Unsupported units "{}"'.format(units))
+                    namespace[model_type.__name__][id] *= self.unit_registry.parse_expression(str(units))
 
         # prepare error message
         error_suffix = " cannot eval expression '{}' in {}; ".format(self.expression,
@@ -1094,7 +1132,7 @@ class ParsedExpression(object):
 
         compiled_namespace = {func.__name__: func for func in self.valid_functions}
         if with_units:
-            compiled_namespace['__dimensionless__'] = unit_registry['dimensionless']
+            compiled_namespace['__dimensionless__'] = self.unit_registry['dimensionless']
 
         return compiled_expression, compiled_namespace
 
