@@ -5,6 +5,7 @@ with open(pkg_resources.resource_filename('tests.fixtures.migrate.wc_lang', 'VER
 # :obj:`str`: version
 
 # API
+'''
 from .core import (TimeUnit, TaxonRank,
                    CompartmentBiologicalType, CompartmentPhysicalType, CompartmentGeometry,
                    MassUnit, VolumeUnit, DensityUnit,
@@ -22,6 +23,7 @@ from .core import (TimeUnit, TaxonRank,
                    StopCondition, StopConditionExpression, StopConditionUnit,
                    Evidence, DatabaseReference, Reference,
                    Validator)
+'''
 # these modules and packages not needed
 # from . import config
 # from . import io

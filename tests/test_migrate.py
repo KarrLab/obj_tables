@@ -12,18 +12,17 @@ import sys
 import re
 import unittest
 import getpass
+import inspect
 from tempfile import mkdtemp
 import shutil
 import numpy
 import copy
 import warnings
 from argparse import Namespace
-import cProfile
-import pstats
 import yaml
 from pprint import pprint, pformat
 
-from obj_model.migrate import (MigratorError, MigrateWarning, Migrator, MigrationController,
+from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
     RunMigration, MigrationDesc)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
@@ -54,8 +53,8 @@ class MigrationFixtures(unittest.TestCase):
         # create tmp dir in 'fixtures/migrate/tmp' so it can be accessed from Docker container's host
         # copy test models to tmp dir
         self.tmp_model_dir = mkdtemp(dir=os.path.join(self.fixtures_path, 'tmp'))
-        self.example_existing_model_copy = self.copy_fixtures_file_to_tmp('example_existing_model.xlsx')
-        self.example_existing_rt_model_copy = self.copy_fixtures_file_to_tmp('example_existing_model_rt.xlsx')
+        self.example_existing_model_copy = self.copy_file_to_tmp('example_existing_model.xlsx')
+        self.example_existing_rt_model_copy = self.copy_file_to_tmp('example_existing_model_rt.xlsx')
         self.example_migrated_model = os.path.join(self.tmp_model_dir, 'example_migrated_model.xlsx')
 
         dst = os.path.join(self.tmp_model_dir, 'tsv_example')
@@ -201,9 +200,9 @@ class MigrationFixtures(unittest.TestCase):
         self.wc_lang_fixtures_path = os.path.join(self.fixtures_path, 'wc_lang')
         self.wc_lang_schema_existing = os.path.join(self.wc_lang_fixtures_path, 'core.py')
         self.wc_lang_schema_modified = os.path.join(self.wc_lang_fixtures_path, 'core_modified.py')
-        self.wc_lang_model_copy = self.copy_fixtures_file_to_tmp('example-wc_lang-model.xlsx')
-        self.wc_lang_small_model_copy = self.copy_fixtures_file_to_tmp('2_species_1_reaction.xlsx')
-        self.wc_lang_no_model_attrs = self.copy_fixtures_file_to_tmp('wc_lang_model_w_no_model_attrs.xlsx')
+        self.wc_lang_model_copy = self.copy_file_to_tmp('example-wc_lang-model.xlsx')
+        self.wc_lang_small_model_copy = self.copy_file_to_tmp('2_species_1_reaction.xlsx')
+        self.wc_lang_no_model_attrs = self.copy_file_to_tmp('wc_lang_model_w_no_model_attrs.xlsx')
 
         # set up expressions testing fixtures
         self.wc_lang_no_change_migrator = Migrator(self.wc_lang_schema_existing,
@@ -230,7 +229,6 @@ class MigrationFixtures(unittest.TestCase):
         Observable = migrator.existing_defs['Observable']
         ParameterClass = migrator.existing_defs[existing_param_class]
         objects = {model: {} for model in [ParameterClass, Function, Observable]}
-        # todo: test without Observable in objects; what traps the ParsedExpressionError?
         model = Model(id='test_model', version='0.0.0')
         param = model.parameters.create(id='param_1')
         objects[ParameterClass]['param_1'] = param
@@ -258,10 +256,18 @@ class MigrationFixtures(unittest.TestCase):
         # create a pathname for a file called name in new temp dir; will be discarded by tearDown()
         return os.path.join(mkdtemp(dir=testcase.tmp_model_dir), name)
 
-    def copy_fixtures_file_to_tmp(self, name):
-        # copy file 'name' to the tmp dir and return its pathname
-        shutil.copy(os.path.join(self.fixtures_path, name), self.tmp_model_dir)
-        return os.path.join(self.tmp_model_dir, name)
+    def copy_file_to_tmp(self, name):
+        # copy file 'name' to a new dir in the tmp dir and return its pathname
+        # 'name' may either be an absolute pathname, or the name of a file in fixtures
+        basename = name
+        if os.path.isabs(name):
+            basename = os.path.basename(name)
+        tmp_filename = os.path.join(mkdtemp(dir=self.tmp_model_dir), basename)
+        if os.path.isabs(name):
+            shutil.copy(name, tmp_filename)
+        else:
+            shutil.copy(os.path.join(self.fixtures_path, name), tmp_filename)
+        return tmp_filename
 
     def assert_differing_workbooks(self, existing_model_file, migrated_model_file):
         self.assert_equal_workbooks(existing_model_file, migrated_model_file, equal=False)
@@ -281,29 +287,33 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-class TestMigrator(MigrationFixtures):
+class TestSchemaModule(MigrationFixtures):
 
     def setUp(self):
         super().setUp()
+        self.test_package = os.path.join(self.fixtures_path, 'test_package')
+        self.test_module = os.path.join(self.test_package, 'test_module.py')
 
     def tearDown(self):
         super().tearDown()
 
-    def test_valid_python_path(self):
-        with self.assertRaisesRegex(MigratorError, "must be Python filename ending in '.py'"):
-            Migrator._valid_python_path(os.path.join('test', 'foo', 'x.csv'))
-        with self.assertRaisesRegex(MigratorError, "must be Python filename ending in '.py'"):
-            Migrator._valid_python_path(os.path.join('foo', '.py'))
-        with self.assertRaisesRegex(MigratorError, "module name '.*' in '.*' cannot contain a '.'"):
-            Migrator._valid_python_path(os.path.join('foo', 'module.with.periods.py'))
+    @staticmethod
+    def silent_remove(filename):
+        # Best effort delete; see: https://stackoverflow.com/a/10840586/509882
+        try:
+            os.remove(filename)
+        except OSError as e:
+            # errno.ENOENT = no such file or directory
+            if e.errno != errno.ENOENT:
+                # re-raise exception if a different error occurred
+                raise
 
-    def test_load_model_defs_file(self):
-        module = self.migrator._load_model_defs_file(self.existing_defs_path)
-        self.assertEqual(module.__dict__['__name__'], 'small_existing')
-        self.assertEqual(module.__dict__['__file__'], self.existing_defs_path)
+    def get_module_name(self, pathname):
+        return os.path.basename(pathname).split('.')[0]
 
     def test_normalize_model_defs_file(self):
-        _normalize_filename = Migrator._normalize_filename
+        _normalize_filename = SchemaModule._normalize_filename
+
         self.assertEqual(_normalize_filename('~'), _normalize_filename('~' + getpass.getuser()))
         self.assertEqual(_normalize_filename('~'), _normalize_filename('$HOME'))
         cur_dir = os.path.dirname(__file__)
@@ -312,6 +322,148 @@ class TestMigrator(MigrationFixtures):
         test_filename = os.path.join(cur_dir, 'test_filename')
         self.assertEqual(test_filename, _normalize_filename('test_filename', dir=os.path.dirname(test_filename)))
         self.assertEqual(os.path.join(os.getcwd(), 'test_filename'), _normalize_filename('test_filename'))
+
+    def test_parse_module_path(self):
+        parse_module_path = SchemaModule.parse_module_path
+
+        # exceptions
+        not_a_python_file = os.path.join(self.tmp_dir, 'not_a_python_file.x')
+        with self.assertRaisesRegex(MigratorError, "'.+' is not a Python source file name"):
+            parse_module_path(not_a_python_file)
+        no_such_file = os.path.join(self.tmp_dir, 'no_such_file.py')
+        with self.assertRaisesRegex(MigratorError, "'.+' is not a file"):
+            parse_module_path(no_such_file)
+        not_a_file = mkdtemp(suffix='.py', dir=self.tmp_dir)
+        with self.assertRaisesRegex(MigratorError, "'.+' is not a file"):
+            parse_module_path(not_a_file)
+
+        # module that's not in a package
+        expected_dir = None
+        expected_package = None
+        expected_module = self.get_module_name(self.existing_defs_path)
+        self.assertEqual(parse_module_path(self.existing_defs_path),
+            (expected_dir, expected_package, expected_module))
+
+        # module in package
+        expected_dir = self.fixtures_path
+        expected_package = 'test_package'
+        expected_module = self.get_module_name(self.test_module)
+        self.assertEqual(parse_module_path(self.test_module),
+            (expected_dir, expected_package, expected_module))
+
+        # test at /; if files cannot be written to / these tests fail silently
+        # module in /
+        expected_module = self.get_module_name(self.existing_defs_path)
+        module_in_root = os.path.join('/', os.path.basename(self.existing_defs_path))
+        try:
+            shutil.copy(self.existing_defs_path, module_in_root)
+            expected_dir = None
+            expected_package = None
+            self.assertEqual(parse_module_path(module_in_root),
+                (expected_dir, expected_package, expected_module))
+        except:
+            pass
+        finally:
+            # remove module_in_root if it exists
+            self.silent_remove(module_in_root)
+
+        # package whose root is /
+        module_in_pkg_in_root = os.path.join('/', 'tmp', os.path.basename(self.existing_defs_path))
+        try:
+            src_dst_copy_pairs = [
+                (os.path.join(self.test_package, '__init__.py'), '/'),
+                (os.path.join(self.test_package, '__init__.py'), '/tmp/'),
+                (self.existing_defs_path, '/tmp')
+            ]
+            for src, dst in src_dst_copy_pairs:
+                shutil.copy(src, dst)
+            expected_dir = '/'
+            expected_package = 'tmp'
+            self.assertEqual(parse_module_path(module_in_pkg_in_root),
+                (expected_dir, expected_package, expected_module))
+        except:
+            pass
+        finally:
+            self.silent_remove('/__init__.py')
+
+    def test_import_module_for_migration(self):
+        # import module not in package
+        sm = SchemaModule(self.existing_defs_path)
+        module = sm.import_module_for_migration()
+        self.assertIn(sm.module_path, SchemaModule.MODULES)
+        self.assertEquals(module, SchemaModule.MODULES[sm.module_path])
+        self.assertEquals(set(SchemaModule._get_model_defs(module)),
+            {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
+
+        # importing self.existing_defs_path again returns same module from cache
+        self.assertEquals(module, sm.import_module_for_migration())
+
+        # import module in a package
+        sm = SchemaModule(self.test_module)
+        module = sm.import_module_for_migration()
+        self.assertEquals(set(SchemaModule._get_model_defs(module)), {'Test', 'Reference', 'Foo'})
+
+        # put the package's dir on sys.path, and import it again
+        SchemaModule.MODULES = {}
+        sys.path.append(self.fixtures_path)
+        module = sm.import_module_for_migration()
+        self.assertEquals(set(SchemaModule._get_model_defs(module)), {'Test', 'Reference', 'Foo'})
+
+        # import a module with a syntax bug
+        bad_module = os.path.join(self.tmp_dir, 'bad_module.py')
+        f = open(bad_module, "w")
+        f.write('bad python')
+        f.close()
+        sm = SchemaModule(bad_module)
+        with self.assertRaisesRegex(MigratorError, "cannot be imported and exec'ed"):
+            sm.import_module_for_migration()
+
+        # import existing wc_lang
+        sm = SchemaModule(self.wc_lang_schema_existing)
+        model_defs = sm.run()
+        self.assertTrue({'Taxon', 'Model'} < set(model_defs))
+        model_defs = sm.run()
+        self.assertTrue({'Taxon', 'Model'} < set(model_defs))
+
+        # import modified wc_lang
+        model_defs = SchemaModule(self.wc_lang_schema_modified).run()
+        self.assertTrue({'Taxon', 'Model'} < set(model_defs))
+
+        # re-importing the same module with the same module name from different files causes fails
+        core_1 = self.copy_file_to_tmp(self.wc_lang_schema_existing)
+        model_defs = SchemaModule(core_1).run(module_name='name being reused')
+        self.assertTrue({'Taxon', 'Model'} < set(model_defs))
+        self.assertIn(core_1, SchemaModule.MODULES)
+        core_2 = self.copy_file_to_tmp(self.wc_lang_schema_existing)
+        with self.assertRaisesRegex(MigratorError, "cannot be imported and exec'ed"):
+            SchemaModule(core_2).run(module_name='name being reused')
+
+    def test_get_model_defs(self):
+        sm = SchemaModule(self.existing_defs_path)
+        module = sm.import_module_for_migration()
+        models = SchemaModule._get_model_defs(module)
+        self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
+        self.assertEqual(models['Test'].__name__, 'Test')
+
+    def test_str(self):
+        sm = SchemaModule(self.existing_defs_path)
+        for attr in ['module_path', 'abs_module_path', 'module_name']:
+            self.assertIn(attr, str(sm))
+        self.assertIn(self.existing_defs_path, str(sm))
+
+    def test_run(self):
+        sm = SchemaModule(self.existing_defs_path)
+        models = sm.run()
+        self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
+
+
+class TestMigrator(MigrationFixtures):
+
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
 
     def test_validate_transformations(self):
         migrator = Migrator()
@@ -403,22 +555,11 @@ class TestMigrator(MigrationFixtures):
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'id'), ('NewRelatedObj', 'id'))
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'no_attr'), (None, None))
 
-    def test_get_model_defs(self):
-        migrator = self.migrator
-        module = migrator._load_model_defs_file(self.existing_defs_path)
-        models = Migrator._get_model_defs(module)
-        self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
-        self.assertEqual(models['Test'].__name__, 'Test')
-
     def test_load_defs_from_files(self):
         migrator = Migrator(self.existing_defs_path, self.migrated_defs_path)
         migrator._load_defs_from_files()
         self.assertEqual(set(migrator.existing_defs), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
         self.assertEqual(set(migrator.migrated_defs), {'Test', 'NewModel', 'Property', 'Subtest', 'Reference'})
-        migrator_no_files = Migrator()
-        migrator_no_files._load_defs_from_files()
-        self.assertEqual(migrator_no_files.existing_defs_path, None)
-        self.assertEqual(migrator_no_files.migrated_defs_path, None)
 
     def test_get_migrated_copy_attr_name(self):
         self.assertTrue(self.migrator._get_migrated_copy_attr_name().startswith(
@@ -732,13 +873,6 @@ class TestMigrator(MigrationFixtures):
 
         self.assertEqual(len(migrated_models), len(expected_migrated_models_2))
         for migrated_model, expected_migrated_model in zip(migrated_models, expected_migrated_models_2):
-            # todo: why don't these produce symmetrical representations?
-            '''
-            print('\nmigrated_model:')
-            migrated_model.pprint(max_depth=2)
-            print('expected_migrated_model:')
-            expected_migrated_model.pprint(max_depth=2)
-            '''
             self.assertTrue(migrated_model.is_equal(expected_migrated_model))
 
     @staticmethod
@@ -918,6 +1052,10 @@ class TestMigrator(MigrationFixtures):
             "existing models must have 1 Model instance, but \\d are present"):
             same_defs_migrator.full_migrate(self.wc_lang_no_model_attrs)
 
+    def test_run(self):
+        migrated_files = self.no_change_migrator.run([self.example_existing_model_copy])
+        self.assert_equal_workbooks(self.example_existing_model_copy, migrated_files[0])
+
     def test_str(self):
         self.wc_lang_changes_migrator.prepare()
         str_value = str(self.wc_lang_changes_migrator)
@@ -964,11 +1102,11 @@ class TestMigrationDesc(MigrationFixtures):
             MigrationDesc.load(temp_bad_config_example)
 
         migration_descs = MigrationDesc.load(self.config_file)
-        self.assertIn('migration_with_renaming', migration_descs.keys())
+        self.assertIn('migration_with_renaming', migration_descs)
 
     def test_get_migrations_config(self):
         migration_descs = MigrationDesc.get_migrations_config(self.config_file)
-        self.assertIn('migration_with_renaming', migration_descs.keys())
+        self.assertIn('migration_with_renaming', migration_descs)
 
         with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
             MigrationDesc.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
@@ -1218,20 +1356,6 @@ class TestMigrationController(MigrationFixtures):
         # validate round trip
         self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
-        # todo: remove
-        '''
-        # profile:
-        out_file = self.temp_pathname('profile.out')
-        print('out_file', out_file)
-        locals = {'MigrationController':MigrationController,
-            'rt_through_changes_migration':rt_through_changes_migration}
-        cProfile.runctx('MigrationController.migrate_over_schema_sequence(rt_through_changes_migration)',
-            {}, locals, filename=out_file)
-        profile = pstats.Stats(out_file)
-        print("Profile:")
-        profile.strip_dirs().sort_stats('cumulative').print_stats(30)
-        '''
-
 
 class TestRunMigration(MigrationFixtures):
 
@@ -1244,21 +1368,28 @@ class TestRunMigration(MigrationFixtures):
         self.assertEqual(args.migrations_config_file, self.config_file)
 
     def test_main(self):
-        args = Namespace(migrations_config_file=self.config_file, warnings=False)
-        with capturer.CaptureOutput(relay=False) as capture_output:
-            results = RunMigration.main(args)
-            for migration_disc, migrated_filenames in results:
-                self.assertIn(migration_disc.name, capture_output.get_text())
-                for migrated_file in migrated_filenames:
-                    self.assertIn(migrated_file, capture_output.get_text())
+        for warnings in [True, False]:
+            args = Namespace(migrations_config_file=self.config_file, warnings=warnings)
+            results = []
+            try:
+                with capturer.CaptureOutput(relay=False) as capture_output:
+                    results = RunMigration.main(args)
+                    for migration_disc, migrated_filenames in results:
+                        self.assertIn(migration_disc.name, capture_output.get_text())
+                        for migrated_file in migrated_filenames:
+                            self.assertIn(migrated_file, capture_output.get_text())
 
-        for migration_disc, migrated_filenames in results:
-            self.assertTrue(isinstance(migration_disc, MigrationDesc))
-            for migrated_file in migrated_filenames:
-                self.assertTrue(os.path.isfile(migrated_file))
-
-                # remove the migrated files so they do not contaminate tests/fixtures/migrate
-                try:
-                    os.remove(migrated_file)
-                except OSError as e:
-                    pass
+                for migration_disc, migrated_filenames in results:
+                    self.assertTrue(isinstance(migration_disc, MigrationDesc))
+                    for migrated_file in migrated_filenames:
+                        self.assertTrue(os.path.isfile(migrated_file))
+            except:
+                raise
+            finally:
+                for _, migrated_filenames in results:
+                    # remove the migrated files so they do not contaminate tests/fixtures/migrate
+                    try:
+                        for migrated_file in migrated_filenames:
+                            os.remove(migrated_file)
+                    except OSError as e:
+                        pass

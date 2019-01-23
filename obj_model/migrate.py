@@ -10,9 +10,12 @@ import os
 import sys
 import argparse
 import importlib
+import importlib.util
+from pathlib import Path
 import inspect
 import copy
 import warnings
+import uuid
 import yaml
 from six import integer_types, string_types
 from enum import Enum
@@ -27,24 +30,27 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
+# todo now
 '''
-migrate xlsx files in wc_sim to new wc_lang
+put minimally modified wc_lang core.py in fixtures & core_modified.py
+test arguments to test_load_defs_from_files
+final bit of coverage
+
+migrate xlsx files in wc_sim to new wc_lang:
 1: identify all wc model files in wc_sim, the wc_lang commits that they use, & get those wc_lang versions
-3. get the present wc_lang version
-4. create a config file for the wc model files
-5: migrate them
+2. get the present wc_lang version
+3. create a config file for the wc model files
+4: migrate them
 '''
-# todo next: generic transformations in YAML config
 # todo next: documentation
-# todo next: final bit of coverage
-# todo next: test OneToManyAttribute
-# todo next: enable wc_lang migration in RunMigration
+# todo next: generic transformations in YAML config
 # todo: prepare lab meeting
-# use dict in wc_utils dup removal
+# todo next: test OneToManyAttribute
+# use dict in wc_utils dup removal; consider Python version
 
 # todo next: move remaining todos to GitHub issues
 # todo: migrate ontology terms
-# todo: automate transformation of wc_lang/core.py into migration schema, if needed
+# todo: *** automate transformation of wc_lang/core.py into migration schema, if needed
 # todo: associate schema pairs with renaming maps
 # todo: yaml config examples with multiple existing_files and multiple migrated_files
 # todo: move generate_wc_lang_migrator() to wc_lang
@@ -52,9 +58,9 @@ migrate xlsx files in wc_sim to new wc_lang
 # todo: separately specified default value for attribute
 # todo: obtain sort order of sheets in existing model file and replicate in migrated model file
 # todo: confirm this works for json, etc.
-# todo: use smaller model to speedup test_wc_lang_migration
-# todo: test sym links in Migrator._normalize_filename
-# provide a well-documented example;
+# todo: test sym links in Migrator.parse_module_path
+# todo: use SHA in wc_lang models to find schema
+# provide a well-documented example
 # todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
 # todo: use PARSED_EXPR everywhere applicable
 # todo: support high-level, WC wc_lang specific migration of a repo
@@ -84,15 +90,203 @@ class MigrateWarning(UserWarning):
     pass
 
 
+class SchemaModule(object):
+    """ Represent and import a schema module
+
+    Attributes:
+        module_path (:obj:`str`): path to the module
+        abs_module_path (:obj:`str`): absolute path to the module
+        package_directory (:obj:`str`): if the module is in a package, the path to the package's directory;
+            otherwise `None`
+        package_name (:obj:`str`): if the module is in a package, the name of the package containing the
+            module; otherwise `None`
+        module_name (:obj:`str`): the module's module name
+    """
+
+    # cached schema modules that have been imported, indexed by full pathnames
+    MODULES = {}
+
+    def __init__(self, module_path, dir=None):
+        """ Initialize a `SchemaModule`
+
+        Args:
+            module_path (:obj:`str`): path to the module
+            dir (:obj:`str`, optional): a directory that contains `self.module_path`
+        """
+        self.module_path = module_path
+        self.abs_module_path = self._normalize_filename(self.module_path, dir=dir)
+        self.package_directory, self.package_name, self.module_name = self.parse_module_path(self.abs_module_path)
+
+    @staticmethod
+    def _normalize_filename(filename, dir=None):
+        """ Normalize a filename to its fully expanded, real, absolute path
+
+        Expand `filename` by interpreting a user’s home directory, environment variables, and
+        normalizing its path. If `filename` is not an absolute path and `dir` is provided then
+        return a full path of `filename` in `dir`.
+
+        Args:
+            filename (:obj:`str`): a filename
+            dir (:obj:`str`, optional): a directory that contains `filename`
+
+        Returns:
+            :obj:`str`: `filename`'s fully expanded, absolute path
+        """
+        filename = os.path.expanduser(filename)
+        filename = os.path.expandvars(filename)
+        if os.path.isabs(filename):
+            return os.path.normpath(filename)
+        elif dir:
+            return os.path.normpath(os.path.join(dir, filename))
+        else:
+            return os.path.abspath(filename)
+
+    def get_path(self):
+        return str(self.abs_module_path)
+
+    @staticmethod
+    def parse_module_path(module_path):
+        """ Convert the path to a module into its package directory, package name, and module name
+
+        Package directory and package name are `None` if the module is not in a package.
+
+        Args:
+            module_path (:obj:`str`): path of a Python module file
+
+        Returns:
+            :obj:`tuple`: the module path's package directory, package name, and module name
+
+        Raises:
+            :obj:`MigratorError`: if `module_path` is not the name of a Python file, or is not a file
+        """
+        path = Path(module_path)
+
+        if not path.suffixes == ['.py']:
+            raise MigratorError("'{}' is not a Python source file name".format(module_path))
+        if not path.is_file():
+            raise MigratorError("'{}' is not a file".format(module_path))
+
+        # get highest directory that does not contain '__init__.py'
+        dir = path.parent
+        found_package = False
+        while True:
+            if not dir.joinpath('__init__.py').is_file():
+                break
+            # exit at / root
+            if dir == dir.parent:
+                break
+            found_package = True
+            dir = dir.parent
+        package_directory, package_name = None, None
+        if found_package:
+            package_directory = str(dir)
+            # obtain package name between directory and module
+            package_name = str(path.relative_to(package_directory).parent).replace('/', '.')
+
+        # obtain module name
+        module_name = path.stem
+
+        return package_directory, package_name, module_name
+
+    def import_module_for_migration(self, module_name=None):
+        """ Import a schema in a Python module
+
+        Args:
+            module_name (:obj:`str`, optional): name to use for the module being loaded; to avoid
+            'cannot use the same related attribute name' error in validate_related_attributes()
+            use different values for module_name for different versions of a schema
+
+        Returns:
+            :obj:`Module`: the `Module` loaded from `self.module_path`
+
+        Raises:
+            :obj:`MigratorError`: if `self.module_path` cannot be loaded
+        """
+        if self.get_path() in self.MODULES:
+            return self.MODULES[self.get_path()]
+
+        # copy sys.paths and sys.modules so they can be restored and analyzed
+        sys_attrs = ['path', 'modules']
+        saved = {}
+        for sys_attr in sys_attrs:
+            saved[sys_attr] = getattr(sys, sys_attr).copy()
+
+        # insert package directory at front of path so existing packages do not conflict
+        if self.package_directory:
+            if self.package_directory not in sys.path:
+                sys.path.insert(0, self.package_directory)
+
+        # add suffix to uniquely distinguish module name and prevent validation errors
+        # does not affect later imports, as modules imported here are not put on sys.modules
+        if module_name is None:
+            module_name = "{}_{}".format(self.module_name, uuid.uuid4())
+
+        limitations_notice = ("migrate does not support relative imports, or importing a module multiple times\n"
+            "from different files with the same module name; one of these limitations may cause this error")
+        try:
+            # note: unclear whether self.module_name here matters
+            spec = importlib.util.spec_from_file_location(module_name, self.get_path())
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            self.MODULES[self.get_path()] = module
+        except (SyntaxError, ImportError, AttributeError, ValueError) as e:
+            raise MigratorError("'{}' cannot be imported and exec'ed: {}\n{}".format(self.get_path(), e,
+                limitations_notice))
+
+        # restore sys.path
+        sys.path = saved['path']
+        # since exec_module may have changed the values of pre-existing entries in sys.modules
+        # restore sys.modules by deleting those that are not new
+        for name in list(sys.modules):
+            if name not in saved['modules']:
+                del sys.modules[name]
+
+        return module
+
+    @staticmethod
+    def _get_model_defs(module):
+        """ Obtain the `obj_model.Model`s in a module
+
+        Args:
+            module (:obj:`Module`): a `Module` containing `obj_model.Model` definitions
+
+        Returns:
+            :obj:`dict`: the Models in a module
+        """
+        models = {}
+        for name, attr in inspect.getmembers(module, inspect.isclass):
+            if isinstance(attr, obj_model.core.ModelMeta):
+                models[name] = attr
+        return models
+
+    def run(self, module_name=None):
+        """ Import a schema and provide its `obj_model.Model`s
+
+        Args:
+            module_name (:obj:`str`, optional): name to use for the module being loaded
+
+        Returns:
+            :obj:`list` of :obj:`obj_model.Model`: the `Model`s in `self.module_path`
+
+        Raises:
+            :obj:`MigratorError`: if `self.module_path` cannot be loaded
+        """
+        module = self.import_module_for_migration(module_name=module_name)
+        return self._get_model_defs(module)
+
+    def __str__(self):
+        vals = []
+        for attr in ['module_path', 'abs_module_path', 'package_directory', 'package_name', 'module_name']:
+            vals.append("{}: {}".format(attr, getattr(self, attr)))
+        return '\n'.join(vals)
+
+
 class Migrator(object):
     """ Support schema migration
 
     Attributes:
-        existing_defs_file (:obj:`str`): file name of Python file containing existing model definitions
-        migrated_defs_file (:obj:`str`): file name of Python file containing migrated model definitions
-        existing_defs_path (:obj:`str`): pathname of Python file containing existing model definitions
-        migrated_defs_path (:obj:`str`): pathname of Python file containing migrated model definitions
-        modules (:obj:`dict`): modules being used for migration, indexed by full pathname
+        existing_schema (:obj:`SchemaModule`): the existing schema, and its properties
+        migrated_schema (:obj:`SchemaModule`): the migrated schema, and its properties
         existing_defs (:obj:`dict`): `obj_model.Model` definitions of the existing models, keyed by name
         migrated_defs (:obj:`dict`): `obj_model.Model` definitions of the migrated models, keyed by name
         deleted_models (:obj:`set`): model types defined in the existing models but not the migrated models
@@ -106,8 +300,7 @@ class Migrator(object):
         transformations (:obj:`dict`): map of transformation types in `SUPPORTED_TRANSFORMATIONS` to callables
     """
 
-    SCALAR_ATTRS = ['existing_defs_file', 'migrated_defs_file', 'existing_defs_path',
-        'migrated_defs_path', 'deleted_models', '_migrated_copy_attr_name']
+    SCALAR_ATTRS = ['deleted_models', '_migrated_copy_attr_name']
     COLLECTIONS_ATTRS = ['existing_defs', 'migrated_defs', 'renamed_models', 'models_map',
         'renamed_attributes', 'renamed_attributes_map']
 
@@ -158,94 +351,31 @@ class Migrator(object):
             transformations (:obj:`dict`, optional): map of transformation types in `SUPPORTED_TRANSFORMATIONS`
                 to callables
         """
-        self.existing_defs_file = existing_defs_file
-        self.migrated_defs_file = migrated_defs_file
-        self.renamed_models = [] if renamed_models is None else renamed_models
-        self.renamed_attributes = [] if renamed_attributes is None else renamed_attributes
+        self.existing_schema = SchemaModule(existing_defs_file) if existing_defs_file else None
+        self.migrated_schema = SchemaModule(migrated_defs_file) if migrated_defs_file else None
+        self.renamed_models = renamed_models if renamed_models else []
+        self.renamed_attributes = renamed_attributes if renamed_attributes else []
         self.transformations = transformations
-        self.existing_defs_path = None
-        self.migrated_defs_path = None
 
-    def _load_defs_from_files(self):
+    def _load_defs_from_files(self, existing_module_name=None, migrated_module_name=None):
         """ Initialize a `Migrator`s model definitions from files
 
         Distinct from `prepare` so most of `Migrator` can be tested with models defined in code
+
+        Args:
+            existing_module_name (:obj:`str`, optional): module name to use for the existing module
+                being loaded
+            migrated_module_name (:obj:`str`, optional): module name to use for the existing migrated
+                module being loaded
+
+        Returns:
+            :obj:`list` of :obj:`obj_model.Model`: the `Model`s in `self.module_path`
         """
-        if self.existing_defs_file:
-            self.existing_defs_path = self._normalize_filename(self.existing_defs_file)
-            self._valid_python_path(self.existing_defs_path)
-            self.existing_defs = self._get_model_defs(self._load_model_defs_file(self.existing_defs_path))
-        if self.migrated_defs_file:
-            self.migrated_defs_path = self._normalize_filename(self.migrated_defs_file)
-            self._valid_python_path(self.migrated_defs_path)
-            self.migrated_defs = self._get_model_defs(self._load_model_defs_file(self.migrated_defs_path))
+        if self.existing_schema:
+            self.existing_defs = self.existing_schema.run(module_name=existing_module_name)
+        if self.migrated_schema:
+            self.migrated_defs = self.migrated_schema.run(module_name=migrated_module_name)
         return self
-
-    @staticmethod
-    def _valid_python_path(filename):
-        """ Raise error if filename is not a valid Python filename
-
-        Args:
-            filename (:obj:`str`): path of a file containing some Model definitions
-
-        Returns:
-            :obj:`Module`: the `Module` loaded from a model definitions file
-
-        Raises:
-            :obj:`MigratorError`: if `filename` doesn't end in '.py', or basename of `filename` contains
-                extra '.'s
-        """
-        # error if basename doesn't end in '.py' and contain exactly 1 '.'
-        root, ext = os.path.splitext(filename)
-        if ext != '.py':
-            raise MigratorError("'{}' must be Python filename ending in '.py'".format(filename))
-        module_name = os.path.basename(root)
-        if '.' in module_name:
-            raise MigratorError("module name '{}' in '{}' cannot contain a '.'".format(module_name, filename))
-
-    def _load_model_defs_file(self, model_defs_file):
-        """ Import a Python file
-
-        Args:
-            model_defs_file (:obj:`str`): path of a file containing some Model definitions
-
-        Returns:
-            :obj:`Module`: the `Module` loaded from model_defs_file
-
-        Raises:
-            :obj:`MigratorError`: if `model_defs_file` cannot be loaded
-        """
-        # avoid re-loading file containing Model definitions, which would fail with
-        # 'cannot use the same related attribute name' error if its Models have related attributes
-        if model_defs_file in self.modules:
-            return self.modules[model_defs_file]
-
-        root, _ = os.path.splitext(model_defs_file)
-        module_name = os.path.basename(root)
-        try:
-            spec = importlib.util.spec_from_file_location(module_name, model_defs_file)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-            self.modules[model_defs_file] = module
-        except (SyntaxError, ImportError, AttributeError, ValueError) as e:
-            raise MigratorError("'{}' cannot be imported and exec'ed: {}".format(model_defs_file, e))
-        return module
-
-    @staticmethod
-    def _get_model_defs(module):
-        """ Obtain the `obj_model.Model`s in a module
-
-        Args:
-            module (:obj:`Module`): a `Module` containing `obj_model.Model` definitions
-
-        Returns:
-            :obj:`dict`: the Models in a module
-        """
-        models = {}
-        for name, attr in inspect.getmembers(module, inspect.isclass):
-            if isinstance(attr, obj_model.core.ModelMeta):
-                models[name] = attr
-        return models
 
     def _get_migrated_copy_attr_name(self):
         """ Obtain name of attribute used in an existing model to reference its migrated model
@@ -259,30 +389,6 @@ class Migrator(object):
                 max_len = max(max_len, len(attr.name))
         return "{}{}".format(Migrator.MIGRATED_COPY_ATTR_PREFIX,
             '_' * (max_len + 1 - len(Migrator.MIGRATED_COPY_ATTR_PREFIX)))
-
-    @staticmethod
-    def _normalize_filename(filename, dir=None):
-        """ Normalize a filename to its fully expanded, real, absolute path
-
-        Expand `filename` by interpreting a user’s home directory, environment variables, and
-        normalizing its path. If `filename` is not an absolute path and `dir` is provided then
-        return a full path of `filename` in `dir`.
-
-        Args:
-            filename (:obj:`str`): a filename
-            dir (:obj:`str`, optional): a directory that contains `filename`
-
-        Returns:
-            :obj:`str`: `filename`'s fully expanded, absolute path
-        """
-        filename = os.path.expanduser(filename)
-        filename = os.path.expandvars(filename)
-        if os.path.isabs(filename):
-            return os.path.normpath(filename)
-        elif dir:
-            return os.path.normpath(os.path.join(dir, filename))
-        else:
-            return os.path.abspath(filename)
 
     def _validate_transformations(self):
         """ Validate transformations
@@ -477,10 +583,12 @@ class Migrator(object):
         inconsistencies = []
 
         # constraint: existing_model and migrated_model must be available in their respective model definitions
-        path = "'{}'".format(self.existing_defs_path) if self.existing_defs_path else 'existing models definitions'
+        path = "'{}'".format(self.existing_schema.get_path()) if self.existing_schema \
+            else 'existing models definitions'
         if existing_model not in self.existing_defs:
             inconsistencies.append("existing model {} not found in {}".format(existing_model, path))
-        path = "'{}'".format(self.migrated_defs_path) if self.migrated_defs_path else 'migrated models definitions'
+        path = "'{}'".format(self.migrated_schema.get_path()) if self.migrated_schema \
+            else 'migrated models definitions'
         if migrated_model not in self.migrated_defs:
             inconsistencies.append("migrated model {} corresponding to existing model {} not found in {}".format(
                 migrated_model, existing_model, path))
@@ -1054,7 +1162,7 @@ class Migrator(object):
         """
         migrated_files = []
         for file in files:
-            migrated_files.append(self.full_migrate(self._normalize_filename(file)))
+            migrated_files.append(self.full_migrate(SchemaModule._normalize_filename(file)))
         return migrated_files
 
     def __str__(self):
@@ -1292,7 +1400,7 @@ class MigrationDesc(object):
         dir = None
         if relative_file:
             dir = os.path.dirname(relative_file)
-        return [Migrator._normalize_filename(filename, dir=dir) for filename in filenames]
+        return [SchemaModule._normalize_filename(filename, dir=dir) for filename in filenames]
 
     def standardize(self):
         """ Standardize the attributes of a `MigrationDesc`
