@@ -10,7 +10,7 @@
 from os.path import splitext
 from obj_model import core, utils
 from obj_model.io import WorkbookReader, WorkbookWriter, convert, create_template, IoWarning
-from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle,
+from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorkbookStyle, WorksheetStyle,
                                   read as read_workbook, write as write_workbook, get_reader, get_writer)
 import enum
 import json
@@ -203,7 +203,12 @@ class TestIo(unittest.TestCase):
         wb = read_workbook(filename)
         wb['Nodes'][2][2] = 'node_0'
         filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
-        write_workbook(filename2, wb)
+        write_workbook(filename2, wb, style={
+            MainRoot.Meta.verbose_name: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Node.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Leaf.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            OneToManyRow.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename2, models=[MainRoot, Node, Leaf, OneToManyRow],
                                  group_objects_by_model=True, validate=True)
@@ -318,7 +323,12 @@ class TestIo(unittest.TestCase):
         workbook['Main root'][0][0] = 'id'
 
         # write workbook
-        writer.run(workbook)
+        writer.run(workbook, style={
+            MainRoot.Meta.verbose_name: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Node.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Leaf.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            OneToManyRow.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
 
         # check that attributes can be read by name
         objects = WorkbookReader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
@@ -331,7 +341,12 @@ class TestIo(unittest.TestCase):
         workbook['Main root'][0][0] = 'ID'
 
         # write workbook
-        writer.run(workbook)
+        writer.run(workbook, style={
+            MainRoot.Meta.verbose_name: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Node.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Leaf.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            OneToManyRow.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
 
         # check that attributes can be read by name
         objects = WorkbookReader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
@@ -767,7 +782,9 @@ class TestIo(unittest.TestCase):
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         xslx_writer = get_writer('.xlsx')(filename)
-        xslx_writer.run(workbook)
+        xslx_writer.run(workbook, style={
+            TestModel.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
 
         with self.assertRaisesRegex(ValueError, 'The model cannot be loaded'):
             WorkbookReader().run(filename, [TestModel])
@@ -965,33 +982,38 @@ class TestMisc(unittest.TestCase):
             WorkbookReader().run(filename, [Node8])
 
     def test_row_and_column_headings(self):
+        class TestModel(core.Model):
+            column_B = core.StringAttribute()
+            column_C = core.StringAttribute()
+            class Meta(core.Model.Meta):
+                verbose_name_plural = 'Sheet'
+
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = WorkbookWriter()
         xslx_writer = get_writer('.xlsx')(filename)
         xslx_writer.initialize_workbook()
         writer.write_sheet(xslx_writer,
-                           sheet_name='Sheet',
+                           TestModel,
                            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
-                           row_headings=[['Row_2', 'Row_3']],
-                           column_headings=[['Column_B', 'Column_C']])
+                           headings=[['Column_B', 'Column_C']])
         xslx_writer.finalize_workbook()
 
         xlsx_reader = get_reader('.xlsx')(filename)
         workbook = xlsx_reader.run()
-        self.assertEqual(list(workbook['Sheet'][0]), [None, 'Column_B', 'Column_C'])
-        self.assertEqual(list(workbook['Sheet'][1]), ['Row_2', 'Cell_2_B', 'Cell_2_C'])
-        self.assertEqual(list(workbook['Sheet'][2]), ['Row_3', 'Cell_3_B', 'Cell_3_C'])
+        self.assertEqual(list(workbook['Sheet'][0]), ['Column_B', 'Column_C'])
+        self.assertEqual(list(workbook['Sheet'][1]), ['Cell_2_B', 'Cell_2_C'])
+        self.assertEqual(list(workbook['Sheet'][2]), ['Cell_3_B', 'Cell_3_C'])
 
         reader = WorkbookReader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
         data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet',
-                                                                num_row_heading_columns=1,
+                                                                num_row_heading_columns=0,
                                                                 num_column_heading_rows=1)
         self.assertEqual(len(data), 2)
         self.assertEqual(list(data[0]), ['Cell_2_B', 'Cell_2_C'])
         self.assertEqual(list(data[1]), ['Cell_3_B', 'Cell_3_C'])
-        self.assertEqual(row_headings, [['Row_2', 'Row_3']])
+        self.assertEqual(row_headings, [])
         self.assertEqual(len(column_headings), 1)
         self.assertEqual(list(column_headings[0]), ['Column_B', 'Column_C'])
 
@@ -1014,7 +1036,9 @@ class TestMisc(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         xslx_writer = get_writer('.xlsx')(filename)
-        xslx_writer.run(workbook)
+        xslx_writer.run(workbook, style={
+            'Node10': WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
 
         class Node10(core.Model):
             id = core.StringAttribute(primary=True, unique=True, verbose_name='Id')
@@ -1161,7 +1185,9 @@ class ReadEmptyCellTestCase(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         xslx_writer = get_writer('.xlsx')(filename)
-        xslx_writer.run(workbook)
+        xslx_writer.run(workbook, style={
+            TestModel.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
 
         objects = WorkbookReader().run(filename, [TestModel])[TestModel]
         objects.sort(key=lambda m: m.id)
@@ -1381,12 +1407,16 @@ class StrictReadingTestCase(unittest.TestCase):
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaisesRegex(ValueError, r'must have 1 header row\(s\)'):
             WorkbookReader().run(filename, [Model])
 
@@ -1407,12 +1437,16 @@ class StrictReadingTestCase(unittest.TestCase):
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id']))
         ws.append(Row(['Attr']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaisesRegex(ValueError, r'must have 1 header column\(s\)'):
             WorkbookReader().run(filename, [Model])
 
@@ -1433,14 +1467,18 @@ class StrictReadingTestCase(unittest.TestCase):
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr2']))
         ws.append(Row(['m1', '2']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, [Model])
         WorkbookReader().run(filename, [Model], ignore_missing_attributes=True)
@@ -1462,14 +1500,18 @@ class StrictReadingTestCase(unittest.TestCase):
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr1', 'Attr2', 'Attr3']))
         ws.append(Row(['m1', '1', '2', '3']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, [Model])
         WorkbookReader().run(filename, [Model], ignore_extra_attributes=True)
@@ -1491,14 +1533,18 @@ class StrictReadingTestCase(unittest.TestCase):
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr2', 'Attr1']))
         ws.append(Row(['m1', '2', '1']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaisesRegex(ValueError, (
             "The columns of worksheet 'Models' must be defined in this order:"
             "\n      A1: Id"
@@ -1765,7 +1811,11 @@ class InlineJsonTestCase(unittest.TestCase):
         # test exception
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
-        write_workbook(path, wb)
+        write_workbook(path, wb, style={
+            Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
@@ -1806,7 +1856,11 @@ class InlineJsonTestCase(unittest.TestCase):
         # test exception
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
-        write_workbook(path, wb)
+        write_workbook(path, wb, style={
+            Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
@@ -1847,7 +1901,11 @@ class InlineJsonTestCase(unittest.TestCase):
         # test exception
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
-        write_workbook(path, wb)
+        write_workbook(path, wb, style={
+            Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
@@ -1888,7 +1946,11 @@ class InlineJsonTestCase(unittest.TestCase):
         # test exception
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
-        write_workbook(path, wb)
+        write_workbook(path, wb, style={
+            Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            })
         with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 

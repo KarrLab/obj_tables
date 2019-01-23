@@ -31,7 +31,7 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
                             InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.workbook.core import get_column_letter
-from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle
+from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, WorksheetValidation, FieldValidation
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
@@ -293,37 +293,29 @@ class WorkbookWriter(WriterBase):
                     obj_data.append(attr.serialize(getattr(obj, attr.name)))
             data.append(obj_data)
 
-        # transpose data for column orientation
-        style = self.create_worksheet_style(model)
-        if model.Meta.tabular_orientation == TabularOrientation.row:
-            self.write_sheet(writer,
-                             sheet_name=model.Meta.verbose_name_plural,
-                             data=data,
-                             column_headings=headings,
-                             style=style,
-                             )
-        else:
-            style.auto_filter = False
-            self.write_sheet(writer,
-                             sheet_name=model.Meta.verbose_name,
-                             data=transpose(data),
-                             row_headings=headings,
-                             style=style,
-                             )
+        self.write_sheet(writer, model, data, headings)
 
-    def write_sheet(self, writer, sheet_name, data, row_headings=None, column_headings=None, style=None):
+    def write_sheet(self, writer, model, data, headings):
         """ Write data to sheet
 
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
-            sheet_name (:obj:`str`): sheet name
+            model (:obj:`type`): model
             data (:obj:`list` of :obj:`list` of :obj:`object`): list of list of cell values
-            row_headings (:obj:`list` of :obj:`list` of :obj:`str`, optional): list of list of row headings
-            column_headings (:obj:`list` of :obj:`list` of :obj:`str`, optional): list of list of column headings
-            style (:obj:`WorksheetStyle`, optional): worksheet style
+            headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headings
         """
-        row_headings = row_headings or []
-        column_headings = copy.deepcopy(column_headings) or []
+        style = self.create_worksheet_style(model)
+        if model.Meta.tabular_orientation == TabularOrientation.row:
+            sheet_name = model.Meta.verbose_name_plural
+            row_headings = []
+            column_headings = headings
+            style.auto_filter = True
+        else:
+            sheet_name = model.Meta.verbose_name
+            row_headings = headings
+            column_headings = []
+            data = transpose(data)
+            style.auto_filter = False
 
         # merge data, headings
         for i_row, row_heading in enumerate(transpose(row_headings)):
@@ -342,8 +334,11 @@ class WorkbookWriter(WriterBase):
 
         content = column_headings + data
 
+        # validations
+        validation = None #WorksheetValidation()
+
         # write content to worksheet
-        writer.write_worksheet(sheet_name, content, style=style)
+        writer.write_worksheet(sheet_name, content, style=style, validation=validation)
 
     @staticmethod
     def create_worksheet_style(model):
