@@ -31,3 +31,6 @@ class Test(obj_model.Model):
 class Reference(obj_model.Model):
     id = SlugAttribute()
     value = StringAttribute()
+    
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'value')
