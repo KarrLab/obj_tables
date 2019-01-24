@@ -2090,7 +2090,8 @@ class ExcelValidationTestCase(unittest.TestCase):
         self.dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.dirname)
+        print(self.dirname)
+        #shutil.rmtree(self.dirname)
 
     def test(self):
         class TestEnum(enum.Enum):

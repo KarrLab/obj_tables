@@ -80,12 +80,13 @@ class UnitAttribute(core.LiteralAttribute):
         """
         return self.default_cleaned_value
 
-    def value_equal(self, val1, val2):
+    def value_equal(self, val1, val2, tol=0.):
         """ Determine if attribute values are equal
 
         Args:
             val1 (:obj:`pint.unit._Unit`): first value
             val2 (:obj:`pint.unit._Unit`): second value
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: True if attribute values are equal

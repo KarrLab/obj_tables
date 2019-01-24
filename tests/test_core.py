@@ -637,6 +637,9 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(attr.serialize(float('nan')), None)
 
+        self.assertEqual(attr.value_equal(1., 1 + 1e-10), False)
+        self.assertEqual(attr.value_equal(1., 1 + 1e-10, tol=1e-8), True)
+
     def test_integer_attribute(self):
         attr = core.IntegerAttribute(default=1., default_cleaned_value=1.)
         self.assertIsInstance(attr.default, int)

@@ -1495,11 +1495,12 @@ class Model(with_metaclass(ModelMeta, object)):
             return tuple(vals)
         return key
 
-    def is_equal(self, other):
+    def is_equal(self, other, tol=0.):
         """ Determine whether two models are semantically equal
 
         Args:
             other (:obj:`Model`): object to compare
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: `True` if objects are semantically equal, else `False`
@@ -1525,7 +1526,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 checked_pairs.append(pair)
 
                 # non-related attributes
-                if not obj._is_equal_attributes(other_obj):
+                if not obj._is_equal_attributes(other_obj, tol=tol):
                     return False
 
                 # related attributes
@@ -1549,11 +1550,12 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return True
 
-    def _is_equal_attributes(self, other):
+    def _is_equal_attributes(self, other, tol=0.):
         """ Determine if the attributes of two objects are semantically equal
 
         Args:
             other (:obj:`Model`): object to compare
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: `True` if the objects' attributes are semantically equal, else `False`
@@ -1572,7 +1574,7 @@ class Model(with_metaclass(ModelMeta, object)):
             other_val = getattr(other, attr_name)
 
             if not isinstance(attr, RelatedAttribute):
-                if not attr.value_equal(val, other_val):
+                if not attr.value_equal(val, other_val, tol=tol):
                     return False
 
             elif isinstance(val, RelatedManager):
@@ -1681,11 +1683,12 @@ class Model(with_metaclass(ModelMeta, object)):
         attr = cls.Meta.attributes[attr_name]
         return attr.serialize(getattr(object, attr_name))
 
-    def difference(self, other):
+    def difference(self, other, tol=0.):
         """ Get the semantic difference between two models
 
         Args:
             other (:obj:`Model`): other `Model`
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`str`: difference message
@@ -1719,7 +1722,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 other_val = getattr(other_obj, attr_name)
 
                 if not isinstance(attr, RelatedAttribute):
-                    if not attr.value_equal(val, other_val):
+                    if not attr.value_equal(val, other_val, tol=tol):
                         difference['attributes'][
                             attr_name] = '{} != {}'.format(val, other_val)
 
@@ -2782,12 +2785,13 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """
         return new_value
 
-    def value_equal(self, val1, val2):
+    def value_equal(self, val1, val2, tol=0.):
         """ Determine if attribute values are equal
 
         Args:
             val1 (:obj:`object`): first value
             val2 (:obj:`object`): second value
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: True if attribute values are equal
@@ -3430,20 +3434,22 @@ class FloatAttribute(NumericAttribute):
         self.max = max
         self.nan = nan
 
-    def value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
+    def value_equal(self, val1, val2, tol=0.):
+        """ Determine if attribute values are equal, optionally,
+        up to a tolerance
 
         Args:
             val1 (:obj:`object`): first value
             val2 (:obj:`object`): second value
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: True if attribute values are equal
         """
         return val1 == val2 or \
             (isnan(val1) and isnan(val2)) or \
-            (val1 == 0. and abs(val2) < 1e-100) or \
-            (val1 != 0. and abs((val1 - val2) / val1) < 1e-100)
+            (val1 == 0. and abs(val2) < tol) or \
+            (val1 != 0. and abs((val1 - val2) / val1) < tol)
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type

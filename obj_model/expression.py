@@ -94,7 +94,7 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(RelatedAttribute, self).get_excel_validation()
+        validation = super(OneToOneAttribute, self).get_excel_validation()
 
         if self.related_class.Meta.expression_is_linear:
             type = 'linear '
@@ -164,7 +164,7 @@ class ExpressionManyToOneAttribute(ManyToOneAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(RelatedAttribute, self).get_excel_validation()
+        validation = super(ManyToOneAttribute, self).get_excel_validation()
 
         if self.related_class.Meta.expression_is_linear:
             type = 'linear '
