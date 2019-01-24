@@ -5905,11 +5905,11 @@ class OneToManyAttribute(RelatedAttribute):
 
         validation.ignore_blank = self.min_related == 0
         if self.min_related == 0:
-            input_message = ['Select one or more values from "{}" or blank.'.format(source)]
-            error_message = ['Value must one or more values from "{}" or blank.'.format(source)]
+            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
         else:
-            input_message = ['Select one or more values from "{}".'.format(source)]
-            error_message = ['Value must be one or more values from "{}".'.format(source)]
+            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
 
         default = self.get_default_cleaned_value()
         if default:
@@ -6235,11 +6235,11 @@ class ManyToManyAttribute(RelatedAttribute):
 
         validation.ignore_blank = self.min_related == 0
         if self.min_related == 0:
-            input_message = ['Select one or more values from "{}" or blank.'.format(source)]
-            error_message = ['Value must one or more values from "{}" or blank.'.format(source)]
+            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
         else:
-            input_message = ['Select one or more values from "{}".'.format(source)]
-            error_message = ['Value must be one or more values from "{}".'.format(source)]
+            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
 
         default = self.get_default_cleaned_value()
         if default:
