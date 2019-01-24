@@ -2,6 +2,7 @@ biopython
 enum34
 inflect
 natsort
+networkx
 numpy
 pint >= 0.9
 git+https://github.com/KarrLab/pronto.git#egg=pronto-0.12.1 >= 0.12.1

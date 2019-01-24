@@ -5,7 +5,9 @@ with open(pkg_resources.resource_filename('tests.fixtures.migrate.wc_lang', 'VER
 # :obj:`str`: version
 
 # API
-from .core import (TaxonRank,
+'''
+migration doesn't support relative imports
+from .core import (TimeUnit, TaxonRank,
                    CompartmentBiologicalType, CompartmentPhysicalType, CompartmentGeometry,
                    SubmodelAlgorithm, SpeciesTypeType,
                    RandomDistribution,
@@ -20,6 +22,7 @@ from .core import (TaxonRank,
                    StopCondition, StopConditionExpression,
                    Evidence, DatabaseReference, Reference,
                    Validator)
+'''
 # these modules and packages not needed
 # from . import config
 # from . import io

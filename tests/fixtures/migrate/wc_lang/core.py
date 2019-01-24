@@ -83,7 +83,7 @@ import warnings
 warnings.filterwarnings('ignore', '', obj_model.SchemaWarning, 'obj_model')
 
 # configuration
-import tests.fixtures.migrate.wc_lang.config.core
+import wc_lang.config.core
 
 
 class TaxonRankMeta(CaseInsensitiveEnumMeta):
@@ -479,7 +479,7 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
             return InvalidAttribute(self, ['LHS and RHS must be different'])
 
         # check element and charge balance
-        validate_element_charge_balance = tests.fixtures.migrate.wc_lang.config.core.get_config()[
+        validate_element_charge_balance = wc_lang.config.core.get_config()[
             'wc_lang']['validation']['validate_element_charge_balance']
         if validate_element_charge_balance:
             delta_formula = EmpiricalFormula()
