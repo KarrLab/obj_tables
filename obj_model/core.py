@@ -33,6 +33,7 @@ from wc_utils.util.list import det_dedupe, is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
+from wc_utils.workbook.core import get_column_letter
 import abc
 import collections
 import copy
@@ -47,6 +48,7 @@ import six
 import sys
 import validate_email
 import warnings
+import wc_utils.workbook.io
 # todo: simplify primary attributes, deserialization
 # todo: improve memory efficiency
 # todo: improve run-time
@@ -1168,11 +1170,26 @@ class Model(with_metaclass(ModelMeta, object)):
                                      exclude=(None, []))
 
     @classmethod
+    def get_attr_index(cls, attr):
+        """ Get the index of an attribute within `Meta.attribute_order`
+
+        Args:
+            attr (:obj:`Attribute`): attribute
+
+        Returns:
+            :obj:`int`: index of attribute within `Meta.attribute_order`
+        """
+        if attr.name not in cls.Meta.attribute_order:
+            raise ValueError('{} not in `attribute_order` for {}'.format(attr.name, cls.__name__))
+        return cls.Meta.attribute_order.index(attr.name)
+
+    @classmethod
     def validate_related_attributes(cls):
         """ Validate attribute values
 
         Raises:
-            :obj:`ValueError`: if related attributes are not valid (e.g. if a class that is the subject of a relationship does not have a primary attribute)
+            :obj:`ValueError`: if related attributes are not valid (e.g. if a class that is the subject of
+                a relationship does not have a primary attribute)
         """
 
         for attr_name, attr in cls.Meta.attributes.items():
@@ -2444,7 +2461,8 @@ class Model(with_metaclass(ModelMeta, object)):
 
         Args:
             json (:obj:`dict`): simple Python representation of the object
-            decode_primary_objects (:obj:`bool`, optional): if :obj:`True`, decode primary classes otherwise just look up objects by their IDs
+            decode_primary_objects (:obj:`bool`, optional): if :obj:`True`, decode primary classes otherwise
+                just look up objects by their IDs
             primary_objects (:obj:`list`, optional): list of instances of primary classes (i.e. non-line classes)
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
@@ -2714,6 +2732,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         self.default = default
         self.default_cleaned_value = default_cleaned_value
         self.verbose_name = verbose_name
+        self.help = help
         self.primary = primary
         self.unique = unique
         self.unique_case_insensitive = unique_case_insensitive
@@ -2795,7 +2814,8 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list
+                of errors as an instance of `InvalidAttribute`
         """
         pass  # pragma: no cover
 
@@ -2807,7 +2827,8 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             values (:obj:`list`): list of values
 
         Returns:
-           :obj:`InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `InvalidAttribute`
+           :obj:`InvalidAttribute` or None: None if values are unique, otherwise return a list of
+            errors as an instance of `InvalidAttribute`
         """
         unq_vals = set()
         rep_vals = set()
@@ -2900,6 +2921,18 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """
         pass  # pragma: no cover
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        return wc_utils.workbook.io.FieldValidation(
+            input_title=self.verbose_name,
+            input_message=self.help,
+            error_title=self.verbose_name,
+            error_message=self.help)
+
 
 class LocalAttribute(object):
     """ Meta data about a local attribute in a class
@@ -2970,7 +3003,8 @@ class LiteralAttribute(Attribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a
+                list of errors as an instance of `InvalidAttribute`
         """
         return None
 
@@ -3198,6 +3232,45 @@ class EnumAttribute(LiteralAttribute):
         """
         return self.enum_class[json]
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(EnumAttribute, self).get_excel_validation()
+
+        allowed_values = [val.name for val in self.enum_class]
+        if len(','.join(allowed_values)) <= 255:
+            validation.type = wc_utils.workbook.io.FieldValidationType.list
+            validation.allowed_list_values = allowed_values
+        validation.ignore_blank = self.none
+
+        if self.none:
+            input_message = ['Select one of "{}" or blank.'.format('", "'.join(allowed_values))]
+            error_message = ['Value must be one of "{}" or blank.'.format('", "'.join(allowed_values))]
+        else:
+            input_message = ['Select one of "{}".'.format('", "'.join(allowed_values))]
+            error_message = ['Value must be one of "{}".'.format('", "'.join(allowed_values))]
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: "{}".'.format(default.name))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class BooleanAttribute(LiteralAttribute):
     """ Boolean attribute
@@ -3277,6 +3350,35 @@ class BooleanAttribute(LiteralAttribute):
             return InvalidAttribute(self, ['Value must be an instance of `bool` or `None`'])
 
         return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(BooleanAttribute, self).get_excel_validation()
+
+        allowed_values = [True, False]
+        validation.type = wc_utils.workbook.io.FieldValidationType.list
+        validation.allowed_list_values = allowed_values
+
+        input_message = ['Select "True" or "False".']
+        error_message = ['Value must be "True" or "False".']
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class FloatAttribute(NumericAttribute):
@@ -3419,6 +3521,61 @@ class FloatAttribute(NumericAttribute):
         if (not isnan(left_val) or not isnan(right_val)) and left_val != right_val:
             raise ValueError('{}.{} must be equal'.format(left.__class__.__name__, self.name))
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(FloatAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.decimal
+        validation.ignore_blank = self.nan
+        if self.nan:
+            input_message = ['Enter a float or blank.']
+            error_message = ['Value must be a float or blank.']
+        else:
+            input_message = ['Enter a float.']
+            error_message = ['Value must be a float.']
+
+        if self.min is None or isnan(self.min):
+            if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = -1e30
+                validation.maximum_scalar_value = 1e30
+            else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
+                validation.allowed_scalar_value = self.max or 1e-10
+                input_message.append('Value must be less than or equal to {}.'.format(self.max))
+        else:
+            if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = self.min or 1e-10
+                input_message.append('Value must be greater than or equal to {}.'.format(self.min))
+            else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = self.min or -1e-10
+                validation.maximum_scalar_value = self.max or 1e-10
+                input_message.append('Value must be between {} and {}.'.format(self.min, self.max))
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None and not isnan(default):
+            input_message.append('Default: {}.'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class PositiveFloatAttribute(FloatAttribute):
     """ Positive float attribute """
@@ -3465,6 +3622,51 @@ class PositiveFloatAttribute(FloatAttribute):
         if errors:
             return InvalidAttribute(self, errors)
         return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(FloatAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.decimal
+        validation.ignore_blank = self.nan
+        if self.nan:
+            input_message = ['Enter a float or blank.']
+            error_message = ['Value must be a float or blank.']
+        else:
+            input_message = ['Enter a float.']
+            error_message = ['Value must be a float.']
+
+        if self.max is None or isnan(self.max):
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>']
+            validation.allowed_scalar_value = -1e-10  # should be 0; needed to compensate for xlsxwrite bug
+            input_message.append('Value must be positive.')
+        else:
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+            validation.minimum_scalar_value = -1e-10  # should be 0; needed to compensate for xlsxwrite bug
+            validation.maximum_scalar_value = self.max or 1e-10
+            input_message.append('Value must be positive and less than or equal to {}.'.format(self.max))
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None and not isnan(default):
+            input_message.append('Default: {}.'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class IntegerAttribute(NumericAttribute):
@@ -3600,6 +3802,56 @@ class IntegerAttribute(NumericAttribute):
         """
         return int(json)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(IntegerAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.integer
+        input_message = ['Enter an integer.']
+        error_message = ['Value must be an integer.']
+
+        if self.min is None or isnan(self.min):
+            if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = -2**15
+                validation.maximum_scalar_value = 2**15-1
+            else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
+                validation.allowed_scalar_value = self.max or 1e-10
+                input_message.append('Value must be less than or equal to {}.'.format(self.max))
+        else:
+            if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = self.min or -1e-10
+                input_message.append('Value must be greater than or equal to {}.'.format(self.min))
+            else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = self.min or -1e-10
+                validation.maximum_scalar_value = self.max or 1e-10
+                input_message.append('Value must be between {} and {}.'.format(self.min, self.max))
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None and not isnan(default):
+            input_message.append('Default: {}.'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class PositiveIntegerAttribute(IntegerAttribute):
     """ Positive integer attribute """
@@ -3617,7 +3869,7 @@ class PositiveIntegerAttribute(IntegerAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
-        super(PositiveIntegerAttribute, self).__init__(min=None, max=max,
+        super(PositiveIntegerAttribute, self).__init__(min=0, max=max,
                                                        default=default,
                                                        default_cleaned_value=default_cleaned_value,
                                                        verbose_name=verbose_name, help=help,
@@ -3646,6 +3898,46 @@ class PositiveIntegerAttribute(IntegerAttribute):
         if errors:
             return InvalidAttribute(self, errors)
         return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(IntegerAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.integer
+        input_message = ['Enter an integer.']
+        error_message = ['Value must be an integer.']
+
+        if self.max is None or isnan(self.max):
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+            validation.allowed_scalar_value = 1
+            input_message.append('Value must be positive.')
+        else:
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+            validation.minimum_scalar_value = -1e-10
+            validation.maximum_scalar_value = self.max or 1e-10
+            input_message.append('Value must be positive and less than or equal to {}.'.format(self.max))
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None and not isnan(default):
+            input_message.append('Default: {}.'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class StringAttribute(LiteralAttribute):
@@ -3751,6 +4043,56 @@ class StringAttribute(LiteralAttribute):
             :obj:`str`: simple Python representation
         """
         return value
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(StringAttribute, self).get_excel_validation()
+
+        input_message = ['Enter a string.']
+        error_message = ['Value must be a string.']
+        if self.min_length is not None and self.min_length:
+            if self.max_length is not None:
+                validation.type = wc_utils.workbook.io.FieldValidationType.length
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = self.min_length
+                validation.maximum_scalar_value = self.max_length
+                validation.ignore_blank = False
+                input_message.append('Value must be between {} and {} characters.'.format(self.min_length, self.max_length))
+                error_message.append('Value must be between {} and {} characters.'.format(self.min_length, self.max_length))
+            else:
+                validation.type = wc_utils.workbook.io.FieldValidationType.length
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = self.min_length
+                validation.ignore_blank = False
+                input_message.append('Value must at least {} characters.'.format(self.min_length))
+                error_message.append('Value must at least {} characters.'.format(self.min_length))
+        elif self.max_length is not None:
+            validation.type = wc_utils.workbook.io.FieldValidationType.length
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
+            validation.allowed_scalar_value = self.max_length
+            input_message.append('Value must be less than or equal to {} characters.'.format(self.max_length))
+            error_message.append('Value must be less than or equal to {} characters.'.format(self.max_length))
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class LongStringAttribute(StringAttribute):
@@ -4060,6 +4402,39 @@ class DateAttribute(LiteralAttribute):
         """
         return datetime.strptime(json, '%Y-%m-%d').date()
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(DateAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.date
+        validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
+        validation.minimum_scalar_value = date(1900, 1, 1)
+        validation.maximum_scalar_value = date(9999, 12, 31)
+
+        input_message = ['Enter a date.']
+        error_message = ['Value must be a date.']
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class TimeAttribute(LiteralAttribute):
     """ Time attribute
@@ -4191,6 +4566,39 @@ class TimeAttribute(LiteralAttribute):
             :obj:`time`: decoded value of the attribute
         """
         return datetime.strptime(json, '%H:%M:%S').time()
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(TimeAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.time
+        validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
+        validation.minimum_scalar_value = time(0, 0, 0, 0)
+        validation.maximum_scalar_value = time(23, 59, 59, 999999)
+
+        input_message = ['Enter a time.']
+        error_message = ['Value must be a time.']
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class DateTimeAttribute(LiteralAttribute):
@@ -4339,6 +4747,39 @@ class DateTimeAttribute(LiteralAttribute):
             :obj:`datetime`: decoded value of the attribute
         """
         return datetime.strptime(json, '%Y-%m-%d %H:%M:%S')
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(DateTimeAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.date
+        validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
+        validation.minimum_scalar_value = datetime(1900, 1, 1, 0, 0, 0, 0)
+        validation.maximum_scalar_value = datetime(999, 12, 31, 23, 59, 59, 999999)
+
+        input_message = ['Enter a date and time.']
+        error_message = ['Value must be a date and time.']
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class RelatedAttribute(Attribute):
@@ -4796,6 +5237,56 @@ class OneToOneAttribute(RelatedAttribute):
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(OneToOneAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.primary_attribute:
+            validation.type = wc_utils.workbook.io.FieldValidationType.list
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Select a value from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Select a value from "{}".'.format(source)]
+            error_message = ['Value must be a value from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: {}.'.format(default.serialize()))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class ManyToOneAttribute(RelatedAttribute):
     """ Represents a many-to-one relationship between two types of objects.
@@ -5063,6 +5554,56 @@ class ManyToOneAttribute(RelatedAttribute):
                 self.name))
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(ManyToOneAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.primary_attribute:
+            validation.type = wc_utils.workbook.io.FieldValidationType.list
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Select a value from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Select a value from "{}".'.format(source)]
+            error_message = ['Value must be a value from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: {}.'.format(default.serialize()))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class OneToManyAttribute(RelatedAttribute):
@@ -5338,6 +5879,51 @@ class OneToManyAttribute(RelatedAttribute):
 
             right_children.remove(right_child)
             left_children.append(left_child)
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(OneToManyAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Select one or more values from "{}" or blank.'.format(source)]
+            error_message = ['Value must one or more values from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Select one or more values from "{}".'.format(source)]
+            error_message = ['Value must be one or more values from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class ManyToManyAttribute(RelatedAttribute):
@@ -5623,6 +6209,51 @@ class ManyToManyAttribute(RelatedAttribute):
             left_child = right_objs_in_left.get(right_child, right_child)
             right_children.remove(right_child)
             left_children.append(left_child)
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(ManyToManyAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Select one or more values from "{}" or blank.'.format(source)]
+            error_message = ['Value must one or more values from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Select one or more values from "{}".'.format(source)]
+            error_message = ['Value must be one or more values from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class RelatedManager(list):

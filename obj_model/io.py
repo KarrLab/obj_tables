@@ -31,7 +31,7 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
                             InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.workbook.core import get_column_letter
-from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, WorksheetValidation, FieldValidation
+from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, WorksheetValidation, WorksheetValidationOrientation
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
@@ -293,16 +293,25 @@ class WorkbookWriter(WriterBase):
                     obj_data.append(attr.serialize(getattr(obj, attr.name)))
             data.append(obj_data)
 
-        self.write_sheet(writer, model, data, headings)
+        # validations
+        field_validations = []
+        attr_order = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+        for attr in attr_order:
+            field_validations.append(attr.get_excel_validation())
+        validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.tabular_orientation.name],
+                                         fields=field_validations)
 
-    def write_sheet(self, writer, model, data, headings):
+        self.write_sheet(writer, model, data, headings, validation)
+
+    def write_sheet(self, writer, model, data, headings, validation):
         """ Write data to sheet
 
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             model (:obj:`type`): model
             data (:obj:`list` of :obj:`list` of :obj:`object`): list of list of cell values
-            headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headings
+            headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headingsvalidations
+            validation (:obj:`WorksheetValidation`): validation
         """
         style = self.create_worksheet_style(model)
         if model.Meta.tabular_orientation == TabularOrientation.row:
@@ -334,9 +343,6 @@ class WorkbookWriter(WriterBase):
 
         content = column_headings + data
 
-        # validations
-        validation = None #WorksheetValidation()
-
         # write content to worksheet
         writer.write_worksheet(sheet_name, content, style=style, validation=validation)
 
@@ -361,9 +367,9 @@ class WorkbookWriter(WriterBase):
 
         if model.Meta.tabular_orientation == TabularOrientation.row:
             style.head_rows = 1
-            style.head_columns = model.Meta.frozen_columns
+            style.head_columns = 0
         else:
-            style.head_rows = model.Meta.frozen_columns
+            style.head_rows = 0
             style.head_columns = 1
 
         return style

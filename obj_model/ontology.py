@@ -8,6 +8,7 @@
 
 from . import core
 import pronto
+import wc_utils.workbook.io
 
 
 class OntologyAttribute(core.LiteralAttribute):
@@ -209,3 +210,60 @@ class OntologyAttribute(core.LiteralAttribute):
             return self.ontology[json]
         else:
             return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(OntologyAttribute, self).get_excel_validation()
+
+        if self.terms is not None:
+            allowed_values = [term.id for term in self.terms]
+            if len(','.join(allowed_values)) <= 255:
+                validation.type = wc_utils.workbook.io.FieldValidationType.list
+                validation.allowed_list_values = allowed_values
+
+            validation.ignore_blank = self.none
+            if self.none:
+                input_message = ['Enter a comma-separated list of {} ontology terms "{}" or blank.'.format(
+                    self.namespace, '", "'.join(allowed_values))]
+                error_message = ['Value must be a comma-separated list of {} ontology terms "{}" or blank.'.format(
+                    self.namespace, '", "'.join(allowed_values))]
+            else:
+                input_message = ['Enter a comma-separated list of {} ontology terms "{}".'.format(
+                    self.namespace, '", "'.join(allowed_values))]
+                error_message = ['Value must be a comma-separated list of {} ontology terms "{}".'.format(
+                    self.namespace, '", "'.join(allowed_values))]
+
+        else:
+            validation.ignore_blank = self.none
+            if self.none:
+                input_message = ['Enter a comma-separated list of {} ontology terms or blank.'.format(
+                    self.namespace)]
+                error_message = ['Value must be a comma-separated list of {} ontology terms or blank.'.format(
+                    self.namespace)]
+            else:
+                input_message = ['Enter a comma-separated list of {} ontology terms.'.format(
+                    self.namespace)]
+                error_message = ['Value must be a comma-separated list of {} ontology terms.'.format(
+                    self.namespace)]            
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: "{}".'.format(default.id))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation

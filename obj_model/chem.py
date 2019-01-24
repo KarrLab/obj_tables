@@ -8,12 +8,14 @@
 
 from . import core
 from wc_utils.util import chem
+import wc_utils.workbook.io
 
 
 class EmpiricalFormulaAttribute(core.LiteralAttribute):
     """ Empirical formula attribute """
 
-    def __init__(self, default=None, verbose_name='', help='', primary=False, unique=False):
+    def __init__(self, default=None, verbose_name='', help="An empirical formula (e.g. 'H2O', 'CO2', or 'NaCl')",
+                 primary=False, unique=False):
         """
         Args:
             default (:obj:`chem.EmpiricalFormula`, :obj:`dict`, :obj:`str`, or :obj:`None`, optional): default value
@@ -123,3 +125,30 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
         if json:
             return chem.EmpiricalFormula(json)
         return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(EmpiricalFormulaAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.any
+
+        input_message = ['Enter an empirical formula (e.g. "H2O").']
+        error_message = ['Value must be an empirical formula (e.g. "H2O").']
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation

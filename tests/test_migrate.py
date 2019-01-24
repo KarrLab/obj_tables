@@ -76,6 +76,8 @@ class MigrationFixtures(unittest.TestCase):
         ### existing models
         class RelatedObj(obj_model.Model):
             id = SlugAttribute()
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id',)
         self.RelatedObj = RelatedObj
 
         class TestExisting(obj_model.Model):
@@ -84,13 +86,19 @@ class MigrationFixtures(unittest.TestCase):
             unmigrated_attr = StringAttribute()
             extra_attr_1 = obj_math.NumpyArrayAttribute()
             other_attr = StringAttribute()
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id', 'attr_a' ,'unmigrated_attr', 'extra_attr_1', 'other_attr')
         self.TestExisting = TestExisting
 
         class TestExisting2(obj_model.Model):
             related = OneToOneAttribute(RelatedObj, related_name='test')
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('related',)
 
         class TestNotMigrated(obj_model.Model):
             id_2 = SlugAttribute()
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id_2',)
 
         migrator_for_error_tests.existing_defs = {
             'RelatedObj': RelatedObj,
@@ -101,6 +109,8 @@ class MigrationFixtures(unittest.TestCase):
         ### migrated models
         class NewRelatedObj(obj_model.Model):
             id = SlugAttribute()
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id',)
         self.NewRelatedObj = NewRelatedObj
 
         class TestMigrated(obj_model.Model):
@@ -109,9 +119,13 @@ class MigrationFixtures(unittest.TestCase):
             migrated_attr = BooleanAttribute()
             extra_attr_2 = obj_math.NumpyArrayAttribute()
             other_attr = StringAttribute(unique=True)
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id', 'attr_b', 'migrated_attr', 'extra_attr_2', 'other_attr')
 
         class TestMigrated2(obj_model.Model):
             related = OneToOneAttribute(RelatedObj, related_name='not_test')
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('related',)
 
         migrator_for_error_tests.migrated_defs = {
             'NewRelatedObj': NewRelatedObj,
@@ -152,6 +166,8 @@ class MigrationFixtures(unittest.TestCase):
         class GoodRelatedCls(obj_model.Model):
             id = SlugAttribute()
             num = IntegerAttribute()
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id', 'num')
         self.GoodRelatedCls = GoodRelatedCls
 
         class GoodExisting(obj_model.Model):
@@ -160,10 +176,14 @@ class MigrationFixtures(unittest.TestCase):
             unmigrated_attr = StringAttribute()
             np_array = obj_math.NumpyArrayAttribute()
             related = OneToOneAttribute(GoodRelatedCls, related_name='test')
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id', 'attr_a', 'unmigrated_attr', 'np_array', 'related')
         self.GoodExisting = GoodExisting
 
         class GoodNotMigrated(obj_model.Model):
             id_2 = SlugAttribute()
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id_2',)
         self.GoodNotMigrated = GoodNotMigrated
 
         # migrated models
@@ -172,6 +192,8 @@ class MigrationFixtures(unittest.TestCase):
             attr_b = StringAttribute()
             np_array = obj_math.NumpyArrayAttribute()
             related = OneToOneAttribute(RelatedObj, related_name='test_2')
+            class Meta(obj_model.Model.Meta):
+                attribute_order = ('id', 'attr_b', 'np_array', 'related')
         self.GoodMigrated = GoodMigrated
 
         self.good_migrator = good_migrator = Migrator()

@@ -1417,6 +1417,7 @@ class DfbaObjectiveExpression(obj_model.Model, Expression):
         expression_term_models = ('Reaction', 'DfbaNetReaction')
         verbose_name = 'dFBA objective expression'
         expression_unit_registry = unit_registry
+        attribute_order = ('expression', 'reactions', 'dfba_net_reactions')
 
     def validate(self):
         """ Determine if the dFBA objective expression is valid
@@ -1986,6 +1987,7 @@ class ObservableExpression(obj_model.Model, Expression):
         expression_term_models = ('Species', 'Observable')
         expression_is_linear = True
         expression_unit_registry = unit_registry
+        attribute_order = ('expression', 'species', 'observables')
 
     def serialize(self):
         """ Generate string representation
@@ -2087,6 +2089,7 @@ class FunctionExpression(obj_model.Model, Expression):
         tabular_orientation = TabularOrientation.inline
         expression_term_models = ('Parameter', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
+        attribute_order = ('expression', 'parameters', 'species', 'observables', 'functions', 'compartments')
 
     def serialize(self):
         """ Generate string representation
@@ -2225,6 +2228,7 @@ class StopConditionExpression(obj_model.Model, Expression):
         expression_term_models = ('Parameter', 'Species', 'Observable', 'Function', 'Compartment')
         expression_type = bool
         expression_unit_registry = unit_registry
+        attribute_order = ('expression', 'parameters', 'species', 'observables', 'functions', 'compartments')
 
     def serialize(self):
         """ Generate string representation
@@ -2653,6 +2657,7 @@ class RateLawExpression(obj_model.Model, Expression):
         ordering = ('expression',)
         expression_term_models = ('Parameter', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
+        attribute_order = ('expression', 'parameters', 'species', 'observables', 'functions', 'compartments')
 
     def serialize(self):
         """ Generate string representation

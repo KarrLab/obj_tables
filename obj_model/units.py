@@ -9,6 +9,7 @@
 from . import core
 from wc_utils.util.units import are_units_equivalent
 import pint
+import wc_utils.workbook.io
 
 
 class UnitAttribute(core.LiteralAttribute):
@@ -21,7 +22,7 @@ class UnitAttribute(core.LiteralAttribute):
     """
 
     def __init__(self, registry, choices=None, none=True, default=None, default_cleaned_value=None,
-                 verbose_name='', help='',
+                 verbose_name='', help="Units (e.g. 'second', 'meter', or 'gram')",
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
@@ -207,3 +208,52 @@ class UnitAttribute(core.LiteralAttribute):
             return self.registry.parse_units(json)
         else:
             return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(UnitAttribute, self).get_excel_validation()
+
+        if self.choices is not None:
+            allowed_values = [str(choice) for choice in self.choices]
+            if len(','.join(allowed_values)) <= 255:
+                validation.type = wc_utils.workbook.io.FieldValidationType.list
+                validation.allowed_list_values = allowed_values
+
+            validation.ignore_blank = self.none
+            if self.none:
+                input_message = ['Select one unit of "{}" or blank.'.format('", "'.join(allowed_values))]
+                error_message = ['Value must be one unit of "{}" or blank.'.format('", "'.join(allowed_values))]
+            else:
+                input_message = ['Select one unit of "{}".'.format('", "'.join(allowed_values))]
+                error_message = ['Value must be one unit of "{}".'.format('", "'.join(allowed_values))]
+
+        else:
+            validation.ignore_blank = self.none
+            if self.none:
+                input_message = ['Enter a unit or blank.']
+                error_message = ['Value must be a unit or blank.']
+            else:
+                input_message = ['Enter a unit.']
+                error_message = ['Value must be a unit.']
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: "{}".'.format(str(default)))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation

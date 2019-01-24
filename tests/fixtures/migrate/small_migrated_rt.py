@@ -32,7 +32,7 @@ class Property(obj_model.Model):
     migrated_value = PositiveIntegerAttribute()
 
     class Meta(obj_model.Model.Meta):
-        attribute_order = ('id', 'test')
+        attribute_order = ('id', 'test', 'migrated_value')
         tabular_orientation = TabularOrientation.column
 
 
@@ -53,3 +53,6 @@ class Reference(obj_model.Model):
     """
     id = SlugAttribute()
     value = StringAttribute()
+
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'value')
