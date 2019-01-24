@@ -88,6 +88,42 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
             return self.related_class.deserialize(value, objects)
         return (None, None)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(RelatedAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.expression_is_linear:
+            type = 'linear '
+        else:
+            type = ''
+
+        terms = []
+        for attr in self.related_class.Meta.attributes.values():
+            if isinstance(attr, RelatedAttribute) and \
+                attr.related_class.__name__ in self.related_class.Meta.expression_term_models:
+                terms.append(attr.related_class.Meta.verbose_name_plural)
+        if len(terms) == 1:
+            terms = terms[0]
+        else:
+            terms = '{} and {}'.format(', '.join(terms[0:-1]), terms[-1])
+
+        input_message = 'Enter a {}expression of {}.'.format(type, terms)
+        error_message = 'Value must be a {}expression of {}.'.format(type, terms)
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += input_message
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += error_message
+
+        return validation
+
 
 class ExpressionManyToOneAttribute(ManyToOneAttribute):
     """ Expresion many-to-one attribute """
@@ -121,6 +157,42 @@ class ExpressionManyToOneAttribute(ManyToOneAttribute):
         if value:
             return self.related_class.deserialize(value, objects)
         return (None, None)
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(RelatedAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.expression_is_linear:
+            type = 'linear '
+        else:
+            type = ''
+
+        terms = []
+        for attr in self.related_class.Meta.attributes.values():
+            if isinstance(attr, RelatedAttribute) and \
+                attr.related_class.__name__ in self.related_class.Meta.expression_term_models:
+                terms.append(attr.related_class.Meta.verbose_name_plural)
+        if len(terms) == 1:
+            terms = terms[0]
+        else:
+            terms = '{} and {}'.format(', '.join(terms[0:-1]), terms[-1])
+
+        input_message = 'Enter a {}expression of {}.'.format(type, terms)
+        error_message = 'Value must be a {}expression of {}.'.format(type, terms)
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += input_message
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += error_message
+
+        return validation
 
 
 class ExpressionTermMeta(object):

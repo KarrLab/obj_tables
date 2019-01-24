@@ -48,7 +48,8 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
 
     @abc.abstractmethod
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+            title=None, description=None, keywords=None, version=None, language=None, creator=None,
+            extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -66,6 +67,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            extra_entries (:obj:`int`, optional): additional entries to display
         """
         pass  # pragma: no cover
 
@@ -74,7 +76,8 @@ class JsonWriter(WriterBase):
     """ Write model objects to a JSON or YAML file """
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+            title=None, description=None, keywords=None, version=None, language=None, creator=None,
+            extra_entries=0):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -91,6 +94,7 @@ class JsonWriter(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            extra_entries (:obj:`int`, optional): additional entries to display
 
         Raises:
             :obj:`ValueError`: if model names are not unique or output format is not supported
@@ -144,10 +148,12 @@ class JsonWriter(WriterBase):
 
 
 class WorkbookWriter(WriterBase):
-    """ Write model objects to an Excel file or CSV or TSV file(s) """
+    """ Write model objects to an Excel file or CSV or TSV file(s)
+    """
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+            title=None, description=None, keywords=None, version=None, language=None, creator=None,
+            extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -167,6 +173,7 @@ class WorkbookWriter(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            extra_entries (:obj:`int`, optional): additional entries to display
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -247,11 +254,12 @@ class WorkbookWriter(WriterBase):
             else:
                 objects = []
 
-            self.write_model(writer, model, objects, include_all_attributes=include_all_attributes, encoded=encoded)
+            self.write_model(writer, model, objects, include_all_attributes=include_all_attributes, encoded=encoded,
+                             extra_entries=extra_entries)
 
         writer.finalize_workbook()
 
-    def write_model(self, writer, model, objects, include_all_attributes=True, encoded=None):
+    def write_model(self, writer, model, objects, include_all_attributes=True, encoded=None, extra_entries=0):
         """ Write a list of model objects to a file
 
         Args:
@@ -261,6 +269,7 @@ class WorkbookWriter(WriterBase):
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
                 including those not explictly included in `Model.Meta.attribute_order`
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
+            extra_entries (:obj:`int`, optional): additional entries to display
         """
 
         # attribute order
@@ -301,9 +310,9 @@ class WorkbookWriter(WriterBase):
         validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.tabular_orientation.name],
                                          fields=field_validations)
 
-        self.write_sheet(writer, model, data, headings, validation)
+        self.write_sheet(writer, model, data, headings, validation, extra_entries=extra_entries)
 
-    def write_sheet(self, writer, model, data, headings, validation):
+    def write_sheet(self, writer, model, data, headings, validation, extra_entries=0):
         """ Write data to sheet
 
         Args:
@@ -312,8 +321,9 @@ class WorkbookWriter(WriterBase):
             data (:obj:`list` of :obj:`list` of :obj:`object`): list of list of cell values
             headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headingsvalidations
             validation (:obj:`WorksheetValidation`): validation
+            extra_entries (:obj:`int`, optional): additional entries to display
         """
-        style = self.create_worksheet_style(model)
+        style = self.create_worksheet_style(model, extra_entries=extra_entries)
         if model.Meta.tabular_orientation == TabularOrientation.row:
             sheet_name = model.Meta.verbose_name_plural
             row_headings = []
@@ -347,11 +357,12 @@ class WorkbookWriter(WriterBase):
         writer.write_worksheet(sheet_name, content, style=style, validation=validation)
 
     @staticmethod
-    def create_worksheet_style(model):
+    def create_worksheet_style(model, extra_entries=0):
         """ Create worksheet style for model
 
         Args:
             model (:obj:`type`): model class
+            extra_entries (:obj:`int`, optional): additional entries to display
 
         Returns:
             :obj:`WorksheetStyle`: worksheet style
@@ -360,7 +371,7 @@ class WorkbookWriter(WriterBase):
             head_row_font_bold=True,
             head_row_fill_pattern='solid',
             head_row_fill_fgcolor='CCCCCC',
-            extra_rows=10,
+            extra_rows=0,
             extra_columns=0,
             row_height=15.01,
         )
@@ -368,9 +379,11 @@ class WorkbookWriter(WriterBase):
         if model.Meta.tabular_orientation == TabularOrientation.row:
             style.head_rows = 1
             style.head_columns = 0
+            style.extra_rows = extra_entries
         else:
             style.head_rows = 0
             style.head_columns = 1
+            style.extra_columns = extra_entries
 
         return style
 
@@ -401,7 +414,8 @@ class Writer(WriterBase):
             raise ValueError('Invalid export format: {}'.format(ext))
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None):
+            title=None, description=None, keywords=None, version=None, language=None, creator=None,
+            extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -421,12 +435,13 @@ class Writer(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            extra_entries (:obj:`int`, optional): additional entries to display
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, models=models, get_related=get_related,
                      include_all_attributes=include_all_attributes, validate=validate,
                      title=title, description=description, keywords=keywords,
-                     language=language, creator=creator)
+                     language=language, creator=creator, extra_entries=extra_entries)
 
 
 class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
@@ -1210,7 +1225,7 @@ def convert(source, destination, models,
 
 
 def create_template(path, models, title=None, description=None, keywords=None,
-                    version=None, language=None, creator=None):
+                    version=None, language=None, creator=None, extra_entries=10):
     """ Create a template for a model
 
     Args:
@@ -1224,10 +1239,12 @@ def create_template(path, models, title=None, description=None, keywords=None,
         version (:obj:`str`, optional): version
         language (:obj:`str`, optional): language
         creator (:obj:`str`, optional): creator
+        extra_entries (:obj:`int`, optional): additional entries to display
     """
     Writer.get_writer(path)().run(path, [], models,
                                   title=title, description=description, keywords=keywords,
-                                  version=version, language=language, creator=creator)
+                                  version=version, language=language, creator=creator,
+                                  extra_entries=extra_entries)
 
 
 def get_ordered_attributes(cls, include_all_attributes=True):
