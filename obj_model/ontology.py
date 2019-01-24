@@ -220,7 +220,7 @@ class OntologyAttribute(core.LiteralAttribute):
         validation = super(OntologyAttribute, self).get_excel_validation()
 
         if self.terms is not None:
-            allowed_values = [term.id for term in self.terms]
+            allowed_values = [self.serialize(term) for term in self.terms]
             if len(','.join(allowed_values)) <= 255:
                 validation.type = wc_utils.workbook.io.FieldValidationType.list
                 validation.allowed_list_values = allowed_values
@@ -256,7 +256,7 @@ class OntologyAttribute(core.LiteralAttribute):
 
         default = self.get_default_cleaned_value()
         if default:
-            input_message.append('Default: "{}".'.format(default.id))
+            input_message.append('Default: "{}".'.format(self.serialize(default)))
 
         if validation.input_message:
             validation.input_message += '\n\n'
