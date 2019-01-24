@@ -3442,8 +3442,8 @@ class FloatAttribute(NumericAttribute):
         """
         return val1 == val2 or \
             (isnan(val1) and isnan(val2)) or \
-            (val1 == 0. and abs(val2) < 1e-10) or \
-            (val1 != 0. and abs((val1 - val2) / val1) < 1e-10)
+            (val1 == 0. and abs(val2) < 1e-100) or \
+            (val1 != 0. and abs((val1 - val2) / val1) < 1e-100)
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -3529,7 +3529,7 @@ class FloatAttribute(NumericAttribute):
         """
         validation = super(FloatAttribute, self).get_excel_validation()
 
-        validation.type = wc_utils.workbook.io.FieldValidationType.any
+        validation.type = wc_utils.workbook.io.FieldValidationType.decimal
         validation.ignore_blank = self.nan
         if self.nan:
             input_message = ['Enter a float or blank.']
@@ -3540,13 +3540,22 @@ class FloatAttribute(NumericAttribute):
 
         if self.min is None or isnan(self.min):
             if self.max is None or isnan(self.max):
-                pass
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = -1e100
+                validation.maximum_scalar_value = 1e100
             else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
+                validation.allowed_scalar_value = self.max or 1e-100
                 input_message.append('Value must be less than or equal to {}.'.format(self.max))
         else:
             if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = self.min or -1e-100
                 input_message.append('Value must be greater than or equal to {}.'.format(self.min))
             else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = self.min or -1e-100
+                validation.maximum_scalar_value = self.max or 1e-100
                 input_message.append('Value must be between {} and {}.'.format(self.min, self.max))
 
         if self.unique:
@@ -3622,7 +3631,7 @@ class PositiveFloatAttribute(FloatAttribute):
         """
         validation = super(FloatAttribute, self).get_excel_validation()
 
-        validation.type = wc_utils.workbook.io.FieldValidationType.any
+        validation.type = wc_utils.workbook.io.FieldValidationType.decimal
         validation.ignore_blank = self.nan
         if self.nan:
             input_message = ['Enter a float or blank.']
@@ -3632,8 +3641,13 @@ class PositiveFloatAttribute(FloatAttribute):
             error_message = ['Value must be a float.']
 
         if self.max is None or isnan(self.max):
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+            validation.allowed_scalar_value = -1e-100
             input_message.append('Value must be positive.')
         else:
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+            validation.minimum_scalar_value = -1e-100
+            validation.maximum_scalar_value = self.max or 1e-100
             input_message.append('Value must be positive and less than or equal to {}.'.format(self.max))
 
         if self.unique:
@@ -3807,17 +3821,17 @@ class IntegerAttribute(NumericAttribute):
                 validation.maximum_scalar_value = 2**15-1
             else:
                 validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
-                validation.allowed_scalar_value = self.max or 1e-10
+                validation.allowed_scalar_value = self.max or 1e-100
                 input_message.append('Value must be less than or equal to {}.'.format(self.max))
         else:
             if self.max is None or isnan(self.max):
                 validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
-                validation.allowed_scalar_value = self.min or -1e-10
+                validation.allowed_scalar_value = self.min or -1e-100
                 input_message.append('Value must be greater than or equal to {}.'.format(self.min))
             else:
                 validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
-                validation.minimum_scalar_value = self.min or -1e-10
-                validation.maximum_scalar_value = self.max or 1e-10
+                validation.minimum_scalar_value = self.min or -1e-100
+                validation.maximum_scalar_value = self.max or 1e-100
                 input_message.append('Value must be between {} and {}.'.format(self.min, self.max))
 
         if self.unique:
@@ -3903,8 +3917,8 @@ class PositiveIntegerAttribute(IntegerAttribute):
             input_message.append('Value must be positive.')
         else:
             validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
-            validation.minimum_scalar_value = -1e-10
-            validation.maximum_scalar_value = self.max or 1e-10
+            validation.minimum_scalar_value = -1e-100
+            validation.maximum_scalar_value = self.max or 1e-100
             input_message.append('Value must be positive and less than or equal to {}.'.format(self.max))
 
         if self.unique:
