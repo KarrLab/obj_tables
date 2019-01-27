@@ -2091,7 +2091,7 @@ class ExcelValidationTestCase(unittest.TestCase):
 
     def tearDown(self):
         print(self.dirname)
-        #shutil.rmtree(self.dirname)
+        # shutil.rmtree(self.dirname)
 
     def test(self):
         class TestEnum(enum.Enum):
@@ -2118,7 +2118,7 @@ class ExcelValidationTestCase(unittest.TestCase):
             id = core.SlugAttribute(unique=True, primary=True)
             enum_attr_1 = core.EnumAttribute(TestEnum, default_cleaned_value=TestEnum.val1)
             enum_attr_2 = core.EnumAttribute(TestEnum, none=True, unique=True)
-            bool_attr = core.BooleanAttribute(default_cleaned_value=True)            
+            bool_attr = core.BooleanAttribute(default_cleaned_value=True)
             float_attr_1 = core.FloatAttribute(default_cleaned_value=4.)
             float_attr_2 = core.FloatAttribute(default_cleaned_value=4., min=-1.)
             float_attr_3 = core.FloatAttribute(default_cleaned_value=4., max=-1.)
@@ -2144,31 +2144,31 @@ class ExcelValidationTestCase(unittest.TestCase):
             many_to_one_attr_1 = core.ManyToOneAttribute(TestChild1, related_name='parents_2')
             one_to_many_attr_1 = core.OneToManyAttribute(TestChild1, related_name='parent_3')
             many_to_many_attr_1 = core.ManyToManyAttribute(TestChild1, related_name='parents_4')
-            one_to_one_attr_2 = core.OneToOneAttribute(TestChild2, related_name='parent_1', 
-                min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_1'))
+            one_to_one_attr_2 = core.OneToOneAttribute(TestChild2, related_name='parent_1',
+                                                       min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_1'))
             many_to_one_attr_2 = core.ManyToOneAttribute(TestChild2, related_name='parents_2',
-                min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_2'))
+                                                         min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_2'))
             one_to_many_attr_2 = core.OneToManyAttribute(TestChild2, related_name='parent_3',
-                min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_3')])
-            many_to_many_attr_2 = core.ManyToManyAttribute(TestChild2, related_name='parents_4', 
-                min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_4')])
+                                                         min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_3')])
+            many_to_many_attr_2 = core.ManyToManyAttribute(TestChild2, related_name='parents_4',
+                                                           min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_4')])
             formula_attr = chem.EmpiricalFormulaAttribute(unique=True)
             onto_attr_1 = ontology.OntologyAttribute(sbo_ontotology,
-                                                   namespace='SBO',
-                                                   terms=sbo_ontotology['SBO:0000474'].rchildren(),
-                                                   default_cleaned_value=sbo_ontotology['SBO:0000475'])
+                                                     namespace='SBO',
+                                                     terms=sbo_ontotology['SBO:0000474'].rchildren(),
+                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'])
             onto_attr_2 = ontology.OntologyAttribute(sbo_ontotology,
-                                                   namespace='SBO',
-                                                   terms=sbo_ontotology['SBO:0000474'].rchildren(),
-                                                   default_cleaned_value=sbo_ontotology['SBO:0000475'],
-                                                   unique=True, none=False)
+                                                     namespace='SBO',
+                                                     terms=sbo_ontotology['SBO:0000474'].rchildren(),
+                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'],
+                                                     unique=True, none=False)
             onto_attr_3 = ontology.OntologyAttribute(sbo_ontotology,
-                                                   namespace='SBO',
-                                                   default_cleaned_value=sbo_ontotology['SBO:0000475'])
+                                                     namespace='SBO',
+                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'])
             onto_attr_4 = ontology.OntologyAttribute(sbo_ontotology,
-                                                   namespace='SBO',
-                                                   default_cleaned_value=sbo_ontotology['SBO:0000475'],
-                                                   unique=True, none=False)
+                                                     namespace='SBO',
+                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'],
+                                                     unique=True, none=False)
             units_attr_1 = units.UnitAttribute(unit_registry, choices=(
                 unit_registry.parse_units('g'),
                 unit_registry.parse_units('l'),
@@ -2178,21 +2178,22 @@ class ExcelValidationTestCase(unittest.TestCase):
                 unit_registry.parse_units('l'),
             ), default_cleaned_value=unit_registry.parse_units('g'), unique=True, none=False)
             units_attr_3 = units.UnitAttribute(unit_registry, default_cleaned_value=unit_registry.parse_units('g'))
-            units_attr_4 = units.UnitAttribute(unit_registry, default_cleaned_value=unit_registry.parse_units('g'), unique=True, none=False)
+            units_attr_4 = units.UnitAttribute(
+                unit_registry, default_cleaned_value=unit_registry.parse_units('g'), unique=True, none=False)
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'enum_attr_1', 'enum_attr_2',
-                                   'bool_attr', 
+                                   'bool_attr',
                                    'float_attr_1', 'float_attr_2', 'float_attr_3', 'float_attr_4',
                                    'pos_float_attr_1', 'pos_float_attr_2',
-                                   'int_attr_1', 'int_attr_2', 'int_attr_3', 'int_attr_4', 
-                                   'pos_int_attr_1', 'pos_int_attr_2', 
+                                   'int_attr_1', 'int_attr_2', 'int_attr_3', 'int_attr_4',
+                                   'pos_int_attr_1', 'pos_int_attr_2',
                                    'str_attr_1', 'str_attr_2', 'str_attr_3', 'str_attr_4',
                                    'date_attr', 'time_attr', 'date_time_attr',
                                    'one_to_one_attr_1', 'many_to_one_attr_1', 'one_to_many_attr_1', 'many_to_many_attr_1',
                                    'one_to_one_attr_2', 'many_to_one_attr_2', 'one_to_many_attr_2', 'many_to_many_attr_2',
-                                   'formula_attr', 
-                                   'onto_attr_1', 'onto_attr_2', 'onto_attr_3', 'onto_attr_4', 
+                                   'formula_attr',
+                                   'onto_attr_1', 'onto_attr_2', 'onto_attr_3', 'onto_attr_4',
                                    'units_attr_1', 'units_attr_2', 'units_attr_3', 'units_attr_4',
                                    )
 
@@ -2200,12 +2201,12 @@ class ExcelValidationTestCase(unittest.TestCase):
             attr.help = 'A helpful description'
 
         objects = [
-            TestParent(id='parent_a', 
+            TestParent(id='parent_a',
                        enum_attr_2=TestEnum.val1,
                        float_attr_4=-0.5,
                        pos_float_attr_2=5.,
-                       int_attr_1=1, int_attr_2=1, int_attr_3=-1, int_attr_4=1, 
-                       pos_int_attr_1=1, pos_int_attr_2=3, 
+                       int_attr_1=1, int_attr_2=1, int_attr_3=-1, int_attr_4=1,
+                       pos_int_attr_1=1, pos_int_attr_2=3,
                        str_attr_2='a2', str_attr_4='a4',
                        date_attr=datetime.date(2001, 1, 1),
                        time_attr=datetime.time(11, 0, 0),
@@ -2215,7 +2216,7 @@ class ExcelValidationTestCase(unittest.TestCase):
                        onto_attr_4=sbo_ontotology['SBO:0000475'],
                        units_attr_2=unit_registry.parse_units('g'),
                        units_attr_4=unit_registry.parse_units('g')),
-            TestParent(id='parent_b', 
+            TestParent(id='parent_b',
                        enum_attr_2=TestEnum.val2,
                        float_attr_4=0.5,
                        pos_float_attr_2=8.,
@@ -2230,6 +2231,95 @@ class ExcelValidationTestCase(unittest.TestCase):
                        onto_attr_4=sbo_ontotology['SBO:0000487'],
                        units_attr_2=unit_registry.parse_units('l'),
                        units_attr_4=unit_registry.parse_units('l')),
+            TestChild1(id='child_1_a'),
+            TestChild1(id='child_1_b'),
+            TestChild2(id='child_2_a'),
+            TestChild2(id='child_2_b'),
+        ]
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        WorkbookWriter().run(filename, objects, [TestParent, TestChild1, TestChild2])
+
+    def test_no_primary_attr(self):
+        class TestChild1(core.Model):
+            id = core.StringAttribute(unique=True)
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
+            def serialize(self):
+                return self.id
+
+        class TestChild2(core.Model):
+            id = core.StringAttribute(unique=True)
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+                tabular_orientation = core.TabularOrientation.column
+
+            def serialize(self):
+                return self.id
+
+        class OneToOneAttribute(core.OneToOneAttribute):
+            def serialize(self, value, encoded=None):
+                if value:
+                    return value.serialize()
+                else:
+                    return None
+
+            def deserialize(self, value, objects, decoded=None): pass
+
+        class OneToManyAttribute(core.OneToManyAttribute):
+            def serialize(self, values, encoded=None):
+                return ', '.join([value.serialize() for value in values])
+
+            def deserialize(self, value, objects, decoded=None): pass
+
+        class ManyToOneAttribute(core.ManyToOneAttribute):
+            def serialize(self, value, encoded=None):
+                if value:
+                    return value.serialize()
+                else:
+                    return None
+
+            def deserialize(self, value, objects, decoded=None): pass
+
+        class ManyToManyAttribute(core.ManyToManyAttribute):
+            def serialize(self, values, encoded=None):
+                return ', '.join([value.serialize() for value in values])
+
+            def deserialize(self, value, objects, decoded=None): pass
+
+        class TestParent(core.Model):
+            id = core.StringAttribute(unique=True)
+            one_to_one_attr_1 = OneToOneAttribute(TestChild1, related_name='parent_1')
+            many_to_one_attr_1 = ManyToOneAttribute(TestChild1, related_name='parents_2')
+            one_to_many_attr_1 = OneToManyAttribute(TestChild1, related_name='parent_3')
+            many_to_many_attr_1 = ManyToManyAttribute(TestChild1, related_name='parents_4')
+            one_to_one_attr_2 = OneToOneAttribute(TestChild2, related_name='parent_1',
+                                                  min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_1'))
+            many_to_one_attr_2 = ManyToOneAttribute(TestChild2, related_name='parents_2',
+                                                    min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_2'))
+            one_to_many_attr_2 = OneToManyAttribute(TestChild2, related_name='parent_3',
+                                                    min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_3')])
+            many_to_many_attr_2 = ManyToManyAttribute(TestChild2, related_name='parents_4',
+                                                      min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_4')])
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',
+                                   'one_to_one_attr_1', 'many_to_one_attr_1', 'one_to_many_attr_1', 'many_to_many_attr_1',
+                                   'one_to_one_attr_2', 'many_to_one_attr_2', 'one_to_many_attr_2', 'many_to_many_attr_2',
+                                   )
+
+            def serialize(self):
+                return self.id
+
+        for attr in TestParent.Meta.attributes.values():
+            attr.help = 'A helpful description'
+
+        objects = [
+            TestParent(id='parent_a'),
+            TestParent(id='parent_b'),
             TestChild1(id='child_1_a'),
             TestChild1(id='child_1_b'),
             TestChild2(id='child_2_a'),
