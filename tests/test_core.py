@@ -264,6 +264,21 @@ class TestCore(unittest.TestCase):
         self.assertEqual(UnrootedLeaf.Meta.attribute_order, ('id', ))
         self.assertEqual(Leaf3.Meta.attribute_order, ('id2', 'name2'))
 
+    def test_get_attr_index(self):
+        class TestModel(core.Model):
+            attr_1 = core.StringAttribute()
+            attr_2 = core.StringAttribute()
+            attr_3 = core.StringAttribute()
+            attr_4 = core.StringAttribute()
+            class Meta(core.Model.Meta):
+                attribute_order = ('attr_1', 'attr_3', 'attr_2')
+
+        self.assertEqual(TestModel.get_attr_index(TestModel.attr_1), 0)
+        self.assertEqual(TestModel.get_attr_index(TestModel.attr_2), 2)
+        self.assertEqual(TestModel.get_attr_index(TestModel.attr_3), 1)
+        with self.assertRaisesRegex(ValueError, 'not in `attribute_order`'):
+            TestModel.get_attr_index(TestModel.attr_4)
+
     def test_set(self):
         leaf = Leaf(id='leaf_1', name='Leaf 1')
         self.assertEqual(leaf.id, 'leaf_1')
