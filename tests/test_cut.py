@@ -92,6 +92,14 @@ class CutTestCase(unittest.TestCase):
         self.assertEqual(self.obj_01_0_0.get_immediate_children(), [])
         self.assertEqual(self.obj_01_1_0.get_immediate_children(), [])
 
+    def test_get_immediate_children_type_all(self):
+        self.assertEqual(set(self.obj_0.get_immediate_children(type='__all__')), set(self.obj_0.children_00) | set(self.obj_0.children_01))
+
+        self.assertEqual(set(self.obj_00_0.get_immediate_children(type='__all__')), set([self.obj_0, self.obj_00_0_0]))
+        self.assertEqual(set(self.obj_00_1.get_immediate_children(type='__all__')), set([self.obj_0, self.obj_00_1_0, self.obj_00_1_1]))
+        self.assertEqual(set(self.obj_01_0.get_immediate_children(type='__all__')), set([self.obj_0, self.obj_01_0.child_010]))
+        self.assertEqual(set(self.obj_01_1.get_immediate_children(type='__all__')), set([self.obj_0, self.obj_01_1.child_011]))
+
     def test_get_immediate_children(self):
         self.assertEqual(self.obj_0.get_immediate_children(type='left'), self.obj_0.children_00)
         self.assertEqual(self.obj_0.get_immediate_children(type='right'), self.obj_0.children_01)
@@ -125,6 +133,19 @@ class CutTestCase(unittest.TestCase):
         self.assertEqual(self.obj_01_1_0.get_immediate_children(type='left'), [])
         self.assertEqual(self.obj_01_1_0.get_immediate_children(type='right'), [])
         self.assertEqual(self.obj_01_1_0.get_immediate_children(type='all'), [])
+
+    def test_get_immediate_children_error(self):
+        class TestModel(core.Model):
+            id = core.SlugAttribute()
+
+            class Meta(core.Model.Meta):
+                children = {
+                    'all': ['id'],
+                }
+
+        model = TestModel(id='model')
+        with self.assertRaisesRegex(ValueError, 'not a related attribute'):
+            model.get_immediate_children(type='all')
 
     def test_get_children_not_recursive(self):
         self.assertEqual(self.obj_0.get_children(recursive=False, type='left'), self.obj_0.children_00)

@@ -2603,6 +2603,8 @@ class Model(with_metaclass(ModelMeta, object)):
         """
         if type is None:
             attr_names = [attr.name for attr in self.Meta.attributes.values() if isinstance(attr, RelatedAttribute)]
+        elif type == '__all__':
+            attr_names = [attr.name for attr in self.Meta.local_attributes.values() if attr.is_related]
         else:
             attr_names = self.Meta.children.get(type, ())
 
