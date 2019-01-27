@@ -106,13 +106,17 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
             if isinstance(attr, RelatedAttribute) and \
                 attr.related_class.__name__ in self.related_class.Meta.expression_term_models:
                 terms.append(attr.related_class.Meta.verbose_name_plural)
-        if len(terms) == 1:
-            terms = terms[0]
-        else:
-            terms = '{} and {}'.format(', '.join(terms[0:-1]), terms[-1])
+        if terms:
+            if len(terms) == 1:
+                terms = terms[0]
+            else:
+                terms = '{} and {}'.format(', '.join(terms[0:-1]), terms[-1])
 
-        input_message = 'Enter a {}expression of {}.'.format(type, terms)
-        error_message = 'Value must be a {}expression of {}.'.format(type, terms)
+            input_message = 'Enter a {}expression of {}.'.format(type, terms)
+            error_message = 'Value must be a {}expression of {}.'.format(type, terms)
+        else:
+            input_message = 'Enter a {}expression.'.format(type, terms)
+            error_message = 'Value must be a {}expression.'.format(type, terms)
 
         if validation.input_message:
             validation.input_message += '\n\n'
@@ -176,13 +180,17 @@ class ExpressionManyToOneAttribute(ManyToOneAttribute):
             if isinstance(attr, RelatedAttribute) and \
                 attr.related_class.__name__ in self.related_class.Meta.expression_term_models:
                 terms.append(attr.related_class.Meta.verbose_name_plural)
-        if len(terms) == 1:
-            terms = terms[0]
-        else:
-            terms = '{} and {}'.format(', '.join(terms[0:-1]), terms[-1])
+        if terms:
+            if len(terms) == 1:
+                terms = terms[0]
+            else:
+                terms = '{} and {}'.format(', '.join(terms[0:-1]), terms[-1])
 
-        input_message = 'Enter a {}expression of {}.'.format(type, terms)
-        error_message = 'Value must be a {}expression of {}.'.format(type, terms)
+            input_message = 'Enter a {}expression of {}.'.format(type, terms)
+            error_message = 'Value must be a {}expression of {}.'.format(type, terms)
+        else:
+            input_message = 'Enter a {}expression.'.format(type, terms)
+            error_message = 'Value must be a {}expression.'.format(type, terms)
 
         if validation.input_message:
             validation.input_message += '\n\n'

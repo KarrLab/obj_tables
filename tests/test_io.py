@@ -8,7 +8,7 @@
 """
 
 from os.path import splitext
-from obj_model import core, utils, chem, units, ontology
+from obj_model import core, utils, chem, ontology, units
 from obj_model.io import WorkbookReader, WorkbookWriter, convert, create_template, IoWarning
 from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorkbookStyle, WorksheetStyle,
                                   read as read_workbook, write as write_workbook, get_reader, get_writer)
@@ -18,6 +18,7 @@ import json
 import math
 import mock
 import obj_model.io
+import obj_model.expression
 import openpyxl
 import os
 import pint
@@ -2114,6 +2115,70 @@ class ExcelValidationTestCase(unittest.TestCase):
         sbo_ontotology = pronto.Ontology('tests/fixtures/SBO.obo')
         unit_registry = pint.UnitRegistry()
 
+        class Parameter1(core.Model):
+            id = core.SlugAttribute()
+            value = core.FloatAttribute()
+            units = units.UnitAttribute(unit_registry)
+
+            class Meta(core.Model.Meta, obj_model.expression.ExpressionStaticTermMeta):
+                expression_term_value = 'value'
+                expression_term_units = 'units'
+
+        class Parameter2(core.Model):
+            id = core.SlugAttribute()
+            value = core.FloatAttribute()
+            units = units.UnitAttribute(unit_registry)
+
+            class Meta(core.Model.Meta, obj_model.expression.ExpressionStaticTermMeta):
+                expression_term_value = 'value'
+                expression_term_units = 'units'
+
+        class TestParentExpression1(core.Model, obj_model.expression.Expression):
+            expression = core.StringAttribute()
+
+            class Meta(core.Model.Meta, obj_model.expression.Expression.Meta):
+                expression_term_models = ()
+                expression_unit_registry = unit_registry
+
+            def serialize(self): return obj_model.expression.Expression.serialize(self)
+
+            @classmethod
+            def deserialize(cls, value, objects): return obj_model.expression.Expression.deserialize(cls, value, objects)
+
+            def validate(self): return obj_model.expression.Expression.validate(self, self.parent_sub_function)
+
+        class TestParentExpression2(core.Model, obj_model.expression.Expression):
+            expression = core.StringAttribute()
+            parameters_1 = core.ManyToManyAttribute(Parameter1, related_name='test_parent_expressions_2')
+
+            class Meta(core.Model.Meta, obj_model.expression.Expression.Meta):
+                expression_term_models = ('Parameter1',)
+                expression_unit_registry = unit_registry
+
+            def serialize(self): return obj_model.expression.Expression.serialize(self)
+
+            @classmethod
+            def deserialize(cls, value, objects): return obj_model.expression.Expression.deserialize(cls, value, objects)
+
+            def validate(self): return obj_model.expression.Expression.validate(self, self.parent_sub_function)
+
+        class TestParentExpression3(core.Model, obj_model.expression.Expression):
+            expression = core.StringAttribute()
+            parameters_1 = core.ManyToManyAttribute(Parameter1, related_name='test_parent_expressions_3')
+            parameters_2 = core.ManyToManyAttribute(Parameter2, related_name='test_parent_expressions_3')
+
+            class Meta(core.Model.Meta, obj_model.expression.Expression.Meta):
+                expression_term_models = ('Parameter1', 'Parameter2')
+                expression_unit_registry = unit_registry
+                expression_is_linear = True
+
+            def serialize(self): return obj_model.expression.Expression.serialize(self)
+
+            @classmethod
+            def deserialize(cls, value, objects): return obj_model.expression.Expression.deserialize(cls, value, objects)
+
+            def validate(self): return obj_model.expression.Expression.validate(self, self.parent_sub_function)
+
         class TestParent(core.Model):
             id = core.SlugAttribute(unique=True, primary=True)
             enum_attr_1 = core.EnumAttribute(TestEnum, default_cleaned_value=TestEnum.val1)
@@ -2180,6 +2245,12 @@ class ExcelValidationTestCase(unittest.TestCase):
             units_attr_3 = units.UnitAttribute(unit_registry, default_cleaned_value=unit_registry.parse_units('g'))
             units_attr_4 = units.UnitAttribute(
                 unit_registry, default_cleaned_value=unit_registry.parse_units('g'), unique=True, none=False)
+            expression_attr_1 = obj_model.expression.ExpressionOneToOneAttribute(TestParentExpression1, related_name='test_parent')
+            expression_attr_2 = obj_model.expression.ExpressionOneToOneAttribute(TestParentExpression2, related_name='test_parent')
+            expression_attr_3 = obj_model.expression.ExpressionOneToOneAttribute(TestParentExpression3, related_name='test_parent')
+            expression_attr_4 = obj_model.expression.ExpressionManyToOneAttribute(TestParentExpression1, related_name='test_parents')
+            expression_attr_5 = obj_model.expression.ExpressionManyToOneAttribute(TestParentExpression2, related_name='test_parents')
+            expression_attr_6 = obj_model.expression.ExpressionManyToOneAttribute(TestParentExpression3, related_name='test_parents')
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'enum_attr_1', 'enum_attr_2',
@@ -2195,6 +2266,8 @@ class ExcelValidationTestCase(unittest.TestCase):
                                    'formula_attr',
                                    'onto_attr_1', 'onto_attr_2', 'onto_attr_3', 'onto_attr_4',
                                    'units_attr_1', 'units_attr_2', 'units_attr_3', 'units_attr_4',
+                                   'expression_attr_1', 'expression_attr_2', 'expression_attr_3',
+                                   'expression_attr_4', 'expression_attr_5', 'expression_attr_6',
                                    )
 
         for attr in TestParent.Meta.attributes.values():
