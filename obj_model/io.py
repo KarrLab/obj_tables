@@ -349,7 +349,8 @@ class WorkbookWriter(WriterBase):
 
         for i_row in range(len(row_headings)):
             for column_heading in column_headings:
-                column_heading.insert(0, None)
+                column_heading.insert(
+                    0, None)  # pragma: no cover # unreachable because row_headings and column_headings cannot both be non-empty
 
         content = column_headings + data
 
@@ -997,7 +998,7 @@ class WorkbookReader(ReaderBase):
                 row_heading.append(row.pop(0))
 
             for column_heading in column_headings:
-                column_heading.pop(0)
+                column_heading.pop(0)  # pragma: no cover # unreachable because row_headings and column_headings cannot both be non-empty
 
         return (data, row_headings, column_headings)
 
