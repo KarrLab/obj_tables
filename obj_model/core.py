@@ -99,6 +99,7 @@ class ModelMeta(type):
             Meta.tabular_orientation = bases[0].Meta.tabular_orientation
             Meta.frozen_columns = bases[0].Meta.frozen_columns
             Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
+            Meta.children = copy.deepcopy(bases[0].Meta.children)
             Meta.merge = bases[0].Meta.merge
 
         # validate attributes
@@ -463,12 +464,12 @@ class ModelMeta(type):
         return tuple(normalized_tup_of_attrnames)
 
     def create_model_manager(cls):
-        """ Create a `Manager` for this `Model`
+        """ Create a :obj:`Manager` for this :obj:`Model`
 
         The `Manager` is accessed via a `Model`'s `objects` attribute
 
         Attributes:
-            cls (:obj:`Class`): the `Model` class which is being managed
+            cls (:obj:`type`): the :obj:`Model` class which is being managed
         """
         setattr(cls, 'objects', Manager(cls))
 
@@ -962,7 +963,9 @@ class Model(with_metaclass(ModelMeta, object)):
             frozen_columns (:obj:`int`): number of Excel columns to freeze
             inheritance (:obj:`tuple` of `class`): tuple of all superclasses
             ordering (:obj:`tuple` of attribute names): controls the order in which objects should be printed when serialized
-            merge (:obj:`ModelMerge`): type of merging operation
+            children (:obj:`dict` that maps :obj:`str` to :obj:`tuple` of :obj:`str`): dictionary that maps types of children to 
+                names of attributes which compose each type of children
+            merge (:obj:`ModelMerge`): type of merging operation            
         """
         attributes = None
         related_attributes = None
@@ -976,6 +979,7 @@ class Model(with_metaclass(ModelMeta, object)):
         frozen_columns = 1
         inheritance = None
         ordering = None
+        children = {}
         merge = ModelMerge.join
 
     def __init__(self, **kwargs):
@@ -1968,16 +1972,16 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get all related objects reachable from `self`
 
         Returns:
-            :obj:`set` of `Model`: related objects, without any duplicates
+            :obj:`list` of :obj:`Model`: related objects, without any duplicates
         """
-        related_objs = collections.OrderedDict()
+        related_objs = set()
         objs_to_explore = [self]
         init_iter = True
         while objs_to_explore:
             obj = objs_to_explore.pop()
             if obj not in related_objs:
                 if not init_iter:
-                    related_objs[obj] = None
+                    related_objs.add(obj)
                 init_iter = False
 
                 cls = obj.__class__
@@ -2554,6 +2558,111 @@ class Model(with_metaclass(ModelMeta, object)):
                 return False
 
         return True
+
+    def get_children(self, type=None, recursive=True):
+        """ Get a type of children. 
+
+        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            type (:obj:`str`, optional): type of children to get
+            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+
+        Returns:
+            :obj:`list` of :obj:`Model`: children
+        """
+        children = self.get_immediate_children(type=type)
+
+        # get recursive children
+        if recursive:
+            objs_to_explore = children
+            children = set(children)
+            while objs_to_explore:
+                obj_to_explore = objs_to_explore.pop()
+                for child in obj_to_explore.get_immediate_children(type=type):
+                    if child not in children:
+                        children.add(child)
+                        objs_to_explore.append(child)
+            children = list(children)
+
+        # return children
+        return children
+
+    def get_immediate_children(self, type=None):
+        """ Get a type of immediate children 
+
+        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            type (:obj:`str`, optional): type of children to get
+
+        Returns:
+            :obj:`list` of :obj:`Model`: immediate children
+        """
+        if type is None:
+            attr_names = [attr.name for attr in self.Meta.attributes.values() if isinstance(attr, RelatedAttribute)]
+        else:
+            attr_names = self.Meta.children.get(type, ())
+
+        children = []
+        for attr_name in attr_names:
+            if not isinstance(self.Meta.local_attributes[attr_name].attr, RelatedAttribute):
+                raise ValueError('Children are defined via related attributes. "{}" is not a related attribute of "{}.'.format(
+                    attr_name, self.__class__.__name__))
+
+            attr_value = getattr(self, attr_name)
+            if isinstance(attr_value, list):
+                children.extend(attr_value)
+            elif attr_value:
+                children.append(attr_value)
+        children = det_dedupe(children)
+        return children
+
+    def cut(self, type=None, recursive=True):
+        """ Cut the object and its children from the rest of the object graph.
+
+        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            type (:obj:`str`, optional): type of children to include
+            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+
+        Returns:
+            :obj:`Model`: same object, but cut from the rest of the object graph
+        """
+        objs = set(self.get_children(type=type, recursive=recursive))
+        objs.add(self)   
+
+        for obj in objs:
+            obj.cut_relations(objs)
+
+        return self
+
+    def cut_relations(self, objs):
+        """ Cut relations to objects not in :obj:`objs`.
+
+        Args:
+            objs (:obj:`set` of :obj:`Model`): objects to retain relations to
+        """
+        # iterate over related attributes
+        for attr in self.Meta.local_attributes.values():
+            if attr.is_related:
+                # get value
+                val = getattr(self, attr.name)
+
+                # cut relationships to objects not in `objs`
+                if isinstance(val, list):
+                    # *ToManyAttribute
+                    for v in list(val):
+                        if v not in objs:
+                            val.remove(v)
+                else:
+                    # *ToOneAttribute
+                    if val and val not in objs:
+                        setattr(self, attr.name, None)
 
     def merge(self, other, normalize=True, validate=True):
         """ Merge another model into a model
@@ -6628,6 +6737,26 @@ class ManyToOneRelatedManager(RelatedManager):
 
         return self
 
+    def cut(self, type=None, recursive=True):
+        """ Cut values and their children of type :obj:`type` into separate graphs.
+
+        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            type (:obj:`str`, optional): type of children to include
+            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+
+        Returns:
+            :obj:`list` of :obj:`Model`: cut values and their children
+        """
+        objs = []
+        for obj in self:
+            obj = obj.copy()
+            obj.cut(type=type, recursive=recursive)
+            objs.append(obj)
+        return objs
+
 
 class OneToManyRelatedManager(RelatedManager):
     """ Represent values of related attributes """
@@ -6679,6 +6808,26 @@ class OneToManyRelatedManager(RelatedManager):
 
         return self
 
+    def cut(self, type=None, recursive=True):
+        """ Cut values and their children of type :obj:`type` into separate graphs.
+
+        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            type (:obj:`str`, optional): type of children to include
+            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+
+        Returns:
+            :obj:`list` of :obj:`Model`: cut values and their children
+        """
+        objs = []
+        for obj in self:
+            obj = obj.copy()
+            obj.cut(type=type, recursive=recursive)
+            objs.append(obj)
+        return objs
+
 
 class ManyToManyRelatedManager(RelatedManager):
     """ Represent values and related values of related attributes """
@@ -6729,6 +6878,26 @@ class ManyToManyRelatedManager(RelatedManager):
                     self.object, propagate=False)
 
         return self
+
+    def cut(self, type=None, recursive=True):
+        """ Cut values and their children of type :obj:`type` into separate graphs.
+
+        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            type (:obj:`str`, optional): type of children to include
+            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+
+        Returns:
+            :obj:`list` of :obj:`Model`: cut values and their children
+        """
+        objs = []
+        for obj in self:
+            obj = obj.copy()
+            obj.cut(type=type, recursive=recursive)
+            objs.append(obj)
+        return objs
 
 
 class InvalidObjectSet(object):
