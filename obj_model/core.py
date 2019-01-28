@@ -4923,1480 +4923,6 @@ class DateTimeAttribute(LiteralAttribute):
         return validation
 
 
-class RelatedAttribute(Attribute):
-    """ Attribute which represents relationships with other objects
-
-    Attributes:
-        primary_class (:obj:`class`): parent class
-        related_class (:obj:`class`): related class
-        related_name (:obj:`str`): name of related attribute on `related_class`
-        verbose_related_name (:obj:`str`): verbose related name
-        related_init_value (:obj:`object`): initial value of related attribute
-        related_default (:obj:`object`): default value of related attribute
-        min_related (:obj:`int`): minimum number of related objects in the forward direction
-        max_related (:obj:`int`): maximum number of related objects in the forward direction
-        min_related_rev (:obj:`int`): minimum number of related objects in the reverse direction
-        max_related_rev (:obj:`int`): maximum number of related objects in the reverse direction
-    """
-
-    def __init__(self, related_class, related_name='',
-                 init_value=None, default=None, default_cleaned_value=None,
-                 related_init_value=None, related_default=None,
-                 min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
-                 verbose_name='', verbose_related_name='', help=''):
-        """
-        Args:
-            related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
-            init_value (:obj:`object`, optional): initial value
-            default (:obj:`object`, optional): default value
-            default_cleaned_value (:obj:`object`, optional): value to replace
-                :obj:`None` values with during cleaning, or function
-                which computes the value to replace :obj:`None` values
-            related_init_value (:obj:`object`, optional): related initial value
-            related_default (:obj:`object`, optional): related default value
-            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
-            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
-            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
-            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
-            verbose_name (:obj:`str`, optional): verbose name
-            verbose_related_name (:obj:`str`, optional): verbose related name
-            help (:obj:`str`, optional): help string
-
-        Raises:
-            :obj:`ValueError`: If default or related_default is not None, an empty list, or a callable or
-                default and related_default are both non-empty lists or callables
-        """
-
-        if default is not None and not isinstance(default, list) and not callable(default):
-            raise ValueError('`default` must be `None`, a list, or a callable')
-
-        if default_cleaned_value is not None and \
-                not isinstance(default_cleaned_value, list) and \
-                not callable(default_cleaned_value):
-            raise ValueError('`default_cleaned_value` must be `None`, a list, or a callable')
-
-        if related_default is not None and not isinstance(related_default, list) and not callable(related_default):
-            raise ValueError('Related default must be `None`, a list, or a callable')
-
-        if (callable(default) or
-                (isinstance(default, list) and len(default) > 0) or
-                (not isinstance(default, list) and default is not None)) and \
-            (callable(related_default) or
-                (isinstance(related_default, list) and len(related_default) > 0) or
-                (not isinstance(related_default, list) and related_default is not None)):
-            raise ValueError('Default and `related_default` cannot both be used')
-
-        if not verbose_related_name:
-            verbose_related_name = sentencecase(related_name)
-
-        super(RelatedAttribute, self).__init__(
-            init_value=init_value, default=default, default_cleaned_value=default_cleaned_value,
-            verbose_name=verbose_name, help=help,
-            primary=False, unique=False, unique_case_insensitive=False)
-        self.primary_class = None
-        self.related_class = related_class
-        self.related_name = related_name
-        self.verbose_related_name = verbose_related_name
-        self.related_init_value = related_init_value
-        self.related_default = related_default
-        self.min_related = min_related
-        self.max_related = max_related
-        self.min_related_rev = min_related_rev
-        self.max_related_rev = max_related_rev
-
-    def get_related_init_value(self, obj):
-        """ Get initial related value for attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute is being initialized
-
-        Returns:
-            value (:obj:`object`): initial value
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
-        """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-
-        return copy.copy(self.related_init_value)
-
-    def get_related_default(self, obj):
-        """ Get default related value for attribute
-
-        Args:
-            obj (:obj:`Model`): object whose attribute is being initialized
-
-        Returns:
-            :obj:`object`: initial value
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
-        """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-
-        if self.related_default and callable(self.related_default):
-            return self.related_default()
-
-        return copy.copy(self.related_default)
-
-    @abc.abstractmethod
-    def set_related_value(self, obj, new_values):
-        """ Update the values of the related attributes of the attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute should be set
-            new_values (:obj:`object`): value of the attribute
-
-        Returns:
-            :obj:`object`: value of the attribute
-        """
-        pass  # pragma: no cover
-
-    @abc.abstractmethod
-    def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
-
-        Args:
-            obj (:obj:`Model`): object to validate
-            value (:obj:`list`): value to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        pass  # pragma: no cover
-
-    def serialize(self, value, encoded=None):
-        """ Serialize related object
-
-        Args:
-            value (:obj:`Model`): Python representation
-            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
-
-        Returns:
-            :obj:`str`: simple Python representation
-        """
-        pass  # pragma: no cover
-
-    def deserialize(self, value, objects, decoded=None):
-        """ Deserialize value
-
-        Args:
-            values (:obj:`object`): String representation
-            objects (:obj:`dict`): dictionary of objects, grouped by model
-            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
-
-        Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
-        """
-        pass  # pragma: no cover
-
-    def to_builtin(self, value):
-        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
-        that is compatible with JSON and YAML
-
-        Args:
-            value (:obj:`object`): value of the attribute
-
-        Returns:
-            :obj:`object`: simple Python representation of a value of the attribute
-        """
-        raise Exception('This function should not be executed')
-
-    def from_builtin(self, json):
-        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
-        that is compatible with JSON and YAML
-
-        Args:
-            json (:obj:`object`): simple Python representation of a value of the attribute
-
-        Returns:
-            :obj:`object`: decoded value of the attribute
-        """
-        raise Exception('This function should not be executed')
-
-
-class OneToOneAttribute(RelatedAttribute):
-    """ Represents a one-to-one relationship between two types of objects. """
-
-    def __init__(self, related_class, related_name='',
-                 default=None, default_cleaned_value=None, related_default=None,
-                 min_related=0, min_related_rev=0,
-                 verbose_name='', verbose_related_name='', help=''):
-        """
-        Args:
-            related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
-            default (:obj:`callable`, optional): callable which returns default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace
-                :obj:`None` values with during cleaning, or function
-                which computes the value to replace :obj:`None` values
-            related_default (:obj:`callable`, optional): callable which returns default related value
-            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
-            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
-            verbose_name (:obj:`str`, optional): verbose name
-            verbose_related_name (:obj:`str`, optional): verbose related name
-            help (:obj:`str`, optional): help string
-        """
-        super(OneToOneAttribute, self).__init__(related_class, related_name=related_name,
-                                                init_value=None, default=default,
-                                                default_cleaned_value=default_cleaned_value,
-                                                related_init_value=None, related_default=related_default,
-                                                min_related=min_related, max_related=1,
-                                                min_related_rev=min_related_rev, max_related_rev=1,
-                                                verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
-
-    def set_value(self, obj, new_value):
-        """ Update the values of the related attributes of the attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute should be set
-            new_value (:obj:`Model`): new attribute value
-
-        Returns:
-            :obj:`Model`: new attribute value
-
-        Raises:
-            :obj:`ValueError`: if related attribute of `new_value` is not `None`
-        """
-        cur_value = getattr(obj, self.name)
-        if cur_value is new_value:
-            return new_value
-
-        if new_value and getattr(new_value, self.related_name):
-            old_related = getattr(new_value, self.related_name)
-            old_related_cls = old_related.__class__
-            new_cls = new_value.__class__
-            raise ValueError("Attribute '{}:{}' of '{}:{}' must be `None`".format(
-                old_related_cls.__name__, old_related.serialize(),
-                new_cls.__name__, new_value.serialize()))
-
-        if self.related_name:
-            if cur_value:
-                cur_value.__setattr__(self.related_name, None, propagate=False)
-
-            if new_value:
-                new_value.__setattr__(self.related_name, obj, propagate=False)
-
-        return new_value
-
-    def set_related_value(self, obj, new_value):
-        """ Update the values of the related attributes of the attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute should be set
-            new_value (:obj:`Model`): value of the attribute
-
-        Returns:
-            :obj:`Model`: value of the attribute
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined or the attribute of `new_value` is not `None`
-        """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-
-        cur_value = getattr(obj, self.related_name)
-        if cur_value is new_value:
-            return new_value
-
-        if new_value and getattr(new_value, self.name):
-            raise ValueError('Attribute of `new_value` must be `None`')
-
-        if cur_value:
-            cur_value.__setattr__(self.name, None, propagate=False)
-
-        if new_value:
-            new_value.__setattr__(self.name, obj, propagate=False)
-
-        return new_value
-
-    def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
-
-        Args:
-            obj (:obj:`Model`): object being validated
-            value (:obj:`Model`): value of attribute to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        errors = []
-
-        if value is None:
-            if self.min_related == 1:
-                errors.append('Value cannot be `None`')
-        elif not isinstance(value, self.related_class):
-            errors.append('Value must be an instance of "{:s}" or `None`'.format(
-                self.related_class.__name__))
-        elif self.related_name:
-            if obj is not getattr(value, self.related_name):
-                errors.append('Object must be related value')
-
-        if errors:
-            return InvalidAttribute(self, errors)
-        return None
-
-    def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
-
-        Args:
-            obj (:obj:`Model`): object being validated
-            value (:obj:`list` of :obj:`Model`): value to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        errors = []
-
-        if value is None:
-            if self.min_related_rev == 1:
-                errors.append('Value cannot be `None`')
-        elif value and self.related_name:
-            if not isinstance(value, self.primary_class):
-                errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
-                    self.primary_class.__name__, value.__class__.__name__))
-            elif getattr(value, self.name) is not obj:
-                errors.append('Object must be related value')
-
-        if errors:
-            return InvalidAttribute(self, errors, related=True)
-        return None
-
-    def copy_value(self, value, objects_and_copies):
-        """ Copy value
-
-        Args:
-            value (:obj:`Model`): value
-            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
-
-        Returns:
-            :obj:`Model`: copy of value
-        """
-        if value is None:
-            return None
-        else:
-            return objects_and_copies[value]
-
-    def serialize(self, value, encoded=None):
-        """ Serialize related object
-
-        Args:
-            value (:obj:`Model`): Python representation
-            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
-
-        Returns:
-            :obj:`str`: simple Python representation
-        """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
-            return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
-                              indent=8)
-
-        else:
-            if value is None:
-                return ''
-
-            primary_attr = value.__class__.Meta.primary_attribute
-            return primary_attr.serialize(getattr(value, primary_attr.name))
-
-    def deserialize(self, value, objects, decoded=None):
-        """ Deserialize value
-
-        Args:
-            value (:obj:`str`): String representation
-            objects (:obj:`dict`): dictionary of objects, grouped by model
-            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
-
-        Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
-        """
-        if not value:
-            return (None, None)
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
-            try:
-                obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
-                                                   primary_objects=objects, decoded=decoded)
-                error = None
-            except Exception as exception:
-                obj = None
-                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
-            return (obj, error)
-
-        else:
-            related_objs = set()
-            related_classes = chain([self.related_class],
-                                    get_subclasses(self.related_class))
-            for related_class in related_classes:
-                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                    related_objs.add(objects[related_class][value])
-
-            if len(related_objs) == 0:
-                primary_attr = self.related_class.Meta.primary_attribute
-                return (None, InvalidAttribute(self, ['Unable to find {} with {}={}'.format(
-                    self.related_class.__name__, primary_attr.name, quote(value))]))
-
-            if len(related_objs) == 1:
-                return (related_objs.pop(), None)
-
-            return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
-
-    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
-        """ Merge an attribute of elements of two models
-
-        Args:
-            left (:obj:`Model`): an element in a model to merge
-            right (:obj:`Model`): an element in a second model to merge
-            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
-            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
-
-        Raises:
-            :obj:`ValueError`: if the attributes of the elements of the models are different
-        """
-        right_child = getattr(right, self.name)
-        if not right_child:
-            return
-
-        cur_left_child = getattr(left, self.name)
-        new_left_child = right_objs_in_left.get(right_child, right_child)
-
-        new_left_child_parent = getattr(new_left_child, self.related_name)
-        new_right_child_parent = left_objs_in_right.get(new_left_child_parent, None)
-
-        if new_left_child != cur_left_child and \
-                ((left == right and new_left_child_parent) or (left != right and cur_left_child)):
-            raise ValueError('Cannot join "{}" {} and {} of {} "{}" and "{}"'.format(
-                self.related_name,
-                left,
-                new_left_child_parent,
-                self.related_class.__name__,
-                cur_left_child,
-                new_left_child))
-
-        setattr(right, self.name, None)
-        setattr(left, self.name, new_left_child)
-
-    def get_excel_validation(self):
-        """ Get Excel validation
-
-        Returns:
-            :obj:`wc_utils.workbook.io.FieldValidation`: validation
-        """
-        validation = super(OneToOneAttribute, self).get_excel_validation()
-
-        if self.related_class.Meta.primary_attribute:
-            validation.type = wc_utils.workbook.io.FieldValidationType.list
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
-            related_ws = self.related_class.Meta.verbose_name_plural
-            if self.related_class.Meta.primary_attribute:
-                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                source = '{}:{}'.format(related_ws, related_col)
-                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
-            else:
-                source = related_ws
-        else:
-            related_ws = self.related_class.Meta.verbose_name
-            if self.related_class.Meta.primary_attribute:
-                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
-                source = '{}:{}'.format(related_ws, related_row)
-                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
-            else:
-                source = related_ws
-
-        validation.ignore_blank = self.min_related == 0
-        if self.min_related == 0:
-            input_message = ['Select a value from "{}" or blank.'.format(source)]
-            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
-        else:
-            input_message = ['Select a value from "{}".'.format(source)]
-            error_message = ['Value must be a value from "{}".'.format(source)]
-
-        default = self.get_default_cleaned_value()
-        if default is not None:
-            input_message.append('Default: {}.'.format(default.serialize()))
-
-        if validation.input_message:
-            validation.input_message += '\n\n'
-        validation.input_message += '\n\n'.join(input_message)
-
-        if validation.error_message:
-            validation.error_message += '\n\n'
-        validation.error_message += '\n\n'.join(error_message)
-
-        return validation
-
-
-class ManyToOneAttribute(RelatedAttribute):
-    """ Represents a many-to-one relationship between two types of objects.
-    This is analagous to a foreign key relationship in a database.
-    """
-
-    def __init__(self, related_class, related_name='',
-                 default=None, default_cleaned_value=None, related_default=list(),
-                 min_related=0, min_related_rev=0, max_related_rev=float('inf'),
-                 verbose_name='', verbose_related_name='', help=''):
-        """
-        Args:
-            related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
-            default (:obj:`callable`, optional): callable which returns the default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace
-                :obj:`None` values with during cleaning, or function
-                which computes the value to replace :obj:`None` values
-            related_default (:obj:`callable`, optional): callable which returns the default related value
-            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
-            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
-            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
-            verbose_name (:obj:`str`, optional): verbose name
-            verbose_related_name (:obj:`str`, optional): verbose related name
-            help (:obj:`str`, optional): help string
-        """
-        super(ManyToOneAttribute, self).__init__(
-            related_class, related_name=related_name,
-            init_value=None, default=default, default_cleaned_value=default_cleaned_value,
-            related_init_value=ManyToOneRelatedManager, related_default=related_default,
-            min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
-            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
-
-    def get_related_init_value(self, obj):
-        """ Get initial related value for attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute is being initialized
-
-        Returns:
-            value (:obj:`object`): initial value
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
-        """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-
-        return ManyToOneRelatedManager(obj, self)
-
-    def set_value(self, obj, new_value):
-        """ Update the values of the related attributes of the attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute should be set
-            new_value (:obj:`Model`): new attribute value
-
-        Returns:
-            :obj:`Model`: new attribute value
-        """
-        cur_value = getattr(obj, self.name)
-        if cur_value is new_value:
-            return new_value
-
-        if self.related_name:
-            if cur_value:
-                cur_related = getattr(cur_value, self.related_name)
-                cur_related.remove(obj, propagate=False)
-
-            if new_value:
-                new_related = getattr(new_value, self.related_name)
-                new_related.append(obj, propagate=False)
-
-        return new_value
-
-    def set_related_value(self, obj, new_values):
-        """ Update the values of the related attributes of the attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute should be set
-            new_values (:obj:`list`): value of the attribute
-
-        Returns:
-            :obj:`list`: value of the attribute
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
-        """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-
-        new_values_copy = list(new_values)
-
-        cur_values = getattr(obj, self.related_name)
-        cur_values.clear()
-        cur_values.extend(new_values_copy)
-
-        return cur_values
-
-    def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
-
-        Args:
-            obj (:obj:`Model`): object being validated
-            value (:obj:`Model`): value of attribute to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        errors = []
-
-        if value is None:
-            if self.min_related == 1:
-                errors.append('Value cannot be `None`')
-        elif not isinstance(value, self.related_class):
-            errors.append('Value must be an instance of "{:s}" or `None`'.format(
-                self.related_class.__name__))
-        elif self.related_name:
-            related_value = getattr(value, self.related_name)
-            if not isinstance(related_value, ManyToOneRelatedManager):
-                errors.append('Related value must be a `ManyToOneRelatedManager`'
-                              )  # pragma: no cover # unreachable due to above error checking
-            if obj not in related_value:
-                errors.append('Object must be in related values')
-
-        if errors:
-            return InvalidAttribute(self, errors)
-        return None
-
-    def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
-
-        Args:
-            obj (:obj:`Model`): object being validated
-            value (:obj:`list` of :obj:`Model`): value to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        errors = []
-
-        if self.related_name:
-            if not isinstance(value, list):
-                errors.append('Related value must be a list')
-            elif len(value) < self.min_related_rev:
-                errors.append('There must be at least {} related values'.format(
-                    self.min_related_rev))
-            elif len(value) > self.max_related_rev:
-                errors.append('There cannot be more than {} related values'.format(
-                    self.max_related_rev))
-            else:
-                for v in value:
-                    if not isinstance(v, self.primary_class):
-                        errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
-                            self.primary_class.__name__, v.__class__.__name__))
-                    elif getattr(v, self.name) is not obj:
-                        errors.append('Object must be related value')
-
-        if errors:
-            return InvalidAttribute(self, errors, related=True)
-        return None
-
-    def copy_value(self, value, objects_and_copies):
-        """ Copy value
-
-        Args:
-            value (:obj:`Model`): value
-            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
-
-        Returns:
-            :obj:`Model`: copy of value
-        """
-        if value is None:
-            return None
-        else:
-            return objects_and_copies[value]
-
-    def serialize(self, value, encoded=None):
-        """ Serialize related object
-
-        Args:
-            value (:obj:`Model`): Python representation
-            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
-
-        Returns:
-            :obj:`str`: simple Python representation
-        """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
-            return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
-                              indent=8)
-
-        else:
-            if value is None:
-                return ''
-
-            primary_attr = value.__class__.Meta.primary_attribute
-            return primary_attr.serialize(getattr(value, primary_attr.name))
-
-    def deserialize(self, value, objects, decoded=None):
-        """ Deserialize value
-
-        Args:
-            value (:obj:`str`): String representation
-            objects (:obj:`dict`): dictionary of objects, grouped by model
-            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
-
-        Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
-        """
-        if not value:
-            return (None, None)
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
-            try:
-                obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
-                                                   primary_objects=objects, decoded=decoded)
-                error = None
-            except Exception as exception:
-                obj = None
-                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
-            return (obj, error)
-
-        else:
-            related_objs = set()
-            related_classes = chain([self.related_class],
-                                    get_subclasses(self.related_class))
-            for related_class in related_classes:
-                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                    related_objs.add(objects[related_class][value])
-
-            if len(related_objs) == 0:
-                primary_attr = self.related_class.Meta.primary_attribute
-                return (None, InvalidAttribute(self, ['Unable to find {} with {}={}'.format(
-                    self.related_class.__name__, primary_attr.name, quote(value))]))
-
-            if len(related_objs) == 1:
-                return (related_objs.pop(), None)
-
-            return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
-
-    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
-        """ Merge an attribute of elements of two models
-
-        Args:
-            left (:obj:`Model`): an element in a model to merge
-            right (:obj:`Model`): an element in a second model to merge
-            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
-            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
-
-        Raises:
-            :obj:`ValueError`: if the attributes of the elements of the models are different
-        """
-        right_child = getattr(right, self.name)
-        if not right_child:
-            return
-
-        cur_left_child = getattr(left, self.name)
-        new_left_child = right_objs_in_left.get(right_child, right_child)
-
-        if left != right and cur_left_child and new_left_child and cur_left_child != new_left_child:
-            raise ValueError('Cannot join {} and {} of {}.{}'.format(
-                cur_left_child,
-                new_left_child,
-                left.__class__.__name__,
-                self.name))
-        setattr(right, self.name, None)
-        setattr(left, self.name, new_left_child)
-
-    def get_excel_validation(self):
-        """ Get Excel validation
-
-        Returns:
-            :obj:`wc_utils.workbook.io.FieldValidation`: validation
-        """
-        validation = super(ManyToOneAttribute, self).get_excel_validation()
-
-        if self.related_class.Meta.primary_attribute:
-            validation.type = wc_utils.workbook.io.FieldValidationType.list
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
-            related_ws = self.related_class.Meta.verbose_name_plural
-            if self.related_class.Meta.primary_attribute:
-                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                source = '{}:{}'.format(related_ws, related_col)
-                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
-            else:
-                source = related_ws
-        else:
-            related_ws = self.related_class.Meta.verbose_name
-            if self.related_class.Meta.primary_attribute:
-                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
-                source = '{}:{}'.format(related_ws, related_row)
-                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
-            else:
-                source = related_ws
-
-        validation.ignore_blank = self.min_related == 0
-        if self.min_related == 0:
-            input_message = ['Select a value from "{}" or blank.'.format(source)]
-            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
-        else:
-            input_message = ['Select a value from "{}".'.format(source)]
-            error_message = ['Value must be a value from "{}".'.format(source)]
-
-        default = self.get_default_cleaned_value()
-        if default is not None:
-            input_message.append('Default: {}.'.format(default.serialize()))
-
-        if validation.input_message:
-            validation.input_message += '\n\n'
-        validation.input_message += '\n\n'.join(input_message)
-
-        if validation.error_message:
-            validation.error_message += '\n\n'
-        validation.error_message += '\n\n'.join(error_message)
-
-        return validation
-
-
-class OneToManyAttribute(RelatedAttribute):
-    """ Represents a one-to-many relationship between two types of objects.
-    This is analagous to a foreign key relationship in a database.
-    """
-
-    def __init__(self, related_class, related_name='',  default=list(), default_cleaned_value=list(),
-                 related_default=None,
-                 min_related=0, max_related=float('inf'), min_related_rev=0,
-                 verbose_name='', verbose_related_name='', help=''):
-        """
-        Args:
-            related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
-            default (:obj:`callable`, optional): function which returns the default value
-            default_cleaned_value (:obj:`callable`, optional): value to replace
-                :obj:`None` values with during cleaning, or function
-                which computes the value to replace :obj:`None` values
-            related_default (:obj:`callable`, optional): function which returns the default related value
-            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
-            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
-            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
-            verbose_name (:obj:`str`, optional): verbose name
-            verbose_related_name (:obj:`str`, optional): verbose related name
-            help (:obj:`str`, optional): help string
-        """
-        super(OneToManyAttribute, self).__init__(
-            related_class, related_name=related_name,
-            init_value=OneToManyRelatedManager, default=default, default_cleaned_value=default_cleaned_value,
-            related_init_value=None, related_default=related_default,
-            min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
-            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
-
-    def get_init_value(self, obj):
-        """ Get initial value for attribute
-
-        Args:
-            obj (:obj:`Model`): object whose attribute is being initialized
-
-        Returns:
-            :obj:`object`: initial value
-        """
-        return OneToManyRelatedManager(obj, self)
-
-    def set_value(self, obj, new_values):
-        """ Update the values of the related attributes of the attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute should be set
-            new_values (:obj:`list`): value of the attribute
-
-        Returns:
-            :obj:`list`: value of the attribute
-        """
-        new_values_copy = list(new_values)
-
-        cur_values = getattr(obj, self.name)
-        cur_values.clear()
-        cur_values.extend(new_values_copy)
-
-        return cur_values
-
-    def set_related_value(self, obj, new_value):
-        """ Update the values of the related attributes of the attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute should be set
-            new_value (:obj:`Model`): new attribute value
-
-        Returns:
-            :obj:`Model`: new attribute value
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
-        """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-
-        cur_value = getattr(obj, self.related_name)
-        if cur_value is new_value:
-            return new_value
-
-        if cur_value:
-            cur_related = getattr(cur_value, self.name)
-            cur_related.remove(obj, propagate=False)
-
-        if new_value:
-            new_related = getattr(new_value, self.name)
-            new_related.append(obj, propagate=False)
-
-        return new_value
-
-    def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
-
-        Args:
-            obj (:obj:`Model`): object being validated
-            value (:obj:`list` of :obj:`Model`): value to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        errors = []
-
-        if not isinstance(value, list):
-            errors.append('Related value must be a list')
-        elif len(value) < self.min_related:
-            errors.append(
-                'There must be at least {} related values'.format(self.min_related))
-        elif len(value) > self.max_related:
-            errors.append(
-                'There must be no more than {} related values'.format(self.max_related))
-        else:
-            for v in value:
-                if not isinstance(v, self.related_class):
-                    errors.append('Value must be an instance of "{:s}"'.format(
-                        self.related_class.__name__))
-                elif self.related_name and getattr(v, self.related_name) is not obj:
-                    errors.append('Object must be related value')
-
-        if errors:
-            return InvalidAttribute(self, errors)
-        return None
-
-    def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
-
-        Args:
-            obj (:obj:`Model`): object being validated
-            value (:obj:`Model`): value of attribute to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        errors = []
-
-        if self.related_name:
-            if value is None:
-                if self.min_related_rev == 1:
-                    errors.append('Value cannot be `None`')
-            elif not isinstance(value, self.primary_class):
-                errors.append('Value must be an instance of "{:s}" or `None`'.format(
-                    self.primary_class.__name__))
-            else:
-                related_value = getattr(value, self.name)
-                if not isinstance(related_value, OneToManyRelatedManager):
-                    errors.append('Related value must be a `OneToManyRelatedManager`'
-                                  )  # pragma: no cover # unreachable due to above error checking
-                if obj not in related_value:
-                    errors.append('Object must be in related values')
-
-        if errors:
-            return InvalidAttribute(self, errors, related=True)
-        return None
-
-    def copy_value(self, value, objects_and_copies):
-        """ Copy value
-
-        Args:
-            value (:obj:`list` of :obj:`Model`): value
-            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
-
-        Returns:
-            :obj:`list` of :obj:`Model`: copy of value
-        """
-        copy_value = []
-        for v in value:
-            copy_value.append(objects_and_copies[v])
-        return copy_value
-
-    def serialize(self, value, encoded=None):
-        """ Serialize related object
-
-        Args:
-            value (:obj:`list` of :obj:`Model`): Python representation
-            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
-
-        Returns:
-            :obj:`str`: simple Python representation
-        """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
-            return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
-                              indent=8)
-
-        else:
-            serialized_vals = []
-            for v in value:
-                primary_attr = v.__class__.Meta.primary_attribute
-                serialized_vals.append(primary_attr.serialize(
-                    getattr(v, primary_attr.name)))
-
-            serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
-            return ', '.join(serialized_vals)
-
-    def deserialize(self, values, objects, decoded=None):
-        """ Deserialize value
-
-        Args:
-            values (:obj:`object`): String representation
-            objects (:obj:`dict`): dictionary of objects, grouped by model
-            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
-
-        Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
-        """
-        if not values:
-            return (list(), None)
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
-            try:
-                objs = []
-                for v in json.loads(values):
-                    objs.append(self.related_class.from_dict(v, decode_primary_objects=False,
-                                                             primary_objects=objects, decoded=decoded))
-                error = None
-            except Exception as exception:
-                objs = None
-                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
-            return (objs, error)
-
-        else:
-            deserialized_values = list()
-            errors = []
-            for value in values.split(','):
-                value = value.strip()
-
-                related_objs = set()
-                related_classes = chain(
-                    [self.related_class], get_subclasses(self.related_class))
-                for related_class in related_classes:
-                    if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                        related_objs.add(objects[related_class][value])
-
-                if len(related_objs) == 1:
-                    deserialized_values.append(related_objs.pop())
-                elif len(related_objs) == 0:
-                    errors.append('Unable to find {} with {}={}'.format(
-                        self.related_class.__name__, self.related_class.Meta.primary_attribute.name, quote(value)))
-                else:
-                    errors.append(
-                        'Multiple matching objects with primary attribute = {}'.format(value))
-
-            if errors:
-                return (None, InvalidAttribute(self, errors))
-            return (deserialized_values, None)
-
-    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
-        """ Merge an attribute of elements of two models
-
-        Args:
-            left (:obj:`Model`): an element in a model to merge
-            right (:obj:`Model`): an element in a second model to merge
-            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
-            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
-
-        Raises:
-            :obj:`ValueError`: if the attributes of the elements of the models are different
-        """
-        left_children = getattr(left, self.name)
-        right_children = getattr(right, self.name)
-
-        for right_child in list(right_children):
-            left_child = right_objs_in_left.get(right_child, right_child)
-            cur_left_child_parent = getattr(left_child, self.related_name)
-
-            if left_child != right_child and cur_left_child_parent and cur_left_child_parent != left:
-                raise ValueError('Cannot join {} and {} of {}.{}'.format(
-                    left,
-                    cur_left_child_parent,
-                    left_child.__class__.__name__,
-                    self.related_name))
-
-            right_children.remove(right_child)
-            left_children.append(left_child)
-
-    def get_excel_validation(self):
-        """ Get Excel validation
-
-        Returns:
-            :obj:`wc_utils.workbook.io.FieldValidation`: validation
-        """
-        validation = super(OneToManyAttribute, self).get_excel_validation()
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
-            related_ws = self.related_class.Meta.verbose_name_plural
-            if self.related_class.Meta.primary_attribute:
-                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                source = '{}:{}'.format(related_ws, related_col)
-            else:
-                source = related_ws
-        else:
-            related_ws = self.related_class.Meta.verbose_name
-            if self.related_class.Meta.primary_attribute:
-                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
-                source = '{}:{}'.format(related_ws, related_row)
-            else:
-                source = related_ws
-
-        validation.ignore_blank = self.min_related == 0
-        if self.min_related == 0:
-            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
-            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
-        else:
-            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
-            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
-
-        default = self.get_default_cleaned_value()
-        if default:
-            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
-
-        if validation.input_message:
-            validation.input_message += '\n\n'
-        validation.input_message += '\n\n'.join(input_message)
-
-        if validation.error_message:
-            validation.error_message += '\n\n'
-        validation.error_message += '\n\n'.join(error_message)
-
-        return validation
-
-
-class ManyToManyAttribute(RelatedAttribute):
-    """ Represents a many-to-many relationship between two types of objects. """
-
-    def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
-                 related_default=list(),
-                 min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
-                 verbose_name='', verbose_related_name='', help=''):
-        """
-        Args:
-            related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
-            default (:obj:`callable`, optional): function which returns the default values
-            default_cleaned_value (:obj:`callable`, optional): value to replace
-                :obj:`None` values with during cleaning, or function
-                which computes the value to replace :obj:`None` values
-            related_default (:obj:`callable`, optional): function which returns the default related values
-            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
-            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
-            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
-            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
-            verbose_name (:obj:`str`, optional): verbose name
-            verbose_related_name (:obj:`str`, optional): verbose related name
-            help (:obj:`str`, optional): help string
-        """
-        super(ManyToManyAttribute, self).__init__(
-            related_class, related_name=related_name,
-            init_value=ManyToManyRelatedManager, default=default, default_cleaned_value=default_cleaned_value,
-            related_init_value=ManyToManyRelatedManager, related_default=related_default,
-            min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
-            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
-
-    def get_init_value(self, obj):
-        """ Get initial value for attribute
-
-        Args:
-            obj (:obj:`Model`): object whose attribute is being initialized
-
-        Returns:
-            :obj:`object`: initial value
-        """
-        return ManyToManyRelatedManager(obj, self, related=False)
-
-    def get_related_init_value(self, obj):
-        """ Get initial related value for attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute is being initialized
-
-        Returns:
-            value (:obj:`object`): initial value
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
-        """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-        return ManyToManyRelatedManager(obj, self, related=True)
-
-    def set_value(self, obj, new_values):
-        """ Get value of attribute of object
-
-        Args:
-            obj (:obj:`Model`): object
-            new_values (:obj:`list`): new attribute value
-
-        Returns:
-            :obj:`list`: new attribute value
-        """
-        new_values_copy = list(new_values)
-
-        cur_values = getattr(obj, self.name)
-        cur_values.clear()
-        cur_values.extend(new_values_copy)
-
-        return cur_values
-
-    def set_related_value(self, obj, new_values):
-        """ Update the values of the related attributes of the attribute
-
-        Args:
-            obj (:obj:`object`): object whose attribute should be set
-            new_values (:obj:`list`): value of the attribute
-
-        Returns:
-            :obj:`list`: value of the attribute
-
-        Raises:
-            :obj:`ValueError`: if related property is not defined
-        """
-        if not self.related_name:
-            raise ValueError('Related property is not defined')
-
-        new_values_copy = list(new_values)
-
-        cur_values = getattr(obj, self.related_name)
-        cur_values.clear()
-        cur_values.extend(new_values_copy)
-
-        return cur_values
-
-    def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
-
-        Args:
-            obj (:obj:`Model`): object being validated
-            value (:obj:`list` of :obj:`Model`): value of attribute to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        errors = []
-
-        if not isinstance(value, list):
-            errors.append('Value must be a `list`')
-        elif len(value) < self.min_related:
-            errors.append(
-                'There must be at least {} related values'.format(self.min_related))
-        elif len(value) > self.max_related:
-            errors.append(
-                'There cannot be more than {} related values'.format(self.max_related))
-        else:
-            for v in value:
-                if not isinstance(v, self.related_class):
-                    errors.append('Value must be a `list` of "{:s}"'.format(
-                        self.related_class.__name__))
-
-                elif self.related_name:
-                    related_v = getattr(v, self.related_name)
-                    if not isinstance(related_v, ManyToManyRelatedManager):
-                        errors.append(
-                            'Related value must be a `ManyToManyRelatedManager`'
-                        )  # pragma: no cover # unreachable due to above error checking
-                    if obj not in related_v:
-                        errors.append('Object must be in related values')
-
-        if errors:
-            return InvalidAttribute(self, errors)
-        return None
-
-    def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
-
-        Args:
-            obj (:obj:`Model`): object being validated
-            value (:obj:`list` of :obj:`Model`): value to validate
-
-        Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
-        """
-        errors = []
-
-        if self.related_name:
-            if not isinstance(value, list):
-                errors.append('Related value must be a list')
-            elif len(value) < self.min_related_rev:
-                errors.append('There must be at least {} related values'.format(
-                    self.min_related_rev))
-            elif len(value) > self.max_related_rev:
-                errors.append('There cannot be more than {} related values'.format(
-                    self.max_related_rev))
-            else:
-                for v in value:
-                    if not isinstance(v, self.primary_class):
-                        errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
-                            self.primary_class.__name__, v.__class__.__name__))
-                    elif obj not in getattr(v, self.name):
-                        errors.append('Object must be in related values')
-
-        if errors:
-            return InvalidAttribute(self, errors, related=True)
-        return None
-
-    def copy_value(self, value, objects_and_copies):
-        """ Copy value
-
-        Args:
-            value (:obj:`list` of :obj:`Model`): value
-            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
-
-        Returns:
-            :obj:`list` of :obj:`Model`: copy of value
-        """
-        copy_value = []
-        for v in value:
-            copy_value.append(objects_and_copies[v])
-        return copy_value
-
-    def serialize(self, value, encoded=None):
-        """ Serialize related object
-
-        Args:
-            value (:obj:`list` of :obj:`Model`): Python representation
-            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
-
-        Returns:
-            :obj:`str`: simple Python representation
-        """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
-            return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
-                              indent=8)
-
-        else:
-            serialized_vals = []
-            for v in value:
-                primary_attr = v.__class__.Meta.primary_attribute
-                serialized_vals.append(primary_attr.serialize(
-                    getattr(v, primary_attr.name)))
-
-            serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
-            return ', '.join(serialized_vals)
-
-    def deserialize(self, values, objects, decoded=None):
-        """ Deserialize value
-
-        Args:
-            values (:obj:`object`): String representation
-            objects (:obj:`dict`): dictionary of objects, grouped by model
-            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
-
-        Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
-        """
-        if not values:
-            return (list(), None)
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
-            try:
-                objs = []
-                for v in json.loads(values):
-                    objs.append(self.related_class.from_dict(v, decode_primary_objects=False,
-                                                             primary_objects=objects, decoded=decoded))
-                error = None
-            except Exception as exception:
-                objs = None
-                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
-            return (objs, error)
-
-        else:
-            deserialized_values = list()
-            errors = []
-            for value in values.split(','):
-                value = value.strip()
-
-                related_objs = set()
-                related_classes = chain(
-                    [self.related_class], get_subclasses(self.related_class))
-                for related_class in related_classes:
-                    if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
-                        related_objs.add(objects[related_class][value])
-
-                if len(related_objs) == 1:
-                    deserialized_values.append(related_objs.pop())
-                elif len(related_objs) == 0:
-                    primary_attr = self.related_class.Meta.primary_attribute
-                    errors.append('Unable to find {} with {}={}'.format(
-                        self.related_class.__name__, primary_attr.name, quote(value)))
-                else:
-                    errors.append(
-                        'Multiple matching objects with primary attribute = {}'.format(value))
-
-            if errors:
-                return (None, InvalidAttribute(self, errors))
-            return (deserialized_values, None)
-
-    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
-        """ Merge an attribute of elements of two models
-
-        Args:
-            left (:obj:`Model`): an element in a model to merge
-            right (:obj:`Model`): an element in a second model to merge
-            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
-            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
-
-        Raises:
-            :obj:`ValueError`: if the attributes of the elements of the models are different
-        """
-        left_children = getattr(left, self.name)
-        right_children = getattr(right, self.name)
-
-        for right_child in list(right_children):
-            left_child = right_objs_in_left.get(right_child, right_child)
-            right_children.remove(right_child)
-            left_children.append(left_child)
-
-    def get_excel_validation(self):
-        """ Get Excel validation
-
-        Returns:
-            :obj:`wc_utils.workbook.io.FieldValidation`: validation
-        """
-        validation = super(ManyToManyAttribute, self).get_excel_validation()
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
-            related_ws = self.related_class.Meta.verbose_name_plural
-            if self.related_class.Meta.primary_attribute:
-                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                source = '{}:{}'.format(related_ws, related_col)
-            else:
-                source = related_ws
-        else:
-            related_ws = self.related_class.Meta.verbose_name
-            if self.related_class.Meta.primary_attribute:
-                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
-                source = '{}:{}'.format(related_ws, related_row)
-            else:
-                source = related_ws
-
-        validation.ignore_blank = self.min_related == 0
-        if self.min_related == 0:
-            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
-            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
-        else:
-            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
-            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
-
-        default = self.get_default_cleaned_value()
-        if default:
-            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
-
-        if validation.input_message:
-            validation.input_message += '\n\n'
-        validation.input_message += '\n\n'.join(input_message)
-
-        if validation.error_message:
-            validation.error_message += '\n\n'
-        validation.error_message += '\n\n'.join(error_message)
-
-        return validation
-
-
 class RelatedManager(list):
     """ Represent values and related values of related attributes
 
@@ -6921,6 +5447,1499 @@ class ManyToManyRelatedManager(RelatedManager):
             obj.cut(kind=kind)
             objs.append(obj)
         return objs
+
+
+class RelatedAttribute(Attribute):
+    """ Attribute which represents relationships with other objects
+
+    Attributes:
+        primary_class (:obj:`class`): parent class
+        related_class (:obj:`class`): related class
+        related_name (:obj:`str`): name of related attribute on `related_class`
+        verbose_related_name (:obj:`str`): verbose related name
+        related_init_value (:obj:`object`): initial value of related attribute
+        related_default (:obj:`object`): default value of related attribute
+        min_related (:obj:`int`): minimum number of related objects in the forward direction
+        max_related (:obj:`int`): maximum number of related objects in the forward direction
+        min_related_rev (:obj:`int`): minimum number of related objects in the reverse direction
+        max_related_rev (:obj:`int`): maximum number of related objects in the reverse direction
+    """
+
+    def __init__(self, related_class, related_name='',
+                 init_value=None, default=None, default_cleaned_value=None,
+                 related_init_value=None, related_default=None,
+                 min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
+                 verbose_name='', verbose_related_name='', help=''):
+        """
+        Args:
+            related_class (:obj:`class`): related class
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            init_value (:obj:`object`, optional): initial value
+            default (:obj:`object`, optional): default value
+            default_cleaned_value (:obj:`object`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
+                which computes the value to replace :obj:`None` values
+            related_init_value (:obj:`object`, optional): related initial value
+            related_default (:obj:`object`, optional): related default value
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
+            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
+            verbose_name (:obj:`str`, optional): verbose name
+            verbose_related_name (:obj:`str`, optional): verbose related name
+            help (:obj:`str`, optional): help string
+
+        Raises:
+            :obj:`ValueError`: If default or related_default is not None, an empty list, or a callable or
+                default and related_default are both non-empty lists or callables
+        """
+
+        if default is not None and not isinstance(default, list) and not callable(default):
+            raise ValueError('`default` must be `None`, a list, or a callable')
+
+        if default_cleaned_value is not None and \
+                not isinstance(default_cleaned_value, list) and \
+                not callable(default_cleaned_value):
+            raise ValueError('`default_cleaned_value` must be `None`, a list, or a callable')
+
+        if related_default is not None and not isinstance(related_default, list) and not callable(related_default):
+            raise ValueError('Related default must be `None`, a list, or a callable')
+
+        if (callable(default) or
+                (isinstance(default, list) and len(default) > 0) or
+                (not isinstance(default, list) and default is not None)) and \
+            (callable(related_default) or
+                (isinstance(related_default, list) and len(related_default) > 0) or
+                (not isinstance(related_default, list) and related_default is not None)):
+            raise ValueError('Default and `related_default` cannot both be used')
+
+        if not verbose_related_name:
+            verbose_related_name = sentencecase(related_name)
+
+        super(RelatedAttribute, self).__init__(
+            init_value=init_value, default=default, default_cleaned_value=default_cleaned_value,
+            verbose_name=verbose_name, help=help,
+            primary=False, unique=False, unique_case_insensitive=False)
+        self.primary_class = None
+        self.related_class = related_class
+        self.related_name = related_name
+        self.verbose_related_name = verbose_related_name
+        self.related_init_value = related_init_value
+        self.related_default = related_default
+        self.min_related = min_related
+        self.max_related = max_related
+        self.min_related_rev = min_related_rev
+        self.max_related_rev = max_related_rev
+
+    def get_related_init_value(self, obj):
+        """ Get initial related value for attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute is being initialized
+
+        Returns:
+            value (:obj:`object`): initial value
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
+        """
+        if not self.related_name:
+            raise ValueError('Related property is not defined')
+
+        return copy.copy(self.related_init_value)
+
+    def get_related_default(self, obj):
+        """ Get default related value for attribute
+
+        Args:
+            obj (:obj:`Model`): object whose attribute is being initialized
+
+        Returns:
+            :obj:`object`: initial value
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
+        """
+        if not self.related_name:
+            raise ValueError('Related property is not defined')
+
+        if self.related_default and callable(self.related_default):
+            return self.related_default()
+
+        return copy.copy(self.related_default)
+
+    @abc.abstractmethod
+    def set_related_value(self, obj, new_values):
+        """ Update the values of the related attributes of the attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute should be set
+            new_values (:obj:`object`): value of the attribute
+
+        Returns:
+            :obj:`object`: value of the attribute
+        """
+        pass  # pragma: no cover
+
+    @abc.abstractmethod
+    def related_validate(self, obj, value):
+        """ Determine if `value` is a valid value of the related attribute
+
+        Args:
+            obj (:obj:`Model`): object to validate
+            value (:obj:`list`): value to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        pass  # pragma: no cover
+
+    def serialize(self, value, encoded=None):
+        """ Serialize related object
+
+        Args:
+            value (:obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        pass  # pragma: no cover
+
+    def deserialize(self, value, objects, decoded=None):
+        """ Deserialize value
+
+        Args:
+            values (:obj:`object`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        pass  # pragma: no cover
+
+    def to_builtin(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`object`): value of the attribute
+
+        Returns:
+            :obj:`object`: simple Python representation of a value of the attribute
+        """
+        raise Exception('This function should not be executed')
+
+    def from_builtin(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`object`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`object`: decoded value of the attribute
+        """
+        raise Exception('This function should not be executed')
+
+
+class OneToOneAttribute(RelatedAttribute):
+    """ Represents a one-to-one relationship between two types of objects. """
+
+    def __init__(self, related_class, related_name='',
+                 default=None, default_cleaned_value=None, related_default=None,
+                 min_related=0, min_related_rev=0,
+                 verbose_name='', verbose_related_name='', help=''):
+        """
+        Args:
+            related_class (:obj:`class`): related class
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            default (:obj:`callable`, optional): callable which returns default value
+            default_cleaned_value (:obj:`callable`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
+                which computes the value to replace :obj:`None` values
+            related_default (:obj:`callable`, optional): callable which returns default related value
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
+            verbose_name (:obj:`str`, optional): verbose name
+            verbose_related_name (:obj:`str`, optional): verbose related name
+            help (:obj:`str`, optional): help string
+        """
+        super(OneToOneAttribute, self).__init__(related_class, related_name=related_name,
+                                                init_value=None, default=default,
+                                                default_cleaned_value=default_cleaned_value,
+                                                related_init_value=None, related_default=related_default,
+                                                min_related=min_related, max_related=1,
+                                                min_related_rev=min_related_rev, max_related_rev=1,
+                                                verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+
+    def set_value(self, obj, new_value):
+        """ Update the values of the related attributes of the attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute should be set
+            new_value (:obj:`Model`): new attribute value
+
+        Returns:
+            :obj:`Model`: new attribute value
+
+        Raises:
+            :obj:`ValueError`: if related attribute of `new_value` is not `None`
+        """
+        cur_value = getattr(obj, self.name)
+        if cur_value is new_value:
+            return new_value
+
+        if new_value and getattr(new_value, self.related_name):
+            old_related = getattr(new_value, self.related_name)
+            old_related_cls = old_related.__class__
+            new_cls = new_value.__class__
+            raise ValueError("Attribute '{}:{}' of '{}:{}' must be `None`".format(
+                old_related_cls.__name__, old_related.serialize(),
+                new_cls.__name__, new_value.serialize()))
+
+        if self.related_name:
+            if cur_value:
+                cur_value.__setattr__(self.related_name, None, propagate=False)
+
+            if new_value:
+                new_value.__setattr__(self.related_name, obj, propagate=False)
+
+        return new_value
+
+    def set_related_value(self, obj, new_value):
+        """ Update the values of the related attributes of the attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute should be set
+            new_value (:obj:`Model`): value of the attribute
+
+        Returns:
+            :obj:`Model`: value of the attribute
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined or the attribute of `new_value` is not `None`
+        """
+        if not self.related_name:
+            raise ValueError('Related property is not defined')
+
+        cur_value = getattr(obj, self.related_name)
+        if cur_value is new_value:
+            return new_value
+
+        if new_value and getattr(new_value, self.name):
+            raise ValueError('Attribute of `new_value` must be `None`')
+
+        if cur_value:
+            cur_value.__setattr__(self.name, None, propagate=False)
+
+        if new_value:
+            new_value.__setattr__(self.name, obj, propagate=False)
+
+        return new_value
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`Model`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if value is None:
+            if self.min_related == 1:
+                errors.append('Value cannot be `None`')
+        elif not isinstance(value, self.related_class):
+            errors.append('Value must be an instance of "{:s}" or `None`'.format(
+                self.related_class.__name__))
+        elif self.related_name:
+            if obj is not getattr(value, self.related_name):
+                errors.append('Object must be related value')
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
+
+    def related_validate(self, obj, value):
+        """ Determine if `value` is a valid value of the related attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`list` of :obj:`Model`): value to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if value is None:
+            if self.min_related_rev == 1:
+                errors.append('Value cannot be `None`')
+        elif value and self.related_name:
+            if not isinstance(value, self.primary_class):
+                errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
+                    self.primary_class.__name__, value.__class__.__name__))
+            elif getattr(value, self.name) is not obj:
+                errors.append('Object must be related value')
+
+        if errors:
+            return InvalidAttribute(self, errors, related=True)
+        return None
+
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`Model`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`Model`: copy of value
+        """
+        if value is None:
+            return None
+        else:
+            return objects_and_copies[value]
+
+    def serialize(self, value, encoded=None):
+        """ Serialize related object
+
+        Args:
+            value (:obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
+                              indent=8)
+
+        else:
+            if value is None:
+                return ''
+
+            primary_attr = value.__class__.Meta.primary_attribute
+            return primary_attr.serialize(getattr(value, primary_attr.name))
+
+    def deserialize(self, value, objects, decoded=None):
+        """ Deserialize value
+
+        Args:
+            value (:obj:`str`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        if not value:
+            return (None, None)
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            try:
+                obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
+                                                   primary_objects=objects, decoded=decoded)
+                error = None
+            except Exception as exception:
+                obj = None
+                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
+            return (obj, error)
+
+        else:
+            related_objs = set()
+            related_classes = chain([self.related_class],
+                                    get_subclasses(self.related_class))
+            for related_class in related_classes:
+                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                    related_objs.add(objects[related_class][value])
+
+            if len(related_objs) == 0:
+                primary_attr = self.related_class.Meta.primary_attribute
+                return (None, InvalidAttribute(self, ['Unable to find {} with {}={}'.format(
+                    self.related_class.__name__, primary_attr.name, quote(value))]))
+
+            if len(related_objs) == 1:
+                return (related_objs.pop(), None)
+
+            return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        right_child = getattr(right, self.name)
+        if not right_child:
+            return
+
+        cur_left_child = getattr(left, self.name)
+        new_left_child = right_objs_in_left.get(right_child, right_child)
+
+        new_left_child_parent = getattr(new_left_child, self.related_name)
+        new_right_child_parent = left_objs_in_right.get(new_left_child_parent, None)
+
+        if new_left_child != cur_left_child and \
+                ((left == right and new_left_child_parent) or (left != right and cur_left_child)):
+            raise ValueError('Cannot join "{}" {} and {} of {} "{}" and "{}"'.format(
+                self.related_name,
+                left,
+                new_left_child_parent,
+                self.related_class.__name__,
+                cur_left_child,
+                new_left_child))
+
+        setattr(right, self.name, None)
+        setattr(left, self.name, new_left_child)
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(OneToOneAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.primary_attribute:
+            validation.type = wc_utils.workbook.io.FieldValidationType.list
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Select a value from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Select a value from "{}".'.format(source)]
+            error_message = ['Value must be a value from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: {}.'.format(default.serialize()))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
+
+class ManyToOneAttribute(RelatedAttribute):
+    """ Represents a many-to-one relationship between two types of objects.
+    This is analagous to a foreign key relationship in a database.
+
+    Attributes:
+        related_manager (:obj:`type`): related manager
+    """
+
+    def __init__(self, related_class, related_name='',
+                 default=None, default_cleaned_value=None, related_default=list(),
+                 min_related=0, min_related_rev=0, max_related_rev=float('inf'),
+                 verbose_name='', verbose_related_name='', help='',
+                 related_manager=ManyToOneRelatedManager):
+        """
+        Args:
+            related_class (:obj:`class`): related class
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            default (:obj:`callable`, optional): callable which returns the default value
+            default_cleaned_value (:obj:`callable`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
+                which computes the value to replace :obj:`None` values
+            related_default (:obj:`callable`, optional): callable which returns the default related value
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
+            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
+            verbose_name (:obj:`str`, optional): verbose name
+            verbose_related_name (:obj:`str`, optional): verbose related name
+            help (:obj:`str`, optional): help string
+            related_manager (:obj:`type`, optional): related manager
+        """
+        super(ManyToOneAttribute, self).__init__(
+            related_class, related_name=related_name,
+            init_value=None, default=default, default_cleaned_value=default_cleaned_value,
+            related_init_value=related_manager, related_default=related_default,
+            min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
+            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        self.related_manager = related_manager
+
+    def get_related_init_value(self, obj):
+        """ Get initial related value for attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute is being initialized
+
+        Returns:
+            value (:obj:`object`): initial value
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
+        """
+        if not self.related_name:
+            raise ValueError('Related property is not defined')
+
+        return self.related_manager(obj, self)
+
+    def set_value(self, obj, new_value):
+        """ Update the values of the related attributes of the attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute should be set
+            new_value (:obj:`Model`): new attribute value
+
+        Returns:
+            :obj:`Model`: new attribute value
+        """
+        cur_value = getattr(obj, self.name)
+        if cur_value is new_value:
+            return new_value
+
+        if self.related_name:
+            if cur_value:
+                cur_related = getattr(cur_value, self.related_name)
+                cur_related.remove(obj, propagate=False)
+
+            if new_value:
+                new_related = getattr(new_value, self.related_name)
+                new_related.append(obj, propagate=False)
+
+        return new_value
+
+    def set_related_value(self, obj, new_values):
+        """ Update the values of the related attributes of the attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute should be set
+            new_values (:obj:`list`): value of the attribute
+
+        Returns:
+            :obj:`list`: value of the attribute
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
+        """
+        if not self.related_name:
+            raise ValueError('Related property is not defined')
+
+        new_values_copy = list(new_values)
+
+        cur_values = getattr(obj, self.related_name)
+        cur_values.clear()
+        cur_values.extend(new_values_copy)
+
+        return cur_values
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`Model`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if value is None:
+            if self.min_related == 1:
+                errors.append('Value cannot be `None`')
+        elif not isinstance(value, self.related_class):
+            errors.append('Value must be an instance of "{:s}" or `None`'.format(
+                self.related_class.__name__))
+        elif self.related_name:
+            related_value = getattr(value, self.related_name)
+            if not isinstance(related_value, self.related_manager):
+                errors.append('Related value must be a `{}`'.format(self.related_manager.__name__)
+                              )  # pragma: no cover # unreachable due to above error checking
+            if obj not in related_value:
+                errors.append('Object must be in related values')
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
+
+    def related_validate(self, obj, value):
+        """ Determine if `value` is a valid value of the related attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`list` of :obj:`Model`): value to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if self.related_name:
+            if not isinstance(value, list):
+                errors.append('Related value must be a list')
+            elif len(value) < self.min_related_rev:
+                errors.append('There must be at least {} related values'.format(
+                    self.min_related_rev))
+            elif len(value) > self.max_related_rev:
+                errors.append('There cannot be more than {} related values'.format(
+                    self.max_related_rev))
+            else:
+                for v in value:
+                    if not isinstance(v, self.primary_class):
+                        errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
+                            self.primary_class.__name__, v.__class__.__name__))
+                    elif getattr(v, self.name) is not obj:
+                        errors.append('Object must be related value')
+
+        if errors:
+            return InvalidAttribute(self, errors, related=True)
+        return None
+
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`Model`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`Model`: copy of value
+        """
+        if value is None:
+            return None
+        else:
+            return objects_and_copies[value]
+
+    def serialize(self, value, encoded=None):
+        """ Serialize related object
+
+        Args:
+            value (:obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
+                              indent=8)
+
+        else:
+            if value is None:
+                return ''
+
+            primary_attr = value.__class__.Meta.primary_attribute
+            return primary_attr.serialize(getattr(value, primary_attr.name))
+
+    def deserialize(self, value, objects, decoded=None):
+        """ Deserialize value
+
+        Args:
+            value (:obj:`str`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        if not value:
+            return (None, None)
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            try:
+                obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
+                                                   primary_objects=objects, decoded=decoded)
+                error = None
+            except Exception as exception:
+                obj = None
+                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
+            return (obj, error)
+
+        else:
+            related_objs = set()
+            related_classes = chain([self.related_class],
+                                    get_subclasses(self.related_class))
+            for related_class in related_classes:
+                if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                    related_objs.add(objects[related_class][value])
+
+            if len(related_objs) == 0:
+                primary_attr = self.related_class.Meta.primary_attribute
+                return (None, InvalidAttribute(self, ['Unable to find {} with {}={}'.format(
+                    self.related_class.__name__, primary_attr.name, quote(value))]))
+
+            if len(related_objs) == 1:
+                return (related_objs.pop(), None)
+
+            return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        right_child = getattr(right, self.name)
+        if not right_child:
+            return
+
+        cur_left_child = getattr(left, self.name)
+        new_left_child = right_objs_in_left.get(right_child, right_child)
+
+        if left != right and cur_left_child and new_left_child and cur_left_child != new_left_child:
+            raise ValueError('Cannot join {} and {} of {}.{}'.format(
+                cur_left_child,
+                new_left_child,
+                left.__class__.__name__,
+                self.name))
+        setattr(right, self.name, None)
+        setattr(left, self.name, new_left_child)
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(ManyToOneAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.primary_attribute:
+            validation.type = wc_utils.workbook.io.FieldValidationType.list
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Select a value from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Select a value from "{}".'.format(source)]
+            error_message = ['Value must be a value from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: {}.'.format(default.serialize()))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
+
+class OneToManyAttribute(RelatedAttribute):
+    """ Represents a one-to-many relationship between two types of objects.
+    This is analagous to a foreign key relationship in a database.
+
+    Attributes:
+        related_manager (:obj:`type`): related manager
+    """
+
+    def __init__(self, related_class, related_name='',  default=list(), default_cleaned_value=list(),
+                 related_default=None,
+                 min_related=0, max_related=float('inf'), min_related_rev=0,
+                 verbose_name='', verbose_related_name='', help='',
+                 related_manager=OneToManyRelatedManager):
+        """
+        Args:
+            related_class (:obj:`class`): related class
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            default (:obj:`callable`, optional): function which returns the default value
+            default_cleaned_value (:obj:`callable`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
+                which computes the value to replace :obj:`None` values
+            related_default (:obj:`callable`, optional): function which returns the default related value
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
+            verbose_name (:obj:`str`, optional): verbose name
+            verbose_related_name (:obj:`str`, optional): verbose related name
+            help (:obj:`str`, optional): help string
+            related_manager (:obj:`type`, optional): related manager
+        """
+        super(OneToManyAttribute, self).__init__(
+            related_class, related_name=related_name,
+            init_value=related_manager, default=default, default_cleaned_value=default_cleaned_value,
+            related_init_value=None, related_default=related_default,
+            min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
+            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        self.related_manager = related_manager
+
+    def get_init_value(self, obj):
+        """ Get initial value for attribute
+
+        Args:
+            obj (:obj:`Model`): object whose attribute is being initialized
+
+        Returns:
+            :obj:`object`: initial value
+        """
+        return self.related_manager(obj, self)
+
+    def set_value(self, obj, new_values):
+        """ Update the values of the related attributes of the attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute should be set
+            new_values (:obj:`list`): value of the attribute
+
+        Returns:
+            :obj:`list`: value of the attribute
+        """
+        new_values_copy = list(new_values)
+
+        cur_values = getattr(obj, self.name)
+        cur_values.clear()
+        cur_values.extend(new_values_copy)
+
+        return cur_values
+
+    def set_related_value(self, obj, new_value):
+        """ Update the values of the related attributes of the attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute should be set
+            new_value (:obj:`Model`): new attribute value
+
+        Returns:
+            :obj:`Model`: new attribute value
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
+        """
+        if not self.related_name:
+            raise ValueError('Related property is not defined')
+
+        cur_value = getattr(obj, self.related_name)
+        if cur_value is new_value:
+            return new_value
+
+        if cur_value:
+            cur_related = getattr(cur_value, self.name)
+            cur_related.remove(obj, propagate=False)
+
+        if new_value:
+            new_related = getattr(new_value, self.name)
+            new_related.append(obj, propagate=False)
+
+        return new_value
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`list` of :obj:`Model`): value to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if not isinstance(value, list):
+            errors.append('Related value must be a list')
+        elif len(value) < self.min_related:
+            errors.append(
+                'There must be at least {} related values'.format(self.min_related))
+        elif len(value) > self.max_related:
+            errors.append(
+                'There must be no more than {} related values'.format(self.max_related))
+        else:
+            for v in value:
+                if not isinstance(v, self.related_class):
+                    errors.append('Value must be an instance of "{:s}"'.format(
+                        self.related_class.__name__))
+                elif self.related_name and getattr(v, self.related_name) is not obj:
+                    errors.append('Object must be related value')
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
+
+    def related_validate(self, obj, value):
+        """ Determine if `value` is a valid value of the related attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`Model`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if self.related_name:
+            if value is None:
+                if self.min_related_rev == 1:
+                    errors.append('Value cannot be `None`')
+            elif not isinstance(value, self.primary_class):
+                errors.append('Value must be an instance of "{:s}" or `None`'.format(
+                    self.primary_class.__name__))
+            else:
+                related_value = getattr(value, self.name)
+                if not isinstance(related_value, self.related_manager):
+                    errors.append('Related value must be a `{}`'.format(self.related_manager.__name__)
+                                  )  # pragma: no cover # unreachable due to above error checking
+                if obj not in related_value:
+                    errors.append('Object must be in related values')
+
+        if errors:
+            return InvalidAttribute(self, errors, related=True)
+        return None
+
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`list` of :obj:`Model`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`list` of :obj:`Model`: copy of value
+        """
+        copy_value = []
+        for v in value:
+            copy_value.append(objects_and_copies[v])
+        return copy_value
+
+    def serialize(self, value, encoded=None):
+        """ Serialize related object
+
+        Args:
+            value (:obj:`list` of :obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
+                              indent=8)
+
+        else:
+            serialized_vals = []
+            for v in value:
+                primary_attr = v.__class__.Meta.primary_attribute
+                serialized_vals.append(primary_attr.serialize(
+                    getattr(v, primary_attr.name)))
+
+            serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
+            return ', '.join(serialized_vals)
+
+    def deserialize(self, values, objects, decoded=None):
+        """ Deserialize value
+
+        Args:
+            values (:obj:`object`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        if not values:
+            return (list(), None)
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            try:
+                objs = []
+                for v in json.loads(values):
+                    objs.append(self.related_class.from_dict(v, decode_primary_objects=False,
+                                                             primary_objects=objects, decoded=decoded))
+                error = None
+            except Exception as exception:
+                objs = None
+                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
+            return (objs, error)
+
+        else:
+            deserialized_values = list()
+            errors = []
+            for value in values.split(','):
+                value = value.strip()
+
+                related_objs = set()
+                related_classes = chain(
+                    [self.related_class], get_subclasses(self.related_class))
+                for related_class in related_classes:
+                    if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                        related_objs.add(objects[related_class][value])
+
+                if len(related_objs) == 1:
+                    deserialized_values.append(related_objs.pop())
+                elif len(related_objs) == 0:
+                    errors.append('Unable to find {} with {}={}'.format(
+                        self.related_class.__name__, self.related_class.Meta.primary_attribute.name, quote(value)))
+                else:
+                    errors.append(
+                        'Multiple matching objects with primary attribute = {}'.format(value))
+
+            if errors:
+                return (None, InvalidAttribute(self, errors))
+            return (deserialized_values, None)
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        left_children = getattr(left, self.name)
+        right_children = getattr(right, self.name)
+
+        for right_child in list(right_children):
+            left_child = right_objs_in_left.get(right_child, right_child)
+            cur_left_child_parent = getattr(left_child, self.related_name)
+
+            if left_child != right_child and cur_left_child_parent and cur_left_child_parent != left:
+                raise ValueError('Cannot join {} and {} of {}.{}'.format(
+                    left,
+                    cur_left_child_parent,
+                    left_child.__class__.__name__,
+                    self.related_name))
+
+            right_children.remove(right_child)
+            left_children.append(left_child)
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(OneToManyAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
+
+class ManyToManyAttribute(RelatedAttribute):
+    """ Represents a many-to-many relationship between two types of objects. 
+
+    Attributes:
+        related_manager (:obj:`type`): related manager
+    """
+
+    def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
+                 related_default=list(),
+                 min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
+                 verbose_name='', verbose_related_name='', help='',
+                 related_manager=ManyToManyRelatedManager):
+        """
+        Args:
+            related_class (:obj:`class`): related class
+            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            default (:obj:`callable`, optional): function which returns the default values
+            default_cleaned_value (:obj:`callable`, optional): value to replace
+                :obj:`None` values with during cleaning, or function
+                which computes the value to replace :obj:`None` values
+            related_default (:obj:`callable`, optional): function which returns the default related values
+            min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
+            max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
+            min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
+            max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
+            verbose_name (:obj:`str`, optional): verbose name
+            verbose_related_name (:obj:`str`, optional): verbose related name
+            help (:obj:`str`, optional): help string
+            related_manager (:obj:`type`, optional): related manager
+        """
+        super(ManyToManyAttribute, self).__init__(
+            related_class, related_name=related_name,
+            init_value=related_manager, default=default, default_cleaned_value=default_cleaned_value,
+            related_init_value=related_manager, related_default=related_default,
+            min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
+            verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        self.related_manager = related_manager
+
+    def get_init_value(self, obj):
+        """ Get initial value for attribute
+
+        Args:
+            obj (:obj:`Model`): object whose attribute is being initialized
+
+        Returns:
+            :obj:`object`: initial value
+        """
+        return self.related_manager(obj, self, related=False)
+
+    def get_related_init_value(self, obj):
+        """ Get initial related value for attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute is being initialized
+
+        Returns:
+            value (:obj:`object`): initial value
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
+        """
+        if not self.related_name:
+            raise ValueError('Related property is not defined')
+        return self.related_manager(obj, self, related=True)
+
+    def set_value(self, obj, new_values):
+        """ Get value of attribute of object
+
+        Args:
+            obj (:obj:`Model`): object
+            new_values (:obj:`list`): new attribute value
+
+        Returns:
+            :obj:`list`: new attribute value
+        """
+        new_values_copy = list(new_values)
+
+        cur_values = getattr(obj, self.name)
+        cur_values.clear()
+        cur_values.extend(new_values_copy)
+
+        return cur_values
+
+    def set_related_value(self, obj, new_values):
+        """ Update the values of the related attributes of the attribute
+
+        Args:
+            obj (:obj:`object`): object whose attribute should be set
+            new_values (:obj:`list`): value of the attribute
+
+        Returns:
+            :obj:`list`: value of the attribute
+
+        Raises:
+            :obj:`ValueError`: if related property is not defined
+        """
+        if not self.related_name:
+            raise ValueError('Related property is not defined')
+
+        new_values_copy = list(new_values)
+
+        cur_values = getattr(obj, self.related_name)
+        cur_values.clear()
+        cur_values.extend(new_values_copy)
+
+        return cur_values
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`list` of :obj:`Model`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if not isinstance(value, list):
+            errors.append('Value must be a `list`')
+        elif len(value) < self.min_related:
+            errors.append(
+                'There must be at least {} related values'.format(self.min_related))
+        elif len(value) > self.max_related:
+            errors.append(
+                'There cannot be more than {} related values'.format(self.max_related))
+        else:
+            for v in value:
+                if not isinstance(v, self.related_class):
+                    errors.append('Value must be a `list` of "{:s}"'.format(
+                        self.related_class.__name__))
+
+                elif self.related_name:
+                    related_v = getattr(v, self.related_name)
+                    if not isinstance(related_v, self.related_manager):
+                        errors.append(
+                            'Related value must be a `{}`'.format(self.related_manager.__name__)
+                        )  # pragma: no cover # unreachable due to above error checking
+                    if obj not in related_v:
+                        errors.append('Object must be in related values')
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
+
+    def related_validate(self, obj, value):
+        """ Determine if `value` is a valid value of the related attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`list` of :obj:`Model`): value to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if self.related_name:
+            if not isinstance(value, list):
+                errors.append('Related value must be a list')
+            elif len(value) < self.min_related_rev:
+                errors.append('There must be at least {} related values'.format(
+                    self.min_related_rev))
+            elif len(value) > self.max_related_rev:
+                errors.append('There cannot be more than {} related values'.format(
+                    self.max_related_rev))
+            else:
+                for v in value:
+                    if not isinstance(v, self.primary_class):
+                        errors.append('Related value must be an instance of "{:s}" not "{}"'.format(
+                            self.primary_class.__name__, v.__class__.__name__))
+                    elif obj not in getattr(v, self.name):
+                        errors.append('Object must be in related values')
+
+        if errors:
+            return InvalidAttribute(self, errors, related=True)
+        return None
+
+    def copy_value(self, value, objects_and_copies):
+        """ Copy value
+
+        Args:
+            value (:obj:`list` of :obj:`Model`): value
+            objects_and_copies (:obj:`dict`): dictionary that maps objects to their copies
+
+        Returns:
+            :obj:`list` of :obj:`Model`: copy of value
+        """
+        copy_value = []
+        for v in value:
+            copy_value.append(objects_and_copies[v])
+        return copy_value
+
+    def serialize(self, value, encoded=None):
+        """ Serialize related object
+
+        Args:
+            value (:obj:`list` of :obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
+                              indent=8)
+
+        else:
+            serialized_vals = []
+            for v in value:
+                primary_attr = v.__class__.Meta.primary_attribute
+                serialized_vals.append(primary_attr.serialize(
+                    getattr(v, primary_attr.name)))
+
+            serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
+            return ', '.join(serialized_vals)
+
+    def deserialize(self, values, objects, decoded=None):
+        """ Deserialize value
+
+        Args:
+            values (:obj:`object`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+        """
+        if not values:
+            return (list(), None)
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+            try:
+                objs = []
+                for v in json.loads(values):
+                    objs.append(self.related_class.from_dict(v, decode_primary_objects=False,
+                                                             primary_objects=objects, decoded=decoded))
+                error = None
+            except Exception as exception:
+                objs = None
+                error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
+            return (objs, error)
+
+        else:
+            deserialized_values = list()
+            errors = []
+            for value in values.split(','):
+                value = value.strip()
+
+                related_objs = set()
+                related_classes = chain(
+                    [self.related_class], get_subclasses(self.related_class))
+                for related_class in related_classes:
+                    if issubclass(related_class, Model) and related_class in objects and value in objects[related_class]:
+                        related_objs.add(objects[related_class][value])
+
+                if len(related_objs) == 1:
+                    deserialized_values.append(related_objs.pop())
+                elif len(related_objs) == 0:
+                    primary_attr = self.related_class.Meta.primary_attribute
+                    errors.append('Unable to find {} with {}={}'.format(
+                        self.related_class.__name__, primary_attr.name, quote(value)))
+                else:
+                    errors.append(
+                        'Multiple matching objects with primary attribute = {}'.format(value))
+
+            if errors:
+                return (None, InvalidAttribute(self, errors))
+            return (deserialized_values, None)
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        left_children = getattr(left, self.name)
+        right_children = getattr(right, self.name)
+
+        for right_child in list(right_children):
+            left_child = right_objs_in_left.get(right_child, right_child)
+            right_children.remove(right_child)
+            left_children.append(left_child)
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(ManyToManyAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class InvalidObjectSet(object):
