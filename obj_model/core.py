@@ -1974,14 +1974,14 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:`list` of :obj:`Model`: related objects, without any duplicates
         """
-        related_objs = set()
+        related_objs = collections.OrderedDict()
         objs_to_explore = [self]
         init_iter = True
         while objs_to_explore:
             obj = objs_to_explore.pop()
             if obj not in related_objs:
                 if not init_iter:
-                    related_objs.add(obj)
+                    related_objs[obj] = None
                 init_iter = False
 
                 cls = obj.__class__
