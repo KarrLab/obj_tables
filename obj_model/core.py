@@ -2559,20 +2559,25 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return True
 
-    def get_children(self, type=None, recursive=True):
-        """ Get a type of children. 
+    def get_children(self, kind=None, __type=None, recursive=True, **kwargs):
+        """ Get a kind of children. 
 
-        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
         in each class.
 
         Args:
-            type (:obj:`str`, optional): type of children to get
+            kind (:obj:`str`, optional): kind of children to get
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
             recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
 
         Returns:
             :obj:`list` of :obj:`Model`: children
         """
-        children = self.get_immediate_children(type=type)
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        children = self.get_immediate_children(kind=kind)
 
         # get recursive children
         if recursive:
@@ -2580,33 +2585,45 @@ class Model(with_metaclass(ModelMeta, object)):
             children = set(children)
             while objs_to_explore:
                 obj_to_explore = objs_to_explore.pop()
-                for child in obj_to_explore.get_immediate_children(type=type):
+                for child in obj_to_explore.get_immediate_children(kind=kind):
                     if child not in children:
                         children.add(child)
                         objs_to_explore.append(child)
             children = list(children)
 
+        # filter by type/attributes
+        matches = []
+        for child in children:
+            if child.has_attr_vals(__type=__type, **kwargs):
+                matches.append(child)
+        children = matches
+
         # return children
         return children
 
-    def get_immediate_children(self, type=None):
-        """ Get a type of immediate children 
+    def get_immediate_children(self, kind=None, __type=None, **kwargs):
+        """ Get a kind of immediate children 
 
-        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
         in each class.
 
         Args:
-            type (:obj:`str`, optional): type of children to get
+            kind (:obj:`str`, optional): kind of children to get
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
 
         Returns:
             :obj:`list` of :obj:`Model`: immediate children
         """
-        if type is None:
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        if kind is None:
             attr_names = [attr.name for attr in self.Meta.attributes.values() if isinstance(attr, RelatedAttribute)]
-        elif type == '__all__':
+        elif kind == '__all__':
             attr_names = [attr.name for attr in self.Meta.local_attributes.values() if attr.is_related]
         else:
-            attr_names = self.Meta.children.get(type, ())
+            attr_names = self.Meta.children.get(kind, ())
 
         children = []
         for attr_name in attr_names:
@@ -2620,23 +2637,30 @@ class Model(with_metaclass(ModelMeta, object)):
             elif attr_value:
                 children.append(attr_value)
         children = det_dedupe(children)
+
+        # filter by type/attributes
+        matches = []
+        for child in children:
+            if child.has_attr_vals(__type=__type, **kwargs):
+                matches.append(child)
+        children = matches
+
         return children
 
-    def cut(self, type=None, recursive=True):
+    def cut(self, kind=None):
         """ Cut the object and its children from the rest of the object graph.
 
-        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
         in each class.
 
         Args:
-            type (:obj:`str`, optional): type of children to include
-            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+            kind (:obj:`str`, optional): kind of children to get
 
         Returns:
             :obj:`Model`: same object, but cut from the rest of the object graph
         """
-        objs = set(self.get_children(type=type, recursive=recursive))
-        objs.add(self)   
+        objs = set(self.get_children(kind=kind))
+        objs.add(self)
 
         for obj in objs:
             obj.cut_relations(objs)
@@ -6739,15 +6763,14 @@ class ManyToOneRelatedManager(RelatedManager):
 
         return self
 
-    def cut(self, type=None, recursive=True):
-        """ Cut values and their children of type :obj:`type` into separate graphs.
+    def cut(self, kind=None):
+        """ Cut values and their children of kind :obj:`kind` into separate graphs.
 
-        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
         in each class.
 
         Args:
-            type (:obj:`str`, optional): type of children to include
-            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+            kind (:obj:`str`, optional): kind of children to include
 
         Returns:
             :obj:`list` of :obj:`Model`: cut values and their children
@@ -6755,7 +6778,7 @@ class ManyToOneRelatedManager(RelatedManager):
         objs = []
         for obj in self:
             obj = obj.copy()
-            obj.cut(type=type, recursive=recursive)
+            obj.cut(kind=kind)
             objs.append(obj)
         return objs
 
@@ -6810,15 +6833,14 @@ class OneToManyRelatedManager(RelatedManager):
 
         return self
 
-    def cut(self, type=None, recursive=True):
-        """ Cut values and their children of type :obj:`type` into separate graphs.
+    def cut(self, kind=None):
+        """ Cut values and their children of kind :obj:`kind` into separate graphs.
 
-        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
         in each class.
 
         Args:
-            type (:obj:`str`, optional): type of children to include
-            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+            kind (:obj:`str`, optional): kind of children to include
 
         Returns:
             :obj:`list` of :obj:`Model`: cut values and their children
@@ -6826,7 +6848,7 @@ class OneToManyRelatedManager(RelatedManager):
         objs = []
         for obj in self:
             obj = obj.copy()
-            obj.cut(type=type, recursive=recursive)
+            obj.cut(kind=kind)
             objs.append(obj)
         return objs
 
@@ -6881,15 +6903,14 @@ class ManyToManyRelatedManager(RelatedManager):
 
         return self
 
-    def cut(self, type=None, recursive=True):
-        """ Cut values and their children of type :obj:`type` into separate graphs.
+    def cut(self, kind=None):
+        """ Cut values and their children of kind :obj:`kind` into separate graphs.
 
-        If :obj:`type` is :obj:`None`, children are defined to be the values of the related attributes defined
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
         in each class.
 
         Args:
-            type (:obj:`str`, optional): type of children to include
-            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+            kind (:obj:`str`, optional): kind of children to include
 
         Returns:
             :obj:`list` of :obj:`Model`: cut values and their children
@@ -6897,7 +6918,7 @@ class ManyToManyRelatedManager(RelatedManager):
         objs = []
         for obj in self:
             obj = obj.copy()
-            obj.cut(type=type, recursive=recursive)
+            obj.cut(kind=kind)
             objs.append(obj)
         return objs
 

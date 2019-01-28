@@ -78,7 +78,7 @@ class CutTestCase(unittest.TestCase):
         self.obj_01_0_0 = self.obj_01_0.child_010 = Level010(id='obj_01_0_0')
         self.obj_01_1_0 = self.obj_01_1.child_011 = Level011(id='obj_01_1_0')
 
-    def test_get_immediate_children_type_none(self):
+    def test_get_immediate_children_kind_none(self):
         self.assertEqual(self.obj_0.get_immediate_children(), self.obj_0.children_01)
 
         self.assertEqual(self.obj_00_0.get_immediate_children(), [self.obj_00_0.parent])
@@ -92,47 +92,61 @@ class CutTestCase(unittest.TestCase):
         self.assertEqual(self.obj_01_0_0.get_immediate_children(), [])
         self.assertEqual(self.obj_01_1_0.get_immediate_children(), [])
 
-    def test_get_immediate_children_type_all(self):
-        self.assertEqual(set(self.obj_0.get_immediate_children(type='__all__')), set(self.obj_0.children_00) | set(self.obj_0.children_01))
+    def test_get_immediate_children_kind_all(self):
+        self.assertEqual(set(self.obj_0.get_immediate_children(kind='__all__')), set(self.obj_0.children_00) | set(self.obj_0.children_01))
 
-        self.assertEqual(set(self.obj_00_0.get_immediate_children(type='__all__')), set([self.obj_0, self.obj_00_0_0]))
-        self.assertEqual(set(self.obj_00_1.get_immediate_children(type='__all__')), set([self.obj_0, self.obj_00_1_0, self.obj_00_1_1]))
-        self.assertEqual(set(self.obj_01_0.get_immediate_children(type='__all__')), set([self.obj_0, self.obj_01_0.child_010]))
-        self.assertEqual(set(self.obj_01_1.get_immediate_children(type='__all__')), set([self.obj_0, self.obj_01_1.child_011]))
+        self.assertEqual(set(self.obj_00_0.get_immediate_children(kind='__all__')), set([self.obj_0, self.obj_00_0_0]))
+        self.assertEqual(set(self.obj_00_1.get_immediate_children(kind='__all__')), set([self.obj_0, self.obj_00_1_0, self.obj_00_1_1]))
+        self.assertEqual(set(self.obj_01_0.get_immediate_children(kind='__all__')), set([self.obj_0, self.obj_01_0.child_010]))
+        self.assertEqual(set(self.obj_01_1.get_immediate_children(kind='__all__')), set([self.obj_0, self.obj_01_1.child_011]))
 
     def test_get_immediate_children(self):
-        self.assertEqual(self.obj_0.get_immediate_children(type='left'), self.obj_0.children_00)
-        self.assertEqual(self.obj_0.get_immediate_children(type='right'), self.obj_0.children_01)
-        self.assertEqual(set(self.obj_0.get_immediate_children(type='all')), set(self.obj_0.children_00) | set(self.obj_0.children_01))
+        self.assertEqual(self.obj_0.get_immediate_children(kind='left'), self.obj_0.children_00)
+        self.assertEqual(self.obj_0.get_immediate_children(kind='right'), self.obj_0.children_01)
+        self.assertEqual(set(self.obj_0.get_immediate_children(kind='all')), set(self.obj_0.children_00) | set(self.obj_0.children_01))
 
-        self.assertEqual(self.obj_00_0.get_immediate_children(type='left'), [self.obj_00_0.child_000])
-        self.assertEqual(self.obj_00_0.get_immediate_children(type='right'), [])
-        self.assertEqual(self.obj_00_0.get_immediate_children(type='all'), [self.obj_00_0.child_000])
-        self.assertEqual(self.obj_00_1.get_immediate_children(type='left'), self.obj_00_1.children_001)
-        self.assertEqual(self.obj_00_1.get_immediate_children(type='right'), [])
-        self.assertEqual(self.obj_00_1.get_immediate_children(type='all'), self.obj_00_1.children_001)
-        self.assertEqual(self.obj_01_0.get_immediate_children(type='left'), [])
-        self.assertEqual(self.obj_01_0.get_immediate_children(type='right'), [self.obj_01_0.child_010])
-        self.assertEqual(self.obj_01_0.get_immediate_children(type='all'), [self.obj_01_0.child_010])
-        self.assertEqual(self.obj_01_1.get_immediate_children(type='left'), [])
-        self.assertEqual(self.obj_01_1.get_immediate_children(type='right'), [self.obj_01_1.child_011])
-        self.assertEqual(self.obj_01_1.get_immediate_children(type='all'), [self.obj_01_1.child_011])
+        self.assertEqual(self.obj_00_0.get_immediate_children(kind='left'), [self.obj_00_0.child_000])
+        self.assertEqual(self.obj_00_0.get_immediate_children(kind='right'), [])
+        self.assertEqual(self.obj_00_0.get_immediate_children(kind='all'), [self.obj_00_0.child_000])
+        self.assertEqual(self.obj_00_1.get_immediate_children(kind='left'), self.obj_00_1.children_001)
+        self.assertEqual(self.obj_00_1.get_immediate_children(kind='right'), [])
+        self.assertEqual(self.obj_00_1.get_immediate_children(kind='all'), self.obj_00_1.children_001)
+        self.assertEqual(self.obj_01_0.get_immediate_children(kind='left'), [])
+        self.assertEqual(self.obj_01_0.get_immediate_children(kind='right'), [self.obj_01_0.child_010])
+        self.assertEqual(self.obj_01_0.get_immediate_children(kind='all'), [self.obj_01_0.child_010])
+        self.assertEqual(self.obj_01_1.get_immediate_children(kind='left'), [])
+        self.assertEqual(self.obj_01_1.get_immediate_children(kind='right'), [self.obj_01_1.child_011])
+        self.assertEqual(self.obj_01_1.get_immediate_children(kind='all'), [self.obj_01_1.child_011])
 
-        self.assertEqual(self.obj_00_0_0.get_immediate_children(type='left'), [])
-        self.assertEqual(self.obj_00_0_0.get_immediate_children(type='right'), [])
-        self.assertEqual(self.obj_00_0_0.get_immediate_children(type='all'), [])
-        self.assertEqual(self.obj_00_1_0.get_immediate_children(type='left'), [])
-        self.assertEqual(self.obj_00_1_0.get_immediate_children(type='right'), [])
-        self.assertEqual(self.obj_00_1_0.get_immediate_children(type='all'), [])
-        self.assertEqual(self.obj_00_1_1.get_immediate_children(type='left'), [])
-        self.assertEqual(self.obj_00_1_1.get_immediate_children(type='right'), [])
-        self.assertEqual(self.obj_00_1_1.get_immediate_children(type='all'), [])
-        self.assertEqual(self.obj_01_0_0.get_immediate_children(type='left'), [])
-        self.assertEqual(self.obj_01_0_0.get_immediate_children(type='right'), [])
-        self.assertEqual(self.obj_01_0_0.get_immediate_children(type='all'), [])
-        self.assertEqual(self.obj_01_1_0.get_immediate_children(type='left'), [])
-        self.assertEqual(self.obj_01_1_0.get_immediate_children(type='right'), [])
-        self.assertEqual(self.obj_01_1_0.get_immediate_children(type='all'), [])
+        self.assertEqual(self.obj_00_0_0.get_immediate_children(kind='left'), [])
+        self.assertEqual(self.obj_00_0_0.get_immediate_children(kind='right'), [])
+        self.assertEqual(self.obj_00_0_0.get_immediate_children(kind='all'), [])
+        self.assertEqual(self.obj_00_1_0.get_immediate_children(kind='left'), [])
+        self.assertEqual(self.obj_00_1_0.get_immediate_children(kind='right'), [])
+        self.assertEqual(self.obj_00_1_0.get_immediate_children(kind='all'), [])
+        self.assertEqual(self.obj_00_1_1.get_immediate_children(kind='left'), [])
+        self.assertEqual(self.obj_00_1_1.get_immediate_children(kind='right'), [])
+        self.assertEqual(self.obj_00_1_1.get_immediate_children(kind='all'), [])
+        self.assertEqual(self.obj_01_0_0.get_immediate_children(kind='left'), [])
+        self.assertEqual(self.obj_01_0_0.get_immediate_children(kind='right'), [])
+        self.assertEqual(self.obj_01_0_0.get_immediate_children(kind='all'), [])
+        self.assertEqual(self.obj_01_1_0.get_immediate_children(kind='left'), [])
+        self.assertEqual(self.obj_01_1_0.get_immediate_children(kind='right'), [])
+        self.assertEqual(self.obj_01_1_0.get_immediate_children(kind='all'), [])
+
+    def test_get_immediate_children_filter(self):
+        self.assertEqual(self.obj_0.get_immediate_children(kind='all', __type=Level0), [])
+        self.assertEqual(set(self.obj_0.get_immediate_children(kind='all', __type=Level00)),
+                         set(self.obj_0.children_00))
+        self.assertEqual(set(self.obj_0.get_immediate_children(kind='all', __type=Level01)),
+                         set(self.obj_0.children_01))
+
+        self.assertEqual(self.obj_0.get_immediate_children(kind='all', id='obj_00_0'),
+                         [self.obj_00_0])
+        self.assertEqual(self.obj_0.get_immediate_children(kind='all', __type=Level00, id='obj_00_0'),
+                         [self.obj_00_0])
+        self.assertEqual(self.obj_0.get_immediate_children(kind='all', __type=Level01, id='obj_00_1'),
+                         [])
 
     def test_get_immediate_children_error(self):
         class TestModel(core.Model):
@@ -145,81 +159,91 @@ class CutTestCase(unittest.TestCase):
 
         model = TestModel(id='model')
         with self.assertRaisesRegex(ValueError, 'not a related attribute'):
-            model.get_immediate_children(type='all')
+            model.get_immediate_children(kind='all')
 
     def test_get_children_not_recursive(self):
-        self.assertEqual(self.obj_0.get_children(recursive=False, type='left'), self.obj_0.children_00)
-        self.assertEqual(self.obj_0.get_children(recursive=False, type='right'), self.obj_0.children_01)
-        self.assertEqual(set(self.obj_0.get_children(recursive=False, type='all')),
+        self.assertEqual(self.obj_0.get_children(recursive=False, kind='left'), self.obj_0.children_00)
+        self.assertEqual(self.obj_0.get_children(recursive=False, kind='right'), self.obj_0.children_01)
+        self.assertEqual(set(self.obj_0.get_children(recursive=False, kind='all')),
                          set(self.obj_0.children_00) | set(self.obj_0.children_01))
 
-        self.assertEqual(self.obj_00_0.get_children(recursive=False, type='left'), [self.obj_00_0.child_000])
-        self.assertEqual(self.obj_00_0.get_children(recursive=False, type='right'), [])
-        self.assertEqual(self.obj_00_0.get_children(recursive=False, type='all'), [self.obj_00_0.child_000])
-        self.assertEqual(self.obj_00_1.get_children(recursive=False, type='left'), self.obj_00_1.children_001)
-        self.assertEqual(self.obj_00_1.get_children(recursive=False, type='right'), [])
-        self.assertEqual(self.obj_00_1.get_children(recursive=False, type='all'), self.obj_00_1.children_001)
-        self.assertEqual(self.obj_01_0.get_children(recursive=False, type='left'), [])
-        self.assertEqual(self.obj_01_0.get_children(recursive=False, type='right'), [self.obj_01_0.child_010])
-        self.assertEqual(self.obj_01_0.get_children(recursive=False, type='all'), [self.obj_01_0.child_010])
-        self.assertEqual(self.obj_01_1.get_children(recursive=False, type='left'), [])
-        self.assertEqual(self.obj_01_1.get_children(recursive=False, type='right'), [self.obj_01_1.child_011])
-        self.assertEqual(self.obj_01_1.get_children(recursive=False, type='all'), [self.obj_01_1.child_011])
+        self.assertEqual(self.obj_00_0.get_children(recursive=False, kind='left'), [self.obj_00_0.child_000])
+        self.assertEqual(self.obj_00_0.get_children(recursive=False, kind='right'), [])
+        self.assertEqual(self.obj_00_0.get_children(recursive=False, kind='all'), [self.obj_00_0.child_000])
+        self.assertEqual(self.obj_00_1.get_children(recursive=False, kind='left'), self.obj_00_1.children_001)
+        self.assertEqual(self.obj_00_1.get_children(recursive=False, kind='right'), [])
+        self.assertEqual(self.obj_00_1.get_children(recursive=False, kind='all'), self.obj_00_1.children_001)
+        self.assertEqual(self.obj_01_0.get_children(recursive=False, kind='left'), [])
+        self.assertEqual(self.obj_01_0.get_children(recursive=False, kind='right'), [self.obj_01_0.child_010])
+        self.assertEqual(self.obj_01_0.get_children(recursive=False, kind='all'), [self.obj_01_0.child_010])
+        self.assertEqual(self.obj_01_1.get_children(recursive=False, kind='left'), [])
+        self.assertEqual(self.obj_01_1.get_children(recursive=False, kind='right'), [self.obj_01_1.child_011])
+        self.assertEqual(self.obj_01_1.get_children(recursive=False, kind='all'), [self.obj_01_1.child_011])
 
-        self.assertEqual(self.obj_00_0_0.get_children(recursive=False, type='left'), [])
-        self.assertEqual(self.obj_00_0_0.get_children(recursive=False, type='right'), [])
-        self.assertEqual(self.obj_00_0_0.get_children(recursive=False, type='all'), [])
-        self.assertEqual(self.obj_00_1_0.get_children(recursive=False, type='left'), [])
-        self.assertEqual(self.obj_00_1_0.get_children(recursive=False, type='right'), [])
-        self.assertEqual(self.obj_00_1_0.get_children(recursive=False, type='all'), [])
-        self.assertEqual(self.obj_00_1_1.get_children(recursive=False, type='left'), [])
-        self.assertEqual(self.obj_00_1_1.get_children(recursive=False, type='right'), [])
-        self.assertEqual(self.obj_00_1_1.get_children(recursive=False, type='all'), [])
-        self.assertEqual(self.obj_01_0_0.get_children(recursive=False, type='left'), [])
-        self.assertEqual(self.obj_01_0_0.get_children(recursive=False, type='right'), [])
-        self.assertEqual(self.obj_01_0_0.get_children(recursive=False, type='all'), [])
-        self.assertEqual(self.obj_01_1_0.get_children(recursive=False, type='left'), [])
-        self.assertEqual(self.obj_01_1_0.get_children(recursive=False, type='right'), [])
-        self.assertEqual(self.obj_01_1_0.get_children(recursive=False, type='all'), [])
+        self.assertEqual(self.obj_00_0_0.get_children(recursive=False, kind='left'), [])
+        self.assertEqual(self.obj_00_0_0.get_children(recursive=False, kind='right'), [])
+        self.assertEqual(self.obj_00_0_0.get_children(recursive=False, kind='all'), [])
+        self.assertEqual(self.obj_00_1_0.get_children(recursive=False, kind='left'), [])
+        self.assertEqual(self.obj_00_1_0.get_children(recursive=False, kind='right'), [])
+        self.assertEqual(self.obj_00_1_0.get_children(recursive=False, kind='all'), [])
+        self.assertEqual(self.obj_00_1_1.get_children(recursive=False, kind='left'), [])
+        self.assertEqual(self.obj_00_1_1.get_children(recursive=False, kind='right'), [])
+        self.assertEqual(self.obj_00_1_1.get_children(recursive=False, kind='all'), [])
+        self.assertEqual(self.obj_01_0_0.get_children(recursive=False, kind='left'), [])
+        self.assertEqual(self.obj_01_0_0.get_children(recursive=False, kind='right'), [])
+        self.assertEqual(self.obj_01_0_0.get_children(recursive=False, kind='all'), [])
+        self.assertEqual(self.obj_01_1_0.get_children(recursive=False, kind='left'), [])
+        self.assertEqual(self.obj_01_1_0.get_children(recursive=False, kind='right'), [])
+        self.assertEqual(self.obj_01_1_0.get_children(recursive=False, kind='all'), [])
 
     def test_get_children(self):
-        self.assertEqual(set(self.obj_0.get_children(type='left')),
+        self.assertEqual(set(self.obj_0.get_children(kind='left')),
                          set(self.obj_0.children_00 + [self.obj_00_0.child_000] + self.obj_00_1.children_001))
-        self.assertEqual(set(self.obj_0.get_children(type='right')),
+        self.assertEqual(set(self.obj_0.get_children(kind='right')),
                          set(self.obj_0.children_01 + [self.obj_01_0.child_010] + [self.obj_01_1.child_011]))
-        self.assertEqual(set(self.obj_0.get_children(type='all')),
+        self.assertEqual(set(self.obj_0.get_children(kind='all')),
                          set(self.obj_0.children_00 + [self.obj_00_0.child_000] + self.obj_00_1.children_001
                              + self.obj_0.children_01 + [self.obj_01_0.child_010] + [self.obj_01_1.child_011]))
-        self.assertEqual(set(self.obj_0.get_children(type='all') + [self.obj_0]), set(self.obj_0.get_related()))
+        self.assertEqual(set(self.obj_0.get_children(kind='all') + [self.obj_0]), set(self.obj_0.get_related()))
 
-        self.assertEqual(self.obj_00_0.get_children(type='left'), [self.obj_00_0.child_000])
-        self.assertEqual(self.obj_00_0.get_children(type='right'), [])
-        self.assertEqual(self.obj_00_0.get_children(type='all'), [self.obj_00_0.child_000])
-        self.assertEqual(set(self.obj_00_1.get_children(type='left')), set(self.obj_00_1.children_001))
-        self.assertEqual(self.obj_00_1.get_children(type='right'), [])
-        self.assertEqual(set(self.obj_00_1.get_children(type='all')), set(self.obj_00_1.children_001))
-        self.assertEqual(self.obj_01_0.get_children(type='left'), [])
-        self.assertEqual(self.obj_01_0.get_children(type='right'), [self.obj_01_0.child_010])
-        self.assertEqual(self.obj_01_0.get_children(type='all'), [self.obj_01_0.child_010])
-        self.assertEqual(self.obj_01_1.get_children(type='left'), [])
-        self.assertEqual(self.obj_01_1.get_children(type='right'), [self.obj_01_1.child_011])
-        self.assertEqual(self.obj_01_1.get_children(type='all'), [self.obj_01_1.child_011])
+        self.assertEqual(self.obj_00_0.get_children(kind='left'), [self.obj_00_0.child_000])
+        self.assertEqual(self.obj_00_0.get_children(kind='right'), [])
+        self.assertEqual(self.obj_00_0.get_children(kind='all'), [self.obj_00_0.child_000])
+        self.assertEqual(set(self.obj_00_1.get_children(kind='left')), set(self.obj_00_1.children_001))
+        self.assertEqual(self.obj_00_1.get_children(kind='right'), [])
+        self.assertEqual(set(self.obj_00_1.get_children(kind='all')), set(self.obj_00_1.children_001))
+        self.assertEqual(self.obj_01_0.get_children(kind='left'), [])
+        self.assertEqual(self.obj_01_0.get_children(kind='right'), [self.obj_01_0.child_010])
+        self.assertEqual(self.obj_01_0.get_children(kind='all'), [self.obj_01_0.child_010])
+        self.assertEqual(self.obj_01_1.get_children(kind='left'), [])
+        self.assertEqual(self.obj_01_1.get_children(kind='right'), [self.obj_01_1.child_011])
+        self.assertEqual(self.obj_01_1.get_children(kind='all'), [self.obj_01_1.child_011])
 
-        self.assertEqual(self.obj_00_0_0.get_children(type='left'), [])
-        self.assertEqual(self.obj_00_0_0.get_children(type='right'), [])
-        self.assertEqual(self.obj_00_0_0.get_children(type='all'), [])
-        self.assertEqual(self.obj_00_1_0.get_children(type='left'), [])
-        self.assertEqual(self.obj_00_1_0.get_children(type='right'), [])
-        self.assertEqual(self.obj_00_1_0.get_children(type='all'), [])
-        self.assertEqual(self.obj_00_1_1.get_children(type='left'), [])
-        self.assertEqual(self.obj_00_1_1.get_children(type='right'), [])
-        self.assertEqual(self.obj_00_1_1.get_children(type='all'), [])
-        self.assertEqual(self.obj_01_0_0.get_children(type='left'), [])
-        self.assertEqual(self.obj_01_0_0.get_children(type='right'), [])
-        self.assertEqual(self.obj_01_0_0.get_children(type='all'), [])
-        self.assertEqual(self.obj_01_1_0.get_children(type='left'), [])
-        self.assertEqual(self.obj_01_1_0.get_children(type='right'), [])
-        self.assertEqual(self.obj_01_1_0.get_children(type='all'), [])
+        self.assertEqual(self.obj_00_0_0.get_children(kind='left'), [])
+        self.assertEqual(self.obj_00_0_0.get_children(kind='right'), [])
+        self.assertEqual(self.obj_00_0_0.get_children(kind='all'), [])
+        self.assertEqual(self.obj_00_1_0.get_children(kind='left'), [])
+        self.assertEqual(self.obj_00_1_0.get_children(kind='right'), [])
+        self.assertEqual(self.obj_00_1_0.get_children(kind='all'), [])
+        self.assertEqual(self.obj_00_1_1.get_children(kind='left'), [])
+        self.assertEqual(self.obj_00_1_1.get_children(kind='right'), [])
+        self.assertEqual(self.obj_00_1_1.get_children(kind='all'), [])
+        self.assertEqual(self.obj_01_0_0.get_children(kind='left'), [])
+        self.assertEqual(self.obj_01_0_0.get_children(kind='right'), [])
+        self.assertEqual(self.obj_01_0_0.get_children(kind='all'), [])
+        self.assertEqual(self.obj_01_1_0.get_children(kind='left'), [])
+        self.assertEqual(self.obj_01_1_0.get_children(kind='right'), [])
+        self.assertEqual(self.obj_01_1_0.get_children(kind='all'), [])
+
+    def test_get_children_filter(self):
+        self.assertEqual(set(self.obj_0.get_children(kind='all', __type=Level00)),
+                         set(self.obj_0.children_00))
+        self.assertEqual(set(self.obj_0.get_children(kind='all', __type=Level01)),
+                         set(self.obj_0.children_01))
+        self.assertEqual(self.obj_0.get_children(kind='all', id='obj_00_1_0'),
+                         [self.obj_00_1_0])
+        self.assertEqual(self.obj_0.get_children(kind='all', id='obj_00_1_1'),
+                         [self.obj_00_1_1])
 
     def test_cut_relations(self):
         self.setUp()
@@ -294,44 +318,44 @@ class CutTestCase(unittest.TestCase):
         obj_0 = self.obj_0
 
         self.setUp()
-        self.obj_0.cut(type='all')
+        self.obj_0.cut(kind='all')
         self.assertTrue(obj_0.is_equal(self.obj_0))
 
         self.setUp()
-        self.obj_0.cut(type='left')
+        self.obj_0.cut(kind='left')
         self.assertFalse(obj_0.is_equal(self.obj_0))
         self.assertNotEqual(self.obj_0.children_00, [])
         self.assertEqual(self.obj_0.children_01, [])
 
         self.setUp()
-        self.obj_0.cut(type='right')
+        self.obj_0.cut(kind='right')
         self.assertFalse(obj_0.is_equal(self.obj_0))
         self.assertEqual(self.obj_0.children_00, [])
         self.assertNotEqual(self.obj_0.children_01, [])
 
         self.setUp()
-        self.obj_00_0.cut(type='left')
+        self.obj_00_0.cut(kind='left')
         self.assertFalse(obj_0.is_equal(self.obj_0))
         self.assertEqual(self.obj_0.children_00, [self.obj_00_1])
         self.assertEqual(self.obj_0.children_01, [self.obj_01_0, self.obj_01_1])
         self.assertEqual(self.obj_00_0.child_000, self.obj_00_0_0)
 
         self.setUp()
-        self.obj_00_0.cut(type='right')
+        self.obj_00_0.cut(kind='right')
         self.assertFalse(obj_0.is_equal(self.obj_0))
         self.assertEqual(self.obj_0.children_00, [self.obj_00_1])
         self.assertEqual(self.obj_0.children_01, [self.obj_01_0, self.obj_01_1])
         self.assertEqual(self.obj_00_0.child_000, None)
 
         self.setUp()
-        self.obj_00_0.cut(type='all')
+        self.obj_00_0.cut(kind='all')
         self.assertFalse(obj_0.is_equal(self.obj_0))
         self.assertEqual(self.obj_0.children_00, [self.obj_00_1])
         self.assertEqual(self.obj_0.children_01, [self.obj_01_0, self.obj_01_1])
         self.assertEqual(self.obj_00_0.child_000, self.obj_00_0_0)
 
         self.setUp()
-        self.obj_00_1.cut(type='left')
+        self.obj_00_1.cut(kind='left')
         self.assertFalse(obj_0.is_equal(self.obj_0))
         self.assertEqual(self.obj_0.children_00, [self.obj_00_0])
         self.assertEqual(self.obj_0.children_01, [self.obj_01_0, self.obj_01_1])
@@ -339,7 +363,7 @@ class CutTestCase(unittest.TestCase):
         self.assertEqual(self.obj_00_1.children_001, [self.obj_00_1_0, self.obj_00_1_1])
 
         self.setUp()
-        self.obj_00_1.cut(type='right')
+        self.obj_00_1.cut(kind='right')
         self.assertFalse(obj_0.is_equal(self.obj_0))
         self.assertEqual(self.obj_0.children_00, [self.obj_00_0])
         self.assertEqual(self.obj_0.children_01, [self.obj_01_0, self.obj_01_1])
@@ -347,7 +371,7 @@ class CutTestCase(unittest.TestCase):
         self.assertEqual(self.obj_00_1.children_001, [])
 
         self.setUp()
-        self.obj_00_1.cut(type='all')
+        self.obj_00_1.cut(kind='all')
         self.assertFalse(obj_0.is_equal(self.obj_0))
         self.assertEqual(self.obj_0.children_00, [self.obj_00_0])
         self.assertEqual(self.obj_0.children_01, [self.obj_01_0, self.obj_01_1])
@@ -356,7 +380,7 @@ class CutTestCase(unittest.TestCase):
 
     def test_OneToManyAttribute_cut(self):
         self.setUp()
-        cut_children = self.obj_0.children_01.cut(type='left')
+        cut_children = self.obj_0.children_01.cut(kind='left')
         obj_01_0 = next(c for c in cut_children if c.id == 'obj_01_0')
         obj_01_1 = next(c for c in cut_children if c.id == 'obj_01_1')
         self.assertEqual(obj_01_0.parent, None)
@@ -365,7 +389,7 @@ class CutTestCase(unittest.TestCase):
         self.assertTrue(obj_01_1.is_equal(Level01(id='obj_01_1')))
 
         self.setUp()
-        cut_children = self.obj_0.children_01.cut(type='right')
+        cut_children = self.obj_0.children_01.cut(kind='right')
         obj_01_0 = next(c for c in cut_children if c.id == 'obj_01_0')
         obj_01_1 = next(c for c in cut_children if c.id == 'obj_01_1')
         self.assertEqual(obj_01_0.parent, None)
@@ -377,7 +401,7 @@ class CutTestCase(unittest.TestCase):
 
     def test_ManyToOneAttribute_cut(self):
         self.setUp()
-        cut_children = self.obj_0.children_00.cut(type='left')
+        cut_children = self.obj_0.children_00.cut(kind='left')
         obj_00_0 = next(c for c in cut_children if c.id == 'obj_00_0')
         obj_00_1 = next(c for c in cut_children if c.id == 'obj_00_1')
         self.assertEqual(obj_00_0.parent, None)
@@ -388,7 +412,7 @@ class CutTestCase(unittest.TestCase):
         self.assertEqual(set(c.id for c in obj_00_1.children_001), set(['obj_00_1_0', 'obj_00_1_1']))
 
         self.setUp()
-        cut_children = self.obj_0.children_00.cut(type='right')
+        cut_children = self.obj_0.children_00.cut(kind='right')
         obj_00_0 = next(c for c in cut_children if c.id == 'obj_00_0')
         obj_00_1 = next(c for c in cut_children if c.id == 'obj_00_1')
         self.assertEqual(obj_00_0.parent, None)
@@ -398,7 +422,7 @@ class CutTestCase(unittest.TestCase):
 
     def test_ManyToManyAttribute_cut(self):
         self.setUp()
-        cut_children = self.obj_00_1.children_001.cut(type='all')
+        cut_children = self.obj_00_1.children_001.cut(kind='all')
         self.assertEqual(len(cut_children), 2)
         obj_00_1_0 = next(c for c in cut_children if c.id == 'obj_00_1_0')
         obj_00_1_1 = next(c for c in cut_children if c.id == 'obj_00_1_1')
@@ -406,18 +430,18 @@ class CutTestCase(unittest.TestCase):
         self.assertTrue(obj_00_1_1.is_equal(Level001(id='obj_00_1_1')))
 
         self.setUp()
-        cut_children = self.obj_00_1_0.parents.cut(type='left')
+        cut_children = self.obj_00_1_0.parents.cut(kind='left')
         self.assertEqual(len(cut_children), 1)
         self.assertTrue(cut_children[0].is_equal(Level00(id='obj_00_1', children_001=[
                         Level001(id='obj_00_1_0'), Level001(id='obj_00_1_1')])))
 
         self.setUp()
-        cut_children = self.obj_00_1_0.parents.cut(type='right')
+        cut_children = self.obj_00_1_0.parents.cut(kind='right')
         self.assertEqual(len(cut_children), 1)
         self.assertTrue(cut_children[0].is_equal(Level00(id='obj_00_1')))
 
         self.setUp()
-        cut_children = self.obj_00_1_0.parents.cut(type='all')
+        cut_children = self.obj_00_1_0.parents.cut(kind='all')
         self.assertEqual(len(cut_children), 1)
         self.assertTrue(cut_children[0].is_equal(Level00(id='obj_00_1', children_001=[
                         Level001(id='obj_00_1_0'), Level001(id='obj_00_1_1')])))
