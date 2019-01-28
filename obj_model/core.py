@@ -963,9 +963,9 @@ class Model(with_metaclass(ModelMeta, object)):
             frozen_columns (:obj:`int`): number of Excel columns to freeze
             inheritance (:obj:`tuple` of `class`): tuple of all superclasses
             ordering (:obj:`tuple` of attribute names): controls the order in which objects should be printed when serialized
-            children (:obj:`dict` that maps :obj:`str` to :obj:`tuple` of :obj:`str`): dictionary that maps types of children to 
+            children (:obj:`dict` that maps :obj:`str` to :obj:`tuple` of :obj:`str`): dictionary that maps types of children to
                 names of attributes which compose each type of children
-            merge (:obj:`ModelMerge`): type of merging operation            
+            merge (:obj:`ModelMerge`): type of merging operation
         """
         attributes = None
         related_attributes = None
@@ -2554,13 +2554,13 @@ class Model(with_metaclass(ModelMeta, object)):
             return False
 
         for attr, val in kwargs.items():
-            if getattr(self, attr) != val:
+            if not hasattr(self, attr) or getattr(self, attr) != val:
                 return False
 
         return True
 
     def get_children(self, kind=None, __type=None, recursive=True, **kwargs):
-        """ Get a kind of children. 
+        """ Get a kind of children.
 
         If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
         in each class.
@@ -2602,7 +2602,7 @@ class Model(with_metaclass(ModelMeta, object)):
         return children
 
     def get_immediate_children(self, kind=None, __type=None, **kwargs):
-        """ Get a kind of immediate children 
+        """ Get a kind of immediate children
 
         If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
         in each class.

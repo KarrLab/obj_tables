@@ -270,6 +270,7 @@ class TestCore(unittest.TestCase):
             attr_2 = core.StringAttribute()
             attr_3 = core.StringAttribute()
             attr_4 = core.StringAttribute()
+
             class Meta(core.Model.Meta):
                 attribute_order = ('attr_1', 'attr_3', 'attr_2')
 
@@ -4491,6 +4492,21 @@ class TestCore(unittest.TestCase):
         test_1.set_nested_attr_val((('children', {'id': 'test_1_2'}), ('children', {
             'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_7')
         self.assertEqual(test_1.id, 'new_id_7')
+
+    def test_has_attr_vals(self):
+        class TestModel(core.Model):
+            attr_1 = core.StringAttribute()
+            attr_2 = core.StringAttribute()
+
+        model = TestModel(attr_1='abc', attr_2='xyz')
+        self.assertTrue(model.has_attr_vals())
+        self.assertTrue(model.has_attr_vals(__type=TestModel))
+        self.assertFalse(model.has_attr_vals(__type=str))
+        self.assertTrue(model.has_attr_vals(attr_1='abc'))
+        self.assertTrue(model.has_attr_vals(attr_2='xyz'))
+        self.assertFalse(model.has_attr_vals(attr_1='xyz'))
+        self.assertFalse(model.has_attr_vals(attr_2='abc'))
+        self.assertFalse(model.has_attr_vals(attr_3='lmnop'))
 
 
 class ContextTestCase(unittest.TestCase):
