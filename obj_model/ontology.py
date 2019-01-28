@@ -248,7 +248,7 @@ class OntologyAttribute(core.LiteralAttribute):
                 input_message = ['Enter a comma-separated list of {} ontology terms.'.format(
                     self.namespace)]
                 error_message = ['Value must be a comma-separated list of {} ontology terms.'.format(
-                    self.namespace)]            
+                    self.namespace)]
 
         if self.unique:
             input_message.append('Value must be unique.')
