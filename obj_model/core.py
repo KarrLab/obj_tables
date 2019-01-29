@@ -33,6 +33,7 @@ from wc_utils.util.list import det_dedupe, is_sorted
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
+from wc_utils.workbook.core import get_column_letter
 import abc
 import collections
 import copy
@@ -47,6 +48,7 @@ import six
 import sys
 import validate_email
 import warnings
+import wc_utils.workbook.io
 # todo: simplify primary attributes, deserialization
 # todo: improve memory efficiency
 # todo: improve run-time
@@ -97,6 +99,7 @@ class ModelMeta(type):
             Meta.tabular_orientation = bases[0].Meta.tabular_orientation
             Meta.frozen_columns = bases[0].Meta.frozen_columns
             Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
+            Meta.children = copy.deepcopy(bases[0].Meta.children)
             Meta.merge = bases[0].Meta.merge
 
         # validate attributes
@@ -461,12 +464,12 @@ class ModelMeta(type):
         return tuple(normalized_tup_of_attrnames)
 
     def create_model_manager(cls):
-        """ Create a `Manager` for this `Model`
+        """ Create a :obj:`Manager` for this :obj:`Model`
 
         The `Manager` is accessed via a `Model`'s `objects` attribute
 
         Attributes:
-            cls (:obj:`Class`): the `Model` class which is being managed
+            cls (:obj:`type`): the :obj:`Model` class which is being managed
         """
         setattr(cls, 'objects', Manager(cls))
 
@@ -960,6 +963,8 @@ class Model(with_metaclass(ModelMeta, object)):
             frozen_columns (:obj:`int`): number of Excel columns to freeze
             inheritance (:obj:`tuple` of `class`): tuple of all superclasses
             ordering (:obj:`tuple` of attribute names): controls the order in which objects should be printed when serialized
+            children (:obj:`dict` that maps :obj:`str` to :obj:`tuple` of :obj:`str`): dictionary that maps types of children to
+                names of attributes which compose each type of children
             merge (:obj:`ModelMerge`): type of merging operation
         """
         attributes = None
@@ -974,6 +979,7 @@ class Model(with_metaclass(ModelMeta, object)):
         frozen_columns = 1
         inheritance = None
         ordering = None
+        children = {}
         merge = ModelMerge.join
 
     def __init__(self, **kwargs):
@@ -1168,11 +1174,26 @@ class Model(with_metaclass(ModelMeta, object)):
                                      exclude=(None, []))
 
     @classmethod
+    def get_attr_index(cls, attr):
+        """ Get the index of an attribute within `Meta.attribute_order`
+
+        Args:
+            attr (:obj:`Attribute`): attribute
+
+        Returns:
+            :obj:`int`: index of attribute within `Meta.attribute_order`
+        """
+        if attr.name not in cls.Meta.attribute_order:
+            raise ValueError('{} not in `attribute_order` for {}'.format(attr.name, cls.__name__))
+        return cls.Meta.attribute_order.index(attr.name)
+
+    @classmethod
     def validate_related_attributes(cls):
         """ Validate attribute values
 
         Raises:
-            :obj:`ValueError`: if related attributes are not valid (e.g. if a class that is the subject of a relationship does not have a primary attribute)
+            :obj:`ValueError`: if related attributes are not valid (e.g. if a class that is the subject of
+                a relationship does not have a primary attribute)
         """
 
         for attr_name, attr in cls.Meta.attributes.items():
@@ -1478,11 +1499,12 @@ class Model(with_metaclass(ModelMeta, object)):
             return tuple(vals)
         return key
 
-    def is_equal(self, other):
+    def is_equal(self, other, tol=0.):
         """ Determine whether two models are semantically equal
 
         Args:
             other (:obj:`Model`): object to compare
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: `True` if objects are semantically equal, else `False`
@@ -1508,7 +1530,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 checked_pairs.append(pair)
 
                 # non-related attributes
-                if not obj._is_equal_attributes(other_obj):
+                if not obj._is_equal_attributes(other_obj, tol=tol):
                     return False
 
                 # related attributes
@@ -1532,11 +1554,12 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return True
 
-    def _is_equal_attributes(self, other):
+    def _is_equal_attributes(self, other, tol=0.):
         """ Determine if the attributes of two objects are semantically equal
 
         Args:
             other (:obj:`Model`): object to compare
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: `True` if the objects' attributes are semantically equal, else `False`
@@ -1555,7 +1578,7 @@ class Model(with_metaclass(ModelMeta, object)):
             other_val = getattr(other, attr_name)
 
             if not isinstance(attr, RelatedAttribute):
-                if not attr.value_equal(val, other_val):
+                if not attr.value_equal(val, other_val, tol=tol):
                     return False
 
             elif isinstance(val, RelatedManager):
@@ -1664,11 +1687,12 @@ class Model(with_metaclass(ModelMeta, object)):
         attr = cls.Meta.attributes[attr_name]
         return attr.serialize(getattr(object, attr_name))
 
-    def difference(self, other):
+    def difference(self, other, tol=0.):
         """ Get the semantic difference between two models
 
         Args:
             other (:obj:`Model`): other `Model`
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`str`: difference message
@@ -1702,7 +1726,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 other_val = getattr(other_obj, attr_name)
 
                 if not isinstance(attr, RelatedAttribute):
-                    if not attr.value_equal(val, other_val):
+                    if not attr.value_equal(val, other_val, tol=tol):
                         difference['attributes'][
                             attr_name] = '{} != {}'.format(val, other_val)
 
@@ -1948,7 +1972,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get all related objects reachable from `self`
 
         Returns:
-            :obj:`set` of `Model`: related objects, without any duplicates
+            :obj:`list` of :obj:`Model`: related objects, without any duplicates
         """
         related_objs = collections.OrderedDict()
         objs_to_explore = [self]
@@ -2444,7 +2468,8 @@ class Model(with_metaclass(ModelMeta, object)):
 
         Args:
             json (:obj:`dict`): simple Python representation of the object
-            decode_primary_objects (:obj:`bool`, optional): if :obj:`True`, decode primary classes otherwise just look up objects by their IDs
+            decode_primary_objects (:obj:`bool`, optional): if :obj:`True`, decode primary classes otherwise
+                just look up objects by their IDs
             primary_objects (:obj:`list`, optional): list of instances of primary classes (i.e. non-line classes)
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
@@ -2529,10 +2554,141 @@ class Model(with_metaclass(ModelMeta, object)):
             return False
 
         for attr, val in kwargs.items():
-            if getattr(self, attr) != val:
+            if not hasattr(self, attr) or getattr(self, attr) != val:
                 return False
 
         return True
+
+    def get_children(self, kind=None, __type=None, recursive=True, **kwargs):
+        """ Get a kind of children.
+
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            kind (:obj:`str`, optional): kind of children to get
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
+
+        Returns:
+            :obj:`list` of :obj:`Model`: children
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        children = self.get_immediate_children(kind=kind)
+
+        # get recursive children
+        if recursive:
+            objs_to_explore = children
+            children = set(children)
+            while objs_to_explore:
+                obj_to_explore = objs_to_explore.pop()
+                for child in obj_to_explore.get_immediate_children(kind=kind):
+                    if child not in children:
+                        children.add(child)
+                        objs_to_explore.append(child)
+            children = list(children)
+
+        # filter by type/attributes
+        matches = []
+        for child in children:
+            if child.has_attr_vals(__type=__type, **kwargs):
+                matches.append(child)
+        children = matches
+
+        # return children
+        return children
+
+    def get_immediate_children(self, kind=None, __type=None, **kwargs):
+        """ Get a kind of immediate children
+
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            kind (:obj:`str`, optional): kind of children to get
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
+
+        Returns:
+            :obj:`list` of :obj:`Model`: immediate children
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        if kind is None:
+            attr_names = [attr.name for attr in self.Meta.attributes.values() if isinstance(attr, RelatedAttribute)]
+        elif kind == '__all__':
+            attr_names = [attr.name for attr in self.Meta.local_attributes.values() if attr.is_related]
+        else:
+            attr_names = self.Meta.children.get(kind, ())
+
+        children = []
+        for attr_name in attr_names:
+            if not isinstance(self.Meta.local_attributes[attr_name].attr, RelatedAttribute):
+                raise ValueError('Children are defined via related attributes. "{}" is not a related attribute of "{}.'.format(
+                    attr_name, self.__class__.__name__))
+
+            attr_value = getattr(self, attr_name)
+            if isinstance(attr_value, list):
+                children.extend(attr_value)
+            elif attr_value:
+                children.append(attr_value)
+        children = det_dedupe(children)
+
+        # filter by type/attributes
+        matches = []
+        for child in children:
+            if child.has_attr_vals(__type=__type, **kwargs):
+                matches.append(child)
+        children = matches
+
+        return children
+
+    def cut(self, kind=None):
+        """ Cut the object and its children from the rest of the object graph.
+
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            kind (:obj:`str`, optional): kind of children to get
+
+        Returns:
+            :obj:`Model`: same object, but cut from the rest of the object graph
+        """
+        objs = set(self.get_children(kind=kind))
+        objs.add(self)
+
+        for obj in objs:
+            obj.cut_relations(objs)
+
+        return self
+
+    def cut_relations(self, objs):
+        """ Cut relations to objects not in :obj:`objs`.
+
+        Args:
+            objs (:obj:`set` of :obj:`Model`): objects to retain relations to
+        """
+        # iterate over related attributes
+        for attr in self.Meta.local_attributes.values():
+            if attr.is_related:
+                # get value
+                val = getattr(self, attr.name)
+
+                # cut relationships to objects not in `objs`
+                if isinstance(val, list):
+                    # *ToManyAttribute
+                    for v in list(val):
+                        if v not in objs:
+                            val.remove(v)
+                else:
+                    # *ToOneAttribute
+                    if val and val not in objs:
+                        setattr(self, attr.name, None)
 
     def merge(self, other, normalize=True, validate=True):
         """ Merge another model into a model
@@ -2714,6 +2870,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         self.default = default
         self.default_cleaned_value = default_cleaned_value
         self.verbose_name = verbose_name
+        self.help = help
         self.primary = primary
         self.unique = unique
         self.unique_case_insensitive = unique_case_insensitive
@@ -2763,12 +2920,13 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """
         return new_value
 
-    def value_equal(self, val1, val2):
+    def value_equal(self, val1, val2, tol=0.):
         """ Determine if attribute values are equal
 
         Args:
             val1 (:obj:`object`): first value
             val2 (:obj:`object`): second value
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: True if attribute values are equal
@@ -2795,7 +2953,8 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list
+                of errors as an instance of `InvalidAttribute`
         """
         pass  # pragma: no cover
 
@@ -2807,7 +2966,8 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             values (:obj:`list`): list of values
 
         Returns:
-           :obj:`InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `InvalidAttribute`
+           :obj:`InvalidAttribute` or None: None if values are unique, otherwise return a list of
+            errors as an instance of `InvalidAttribute`
         """
         unq_vals = set()
         rep_vals = set()
@@ -2900,6 +3060,18 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """
         pass  # pragma: no cover
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        return wc_utils.workbook.io.FieldValidation(
+            input_title=self.verbose_name,
+            input_message=self.help,
+            error_title=self.verbose_name,
+            error_message=self.help)
+
 
 class LocalAttribute(object):
     """ Meta data about a local attribute in a class
@@ -2970,7 +3142,8 @@ class LiteralAttribute(Attribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a
+                list of errors as an instance of `InvalidAttribute`
         """
         return None
 
@@ -3198,6 +3371,45 @@ class EnumAttribute(LiteralAttribute):
         """
         return self.enum_class[json]
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(EnumAttribute, self).get_excel_validation()
+
+        allowed_values = [val.name for val in self.enum_class]
+        if len(','.join(allowed_values)) <= 255:
+            validation.type = wc_utils.workbook.io.FieldValidationType.list
+            validation.allowed_list_values = allowed_values
+        validation.ignore_blank = self.none
+
+        if self.none:
+            input_message = ['Select one of "{}" or blank.'.format('", "'.join(allowed_values))]
+            error_message = ['Value must be one of "{}" or blank.'.format('", "'.join(allowed_values))]
+        else:
+            input_message = ['Select one of "{}".'.format('", "'.join(allowed_values))]
+            error_message = ['Value must be one of "{}".'.format('", "'.join(allowed_values))]
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: "{}".'.format(default.name))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class BooleanAttribute(LiteralAttribute):
     """ Boolean attribute
@@ -3278,6 +3490,35 @@ class BooleanAttribute(LiteralAttribute):
 
         return None
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(BooleanAttribute, self).get_excel_validation()
+
+        allowed_values = [True, False]
+        validation.type = wc_utils.workbook.io.FieldValidationType.list
+        validation.allowed_list_values = allowed_values
+
+        input_message = ['Select "True" or "False".']
+        error_message = ['Value must be "True" or "False".']
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class FloatAttribute(NumericAttribute):
     """ Float attribute
@@ -3328,20 +3569,22 @@ class FloatAttribute(NumericAttribute):
         self.max = max
         self.nan = nan
 
-    def value_equal(self, val1, val2):
-        """ Determine if attribute values are equal
+    def value_equal(self, val1, val2, tol=0.):
+        """ Determine if attribute values are equal, optionally,
+        up to a tolerance
 
         Args:
             val1 (:obj:`object`): first value
             val2 (:obj:`object`): second value
+            tol (:obj:`float`, optional): equality tolerance
 
         Returns:
             :obj:`bool`: True if attribute values are equal
         """
         return val1 == val2 or \
             (isnan(val1) and isnan(val2)) or \
-            (val1 == 0. and abs(val2) < 1e-10) or \
-            (val1 != 0. and abs((val1 - val2) / val1) < 1e-10)
+            (val1 == 0. and abs(val2) < tol) or \
+            (val1 != 0. and abs((val1 - val2) / val1) < tol)
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -3419,6 +3662,61 @@ class FloatAttribute(NumericAttribute):
         if (not isnan(left_val) or not isnan(right_val)) and left_val != right_val:
             raise ValueError('{}.{} must be equal'.format(left.__class__.__name__, self.name))
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(FloatAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.decimal
+        validation.ignore_blank = self.nan
+        if self.nan:
+            input_message = ['Enter a float or blank.']
+            error_message = ['Value must be a float or blank.']
+        else:
+            input_message = ['Enter a float.']
+            error_message = ['Value must be a float.']
+
+        if self.min is None or isnan(self.min):
+            if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = -1e100
+                validation.maximum_scalar_value = 1e100
+            else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
+                validation.allowed_scalar_value = self.max or 1e-100
+                input_message.append('Value must be less than or equal to {}.'.format(self.max))
+        else:
+            if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = self.min or -1e-100
+                input_message.append('Value must be greater than or equal to {}.'.format(self.min))
+            else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = self.min or -1e-100
+                validation.maximum_scalar_value = self.max or 1e-100
+                input_message.append('Value must be between {} and {}.'.format(self.min, self.max))
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None and not isnan(default):
+            input_message.append('Default: {}.'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class PositiveFloatAttribute(FloatAttribute):
     """ Positive float attribute """
@@ -3465,6 +3763,51 @@ class PositiveFloatAttribute(FloatAttribute):
         if errors:
             return InvalidAttribute(self, errors)
         return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(FloatAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.decimal
+        validation.ignore_blank = self.nan
+        if self.nan:
+            input_message = ['Enter a float or blank.']
+            error_message = ['Value must be a float or blank.']
+        else:
+            input_message = ['Enter a float.']
+            error_message = ['Value must be a float.']
+
+        if self.max is None or isnan(self.max):
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+            validation.allowed_scalar_value = -1e-100
+            input_message.append('Value must be positive.')
+        else:
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+            validation.minimum_scalar_value = -1e-100
+            validation.maximum_scalar_value = self.max or 1e-100
+            input_message.append('Value must be positive and less than or equal to {}.'.format(self.max))
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None and not isnan(default):
+            input_message.append('Default: {}.'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class IntegerAttribute(NumericAttribute):
@@ -3600,6 +3943,56 @@ class IntegerAttribute(NumericAttribute):
         """
         return int(json)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(IntegerAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.integer
+        input_message = ['Enter an integer.']
+        error_message = ['Value must be an integer.']
+
+        if self.min is None or isnan(self.min):
+            if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = -2**15
+                validation.maximum_scalar_value = 2**15-1
+            else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
+                validation.allowed_scalar_value = self.max or 1e-100
+                input_message.append('Value must be less than or equal to {}.'.format(self.max))
+        else:
+            if self.max is None or isnan(self.max):
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = self.min or -1e-100
+                input_message.append('Value must be greater than or equal to {}.'.format(self.min))
+            else:
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = self.min or -1e-100
+                validation.maximum_scalar_value = self.max or 1e-100
+                input_message.append('Value must be between {} and {}.'.format(self.min, self.max))
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None and not isnan(default):
+            input_message.append('Default: {}.'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class PositiveIntegerAttribute(IntegerAttribute):
     """ Positive integer attribute """
@@ -3617,7 +4010,7 @@ class PositiveIntegerAttribute(IntegerAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
-        super(PositiveIntegerAttribute, self).__init__(min=None, max=max,
+        super(PositiveIntegerAttribute, self).__init__(min=0, max=max,
                                                        default=default,
                                                        default_cleaned_value=default_cleaned_value,
                                                        verbose_name=verbose_name, help=help,
@@ -3646,6 +4039,46 @@ class PositiveIntegerAttribute(IntegerAttribute):
         if errors:
             return InvalidAttribute(self, errors)
         return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(IntegerAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.integer
+        input_message = ['Enter an integer.']
+        error_message = ['Value must be an integer.']
+
+        if self.max is None or isnan(self.max):
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+            validation.allowed_scalar_value = 1
+            input_message.append('Value must be positive.')
+        else:
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+            validation.minimum_scalar_value = -1e-100
+            validation.maximum_scalar_value = self.max or 1e-100
+            input_message.append('Value must be positive and less than or equal to {}.'.format(self.max))
+
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None and not isnan(default):
+            input_message.append('Default: {}.'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class StringAttribute(LiteralAttribute):
@@ -3751,6 +4184,56 @@ class StringAttribute(LiteralAttribute):
             :obj:`str`: simple Python representation
         """
         return value
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(StringAttribute, self).get_excel_validation()
+
+        input_message = ['Enter a string.']
+        error_message = ['Value must be a string.']
+        if self.min_length is not None and self.min_length:
+            if self.max_length is not None:
+                validation.type = wc_utils.workbook.io.FieldValidationType.length
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
+                validation.minimum_scalar_value = self.min_length
+                validation.maximum_scalar_value = self.max_length
+                validation.ignore_blank = False
+                input_message.append('Value must be between {} and {} characters.'.format(self.min_length, self.max_length))
+                error_message.append('Value must be between {} and {} characters.'.format(self.min_length, self.max_length))
+            else:
+                validation.type = wc_utils.workbook.io.FieldValidationType.length
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = self.min_length
+                validation.ignore_blank = False
+                input_message.append('Value must at least {} characters.'.format(self.min_length))
+                error_message.append('Value must at least {} characters.'.format(self.min_length))
+        elif self.max_length is not None:
+            validation.type = wc_utils.workbook.io.FieldValidationType.length
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
+            validation.allowed_scalar_value = self.max_length
+            input_message.append('Value must be less than or equal to {} characters.'.format(self.max_length))
+            error_message.append('Value must be less than or equal to {} characters.'.format(self.max_length))
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class LongStringAttribute(StringAttribute):
@@ -4060,6 +4543,39 @@ class DateAttribute(LiteralAttribute):
         """
         return datetime.strptime(json, '%Y-%m-%d').date()
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(DateAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.date
+        validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
+        validation.minimum_scalar_value = date(1900, 1, 1)
+        validation.maximum_scalar_value = date(9999, 12, 31)
+
+        input_message = ['Enter a date.']
+        error_message = ['Value must be a date.']
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class TimeAttribute(LiteralAttribute):
     """ Time attribute
@@ -4191,6 +4707,39 @@ class TimeAttribute(LiteralAttribute):
             :obj:`time`: decoded value of the attribute
         """
         return datetime.strptime(json, '%H:%M:%S').time()
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(TimeAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.time
+        validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
+        validation.minimum_scalar_value = time(0, 0, 0, 0)
+        validation.maximum_scalar_value = time(23, 59, 59, 999999)
+
+        input_message = ['Enter a time.']
+        error_message = ['Value must be a time.']
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class DateTimeAttribute(LiteralAttribute):
@@ -4339,6 +4888,565 @@ class DateTimeAttribute(LiteralAttribute):
             :obj:`datetime`: decoded value of the attribute
         """
         return datetime.strptime(json, '%Y-%m-%d %H:%M:%S')
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(DateTimeAttribute, self).get_excel_validation()
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.date
+        validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
+        validation.minimum_scalar_value = datetime(1900, 1, 1, 0, 0, 0, 0)
+        validation.maximum_scalar_value = datetime(999, 12, 31, 23, 59, 59, 999999)
+
+        input_message = ['Enter a date and time.']
+        error_message = ['Value must be a date and time.']
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
+
+class RelatedManager(list):
+    """ Represent values and related values of related attributes
+
+    Attributes:
+        object (:obj:`Model`): model instance
+        attribute (:obj:`Attribute`): attribute
+        related (:obj:`bool`): is related attribute
+    """
+
+    def __init__(self, object, attribute, related=True):
+        """
+        Args:
+            object (:obj:`Model`): model instance
+            attribute (:obj:`Attribute`): attribute
+            related (:obj:`bool`, optional): is related attribute
+        """
+        super(RelatedManager, self).__init__()
+        self.object = object
+        self.attribute = attribute
+        self.related = related
+
+    def create(self, __type=None, **kwargs):
+        """ Create instance of primary class and add to list
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
+
+        Returns:
+            :obj:`Model`: created object
+
+        Raises:
+            :obj:`ValueError`: if keyword argument is not an attribute of the class
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        if self.related:
+            if self.attribute.name in kwargs:
+                raise TypeError("'{}' is an invalid keyword argument for {}.create for {}".format(
+                    self.attribute.name, self.__class__.__name__, self.attribute.primary_class.__name__))
+            cls = __type or self.attribute.primary_class
+            obj = cls(**kwargs)
+
+        else:
+            if self.attribute.related_name in kwargs:
+                raise TypeError("'{}' is an invalid keyword argument for {}.create for {}".format(
+                    self.attribute.related_name, self.__class__.__name__, self.attribute.primary_class.__name__))
+            cls = __type or self.attribute.related_class
+            obj = cls(**kwargs)
+
+        self.append(obj)
+
+        return obj
+
+    def append(self, value, **kwargs):
+        """ Add value to list
+
+        Args:
+            value (:obj:`object`): value
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        super(RelatedManager, self).append(value, **kwargs)
+
+        return self
+
+    def add(self, value, **kwargs):
+        """ Add value to list
+
+        Args:
+            value (:obj:`object`): value
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        self.append(value, **kwargs)
+
+        return self
+
+    def discard(self, value):
+        """ Remove value from list if value in list
+
+        Args:
+            value (:obj:`object`): value
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        if value in self:
+            self.remove(value)
+
+        return self
+
+    def clear(self):
+        """ Remove all elements from list
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        for value in reversed(self):
+            self.remove(value)
+
+        return self
+
+    def pop(self, i=-1):
+        """ Remove an arbitrary element from the list
+
+        Args:
+            i (:obj:`int`, optional): index of element to remove
+
+        Returns:
+            :obj:`object`: removed element
+        """
+        value = super(RelatedManager, self).pop(i)
+        self.remove(value, update_list=False)
+
+        return value
+
+    def update(self, values):
+        """ Add values to list
+
+        Args:
+            values (:obj:`list`): values to add to list
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        self.extend(values)
+
+        return self
+
+    def extend(self, values):
+        """ Add values to list
+
+        Args:
+            values (:obj:`list`): values to add to list
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        for value in values:
+            self.append(value)
+
+        return self
+
+    def intersection_update(self, values):
+        """ Retain only intersection of list and `values`
+
+        Args:
+            values (:obj:`list`): values to intersect with list
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        for value in reversed(self):
+            if value not in values:
+                self.remove(value)
+
+        return self
+
+    def difference_update(self, values):
+        """ Retain only values of list not in `values`
+
+        Args:
+            values (:obj:`list`): values to difference with list
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        for value in values:
+            if value in self:
+                self.remove(value)
+
+        return self
+
+    def symmetric_difference_update(self, values):
+        """ Retain values in only one of list and `values`
+
+        Args:
+            values (:obj:`list`): values to difference with list
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        self_copy = copy.copy(self)
+        values_copy = copy.copy(values)
+
+        for value in values_copy:
+            if value in self_copy:
+                self.remove(value)
+            else:
+                self.add(value)
+
+        return self
+
+    def get_or_create(self, __type=None, **kwargs):
+        """ Get or create a related object by attribute/value pairs. Optionally, only get or create instances of
+        :obj:`Model` subclass :obj:`__type`.
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+                object or create new object
+
+        Returns:
+            :obj:`Model`: existing or new object
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        obj = self.get_one(__type=__type, **kwargs)
+        if obj:
+            return obj
+        else:
+            return self.create(__type=__type, **kwargs)
+
+    def get_one(self, __type=None, **kwargs):
+        """ Get a related object by attribute/value pairs; report an error if multiple objects match and,
+        optionally, only return matches that are also instances of :obj:`Model` subclass :obj:`__type`.
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+                objects
+
+        Returns:
+            :obj:`Model` or `None`: matching instance of `Model`, or `None` if no matching instance
+
+        Raises:
+            :obj:`ValueError`: if multiple matching objects
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        matches = self.get(__type=__type, **kwargs)
+
+        if len(matches) == 0:
+            return None
+
+        if len(matches) == 1:
+            return matches.pop()
+
+        if len(matches) > 1:
+            raise ValueError(
+                'Multiple objects match the attribute name/value pair(s)')
+
+    def get(self, __type=None, **kwargs):
+        """ Get related objects by attribute/value pairs and, optionally, only return matches that are also
+        instances of :obj:`Model` subclass :obj:`__type`.
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+                objects
+
+        Returns:
+            :obj:`list` of :obj:`Model`: matching instances of `Model`
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        matches = []
+        for obj in self:
+            if obj.has_attr_vals(__type=__type, **kwargs):
+                matches.append(obj)
+        return matches
+
+    def index(self, *args, **kwargs):
+        """ Get related object index by attribute/value pairs
+
+        Args:
+            *args (:obj:`list` of :obj:`Model`): object to find
+            **kwargs (:obj:`dict` of :obj:`str`, :obj:`object`): dictionary of attribute name/value pairs to find matching objects
+
+        Returns:
+            :obj:`int`: index of matching object
+
+        Raises:
+            :obj:`ValueError`: if no argument or keyword argument is provided, if argument and keyword arguments are
+                both provided, if multiple arguments are provided, if the keyword attribute/value pairs match no object,
+                or if the keyword attribute/value pairs match multiple objects
+        """
+        if args and kwargs:
+            raise ValueError('Argument and keyword arguments cannot both be provided')
+        if not args and not kwargs:
+            raise ValueError('At least one argument must be provided')
+
+        if args:
+            if len(args) > 1:
+                raise ValueError('At most one argument can be provided')
+
+            return super(RelatedManager, self).index(args[0])
+
+        else:
+            match = None
+
+            for i_obj, obj in enumerate(self):
+                is_match = True
+                for attr_name, value in kwargs.items():
+                    if getattr(obj, attr_name) != value:
+                        is_match = False
+                        break
+
+                if is_match:
+                    if match is not None:
+                        raise ValueError(
+                            'Keyword argument attribute/value pairs match multiple objects')
+                    else:
+                        match = i_obj
+
+            if match is None:
+                raise ValueError('No matching object with {}'.format(', '.join(str(k) + '=' + str(v) for k, v in kwargs.items())))
+
+            return match
+
+
+class ManyToOneRelatedManager(RelatedManager):
+    """ Represent values of related attributes """
+
+    def __init__(self, object, attribute):
+        """
+        Args:
+            object (:obj:`Model`): model instance
+            attribute (:obj:`Attribute`): attribute
+        """
+        super(ManyToOneRelatedManager, self).__init__(
+            object, attribute, related=True)
+
+    def append(self, value, propagate=True):
+        """ Add value to list
+
+        Args:
+            value (:obj:`object`): value
+            propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        if value in self:
+            return self
+
+        super(ManyToOneRelatedManager, self).append(value)
+        if propagate:
+            value.__setattr__(self.attribute.name, self.object, propagate=True)
+
+        return self
+
+    def remove(self, value, update_list=True, propagate=True):
+        """ Remove value from list
+
+        Args:
+            value (:obj:`object`): value
+            propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        if update_list:
+            super(ManyToOneRelatedManager, self).remove(value)
+        if propagate:
+            value.__setattr__(self.attribute.name, None, propagate=False)
+
+        return self
+
+    def cut(self, kind=None):
+        """ Cut values and their children of kind :obj:`kind` into separate graphs.
+
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            kind (:obj:`str`, optional): kind of children to include
+
+        Returns:
+            :obj:`list` of :obj:`Model`: cut values and their children
+        """
+        objs = []
+        for obj in self:
+            obj = obj.copy()
+            obj.cut(kind=kind)
+            objs.append(obj)
+        return objs
+
+
+class OneToManyRelatedManager(RelatedManager):
+    """ Represent values of related attributes """
+
+    def __init__(self, object, attribute):
+        """
+        Args:
+            object (:obj:`Model`): model instance
+            attribute (:obj:`Attribute`): attribute
+        """
+        super(OneToManyRelatedManager, self).__init__(
+            object, attribute, related=False)
+
+    def append(self, value, propagate=True):
+        """ Add value to list
+
+        Args:
+            value (:obj:`object`): value
+            propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        if value in self:
+            return self
+
+        super(OneToManyRelatedManager, self).append(value)
+        if propagate:
+            value.__setattr__(self.attribute.related_name,
+                              self.object, propagate=True)
+
+        return self
+
+    def remove(self, value, update_list=True, propagate=True):
+        """ Remove value from list
+
+        Args:
+            value (:obj:`object`): value
+            propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        if update_list:
+            super(OneToManyRelatedManager, self).remove(value)
+        if propagate:
+            value.__setattr__(self.attribute.related_name,
+                              None, propagate=False)
+
+        return self
+
+    def cut(self, kind=None):
+        """ Cut values and their children of kind :obj:`kind` into separate graphs.
+
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            kind (:obj:`str`, optional): kind of children to include
+
+        Returns:
+            :obj:`list` of :obj:`Model`: cut values and their children
+        """
+        objs = []
+        for obj in self:
+            obj = obj.copy()
+            obj.cut(kind=kind)
+            objs.append(obj)
+        return objs
+
+
+class ManyToManyRelatedManager(RelatedManager):
+    """ Represent values and related values of related attributes """
+
+    def append(self, value, propagate=True):
+        """ Add value to list
+
+        Args:
+            value (:obj:`object`): value
+            propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        if value in self:
+            return self
+
+        super(ManyToManyRelatedManager, self).append(value)
+        if propagate:
+            if self.related:
+                getattr(value, self.attribute.name).append(
+                    self.object, propagate=False)
+            else:
+                getattr(value, self.attribute.related_name).append(
+                    self.object, propagate=False)
+
+        return self
+
+    def remove(self, value, update_list=True, propagate=True):
+        """ Remove value from list
+
+        Args:
+            value (:obj:`object`): value
+            update_list (:obj:`bool`, optional): update list
+            propagate (:obj:`bool`, optional): propagate change to related attribute
+
+        Returns:
+            :obj:`RelatedManager`: self
+        """
+        if update_list:
+            super(ManyToManyRelatedManager, self).remove(value)
+        if propagate:
+            if self.related:
+                getattr(value, self.attribute.name).remove(
+                    self.object, propagate=False)
+            else:
+                getattr(value, self.attribute.related_name).remove(
+                    self.object, propagate=False)
+
+        return self
+
+    def cut(self, kind=None):
+        """ Cut values and their children of kind :obj:`kind` into separate graphs.
+
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            kind (:obj:`str`, optional): kind of children to include
+
+        Returns:
+            :obj:`list` of :obj:`Model`: cut values and their children
+        """
+        objs = []
+        for obj in self:
+            obj = obj.copy()
+            obj.cut(kind=kind)
+            objs.append(obj)
+        return objs
 
 
 class RelatedAttribute(Attribute):
@@ -4796,16 +5904,70 @@ class OneToOneAttribute(RelatedAttribute):
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(OneToOneAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.primary_attribute:
+            validation.type = wc_utils.workbook.io.FieldValidationType.list
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Select a value from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Select a value from "{}".'.format(source)]
+            error_message = ['Value must be a value from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: {}.'.format(default.serialize()))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class ManyToOneAttribute(RelatedAttribute):
     """ Represents a many-to-one relationship between two types of objects.
     This is analagous to a foreign key relationship in a database.
+
+    Attributes:
+        related_manager (:obj:`type`): related manager
     """
 
     def __init__(self, related_class, related_name='',
                  default=None, default_cleaned_value=None, related_default=list(),
                  min_related=0, min_related_rev=0, max_related_rev=float('inf'),
-                 verbose_name='', verbose_related_name='', help=''):
+                 verbose_name='', verbose_related_name='', help='',
+                 related_manager=ManyToOneRelatedManager):
         """
         Args:
             related_class (:obj:`class`): related class
@@ -4821,13 +5983,15 @@ class ManyToOneAttribute(RelatedAttribute):
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
+            related_manager (:obj:`type`, optional): related manager
         """
         super(ManyToOneAttribute, self).__init__(
             related_class, related_name=related_name,
             init_value=None, default=default, default_cleaned_value=default_cleaned_value,
-            related_init_value=ManyToOneRelatedManager, related_default=related_default,
+            related_init_value=related_manager, related_default=related_default,
             min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
             verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        self.related_manager = related_manager
 
     def get_related_init_value(self, obj):
         """ Get initial related value for attribute
@@ -4844,7 +6008,7 @@ class ManyToOneAttribute(RelatedAttribute):
         if not self.related_name:
             raise ValueError('Related property is not defined')
 
-        return ManyToOneRelatedManager(obj, self)
+        return self.related_manager(obj, self)
 
     def set_value(self, obj, new_value):
         """ Update the values of the related attributes of the attribute
@@ -4915,8 +6079,8 @@ class ManyToOneAttribute(RelatedAttribute):
                 self.related_class.__name__))
         elif self.related_name:
             related_value = getattr(value, self.related_name)
-            if not isinstance(related_value, ManyToOneRelatedManager):
-                errors.append('Related value must be a `ManyToOneRelatedManager`'
+            if not isinstance(related_value, self.related_manager):
+                errors.append('Related value must be a `{}`'.format(self.related_manager.__name__)
                               )  # pragma: no cover # unreachable due to above error checking
             if obj not in related_value:
                 errors.append('Object must be in related values')
@@ -5064,16 +6228,70 @@ class ManyToOneAttribute(RelatedAttribute):
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(ManyToOneAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.primary_attribute:
+            validation.type = wc_utils.workbook.io.FieldValidationType.list
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Select a value from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Select a value from "{}".'.format(source)]
+            error_message = ['Value must be a value from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: {}.'.format(default.serialize()))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class OneToManyAttribute(RelatedAttribute):
     """ Represents a one-to-many relationship between two types of objects.
     This is analagous to a foreign key relationship in a database.
+
+    Attributes:
+        related_manager (:obj:`type`): related manager
     """
 
     def __init__(self, related_class, related_name='',  default=list(), default_cleaned_value=list(),
                  related_default=None,
                  min_related=0, max_related=float('inf'), min_related_rev=0,
-                 verbose_name='', verbose_related_name='', help=''):
+                 verbose_name='', verbose_related_name='', help='',
+                 related_manager=OneToManyRelatedManager):
         """
         Args:
             related_class (:obj:`class`): related class
@@ -5089,13 +6307,15 @@ class OneToManyAttribute(RelatedAttribute):
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
+            related_manager (:obj:`type`, optional): related manager
         """
         super(OneToManyAttribute, self).__init__(
             related_class, related_name=related_name,
-            init_value=OneToManyRelatedManager, default=default, default_cleaned_value=default_cleaned_value,
+            init_value=related_manager, default=default, default_cleaned_value=default_cleaned_value,
             related_init_value=None, related_default=related_default,
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
             verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        self.related_manager = related_manager
 
     def get_init_value(self, obj):
         """ Get initial value for attribute
@@ -5106,7 +6326,7 @@ class OneToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`object`: initial value
         """
-        return OneToManyRelatedManager(obj, self)
+        return self.related_manager(obj, self)
 
     def set_value(self, obj, new_values):
         """ Update the values of the related attributes of the attribute
@@ -5209,8 +6429,8 @@ class OneToManyAttribute(RelatedAttribute):
                     self.primary_class.__name__))
             else:
                 related_value = getattr(value, self.name)
-                if not isinstance(related_value, OneToManyRelatedManager):
-                    errors.append('Related value must be a `OneToManyRelatedManager`'
+                if not isinstance(related_value, self.related_manager):
+                    errors.append('Related value must be a `{}`'.format(self.related_manager.__name__)
                                   )  # pragma: no cover # unreachable due to above error checking
                 if obj not in related_value:
                     errors.append('Object must be in related values')
@@ -5339,14 +6559,64 @@ class OneToManyAttribute(RelatedAttribute):
             right_children.remove(right_child)
             left_children.append(left_child)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(OneToManyAttribute, self).get_excel_validation()
+
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
+            else:
+                source = related_ws
+        else:
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+            else:
+                source = related_ws
+
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
+        else:
+            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
+
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
 
 class ManyToManyAttribute(RelatedAttribute):
-    """ Represents a many-to-many relationship between two types of objects. """
+    """ Represents a many-to-many relationship between two types of objects. 
+
+    Attributes:
+        related_manager (:obj:`type`): related manager
+    """
 
     def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
                  related_default=list(),
                  min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
-                 verbose_name='', verbose_related_name='', help=''):
+                 verbose_name='', verbose_related_name='', help='',
+                 related_manager=ManyToManyRelatedManager):
         """
         Args:
             related_class (:obj:`class`): related class
@@ -5363,13 +6633,15 @@ class ManyToManyAttribute(RelatedAttribute):
             verbose_name (:obj:`str`, optional): verbose name
             verbose_related_name (:obj:`str`, optional): verbose related name
             help (:obj:`str`, optional): help string
+            related_manager (:obj:`type`, optional): related manager
         """
         super(ManyToManyAttribute, self).__init__(
             related_class, related_name=related_name,
-            init_value=ManyToManyRelatedManager, default=default, default_cleaned_value=default_cleaned_value,
-            related_init_value=ManyToManyRelatedManager, related_default=related_default,
+            init_value=related_manager, default=default, default_cleaned_value=default_cleaned_value,
+            related_init_value=related_manager, related_default=related_default,
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
             verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
+        self.related_manager = related_manager
 
     def get_init_value(self, obj):
         """ Get initial value for attribute
@@ -5380,7 +6652,7 @@ class ManyToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`object`: initial value
         """
-        return ManyToManyRelatedManager(obj, self, related=False)
+        return self.related_manager(obj, self, related=False)
 
     def get_related_init_value(self, obj):
         """ Get initial related value for attribute
@@ -5396,7 +6668,7 @@ class ManyToManyAttribute(RelatedAttribute):
         """
         if not self.related_name:
             raise ValueError('Related property is not defined')
-        return ManyToManyRelatedManager(obj, self, related=True)
+        return self.related_manager(obj, self, related=True)
 
     def set_value(self, obj, new_values):
         """ Get value of attribute of object
@@ -5468,9 +6740,9 @@ class ManyToManyAttribute(RelatedAttribute):
 
                 elif self.related_name:
                     related_v = getattr(v, self.related_name)
-                    if not isinstance(related_v, ManyToManyRelatedManager):
+                    if not isinstance(related_v, self.related_manager):
                         errors.append(
-                            'Related value must be a `ManyToManyRelatedManager`'
+                            'Related value must be a `{}`'.format(self.related_manager.__name__)
                         )  # pragma: no cover # unreachable due to above error checking
                     if obj not in related_v:
                         errors.append('Object must be in related values')
@@ -5624,474 +6896,50 @@ class ManyToManyAttribute(RelatedAttribute):
             right_children.remove(right_child)
             left_children.append(left_child)
 
-
-class RelatedManager(list):
-    """ Represent values and related values of related attributes
-
-    Attributes:
-        object (:obj:`Model`): model instance
-        attribute (:obj:`Attribute`): attribute
-        related (:obj:`bool`): is related attribute
-    """
-
-    def __init__(self, object, attribute, related=True):
-        """
-        Args:
-            object (:obj:`Model`): model instance
-            attribute (:obj:`Attribute`): attribute
-            related (:obj:`bool`, optional): is related attribute
-        """
-        super(RelatedManager, self).__init__()
-        self.object = object
-        self.attribute = attribute
-        self.related = related
-
-    def create(self, __type=None, **kwargs):
-        """ Create instance of primary class and add to list
-
-        Args:
-            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
+    def get_excel_validation(self):
+        """ Get Excel validation
 
         Returns:
-            :obj:`Model`: created object
-
-        Raises:
-            :obj:`ValueError`: if keyword argument is not an attribute of the class
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        if '__type' in kwargs:
-            __type = kwargs.pop('__type')
+        validation = super(ManyToManyAttribute, self).get_excel_validation()
 
-        if self.related:
-            if self.attribute.name in kwargs:
-                raise TypeError("'{}' is an invalid keyword argument for {}.create for {}".format(
-                    self.attribute.name, self.__class__.__name__, self.attribute.primary_class.__name__))
-            cls = __type or self.attribute.primary_class
-            obj = cls(**kwargs)
-
-        else:
-            if self.attribute.related_name in kwargs:
-                raise TypeError("'{}' is an invalid keyword argument for {}.create for {}".format(
-                    self.attribute.related_name, self.__class__.__name__, self.attribute.primary_class.__name__))
-            cls = __type or self.attribute.related_class
-            obj = cls(**kwargs)
-
-        self.append(obj)
-
-        return obj
-
-    def append(self, value, **kwargs):
-        """ Add value to list
-
-        Args:
-            value (:obj:`object`): value
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        super(RelatedManager, self).append(value, **kwargs)
-
-        return self
-
-    def add(self, value, **kwargs):
-        """ Add value to list
-
-        Args:
-            value (:obj:`object`): value
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        self.append(value, **kwargs)
-
-        return self
-
-    def discard(self, value):
-        """ Remove value from list if value in list
-
-        Args:
-            value (:obj:`object`): value
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        if value in self:
-            self.remove(value)
-
-        return self
-
-    def clear(self):
-        """ Remove all elements from list
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        for value in reversed(self):
-            self.remove(value)
-
-        return self
-
-    def pop(self, i=-1):
-        """ Remove an arbitrary element from the list
-
-        Args:
-            i (:obj:`int`, optional): index of element to remove
-
-        Returns:
-            :obj:`object`: removed element
-        """
-        value = super(RelatedManager, self).pop(i)
-        self.remove(value, update_list=False)
-
-        return value
-
-    def update(self, values):
-        """ Add values to list
-
-        Args:
-            values (:obj:`list`): values to add to list
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        self.extend(values)
-
-        return self
-
-    def extend(self, values):
-        """ Add values to list
-
-        Args:
-            values (:obj:`list`): values to add to list
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        for value in values:
-            self.append(value)
-
-        return self
-
-    def intersection_update(self, values):
-        """ Retain only intersection of list and `values`
-
-        Args:
-            values (:obj:`list`): values to intersect with list
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        for value in reversed(self):
-            if value not in values:
-                self.remove(value)
-
-        return self
-
-    def difference_update(self, values):
-        """ Retain only values of list not in `values`
-
-        Args:
-            values (:obj:`list`): values to difference with list
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        for value in values:
-            if value in self:
-                self.remove(value)
-
-        return self
-
-    def symmetric_difference_update(self, values):
-        """ Retain values in only one of list and `values`
-
-        Args:
-            values (:obj:`list`): values to difference with list
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        self_copy = copy.copy(self)
-        values_copy = copy.copy(values)
-
-        for value in values_copy:
-            if value in self_copy:
-                self.remove(value)
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+            related_ws = self.related_class.Meta.verbose_name_plural
+            if self.related_class.Meta.primary_attribute:
+                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                source = '{}:{}'.format(related_ws, related_col)
             else:
-                self.add(value)
-
-        return self
-
-    def get_or_create(self, __type=None, **kwargs):
-        """ Get or create a related object by attribute/value pairs. Optionally, only get or create instances of
-        :obj:`Model` subclass :obj:`__type`.
-
-        Args:
-            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
-                object or create new object
-
-        Returns:
-            :obj:`Model`: existing or new object
-        """
-        if '__type' in kwargs:
-            __type = kwargs.pop('__type')
-
-        obj = self.get_one(__type=__type, **kwargs)
-        if obj:
-            return obj
+                source = related_ws
         else:
-            return self.create(__type=__type, **kwargs)
+            related_ws = self.related_class.Meta.verbose_name
+            if self.related_class.Meta.primary_attribute:
+                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
+                source = '{}:{}'.format(related_ws, related_row)
+            else:
+                source = related_ws
 
-    def get_one(self, __type=None, **kwargs):
-        """ Get a related object by attribute/value pairs; report an error if multiple objects match and,
-        optionally, only return matches that are also instances of :obj:`Model` subclass :obj:`__type`.
-
-        Args:
-            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
-                objects
-
-        Returns:
-            :obj:`Model` or `None`: matching instance of `Model`, or `None` if no matching instance
-
-        Raises:
-            :obj:`ValueError`: if multiple matching objects
-        """
-        if '__type' in kwargs:
-            __type = kwargs.pop('__type')
-
-        matches = self.get(__type=__type, **kwargs)
-
-        if len(matches) == 0:
-            return None
-
-        if len(matches) == 1:
-            return matches.pop()
-
-        if len(matches) > 1:
-            raise ValueError(
-                'Multiple objects match the attribute name/value pair(s)')
-
-    def get(self, __type=None, **kwargs):
-        """ Get related objects by attribute/value pairs and, optionally, only return matches that are also
-        instances of :obj:`Model` subclass :obj:`__type`.
-
-        Args:
-            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
-                objects
-
-        Returns:
-            :obj:`list` of :obj:`Model`: matching instances of `Model`
-        """
-        if '__type' in kwargs:
-            __type = kwargs.pop('__type')
-
-        matches = []
-        for obj in self:
-            if obj.has_attr_vals(__type=__type, **kwargs):
-                matches.append(obj)
-        return matches
-
-    def index(self, *args, **kwargs):
-        """ Get related object index by attribute/value pairs
-
-        Args:
-            *args (:obj:`list` of :obj:`Model`): object to find
-            **kwargs (:obj:`dict` of :obj:`str`, :obj:`object`): dictionary of attribute name/value pairs to find matching objects
-
-        Returns:
-            :obj:`int`: index of matching object
-
-        Raises:
-            :obj:`ValueError`: if no argument or keyword argument is provided, if argument and keyword arguments are
-                both provided, if multiple arguments are provided, if the keyword attribute/value pairs match no object,
-                or if the keyword attribute/value pairs match multiple objects
-        """
-        if args and kwargs:
-            raise ValueError('Argument and keyword arguments cannot both be provided')
-        if not args and not kwargs:
-            raise ValueError('At least one argument must be provided')
-
-        if args:
-            if len(args) > 1:
-                raise ValueError('At most one argument can be provided')
-
-            return super(RelatedManager, self).index(args[0])
-
+        validation.ignore_blank = self.min_related == 0
+        if self.min_related == 0:
+            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
         else:
-            match = None
+            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
+            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
 
-            for i_obj, obj in enumerate(self):
-                is_match = True
-                for attr_name, value in kwargs.items():
-                    if getattr(obj, attr_name) != value:
-                        is_match = False
-                        break
+        default = self.get_default_cleaned_value()
+        if default:
+            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
 
-                if is_match:
-                    if match is not None:
-                        raise ValueError(
-                            'Keyword argument attribute/value pairs match multiple objects')
-                    else:
-                        match = i_obj
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message += '\n\n'.join(input_message)
 
-            if match is None:
-                raise ValueError('No matching object with {}'.format(', '.join(str(k) + '=' + str(v) for k, v in kwargs.items())))
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message += '\n\n'.join(error_message)
 
-            return match
-
-
-class ManyToOneRelatedManager(RelatedManager):
-    """ Represent values of related attributes """
-
-    def __init__(self, object, attribute):
-        """
-        Args:
-            object (:obj:`Model`): model instance
-            attribute (:obj:`Attribute`): attribute
-        """
-        super(ManyToOneRelatedManager, self).__init__(
-            object, attribute, related=True)
-
-    def append(self, value, propagate=True):
-        """ Add value to list
-
-        Args:
-            value (:obj:`object`): value
-            propagate (:obj:`bool`, optional): propagate change to related attribute
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        if value in self:
-            return self
-
-        super(ManyToOneRelatedManager, self).append(value)
-        if propagate:
-            value.__setattr__(self.attribute.name, self.object, propagate=True)
-
-        return self
-
-    def remove(self, value, update_list=True, propagate=True):
-        """ Remove value from list
-
-        Args:
-            value (:obj:`object`): value
-            propagate (:obj:`bool`, optional): propagate change to related attribute
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        if update_list:
-            super(ManyToOneRelatedManager, self).remove(value)
-        if propagate:
-            value.__setattr__(self.attribute.name, None, propagate=False)
-
-        return self
-
-
-class OneToManyRelatedManager(RelatedManager):
-    """ Represent values of related attributes """
-
-    def __init__(self, object, attribute):
-        """
-        Args:
-            object (:obj:`Model`): model instance
-            attribute (:obj:`Attribute`): attribute
-        """
-        super(OneToManyRelatedManager, self).__init__(
-            object, attribute, related=False)
-
-    def append(self, value, propagate=True):
-        """ Add value to list
-
-        Args:
-            value (:obj:`object`): value
-            propagate (:obj:`bool`, optional): propagate change to related attribute
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        if value in self:
-            return self
-
-        super(OneToManyRelatedManager, self).append(value)
-        if propagate:
-            value.__setattr__(self.attribute.related_name,
-                              self.object, propagate=True)
-
-        return self
-
-    def remove(self, value, update_list=True, propagate=True):
-        """ Remove value from list
-
-        Args:
-            value (:obj:`object`): value
-            propagate (:obj:`bool`, optional): propagate change to related attribute
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        if update_list:
-            super(OneToManyRelatedManager, self).remove(value)
-        if propagate:
-            value.__setattr__(self.attribute.related_name,
-                              None, propagate=False)
-
-        return self
-
-
-class ManyToManyRelatedManager(RelatedManager):
-    """ Represent values and related values of related attributes """
-
-    def append(self, value, propagate=True):
-        """ Add value to list
-
-        Args:
-            value (:obj:`object`): value
-            propagate (:obj:`bool`, optional): propagate change to related attribute
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        if value in self:
-            return self
-
-        super(ManyToManyRelatedManager, self).append(value)
-        if propagate:
-            if self.related:
-                getattr(value, self.attribute.name).append(
-                    self.object, propagate=False)
-            else:
-                getattr(value, self.attribute.related_name).append(
-                    self.object, propagate=False)
-
-        return self
-
-    def remove(self, value, update_list=True, propagate=True):
-        """ Remove value from list
-
-        Args:
-            value (:obj:`object`): value
-            update_list (:obj:`bool`, optional): update list
-            propagate (:obj:`bool`, optional): propagate change to related attribute
-
-        Returns:
-            :obj:`RelatedManager`: self
-        """
-        if update_list:
-            super(ManyToManyRelatedManager, self).remove(value)
-        if propagate:
-            if self.related:
-                getattr(value, self.attribute.name).remove(
-                    self.object, propagate=False)
-            else:
-                getattr(value, self.attribute.related_name).remove(
-                    self.object, propagate=False)
-
-        return self
+        return validation
 
 
 class InvalidObjectSet(object):

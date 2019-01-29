@@ -29,6 +29,9 @@ class Test(obj_model.Model):
 class DeletedModel(obj_model.Model):
     id = SlugAttribute()
 
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id',)
+
 
 class Property(obj_model.Model):
     id = SlugAttribute()
@@ -36,7 +39,7 @@ class Property(obj_model.Model):
     value = PositiveIntegerAttribute()
 
     class Meta(obj_model.Model.Meta):
-        attribute_order = ('id', 'test')
+        attribute_order = ('id', 'test', 'value')
         tabular_orientation = TabularOrientation.column
 
 
@@ -57,3 +60,6 @@ class Reference(obj_model.Model):
     """
     id = SlugAttribute()
     value = StringAttribute()
+
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'value')

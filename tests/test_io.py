@@ -8,23 +8,28 @@
 """
 
 from os.path import splitext
-from obj_model import core, utils
+from obj_model import core, utils, chem, ontology, units
 from obj_model.io import WorkbookReader, WorkbookWriter, convert, create_template, IoWarning
-from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorksheetStyle,
+from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorkbookStyle, WorksheetStyle,
                                   read as read_workbook, write as write_workbook, get_reader, get_writer)
+import datetime
 import enum
 import json
 import math
 import mock
 import obj_model.io
+import obj_model.expression
 import openpyxl
 import os
+import pint
+import pronto
 import pytest
 import re
 import shutil
 import sys
 import tempfile
 import unittest
+import wc_utils.util.chem
 
 
 class MainRoot(core.Model):
@@ -203,7 +208,12 @@ class TestIo(unittest.TestCase):
         wb = read_workbook(filename)
         wb['Nodes'][2][2] = 'node_0'
         filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
-        write_workbook(filename2, wb)
+        write_workbook(filename2, wb, style={
+            MainRoot.Meta.verbose_name: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Node.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Leaf.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            OneToManyRow.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename2, models=[MainRoot, Node, Leaf, OneToManyRow],
                                  group_objects_by_model=True, validate=True)
@@ -318,7 +328,12 @@ class TestIo(unittest.TestCase):
         workbook['Main root'][0][0] = 'id'
 
         # write workbook
-        writer.run(workbook)
+        writer.run(workbook, style={
+            MainRoot.Meta.verbose_name: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Node.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Leaf.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            OneToManyRow.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
 
         # check that attributes can be read by name
         objects = WorkbookReader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
@@ -331,7 +346,12 @@ class TestIo(unittest.TestCase):
         workbook['Main root'][0][0] = 'ID'
 
         # write workbook
-        writer.run(workbook)
+        writer.run(workbook, style={
+            MainRoot.Meta.verbose_name: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Node.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Leaf.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            OneToManyRow.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
 
         # check that attributes can be read by name
         objects = WorkbookReader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
@@ -767,7 +787,9 @@ class TestIo(unittest.TestCase):
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         xslx_writer = get_writer('.xlsx')(filename)
-        xslx_writer.run(workbook)
+        xslx_writer.run(workbook, style={
+            TestModel.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
 
         with self.assertRaisesRegex(ValueError, 'The model cannot be loaded'):
             WorkbookReader().run(filename, [TestModel])
@@ -786,8 +808,14 @@ class TestMisc(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
             children = core.OneToManyAttribute('Child1', verbose_name='children', related_name='parent')
 
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'children')
+
         class Child1(core.Model):
             id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
 
         parents = [
             Parent1(id='parent_0'),
@@ -861,12 +889,14 @@ class TestMisc(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 verbose_name_plural = 'Parents'
+                attribute_order = ('id', 'children')
 
         class WriterChild(core.Model):
             id = core.StringAttribute(primary=True, verbose_name='Identifier')
 
             class Meta(core.Model.Meta):
                 verbose_name_plural = 'Children'
+                attribute_order = ('id',)
 
         class ReaderChildrenAttribute(core.OneToManyAttribute):
             pass
@@ -877,12 +907,14 @@ class TestMisc(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 verbose_name_plural = 'Parents'
+                attribute_order = ('id', 'children')
 
         class ReaderChild(core.Model):
             id = core.StringAttribute(verbose_name='Identifier')
 
             class Meta(core.Model.Meta):
                 verbose_name_plural = 'Children'
+                attribute_order = ('id',)
 
         parent = WriterParent(id='parent')
         parent.children.create(id='child_1')
@@ -914,9 +946,10 @@ class TestMisc(unittest.TestCase):
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = WorkbookWriter()
 
-        with pytest.warns(IoWarning):
+        with self.assertRaisesRegex(ValueError, 'cannot be unambiguously mapped to models'):
             writer.run(filename, [node1, node2], [Node4, Node5])
 
+        writer.run(filename, [node1], [Node4])
         with self.assertRaisesRegex(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):
             WorkbookReader().run(filename, [Node4, Node5])
 
@@ -964,33 +997,40 @@ class TestMisc(unittest.TestCase):
             WorkbookReader().run(filename, [Node8])
 
     def test_row_and_column_headings(self):
+        class TestModel(core.Model):
+            column_B = core.StringAttribute()
+            column_C = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                verbose_name_plural = 'Sheet'
+
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = WorkbookWriter()
         xslx_writer = get_writer('.xlsx')(filename)
         xslx_writer.initialize_workbook()
         writer.write_sheet(xslx_writer,
-                           sheet_name='Sheet',
+                           TestModel,
                            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
-                           row_headings=[['Row_2', 'Row_3']],
-                           column_headings=[['Column_B', 'Column_C']])
+                           headings=[['Column_B', 'Column_C']],
+                           validation=None)
         xslx_writer.finalize_workbook()
 
         xlsx_reader = get_reader('.xlsx')(filename)
         workbook = xlsx_reader.run()
-        self.assertEqual(list(workbook['Sheet'][0]), [None, 'Column_B', 'Column_C'])
-        self.assertEqual(list(workbook['Sheet'][1]), ['Row_2', 'Cell_2_B', 'Cell_2_C'])
-        self.assertEqual(list(workbook['Sheet'][2]), ['Row_3', 'Cell_3_B', 'Cell_3_C'])
+        self.assertEqual(list(workbook['Sheet'][0]), ['Column_B', 'Column_C'])
+        self.assertEqual(list(workbook['Sheet'][1]), ['Cell_2_B', 'Cell_2_C'])
+        self.assertEqual(list(workbook['Sheet'][2]), ['Cell_3_B', 'Cell_3_C'])
 
         reader = WorkbookReader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
         data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet',
-                                                                num_row_heading_columns=1,
+                                                                num_row_heading_columns=0,
                                                                 num_column_heading_rows=1)
         self.assertEqual(len(data), 2)
         self.assertEqual(list(data[0]), ['Cell_2_B', 'Cell_2_C'])
         self.assertEqual(list(data[1]), ['Cell_3_B', 'Cell_3_C'])
-        self.assertEqual(row_headings, [['Row_2', 'Row_3']])
+        self.assertEqual(row_headings, [])
         self.assertEqual(len(column_headings), 1)
         self.assertEqual(list(column_headings[0]), ['Column_B', 'Column_C'])
 
@@ -1013,7 +1053,9 @@ class TestMisc(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         xslx_writer = get_writer('.xlsx')(filename)
-        xslx_writer.run(workbook)
+        xslx_writer.run(workbook, style={
+            'Node10': WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
 
         class Node10(core.Model):
             id = core.StringAttribute(primary=True, unique=True, verbose_name='Id')
@@ -1139,7 +1181,7 @@ class ReadEmptyCellTestCase(unittest.TestCase):
             def merge(self, other, validate=True):
                 pass
 
-            def copy_value(self, value, objects_and_copies): 
+            def copy_value(self, value, objects_and_copies):
                 pass
 
         attr = ConcreteAttribute(default_cleaned_value=lambda: 1.5)
@@ -1151,6 +1193,9 @@ class ReadEmptyCellTestCase(unittest.TestCase):
             value_1 = core.FloatAttribute(default_cleaned_value=float('nan'))
             value_2 = core.FloatAttribute(default_cleaned_value=2.)
 
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'value_1', 'value_2')
+
         workbook = Workbook()
         workbook['Test models'] = worksheet = Worksheet()
         worksheet.append(Row(['Id', 'Value 1', 'Value 2']))
@@ -1160,7 +1205,9 @@ class ReadEmptyCellTestCase(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         xslx_writer = get_writer('.xlsx')(filename)
-        xslx_writer.run(workbook)
+        xslx_writer.run(workbook, style={
+            TestModel.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
 
         objects = WorkbookReader().run(filename, [TestModel])[TestModel]
         objects.sort(key=lambda m: m.id)
@@ -1185,12 +1232,18 @@ class InheritedIoTestCase(unittest.TestCase):
         class B(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
 
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
         class BB(B):
             pass
 
         class A(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             b = core.OneToOneAttribute(B, related_name='a')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'b')
 
         class AA(A):
             pass
@@ -1210,12 +1263,18 @@ class InheritedIoTestCase(unittest.TestCase):
         class B(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
 
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
         class BB(B):
             pass
 
         class A(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             b = core.ManyToOneAttribute(B, related_name='a_s')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'b')
 
         class AA(A):
             pass
@@ -1235,12 +1294,18 @@ class InheritedIoTestCase(unittest.TestCase):
         class B(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
 
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
         class BB(B):
             pass
 
         class A(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             bs = core.OneToManyAttribute(B, related_name='a')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'bs')
 
         class AA(A):
             pass
@@ -1260,12 +1325,18 @@ class InheritedIoTestCase(unittest.TestCase):
         class B(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
 
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
         class BB(B):
             pass
 
         class A(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             bs = core.ManyToManyAttribute(B, related_name='a_s')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'bs')
 
         class AA(A):
             pass
@@ -1380,12 +1451,16 @@ class StrictReadingTestCase(unittest.TestCase):
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaisesRegex(ValueError, r'must have 1 header row\(s\)'):
             WorkbookReader().run(filename, [Model])
 
@@ -1406,12 +1481,16 @@ class StrictReadingTestCase(unittest.TestCase):
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id']))
         ws.append(Row(['Attr']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaisesRegex(ValueError, r'must have 1 header column\(s\)'):
             WorkbookReader().run(filename, [Model])
 
@@ -1432,14 +1511,18 @@ class StrictReadingTestCase(unittest.TestCase):
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr2']))
         ws.append(Row(['m1', '2']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, [Model])
         WorkbookReader().run(filename, [Model], ignore_missing_attributes=True)
@@ -1461,14 +1544,18 @@ class StrictReadingTestCase(unittest.TestCase):
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr1', 'Attr2', 'Attr3']))
         ws.append(Row(['m1', '1', '2', '3']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, [Model])
         WorkbookReader().run(filename, [Model], ignore_extra_attributes=True)
@@ -1490,14 +1577,18 @@ class StrictReadingTestCase(unittest.TestCase):
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr1', 'Attr2']))
         ws.append(Row(['m1', '1', '2']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         WorkbookReader().run(filename, [Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         ws.append(Row(['Id', 'Attr2', 'Attr1']))
         ws.append(Row(['m1', '2', '1']))
-        writer.run(wb)
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaisesRegex(ValueError, (
             "The columns of worksheet 'Models' must be defined in this order:"
             "\n      A1: Id"
@@ -1764,7 +1855,11 @@ class InlineJsonTestCase(unittest.TestCase):
         # test exception
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
-        write_workbook(path, wb)
+        write_workbook(path, wb, style={
+            Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
@@ -1805,7 +1900,11 @@ class InlineJsonTestCase(unittest.TestCase):
         # test exception
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
-        write_workbook(path, wb)
+        write_workbook(path, wb, style={
+            Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
@@ -1846,7 +1945,11 @@ class InlineJsonTestCase(unittest.TestCase):
         # test exception
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
-        write_workbook(path, wb)
+        write_workbook(path, wb, style={
+            Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
@@ -1887,7 +1990,11 @@ class InlineJsonTestCase(unittest.TestCase):
         # test exception
         wb = read_workbook(path)
         wb['Parents'][1][1] = ']'
-        write_workbook(path, wb)
+        write_workbook(path, wb, style={
+            Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+            GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
         with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
             objs2 = obj_model.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
@@ -1977,3 +2084,320 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(leaf_attrs, ('id',))
         self.assertEqual(unrooted_leaf_attrs, ('id',))
         self.assertEqual(leaf3_attrs, ('id2', 'name2',))
+
+
+class ExcelValidationTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        print(self.dirname)
+        # shutil.rmtree(self.dirname)
+
+    def test(self):
+        class TestEnum(enum.Enum):
+            val1 = 0
+            val2 = 1
+
+        class TestChild1(core.Model):
+            id = core.SlugAttribute(unique=True, primary=True)
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
+        class TestChild2(core.Model):
+            id = core.SlugAttribute(unique=True, primary=True)
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+                tabular_orientation = core.TabularOrientation.column
+
+        sbo_ontotology = pronto.Ontology('tests/fixtures/SBO.obo')
+        unit_registry = pint.UnitRegistry()
+
+        class Parameter1(core.Model):
+            id = core.SlugAttribute()
+            value = core.FloatAttribute()
+            units = units.UnitAttribute(unit_registry)
+
+            class Meta(core.Model.Meta, obj_model.expression.ExpressionStaticTermMeta):
+                expression_term_value = 'value'
+                expression_term_units = 'units'
+
+        class Parameter2(core.Model):
+            id = core.SlugAttribute()
+            value = core.FloatAttribute()
+            units = units.UnitAttribute(unit_registry)
+
+            class Meta(core.Model.Meta, obj_model.expression.ExpressionStaticTermMeta):
+                expression_term_value = 'value'
+                expression_term_units = 'units'
+
+        class TestParentExpression1(core.Model, obj_model.expression.Expression):
+            expression = core.StringAttribute()
+
+            class Meta(core.Model.Meta, obj_model.expression.Expression.Meta):
+                expression_term_models = ()
+                expression_unit_registry = unit_registry
+
+            def serialize(self): return obj_model.expression.Expression.serialize(self)
+
+            @classmethod
+            def deserialize(cls, value, objects): return obj_model.expression.Expression.deserialize(cls, value, objects)
+
+            def validate(self): return obj_model.expression.Expression.validate(self, self.parent_sub_function)
+
+        class TestParentExpression2(core.Model, obj_model.expression.Expression):
+            expression = core.StringAttribute()
+            parameters_1 = core.ManyToManyAttribute(Parameter1, related_name='test_parent_expressions_2')
+
+            class Meta(core.Model.Meta, obj_model.expression.Expression.Meta):
+                expression_term_models = ('Parameter1',)
+                expression_unit_registry = unit_registry
+
+            def serialize(self): return obj_model.expression.Expression.serialize(self)
+
+            @classmethod
+            def deserialize(cls, value, objects): return obj_model.expression.Expression.deserialize(cls, value, objects)
+
+            def validate(self): return obj_model.expression.Expression.validate(self, self.parent_sub_function)
+
+        class TestParentExpression3(core.Model, obj_model.expression.Expression):
+            expression = core.StringAttribute()
+            parameters_1 = core.ManyToManyAttribute(Parameter1, related_name='test_parent_expressions_3')
+            parameters_2 = core.ManyToManyAttribute(Parameter2, related_name='test_parent_expressions_3')
+
+            class Meta(core.Model.Meta, obj_model.expression.Expression.Meta):
+                expression_term_models = ('Parameter1', 'Parameter2')
+                expression_unit_registry = unit_registry
+                expression_is_linear = True
+
+            def serialize(self): return obj_model.expression.Expression.serialize(self)
+
+            @classmethod
+            def deserialize(cls, value, objects): return obj_model.expression.Expression.deserialize(cls, value, objects)
+
+            def validate(self): return obj_model.expression.Expression.validate(self, self.parent_sub_function)
+
+        class TestParent(core.Model):
+            id = core.SlugAttribute(unique=True, primary=True)
+            enum_attr_1 = core.EnumAttribute(TestEnum, default_cleaned_value=TestEnum.val1)
+            enum_attr_2 = core.EnumAttribute(TestEnum, none=True, unique=True)
+            bool_attr = core.BooleanAttribute(default_cleaned_value=True)
+            float_attr_1 = core.FloatAttribute(default_cleaned_value=4.)
+            float_attr_2 = core.FloatAttribute(default_cleaned_value=4., min=-1.)
+            float_attr_3 = core.FloatAttribute(default_cleaned_value=4., max=-1.)
+            float_attr_4 = core.FloatAttribute(default_cleaned_value=4., nan=False, min=-1., max=1., unique=True)
+            pos_float_attr_1 = core.PositiveFloatAttribute(default_cleaned_value=5.)
+            pos_float_attr_2 = core.PositiveFloatAttribute(default_cleaned_value=5., nan=False, max=10., unique=True)
+            int_attr_1 = core.IntegerAttribute(default_cleaned_value=2)
+            int_attr_2 = core.IntegerAttribute(default_cleaned_value=2, min=-1)
+            int_attr_3 = core.IntegerAttribute(default_cleaned_value=2, max=1)
+            int_attr_4 = core.IntegerAttribute(default_cleaned_value=2, min=-2, max=2, unique=True)
+            pos_int_attr_1 = core.PositiveIntegerAttribute(default_cleaned_value=3)
+            pos_int_attr_2 = core.PositiveIntegerAttribute(default_cleaned_value=3, max=10, unique=True)
+
+            str_attr_1 = core.StringAttribute(default_cleaned_value='default val', help='Enter a string')
+            str_attr_2 = core.StringAttribute(min_length=1, max_length=None)
+            str_attr_3 = core.StringAttribute(min_length=0, max_length=10)
+            str_attr_4 = core.StringAttribute(min_length=1, max_length=10, unique=True)
+
+            date_attr = core.DateAttribute(default_cleaned_value=datetime.date(2000, 1, 2), unique=True)
+            time_attr = core.TimeAttribute(default_cleaned_value=datetime.time(10, 1, 2), unique=True)
+            date_time_attr = core.DateTimeAttribute(default_cleaned_value=datetime.datetime(2001, 2, 3, 11, 3, 4), unique=True)
+            one_to_one_attr_1 = core.OneToOneAttribute(TestChild1, related_name='parent_1')
+            many_to_one_attr_1 = core.ManyToOneAttribute(TestChild1, related_name='parents_2')
+            one_to_many_attr_1 = core.OneToManyAttribute(TestChild1, related_name='parent_3')
+            many_to_many_attr_1 = core.ManyToManyAttribute(TestChild1, related_name='parents_4')
+            one_to_one_attr_2 = core.OneToOneAttribute(TestChild2, related_name='parent_1',
+                                                       min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_1'))
+            many_to_one_attr_2 = core.ManyToOneAttribute(TestChild2, related_name='parents_2',
+                                                         min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_2'))
+            one_to_many_attr_2 = core.OneToManyAttribute(TestChild2, related_name='parent_3',
+                                                         min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_3')])
+            many_to_many_attr_2 = core.ManyToManyAttribute(TestChild2, related_name='parents_4',
+                                                           min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_4')])
+            formula_attr = chem.EmpiricalFormulaAttribute(unique=True)
+            onto_attr_1 = ontology.OntologyAttribute(sbo_ontotology,
+                                                     namespace='SBO',
+                                                     terms=sbo_ontotology['SBO:0000474'].rchildren(),
+                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'])
+            onto_attr_2 = ontology.OntologyAttribute(sbo_ontotology,
+                                                     namespace='SBO',
+                                                     terms=sbo_ontotology['SBO:0000474'].rchildren(),
+                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'],
+                                                     unique=True, none=False)
+            onto_attr_3 = ontology.OntologyAttribute(sbo_ontotology,
+                                                     namespace='SBO',
+                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'])
+            onto_attr_4 = ontology.OntologyAttribute(sbo_ontotology,
+                                                     namespace='SBO',
+                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'],
+                                                     unique=True, none=False)
+            units_attr_1 = units.UnitAttribute(unit_registry, choices=(
+                unit_registry.parse_units('g'),
+                unit_registry.parse_units('l'),
+            ), default_cleaned_value=unit_registry.parse_units('g'))
+            units_attr_2 = units.UnitAttribute(unit_registry, choices=(
+                unit_registry.parse_units('g'),
+                unit_registry.parse_units('l'),
+            ), default_cleaned_value=unit_registry.parse_units('g'), unique=True, none=False)
+            units_attr_3 = units.UnitAttribute(unit_registry, default_cleaned_value=unit_registry.parse_units('g'))
+            units_attr_4 = units.UnitAttribute(
+                unit_registry, default_cleaned_value=unit_registry.parse_units('g'), unique=True, none=False)
+            expression_attr_1 = obj_model.expression.ExpressionOneToOneAttribute(TestParentExpression1, related_name='test_parent')
+            expression_attr_2 = obj_model.expression.ExpressionOneToOneAttribute(TestParentExpression2, related_name='test_parent')
+            expression_attr_3 = obj_model.expression.ExpressionOneToOneAttribute(TestParentExpression3, related_name='test_parent')
+            expression_attr_4 = obj_model.expression.ExpressionManyToOneAttribute(TestParentExpression1, related_name='test_parents')
+            expression_attr_5 = obj_model.expression.ExpressionManyToOneAttribute(TestParentExpression2, related_name='test_parents')
+            expression_attr_6 = obj_model.expression.ExpressionManyToOneAttribute(TestParentExpression3, related_name='test_parents')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'enum_attr_1', 'enum_attr_2',
+                                   'bool_attr',
+                                   'float_attr_1', 'float_attr_2', 'float_attr_3', 'float_attr_4',
+                                   'pos_float_attr_1', 'pos_float_attr_2',
+                                   'int_attr_1', 'int_attr_2', 'int_attr_3', 'int_attr_4',
+                                   'pos_int_attr_1', 'pos_int_attr_2',
+                                   'str_attr_1', 'str_attr_2', 'str_attr_3', 'str_attr_4',
+                                   'date_attr', 'time_attr', 'date_time_attr',
+                                   'one_to_one_attr_1', 'many_to_one_attr_1', 'one_to_many_attr_1', 'many_to_many_attr_1',
+                                   'one_to_one_attr_2', 'many_to_one_attr_2', 'one_to_many_attr_2', 'many_to_many_attr_2',
+                                   'formula_attr',
+                                   'onto_attr_1', 'onto_attr_2', 'onto_attr_3', 'onto_attr_4',
+                                   'units_attr_1', 'units_attr_2', 'units_attr_3', 'units_attr_4',
+                                   'expression_attr_1', 'expression_attr_2', 'expression_attr_3',
+                                   'expression_attr_4', 'expression_attr_5', 'expression_attr_6',
+                                   )
+
+        for attr in TestParent.Meta.attributes.values():
+            attr.help = 'A helpful description'
+
+        objects = [
+            TestParent(id='parent_a',
+                       enum_attr_2=TestEnum.val1,
+                       float_attr_4=-0.5,
+                       pos_float_attr_2=5.,
+                       int_attr_1=1, int_attr_2=1, int_attr_3=-1, int_attr_4=1,
+                       pos_int_attr_1=1, pos_int_attr_2=3,
+                       str_attr_2='a2', str_attr_4='a4',
+                       date_attr=datetime.date(2001, 1, 1),
+                       time_attr=datetime.time(11, 0, 0),
+                       date_time_attr=datetime.datetime(2001, 1, 1, 11, 0, 0),
+                       formula_attr=wc_utils.util.chem.EmpiricalFormula('H2O'),
+                       onto_attr_2=sbo_ontotology['SBO:0000475'],
+                       onto_attr_4=sbo_ontotology['SBO:0000475'],
+                       units_attr_2=unit_registry.parse_units('g'),
+                       units_attr_4=unit_registry.parse_units('g')),
+            TestParent(id='parent_b',
+                       enum_attr_2=TestEnum.val2,
+                       float_attr_4=0.5,
+                       pos_float_attr_2=8.,
+                       int_attr_1=1, int_attr_2=1, int_attr_3=-1, int_attr_4=2,
+                       pos_int_attr_1=1, pos_int_attr_2=5,
+                       str_attr_2='b2', str_attr_4='b4',
+                       date_attr=datetime.date(2001, 1, 2),
+                       time_attr=datetime.time(12, 0, 0),
+                       date_time_attr=datetime.datetime(2001, 1, 2, 12, 0, 0),
+                       formula_attr=wc_utils.util.chem.EmpiricalFormula('CO2'),
+                       onto_attr_2=sbo_ontotology['SBO:0000487'],
+                       onto_attr_4=sbo_ontotology['SBO:0000487'],
+                       units_attr_2=unit_registry.parse_units('l'),
+                       units_attr_4=unit_registry.parse_units('l')),
+            TestChild1(id='child_1_a'),
+            TestChild1(id='child_1_b'),
+            TestChild2(id='child_2_a'),
+            TestChild2(id='child_2_b'),
+        ]
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        WorkbookWriter().run(filename, objects, [TestParent, TestChild1, TestChild2])
+
+    def test_no_primary_attr(self):
+        class TestChild1(core.Model):
+            id = core.StringAttribute(unique=True)
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
+            def serialize(self):
+                return self.id
+
+        class TestChild2(core.Model):
+            id = core.StringAttribute(unique=True)
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+                tabular_orientation = core.TabularOrientation.column
+
+            def serialize(self):
+                return self.id
+
+        class OneToOneAttribute(core.OneToOneAttribute):
+            def serialize(self, value, encoded=None):
+                if value:
+                    return value.serialize()
+                else:
+                    return None
+
+            def deserialize(self, value, objects, decoded=None): pass
+
+        class OneToManyAttribute(core.OneToManyAttribute):
+            def serialize(self, values, encoded=None):
+                return ', '.join([value.serialize() for value in values])
+
+            def deserialize(self, value, objects, decoded=None): pass
+
+        class ManyToOneAttribute(core.ManyToOneAttribute):
+            def serialize(self, value, encoded=None):
+                if value:
+                    return value.serialize()
+                else:
+                    return None
+
+            def deserialize(self, value, objects, decoded=None): pass
+
+        class ManyToManyAttribute(core.ManyToManyAttribute):
+            def serialize(self, values, encoded=None):
+                return ', '.join([value.serialize() for value in values])
+
+            def deserialize(self, value, objects, decoded=None): pass
+
+        class TestParent(core.Model):
+            id = core.StringAttribute(unique=True)
+            one_to_one_attr_1 = OneToOneAttribute(TestChild1, related_name='parent_1')
+            many_to_one_attr_1 = ManyToOneAttribute(TestChild1, related_name='parents_2')
+            one_to_many_attr_1 = OneToManyAttribute(TestChild1, related_name='parent_3')
+            many_to_many_attr_1 = ManyToManyAttribute(TestChild1, related_name='parents_4')
+            one_to_one_attr_2 = OneToOneAttribute(TestChild2, related_name='parent_1',
+                                                  min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_1'))
+            many_to_one_attr_2 = ManyToOneAttribute(TestChild2, related_name='parents_2',
+                                                    min_related=1, default_cleaned_value=lambda: TestChild2(id='child_b_2'))
+            one_to_many_attr_2 = OneToManyAttribute(TestChild2, related_name='parent_3',
+                                                    min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_3')])
+            many_to_many_attr_2 = ManyToManyAttribute(TestChild2, related_name='parents_4',
+                                                      min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_4')])
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',
+                                   'one_to_one_attr_1', 'many_to_one_attr_1', 'one_to_many_attr_1', 'many_to_many_attr_1',
+                                   'one_to_one_attr_2', 'many_to_one_attr_2', 'one_to_many_attr_2', 'many_to_many_attr_2',
+                                   )
+
+            def serialize(self):
+                return self.id
+
+        for attr in TestParent.Meta.attributes.values():
+            attr.help = 'A helpful description'
+
+        objects = [
+            TestParent(id='parent_a'),
+            TestParent(id='parent_b'),
+            TestChild1(id='child_1_a'),
+            TestChild1(id='child_1_b'),
+            TestChild2(id='child_2_a'),
+            TestChild2(id='child_2_b'),
+        ]
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        WorkbookWriter().run(filename, objects, [TestParent, TestChild1, TestChild2])
