@@ -248,6 +248,8 @@ class ModelMeta(type):
             raise ValueError("{} cannot contain identical attribute sets: {}".format(
                 meta_attribute_name, str(equivalent_tuples)))
 
+    # enable suspension of checking of same related attribute name so that obj_model schemas can be migrated
+    CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
     @classmethod
     def validate_related_attributes(metacls, name, bases, namespace):
         """ Check the related attributes
@@ -293,8 +295,9 @@ class ModelMeta(type):
 
                         # check that name doesn't clash with another related
                         # attribute from a different model
-                        if attr.related_name in related_class.Meta.related_attributes and \
-                                related_class.Meta.related_attributes[attr.related_name] is not attr:
+                        if metacls.CHECK_SAME_RELATED_ATTRIBUTE_NAME and \
+                            attr.related_name in related_class.Meta.related_attributes and \
+                            related_class.Meta.related_attributes[attr.related_name] is not attr:
                             other_attr = related_class.Meta.related_attributes[
                                 attr.related_name]
                             raise ValueError('Attributes {}.{} and {}.{} cannot use the same related attribute name {}.{}'.format(
@@ -2907,7 +2910,7 @@ class LocalAttribute(object):
     Attributes:
         attr (:obj:`Attribute`): attribute
         cls (:obj:`type`): class which owns this attribute
-        name (:obj:`str`: name of the :obj:`attr` in :obj:`cls`
+        name (:obj:`str`): name of the :obj:`attr` in :obj:`cls`
         related_class (:obj:`type`): other class which is related to this attribute
         related_name (:obj:`str`): name of this attribute in :obj:`related_cls`
         primary_class (:obj:`type`): class in which this attribute was defined
@@ -6313,7 +6316,7 @@ def get_models(module=None, inline=True):
         models = get_subclasses(Model)
 
     if not inline:
-        for model in list(models):
+        for model in models:
             if model.Meta.tabular_orientation == TabularOrientation.inline:
                 models.remove(model)
 
