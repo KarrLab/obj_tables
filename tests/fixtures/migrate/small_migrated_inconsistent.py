@@ -15,7 +15,13 @@ class Test(obj_model.Model):
     """
     id = SlugAttribute()
 
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id',)
+
 
 class Property(obj_model.Model):
     id = SlugAttribute()
     value = StringAttribute()
+
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'value')

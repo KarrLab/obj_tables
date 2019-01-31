@@ -264,6 +264,22 @@ class TestCore(unittest.TestCase):
         self.assertEqual(UnrootedLeaf.Meta.attribute_order, ('id', ))
         self.assertEqual(Leaf3.Meta.attribute_order, ('id2', 'name2'))
 
+    def test_get_attr_index(self):
+        class TestModel(core.Model):
+            attr_1 = core.StringAttribute()
+            attr_2 = core.StringAttribute()
+            attr_3 = core.StringAttribute()
+            attr_4 = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('attr_1', 'attr_3', 'attr_2')
+
+        self.assertEqual(TestModel.get_attr_index(TestModel.attr_1), 0)
+        self.assertEqual(TestModel.get_attr_index(TestModel.attr_2), 2)
+        self.assertEqual(TestModel.get_attr_index(TestModel.attr_3), 1)
+        with self.assertRaisesRegex(ValueError, 'not in `attribute_order`'):
+            TestModel.get_attr_index(TestModel.attr_4)
+
     def test_set(self):
         leaf = Leaf(id='leaf_1', name='Leaf 1')
         self.assertEqual(leaf.id, 'leaf_1')
@@ -636,6 +652,9 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.clean('')[1], None)
 
         self.assertEqual(attr.serialize(float('nan')), None)
+
+        self.assertEqual(attr.value_equal(1., 1 + 1e-10), False)
+        self.assertEqual(attr.value_equal(1., 1 + 1e-10, tol=1e-8), True)
 
     def test_integer_attribute(self):
         attr = core.IntegerAttribute(default=1., default_cleaned_value=1.)
@@ -4473,6 +4492,21 @@ class TestCore(unittest.TestCase):
         test_1.set_nested_attr_val((('children', {'id': 'test_1_2'}), ('children', {
             'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_7')
         self.assertEqual(test_1.id, 'new_id_7')
+
+    def test_has_attr_vals(self):
+        class TestModel(core.Model):
+            attr_1 = core.StringAttribute()
+            attr_2 = core.StringAttribute()
+
+        model = TestModel(attr_1='abc', attr_2='xyz')
+        self.assertTrue(model.has_attr_vals())
+        self.assertTrue(model.has_attr_vals(__type=TestModel))
+        self.assertFalse(model.has_attr_vals(__type=str))
+        self.assertTrue(model.has_attr_vals(attr_1='abc'))
+        self.assertTrue(model.has_attr_vals(attr_2='xyz'))
+        self.assertFalse(model.has_attr_vals(attr_1='xyz'))
+        self.assertFalse(model.has_attr_vals(attr_2='abc'))
+        self.assertFalse(model.has_attr_vals(attr_3='lmnop'))
 
 
 class ContextTestCase(unittest.TestCase):
