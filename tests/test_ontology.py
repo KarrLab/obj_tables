@@ -161,4 +161,7 @@ class OntologyAttributeTestCase(unittest.TestCase):
         model_1 = Model(attr=self.ontology['SBO:0000000'])
         model_2 = Model(attr=copy.deepcopy(model_1.attr))
 
-        Model.attr.merge(model_1, model_2, {}, {})
+        try:
+            Model.attr.merge(model_1, model_2, {}, {})
+        except ValueError:
+            self.fail("Shouldn't raise 'ValueError: Model.attr must be equal'")
