@@ -7,7 +7,9 @@
 """
 
 from . import core
+from wc_utils.util.list import det_dedupe
 from wc_utils.util.units import are_units_equivalent
+import itertools
 import pint
 import wc_utils.workbook.io
 
@@ -258,3 +260,24 @@ class UnitAttribute(core.LiteralAttribute):
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
+
+
+def get_obj_units(obj):
+    """ Get units used in a model object and related objects
+
+    Args:
+        obj (:obj:`core.Model`): model object
+
+    Returns:
+        :obj:`list` of :obj:`pint.unit._Unit`: units used in model object
+    """
+    units = []
+    for o in itertools.chain([obj], obj.get_related()):
+        for attr in o.Meta.attributes.values():
+            if isinstance(attr, UnitAttribute):
+                unit = getattr(o, attr.name)
+                if unit:
+                    units.append(unit)
+
+    # return units
+    return det_dedupe(units)

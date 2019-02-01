@@ -6,6 +6,7 @@
 :License: MIT
 """
 
+from obj_model import core
 from obj_model import units
 from wc_utils.util.units import unit_registry
 import pint
@@ -129,3 +130,20 @@ class UnitAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(''), None)
         self.assertEqual(attr.from_builtin(None), None)
         self.assertEqual(attr.from_builtin('s'), registry.parse_units('s'))
+
+    def test_get_obj_units(self):
+        registry = pint.UnitRegistry()
+        
+        class TestModel(core.Model):
+            registry = pint.UnitRegistry()
+            str_attr = core.StringAttribute()
+            unit_attr_1 = units.UnitAttribute(registry)
+            unit_attr_2 = units.UnitAttribute(registry)
+
+        units_g = registry.parse_units('g')
+        units_l = registry.parse_units('l')
+        model = TestModel(str_attr='s',
+                          unit_attr_1=units_g,
+                          unit_attr_2=units_l)
+
+        self.assertEqual(set(units.get_obj_units(model)), set([units_g, units_l]))
