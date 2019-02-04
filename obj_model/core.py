@@ -5453,11 +5453,11 @@ class ManyToManyRelatedManager(RelatedManager):
 
 
 class RelatedAttribute(Attribute):
-    """ Attribute which represents relationships with other objects
+    """ Attribute which represents a relationship with other `Model`(s)
 
     Attributes:
-        primary_class (:obj:`class`): parent class
-        related_class (:obj:`class`): related class
+        primary_class (:obj:`class`): the type of the class that this related attribute references
+        related_class (:obj:`class`): the type of the class that contains a related attribute
         related_name (:obj:`str`): name of related attribute on `related_class`
         verbose_related_name (:obj:`str`): verbose related name
         related_init_value (:obj:`object`): initial value of related attribute
@@ -7171,17 +7171,19 @@ def get_models(module=None, inline=True):
     return models
 
 
-def get_model(name, module=None):
-    """ Get model with name `name`
+def get_model(name, module=None, rev=False):
+    """ Get first `Model` with name `name`
 
     Args:
         name (:obj:`str`): name
-        module (:obj:`module`, optional): module
+        module (:obj:`Module`, optional): module
+        rev (:obj:`bool`, optional): if true, return newest `Model`; this relies on the insertion
+            ordering of dictionaries, available in the CPython implementation of Python 3.6+
 
     Returns:
         :obj:`class`: model class
     """
-    for model in get_subclasses(Model):
+    for model in get_subclasses(Model, rev=rev):
         if name == model.__module__ + '.' + model.__name__ or \
                 module is not None and module.__name__ == model.__module__ and name == model.__name__:
             return model

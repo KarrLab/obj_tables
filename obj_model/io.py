@@ -13,6 +13,7 @@
 :License: MIT
 """
 
+from pprint import pprint
 import abc
 import collections
 import copy
@@ -1093,7 +1094,7 @@ class WorkbookReader(ReaderBase):
 
     @classmethod
     def get_ambiguous_sheet_names(cls, sheet_names, models):
-        """ Get names of sheets than cannot be unambiguously mapped to models (sheet names that map to multiple models).
+        """ Get names of sheets that cannot be unambiguously mapped to models (sheet names that map to multiple models).
 
         Args:
             sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
