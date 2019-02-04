@@ -20,6 +20,7 @@ import math
 import pint
 import types
 import warnings
+# INCOMPATIBLE CODE
 # import wc_lang.core
 
 
@@ -28,7 +29,6 @@ class LibSbmlError(Exception):
 
     def __init__(self, msg):
         self.msg = msg
-
 
 
 class LibSbmlInterface(object):

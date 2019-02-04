@@ -6,6 +6,8 @@ with open(pkg_resources.resource_filename('wc_lang', 'VERSION'), 'r') as file:
 
 # API
 '''
+INCOMPATIBLE CODE
+
 from .core import (RateLawDirection, TaxonRank,
 
                    Model, Taxon, Submodel, Compartment,
