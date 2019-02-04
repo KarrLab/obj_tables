@@ -164,4 +164,4 @@ class OntologyAttributeTestCase(unittest.TestCase):
         try:
             Model.attr.merge(model_1, model_2, {}, {})
         except ValueError:
-            self.fail("Shouldn't raise 'ValueError: Model.attr must be equal'")
+            self.fail("Shouldn't raise 'ValueError: Model.attr must be equal'; check version and fork of pronto")
