@@ -5,6 +5,7 @@ with open(pkg_resources.resource_filename('wc_lang', 'VERSION'), 'r') as file:
 # :obj:`str`: version
 
 # API
+'''
 from .core import (RateLawDirection, TaxonRank,
 
                    Model, Taxon, Submodel, Compartment,
@@ -22,3 +23,4 @@ from . import io
 from . import sbml
 from . import transform
 from . import util
+'''

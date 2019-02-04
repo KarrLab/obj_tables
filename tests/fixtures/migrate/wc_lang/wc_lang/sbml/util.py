@@ -20,7 +20,7 @@ import math
 import pint
 import types
 import warnings
-import wc_lang.core
+# import wc_lang.core
 
 
 class LibSbmlError(Exception):
@@ -28,6 +28,7 @@ class LibSbmlError(Exception):
 
     def __init__(self, msg):
         self.msg = msg
+
 
 
 class LibSbmlInterface(object):
