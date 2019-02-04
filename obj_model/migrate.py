@@ -15,7 +15,6 @@ from pathlib import Path
 import inspect
 import copy
 import warnings
-import uuid
 import yaml
 from six import integer_types, string_types
 from enum import Enum
@@ -23,16 +22,32 @@ from warnings import warn
 from pprint import pprint, pformat
 
 import obj_model
-from obj_model import TabularOrientation
+from obj_model import TabularOrientation, RelatedAttribute
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
+'''
+documentation notes:
+a schema must be imported from a self-contained module or a 
+complete package, as otherwise import statements within the package may use another version of it on sys.path.
+
+'''
 # todo now
 '''
-put minimally modified wc_lang core.py in fixtures & core_modified.py
+test all combinations of existing & migrated:
+alternatives:
+    schema: a self-contained module or a module in a package
+    existing vs. migrated: same or different:
+        if self-contained module:
+            module name, module path
+        if module in a package:
+            module name, package name, package path
+
+test import module that imports itself
+
 test arguments to test_load_defs_from_files
 final bit of coverage
 
@@ -42,10 +57,14 @@ migrate xlsx files in wc_sim to new wc_lang:
 3. create a config file for the wc model files
 4: migrate them
 '''
+# todo: remove obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME and in core.py: not needed if _check_related_attributes() is OK
+# todo: look for other places in migrate that should use local_attributes
+# todo: get rid of wc_lang_model_w_no_model_attrs.xlsx
+# todo next: test OneToManyAttribute
 # todo next: documentation
 # todo next: generic transformations in YAML config
+# todo: remove 'source_file' debugging code
 # todo: prepare lab meeting
-# todo next: test OneToManyAttribute
 # use dict in wc_utils dup removal; consider Python version
 
 # todo next: move remaining todos to GitHub issues
@@ -137,6 +156,7 @@ class SchemaModule(object):
         if os.path.isabs(filename):
             return os.path.normpath(filename)
         elif dir:
+            # todo: raise exception if dir isn't absolute
             return os.path.normpath(os.path.join(dir, filename))
         else:
             return os.path.abspath(filename)
@@ -182,64 +202,179 @@ class SchemaModule(object):
             package_directory = str(dir)
             # obtain package name between directory and module
             package_name = str(path.relative_to(package_directory).parent).replace('/', '.')
+            module_name = package_name + '.' + path.stem
 
-        # obtain module name
-        module_name = path.stem
+        else:
+            # obtain module name
+            module_name = path.stem
 
         return package_directory, package_name, module_name
+
+    MUNGED_MODEL_NAME_SUFFIX = '_munged'
+
+    @staticmethod
+    def _munge_model_name(model):
+        """ Munge `model`'s name
+
+        Args:
+            model (:obj:`obj_model.Model`): a model
+
+        Returns:
+            :obj:`str`: a munged name for model, made by appending `SchemaModule.MUNGED_MODEL_NAME_SUFFIX`
+        """
+        return "{}{}".format(model.__name__, SchemaModule.MUNGED_MODEL_NAME_SUFFIX)
+
+    @staticmethod
+    def _unmunge_model_name(model):
+        """ Ununge `model`'s name
+
+        Args:
+            model (:obj:`obj_model.Model`): a model
+
+        Returns:
+            :obj:`str`: an unmunged name for `model`, made by removing the suffix
+                `SchemaModule.MUNGED_MODEL_NAME_SUFFIX`
+
+        Raises:
+            :obj:`MigratorError`: if `model` isn't munged
+        """
+        if model.__name__.endswith("{}".format(SchemaModule.MUNGED_MODEL_NAME_SUFFIX)):
+            return model.__name__[:-len(SchemaModule.MUNGED_MODEL_NAME_SUFFIX)]
+        else:
+            raise MigratorError("{} isn't munged".format(model.__name__))
+
+    @staticmethod
+    def _munge_model_names(module):
+        """ Munge the names of `module`'s models, so the models cannot be found by name and reused
+
+        Args:
+            module (:obj:`Module`): a `Module` containing subclasses of `obj_model.Model`
+        """
+        for model in SchemaModule._get_model_defs(module).values():
+            model.__name__ = SchemaModule._munge_model_name(model)
+
+    @staticmethod
+    def _unmunge_model_names(module):
+        """ Unmunge the names of `module`'s models so they can be used, inverting `_munge_model_names`
+
+        Args:
+            module (:obj:`Module`): a `Module` containing subclasses of `obj_model.Model`
+        """
+        for model in SchemaModule._get_model_defs(module).values():
+            model.__name__ = SchemaModule._unmunge_model_name(model)
+
+    SOURCE_FILE = '_source_file'
+
+    @staticmethod
+    def _set_source_file(model, source_file):
+        setattr(model, SchemaModule.SOURCE_FILE, source_file)
+
+    @staticmethod
+    def _set_source_files(module, source_file):
+        for model in SchemaModule._get_model_defs(module).values():
+            SchemaModule._set_source_file(model, source_file)
+
+    @staticmethod
+    def _find_source_file(model):
+        # try source file saved by import_module_for_migration
+        if hasattr(model, SchemaModule.SOURCE_FILE):
+            return getattr(model, SchemaModule.SOURCE_FILE)
+        # try source file in standard module
+        try:
+            return inspect.getsourcefile(model)
+        except TypeError:
+            return None
+
+    @staticmethod
+    def all_models_by_source_file():
+        sources = {}
+        for existing_model in obj_model.core.get_models():
+            if existing_model in {obj_model.Model, obj_model.abstract.AbstractModel}:
+                continue
+            sf = SchemaModule._find_source_file(existing_model)
+            if sf not in sources:
+                sources[sf] = []
+            sources[sf].append((existing_model.__name__, id(existing_model)))
+        return sources
+
+    @staticmethod
+    def format_all_models_by_source_file(sources):
+        rv = []
+        for file, models in sources.items():
+            rv.append(str(file) + ':')
+            rv.append("  " + ', '.join(["{}:..{}".format(mod, str(id)[-5:]) for mod, id in sorted(models)]))
+        return '\n'.join(rv)
+
+    ERROR_NOTICE = """Migrate doesn't import all parent package directories of the schema.
+Therefore, the schema and Python it imports, directly or indirectly, cannot use relative imports or cycles of imports."""
 
     def import_module_for_migration(self, module_name=None):
         """ Import a schema in a Python module
 
         Args:
-            module_name (:obj:`str`, optional): name to use for the module being loaded; to avoid
-            'cannot use the same related attribute name' error in validate_related_attributes()
-            use different values for module_name for different versions of a schema
+            module_name (:obj:`str`, optional): name to use for the module being loaded; default
+                is basename of schema source file
 
         Returns:
             :obj:`Module`: the `Module` loaded from `self.module_path`
 
         Raises:
-            :obj:`MigratorError`: if `self.module_path` cannot be loaded
+            :obj:`MigratorError`: if the schema at `self.module_path` cannot be imported,
+                or if any related attribute in any model references a model not in the module
         """
         if self.get_path() in self.MODULES:
             return self.MODULES[self.get_path()]
 
-        # copy sys.paths and sys.modules so they can be restored and analyzed
+        # temporarily munge names of all models in modules imported for migration so they're not reused
+        for module in self.MODULES.values():
+            SchemaModule._munge_model_names(module)
+
+        # copy sys.paths and sys.modules so they can be restored
         sys_attrs = ['path', 'modules']
         saved = {}
         for sys_attr in sys_attrs:
             saved[sys_attr] = getattr(sys, sys_attr).copy()
 
-        # insert package directory at front of path so existing packages do not conflict
-        if self.package_directory:
-            if self.package_directory not in sys.path:
-                sys.path.insert(0, self.package_directory)
-
-        # add suffix to uniquely distinguish module name and prevent validation errors
-        # does not affect later imports, as modules imported here are not put on sys.modules
-        if module_name is None:
-            module_name = "{}_{}".format(self.module_name, uuid.uuid4())
-
-        limitations_notice = ("migrate does not support relative imports, or importing a module multiple times\n"
-            "from different files with the same module name; one of these limitations may cause this error")
         try:
-            # note: unclear whether self.module_name here matters
+            # todo: remove here and in core.py: not needed if _check_related_attributes() is OK
+            # obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
+
+            # insert package directory at front of path so existing packages cannot conflict
+            if self.package_directory:
+                if self.package_directory not in sys.path:
+                    sys.path.insert(0, self.package_directory)
+                # todo: test with test_module.py
+
+                # if importing a schema in a package, temporarily put the parent package in sys.modules
+                # so that the schema and its indirect imports can use it
+                importlib.import_module(self.package_name)
+
+            if module_name is None:
+                module_name = self.module_name
+
             spec = importlib.util.spec_from_file_location(module_name, self.get_path())
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            self.MODULES[self.get_path()] = module
-        except (SyntaxError, ImportError, AttributeError, ValueError) as e:
-            raise MigratorError("'{}' cannot be imported and exec'ed: {}\n{}".format(self.get_path(), e,
-                limitations_notice))
+        except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
+            raise MigratorError("'{}' cannot be imported and exec'ed: {}\n{}".format(
+                self.get_path(), e, SchemaModule.ERROR_NOTICE))
+        finally:
+            # unmunge names of all models in modules imported for migration
+            for current_module in self.MODULES.values():
+                SchemaModule._unmunge_model_names(current_module)
 
         # restore sys.path
         sys.path = saved['path']
-        # since exec_module may have changed the values of pre-existing entries in sys.modules
-        # restore sys.modules by deleting those that are not new
-        for name in list(sys.modules):
-            if name not in saved['modules']:
-                del sys.modules[name]
+
+        # to avoid side effects do not allow changes to sys.modules
+        sys.modules = saved['modules']
+
+        errors = self._check_related_attributes(module=module)
+        if errors:
+            raise MigratorError('\n'.join(errors))
+
+        self.MODULES[self.get_path()] = module
+        SchemaModule._set_source_files(module, self.get_path())
 
         return module
 
@@ -248,16 +383,40 @@ class SchemaModule(object):
         """ Obtain the `obj_model.Model`s in a module
 
         Args:
-            module (:obj:`Module`): a `Module` containing `obj_model.Model` definitions
+            module (:obj:`Module`): a `Module` containing subclasses of `obj_model.Model`
 
         Returns:
             :obj:`dict`: the Models in a module
         """
         models = {}
-        for name, attr in inspect.getmembers(module, inspect.isclass):
-            if isinstance(attr, obj_model.core.ModelMeta):
-                models[name] = attr
+        for name, cls in inspect.getmembers(module, inspect.isclass):
+            if issubclass(cls, obj_model.core.Model) and \
+                not cls in {obj_model.Model, obj_model.abstract.AbstractModel}:
+                models[name] = cls
         return models
+
+    def _check_related_attributes(self, module=None):
+        """ Ensure that all RelatedAttributes in all models reference models in the module
+
+        Args:
+            module (:obj:`Module`, optional): a `Module` containing subclasses of `obj_model.Model`;
+            if not provided, the module is imported
+
+        Returns:
+            :obj:`list`: reference errors in the module
+        """
+        errors = []
+        module = self.import_module_for_migration() if module is None else module
+        model_defs = SchemaModule._get_model_defs(module)
+        for model_name, model in model_defs.items():
+            for attr_name, local_attr in model.Meta.local_attributes.items():
+
+                if isinstance(local_attr.attr, RelatedAttribute):
+                    related_class = local_attr.related_class
+                    if related_class != model_defs[related_class.__name__]:
+                        errors.append("{}.{} references a {}, but it's not the model in module {}".format(
+                                model_name, attr_name, related_class.__name__, module.__name__))
+        return errors
 
     def run(self, module_name=None):
         """ Import a schema and provide its `obj_model.Model`s
@@ -266,7 +425,7 @@ class SchemaModule(object):
             module_name (:obj:`str`, optional): name to use for the module being loaded
 
         Returns:
-            :obj:`list` of :obj:`obj_model.Model`: the `Model`s in `self.module_path`
+            :obj:`dict`: the imported Models
 
         Raises:
             :obj:`MigratorError`: if `self.module_path` cannot be loaded
@@ -760,6 +919,8 @@ class Migrator(object):
     def read_existing_model(self, existing_file):
         """ Read models from existing file
 
+        Does not perform validation -- data in existing model file must be already validated with the existing schema.
+
         Args:
             existing_file (:obj:`str`): pathname of file to migrate
 
@@ -768,8 +929,9 @@ class Migrator(object):
         """
         obj_model_reader = obj_model.io.Reader.get_reader(existing_file)()
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
+        # data in model files must be already validated with the existing schema
         existing_models = obj_model_reader.run(existing_file, models=self._get_models_with_worksheets(self.existing_defs),
-            ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False)
+            ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False, validate=False)
         models_read = []
         for models in existing_models.values():
             models_read.extend(models)
@@ -789,9 +951,34 @@ class Migrator(object):
         migrated_models = [migrated_model for _, migrated_model in all_models]
         return migrated_models
 
+    @staticmethod
+    def path_of_migrated_file(existing_file, migrate_suffix=None, migrate_in_place=False):
+        """ Determine the pathname of the migrated file
+
+        Args:
+            existing_file (:obj:`str`): pathname of file being migrated
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
+                default is `Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, migrated file is `existing_file`, which
+                will be overwritten
+
+        Returns:
+            :obj:`str`: name of migrated file
+        """
+        if migrate_in_place:
+            return existing_file
+        root, ext = os.path.splitext(existing_file)
+        if migrate_suffix is None:
+            migrate_suffix = Migrator.MIGRATE_SUFFIX
+        migrated_file = os.path.join(os.path.dirname(existing_file),
+            os.path.basename(root) + migrate_suffix + ext)
+        return migrated_file
+
     def write_migrated_file(self, migrated_models, model_order, existing_file, migrated_file=None,
         migrate_suffix=None, migrate_in_place=False):
         """ Write migrated models to an external representation
+
+        Does not perform validation -- validation must be performed independently.
 
         Args:
             migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
@@ -812,22 +999,16 @@ class Migrator(object):
             :obj:`MigratorError`: if migrate_in_place is False and writing the migrated file would
                 overwrite an existing file
         """
-        root, ext = os.path.splitext(existing_file)
-        # determine pathname of migrated file
-        if migrate_in_place:
-            migrated_file = existing_file
-        else:
-            if migrate_suffix is None:
-                migrate_suffix = Migrator.MIGRATE_SUFFIX
-            if migrated_file is None:
-                migrated_file = os.path.join(os.path.dirname(existing_file),
-                    os.path.basename(root) + migrate_suffix + ext)
-            if os.path.exists(migrated_file):
-                raise MigratorError("migrated file '{}' already exists".format(migrated_file))
+        if not migrated_file:
+            migrated_file = self.path_of_migrated_file(existing_file,
+                migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
+
+        if not migrate_in_place and os.path.exists(migrated_file):
+            raise MigratorError("migrated file '{}' already exists".format(migrated_file))
 
         # write migrated models to disk
         obj_model_writer = obj_model.io.Writer.get_writer(existing_file)()
-        obj_model_writer.run(migrated_file, migrated_models, models=model_order)
+        obj_model_writer.run(migrated_file, migrated_models, models=model_order, validate=False)
         return migrated_file
 
     def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
@@ -1256,15 +1437,13 @@ class MigrationDesc(object):
 
     @classmethod
     def load(cls, migrations_config_file):
-        """ Create a list of `MigrationDesc`s from a migrations configuration file
-
-        Validate and standardize the `MigrationDesc`s
+        """ Create a list of validated and standardized `MigrationDesc`s from a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
 
         Returns:
-            :obj:`list` of :obj:`MigrationDesc`: migration descriptions
+            :obj:`dict` of :obj:`MigrationDesc`: migration descriptions
 
         Raises:
             :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration descriptions in
@@ -1291,7 +1470,7 @@ class MigrationDesc(object):
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
 
         Returns:
-            :obj:`list` of :obj:`MigrationDesc`: migration descriptions
+            :obj:`dict` of :obj:`MigrationDesc`: migration descriptions
 
         Raises:
             :obj:`MigratorError`: if `migrations_config_file` cannot be read
@@ -1443,6 +1622,22 @@ class MigrationDesc(object):
             :obj:`callable`: a callable that creates `Migrator`s for this `MigrationDesc`
         """
         return self.MIGRATOR_CREATOR_MAP[self.migrator]
+
+    def expected_migrated_files(self):
+        """ Provide names of migrated files that migration of this `MigrationDesc` would produce
+
+        Returns:
+            :obj:`list` of :obj:`str`: the names of the migrated files that a successful migration of this
+                `MigrationDesc` will produce
+        """
+        if self.migrated_files:
+            return self.migrated_files
+        migrated_files = []
+        for existing_file in self.existing_files:
+            migrated_files.append(
+                Migrator.path_of_migrated_file(existing_file, migrate_suffix=self.migrate_suffix,
+                    migrate_in_place=self.migrate_in_place))
+        return migrated_files
 
     def __str__(self):
         """ Get str representation
