@@ -1,4 +1,4 @@
-""" Data model to represent biochemical models.
+""" Data model to represent composite, multi-algorithmic biochemical models.
 
 This module defines classes that represent the schema of a biochemical model:
 
@@ -14,8 +14,8 @@ This module defines classes that represent the schema of a biochemical model:
 * :obj:`SpeciesCoefficient`
 * :obj:`RateLaw`
 * :obj:`RateLawExpression`
-* :obj:`DfbaNetSpecies`
-* :obj:`DfbaNetReaction`
+* :obj:`DfbaObjSpecies`
+* :obj:`DfbaObjReaction`
 * :obj:`ParameterRenamed`
 * :obj:`Reference`
 * :obj:`DatabaseReference`
@@ -40,39 +40,38 @@ from natsort import natsorted, ns
 from obj_model import (BooleanAttribute, EnumAttribute,
                        FloatAttribute,
                        IntegerAttribute, PositiveIntegerAttribute,
-                       RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute, UrlAttribute,
-                       DateTimeAttribute,
+                       RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
+                       UrlAttribute, EmailAttribute, DateTimeAttribute,
                        OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
+                       ManyToOneRelatedManager,
                        InvalidObject, InvalidAttribute, TabularOrientation)
 from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
                                   ExpressionStaticTermMeta, ExpressionDynamicTermMeta,
                                   ExpressionExpressionTermMeta, Expression,
                                   ParsedExpression, ParsedExpressionError)
+from obj_model.ontology import OntologyAttribute
 from obj_model.units import UnitAttribute
 from six import with_metaclass
-
-# rename wc_lang so it can be used as a fixture in obj_model
-'''
-# imports not needed, as they're not executed when this file is imported or a model based on it is read or written
-from tests.fixtures.migrate.wc_lang.sbml.util import (wrap_libsbml, str_to_xmlstr, LibSBMLError,
-                               create_sbml_parameter)
-'''
+from wc_lang.sbml.util import LibSbmlInterface, LibSbmlError
 from wc_utils.util.chem import EmpiricalFormula
 from wc_utils.util.enumerate import CaseInsensitiveEnum, CaseInsensitiveEnumMeta
 from wc_utils.util.list import det_dedupe
-from wc_utils.util.units import unit_registry
+from wc_utils.util.ontology import wcm_ontology
+from wc_utils.util.units import unit_registry, are_units_equivalent
+from wc_utils.workbook.core import get_column_letter
 import collections
 import datetime
 import networkx
 import obj_model
 import obj_model.chem
 import pkg_resources
+import pronto.term
 import re
 import six
 import stringcase
 import token
 
-with open(pkg_resources.resource_filename('tests.fixtures.migrate.wc_lang', 'VERSION'), 'r') as file:
+with open(pkg_resources.resource_filename('wc_lang', 'VERSION'), 'r') as file:
     wc_lang_version = file.read().strip()
 
 # wc_lang generates obj_model SchemaWarning warnings because some Models lack primary attributes.
@@ -83,7 +82,9 @@ import warnings
 warnings.filterwarnings('ignore', '', obj_model.SchemaWarning, 'obj_model')
 
 # configuration
-import tests.fixtures.migrate.wc_lang.config.core
+import wc_lang.config.core
+
+call_libsbml = LibSbmlInterface.call_libsbml
 
 
 class TaxonRankMeta(CaseInsensitiveEnumMeta):
@@ -143,138 +144,10 @@ class TaxonRank(with_metaclass(TaxonRankMeta, int, Enum)):
     variety = 10
 
 
-class CompartmentBiologicalType(int, CaseInsensitiveEnum):
-    """ Compartment biological type """
-    cellular = 1
-    extracellular = 2
-    other = 3
-
-
-class CompartmentPhysicalType(int, CaseInsensitiveEnum):
-    """ Compartment physical type """
-    fluid = 1
-    membrane = 2
-    other = 3
-
-
-CompartmentGeometry = CaseInsensitiveEnum('CompartmentGeometry', type=int, names=[
-    ('none', 0),
-    # ('1d', 1),
-    # ('2d', 2),
-    ('3d', 3),
-])
-
-
-class SubmodelAlgorithm(int, CaseInsensitiveEnum):
-    """ Submodel algorithms """
-    dfba = 1
-    ode = 2
-    ssa = 3
-
-
-class SpeciesTypeType(int, CaseInsensitiveEnum):
-    """ Types of species types """
-    metabolite = 1
-    protein = 2
-    dna = 3
-    rna = 4
-    pseudo_species = 5
-
-
-RandomDistribution = CaseInsensitiveEnum('RandomDistribution', type=int, names=[
-    #('beta', 1),
-    #('binomial', 2),
-    #('chisquare', 3),
-    #('dirichlet', 4),
-    #('exponential', 5),
-    #('f', 6),
-    #('gamma', 7),
-    #('geometric', 8),
-    #('gumbel', 9),
-    #('hypergeometric', 10),
-    #('laplace', 11),
-    #('logisitic', 12),
-    #('lognormal', 13),
-    #('logseries', 14),
-    #('multinomial', 15),
-    #('multivariate-normal', 16),
-    #('negative-binomial', 17),
-    #('noncentral-chisquare', 18),
-    #('noncentral-f', 19),
-    ('normal', 20),
-    #('pareto', 21),
-    #('poisson', 22),
-    #('power', 23),
-    #('rayleigh', 24),
-    #('standard-cauchy', 25),
-    #('standard-exponential', 26),
-    #('standard-gamma', 27),
-    #('standard-normal', 28),
-    #('standard-t', 29),
-    #('triangular', 30),
-    #('uniform', 31),
-    #('vonmises', 32),
-    #('wald', 33),
-    #('weibull', 34),
-    #('zipf', 35),
-])
-
-
 class RateLawDirection(int, CaseInsensitiveEnum):
     """ Rate law directions """
     backward = -1
     forward = 1
-
-
-class RateLawType(int, CaseInsensitiveEnum):
-    """ SBO rate law types """
-    hill = 192
-    mass_action = 12
-    michaelis_menten = 29
-    modular = 527
-    other = 1
-
-
-RateLawType = CaseInsensitiveEnum('RateLawType', type=int, names=[
-    ('hill', 192),
-    ('mass-action', 12),
-    ('michaelis-menten', 29),
-    ('modular', 527),
-    ('other', 1),
-])
-
-
-class ParameterType(int, Enum):
-    """ SBO parameter types """
-    k_cat = 25
-    v_max = 186
-    K_m = 27
-    K_i = 261
-    other = 2
-
-
-class EvidenceType(int, CaseInsensitiveEnum):
-    """ Evidence types """
-    experiment = 1
-    computation = 2
-    theory = 3
-    intuition = 4
-    other = 5
-
-
-class ReferenceType(int, CaseInsensitiveEnum):
-    """ Reference types """
-    article = 1
-    book = 2
-    online = 3
-    proceedings = 4
-    thesis = 5
-
-    inbook = 6
-    incollection = 7
-    inproceedings = 8
-
-    misc = 9
 
 
 class ReactionParticipantAttribute(ManyToManyAttribute):
@@ -434,13 +307,12 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
             if part_errors:
                 errors += part_errors
             else:
-                species_id = Species.gen_id(species_type.id, compartment.id)
+                species_id = Species._gen_id(species_type.id, compartment.id)
                 species, error = Species.deserialize(species_id, objects)
                 if error:
-                    raise ValueError('Invalid species "{}"'.format(species_id)
-                                     )  # pragma: no cover; unreachable due to above error checking of species types and compartments
+                    errors.extend(error.messages)
 
-                if coefficient != 0:
+                elif coefficient != 0:
                     if SpeciesCoefficient not in objects:
                         objects[SpeciesCoefficient] = {}
                     serialized_value = SpeciesCoefficient._serialize(species, coefficient)
@@ -479,7 +351,7 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
             return InvalidAttribute(self, ['LHS and RHS must be different'])
 
         # check element and charge balance
-        validate_element_charge_balance = tests.fixtures.migrate.wc_lang.config.core.get_config()[
+        validate_element_charge_balance = wc_lang.config.core.get_config()[
             'wc_lang']['validation']['validate_element_charge_balance']
         if validate_element_charge_balance:
             delta_formula = EmpiricalFormula()
@@ -506,6 +378,38 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
 
         # return None
         return None
+
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(ManyToManyAttribute, self).get_excel_validation()
+
+        related_class = Species
+        related_ws = related_class.Meta.verbose_name_plural
+        related_col = get_column_letter(related_class.get_attr_index(related_class.Meta.primary_attribute) + 1)
+        source = '{}:{}'.format(related_ws, related_col)
+
+        validation.ignore_blank = False
+        input_message = ['Enter a reaction string using species from "{}".'.format(source)]
+        error_message = ['Value must be a reaction string using species from "{}".'.format(source)]
+
+        input_message.append(('Examples:\n'
+                              '* [c]: atp + h2o ==> adp + pi + h\n'
+                              '* glc[e] + atp[c] + h2o[c] ==> glc[e] + adp[c] + pi[c] + h[c]\n'
+                              '* (3) Na[c] + (2) K[e] ==> (3) Na[e] + (2) K[c]'))
+
+        error_message.append(('Examples:\n'
+                              '* [c]: atp + h2o ==> adp + pi + h\n'
+                              '* glc[e] + atp[c] + h2o[c] ==> glc[e] + adp[c] + pi[c] + h[c]\n'
+                              '* (3) Na[c] + (2) K[e] ==> (3) Na[e] + (2) K[c]'))
+
+        validation.input_message = '\n\n'.join(input_message)
+        validation.error_message = '\n\n'.join(error_message)
+
+        return validation
 
 
 class DatabaseReferenceOneToManyAttribute(OneToManyAttribute):
@@ -566,6 +470,31 @@ class DatabaseReferenceOneToManyAttribute(OneToManyAttribute):
         else:
             return (det_dedupe(db_refs), None)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(OneToManyAttribute, self).get_excel_validation()
+
+        validation.ignore_blank = True
+        input_message = ['Enter a comma-separated list of references to external databases.']
+        error_message = ['Value must be a comma-separated list of references to external databases.']
+
+        input_message.append(('Examples:\n'
+                              '* doi: 10.1016/j.tcb.2015.09.004\n'
+                              '* chebi: CHEBI:15377, kegg.compound: C00001'))
+
+        error_message.append(('Examples:\n'
+                              '* doi: 10.1016/j.tcb.2015.09.004\n'
+                              '* chebi: CHEBI:15377, kegg.compound: C00001'))
+
+        validation.input_message = '\n\n'.join(input_message)
+        validation.error_message = '\n\n'.join(error_message)
+
+        return validation
+
 
 class DatabaseReferenceManyToManyAttribute(ManyToManyAttribute):
     def __init__(self, related_name='', verbose_name='Database references', verbose_related_name='', help=''):
@@ -625,6 +554,103 @@ class DatabaseReferenceManyToManyAttribute(ManyToManyAttribute):
         else:
             return (det_dedupe(db_refs), None)
 
+    def get_excel_validation(self):
+        """ Get Excel validation
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(ManyToManyAttribute, self).get_excel_validation()
+
+        validation.ignore_blank = True
+        input_message = ['Enter a comma-separated list of references to external databases.']
+        error_message = ['Value must be a comma-separated list of references to external databases.']
+
+        input_message.append(('Examples:\n'
+                              '* doi: 10.1016/j.tcb.2015.09.004\n'
+                              '* chebi: CHEBI:15377, kegg.compound: C00001'))
+
+        error_message.append(('Examples:\n'
+                              '* doi: 10.1016/j.tcb.2015.09.004\n'
+                              '* chebi: CHEBI:15377, kegg.compound: C00001'))
+
+        validation.input_message = '\n\n'.join(input_message)
+        validation.error_message = '\n\n'.join(error_message)
+
+        return validation
+
+
+class SubmodelsToModelRelatedManager(ManyToOneRelatedManager):
+    """ Submodels to model related manager """
+
+    def gen_models(self):
+        """ Generate separate models for each submodel, as well as a "core" model which contains the
+        model integration framework (compartments, species types, species, observables, functions,
+        stop conditions, etc.) and all model objects that are not associated with at least 1 submodel.
+
+        Returns:
+            :obj:`Model`: model with objects that (a) form the model integration framework or (b) are 
+                not associated with any submodel
+            :obj:`list` of :obj:`Model`: one model for each submodel
+
+        Raises:
+            :obj:`ValueError`: if submodels do not belong to a model
+        """
+        model = self.object
+
+        # cut submodels from model
+        submodels = self.cut(kind='submodel')
+
+        # get objects that won't be exported with at least one submodel to export as "core" model
+        core_model = model.copy()
+        objs_in_core = set(core_model.get_related())
+        for submodel in core_model.submodels:
+            objs_in_core.discard(submodel)
+            objs_in_core.difference_update(set(submodel.get_children(kind='submodel')))
+        objs_in_core.add(core_model)
+
+        # add additional objects to "core" model that define model integration framework
+        # * compartments
+        # * species types
+        # * species
+        # * observables
+        # * functions
+        # * stop conditions
+        for obj in list(objs_in_core):
+            objs_in_core.update(obj.get_children(kind='core_model'))
+
+        # generate "core" model which has
+        # * the model integration framework and
+        # * other objects not exported with at least one 1 submodel
+        for obj in objs_in_core:
+            obj.cut_relations(objs_in_core)
+
+        # return core model and separate models for each submodel
+        return (core_model, [submodel.model for submodel in submodels])
+
+
+class CommentAttribute(obj_model.LongStringAttribute):
+    """ Comment attribute """
+
+    SEPARATOR = '\n\n'
+
+    def merge(self, left, right, right_objs_in_left, left_objs_in_right):
+        """ Merge an attribute of elements of two models
+
+        Args:
+            left (:obj:`Model`): an element in a model to merge
+            right (:obj:`Model`): an element in a second model to merge
+            right_objs_in_left (:obj:`dict`): mapping from objects in right model to objects in left model
+            left_objs_in_right (:obj:`dict`): mapping from objects in left model to objects in right model
+
+        Raises:
+            :obj:`ValueError`: if the attributes of the elements of the models are different
+        """
+        left_val = getattr(left, self.name)
+        right_val = getattr(right, self.name)
+        if left_val != right_val:
+            setattr(left, self.name, left_val + self.SEPARATOR + right_val)
+
 
 class Model(obj_model.Model):
     """ Model
@@ -637,9 +663,6 @@ class Model(obj_model.Model):
         branch (:obj:`str`): branch of the model Git repository
         revision (:obj:`str`): revision of the model Git repository
         wc_lang_version (:obj:`str`): version of ``wc_lang``
-        author (:obj:`str`): author(s)
-        author_organization (:obj:`str`): author organization(s)
-        author_email (:obj:`str`): author emails(s)
         time_units (:obj:`unit_registry.Unit`): time units
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         comments (:obj:`str`): comments
@@ -661,10 +684,15 @@ class Model(obj_model.Model):
         reactions (:obj:`list` of :obj:`Reaction`): reactions
         rate_laws (:obj:`list` of :obj:`RateLaw`): rate laws
         dfba_objs (:obj:`list` of :obj:`DfbaObjective`): dFBA objectives
-        dfba_net_reactions (:obj:`list` of :obj:`DfbaNetReaction`): dFBA net reactions
+        dfba_obj_reactions (:obj:`list` of :obj:`DfbaObjReaction`): dFBA objective reactions
+        dfba_obj_species (:obj:`list` of :obj:`DfbaObjSpecies`): dFBA objective species
         stop_conditions (:obj:`list` of :obj:`StopCondition`): stop conditions
         parameters (:obj:`list` of :obj:`ParameterRenamed`): parameters
+        evidences (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         references (:obj:`list` of :obj:`Reference`): references
+        authors (:obj:`list` of :obj:`Author`): authors
+        changes (:obj:`list` of :obj:`Change`): changes
     """
     id = SlugAttribute()
     name = StringAttribute()
@@ -674,12 +702,11 @@ class Model(obj_model.Model):
     revision = StringAttribute()
     wc_lang_version = RegexAttribute(min_length=1, pattern=r'^[0-9]+\.[0-9+]\.[0-9]+', flags=re.I,
                                      default=wc_lang_version, verbose_name='wc_lang version')
-    author = LongStringAttribute()
-    author_organization = LongStringAttribute()
-    author_email = LongStringAttribute()
-    time_units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('s'),), default=unit_registry.parse_units('s'))
+    time_units = UnitAttribute(unit_registry,
+                               choices=[unit_registry.parse_units('s')],
+                               default=unit_registry.parse_units('s'))
     db_refs = DatabaseReferenceOneToManyAttribute(related_name='model')
-    comments = LongStringAttribute()
+    comments = CommentAttribute()
     created = DateTimeAttribute()
     updated = DateTimeAttribute()
 
@@ -687,11 +714,16 @@ class Model(obj_model.Model):
         attribute_order = ('id', 'name', 'version',
                            'url', 'branch', 'revision',
                            'wc_lang_version',
-                           'author', 'author_organization', 'author_email',
                            'time_units',
                            'db_refs', 'comments',
                            'created', 'updated')
         tabular_orientation = TabularOrientation.column
+        children = {
+            'submodel': ('taxon', 'env'),
+            'core_model': ('taxon', 'env',
+                           'compartments', 'species_types', 'species', 'distribution_init_concentrations',
+                           'observables', 'functions', 'stop_conditions'),
+        }
 
     def __init__(self, **kwargs):
         """
@@ -827,7 +859,7 @@ class Model(obj_model.Model):
         roots = []
         for comp in self.get_compartments(__type=__type, **kwargs):
             if comp.parent_compartment is None \
-                    or comp.parent_compartment.biological_type != CompartmentBiologicalType.cellular:
+                    or comp.parent_compartment.biological_type != wcm_ontology['WCM:cellular_compartment']:
                 roots.append(comp)
         return roots
 
@@ -956,8 +988,8 @@ class Model(obj_model.Model):
 
         return self.dfba_objs.get(__type=__type, **kwargs)
 
-    def get_dfba_net_reactions(self, __type=None, **kwargs):
-        """ Get all dFBA net reactions used by submodels
+    def get_dfba_obj_reactions(self, __type=None, **kwargs):
+        """ Get all dFBA objective reactions used by submodels
 
         Args:
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
@@ -965,12 +997,28 @@ class Model(obj_model.Model):
                 objects
 
         Returns:
-            :obj:`list` of :obj:`DfbaNetReaction`: dFBA net reactions
+            :obj:`list` of :obj:`DfbaObjReaction`: dFBA objective reactions
         """
         if '__type' in kwargs:
             __type = kwargs.pop('__type')
 
-        return self.dfba_net_reactions.get(__type=__type, **kwargs)
+        return self.dfba_obj_reactions.get(__type=__type, **kwargs)
+
+    def get_dfba_obj_species(self, __type=None, **kwargs):
+        """ Get all dFBA objective species used by submodels
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+                objects
+
+        Returns:
+            :obj:`list` of :obj:`DfbaObjSpecies`: dFBA objective species
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        return self.dfba_obj_species.get(__type=__type, **kwargs)
 
     def get_parameters(self, __type=None, **kwargs):
         """ Get all parameters from model and submodels
@@ -1015,6 +1063,17 @@ class Model(obj_model.Model):
 
         return self.evidences.get(__type=__type, **kwargs)
 
+    def get_interpretations(self, __type=None, **kwargs):
+        """ Get all interpretations for model
+
+        Returns:
+            :obj:`list` of :obj:`Interpretation`: interpretations for model
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        return self.interpretations.get(__type=__type, **kwargs)
+
     def get_references(self, __type=None, **kwargs):
         """ Get all references from model and children
 
@@ -1030,6 +1089,38 @@ class Model(obj_model.Model):
             __type = kwargs.pop('__type')
 
         return self.references.get(__type=__type, **kwargs)
+
+    def get_authors(self, __type=None, **kwargs):
+        """ Get all authors from model and children
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+                objects
+
+        Returns:
+            :obj:`list` of :obj:`Author`: authors
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        return self.authors.get(__type=__type, **kwargs)
+
+    def get_changes(self, __type=None, **kwargs):
+        """ Get all changes from model and children
+
+        Args:
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+                objects
+
+        Returns:
+            :obj:`list` of :obj:`Change`: changes
+        """
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+
+        return self.changes.get(__type=__type, **kwargs)
 
     def get_components(self, __type=None, **kwargs):
         """ Find model component of `type` with `id`
@@ -1051,8 +1142,9 @@ class Model(obj_model.Model):
             type_names = [
                 'submodels', 'compartments', 'species_types', 'species',
                 'distribution_init_concentrations', 'observables', 'functions',
-                'dfba_objs', 'reactions', 'rate_laws', 'dfba_net_reactions',
-                'stop_conditions', 'parameters', 'evidence', 'references',
+                'dfba_objs', 'reactions', 'rate_laws', 'dfba_obj_reactions', 'dfba_obj_species',
+                'stop_conditions', 'parameters', 'evidence', 'interpretations',
+                'references', 'authors', 'changes',
             ]
 
         components = []
@@ -1061,6 +1153,21 @@ class Model(obj_model.Model):
             components.extend(get_func(__type=__type, **kwargs))
 
         return components
+
+    def merge_attrs(self, other, other_objs_in_self, self_objs_in_other):
+        """ Merge attributes of two objects
+
+        Args:
+            other (:obj:`Model`): other model
+            other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
+                in a model
+            self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
+                in another model
+        """
+        self.Meta.attributes['comments'].merge(self, other, other_objs_in_self, self_objs_in_other)
+        for attr in self.Meta.attributes.values():
+            if isinstance(attr, obj_model.RelatedAttribute):
+                attr.merge(self, other, other_objs_in_self, self_objs_in_other)
 
 
 class Taxon(obj_model.Model):
@@ -1075,12 +1182,12 @@ class Taxon(obj_model.Model):
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
     """
-    id = RegexAttribute(pattern=r'^taxon$')
+    id = RegexAttribute(pattern=r'^taxon$', primary=True, unique=True)
     name = StringAttribute()
     model = OneToOneAttribute(Model, related_name='taxon')
     rank = EnumAttribute(TaxonRank, default=TaxonRank.species)
     db_refs = DatabaseReferenceOneToManyAttribute(related_name='taxon')
-    comments = LongStringAttribute()
+    comments = CommentAttribute()
     references = OneToManyAttribute('Reference', related_name='taxon')
 
     class Meta(obj_model.Model.Meta):
@@ -1088,6 +1195,10 @@ class Taxon(obj_model.Model):
                            'rank',
                            'db_refs', 'comments', 'references')
         tabular_orientation = TabularOrientation.column
+        children = {
+            'submodel': ('db_refs', 'references'),
+            'core_model': ('db_refs', 'references'),
+        }
 
 
 class Environment(obj_model.Model):
@@ -1100,11 +1211,12 @@ class Environment(obj_model.Model):
         temp (:obj:`float`): temperature
         temp_units (:obj:`unit_registry.Unit`): temperature units
         ph (:obj:`float`): pH
+        ph_units (:obj:`unit_registry.Unit`): pH units
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
     """
-    id = RegexAttribute(pattern=r'^env$')
+    id = RegexAttribute(pattern=r'^env$', primary=True, unique=True)
     name = StringAttribute()
     model = OneToOneAttribute(Model, related_name='env')
     temp = FloatAttribute(verbose_name='Temperature')
@@ -1113,15 +1225,23 @@ class Environment(obj_model.Model):
                                default=unit_registry.parse_units('celsius'),
                                verbose_name='Temperature units')
     ph = FloatAttribute(verbose_name='pH')
+    ph_units = UnitAttribute(unit_registry,
+                             choices=(unit_registry.parse_units('dimensionless'),),
+                             default=unit_registry.parse_units('dimensionless'),
+                             verbose_name='pH units')
     db_refs = DatabaseReferenceOneToManyAttribute(related_name='env')
-    comments = LongStringAttribute()
+    comments = CommentAttribute()
     references = OneToManyAttribute('Reference', related_name='env')
 
     class Meta(obj_model.Model.Meta):
         attribute_order = ('id', 'name',
-                           'temp', 'temp_units', 'ph',
+                           'temp', 'temp_units', 'ph', 'ph_units',
                            'db_refs', 'comments', 'references')
         tabular_orientation = TabularOrientation.column
+        children = {
+            'submodel': ('db_refs', 'references'),
+            'core_model': ('db_refs', 'references'),
+        }
 
 
 class Submodel(obj_model.Model):
@@ -1131,31 +1251,43 @@ class Submodel(obj_model.Model):
         id (:obj:`str`): unique identifier
         name (:obj:`str`): name
         model (:obj:`Model`): model
-        algorithm (:obj:`SubmodelAlgorithm`): algorithm
+        framework (:obj:`pronto.term.Term`): modeling framework (e.g. dynamic flux balance analysis)
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
     Related attributes:
         reactions (:obj:`list` of :obj:`Reaction`): reactions
         dfba_obj (:obj:`DfbaObjective`): objective function for a dFBA submodel;
-            if not initialized, then `dfba_net_reaction` is used as the objective function
-        dfba_net_reactions (:obj:`list` of :obj:`DfbaNetReaction`): the growth reaction for a dFBA submodel
+            if not initialized, then `dfba_obj_reaction` is used as the objective function
+        dfba_obj_reactions (:obj:`list` of :obj:`DfbaObjReaction`): the growth reaction for a dFBA submodel
+        changes (:obj:`list` of :obj:`Change`): changes
     """
     id = SlugAttribute()
     name = StringAttribute()
-    model = ManyToOneAttribute(Model, related_name='submodels')
-    algorithm = EnumAttribute(SubmodelAlgorithm, default=SubmodelAlgorithm.ssa)
+    model = ManyToOneAttribute(Model, related_name='submodels', related_manager=SubmodelsToModelRelatedManager)
+    framework = OntologyAttribute(wcm_ontology,
+                                  namespace='WCM',
+                                  terms=wcm_ontology['WCM:modeling_framework'].rchildren(),
+                                  default=wcm_ontology['WCM:stochastic_simulation_algorithm'],
+                                  none=False)
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='submodels')
     evidence = ManyToManyAttribute('Evidence', related_name='submodels')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='submodels')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='submodels')
 
     class Meta(obj_model.Model.Meta):
-        attribute_order = ('id', 'name', 'algorithm',
-                           'db_refs', 'evidence', 'comments', 'references')
+        attribute_order = ('id', 'name', 'framework',
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         indexed_attrs_tuples = (('id',), )
+        merge = obj_model.ModelMerge.append
+        children = {
+            'submodel': ('model', 'reactions', 'dfba_obj', 'dfba_obj_reactions',
+                         'db_refs', 'evidence', 'interpretations', 'references', 'changes'),
+        }
 
     def validate(self):
         """ Determine if the submodel is valid
@@ -1174,7 +1306,7 @@ class Submodel(obj_model.Model):
         else:
             errors = []
 
-        if self.algorithm == SubmodelAlgorithm.dfba:
+        if self.framework == wcm_ontology['WCM:dynamic_flux_balance_analysis']:
             if not self.dfba_obj:
                 errors.append(InvalidAttribute(self.Meta.related_attributes['dfba_obj'],
                                                ['dFBA submodel must have an objective']))
@@ -1183,215 +1315,119 @@ class Submodel(obj_model.Model):
             return InvalidObject(self, errors)
         return None
 
-    def get_compartments(self):
-        """ Get compartments in submodel
+    def get_children(self, kind=None, __type=None, recursive=True, __include_stop_conditions=True,
+                     **kwargs):
+        """ Get a kind of children. 
+
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            kind (:obj:`str`, optional): kind of children to get
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
+            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
 
         Returns:
-            :obj:`list` of :obj:`Compartment`: compartments in submodel
+            :obj:`list` of :obj:`Model`: children
         """
-        compartments = []
-        for species in self.get_species():
-            compartments.append(species.compartment)
-        return det_dedupe(compartments)
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+        if '__include_stop_conditions' in kwargs:
+            __include_stop_conditions = kwargs.pop('__include_stop_conditions')
 
-    def get_species_types(self):
-        """ Get species types in submodel
+        children = self.get_immediate_children(kind=kind, __include_stop_conditions=__include_stop_conditions)
+
+        # get recursive children
+        if recursive:
+            objs_to_explore = children
+            children = set(children)
+            while objs_to_explore:
+                obj_to_explore = objs_to_explore.pop()
+                for child in obj_to_explore.get_immediate_children(kind=kind):
+                    if child not in children:
+                        children.add(child)
+                        objs_to_explore.append(child)
+            children = list(children)
+
+        # filter by type/attributes
+        matches = []
+        for child in children:
+            if child.has_attr_vals(__type=__type, **kwargs):
+                matches.append(child)
+        children = matches
+
+        # return children
+        return children
+
+    def get_immediate_children(self, kind=None, __type=None, __include_stop_conditions=True,
+                               **kwargs):
+        """ Get a kind of children. 
+
+        If :obj:`kind` is :obj:`None`, children are defined to be the values of the related attributes defined
+        in each class.
+
+        Args:
+            kind (:obj:`str`, optional): kind of children to get
+            __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
 
         Returns:
-            :obj:`list` of :obj:`SpeciesType`: species types in submodel
+            :obj:`list` of :obj:`Model`: children
         """
-        species_types = []
-        for species in self.get_species():
-            species_types.append(species.species_type)
-        return det_dedupe(species_types)
+        if '__type' in kwargs:
+            __type = kwargs.pop('__type')
+        if '__include_stop_conditions' in kwargs:
+            __include_stop_conditions = kwargs.pop('__include_stop_conditions')
 
-    def get_species(self):
-        """ Get species in submodel
+        immediate_children = super(Submodel, self).get_immediate_children(kind=kind)
+
+        if kind == 'submodel' and __include_stop_conditions:
+            all_children = set(self.get_children(kind=kind, __include_stop_conditions=False))
+
+            for stop_condition in self.model.stop_conditions:
+                stop_condition_children = stop_condition.get_children(kind='submodel')
+                stop_condition_species = set()
+                for child in stop_condition_children:
+                    if isinstance(child, Species):
+                        stop_condition_species.add(child)
+                if not stop_condition_species.difference(all_children):
+                    immediate_children.append(stop_condition)
+
+            immediate_children = det_dedupe(immediate_children)
+
+        # filter by type/attributes
+        matches = []
+        for child in immediate_children:
+            if child.has_attr_vals(__type=__type, **kwargs):
+                matches.append(child)
+        immediate_children = matches
+
+        return immediate_children
+
+    def add_to_sbml_model(self, sbml_model):
+        """ Add this metadata about this submodel to a SBML model.
+
+        Args:
+            sbml_model (:obj:`libsbml.Model`): SBML model
 
         Returns:
-            :obj:`list` of :obj:`Species`: species in submodel
+            :obj:`libsbml.Model`: SBML model
+
+        Raises:
+            :obj:`LibSbmlError`: if calling `libsbml` raises an error
         """
-        species = []
-        for reaction in self.get_reactions():
-            species.extend(reaction.get_species())
-        for dfba_net_reaction in self.get_dfba_net_reactions():
-            for dfba_net_species in dfba_net_reaction.dfba_net_species:
-                species.append(dfba_net_species.species)
-        for observable in self.get_observables():
-            species.extend(observable.expression.species)
-        for function in self.get_functions():
-            species.extend(function.expression.species)
-        for rate_law in self.get_rate_laws():
-            species.extend(rate_law.expression.species)
-        return det_dedupe(species)
-
-    def get_observables(self):
-        """ Get observables in submodel
-
-        Returns:
-            :obj:`list` of :obj:`Observable`: observables in submodel
-        """
-        obs = []
-        for function in self.get_functions():
-            obs.extend(function.expression.observables)
-        for rate_law in self.get_rate_laws():
-            obs.extend(rate_law.expression.observables)
-        obs = det_dedupe(obs)
-        obs_to_flats = list(obs)
-        while obs_to_flats:
-            obs_to_flat = obs_to_flats.pop()
-            obs.extend(obs_to_flat.expression.observables)
-            obs_to_flats.extend(obs_to_flat.expression.observables)
-        return det_dedupe(obs)
-
-    def get_functions(self):
-        """ Get functions in submodel
-
-        Returns:
-            :obj:`list` of :obj:`Function`: functions in submodel
-        """
-        funcs = []
-        for rate_law in self.get_rate_laws():
-            funcs.extend(rate_law.expression.functions)
-        funcs = det_dedupe(funcs)
-        funcs_to_flats = list(funcs)
-        while funcs_to_flats:
-            funcs_to_flat = funcs_to_flats.pop()
-            funcs.extend(funcs_to_flat.expression.functions)
-            funcs_to_flats.extend(funcs_to_flat.expression.functions)
-        return det_dedupe(funcs)
-
-    def get_reactions(self):
-        """ Get reactions in submodel
-
-        Returns:
-            :obj:`list` of :obj:`Reaction`: reactions in submodel
-        """
-        reactions = list(self.reactions)
-        for dfba_obj in self.get_dfba_objs():
-            if dfba_obj.expression:
-                reactions.extend(dfba_obj.expression.reactions)
-        return det_dedupe(reactions)
-
-    def get_rate_laws(self):
-        """ Get rate laws in submodel
-
-        Returns:
-            :obj:`list` of :obj:`RateLaw`: rate laws in submodel
-        """
-        rate_laws = []
-        for reaction in self.get_reactions():
-            rate_laws.extend(reaction.rate_laws)
-        return det_dedupe(rate_laws)
-
-    def get_dfba_objs(self):
-        """ Get dFBA objectives in submodel
-
-        Returns:
-            :obj:`list` of :obj:`DfbaObjective`: dFBA objectives in submodel
-        """
-        if self.dfba_obj:
-            return [self.dfba_obj]
-        return []
-
-    def get_dfba_net_reactions(self):
-        """ Get dFBA net reactions in submodel
-
-        Returns:
-            :obj:`list` of :obj:`DfbaNetReaction`: dFBA net reactions in submodel
-        """
-        rxns = list(self.dfba_net_reactions)
-        for dfba_obj in self.get_dfba_objs():
-            if dfba_obj.expression:
-                rxns.extend(dfba_obj.expression.dfba_net_reactions)
-        return det_dedupe(rxns)
-
-    def get_parameters(self):
-        """ Get parameters in submodel
-
-        Returns:
-            :obj:`list` of :obj:`ParameterRenamed`: parameters in submodel
-        """
-        parameters = []
-        for rate_law in self.get_rate_laws():
-            parameters.extend(rate_law.expression.parameters)
-        for function in self.get_functions():
-            parameters.extend(function.expression.parameters)
-        return det_dedupe(parameters)
-
-    def get_evidence(self):
-        """ Get evidence of submodel
-
-        Returns:
-            :obj:`list` of :obj:`Evidence`: evidence for submodel
-        """
-        types = [
-            'compartments',
-            'species_types',
-            'species',
-            'observables',
-            'functions',
-            'dfba_objs',
-            'reactions',
-            'rate_laws',
-            'dfba_net_reactions',
-            'parameters',
-        ]
-        evidence = list(self.evidence)
-        for type in types:
-            get_func = getattr(self, 'get_' + type)
-            for obj in get_func():
-                evidence.extend(obj.evidence)
-        return det_dedupe(evidence)
-
-    def get_references(self):
-        """ Get references of submodel
-
-        Returns:
-            :obj:`list` of :obj:`Reference`: references in submodel
-        """
-        types = [
-            'compartments',
-            'species_types',
-            'species',
-            'observables',
-            'functions',
-            'dfba_objs',
-            'reactions',
-            'rate_laws',
-            'dfba_net_reactions',
-            'parameters',
-            'evidence',
-        ]
-        references = list(self.references)
-        for type in types:
-            get_func = getattr(self, 'get_' + type)
-            for obj in get_func():
-                references.extend(obj.references)
-        return det_dedupe(references)
-
-    def get_components(self):
-        """ Get components of submodel
-
-        Returns:
-            :obj:`list` of :obj:`obj_model.Model`: components in submodel
-        """
-        return self.get_compartments() + \
-            self.get_species_types() + \
-            self.get_species() + \
-            self.get_observables() + \
-            self.get_functions() + \
-            self.get_reactions() + \
-            self.get_rate_laws() + \
-            self.get_dfba_objs() + \
-            self.get_dfba_net_reactions() + \
-            self.get_parameters() + \
-            self.get_evidence() + \
-            self.get_references()
+        call_libsbml(sbml_model.setIdAttribute, self.id)
+        if self.name:
+            call_libsbml(sbml_model.setName, self.name)
+        # compartment, dfba_obj, and parameters are created separately
+        if self.comments:
+            call_libsbml(sbml_model.appendNotes, LibSbmlInterface.str_to_xmlstr(self.comments))
+        return sbml_model
 
 
 class DfbaObjectiveExpression(obj_model.Model, Expression):
-    """ A mathematical expression of Reactions and DfbaNetReactions
+    """ A mathematical expression of Reactions and DfbaObjReactions
 
     The expression used by a :obj:`DfbaObjective`.
 
@@ -1399,7 +1435,7 @@ class DfbaObjectiveExpression(obj_model.Model, Expression):
         expression (:obj:`str`): mathematical expression
         _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_model.Model`
         reactions (:obj:`list` of :obj:`Reaction`): reactions used by this expression
-        dfba_net_reactions (:obj:`list` of :obj:`Species`): dFBA net reactions used by this expression
+        dfba_obj_reactions (:obj:`list` of :obj:`Species`): dFBA objective reactions used by this expression
 
     Related attributes:
         dfba_obj (:obj:`DfbaObjective`): dFBA objective
@@ -1408,23 +1444,27 @@ class DfbaObjectiveExpression(obj_model.Model, Expression):
     expression = LongStringAttribute(primary=True, unique=True, default='')
     reactions = OneToManyAttribute('Reaction', related_name='dfba_obj_expression',
                                    verbose_related_name='dFBA objective expression')
-    dfba_net_reactions = OneToManyAttribute('DfbaNetReaction', related_name='dfba_obj_expression',
-                                            verbose_name='dFBA net reactions', verbose_related_name='dFBA objective expression')
+    dfba_obj_reactions = OneToManyAttribute('DfbaObjReaction', related_name='dfba_obj_expression',
+                                            verbose_name='dFBA objective reactions', verbose_related_name='dFBA objective expression')
 
     class Meta(obj_model.Model.Meta, Expression.Meta):
         tabular_orientation = TabularOrientation.inline
         expression_valid_functions = ()
-        expression_term_models = ('Reaction', 'DfbaNetReaction')
+        expression_term_models = ('Reaction', 'DfbaObjReaction')
         verbose_name = 'dFBA objective expression'
+        merge = obj_model.ModelMerge.append
         expression_unit_registry = unit_registry
-        attribute_order = ('expression', 'reactions', 'dfba_net_reactions')
+        children = {
+            'submodel': ('reactions', 'dfba_obj_reactions'),
+            'core_model': ('reactions', 'dfba_obj_reactions'),
+        }
 
     def validate(self):
         """ Determine if the dFBA objective expression is valid
 
         * Check that the expression is a linear function
-        * Check if expression is a function of at least one reaction or dFBA net reaction
-        * Check that the reactions and dFBA net reactions belong to the same submodel
+        * Check if expression is a function of at least one reaction or dFBA objective reaction
+        * Check that the reactions and dFBA objective reactions belong to the same submodel
 
         Returns:
             :obj:`InvalidObject` or None: `None` if the object is valid,
@@ -1437,23 +1477,23 @@ class DfbaObjectiveExpression(obj_model.Model, Expression):
             errors = []
 
         expr_errors = []
-        if not self.reactions and not self.dfba_net_reactions:
-            expr_errors.append('Expression must be a function of at least one reaction or dFBA net reaction')
+        if not self.reactions and not self.dfba_obj_reactions:
+            expr_errors.append('Expression must be a function of at least one reaction or dFBA objective reaction')
 
         if self.dfba_obj and self.dfba_obj.submodel:
             missing_rxns = set(self.reactions).difference(set(self.dfba_obj.submodel.reactions))
-            missing_dfba_net_rxns = set(self.dfba_net_reactions).difference(set(self.dfba_obj.submodel.dfba_net_reactions))
+            missing_dfba_obj_rxns = set(self.dfba_obj_reactions).difference(set(self.dfba_obj.submodel.dfba_obj_reactions))
 
             if missing_rxns:
                 expr_errors.append(('dFBA submodel {} must contain the following reactions '
                                     'that are in its objective function:\n  {}').format(
                     self.dfba_obj.submodel.id,
                     '\n  '.join(rxn.id for rxn in missing_rxns)))
-            if missing_dfba_net_rxns:
-                expr_errors.append(('dFBA submodel {} must contain the following dFBA net reactions '
+            if missing_dfba_obj_rxns:
+                expr_errors.append(('dFBA submodel {} must contain the following dFBA objective reactions '
                                     'that are in its objective function:\n  {}').format(
                     self.dfba_obj.submodel.id,
-                    '\n  '.join(rxn.id for rxn in missing_dfba_net_rxns)))
+                    '\n  '.join(rxn.id for rxn in missing_dfba_obj_rxns)))
 
         if expr_errors:
             errors.append(InvalidAttribute(self.Meta.attributes['expression'], expr_errors))
@@ -1499,6 +1539,7 @@ class DfbaObjective(obj_model.Model):
         coefficient_units (:obj:`unit_registry.Unit`): coefficient units
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
     """
@@ -1508,34 +1549,40 @@ class DfbaObjective(obj_model.Model):
     submodel = OneToOneAttribute(Submodel, related_name='dfba_obj', min_related=1, verbose_related_name='dFBA objective')
     expression = ExpressionOneToOneAttribute(DfbaObjectiveExpression, related_name='dfba_obj',
                                              min_related=1, min_related_rev=1, verbose_related_name='dFBA objective')
-    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('dimensionless'),),
+    units = UnitAttribute(unit_registry,
+                          choices=(unit_registry.parse_units('dimensionless'),),
                           default=unit_registry.parse_units('dimensionless'))
-    reaction_rate_units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('s^-1'),),
+    reaction_rate_units = UnitAttribute(unit_registry,
+                                        choices=(unit_registry.parse_units('s^-1'),),
                                         default=unit_registry.parse_units('s^-1'))
-    coefficient_units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('s'),), default=unit_registry.parse_units('s'))
+    coefficient_units = UnitAttribute(unit_registry,
+                                      choices=(unit_registry.parse_units('s'),),
+                                      default=unit_registry.parse_units('s'))
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='dfba_objs', verbose_related_name='dFBA objectives')
     evidence = ManyToManyAttribute('Evidence', related_name='dfba_objs', verbose_related_name='dFBA objectives')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='dfba_objs', verbose_related_name='dFBA objectives')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='dfba_objs', verbose_related_name='dFBA objectives')
 
     class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
         verbose_name = 'dFBA objective'
         attribute_order = ('id', 'name', 'submodel', 'expression', 'units', 'reaction_rate_units', 'coefficient_units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         expression_term_model = DfbaObjectiveExpression
         expression_term_units = 'units'
+        merge = obj_model.ModelMerge.append
+        children = {
+            'submodel': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
-    @staticmethod
-    def gen_id(submodel_id):
+    def gen_id(self):
         """ Generate identifier
-
-        Args:
-            submodel_id (:obj:`str`): submodel id
 
         Returns:
             :obj:`str`: identifier
         """
-        return 'dfba-obj-{}'.format(submodel_id)
+        return 'dfba-obj-{}'.format(self.submodel.id)
 
     def validate(self):
         """ Validate that the dFBA objective is valid
@@ -1552,14 +1599,55 @@ class DfbaObjective(obj_model.Model):
         else:
             errors = []
 
-        if self.submodel and self.id != self.gen_id(self.submodel.id):
+        if self.submodel and self.id != self.gen_id():
             errors.append(InvalidAttribute(self.Meta.attributes['id'],
-                                           ['Id must be {}'.format(self.gen_id(self.submodel.id))]))
+                                           ['Id must be {}'.format(self.gen_id())]))
         if errors:
             return InvalidObject(self, errors)
         return None
 
     ACTIVE_OBJECTIVE = 'active_objective'
+
+    def add_to_sbml_model(self, sbml_model):
+        """ Add this DfbaObjective to a SBML model.
+
+        This uses version 2 of the 'Flux Balance Constraints' extension. SBML assumes that an
+        DfbaObjective is a linear combination of reaction fluxes.
+
+        Args:
+            sbml_model (:obj:`libsbml.Model`): SBML model
+
+        Returns:
+            :obj:`libsbml.Objective`: SBML objective
+
+        Raises:
+            :obj:`LibSbmlError`: if calling `libsbml` raises an error
+        """
+        # issue warning if objective function not linear
+        if not self.expression._parsed_expression.is_linear:
+            warnings.warn("submodel '{}' can't add non-linear objective function to SBML FBC model".format(
+                self.submodel.id), UserWarning)
+            return
+        fbc_model_plugin = call_libsbml(sbml_model.getPlugin, 'fbc')
+        sbml_objective = call_libsbml(fbc_model_plugin.createObjective)
+        call_libsbml(sbml_objective.setType, 'maximize')
+        # In SBML 3 FBC 2, the 'activeObjective' attribute must be set on ListOfObjectives.
+        # Since a submodel has only one Objective, it must be the active one.
+        call_libsbml(sbml_objective.setIdAttribute, DfbaObjective.ACTIVE_OBJECTIVE)
+        list_of_objectives = call_libsbml(fbc_model_plugin.getListOfObjectives)
+        call_libsbml(list_of_objectives.setActiveObjective, DfbaObjective.ACTIVE_OBJECTIVE)
+        for idx, reaction in enumerate(self.expression.reactions):
+            sbml_flux_objective = call_libsbml(sbml_objective.createFluxObjective)
+            call_libsbml(sbml_flux_objective.setReaction, reaction.id)
+            call_libsbml(sbml_flux_objective.setCoefficient,
+                         self.expression._parsed_expression.lin_coeffs[Reaction][reaction])
+        for idx, dfba_obj_reaction in enumerate(self.expression.dfba_obj_reactions):
+            sbml_flux_objective = call_libsbml(sbml_objective.createFluxObjective)
+            call_libsbml(sbml_flux_objective.setReaction, dfba_obj_reaction.id)
+            call_libsbml(sbml_flux_objective.setCoefficient,
+                         self.expression._parsed_expression.lin_coeffs[DfbaObjReaction][dfba_obj_reaction])
+
+        return sbml_objective
 
     def get_products(self, __type=None, **kwargs):
         """ Get the species produced by this objective function
@@ -1589,11 +1677,11 @@ class DfbaObjective(obj_model.Model):
                         if part.species.has_attr_vals(__type=__type, **kwargs):
                             products.append(part.species)
 
-        # products of dFBA net reactions
-        for dfba_net_reaction in self.expression.dfba_net_reactions:
-            for dfba_net_species in dfba_net_reaction.dfba_net_species:
-                if dfba_net_species.value > 0 and dfba_net_species.species.has_attr_vals(__type=__type, **kwargs):
-                    products.append(dfba_net_species.species)
+        # products of dFBA objective reactions
+        for dfba_obj_reaction in self.expression.dfba_obj_reactions:
+            for dfba_obj_species in dfba_obj_reaction.dfba_obj_species:
+                if dfba_obj_species.value > 0 and dfba_obj_species.species.has_attr_vals(__type=__type, **kwargs):
+                    products.append(dfba_obj_species.species)
 
         # return unique list
         return det_dedupe(products)
@@ -1606,9 +1694,9 @@ class Compartment(obj_model.Model):
         id (:obj:`str`): unique identifier
         name (:obj:`str`): name
         model (:obj:`Model`): model
-        biological_type (:obj:`CompartmentBiologicalType`): biological type
-        physical_type (:obj:`CompartmentPhysicalType`): physical type
-        geometry (:obj:`CompartmentGeometry`): geometry
+        biological_type (:obj:`pronto.term.Term`): biological type
+        physical_type (:obj:`pronto.term.Term`): physical type
+        geometry (:obj:`pronto.term.Term`): geometry
         parent_compartment (:obj:`Compartment`): parent compartment
         mass_units (:obj:`unit_registry.Unit`): mass units
         mean_init_volume (:obj:`float`): mean initial volume
@@ -1618,6 +1706,7 @@ class Compartment(obj_model.Model):
             each simulation
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
@@ -1631,23 +1720,41 @@ class Compartment(obj_model.Model):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='compartments')
-    biological_type = EnumAttribute(CompartmentBiologicalType, default=CompartmentBiologicalType.cellular)
-    physical_type = EnumAttribute(CompartmentPhysicalType, default=CompartmentPhysicalType.fluid)
-    geometry = EnumAttribute(CompartmentGeometry, default=CompartmentGeometry['3d'])
+    biological_type = OntologyAttribute(wcm_ontology,
+                                        namespace='WCM',
+                                        terms=wcm_ontology['WCM:biological_compartment'].rchildren(),
+                                        default=wcm_ontology['WCM:cellular_compartment'],
+                                        none=True)
+    physical_type = OntologyAttribute(wcm_ontology,
+                                      namespace='WCM',
+                                      terms=wcm_ontology['WCM:physical_compartment'].rchildren(),
+                                      default=wcm_ontology['WCM:fluid_compartment'],
+                                      none=True)
+    geometry = OntologyAttribute(wcm_ontology,
+                                 namespace='WCM',
+                                 terms=wcm_ontology['WCM:geometric_compartment'].rchildren(),
+                                 default=wcm_ontology['WCM:3D_compartment'],
+                                 none=True)
     parent_compartment = ManyToOneAttribute('Compartment', related_name='sub_compartments')
-    distribution_init_volume = EnumAttribute(RandomDistribution, default=RandomDistribution.normal,
-                                             verbose_name='Initial volume distribution')
-    mass_units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('g'),), default=unit_registry.parse_units('g'))
+    distribution_init_volume = OntologyAttribute(wcm_ontology,
+                                                 namespace='WCM',
+                                                 terms=wcm_ontology['WCM:random_distribution'].rchildren(),
+                                                 default=wcm_ontology['WCM:normal_distribution'],
+                                                 verbose_name='Initial volume distribution')
+    mass_units = UnitAttribute(unit_registry,
+                               choices=(unit_registry.parse_units('g'),),
+                               default=unit_registry.parse_units('g'))
     mean_init_volume = FloatAttribute(min=0, verbose_name='Initial volume mean')
     std_init_volume = FloatAttribute(min=0, verbose_name='Initial volume standard deviation')
     init_volume_units = UnitAttribute(unit_registry,
                                       choices=(unit_registry.parse_units('l'),),
                                       default=unit_registry.parse_units('l'),
                                       verbose_name='Initial volume units')
-    init_density = OneToOneAttribute('ParameterRenamed', related_name='density_compartments', verbose_name='Initial density')
+    init_density = OneToOneAttribute('ParameterRenamed', related_name='density_compartment', verbose_name='Initial density')
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='compartments')
     evidence = ManyToManyAttribute('Evidence', related_name='compartments')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='compartments')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='compartments')
 
     class Meta(obj_model.Model.Meta, ExpressionDynamicTermMeta):
@@ -1656,8 +1763,15 @@ class Compartment(obj_model.Model):
                            'mass_units',
                            'distribution_init_volume', 'mean_init_volume', 'std_init_volume', 'init_volume_units',
                            'init_density',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         expression_term_units = 'mass_units'
+        children = {
+            'submodel': (  # 'parent_compartment', 'sub_compartments',
+                'init_density', 'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': (
+                'parent_compartment', 'sub_compartments', 'init_density',
+                'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
     def validate(self):
         """ Check that the compartment is valid
@@ -1674,12 +1788,12 @@ class Compartment(obj_model.Model):
         else:
             errors = []
 
-        if self.geometry == CompartmentGeometry['3d']:
+        if self.geometry == wcm_ontology['WCM:3D_compartment']:
             if not self.init_density:
                 errors.append(InvalidAttribute(self.Meta.attributes['init_density'],
                                                ['Initial density must be defined for 3D compartments']))
-            elif unit_registry.parse_expression(str(self.init_density.units)).to_base_units().units != \
-                    unit_registry.parse_expression('g l^-1').to_base_units().units:
+            elif not are_units_equivalent(self.init_density.units, unit_registry.parse_units('g l^-1'),
+                                          check_same_magnitude=True):
                 errors.append(InvalidAttribute(self.Meta.attributes['init_density'],
                                                ['Initial density of 3D compartment must have units `{}`'.format(
                                                 'g l^-1')]))
@@ -1720,6 +1834,28 @@ class Compartment(obj_model.Model):
             tot += comp.mean_init_volume
         return tot
 
+    def add_to_sbml_model(self, sbml_model):
+        """ Add this compartment to a SBML model.
+
+        Args:
+            sbml_model (:obj:`libsbml.Model`): SBML model
+
+        Returns:
+            :obj:`libsbml.Compartment`: SBML compartment
+
+        Raises:
+            :obj:`LibSbmlError`: if calling `libsbml` raises an error
+        """
+        sbml_compartment = call_libsbml(sbml_model.createCompartment)
+        call_libsbml(sbml_compartment.setIdAttribute, self.id)
+        call_libsbml(sbml_compartment.setName, self.name)
+        call_libsbml(sbml_compartment.setSpatialDimensions, 3)
+        call_libsbml(sbml_compartment.setSize, 1.0)  # todo: set based on calculated concentrations and density
+        call_libsbml(sbml_compartment.setConstant, False)
+        if self.comments:
+            call_libsbml(sbml_compartment.setNotes, self.comments, True)
+        return sbml_compartment
+
 
 class SpeciesType(obj_model.Model):
     """ Species type
@@ -1732,17 +1868,15 @@ class SpeciesType(obj_model.Model):
         empirical_formula (:obj:`EmpiricalFormula`): empirical formula
         molecular_weight (:obj:`float`): molecular weight
         charge (:obj:`int`): charge
-        type (:obj:`SpeciesTypeType`): type
+        type (:obj:`pronto.term.Term`): type
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
     Related attributes:
         species (:obj:`list` of :obj:`Species`): species
-        distribution_init_concentrations (:obj:`list` of :obj:`DistributionInitConcentration`):
-            distribution of initial concentrations of species at the beginning of
-            each cell cycle
     """
     id = SlugAttribute()
     name = StringAttribute()
@@ -1751,19 +1885,27 @@ class SpeciesType(obj_model.Model):
     empirical_formula = obj_model.chem.EmpiricalFormulaAttribute()
     molecular_weight = FloatAttribute(min=0)
     charge = IntegerAttribute()
-    type = EnumAttribute(SpeciesTypeType, default=SpeciesTypeType.metabolite)
+    type = OntologyAttribute(wcm_ontology,
+                             namespace='WCM',
+                             terms=wcm_ontology['WCM:species_type'].rchildren(),
+                             default=wcm_ontology['WCM:metabolite'],
+                             none=True)
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='species_types', verbose_related_name='species types')
     evidence = ManyToManyAttribute('Evidence', related_name='species_types')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='species_types')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='species_types')
 
     class Meta(obj_model.Model.Meta):
         verbose_name = 'Species type'
         attribute_order = ('id', 'name', 'structure', 'empirical_formula',
                            'molecular_weight', 'charge', 'type',
-                           'db_refs', 'evidence', 'comments', 'references')
-
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         indexed_attrs_tuples = (('id',), )
+        children = {
+            'submodel': ('db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('species', 'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
     def has_carbon(self):
         """ Returns `True` is species contains at least one carbon atom.
@@ -1786,6 +1928,7 @@ class Species(obj_model.Model):
         units (:obj:`unit_registry.Unit`): units of counts
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
@@ -1797,40 +1940,75 @@ class Species(obj_model.Model):
         observable_expressions (:obj:`list` of :obj:`ObservableExpression`): observable expressions
         stop_condition_expressions (:obj:`list` of :obj:`StopConditionExpression`): stop condition expressions
         function_expressions (:obj:`list` of :obj:`FunctionExpression`): function expressions
-        dfba_net_species (:obj:`list` of :obj:`DfbaNetSpecies`): dFBA net species
+        dfba_obj_species (:obj:`list` of :obj:`DfbaObjSpecies`): dFBA objective species
     """
     id = StringAttribute(primary=True, unique=True)
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='species')
     species_type = ManyToOneAttribute(SpeciesType, related_name='species', min_related=1)
     compartment = ManyToOneAttribute(Compartment, related_name='species', min_related=1)
-    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('molecule'),), default=unit_registry.parse_units('molecule'))
+    units = UnitAttribute(unit_registry,
+                          choices=(unit_registry.parse_units('molecule'),),
+                          default=unit_registry.parse_units('molecule'))
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='species')
     evidence = ManyToManyAttribute('Evidence', related_name='species')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='species')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='species')
 
     class Meta(obj_model.Model.Meta, ExpressionDynamicTermMeta):
         attribute_order = ('id', 'name', 'species_type', 'compartment', 'units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         frozen_columns = 1
         # unique_together = (('species_type', 'compartment', ), )
         indexed_attrs_tuples = (('species_type', 'compartment'), )
         expression_term_token_pattern = (token.NAME, token.LSQB, token.NAME, token.RSQB)
         expression_term_units = 'units'
+        children = {
+            'submodel': ('species_type', 'compartment', 'distribution_init_concentration',
+                         'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('species_type', 'compartment', 'distribution_init_concentration',
+                           'db_refs', 'evidence', 'interpretations', 'references'),
+        }
+
+    def gen_id(self):
+        """ Generate identifier
+
+        Returns:
+            :obj:`str`: identifier
+        """
+        return self._gen_id(self.species_type.id, self.compartment.id)
 
     @staticmethod
-    def gen_id(species_type_id, compartment_id):
+    def _gen_id(species_type_id, compartment_id):
         """ Generate identifier
 
         Args:
             species_type_id (:obj:`str`): species type id
-            compartment_id (:obj:`str`): species type id
+            compartment_id (:obj:`str`): compartment id
 
         Returns:
             :obj:`str`: identifier
         """
         return '{}[{}]'.format(species_type_id, compartment_id)
+
+    @classmethod
+    def parse_id(cls, id):
+        """
+        Args:
+            id (:obj:`str`): identifier
+
+        Returns:
+            :obj:`str`: species type id
+            :obj:`str`: compartment id
+        """
+        st = cls.species_type.related_class.id.pattern[1:-1]
+        comp = cls.compartment.related_class.id.pattern[1:-1]
+        match = re.match(r'^(' + st + ')\[(' + comp + ')\]$', id)
+        if not match:
+            raise ValueError('{} is not a valid id')
+
+        return (match.group(1), match.group(2))
 
     def validate(self):
         """ Check that the species is valid
@@ -1847,9 +2025,9 @@ class Species(obj_model.Model):
         else:
             errors = []
 
-        if self.id != self.gen_id(self.species_type.id, self.compartment.id):
+        if self.id != self.gen_id():
             errors.append(InvalidAttribute(self.Meta.attributes['id'],
-                                           ['Id must be {}'.format(self.gen_id(self.species_type.id, self.compartment.id))]))
+                                           ['Id must be {}'.format(self.gen_id())]))
 
         if errors:
             return InvalidObject(self, errors)
@@ -1879,6 +2057,61 @@ class Species(obj_model.Model):
             rv.append(s)
         return rv
 
+    def gen_sbml_id(self):
+        """ Make a Species id that satisfies the SBML string id syntax.
+
+        Replaces the '[' and ']' in Species.id with double-underscores '__'.
+        See Finney and Hucka, "Systems Biology Markup Language (SBML) Level 2: Structures and
+        Facilities for Model Definitions", 2003, section 3.4.
+
+        Returns:
+            :obj:`str`: SBML id
+        """
+        return '{}__{}__'.format(self.species_type.id, self.compartment.id)
+
+    @staticmethod
+    def sbml_id_to_id(sbml_id):
+        """ Convert an `sbml_id` to its species id.
+
+        Returns:
+            :obj:`str`: species id
+        """
+        return sbml_id.replace('__', '[', 1).replace('__', ']', 1)
+
+    def add_to_sbml_model(self, sbml_model):
+        """ Add this species to a SBML model.
+
+        Args:
+            sbml_model (:obj:`libsbml.Model`): SBML model
+
+        Returns:
+            :obj:`libsbml.Species`: SBML species
+
+        Raises:
+            :obj:`LibSbmlError`: if calling `libsbml` raises an error
+        """
+        sbml_species = call_libsbml(sbml_model.createSpecies)
+        # initDefaults() isn't wrapped in call_libsbml because it returns None
+        sbml_species.initDefaults()
+        call_libsbml(sbml_species.setIdAttribute, self.gen_sbml_id())
+
+        # add some SpeciesType data
+        call_libsbml(sbml_species.setName, self.species_type.name)
+        if self.species_type.comments:
+            call_libsbml(sbml_species.setNotes, self.species_type.comments, True)
+
+        # set Compartment, which must already be in the SBML document
+        call_libsbml(sbml_species.setCompartment, self.compartment.id)
+
+        # set the initial concentration
+        call_libsbml(sbml_species.setInitialConcentration, self.distribution_init_concentration.mean)
+
+        # set units
+        unit_xml_id = str(self.distribution_init_concentration.units)
+        call_libsbml(sbml_species.setSubstanceUnits, unit_xml_id)
+
+        return sbml_species
+
 
 class DistributionInitConcentration(obj_model.Model):
     """ Distribution of the initial concentration of a species
@@ -1889,7 +2122,7 @@ class DistributionInitConcentration(obj_model.Model):
         name (:obj:`str`): name
         model (:obj:`Model`): model
         species (:obj:`Species`): species
-        distribution (:obj:`RandomDistribution`): distribution
+        distribution (:obj:`pronto.term.Term`): distribution
         mean (:obj:`float`): mean concentration in a population of single cells at the
             beginning of each cell cycle
         std (:obj:`float`): standard deviation of the concentration in a population of
@@ -1897,6 +2130,7 @@ class DistributionInitConcentration(obj_model.Model):
         units (:obj:`unit_registry.Unit`): units; default units is `M`
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
     """
@@ -1904,38 +2138,50 @@ class DistributionInitConcentration(obj_model.Model):
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='distribution_init_concentrations')
     species = OneToOneAttribute(Species, min_related=1, related_name='distribution_init_concentration')
-    distribution = EnumAttribute(RandomDistribution, default=RandomDistribution.normal)
+    distribution = OntologyAttribute(wcm_ontology,
+                                     namespace='WCM',
+                                     terms=wcm_ontology['WCM:random_distribution'].rchildren(),
+                                     default=wcm_ontology['WCM:normal_distribution'])
     mean = FloatAttribute(min=0)
     std = FloatAttribute(min=0, verbose_name='Standard deviation')
-    units = UnitAttribute(unit_registry, choices=(
-        unit_registry.parse_units('molecule'),
-        unit_registry.parse_units('M'),
-    ),
-        default=unit_registry.parse_units('M'))
+    units = UnitAttribute(unit_registry,
+                          choices=(
+                              unit_registry.parse_units('molecule'),
+                              unit_registry.parse_units('M'),
+                              unit_registry.parse_units('mM'),
+                              unit_registry.parse_units('uM'),
+                              unit_registry.parse_units('nM'),
+                              unit_registry.parse_units('pM'),
+                              unit_registry.parse_units('fM'),
+                              unit_registry.parse_units('aM'),
+                          ),
+                          default=unit_registry.parse_units('M'))
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='distribution_init_concentrations')
     evidence = ManyToManyAttribute('Evidence', related_name='distribution_init_concentrations')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='distribution_init_concentrations')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='distribution_init_concentrations')
 
     class Meta(obj_model.Model.Meta):
         # unique_together = (('species', ), )
         attribute_order = ('id', 'name', 'species',
                            'distribution', 'mean', 'std', 'units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         verbose_name = 'Initial species concentration'
         frozen_columns = 1
+        children = {
+            'submodel': ('db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('species',
+                           'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
-    @staticmethod
-    def gen_id(species_id):
+    def gen_id(self):
         """ Generate string representation
-
-        Args:
-            species_id (:obj:`str`): species id
 
         Returns:
             :obj:`str`: string representation
         """
-        return 'dist-init-conc-{}'.format(species_id)
+        return 'dist-init-conc-{}'.format(self.species.id)
 
     def validate(self):
         """ Check that the distribution of initial concentrations
@@ -1953,9 +2199,9 @@ class DistributionInitConcentration(obj_model.Model):
         else:
             errors = []
 
-        if self.species and self.id != self.gen_id(self.species.id):
+        if self.species and self.id != self.gen_id():
             errors.append(InvalidAttribute(self.Meta.attributes['id'],
-                                           ['Id must be {}'.format(self.gen_id(self.species.id))]))
+                                           ['Id must be {}'.format(self.gen_id())]))
 
         if errors:
             return InvalidObject(self, errors)
@@ -1986,7 +2232,10 @@ class ObservableExpression(obj_model.Model, Expression):
         expression_term_models = ('Species', 'Observable')
         expression_is_linear = True
         expression_unit_registry = unit_registry
-        attribute_order = ('expression', 'species', 'observables')
+        children = {
+            'submodel': ('species', 'observables'),
+            'core_model': ('species', 'observables'),
+        }
 
     def serialize(self):
         """ Generate string representation
@@ -2033,6 +2282,7 @@ class Observable(obj_model.Model):
         units (:obj:`unit_registry.Unit`): units of expression
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
@@ -2045,18 +2295,26 @@ class Observable(obj_model.Model):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='observables')
-    expression = ExpressionOneToOneAttribute(ObservableExpression, related_name='observable')
-    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('molecule'),), default=unit_registry.parse_units('molecule'))
+    expression = ExpressionOneToOneAttribute(ObservableExpression, related_name='observable',
+                                             min_related=1, min_related_rev=1)
+    units = UnitAttribute(unit_registry,
+                          choices=(unit_registry.parse_units('molecule'),),
+                          default=unit_registry.parse_units('molecule'))
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='observables')
     evidence = ManyToManyAttribute('Evidence', related_name='observables')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='observables')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='observables')
 
     class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
         attribute_order = ('id', 'name', 'expression', 'units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         expression_term_model = ObservableExpression
         expression_term_units = 'units'
+        children = {
+            'submodel': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
 
 class FunctionExpression(obj_model.Model, Expression):
@@ -2075,7 +2333,6 @@ class FunctionExpression(obj_model.Model, Expression):
 
     Related attributes:
         function (:obj:`Function`): function
-        density_compartments (:obj:`Compartment`): compartments whose density is represented by the function
     """
     expression = LongStringAttribute(primary=True, unique=True, default='')
     parameters = ManyToManyAttribute('ParameterRenamed', related_name='function_expressions')
@@ -2088,7 +2345,10 @@ class FunctionExpression(obj_model.Model, Expression):
         tabular_orientation = TabularOrientation.inline
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
-        attribute_order = ('expression', 'parameters', 'species', 'observables', 'functions', 'compartments')
+        children = {
+            'submodel': ('parameters', 'species', 'observables', 'functions', 'compartments'),
+            'core_model': ('parameters', 'species', 'observables', 'functions', 'compartments'),
+        }
 
     def serialize(self):
         """ Generate string representation
@@ -2132,9 +2392,10 @@ class Function(obj_model.Model):
         name (:obj:`str`): name
         model (:obj:`Model`): model
         expression (:obj:`FunctionExpression`): mathematical expression for a Function
-        units (:obj:`str`): units
+        units (:obj:`unit_registry.Unit`): units
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
@@ -2146,18 +2407,24 @@ class Function(obj_model.Model):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='functions')
-    expression = ExpressionOneToOneAttribute(FunctionExpression, related_name='function')
+    expression = ExpressionOneToOneAttribute(FunctionExpression, related_name='function',
+                                             min_related=1, min_related_rev=1)
     units = UnitAttribute(unit_registry)
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='functions')
     evidence = ManyToManyAttribute('Evidence', related_name='functions')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='functions')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='functions')
 
     class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
         attribute_order = ('id', 'name', 'expression', 'units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         expression_term_model = FunctionExpression
         expression_term_units = 'units'
+        children = {
+            'submodel': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
     def validate(self):
         """ Check that the Function is valid
@@ -2176,21 +2443,21 @@ class Function(obj_model.Model):
 
         # check that units are valid
         if self.expression and hasattr(self.expression, '_parsed_expression') and self.expression._parsed_expression:
-            exp_units = unit_registry.parse_expression(str(self.units)).to_base_units().units
             try:
                 calc = self.expression._parsed_expression.test_eval(with_units=True)
             except ParsedExpressionError as error:
                 errors.append(InvalidAttribute(self.Meta.attributes['units'], [str(error)]))
             else:
                 if hasattr(calc, 'units'):
-                    calc_units = calc.to_base_units().units
+                    calc_units = calc.units or unit_registry.parse_units('dimensionless')
                 else:
-                    calc_units = unit_registry.parse_expression('dimensionless').units
+                    calc_units = unit_registry.parse_units('dimensionless')
 
-                if calc_units != exp_units:
+                exp_units = self.units
+                if not are_units_equivalent(exp_units, calc_units, check_same_magnitude=True):
                     errors.append(InvalidAttribute(self.Meta.attributes['units'],
                                                    ['Units of "{}" should be "{}" not "{}"'.format(
-                                                    self.expression.expression, exp_units, calc_units)]))
+                                                    self.expression.expression, str(exp_units), str(calc_units))]))
 
         # return errors
         if errors:
@@ -2206,6 +2473,7 @@ class StopConditionExpression(obj_model.Model, Expression):
     Attributes:
         expression (:obj:`str`): mathematical expression for a StopCondition
         _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_model.Model`
+        species (:obj:`list` of :obj:`Species`): Species used by this stop condition expression
         observables (:obj:`list` of :obj:`Observable`): Observables used by this stop condition expression
         parameters (:obj:`list` of :obj:`ParameterRenamed`): Parameters used by this stop condition expression
         functions (:obj:`list` of :obj:`Function`): Functions used by this stop condition expression
@@ -2227,7 +2495,10 @@ class StopConditionExpression(obj_model.Model, Expression):
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_type = bool
         expression_unit_registry = unit_registry
-        attribute_order = ('expression', 'parameters', 'species', 'observables', 'functions', 'compartments')
+        children = {
+            'submodel': ('parameters', 'species', 'observables', 'functions', 'compartments'),
+            'core_model': ('parameters', 'species', 'observables', 'functions', 'compartments'),
+        }
 
     def serialize(self):
         """ Generate string representation
@@ -2277,6 +2548,7 @@ class StopCondition(obj_model.Model):
         units (:obj:`unit_registry.Unit`): units
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
@@ -2286,19 +2558,26 @@ class StopCondition(obj_model.Model):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='stop_conditions')
-    expression = ExpressionOneToOneAttribute(StopConditionExpression, related_name='stop_condition')
-    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('dimensionless'),),
+    expression = ExpressionOneToOneAttribute(StopConditionExpression, related_name='stop_condition',
+                                             min_related=1, min_related_rev=1)
+    units = UnitAttribute(unit_registry,
+                          choices=(unit_registry.parse_units('dimensionless'),),
                           default=unit_registry.parse_units('dimensionless'))
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='stop_conditions')
     evidence = ManyToManyAttribute('Evidence', related_name='stop_conditions')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='stop_conditions')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='stop_conditions')
 
     class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
         attribute_order = ('id', 'name', 'expression', 'units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         expression_term_model = StopConditionExpression
         expression_term_units = 'units'
+        children = {
+            'submodel': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
     def validate(self):
         """ Check that the stop condition is valid
@@ -2335,9 +2614,6 @@ class StopCondition(obj_model.Model):
                                            ['Expression for {} could not be parsed: {}'.format(
                                             self.id, expression)]))
 
-        if self.units != unit_registry.parse_units('dimensionless'):
-            errors.append(InvalidAttribute(self.Meta.attributes['units'], ['Units must be dimensionless']))
-
         # return errors
         if errors:
             return InvalidObject(self, errors)
@@ -2359,6 +2635,7 @@ class Reaction(obj_model.Model):
         flux_bound_units (:obj:`unit_registry.Unit`): units for the minimum and maximum fluxes
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
@@ -2373,22 +2650,34 @@ class Reaction(obj_model.Model):
     submodel = ManyToOneAttribute(Submodel, related_name='reactions')
     participants = ReactionParticipantAttribute(related_name='reactions')
     reversible = BooleanAttribute()
-    rate_units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('s^-1'),), default=unit_registry.parse_units('s^-1'))
+    rate_units = UnitAttribute(unit_registry,
+                               choices=(unit_registry.parse_units('s^-1'),),
+                               default=unit_registry.parse_units('s^-1'))
     flux_min = FloatAttribute(nan=True)
     flux_max = FloatAttribute(min=0, nan=True)
-    flux_bound_units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('M s^-1'),), default=None, none=True)
+    flux_bound_units = UnitAttribute(unit_registry,
+                                     choices=(unit_registry.parse_units('M s^-1'),),
+                                     default=None, none=True)
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='reactions')
     evidence = ManyToManyAttribute('Evidence', related_name='reactions')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='reactions')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='reactions')
 
     class Meta(obj_model.Model.Meta, ExpressionDynamicTermMeta):
         attribute_order = ('id', 'name', 'submodel',
                            'participants', 'reversible',
                            'rate_units', 'flux_min', 'flux_max', 'flux_bound_units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         indexed_attrs_tuples = (('id',), )
         expression_term_units = 'rate_units'
+        merge = obj_model.ModelMerge.append
+        children = {
+            'submodel': ('participants', 'rate_laws',
+                         'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('participants', 'rate_laws',
+                           'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
     def validate(self):
         """ Check if the reaction is valid
@@ -2415,13 +2704,16 @@ class Reaction(obj_model.Model):
 
         for_rl = self.rate_laws.get_one(direction=RateLawDirection.forward)
         rev_rl = self.rate_laws.get_one(direction=RateLawDirection.backward)
-        if self.submodel and self.submodel.algorithm in [SubmodelAlgorithm.ode, SubmodelAlgorithm.ssa]:
+        if self.submodel and isinstance(self.submodel.framework, pronto.term.Term) and self.submodel.framework.id in [
+            'WCM:ordinary_differential_equations',
+            'WCM:stochastic_simulation_algorithm',
+        ]:
             if not for_rl:
                 rl_errors.append('Reaction in {} submodel must have a forward rate law'.format(
-                    self.submodel.algorithm.name))
+                    self.submodel.framework.name))
             if self.reversible and not rev_rl:
                 rl_errors.append('Reversible reaction in {} submodel must have a backward rate law'.format(
-                    self.submodel.algorithm.name))
+                    self.submodel.framework.name))
         if not self.reversible and rev_rl:
             rl_errors.append('Irreversible reaction cannot have a backward rate law')
 
@@ -2433,7 +2725,7 @@ class Reaction(obj_model.Model):
             errors.append(InvalidAttribute(self.Meta.attributes['flux_bound_units'],
                                            ['Units must be defined for the flux bounds']))
 
-        if self.submodel and self.submodel.algorithm is not SubmodelAlgorithm.dfba:
+        if self.submodel and self.submodel.framework != wcm_ontology['WCM:dynamic_flux_balance_analysis']:
             if not isnan(self.flux_min):
                 errors.append(InvalidAttribute(self.Meta.attributes['flux_min'],
                                                ['Minimum flux should be NaN for reactions in non-dFBA submodels']))
@@ -2515,6 +2807,57 @@ class Reaction(obj_model.Model):
         """
         return list(set(self.rate_laws.get_one(direction=direction).expression.species) - set(self.get_reactants()))
 
+    def add_to_sbml_model(self, sbml_model):
+        """ Add this reaction to a SBML model.
+
+        Args:
+            sbml_model (:obj:`libsbml.Model`): SBML model
+
+        Returns:
+            :obj:`libsbml.Reaction`: SBML reaction
+
+        Raises:
+            :obj:`LibSbmlError`: if calling `libsbml` raises an error
+        """
+
+        # create SBML reaction in SBML document
+        sbml_reaction = call_libsbml(sbml_model.createReaction)
+        call_libsbml(sbml_reaction.setIdAttribute, self.id)
+        call_libsbml(sbml_reaction.setName, self.name)
+        call_libsbml(sbml_reaction.setReversible, self.reversible)
+        call_libsbml(sbml_reaction.setFast, False)
+        if self.comments:
+            call_libsbml(sbml_reaction.setNotes, self.comments, True)
+
+        # write reaction participants to SBML document
+        for participant in self.participants:
+            if participant.coefficient < 0:
+                species_reference = call_libsbml(sbml_reaction.createReactant)
+                call_libsbml(species_reference.setStoichiometry, -participant.coefficient)
+            elif 0 < participant.coefficient:
+                species_reference = call_libsbml(sbml_reaction.createProduct)
+                call_libsbml(species_reference.setStoichiometry, participant.coefficient)
+            call_libsbml(species_reference.setSpecies, participant.species.gen_sbml_id())
+            call_libsbml(species_reference.setConstant, True)
+
+        # for dFBA submodels, write flux bounds to SBML document
+        # uses version 2 of the 'Flux Balance Constraints' extension
+        if self.submodel.framework == wcm_ontology['WCM:dynamic_flux_balance_analysis']:
+            fbc_reaction_plugin = call_libsbml(sbml_reaction.getPlugin, 'fbc')
+            for bound in ['lower', 'upper']:
+                # make a unique ID for each flux bound parameter
+                # ids for wc_lang Parameters all start with 'parameter'
+                param_id = "_reaction_{}_{}_bound".format(self.id, bound)
+                param = LibSbmlInterface.create_parameter(sbml_model, id=param_id, value=self.flux_min,
+                                                          units='mmol_per_gDW_per_hr')
+                if bound == 'lower':
+                    call_libsbml(param.setValue, self.flux_min)
+                    call_libsbml(fbc_reaction_plugin.setLowerFluxBound, param_id)
+                if bound == 'upper':
+                    call_libsbml(param.setValue, self.flux_max)
+                    call_libsbml(fbc_reaction_plugin.setUpperFluxBound, param_id)
+        return sbml_reaction
+
 
 class SpeciesCoefficient(obj_model.Model):
     """ A tuple of a species and a coefficient
@@ -2536,6 +2879,10 @@ class SpeciesCoefficient(obj_model.Model):
         frozen_columns = 1
         tabular_orientation = TabularOrientation.inline
         ordering = ('species', 'coefficient')
+        children = {
+            'submodel': ('species',),
+            'core_model': ('species',),
+        }
 
     def serialize(self, show_compartment=True, show_coefficient_sign=True):
         """ Serialize related object
@@ -2607,7 +2954,7 @@ class SpeciesCoefficient(obj_model.Model):
             coefficient = float(match.group(2) or 1.)
 
             if compartment:
-                species_id = Species.gen_id(match.group(5), compartment.get_primary_attribute())
+                species_id = Species._gen_id(match.group(5), compartment.get_primary_attribute())
             else:
                 species_id = match.group(5)
 
@@ -2656,7 +3003,10 @@ class RateLawExpression(obj_model.Model, Expression):
         ordering = ('expression',)
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
-        attribute_order = ('expression', 'parameters', 'species', 'observables', 'functions', 'compartments')
+        children = {
+            'submodel': ('parameters', 'species', 'observables', 'functions', 'compartments'),
+            'core_model': ('parameters', 'species', 'observables', 'functions', 'compartments'),
+        }
 
     def serialize(self):
         """ Generate string representation
@@ -2702,11 +3052,12 @@ class RateLaw(obj_model.Model):
         model (:obj:`Model`): model
         reaction (:obj:`Reaction`): reaction
         direction (:obj:`RateLawDirection`): direction
-        type (:obj:`RateLawType`): type
+        type (:obj:`pronto.term.Term`): type
         expression (:obj:`RateLawExpression`): expression
         units (:obj:`unit_registry.Unit`): units
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
     """
@@ -2715,34 +3066,39 @@ class RateLaw(obj_model.Model):
     model = ManyToOneAttribute(Model, related_name='rate_laws')
     reaction = ManyToOneAttribute(Reaction, related_name='rate_laws')
     direction = EnumAttribute(RateLawDirection, default=RateLawDirection.forward)
-    type = EnumAttribute(RateLawType, default=RateLawType.other)
+    type = OntologyAttribute(wcm_ontology,
+                             namespace='WCM',
+                             terms=wcm_ontology['WCM:rate_law'].rchildren(),
+                             default=None, none=True)
     expression = ExpressionManyToOneAttribute(RateLawExpression, min_related=1, min_related_rev=1, related_name='rate_laws')
-    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('s^-1'),), default=unit_registry.parse_units('s^-1'))
+    units = UnitAttribute(unit_registry,
+                          choices=(unit_registry.parse_units('s^-1'),),
+                          default=unit_registry.parse_units('s^-1'))
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='rate_laws')
     evidence = ManyToManyAttribute('Evidence', related_name='rate_laws')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='rate_laws')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='rate_laws')
 
     class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
         attribute_order = ('id', 'name', 'reaction', 'direction', 'type',
                            'expression', 'units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         # unique_together = (('reaction', 'direction'), )
         expression_term_model = RateLawExpression
         expression_term_units = 'units'
+        children = {
+            'submodel': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('expression', 'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
-    @staticmethod
-    def gen_id(reaction_id, direction_name):
+    def gen_id(self):
         """ Generate identifier
-
-        Args:
-            reaction_id (:obj:`str`): reaction id
-            direction_name (:obj:`str`): direction name
 
         Returns:
             :obj:`str`: identifier
         """
-        return '{}-{}'.format(reaction_id, direction_name)
+        return '{}-{}'.format(self.reaction.id, self.direction.name)
 
     def validate(self):
         """ Determine whether this `RateLaw` is valid
@@ -2761,10 +3117,10 @@ class RateLaw(obj_model.Model):
 
         # check ID
         if self.reaction and self.direction is not None and \
-                self.id != self.gen_id(self.reaction.id, self.direction.name):
+                self.id != self.gen_id():
             errors.append(InvalidAttribute(
                 self.Meta.attributes['id'],
-                ['Id must be {}'.format(self.gen_id(self.reaction.id, self.direction.name))]))
+                ['Id must be {}'.format(self.gen_id())]))
 
         # check that units are valid
         if self.expression and self.reaction and self.units != self.reaction.rate_units:
@@ -2774,21 +3130,21 @@ class RateLaw(obj_model.Model):
         if self.expression \
                 and hasattr(self.expression, '_parsed_expression') \
                 and self.expression._parsed_expression:
-            exp_units = unit_registry.parse_expression(str(self.units)).to_base_units().units
             try:
                 calc = self.expression._parsed_expression.test_eval(with_units=True)
             except ParsedExpressionError as error:
                 errors.append(InvalidAttribute(self.Meta.attributes['units'], [str(error)]))
             else:
                 if hasattr(calc, 'units'):
-                    calc_units = calc.to_base_units().units
+                    calc_units = calc.units or unit_registry.parse_units('dimensionless')
                 else:
-                    calc_units = unit_registry.parse_expression('dimensionless').units
+                    calc_units = unit_registry.parse_units('dimensionless')
 
-                if calc_units != exp_units:
+                exp_units = self.units
+                if not are_units_equivalent(exp_units, calc_units, check_same_magnitude=True):
                     errors.append(InvalidAttribute(self.Meta.attributes['units'],
                                                    ['Units of "{}" should be "{}" not "{}"'.format(
-                                                    self.expression.expression, exp_units, calc_units)]))
+                                                    self.expression.expression, str(exp_units), str(calc_units))]))
         else:
             if self.expression:
                 expression = self.expression.expression
@@ -2804,108 +3160,110 @@ class RateLaw(obj_model.Model):
         return None
 
 
-class DfbaNetSpecies(obj_model.Model):
-    """ DfbaNetSpecies
+class DfbaObjSpecies(obj_model.Model):
+    """ DfbaObjSpecies
 
-    A dFBA net reaction contains a list of DfbaNetSpecies instances. Distinct DfbaNetComponents
+    A dFBA objective reaction contains a list of DfbaObjSpecies instances. Distinct DfbaObjSpecies
     enable separate comments and references for each one.
 
     Attributes:
-        id (:obj:`str`): unique identifier per DfbaNetSpecies equal to
-            `dfba-net-species-{dfba_net_reaction.id}-{species.id}`
+        id (:obj:`str`): unique identifier per DfbaObjSpecies equal to
+            `dfba-net-species-{dfba_obj_reaction.id}-{species.id}`
         name (:obj:`str`): name
-        dfba_net_reaction (:obj:`DfbaNetReaction`): the dFBA net reaction that uses the dFBA net species
+        model (:obj:`Model`): model
+        dfba_obj_reaction (:obj:`DfbaObjReaction`): the dFBA objective reaction that uses the dFBA objective species
         species (:obj:`Species`): species
         value (:obj:`float`): the specie's reaction coefficient
         units (:obj:`unit_registry.Unit`): units of the value
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
     """
     id = StringAttribute(primary=True, unique=True)
     name = StringAttribute()
-    dfba_net_reaction = ManyToOneAttribute('DfbaNetReaction', min_related=1, related_name='dfba_net_species',
-                                           verbose_name='dFBA net reaction',
-                                           verbose_related_name='dFBA net species')
-    species = ManyToOneAttribute(Species, min_related=1, related_name='dfba_net_species',
-                                 verbose_related_name='dFBA net species')
+    model = ManyToOneAttribute(Model, related_name='dfba_obj_species')
+    dfba_obj_reaction = ManyToOneAttribute('DfbaObjReaction', min_related=1, related_name='dfba_obj_species',
+                                           verbose_name='dFBA objective reaction',
+                                           verbose_related_name='dFBA objective species')
+    species = ManyToOneAttribute(Species, min_related=1, related_name='dfba_obj_species',
+                                 verbose_related_name='dFBA objective species')
     value = FloatAttribute()
     units = UnitAttribute(unit_registry,
-                          choices=(
-                              unit_registry.parse_units('M s^-1'),
-                              unit_registry.parse_units('mol gDCW^-1 s^-1'),
-                          ),
+                          choices=(unit_registry.parse_units('M s^-1'), unit_registry.parse_units('mol gDCW^-1 s^-1')),
                           default=unit_registry.parse_units('M s^-1'))
-    db_refs = DatabaseReferenceManyToManyAttribute(related_name='dfba_net_species',
-                                                   verbose_related_name='dFBA net species')
-    evidence = ManyToManyAttribute('Evidence', related_name='dfba_net_species',
-                                   verbose_related_name='dFBA net species')
-    comments = LongStringAttribute()
-    references = ManyToManyAttribute('Reference', related_name='dfba_net_species',
-                                     verbose_related_name='dFBA net species')
+    db_refs = DatabaseReferenceManyToManyAttribute(related_name='dfba_obj_species',
+                                                   verbose_related_name='dFBA objective species')
+    evidence = ManyToManyAttribute('Evidence', related_name='dfba_obj_species',
+                                   verbose_related_name='dFBA objective species')
+    interpretations = ManyToManyAttribute('Interpretation', related_name='dfba_obj_species',
+                                          verbose_related_name='dFBA objective species')
+    comments = CommentAttribute()
+    references = ManyToManyAttribute('Reference', related_name='dfba_obj_species',
+                                     verbose_related_name='dFBA objective species')
 
     class Meta(obj_model.Model.Meta):
-        # unique_together = (('dfba_net_reaction', 'species'), )
-        attribute_order = ('id', 'name', 'dfba_net_reaction',
+        # unique_together = (('dfba_obj_reaction', 'species'), )
+        attribute_order = ('id', 'name', 'dfba_obj_reaction',
                            'species', 'value', 'units',
-                           'db_refs', 'evidence', 'comments', 'references')
-        verbose_name = 'dFBA net species'
-        verbose_name_plural = 'dFBA net species'
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
+        verbose_name = 'dFBA objective species'
+        verbose_name_plural = 'dFBA objective species'
+        merge = obj_model.ModelMerge.append
+        children = {
+            'submodel': ('dfba_obj_reaction', 'species', 'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('dfba_obj_reaction', 'species', 'db_refs', 'evidence', 'interpretations', 'references'),
+        }
 
-    @staticmethod
-    def gen_id(dfba_net_rxn_id, species_id):
+    def gen_id(self):
         """ Generate identifier equal to
-        `dfba-net-species-{dfba_net_reaction.id}-{species.id}`
-
-        Args:
-            dfba_net_rxn_id (:obj:`str`): dFBA net reaction id
-            species_id (:obj:`str`): species id
+        `dfba-net-species-{dfba_obj_reaction.id}-{species.id}`
 
         Returns:
             :obj:`str`: identifier
         """
-        return 'dfba-net-species-{}-{}'.format(dfba_net_rxn_id, species_id)
+        return 'dfba-net-species-{}-{}'.format(self.dfba_obj_reaction.id, self.species.id)
 
     def validate(self):
         """ Validate that the dFBA objective is valid
 
         * Check if the identifier is equal to
-          `dfba-net-species-{dfba_net_reaction.id}-{species.id}`
+          `dfba-net-species-{dfba_obj_reaction.id}-{species.id}`
         * Units consistent with units of cell size
 
         Returns:
             :obj:`InvalidObject` or None: `None` if the object is valid,
                 otherwise return a list of errors as an instance of `InvalidObject`
         """
-        invalid_obj = super(DfbaNetSpecies, self).validate()
+        invalid_obj = super(DfbaObjSpecies, self).validate()
         if invalid_obj:
             errors = invalid_obj.attributes
         else:
             errors = []
 
         # id
-        if self.dfba_net_reaction and self.species and self.id != self.gen_id(self.dfba_net_reaction.id, self.species.id):
+        if self.dfba_obj_reaction and self.species and self.id != self.gen_id():
             errors.append(InvalidAttribute(self.Meta.attributes['id'], ['Id must be {}'.format(
-                self.gen_id(self.dfba_net_reaction.id, self.species.id))]))
+                self.gen_id())]))
 
         # units consistent with units of cell size
-        if self.dfba_net_reaction and \
+        if self.dfba_obj_reaction and \
                 ((self.units == unit_registry.parse_units('M s^-1') and
-                    self.dfba_net_reaction.cell_size_units != unit_registry.parse_units('l')) or
+                    self.dfba_obj_reaction.cell_size_units != unit_registry.parse_units('l')) or
                  (self.units == unit_registry.parse_units('mol gDCW^-1 s^-1') and
-                    self.dfba_net_reaction.cell_size_units != unit_registry.parse_units('gDCW'))):
+                    self.dfba_obj_reaction.cell_size_units != unit_registry.parse_units('gDCW'))):
             errors.append(InvalidAttribute(
                 self.Meta.attributes['units'],
                 ['Units {} are not consistent with cell size units {}'.format(
-                    self.units.name, self.dfba_net_reaction.cell_size_units.name)]))
+                    str(self.units), str(self.dfba_obj_reaction.cell_size_units))]))
 
         if errors:
             return InvalidObject(self, errors)
         return None
 
 
-class DfbaNetReaction(obj_model.Model):
+class DfbaObjReaction(obj_model.Model):
     """ A pseudo-reaction used to represent the interface between metabolism and other
     cell processes.
 
@@ -2918,37 +3276,100 @@ class DfbaNetReaction(obj_model.Model):
         cell_size_units (:obj:`unit_registry.Unit`): cell size units
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
     Related attributes:
         dfba_obj_expression (:obj:`DfbaObjectiveExpression`): dFBA objectie expression
-        dfba_net_species (:obj:`list` of :obj:`DfbaNetSpecies`): the components of this dFBA net reaction
+        dfba_obj_species (:obj:`list` of :obj:`DfbaObjSpecies`): the components of this dFBA objective reaction
     """
     id = SlugAttribute()
     name = StringAttribute()
-    model = ManyToOneAttribute(Model, related_name='dfba_net_reactions', verbose_related_name='dFBA net reactions')
-    submodel = ManyToOneAttribute(Submodel, related_name='dfba_net_reactions', verbose_related_name='dFBA net reactions')
-    units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('s^-1'),), default=unit_registry.parse_units('s^-1'))
+    model = ManyToOneAttribute(Model, related_name='dfba_obj_reactions', verbose_related_name='dFBA objective reactions')
+    submodel = ManyToOneAttribute(Submodel, related_name='dfba_obj_reactions', verbose_related_name='dFBA objective reactions')
+    units = UnitAttribute(unit_registry,
+                          choices=(unit_registry.parse_units('s^-1'),),
+                          default=unit_registry.parse_units('s^-1'))
     cell_size_units = UnitAttribute(unit_registry,
-                                    choices=(
-                                        unit_registry.parse_units('l'),
-                                        unit_registry.parse_units('gDCW'),
-                                    ),
+                                    choices=(unit_registry.parse_units('l'), unit_registry.parse_units('gDCW')),
                                     default=unit_registry.parse_units('l'))
-    db_refs = DatabaseReferenceManyToManyAttribute(related_name='dfba_net_reactions',
-                                                   verbose_related_name='dFBA net reactions')
-    evidence = ManyToManyAttribute('Evidence', related_name='dfba_net_reactions',
-                                   verbose_related_name='dFBA net reactions')
-    comments = LongStringAttribute()
-    references = ManyToManyAttribute('Reference', related_name='dfba_net_reactions', verbose_related_name='dFBA net reactions')
+    db_refs = DatabaseReferenceManyToManyAttribute(related_name='dfba_obj_reactions',
+                                                   verbose_related_name='dFBA objective reactions')
+    evidence = ManyToManyAttribute('Evidence', related_name='dfba_obj_reactions',
+                                   verbose_related_name='dFBA objective reactions')
+    interpretations = ManyToManyAttribute('Interpretation', related_name='dfba_obj_reactions',
+                                          verbose_related_name='dFBA objective reactions')
+    comments = CommentAttribute()
+    references = ManyToManyAttribute('Reference', related_name='dfba_obj_reactions', verbose_related_name='dFBA objective reactions')
 
     class Meta(obj_model.Model.Meta, ExpressionDynamicTermMeta):
         attribute_order = ('id', 'name', 'submodel', 'units', 'cell_size_units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         indexed_attrs_tuples = (('id',), )
-        verbose_name = 'dFBA net reaction'
+        verbose_name = 'dFBA objective reaction'
         expression_term_units = 'units'
+        merge = obj_model.ModelMerge.append
+        children = {
+            'submodel': ('dfba_obj_species', 'db_refs', 'evidence', 'interpretations', 'references'),
+            'core_model': ('dfba_obj_species', 'db_refs', 'evidence', 'interpretations', 'references'),
+        }
+
+    def add_to_sbml_model(self, sbml_model):
+        """ Add a DfbaObjReaction to a SBML model.
+
+        DfbaObjReactions are added to the SBML model because they can be used in a dFBA submodel's
+        objective function. In fact the default objective function is the submodel's dFBA objective reaction.
+        Since SBML does not define DfbaObjReaction as a separate class, DfbaObjReactions are added
+        to the SBML model as SBML reactions.
+        CheckModel ensures that wc_lang DfbaObjReactions and Reactions have distinct ids.
+
+        Args:
+            sbml_model (:obj:`libsbml.Model`): SBML model
+
+        Returns:
+            :obj:`libsbml.Reaction`: SBML reaction
+
+        Raises:
+            :obj:`LibSbmlError`: if calling `libsbml` raises an error
+        """
+
+        # create SBML reaction in SBML document
+        sbml_reaction = call_libsbml(sbml_model.createReaction)
+        call_libsbml(sbml_reaction.setIdAttribute, self.id)
+        call_libsbml(sbml_reaction.setName, self.name)
+        call_libsbml(sbml_reaction.setReversible, False)
+        call_libsbml(sbml_reaction.setFast, False)
+        if self.comments:
+            call_libsbml(sbml_reaction.setNotes, self.comments, True)
+
+        # write dFBA objective reaction participants to SBML document
+        for dfba_obj_species in self.dfba_obj_species:
+            if dfba_obj_species.value < 0:
+                species_reference = call_libsbml(sbml_reaction.createReactant)
+                call_libsbml(species_reference.setStoichiometry, -dfba_obj_species.value)
+            elif 0 < dfba_obj_species.value:
+                species_reference = call_libsbml(sbml_reaction.createProduct)
+                call_libsbml(species_reference.setStoichiometry, dfba_obj_species.value)
+            id = dfba_obj_species.species.gen_sbml_id()
+            call_libsbml(species_reference.setSpecies, id)
+            call_libsbml(species_reference.setConstant, True)
+
+        # the dFBA objective reaction does not constrain the optimization, so set its bounds to 0 and INF
+        fbc_reaction_plugin = call_libsbml(sbml_reaction.getPlugin, 'fbc')
+        for bound in ['lower', 'upper']:
+            # make a unique ID for each flux bound parameter
+            # ids for wc_lang Parameters all start with 'parameter'
+            param_id = "_dfba_obj_reaction_{}_{}_bound".format(self.id, bound)
+            param = LibSbmlInterface.create_parameter(sbml_model, id=param_id, value=0,
+                                                      units='mmol_per_gDW_per_hr')
+            if bound == 'lower':
+                call_libsbml(param.setValue, 0)
+                call_libsbml(fbc_reaction_plugin.setLowerFluxBound, param_id)
+            if bound == 'upper':
+                call_libsbml(param.setValue, float('inf'))
+                call_libsbml(fbc_reaction_plugin.setUpperFluxBound, param_id)
+        return sbml_reaction
 
 
 class ParameterRenamed(obj_model.Model):
@@ -2958,16 +3379,18 @@ class ParameterRenamed(obj_model.Model):
         id (:obj:`str`): unique identifier per model/submodel
         name (:obj:`str`): name
         model (:obj:`Model`): model
-        type (:obj:`ParameterType`): parameter type
+        type (:obj:`pronto.term.Term`): parameter type
         value (:obj:`float`): value
         std (:obj:`float`): standard error of the value
-        units (:obj:`str`): units of the value and standard error
+        units (:obj:`unit_registry.Unit`): units of the value and standard error
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
 
     Related attributes:
+        density_compartment (:obj:`Compartment`): compartments whose density is represented by the parameter
         observable_expressions (:obj:`list` of :obj:`ObservableExpression`): observable expressions
         function_expressions (:obj:`list` of :obj:`FunctionExpression`): function expressions
         rate_law_expressions (:obj:`list` of :obj:`RateLawExpression`): rate law expressions
@@ -2976,21 +3399,59 @@ class ParameterRenamed(obj_model.Model):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='parameters')
-    type = EnumAttribute(ParameterType, default=ParameterType.other)
+    type = OntologyAttribute(wcm_ontology,
+                             namespace='WCM',
+                             terms=wcm_ontology['WCM:parameter'].rchildren(),
+                             default=None, none=True)
     value = FloatAttribute()
     std = FloatAttribute(min=0, verbose_name='Standard error')
     units = UnitAttribute(unit_registry)
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='parameters')
     evidence = ManyToManyAttribute('Evidence', related_name='parameters')
-    comments = LongStringAttribute()
+    interpretations = ManyToManyAttribute('Interpretation', related_name='parameters')
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='parameters')
 
     class Meta(obj_model.Model.Meta, ExpressionStaticTermMeta):
         attribute_order = ('id', 'name', 'type',
                            'value', 'std', 'units',
-                           'db_refs', 'evidence', 'comments', 'references')
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references')
         expression_term_value = 'value'
         expression_term_units = 'units'
+
+    def add_to_sbml_model(self, sbml_model):
+        """ Add this parameter to a SBML model.
+
+        Args:
+            sbml_model (:obj:`libsbml.Model`): SBML model
+
+        Returns:
+            :obj:`libsbml.ParameterRenamed`: SBML parameter
+
+        Raises:
+            :obj:`LibSbmlError`: if calling `libsbml` raises an error
+            :obj:`ValueError`: if units are undefined
+        """
+        # prefix id with 'parameter' so ids for wc_lang Parameters don't collide with ids for other libsbml parameters
+        sbml_id = "parameter_{}".format(self.id)
+        # TODO: use a standard unit ontology to map self.units to SBML model units
+        if not self.units:
+            raise ValueError('Units must be defined for parameter "{}"'.format(self.id))
+
+        if are_units_equivalent(self.units, unit_registry.parse_units('dimensionless'), check_same_magnitude=True):
+            sbml_parameter = LibSbmlInterface.create_parameter(sbml_model, sbml_id, self.value, 'dimensionless_ud',
+                                                               name=self.name)
+        elif are_units_equivalent(self.units, unit_registry.parse_units('s'), check_same_magnitude=True):
+            sbml_parameter = LibSbmlInterface.create_parameter(sbml_model, sbml_id, self.value, 'second',
+                                                               name=self.name)
+        elif are_units_equivalent(self.units, unit_registry.parse_units('mmol/gDCW/hour'), check_same_magnitude=True):
+            sbml_parameter = LibSbmlInterface.create_parameter(sbml_model, sbml_id, self.value, 'mmol_per_gDW_per_hr',
+                                                               name=self.name)
+        else:
+            sbml_parameter = LibSbmlInterface.create_parameter(sbml_model, sbml_id, self.value, 'dimensionless_ud',
+                                                               name=self.name)
+
+        return sbml_parameter
 
 
 class Evidence(obj_model.Model):
@@ -3001,13 +3462,21 @@ class Evidence(obj_model.Model):
         name (:obj:`str`): name
         model (:obj:`Model`): model
         value (:obj:`str`): value
-        units (:obj:`str`): units
-        type (:obj:`EvidenceType`): type
+        std (:obj:`str`): standard error of the value
+        units (:obj:`unit_registry.Unit`): units
+        type (:obj:`pronto.term.Term`): type
         taxon (:obj:`str`): taxon in which the evidence was observed
         genetic_variant (:obj:`str`): genetic variant in which the evidence was observed
-        temperature (:obj:`float`): temperature at which the evidence was observed
+        temp (:obj:`float`): temperature at which the evidence was observed
+        temp_units (:obj:`unit_registry.Unit`): temperature units
         ph (:obj:`float`): pH at which the evidence was observed
+        ph_units (:obj:`unit_registry.Unit): pH units
         growth_media (:obj:`str`): growth media at which the evidence was observed
+        condition (:obj:`str`): experimental conditions (e.g. control)
+        experiment_type (:obj:`str`): type of experiment (e.g. RNA-seq)
+        experiment_design (:obj:`str`): experimental design
+        measurement_method (:obj:`str`): method used to measure data (e.g. deep sequencing)
+        analysis_method (:obj:`str`): method used to analyze data (e.g. Cufflinks)
         db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
         evidence (:obj:`list` of :obj:`Evidence`): evidence underlying reduced evidence
             (e.g. individual observations underlying an average)
@@ -3027,10 +3496,12 @@ class Evidence(obj_model.Model):
         reactions (:obj:`list` of :obj:`Reaction`): reactions
         rate_laws (:obj:`list` of :obj:`RateLaw`): rate laws
         dfba_objs (:obj:`list` of :obj:`DfbaObjective`): dFBA objectives
-        dfba_net_reactions (:obj:`list` of :obj:`DfbaNetReaction`): dFBA net reactions
-        dfba_net_species (:obj:`list` of :obj:`DfbaNetSpecies`): dFBA net species
+        dfba_obj_reactions (:obj:`list` of :obj:`DfbaObjReaction`): dFBA objective reactions
+        dfba_obj_species (:obj:`list` of :obj:`DfbaObjSpecies`): dFBA objective species
         stop_conditions (:obj:`list` of :obj:`StopCondition`): stop conditions
         parameters (:obj:`list` of :obj:`ParameterRenamed`): parameters
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
+        changes (:obj:`list` of :obj:`Change`): change
         reduced_evidences (:obj:`list` of :obj:`Evidence`): reduced evidence that the evidence
             supports (e.g. averages supported by this and other evidence)
     """
@@ -3038,24 +3509,143 @@ class Evidence(obj_model.Model):
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='evidences')
     value = StringAttribute()
+    std = StringAttribute(verbose_name='Standard error')
     units = UnitAttribute(unit_registry, none=True)
-    type = EnumAttribute(EvidenceType, default=EvidenceType.other)
+    type = OntologyAttribute(wcm_ontology,
+                             namespace='WCM',
+                             terms=wcm_ontology['WCM:evidence'].rchildren(),
+                             default=None, none=True)
     taxon = StringAttribute()
     genetic_variant = StringAttribute()
-    temperature = FloatAttribute(nan=True, verbose_name='Temperature (C)')
+    temp = FloatAttribute(nan=True, verbose_name='Temperature')
+    temp_units = UnitAttribute(unit_registry,
+                               choices=(unit_registry.parse_units('celsius'),),
+                               none=True,
+                               verbose_name='Temperature units')
     ph = FloatAttribute(nan=True, verbose_name='pH')
+    ph_units = UnitAttribute(unit_registry,
+                             choices=(unit_registry.parse_units('dimensionless'),),
+                             none=True,
+                             verbose_name='pH units')
     growth_media = LongStringAttribute()
+    condition = LongStringAttribute()
+    experiment_type = LongStringAttribute()
+    experiment_design = LongStringAttribute()
+    measurement_method = LongStringAttribute()
+    analysis_method = LongStringAttribute()
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='evidences')
     evidence = ManyToManyAttribute('Evidence', related_name='reduced_evidences')
-    comments = LongStringAttribute()
+    comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='evidences')
 
     class Meta(obj_model.Model.Meta):
         attribute_order = ('id', 'name',
-                           'value', 'units',
-                           'type', 'taxon', 'genetic_variant', 'temperature', 'ph', 'growth_media',
+                           'value', 'std', 'units',
+                           'type',
+                           'taxon', 'genetic_variant',
+                           'temp', 'temp_units', 'ph', 'ph_units', 'growth_media', 'condition',
+                           'experiment_type', 'experiment_design', 'measurement_method', 'analysis_method',
                            'db_refs', 'evidence', 'comments', 'references')
         verbose_name_plural = 'Evidence'
+        children = {
+            'submodel': ('db_refs', 'evidence', 'references'),
+            'core_model': ('db_refs', 'evidence', 'references'),
+        }
+
+    def validate(self):
+        """ Determine if the evidence is valid
+
+        * temperature units are defined if the temperature is not None
+        * pH units are defined if the pH is not None
+
+        Returns:
+            :obj:`InvalidObject` or None: `None` if the object is valid,
+                otherwise return a list of errors as an instance of `InvalidObject`
+        """
+        invalid_obj = super(Evidence, self).validate()
+        if invalid_obj:
+            errors = invalid_obj.attributes
+        else:
+            errors = []
+
+        if self.temp is not None and not isnan(self.temp) \
+                and not isinstance(self.temp_units, unit_registry.Unit):
+            errors.append(InvalidAttribute(self.Meta.attributes['temp_units'],
+                                           ['Temperature units must be defined']))
+        if self.ph is not None and not isnan(self.ph) \
+                and not isinstance(self.ph_units, unit_registry.Unit):
+            errors.append(InvalidAttribute(self.Meta.attributes['ph_units'],
+                                           ['pH units must be defined']))
+
+        if errors:
+            return InvalidObject(self, errors)
+        return None
+
+
+class Interpretation(obj_model.Model):
+    """ Interpretation of evidence
+
+    Attributes:
+        id (:obj:`str`): unique identifier
+        name (:obj:`str`): name
+        model (:obj:`Model`): model
+        value (:obj:`str`): value
+        std (:obj:`str`): standard error of the value
+        units (:obj:`unit_registry.Unit`): units
+        type (:obj:`pronto.term.Term`): type
+        method (:obj:`str`): procedure which produced the interpretation
+        db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
+        evidence (:obj:`list` of :obj:`Evidence`): evidence underlying reduced evidence
+            (e.g. individual observations underlying an average)
+        comments (:obj:`str`): comments
+        references (:obj:`list` of :obj:`Reference`): references
+        authors (:obj:`list` of :obj:`Author`): authors
+
+    Related attributes:
+        submodels (:obj:`list` of :obj:`Submodel`): submodels
+        compartments (:obj:`list` of :obj:`Compartment`): compartments
+        species_types (:obj:`list` of :obj:`SpeciesType`): species types
+        species (:obj:`list` of :obj:`Species`): species
+        distribution_init_concentrations (:obj:`list` of :obj:`DistributionInitConcentration`):
+            distributions of initial concentrations of species at the beginning of each
+            cell cycle
+        observables (:obj:`list` of :obj:`Observable`): observables
+        functions (:obj:`list` of :obj:`Function`): functions
+        reactions (:obj:`list` of :obj:`Reaction`): reactions
+        rate_laws (:obj:`list` of :obj:`RateLaw`): rate laws
+        dfba_objs (:obj:`list` of :obj:`DfbaObjective`): dFBA objectives
+        dfba_obj_reactions (:obj:`list` of :obj:`DfbaObjReaction`): dFBA objective reactions
+        dfba_obj_species (:obj:`list` of :obj:`DfbaObjSpecies`): dFBA objective species
+        stop_conditions (:obj:`list` of :obj:`StopCondition`): stop conditions
+        parameters (:obj:`list` of :obj:`ParameterRenamed`): parameters
+        changes (:obj:`list` of :obj:`Change`): changes
+    """
+    id = SlugAttribute()
+    name = StringAttribute()
+    model = ManyToOneAttribute(Model, related_name='interpretations')
+    value = StringAttribute()
+    std = StringAttribute(verbose_name='Standard error')
+    units = UnitAttribute(unit_registry, none=True)
+    type = OntologyAttribute(wcm_ontology,
+                             namespace='WCM',
+                             terms=wcm_ontology['WCM:interpretation'].rchildren(),
+                             default=None, none=True)
+    method = LongStringAttribute()
+    db_refs = DatabaseReferenceManyToManyAttribute(related_name='interpretations')
+    evidence = ManyToManyAttribute('Evidence', related_name='interpretations')
+    comments = CommentAttribute()
+    references = ManyToManyAttribute('Reference', related_name='interpretations')
+    authors = ManyToManyAttribute('Author', related_name='interpretations')
+
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'name',
+                           'value', 'std', 'units',
+                           'type', 'method',
+                           'db_refs', 'evidence', 'comments', 'references', 'authors')
+        children = {
+            'submodel': ('db_refs', 'evidence', 'references', 'authors'),
+            'core_model': ('db_refs', 'evidence', 'references', 'authors'),
+        }
 
 
 class Reference(obj_model.Model):
@@ -3069,7 +3659,7 @@ class Reference(obj_model.Model):
         author (:obj:`str`): author(s)
         editor (:obj:`str`): editor(s)
         year (:obj:`int`): year
-        type (:obj:`ReferenceType`): type
+        type (:obj:`proto.term.Term`): type
         publication (:obj:`str`): publication title
         publisher (:obj:`str`): publisher
         series (:obj:`str`): series
@@ -3097,9 +3687,10 @@ class Reference(obj_model.Model):
         reactions (:obj:`list` of :obj:`Reaction`): reactions
         rate_laws (:obj:`list` of :obj:`RateLaw`): rate laws
         dfba_objs (:obj:`list` of :obj:`DfbaObjective`): dFBA objectives
-        dfba_net_species (:obj:`list` of :obj:`DfbaNetSpecies`): dFBA net species
+        dfba_obj_species (:obj:`list` of :obj:`DfbaObjSpecies`): dFBA objective species
         stop_conditions (:obj:`list` of :obj:`StopCondition`): stop conditions
         parameters (:obj:`list` of :obj:`ParameterRenamed`): parameters
+        changes (:obj:`list` of :obj:`Change`): changes
     """
     id = SlugAttribute()
     name = StringAttribute()
@@ -3108,7 +3699,10 @@ class Reference(obj_model.Model):
     author = StringAttribute()
     editor = StringAttribute()
     year = PositiveIntegerAttribute()
-    type = EnumAttribute(ReferenceType)
+    type = OntologyAttribute(wcm_ontology,
+                             namespace='WCM',
+                             terms=wcm_ontology['WCM:reference'].rchildren(),
+                             default=None, none=True)
     publication = StringAttribute()
     publisher = StringAttribute()
     series = StringAttribute()
@@ -3119,13 +3713,126 @@ class Reference(obj_model.Model):
     chapter = StringAttribute()
     pages = StringAttribute()
     db_refs = DatabaseReferenceManyToManyAttribute(related_name='references')
-    comments = LongStringAttribute()
+    comments = CommentAttribute()
 
     class Meta(obj_model.Model.Meta):
         attribute_order = ('id', 'name',
                            'title', 'author', 'editor', 'year', 'type', 'publication', 'publisher',
                            'series', 'volume', 'number', 'issue', 'edition', 'chapter', 'pages',
                            'db_refs', 'comments')
+        children = {
+            'submodel': ('db_refs',),
+            'core_model': ('db_refs',),
+        }
+
+
+class Author(obj_model.Model):
+    """ An author of a model
+
+    Attributes:
+        id (:obj:`str`): unique identifier
+        name (:obj:`str`): full name
+        model (:obj:`Model`): model
+        last_name (:obj:`str`): last name(s)
+        first_name (:obj:`str`): first name(s)
+        middle_name (:obj:`str`): middle name(s)
+        title (:obj:`str`): title
+        organization (:obj:`str`): organization
+        email (:obj:`str`): email address
+        website (:obj:`str`): website
+        address (:obj:`str`): physical address
+        orcid (:obj:`str`): ORCID
+        db_refs (:obj:`list` of :obj:`DatabaseReference`): database references
+        comments (:obj:`str`): comments
+
+    Related attributes:
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
+        changes (:obj:`list` of :obj:`Change`): changes
+    """
+    id = SlugAttribute()
+    name = StringAttribute(min_length=1)
+    model = ManyToOneAttribute(Model, related_name='authors')
+    last_name = StringAttribute(min_length=1)
+    first_name = StringAttribute()
+    middle_name = StringAttribute(min_length=1)
+    title = LongStringAttribute()
+    organization = LongStringAttribute()
+    email = EmailAttribute()
+    website = UrlAttribute()
+    address = LongStringAttribute()
+    orcid = RegexAttribute(pattern=r'^\d{4}-\d{4}-\d{4}-(\d{3}X|\d{4})$', verbose_name='ORCID')
+    db_refs = DatabaseReferenceManyToManyAttribute(related_name='authors')
+    comments = LongStringAttribute()
+
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'name',
+                           'last_name', 'first_name', 'middle_name',
+                           'title', 'organization',
+                           'email', 'website', 'address', 'orcid',
+                           'db_refs', 'comments')
+        frozen_columns = 2
+        children = {
+            'submodel': ('db_refs',),
+            'core_model': ('db_refs',),
+        }
+
+
+class Change(obj_model.Model):
+    """ A change to a model
+
+    Attributes:
+        id (:obj:`str`): unique identifier
+        name (:obj:`str`): full name
+        model (:obj:`Model`): model
+        type (:obj:`pronto.term.Term`): type
+        target (:obj:`str`): target
+        target_submodel (:obj:`Submodel`): target submodel
+        target_type (:obj:`pronto.term.Term`): target type
+        reason (:obj:`str`): reason
+        reason_type (:obj:`pronto.term.Term`): type of reason
+        intention (:obj:`str`): intention
+        intention_type (:obj:`pronto.term.Term`): type of intention
+        db_refs (::obj:`list` of :obj:`DatabaseReference`): database references
+        evidence (:obj:`list` of :obj:`Evidence`): evidence
+        interpretations (:obj:`list` of :obj:`Interpretation`): interpretations
+        comments (:obj:`str`): comments
+        references (:obj:`list` of :obj:`Reference`): references
+        authors (:obj:`list` of :obj:`Author`): authors
+        date (:obj:`datetime`): date
+    """
+    id = SlugAttribute()
+    name = StringAttribute(min_length=1)
+    model = ManyToOneAttribute(Model, related_name='changes')
+
+    type = OntologyAttribute(wcm_ontology, namespace='WCM',
+                             terms=wcm_ontology['WCM:change_provenance'].rchildren())
+    target = LongStringAttribute()
+    target_submodel = ManyToOneAttribute(Submodel, related_name='changes')
+    target_type = OntologyAttribute(wcm_ontology, namespace='WCM',
+                                    terms=wcm_ontology['WCM:target_provenance'].rchildren())
+    reason = LongStringAttribute()
+    reason_type = OntologyAttribute(wcm_ontology, namespace='WCM',
+                                    terms=wcm_ontology['WCM:reason_provenance'].rchildren())
+    intention = LongStringAttribute()
+    intention_type = OntologyAttribute(wcm_ontology, namespace='WCM',
+                                       terms=wcm_ontology['WCM:intention_provenance'].rchildren())
+    db_refs = DatabaseReferenceManyToManyAttribute(related_name='changes')
+    evidence = ManyToManyAttribute('Evidence', related_name='changes')
+    interpretations = ManyToManyAttribute('Interpretation', related_name='changes')
+    comments = LongStringAttribute()
+    references = ManyToManyAttribute('Reference', related_name='changes')
+    authors = ManyToManyAttribute('Author', related_name='changes')
+    date = DateTimeAttribute()
+
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'name',
+                           'type', 'target', 'target_submodel', 'target_type', 'reason', 'reason_type', 'intention', 'intention_type',
+                           'db_refs', 'evidence', 'interpretations', 'comments', 'references',
+                           'authors', 'date')
+        children = {
+            'submodel': ('db_refs', 'evidence', 'interpretations', 'references', 'authors'),
+            'core_model': ('db_refs', 'evidence', 'interpretations', 'references', 'authors'),
+        }
 
 
 class DatabaseReference(obj_model.Model):
@@ -3151,11 +3858,13 @@ class DatabaseReference(obj_model.Model):
         reactions (:obj:`list` of :obj:`Reaction`): reactions
         rate_laws (:obj:`list` of :obj:`RateLaw`): rate laws
         dfba_objs (:obj:`list` of :obj:`DfbaObjective`): dFBA objectives
-        dfba_net_reactions (:obj:`list` of :obj:`DfbaNetReaction`): dFBA net reactions
-        dfba_net_species (:obj:`list` of :obj:`DfbaNetSpecies`): dFBA net species
+        dfba_obj_reactions (:obj:`list` of :obj:`DfbaObjReaction`): dFBA objective reactions
+        dfba_obj_species (:obj:`list` of :obj:`DfbaObjSpecies`): dFBA objective species
         stop_conditions (:obj:`list` of :obj:`StopCondition`): stop conditions
         parameters (:obj:`list` of :obj:`ParameterRenamed`): parameters
         references (:obj:`list` of :obj:`Reference`): references
+        authors (:obj:`list` of :obj:`Author`): authors
+        changes (:obj:`list` of :obj:`Change`): changes
     """
 
     database = StringAttribute(min_length=1)
@@ -3208,7 +3917,7 @@ class DatabaseReference(obj_model.Model):
 
 class Validator(obj_model.Validator):
     def run(self, model, get_related=True):
-        """ Validate a list of objects and return their errors
+        """ Validate a model and return its errors
 
         Args:
             model (:obj:`Model`): model

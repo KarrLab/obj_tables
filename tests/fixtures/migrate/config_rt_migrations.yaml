@@ -21,9 +21,9 @@ migration_with_renaming:
     existing_files: [example_existing_model_rt.xlsx]
 
 wc_lang_migration:
-    # do use wc_lang schema & files
-    existing_files: [2_species_1_reaction.xlsx]
-    model_defs_files: [wc_lang/core.py, wc_lang/core_modified.py, wc_lang/core.py]
+    # use fully_instantiated_wc_lang_model.xlsx so round-trip test makes identical existing and migrated files
+    existing_files: [fully_instantiated_wc_lang_model.xlsx]
+    model_defs_files: [wc_lang/wc_lang/core.py, wc_lang/wc_lang/core_modified.py, wc_lang/wc_lang/core.py]
     seq_of_renamed_models: [
         # for 1st migration:
         [[Parameter, ParameterRenamed]],

@@ -254,6 +254,8 @@ class ModelMeta(type):
             raise ValueError("{} cannot contain identical attribute sets: {}".format(
                 meta_attribute_name, str(equivalent_tuples)))
 
+    # enable suspension of checking of same related attribute name so that obj_model schemas can be migrated
+    CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
     @classmethod
     def validate_related_attributes(metacls, name, bases, namespace):
         """ Check the related attributes
@@ -299,8 +301,9 @@ class ModelMeta(type):
 
                         # check that name doesn't clash with another related
                         # attribute from a different model
-                        if attr.related_name in related_class.Meta.related_attributes and \
-                                related_class.Meta.related_attributes[attr.related_name] is not attr:
+                        if metacls.CHECK_SAME_RELATED_ATTRIBUTE_NAME and \
+                            attr.related_name in related_class.Meta.related_attributes and \
+                            related_class.Meta.related_attributes[attr.related_name] is not attr:
                             other_attr = related_class.Meta.related_attributes[
                                 attr.related_name]
                             raise ValueError('Attributes {}.{} and {}.{} cannot use the same related attribute name {}.{}'.format(
@@ -3082,7 +3085,7 @@ class LocalAttribute(object):
     Attributes:
         attr (:obj:`Attribute`): attribute
         cls (:obj:`type`): class which owns this attribute
-        name (:obj:`str`: name of the :obj:`attr` in :obj:`cls`
+        name (:obj:`str`): name of the :obj:`attr` in :obj:`cls`
         related_class (:obj:`type`): other class which is related to this attribute
         related_name (:obj:`str`): name of this attribute in :obj:`related_cls`
         primary_class (:obj:`type`): class in which this attribute was defined
@@ -5453,11 +5456,11 @@ class ManyToManyRelatedManager(RelatedManager):
 
 
 class RelatedAttribute(Attribute):
-    """ Attribute which represents relationships with other objects
+    """ Attribute which represents a relationship with other `Model`(s)
 
     Attributes:
-        primary_class (:obj:`class`): parent class
-        related_class (:obj:`class`): related class
+        primary_class (:obj:`class`): the type of the class that this related attribute references
+        related_class (:obj:`class`): the type of the class that contains a related attribute
         related_name (:obj:`str`): name of related attribute on `related_class`
         verbose_related_name (:obj:`str`): verbose related name
         related_init_value (:obj:`object`): initial value of related attribute
@@ -7164,24 +7167,26 @@ def get_models(module=None, inline=True):
         models = get_subclasses(Model)
 
     if not inline:
-        for model in list(models):
+        for model in models:
             if model.Meta.tabular_orientation == TabularOrientation.inline:
                 models.remove(model)
 
     return models
 
 
-def get_model(name, module=None):
-    """ Get model with name `name`
+def get_model(name, module=None, rev=False):
+    """ Get first `Model` with name `name`
 
     Args:
         name (:obj:`str`): name
-        module (:obj:`module`, optional): module
+        module (:obj:`Module`, optional): module
+        rev (:obj:`bool`, optional): if true, return newest `Model`; this relies on the insertion
+            ordering of dictionaries, available in the CPython implementation of Python 3.6+
 
     Returns:
         :obj:`class`: model class
     """
-    for model in get_subclasses(Model):
+    for model in get_subclasses(Model, rev=rev):
         if name == model.__module__ + '.' + model.__name__ or \
                 module is not None and module.__name__ == model.__module__ and name == model.__name__:
             return model

@@ -191,6 +191,11 @@ class Example1(core.Model):
 class Example2(core.Model):
     id = core.IntegerAttribute()
 
+class Test(core.Model): pass
+test_earlier = Test
+class Test(core.Model): pass
+test_later = Test
+
 
 class TestCore(unittest.TestCase):
 
@@ -199,8 +204,8 @@ class TestCore(unittest.TestCase):
             Root, Leaf, UnrootedLeaf, Leaf3, Grandparent, Parent, Child,
             UniqueRoot, DateRoot, NotNoneDateRoot, OneToOneRoot, OneToOneLeaf,
             ManyToOneRoot, ManyToOneLeaf, OneToManyRoot, OneToManyLeaf, ManyToManyRoot, ManyToManyLeaf,
-            UniqueTogetherRoot, InlineRoot, Example0, Example1, Example2
-        ))
+            UniqueTogetherRoot, InlineRoot, Example0, Example1, Example2, test_earlier,
+            test_later))
         self.assertEqual(
             set(core.get_models(module=sys.modules[__name__])), models)
         self.assertEqual(models.difference(core.get_models()), set())
@@ -216,6 +221,9 @@ class TestCore(unittest.TestCase):
         self.assertEqual(core.get_model(
             'Root', module=sys.modules[__name__]), Root)
         self.assertEqual(core.get_model(Root.__module__ + '.Root'), Root)
+        test_name = self.__module__ + '.' + 'Test'
+        self.assertEqual(core.get_model(test_name), test_earlier)
+        self.assertEqual(core.get_model(test_name, rev=True), test_later)
 
     def test_verbose_name(self):
         self.assertEqual(Root.Meta.verbose_name, 'Root')
