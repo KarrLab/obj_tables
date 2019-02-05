@@ -155,6 +155,9 @@ class ModelMeta(type):
         if '_{}__id'.format(name) in namespace:
             raise ValueError('Attribute cannot have reserved name `__id`')
 
+        if not isinstance(namespace['Meta'].attribute_order, (tuple, list)):
+            raise ValueError('`attribute_order` must be a tuple of strings of the names of attributes')
+
         for attr_name in namespace['Meta'].attribute_order:
             if not isinstance(attr_name, str):
                 raise ValueError("`attribute_order` for {} must contain attribute names; '{}' is "

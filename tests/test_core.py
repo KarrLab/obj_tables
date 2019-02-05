@@ -453,6 +453,13 @@ class TestCore(unittest.TestCase):
         parent = TestParent(children=[TestChild()])
 
     def test_validate_attributes_errors(self):
+        with self.assertRaisesRegex(ValueError, 'must be a tuple of strings'):
+            class Test1(core.Model):
+                name = core.StringAttribute()
+
+                class Meta(core.Model.Meta):
+                    attribute_order = 'name'
+
         with self.assertRaises(ValueError) as context:
             class Test1(core.Model):
                 name = core.StringAttribute()
