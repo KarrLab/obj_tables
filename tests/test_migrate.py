@@ -28,7 +28,7 @@ from itertools import chain
 import inspect
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
-    RunMigration, MigrationDesc)
+    RunMigration, MigrationSpec)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -257,8 +257,8 @@ class MigrationFixtures(unittest.TestCase):
         self.changes_migrator_model = \
             self.set_up_fun_expr_fixtures(self.wc_lang_changes_migrator, 'Parameter', 'ParameterRenamed')
 
-        # since MigrationDesc describes a sequence of migrations, embed renamings in lists
-        self.migration_desc = MigrationDesc('name',
+        # since MigrationSpec describes a sequence of migrations, embed renamings in lists
+        self.migration_desc = MigrationSpec('name',
             existing_files=[self.example_existing_rt_model_copy],
             model_defs_files=[self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path],
             seq_of_renamed_models=[self.existing_2_migrated_renamed_models],
@@ -1225,7 +1225,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-class TestMigrationDesc(MigrationFixtures):
+class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
         super().setUp()
@@ -1249,17 +1249,17 @@ class TestMigrationDesc(MigrationFixtures):
             file.write(u'migration:\n')
             file.write(u'    obj_defs: [small_migrated_rt.py, small_existing_rt.py]\n')
         with self.assertRaisesRegex(MigratorError, re.escape("disallowed attribute(s) found: {'obj_defs'}")):
-            MigrationDesc.load(temp_bad_config_example)
+            MigrationSpec.load(temp_bad_config_example)
 
-        migration_descs = MigrationDesc.load(self.config_file)
+        migration_descs = MigrationSpec.load(self.config_file)
         self.assertIn('migration_with_renaming', migration_descs)
 
     def test_get_migrations_config(self):
-        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
+        migration_descs = MigrationSpec.get_migrations_config(self.config_file)
         self.assertIn('migration_with_renaming', migration_descs)
 
         with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
-            MigrationDesc.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
+            MigrationSpec.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
 
     def test_validate(self):
         self.assertFalse(self.migration_desc.validate())
@@ -1267,7 +1267,7 @@ class TestMigrationDesc(MigrationFixtures):
         setattr(md, 'disallowed_attr', 'bad')
         self.assertEqual(md.validate(), ["disallowed attribute(s) found: {'disallowed_attr'}"])
 
-        for attr in MigrationDesc._REQUIRED_ATTRS:
+        for attr in MigrationSpec._REQUIRED_ATTRS:
             md = copy.deepcopy(self.migration_desc)
             setattr(md, attr, None)
             self.assertEqual(md.validate(), ["missing required attribute '{}'".format(attr)])
@@ -1279,19 +1279,19 @@ class TestMigrationDesc(MigrationFixtures):
         self.assertEqual(md.validate(),
             ["model_defs_files must contain at least 2 model definitions, but it has only 0"])
 
-        for renaming_list in MigrationDesc._RENAMING_LISTS:
+        for renaming_list in MigrationSpec._RENAMING_LISTS:
             md = copy.deepcopy(self.migration_desc)
             setattr(md, renaming_list, [[], []])
             error = md.validate()[0]
             self.assertRegex(error,
                 "{} must have 1 .+ 1 migration.+ model_defs_files, but it has \d".format(renaming_list))
 
-        for renaming_list in MigrationDesc._RENAMING_LISTS:
+        for renaming_list in MigrationSpec._RENAMING_LISTS:
             md = copy.deepcopy(self.migration_desc)
             setattr(md, renaming_list, None)
             self.assertFalse(md.validate())
 
-        for renaming_list in MigrationDesc._RENAMING_LISTS:
+        for renaming_list in MigrationSpec._RENAMING_LISTS:
             md = copy.deepcopy(self.migration_desc)
             setattr(md, renaming_list, [None])
             self.assertEqual(md.validate(), [])
@@ -1339,26 +1339,26 @@ class TestMigrationDesc(MigrationFixtures):
 
     def test_normalize_filenames(self):
         tmp_path = temp_pathname(self, 'foo')
-        self.assertEqual(MigrationDesc._normalize_filenames([tmp_path]), [tmp_path])
+        self.assertEqual(MigrationSpec._normalize_filenames([tmp_path]), [tmp_path])
         file_in_dir = os.path.join('dir_name', 'bar')
         expected_abs_file_in_dir = os.path.join(os.path.dirname(tmp_path), file_in_dir)
-        self.assertEqual(MigrationDesc._normalize_filenames([tmp_path, file_in_dir], relative_file=tmp_path),
+        self.assertEqual(MigrationSpec._normalize_filenames([tmp_path, file_in_dir], relative_file=tmp_path),
             [tmp_path, expected_abs_file_in_dir])
 
     def test_standardize(self):
-        md = MigrationDesc('name', model_defs_files=['f1.py', 'f2.py'])
+        md = MigrationSpec('name', model_defs_files=['f1.py', 'f2.py'])
         md.standardize()
-        for renaming in MigrationDesc._RENAMING_LISTS:
+        for renaming in MigrationSpec._RENAMING_LISTS:
             self.assertEqual(getattr(md, renaming), [None])
         for attr in ['existing_files', 'migrated_files']:
             self.assertEqual(getattr(md, attr), None)
 
-        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
+        migration_descs = MigrationSpec.get_migrations_config(self.config_file)
 
         md = migration_descs['simple_migration']
         migrations_config_file_dir = os.path.dirname(md.migrations_config_file)
         md.standardize()
-        for renaming in MigrationDesc._RENAMING_LISTS:
+        for renaming in MigrationSpec._RENAMING_LISTS:
             self.assertEqual(len(getattr(md, renaming)), len(md.model_defs_files) - 1)
             self.assertEqual(getattr(md, renaming), [None])
         for file_list in ['existing_files', 'model_defs_files']:
@@ -1376,7 +1376,7 @@ class TestMigrationDesc(MigrationFixtures):
         ]
         self.assertEqual(md.seq_of_renamed_attributes[0], expected_1st_renamed_attributes)
 
-        migration_descs = MigrationDesc.get_migrations_config(self.bad_migrations_config)
+        migration_descs = MigrationSpec.get_migrations_config(self.bad_migrations_config)
         md = migration_descs['migration_with_empty_renaming_n_migrated_files']
         md.standardize()
         self.assertEqual(md.seq_of_renamed_attributes[1], None)
@@ -1391,7 +1391,7 @@ class TestMigrationDesc(MigrationFixtures):
         self.assertEqual(md.expected_migrated_files(), [tmp_file])
 
     def test_str(self):
-        migration_descs = MigrationDesc.get_migrations_config(self.config_file)
+        migration_descs = MigrationSpec.get_migrations_config(self.config_file)
         name = 'migration_with_renaming'
         migration_desc = migration_descs[name]
         migration_desc_str = str(migration_desc)
@@ -1422,7 +1422,7 @@ class TestMigrationController(MigrationFixtures):
         seq_of_renamed_attributes = [self.existing_2_migrated_renamed_attributes, [], migrated_2_existing_renamed_attributes]
 
         migrated_filename = temp_pathname(self, 'example_existing_model_rt_migrated.xlsx')
-        migration_desc = MigrationDesc('name',
+        migration_desc = MigrationSpec('name',
             existing_files=[self.example_existing_rt_model_copy],
             model_defs_files=model_defs_files,
             seq_of_renamed_models=seq_of_renamed_models,
@@ -1443,7 +1443,7 @@ class TestMigrationController(MigrationFixtures):
         return migrated_filename
 
     def test_migrate_from_desc(self):
-        migration_descs = MigrationDesc.load(self.config_file)
+        migration_descs = MigrationSpec.load(self.config_file)
 
         migration_desc = migration_descs['simple_migration']
         tmp_migrated_filename = self.put_tmp_migrated_file_in_migration_desc(migration_desc, 'migration.xlsx')
@@ -1456,23 +1456,18 @@ class TestMigrationController(MigrationFixtures):
         round_trip_migrated_xlsx_files = MigrationController.migrate_from_desc(migration_desc)
         self.assert_equal_workbooks(migration_desc.existing_files[0], round_trip_migrated_xlsx_files[0])
 
-        '''
-        # skip("same broken")
-        # todo: fix
         migration_desc = migration_descs['wc_lang_migration']
         self.put_tmp_migrated_file_in_migration_desc(migration_desc, 'example-wc_lang-model_migrated.xlsx')
         round_trip_migrated_wc_lang_files = MigrationController.migrate_from_desc(migration_desc)
         self.assert_equal_workbooks(migration_desc.existing_files[0], round_trip_migrated_wc_lang_files[0])
-        '''
 
-    @unittest.skip("same broken")
     def test_migrate_from_config(self):
         # these are round-trip migrations
 
         # Prepare to remove the migrated_files so they do not contaminate tests/fixtures/migrate.
         # An alternative but more complex approach would be to copy the YAML config file into
         # a temp dir along with the files and directories (packages) it references.
-        for migration_desc in MigrationDesc.load(self.config_file).values():
+        for migration_desc in MigrationSpec.load(self.config_file).values():
             for expected_migrated_file in migration_desc.expected_migrated_files():
                 self.files_to_delete.add(expected_migrated_file)
 
@@ -1481,14 +1476,13 @@ class TestMigrationController(MigrationFixtures):
             self.assert_equal_workbooks(migration_desc.existing_files[0], migrated_files[0])
 
     def test_wc_lang_migration(self):
-
         # round-trip migrate through changed schema
 
-        # Process for round-trip migration of wc_lang model that lacks 'model' attributes
-        # 1: create model with 'model' attributes by migrating to tmp file w generate_wc_lang_migrator
-        # 2: starting with the tmp migrated file test round-trip migration with migrations that invert each other
+        # Process for testing a round-trip migration of a wc_lang model that lacks 'model' attributes
+        # 1: create model file with 'model' attributes by migrating to tmp file w generate_wc_lang_migrator
+        # 2: use the tmp migrated file in a round-trip migration with migrations that invert each other
         fully_instantiated_wc_lang_model = temp_pathname(self, 'fully_instantiated_wc_lang_model.xlsx')
-        fully_instantiate_migration = MigrationDesc(
+        fully_instantiate_migration = MigrationSpec(
             "1: create fully instantiated model with 'model' attributes: migrate model from existing wc_lang core to itself",
             migrator='wc_lang',
             existing_files=[self.wc_lang_model_copy],
@@ -1497,10 +1491,7 @@ class TestMigrationController(MigrationFixtures):
         fully_instantiate_migration.prepare()
         MigrationController.migrate_over_schema_sequence(fully_instantiate_migration)
 
-        '''
-        # skip("same broken")
-        # todo: fix
-        rt_through_changes_migration = MigrationDesc(
+        rt_through_changes_migration = MigrationSpec(
             "2: round trip migration with migrations that invert each other",
             existing_files=[fully_instantiated_wc_lang_model],
             model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified,
@@ -1511,7 +1502,6 @@ class TestMigrationController(MigrationFixtures):
             MigrationController.migrate_over_schema_sequence(rt_through_changes_migration)
         # validate round trip
         self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
-        '''
 
 
 class TestRunMigration(MigrationFixtures):
@@ -1527,11 +1517,10 @@ class TestRunMigration(MigrationFixtures):
         args = RunMigration.parse_args(cli_args=cl.split())
         self.assertEqual(args.migrations_config_file, self.config_file)
 
-    @unittest.skip("same broken")
     def test_main(self):
         for warnings in [True, False]:
             # Prepare to remove the migrated_files if the test fails
-            for migration_desc in MigrationDesc.load(self.config_file).values():
+            for migration_desc in MigrationSpec.load(self.config_file).values():
                 for expected_migrated_file in migration_desc.expected_migrated_files():
                     self.files_to_delete.add(expected_migrated_file)
 
@@ -1544,7 +1533,7 @@ class TestRunMigration(MigrationFixtures):
                         self.assertIn(migrated_file, capture_output.get_text())
 
             for migration_disc, migrated_filenames in results:
-                self.assertTrue(isinstance(migration_disc, MigrationDesc))
+                self.assertTrue(isinstance(migration_disc, MigrationSpec))
                 for migrated_file in migrated_filenames:
                     self.assertTrue(os.path.isfile(migrated_file))
 
