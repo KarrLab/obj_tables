@@ -22,14 +22,13 @@ from warnings import warn
 from pprint import pprint, pformat
 
 import obj_model
-from obj_model import TabularOrientation, RelatedAttribute
+from obj_model import TabularOrientation, RelatedAttribute, get_models
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
-# todo: remove obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME and in core.py: not needed if _check_related_attributes() is OK
 # todo: final bit of coverage
 # todo next: generic transformations in YAML config
 '''
@@ -37,6 +36,7 @@ documentation notes:
 a schema must be imported from a self-contained module or a 
 complete package, as otherwise import statements within the package may use another version of it on sys.path.
 
+Migration is not composable. It should be run independently of other obj_model code.
 '''
 # todo now
 '''
@@ -50,22 +50,6 @@ migrate xlsx files in wc_sim to new wc_lang:
 # todo: look for other places in migrate that should use local_attributes
 # todo next: test OneToManyAttribute
 # todo next: documentation
-
-# todo next: move remaining todos to GitHub issues
-# use deepcopy on obj_model.ontology.OntologyAttribute attributes when pronto has deepcopy
-# todo: associate schema pairs with renaming maps
-# todo: yaml config examples with multiple existing_files and multiple migrated_files
-# todo: move generate_wc_lang_migrator() to wc_lang
-# todo: separately specified default value for attribute
-# todo: obtain sort order of sheets in existing model file and replicate in migrated model file
-# todo: confirm this works for json, etc.
-# todo: test sym links in Migrator.parse_module_path
-# provide a well-documented example
-# todo: refactor testing into individual tests for read_existing_model, migrate, and write_migrated_file
-# todo: use PARSED_EXPR everywhere applicable
-# todo: use Model.revision to label git commit of wc_lang and automatically migrate models to current schema
-# and to report inconsistency between a schema and model file
-# todo: use SHA in wc_lang models to find schema
 
 class MigratorError(Exception):
     """ Exception raised for errors in obj_model.migrate
@@ -183,7 +167,7 @@ class SchemaModule(object):
 
         return package_directory, package_name, module_name
 
-    MUNGED_MODEL_NAME_SUFFIX = '_munged'
+    MUNGED_MODEL_NAME_SUFFIX = '_MUNGED'
 
     @staticmethod
     def _munge_model_name(model):
@@ -211,30 +195,37 @@ class SchemaModule(object):
         Raises:
             :obj:`MigratorError`: if `model` isn't munged
         """
-        if model.__name__.endswith("{}".format(SchemaModule.MUNGED_MODEL_NAME_SUFFIX)):
+        if SchemaModule._model_name_is_munged(model):
             return model.__name__[:-len(SchemaModule.MUNGED_MODEL_NAME_SUFFIX)]
         else:
             raise MigratorError("{} isn't munged".format(model.__name__))
 
     @staticmethod
-    def _munge_model_names(module):
-        """ Munge the names of `module`'s models, so the models cannot be found by name and reused
+    def _model_name_is_munged(model):
+        """ Is `model`'s name munged
 
         Args:
-            module (:obj:`Module`): a `Module` containing subclasses of `obj_model.Model`
+            model (:obj:`obj_model.Model`): a model
+
+        Returns:
+            :obj:`bool`: True if `model` is munged
         """
-        for model in SchemaModule._get_model_defs(module).values():
+        return model.__name__.endswith("{}".format(SchemaModule.MUNGED_MODEL_NAME_SUFFIX))
+
+    @staticmethod
+    def _munge_all_model_names():
+        """ Munge the names of all models, so the models cannot be found by name and reused
+        """
+        for model in get_models():
             model.__name__ = SchemaModule._munge_model_name(model)
 
     @staticmethod
-    def _unmunge_model_names(module):
-        """ Unmunge the names of `module`'s models so they can be used, inverting `_munge_model_names`
-
-        Args:
-            module (:obj:`Module`): a `Module` containing subclasses of `obj_model.Model`
+    def _unmunge_all_munged_model_names():
+        """ Unmunge the names of all models so they can be used, inverting `_munge_all_model_names`
         """
-        for model in SchemaModule._get_model_defs(module).values():
-            model.__name__ = SchemaModule._unmunge_model_name(model)
+        for model in get_models():
+            if SchemaModule._model_name_is_munged(model):
+                model.__name__ = SchemaModule._unmunge_model_name(model)
 
     ERROR_NOTICE = """Migrate doesn't import all parent package directories of the schema.
 Therefore, the schema and Python it imports, directly or indirectly, cannot use relative imports or cycles of imports."""
@@ -253,8 +244,7 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
             return self.MODULES[self.get_path()]
 
         # temporarily munge names of all models in modules imported for migration so they're not reused
-        for module in self.MODULES.values():
-            SchemaModule._munge_model_names(module)
+        SchemaModule._munge_all_model_names()
 
         # copy sys.paths and sys.modules so they can be restored
         sys_attrs = ['path', 'modules']
@@ -263,8 +253,8 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
             saved[sys_attr] = getattr(sys, sys_attr).copy()
 
         try:
-            # todo: remove here and in core.py: not needed if _check_related_attributes() is OK
-            # obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
+            # suspend global check that related attribute names don't clash
+            obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
             # insert package directory at front of path so existing packages cannot conflict
             if self.package_directory:
@@ -283,9 +273,10 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
             raise MigratorError("'{}' cannot be imported and exec'ed: {}\n{}".format(
                 self.get_path(), e, SchemaModule.ERROR_NOTICE))
         finally:
+            # reset global variable
+            obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
             # unmunge names of all models in modules imported for migration
-            for current_module in self.MODULES.values():
-                SchemaModule._unmunge_model_names(current_module)
+            SchemaModule._unmunge_all_munged_model_names()
 
         # restore sys.path
         sys.path = saved['path']

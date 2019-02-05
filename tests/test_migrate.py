@@ -33,7 +33,7 @@ import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-    RelatedAttribute, TabularOrientation, migrate, obj_math)
+    RelatedAttribute, TabularOrientation, migrate, obj_math, get_models)
 from wc_utils.workbook.io import read as read_workbook
 from obj_model.expression import Expression
 
@@ -471,21 +471,21 @@ class TestSchemaModule(unittest.TestCase):
         munged_name_a = SchemaModule._munge_model_name(A)
         self.assertTrue(munged_name_a.startswith(name_a))
         self.assertTrue(munged_name_a.endswith(SchemaModule.MUNGED_MODEL_NAME_SUFFIX))
+
         A.__name__ = munged_name_a
+        self.assertTrue(SchemaModule._model_name_is_munged(A))
         self.assertEquals(SchemaModule._unmunge_model_name(A), name_a)
         A.__name__ = SchemaModule._unmunge_model_name(A)
+        self.assertFalse(SchemaModule._model_name_is_munged(A))
         with self.assertRaisesRegex(MigratorError, "\w+ isn't munged"):
             SchemaModule._unmunge_model_name(A)
 
-        sm = SchemaModule(self.existing_defs_path)
-        module = sm.import_module_for_migration()
-        SchemaModule._munge_model_names(module)
-        models = SchemaModule._get_model_defs(module).values()
-        for model in models:
-            self.assertTrue(model.__name__.endswith(SchemaModule.MUNGED_MODEL_NAME_SUFFIX))
-        SchemaModule._unmunge_model_names(module)
-        for model in models:
-            self.assertFalse(model.__name__.endswith(SchemaModule.MUNGED_MODEL_NAME_SUFFIX))
+        SchemaModule._munge_all_model_names()
+        for model in get_models():
+            self.assertTrue(SchemaModule._model_name_is_munged(model))
+        SchemaModule._unmunge_all_munged_model_names()
+        for model in get_models():
+            self.assertFalse(SchemaModule._model_name_is_munged(model))
 
     def check_related_attributes(self, schema_module):
         # ensure that all RelatedAttributes point to Models contained within a module

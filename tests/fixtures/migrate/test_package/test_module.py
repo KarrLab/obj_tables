@@ -7,14 +7,8 @@ from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerA
                        PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
                        UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
                        TabularOrientation)
-
 import obj_model
-
 from test_package.pkg_dir.code import Foo
-'''
-from .pkg_dir import code
-from ..test_package.pkg_dir import code
-'''
 
 
 class Test(obj_model.Model):
