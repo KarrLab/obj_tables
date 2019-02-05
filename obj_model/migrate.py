@@ -29,8 +29,6 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
-# todo: final bit of coverage
-# todo next: generic transformations in YAML config
 '''
 documentation notes:
 a schema must be imported from a self-contained module or a 
@@ -38,9 +36,11 @@ complete package, as otherwise import statements within the package may use anot
 
 Migration is not composable. It should be run independently of other obj_model code.
 '''
+# todo: merge with master branch
+# todo: final bit of coverage
+# todo next: generic transformations in YAML config
 # todo now
 '''
-
 migrate xlsx files in wc_sim to new wc_lang:
 1: identify all wc model files in wc_sim, the wc_lang commits that they use, & get those wc_lang versions
 2. get the present wc_lang version
