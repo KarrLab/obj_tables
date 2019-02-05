@@ -7174,19 +7174,17 @@ def get_models(module=None, inline=True):
     return models
 
 
-def get_model(name, module=None, rev=False):
+def get_model(name, module=None):
     """ Get first `Model` with name `name`
 
     Args:
         name (:obj:`str`): name
         module (:obj:`Module`, optional): module
-        rev (:obj:`bool`, optional): if true, return newest `Model`; this relies on the insertion
-            ordering of dictionaries, available in the CPython implementation of Python 3.6+
 
     Returns:
         :obj:`class`: model class
     """
-    for model in get_subclasses(Model, rev=rev):
+    for model in get_subclasses(Model):
         if name == model.__module__ + '.' + model.__name__ or \
                 module is not None and module.__name__ == model.__module__ and name == model.__name__:
             return model
