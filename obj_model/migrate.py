@@ -36,7 +36,6 @@ complete package, as otherwise import statements within the package may use anot
 
 Migration is not composable. It should be run independently of other obj_model code.
 '''
-# todo: merge with master branch
 # todo: final bit of coverage
 # todo next: generic transformations in YAML config
 # todo now
@@ -47,9 +46,17 @@ migrate xlsx files in wc_sim to new wc_lang:
 3. create a config file for the wc model files
 4: migrate them
 '''
-# todo: look for other places in migrate that should use local_attributes
+# todo notes from lab meeting presentation
+# todo: good wc_lang migration example
+# todo: migration integrated into wc_lang & wc_kb
+# todo: wc_lang migration without a config file
+# todo: migration steps for wc_lang commits
+# todo: does SBML have migration
+# todo: retain or control column and row order
 # todo next: test OneToManyAttribute
 # todo next: documentation
+# todo next: try using requirements.txt and an empty sys.path to avoid collisions and enable relative imports
+# todo next: simply infer the deleted_models
 
 class MigratorError(Exception):
     """ Exception raised for errors in obj_model.migrate
@@ -167,7 +174,9 @@ class SchemaModule(object):
 
         return package_directory, package_name, module_name
 
-    MUNGED_MODEL_NAME_SUFFIX = '_MUNGED'
+    # suffix for munged model names
+    # include whitespace so munged Model names cannot collide with actual Model names
+    MUNGED_MODEL_NAME_SUFFIX = '_MUNGED WITH SPACES'
 
     @staticmethod
     def _munge_model_name(model):
