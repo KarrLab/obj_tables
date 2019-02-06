@@ -46,16 +46,20 @@ migrate xlsx files in wc_sim to new wc_lang:
 3. create a config file for the wc model files
 4: migrate them
 '''
-# todo notes from lab meeting presentation
+# todo: Double-check that obj_model.Model used by a schema is the object as the obj_model.Model used by migration
 # todo: good wc_lang migration example
+# todo: does SBML have migration
+# todo: Rename model_defs_files to schema_files
+
 # todo: migration integrated into wc_lang & wc_kb
 # todo: wc_lang migration without a config file
 # todo: migration steps for wc_lang commits
-# todo: does SBML have migration
 # todo: retain or control column and row order
+# todo: Preload a schema’s required packages from requirements.txt, and set sys.path to hold just the schema’s directory
+# to avoid collisions and enable relative imports
+# todo: deleted models: handle automatically (model that's not present in migrated schema or renamed is deleted), or add to config attributes
 # todo next: test OneToManyAttribute
 # todo next: documentation
-# todo next: try using requirements.txt and an empty sys.path to avoid collisions and enable relative imports
 # todo next: simply infer the deleted_models
 
 class MigratorError(Exception):

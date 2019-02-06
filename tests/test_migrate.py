@@ -26,6 +26,8 @@ import yaml
 from pprint import pprint, pformat
 from itertools import chain
 import inspect
+import cProfile
+import pstats
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
     RunMigration, MigrationSpec)
@@ -1474,6 +1476,21 @@ class TestMigrationController(MigrationFixtures):
         results = MigrationController.migrate_from_config(self.config_file)
         for migration_desc, migrated_files in results:
             self.assert_equal_workbooks(migration_desc.existing_files[0], migrated_files[0])
+
+    # @unittest.skip("optional performance test")
+    def test_migrate_from_config_performance(self):
+        # test performance
+        for migration_desc in MigrationSpec.load(self.config_file).values():
+            for expected_migrated_file in migration_desc.expected_migrated_files():
+                self.files_to_delete.add(expected_migrated_file)
+
+        out_file = temp_pathname(self, "profile_out.out")
+        locals = {'self':self, 'MigrationController':MigrationController}
+        cProfile.runctx('results = MigrationController.migrate_from_config(self.config_file)', {},
+            locals, filename=out_file)
+        profile = pstats.Stats(out_file)
+        print("Profile for 'MigrationController.migrate_from_config(self.config_file)'")
+        profile.strip_dirs().sort_stats('cumulative').print_stats(20)
 
     def test_wc_lang_migration(self):
         # round-trip migrate through changed schema
