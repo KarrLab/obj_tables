@@ -36,8 +36,6 @@ complete package, as otherwise import statements within the package may use anot
 
 Migration is not composable. It should be run independently of other obj_model code.
 '''
-# todo: final bit of coverage
-# todo next: generic transformations in YAML config
 # todo now
 '''
 migrate xlsx files in wc_sim to new wc_lang:
@@ -46,10 +44,11 @@ migrate xlsx files in wc_sim to new wc_lang:
 3. create a config file for the wc model files
 4: migrate them
 '''
-# todo: Double-check that obj_model.Model used by a schema is the object as the obj_model.Model used by migration
+# todo: using get_superclasses, Double-check that obj_model.Model used by a schema is the object as the obj_model.Model used by migration
+# todo: final bit of coverage
+# todo next: generic transformations in YAML config
 # todo: good wc_lang migration example
-# todo: does SBML have migration
-# todo: Rename model_defs_files to schema_files
+# todo: does SBML have migration?
 
 # todo: migration integrated into wc_lang & wc_kb
 # todo: wc_lang migration without a config file
@@ -297,7 +296,7 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
         # to avoid side effects do not allow changes to sys.modules
         sys.modules = saved['modules']
 
-        errors = self._check_related_attributes(module=module)
+        errors = self._check_imported_models(module=module)
         if errors:
             raise MigratorError('\n'.join(errors))
 
@@ -322,19 +321,23 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
                 models[name] = cls
         return models
 
-    def _check_related_attributes(self, module=None):
-        """ Ensure that all RelatedAttributes in all models reference models in the module
+    def _check_imported_models(self, module=None):
+        """ Check consistency of an imported module
 
         Args:
             module (:obj:`Module`, optional): a `Module` containing subclasses of `obj_model.Model`;
             if not provided, the module is imported
 
         Returns:
-            :obj:`list`: reference errors in the module
+            :obj:`list`: errors in the module
         """
-        errors = []
         module = self.import_module_for_migration() if module is None else module
         model_defs = SchemaModule._get_model_defs(module)
+
+        errors = []
+        # todo: ensure that obj_model.Model used by a schema is the same as the obj_model.Model used by migration
+
+        # ensure that all RelatedAttributes in all models reference models in the module
         for model_name, model in model_defs.items():
             for attr_name, local_attr in model.Meta.local_attributes.items():
 
@@ -1296,7 +1299,7 @@ class MigrationSpec(object):
         migrator (:obj:`str`): the name of a Migrator to use for migrations, which must be a key in
             `self.MIGRATOR_CREATOR_MAP`; default = `standard_migrator`, which maps to `Migrator`
         existing_files (:obj:`list`: of :obj:`str`, optional): existing files to migrate
-        model_defs_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
+        schema_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
             definitions for each state in a sequence of migrations
         seq_of_renamed_models (:obj:`list` of :obj:`list`, optional): list of renamed models for use
             by a `Migrator` for each migration in a sequence of migrations
@@ -1315,18 +1318,18 @@ class MigrationSpec(object):
     # map migrator names to callables that create `Migrator`s
     MIGRATOR_CREATOR_MAP = dict(standard_migrator=Migrator, wc_lang=Migrator.generate_wc_lang_migrator)
 
-    _REQUIRED_ATTRS = ['name', 'migrator', 'existing_files', 'model_defs_files']
+    _REQUIRED_ATTRS = ['name', 'migrator', 'existing_files', 'schema_files']
     _RENAMING_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes']
     _ALLOWED_ATTRS = _REQUIRED_ATTRS + _RENAMING_LISTS + ['migrated_files', 'migrate_suffix',
         'migrate_in_place', 'migrations_config_file', '_prepared', 'MIGRATOR_CREATOR_MAP']
 
-    def __init__(self, name, migrator='standard_migrator', existing_files=None, model_defs_files=None,
+    def __init__(self, name, migrator='standard_migrator', existing_files=None, schema_files=None,
         seq_of_renamed_models=None, seq_of_renamed_attributes=None, migrated_files=None, migrate_suffix=None,
         migrate_in_place=False, migrations_config_file=None):
         self.name = name
         self.migrator = migrator
         self.existing_files = existing_files
-        self.model_defs_files = model_defs_files
+        self.schema_files = schema_files
         self.seq_of_renamed_models = seq_of_renamed_models
         self.seq_of_renamed_attributes = seq_of_renamed_attributes
         self.migrated_files = migrated_files
@@ -1435,15 +1438,15 @@ class MigrationSpec(object):
         if errors:
             return errors
 
-        if len(self.model_defs_files) < 2:
-            return ["model_defs_files must contain at least 2 model definitions, but it has only {}".format(
-                len(self.model_defs_files))]
+        if len(self.schema_files) < 2:
+            return ["schema_files must contain at least 2 model definitions, but it has only {}".format(
+                len(self.schema_files))]
 
         for renaming_list in self._RENAMING_LISTS:
             if getattr(self, renaming_list) is not None:
-                if len(getattr(self, renaming_list)) != len(self.model_defs_files) - 1:
+                if len(getattr(self, renaming_list)) != len(self.schema_files) - 1:
                     errors.append("{} must have 1 mapping for each of the {} migration(s) specified by "
-                        "model_defs_files, but it has {}".format(renaming_list,  len(self.model_defs_files) - 1,
+                        "schema_files, but it has {}".format(renaming_list,  len(self.schema_files) - 1,
                         len(getattr(self, renaming_list))))
 
         if self.seq_of_renamed_models:
@@ -1522,7 +1525,7 @@ class MigrationSpec(object):
             self.seq_of_renamed_attributes = migrated_renamed_attributes
 
         # if a renaming_list isn't provided, replace it with a list of Nones indicating no renaming
-        empty_per_migration_list = [None]*(len(self.model_defs_files) - 1)
+        empty_per_migration_list = [None]*(len(self.schema_files) - 1)
         for renaming_list in self._RENAMING_LISTS:
             if getattr(self, renaming_list) is None:
                 setattr(self, renaming_list, empty_per_migration_list)
@@ -1531,7 +1534,7 @@ class MigrationSpec(object):
         if self.migrations_config_file:
             self.existing_files = self._normalize_filenames(self.existing_files,
                 relative_file=self.migrations_config_file)
-            self.model_defs_files = self._normalize_filenames(self.model_defs_files,
+            self.schema_files = self._normalize_filenames(self.schema_files,
                 relative_file=self.migrations_config_file)
             if self.migrated_files:
                 self.migrated_files = self._normalize_filenames(self.migrated_files,
@@ -1596,7 +1599,7 @@ class MigrationController(object):
                 its migrated filename
 
         Raises:
-            :obj:`MigratorError`: if `model_defs_files`, `renamed_models`, and `seq_of_renamed_attributes`
+            :obj:`MigratorError`: if `schema_files`, `renamed_models`, and `seq_of_renamed_attributes`
                 are not consistent with each other;
         """
         md = migration_desc
@@ -1606,14 +1609,14 @@ class MigrationController(object):
         migrated_files = md.migrated_files if md.migrated_files else [None] * len(md.existing_files)
         all_models, all_migrated_files = [], []
         for existing_file, migrated_file in zip(md.existing_files, migrated_files):
-            num_migrations = len(md.model_defs_files) - 1
+            num_migrations = len(md.schema_files) - 1
             # since 0 < num_migrations this loop always executes and branch coverage reports that
             # the 'for' line doesn't jump to return; this cannot be annotated with 'pragma: no cover'
             for i in range(num_migrations):
                 # create Migrator for each pair of schemas
                 migrator_creator = migration_desc.get_migrator()
-                migrator = migrator_creator(existing_defs_file=md.model_defs_files[i],
-                    migrated_defs_file=md.model_defs_files[i+1], renamed_models=md.seq_of_renamed_models[i],
+                migrator = migrator_creator(existing_defs_file=md.schema_files[i],
+                    migrated_defs_file=md.schema_files[i+1], renamed_models=md.seq_of_renamed_models[i],
                     renamed_attributes=md.seq_of_renamed_attributes[i])
                 migrator.prepare()
                 # the 1st iteration inits `models` from the existing file; iteration n+1 uses `models` set in n

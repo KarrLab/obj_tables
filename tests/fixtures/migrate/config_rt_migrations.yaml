@@ -1,11 +1,11 @@
 # a migrations configuration
 # round-trip migrations, which transform an obj_model model file to itself
 simple_migration:
-    model_defs_files: [small_existing.py, small_existing.py]
+    schema_files: [small_existing.py, small_existing.py]
     existing_files: [example_existing_model.xlsx]
 
 migration_with_renaming:
-    model_defs_files: [small_existing_rt.py, small_migrated_rt.py, small_existing_rt.py]
+    schema_files: [small_existing_rt.py, small_migrated_rt.py, small_existing_rt.py]
     seq_of_renamed_models: [[[Test, MigratedTest]], [[MigratedTest, Test]]]
     seq_of_renamed_attributes: [
         # for 1st migration:
@@ -23,7 +23,7 @@ migration_with_renaming:
 wc_lang_migration:
     # use fully_instantiated_wc_lang_model.xlsx so round-trip test makes identical existing and migrated files
     existing_files: [fully_instantiated_wc_lang_model.xlsx]
-    model_defs_files: [wc_lang/wc_lang/core.py, wc_lang/wc_lang/core_modified.py, wc_lang/wc_lang/core.py]
+    schema_files: [wc_lang/wc_lang/core.py, wc_lang/wc_lang/core_modified.py, wc_lang/wc_lang/core.py]
     seq_of_renamed_models: [
         # for 1st migration:
         [[Parameter, ParameterRenamed]],

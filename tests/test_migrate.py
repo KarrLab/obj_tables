@@ -262,7 +262,7 @@ class MigrationFixtures(unittest.TestCase):
         # since MigrationSpec describes a sequence of migrations, embed renamings in lists
         self.migration_desc = MigrationSpec('name',
             existing_files=[self.example_existing_rt_model_copy],
-            model_defs_files=[self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path],
+            schema_files=[self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path],
             seq_of_renamed_models=[self.existing_2_migrated_renamed_models],
             seq_of_renamed_attributes=[self.existing_2_migrated_renamed_attributes])
 
@@ -562,17 +562,17 @@ class TestSchemaModule(unittest.TestCase):
             sm = SchemaModule(path)
             self.check_related_attributes(sm)
 
-        # test _check_related_attributes errors exception
+        # test _check_imported_models errors exception
         sm = SchemaModule(self.small_bad_related_path)
         with self.assertRaisesRegex(MigratorError,
             "\w+\.\w+ references a \w+, but it's not the model in module \w+"):
             sm.import_module_for_migration()
 
-    def test_check_related_attributes(self):
+    def test_check_imported_models(self):
         for good_schema_path in [self.existing_defs_path, self.migrated_defs_path, self.wc_lang_schema_existing,
             self.wc_lang_schema_modified]:
             sm = SchemaModule(good_schema_path)
-            self.assertEqual(sm._check_related_attributes(), [])
+            self.assertEqual(sm._check_imported_models(), [])
 
     def test_get_model_defs(self):
         sm = SchemaModule(self.existing_defs_path)
@@ -1277,16 +1277,16 @@ class TestMigrationSpec(MigrationFixtures):
             self.assertEqual(md.validate(), ["missing required attribute '{}'".format(attr)])
 
         md = copy.deepcopy(self.migration_desc)
-        md.model_defs_files = []
+        md.schema_files = []
         self.assertEqual(md.validate(),
-            ["model_defs_files must contain at least 2 model definitions, but it has only 0"])
+            ["schema_files must contain at least 2 model definitions, but it has only 0"])
 
         for renaming_list in MigrationSpec._RENAMING_LISTS:
             md = copy.deepcopy(self.migration_desc)
             setattr(md, renaming_list, [[], []])
             error = md.validate()[0]
             self.assertRegex(error,
-                "{} must have 1 .+ 1 migration.+ model_defs_files, but it has \d".format(renaming_list))
+                "{} must have 1 .+ 1 migration.+ schema_files, but it has \d".format(renaming_list))
 
         for renaming_list in MigrationSpec._RENAMING_LISTS:
             md = copy.deepcopy(self.migration_desc)
@@ -1348,7 +1348,7 @@ class TestMigrationSpec(MigrationFixtures):
             [tmp_path, expected_abs_file_in_dir])
 
     def test_standardize(self):
-        md = MigrationSpec('name', model_defs_files=['f1.py', 'f2.py'])
+        md = MigrationSpec('name', schema_files=['f1.py', 'f2.py'])
         md.standardize()
         for renaming in MigrationSpec._RENAMING_LISTS:
             self.assertEqual(getattr(md, renaming), [None])
@@ -1361,9 +1361,9 @@ class TestMigrationSpec(MigrationFixtures):
         migrations_config_file_dir = os.path.dirname(md.migrations_config_file)
         md.standardize()
         for renaming in MigrationSpec._RENAMING_LISTS:
-            self.assertEqual(len(getattr(md, renaming)), len(md.model_defs_files) - 1)
+            self.assertEqual(len(getattr(md, renaming)), len(md.schema_files) - 1)
             self.assertEqual(getattr(md, renaming), [None])
-        for file_list in ['existing_files', 'model_defs_files']:
+        for file_list in ['existing_files', 'schema_files']:
             for file in getattr(md, file_list):
                 self.assertEqual(os.path.dirname(file), migrations_config_file_dir)
 
@@ -1398,7 +1398,7 @@ class TestMigrationSpec(MigrationFixtures):
         migration_desc = migration_descs[name]
         migration_desc_str = str(migration_desc)
         self.assertIn(name, migration_desc_str)
-        self.assertIn(str(migration_desc.model_defs_files), migration_desc_str)
+        self.assertIn(str(migration_desc.schema_files), migration_desc_str)
 
 
 class TestMigrationController(MigrationFixtures):
@@ -1416,7 +1416,7 @@ class TestMigrationController(MigrationFixtures):
             MigrationController.migrate_over_schema_sequence(bad_migration_desc)
 
         # round-trip test: existing -> migrated -> migrated -> existing
-        model_defs_files = [self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path,
+        schema_files = [self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path,
             self.migrated_rt_model_defs_path, self.existing_rt_model_defs_path]
         migrated_2_existing_renamed_models = self.invert_renaming(self.existing_2_migrated_renamed_models)
         migrated_2_existing_renamed_attributes = self.invert_renaming(self.existing_2_migrated_renamed_attributes)
@@ -1426,7 +1426,7 @@ class TestMigrationController(MigrationFixtures):
         migrated_filename = temp_pathname(self, 'example_existing_model_rt_migrated.xlsx')
         migration_desc = MigrationSpec('name',
             existing_files=[self.example_existing_rt_model_copy],
-            model_defs_files=model_defs_files,
+            schema_files=schema_files,
             seq_of_renamed_models=seq_of_renamed_models,
             seq_of_renamed_attributes=seq_of_renamed_attributes,
             migrated_files=[migrated_filename])
@@ -1503,7 +1503,7 @@ class TestMigrationController(MigrationFixtures):
             "1: create fully instantiated model with 'model' attributes: migrate model from existing wc_lang core to itself",
             migrator='wc_lang',
             existing_files=[self.wc_lang_model_copy],
-            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
+            schema_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
             migrated_files=[fully_instantiated_wc_lang_model])
         fully_instantiate_migration.prepare()
         MigrationController.migrate_over_schema_sequence(fully_instantiate_migration)
@@ -1511,7 +1511,7 @@ class TestMigrationController(MigrationFixtures):
         rt_through_changes_migration = MigrationSpec(
             "2: round trip migration with migrations that invert each other",
             existing_files=[fully_instantiated_wc_lang_model],
-            model_defs_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified,
+            schema_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified,
                 self.wc_lang_schema_existing],
             seq_of_renamed_models=[[('Parameter', 'ParameterRenamed')], [('ParameterRenamed', 'Parameter')]])
         rt_through_changes_migration.prepare()

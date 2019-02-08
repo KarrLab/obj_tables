@@ -34,7 +34,7 @@ class Test(Model):
 
 
 class Reference(Model):
-    """ Another definition of Reference, which causes a _check_related_attributes error
+    """ Another definition of Reference, which causes a _check_imported_models error
 
     Related attributes:
         subtests (:obj:`list` of `Subtest`): subtests
