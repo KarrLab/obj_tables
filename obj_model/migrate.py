@@ -44,7 +44,6 @@ migrate xlsx files in wc_sim to new wc_lang:
 3. create a config file for the wc model files
 4: migrate them
 '''
-# todo: using get_superclasses, Double-check that obj_model.Model used by a schema is the object as the obj_model.Model used by migration
 # todo: final bit of coverage
 # todo next: generic transformations in YAML config
 # todo: good wc_lang migration example
@@ -304,8 +303,7 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
 
         return module
 
-    @staticmethod
-    def _get_model_defs(module):
+    def _get_model_defs(self, module):
         """ Obtain the `obj_model.Model`s in a module
 
         Args:
@@ -313,12 +311,18 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
 
         Returns:
             :obj:`dict`: the Models in a module
+
+        Raises:
+            :obj:`MigratorError`: if no subclasses of `obj_model.Model` are found
         """
         models = {}
         for name, cls in inspect.getmembers(module, inspect.isclass):
             if issubclass(cls, obj_model.core.Model) and \
                 not cls in {obj_model.Model, obj_model.abstract.AbstractModel}:
                 models[name] = cls
+        # ensure that a schema contains some obj_model.Models
+        if not models:
+            raise MigratorError("No subclasses of obj_model.Model found in '{}'".format(self.abs_module_path))
         return models
 
     def _check_imported_models(self, module=None):
@@ -332,12 +336,10 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
             :obj:`list`: errors in the module
         """
         module = self.import_module_for_migration() if module is None else module
-        model_defs = SchemaModule._get_model_defs(module)
-
-        errors = []
-        # todo: ensure that obj_model.Model used by a schema is the same as the obj_model.Model used by migration
+        model_defs = self._get_model_defs(module)
 
         # ensure that all RelatedAttributes in all models reference models in the module
+        errors = []
         for model_name, model in model_defs.items():
             for attr_name, local_attr in model.Meta.local_attributes.items():
 

@@ -411,7 +411,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(parse_module_path(module_in_pkg_in_root),
             (expected_dir, expected_package, expected_module))
 
-    def check_imported_module(self, module_name, module):
+    def check_imported_module(self, schema_module, module_name, module):
         """ Check that an imported module has the right models and relationships between them
         """
         self.assertEquals(module_name, module.__name__)
@@ -434,7 +434,7 @@ class TestSchemaModule(unittest.TestCase):
             'test_package.pkg_dir.code': [],
         }
 
-        model_defs = SchemaModule._get_model_defs(module)
+        model_defs = schema_module._get_model_defs(module)
         self.assertEquals(expected_models[module_name], set(model_defs))
         for left, right in expected_relationships[module_name]:
             left_model, left_attr = left
@@ -451,14 +451,14 @@ class TestSchemaModule(unittest.TestCase):
         # import module in a package
         sm = SchemaModule(test_module)
         module = sm.import_module_for_migration()
-        self.check_imported_module('test_package.test_module', module)
+        self.check_imported_module(sm, 'test_package.test_module', module)
         self.check_related_attributes(sm)
 
         # import module two dirs down in a package
         code = os.path.join(test_package_dir, 'pkg_dir', 'code.py')
         sm = SchemaModule(code)
         module = sm.import_module_for_migration()
-        self.check_imported_module('test_package.pkg_dir.code', module)
+        self.check_imported_module(sm, 'test_package.pkg_dir.code', module)
         self.check_related_attributes(sm)
 
     def test_munging(self):
@@ -492,7 +492,7 @@ class TestSchemaModule(unittest.TestCase):
     def check_related_attributes(self, schema_module):
         # ensure that all RelatedAttributes point to Models contained within a module
         module = schema_module.import_module_for_migration()
-        model_defs = SchemaModule._get_model_defs(module)
+        model_defs = schema_module._get_model_defs(module)
         model_names = set(model_defs)
         models = set(model_defs.values())
 
@@ -516,7 +516,7 @@ class TestSchemaModule(unittest.TestCase):
         module = sm.import_module_for_migration()
         self.assertIn(sm.module_path, SchemaModule.MODULES)
         self.assertEquals(module, SchemaModule.MODULES[sm.module_path])
-        self.check_imported_module('small_existing', module)
+        self.check_imported_module(sm, 'small_existing', module)
         self.check_related_attributes(sm)
 
         # importing self.existing_defs_path again returns same module from cache
@@ -526,7 +526,7 @@ class TestSchemaModule(unittest.TestCase):
         copy_of_small_existing = copy_file_to_tmp(self, 'small_existing.py')
         sm = SchemaModule(copy_of_small_existing)
         module = sm.import_module_for_migration()
-        self.check_imported_module('small_existing', module)
+        self.check_imported_module(sm, 'small_existing', module)
         self.check_related_attributes(sm)
 
         # test import from a package
@@ -577,9 +577,18 @@ class TestSchemaModule(unittest.TestCase):
     def test_get_model_defs(self):
         sm = SchemaModule(self.existing_defs_path)
         module = sm.import_module_for_migration()
-        models = SchemaModule._get_model_defs(module)
+        models = sm._get_model_defs(module)
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
         self.assertEqual(models['Test'].__name__, 'Test')
+
+        # test detection of a module with no Models
+        empty_module = os.path.join(self.tmp_dir, 'empty_module.py')
+        f = open(empty_module, "w")
+        f.write('# a module with no Models')
+        f.close()
+        sm = SchemaModule(empty_module)
+        with self.assertRaisesRegex(MigratorError, "No subclasses of obj_model\.Model found in '\S+'"):
+            sm.import_module_for_migration()
 
     def test_str(self):
         sm = SchemaModule(self.existing_defs_path)
