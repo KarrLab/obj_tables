@@ -6,8 +6,6 @@
 :License: MIT
 """
 
-from wc_utils.util.types import get_subclasses
-
 import capturer
 import os
 import sys
@@ -28,9 +26,13 @@ from itertools import chain
 import inspect
 import cProfile
 import pstats
+import git
+import networkx as nx
+from networkx.algorithms.shortest_paths.generic import has_path
+import random
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
-    RunMigration, MigrationSpec)
+    RunMigration, MigrationSpec, SchemaCommitChanges, AutomatedMigration, GitRepo)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -1272,6 +1274,14 @@ class TestMigrationSpec(MigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
             MigrationSpec.get_migrations_config(os.path.join(self.fixtures_path, 'no_file.yaml'))
 
+        # test detecting bad yaml
+        bad_yaml = os.path.join(self.tmp_dir, 'bad_yaml.yaml')
+        f = open(bad_yaml, "w")
+        f.write("unbalanced blackets: ][")
+        f.close()
+        with self.assertRaisesRegex(MigratorError, "could not parse YAML migration config file: '\S+'"):
+            MigrationSpec.get_migrations_config(bad_yaml)
+
     def test_validate(self):
         self.assertFalse(self.migration_desc.validate())
         md = copy.deepcopy(self.migration_desc)
@@ -1528,6 +1538,103 @@ class TestMigrationController(MigrationFixtures):
             MigrationController.migrate_over_schema_sequence(rt_through_changes_migration)
         # validate round trip
         self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
+
+
+class TestSchemaChangeSpec(MigrationFixtures):
+
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test_init(self):
+        pass
+
+    def test_(self):
+        pass
+
+
+class TestGitRepo(unittest.TestCase):
+
+    # todo: construct small test repo to test git-based methods
+    def setUp(self):
+        class MockGitRepo(GitRepo):
+            def __init__(self):
+                self.commit_DAG = None
+        self.fake_git_repo = MockGitRepo()
+
+        self.repo_root = os.path.dirname(os.path.dirname(__file__))
+        self.git_repo = GitRepo(self.repo_root)
+
+    def test_init(self):
+        git_repo = self.git_repo
+        self.assertEqual(self.repo_root, git_repo.repo_dir)
+        self.assertTrue(isinstance(git_repo.repo, git.Repo))
+
+    def test_repo_name(self):
+        self.assertEqual(self.git_repo.repo_name(), 'obj_model')
+
+    def test_latest_commit(self):
+        self.assertTrue(isinstance(self.git_repo.latest_commit(), git.objects.commit.Commit))
+
+    def test_commits_as_graph(self):
+        commit_DAG = self.git_repo.commits_as_graph()
+        self.assertTrue(isinstance(commit_DAG, nx.classes.digraph.DiGraph))
+
+    def test_get_hash(self):
+        hash = GitRepo.get_hash(self.git_repo.latest_commit())
+        self.assertEqual(len(hash), 40)
+
+    def test_get_clone_at_commit(self):
+        clone = self.git_repo.get_clone_at_commit(self.git_repo.latest_commit())
+
+        # check that TemporaryDirectory is destroyed when a GitRepo is destroyed
+        def make_git_repo():
+            git_repo = GitRepo(self.repo_root)
+            git_repo.get_clone_at_commit(self.git_repo.latest_commit())
+            return [dir.name for dir in git_repo.temp_dirs]
+        dirs = make_git_repo()
+        for d in dirs:
+            self.assertFalse(os.path.isdir(d))
+
+    def check_dependency(self, sequence, DAG):
+        # check that sequence satisfies "any nodes u, v with a path u -> ... -> v in the DAG appear in
+        # the same order in the sequence"
+        sequence.reverse()
+        for i in range(len(sequence)):
+            u = sequence[i]
+            for j in range(i+1, len(sequence)):
+                v = sequence[j]
+                if has_path(DAG, v, u):
+                    self.fail("{} @ {} precedes {} @ {} in sequence, but DAG "
+                        "has a path {} -> {}".format(u, i, v, j, v, u))
+
+    def test_commit_seq_with_schema_changes(self):
+        fake_git_repo = self.fake_git_repo
+        # to simplify initial tests of commit_seq_with_schema_changes use integers, rather than commits
+        single_path_edges = [(2, 1), (3, 2), (4, 3), (5, 4)]
+        fake_git_repo.commit_DAG = nx.DiGraph(single_path_edges)
+        sequence = fake_git_repo.commit_seq_with_schema_changes([4, 1, 2])
+        only_possible_sequence = [1, 2, 4]
+        self.assertEqual(sequence, only_possible_sequence)
+
+        multi_path_edges = [(2, 1), (3, 2), (7, 3), (8, 7), (4, 2), (6, 4), (5, 4), (6, 5), (7, 6)]
+        fake_git_repo.commit_DAG = nx.DiGraph(multi_path_edges)
+        n_tests = 20
+        for _ in range(n_tests):
+            first = 1
+            stop = 9
+            population = range(first, stop)
+            commits_to_migrate = random.sample(population, random.choice(range(2, stop - first + 1)))
+            sequence = fake_git_repo.commit_seq_with_schema_changes(commits_to_migrate)
+            self.check_dependency(sequence, fake_git_repo.commit_DAG)
+
+        # create a topological sort of 50 obj_model commits
+        self.git_repo.commit_DAG = self.git_repo.commits_as_graph()
+        commits_to_migrate = random.sample(self.git_repo.commit_DAG.nodes, 50)
+        sequence = self.git_repo.commit_seq_with_schema_changes(commits_to_migrate)
+        self.check_dependency(sequence, self.git_repo.commit_DAG)
 
 
 class TestRunMigration(MigrationFixtures):
