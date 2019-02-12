@@ -2007,6 +2007,8 @@ class GitRepo(object):
         Returns:
             :obj:`str`: the repo's name
         """
+        print(self.repo.git_dir)
+        print(self.repo_dir)
         return os.path.basename(self.repo_dir)
 
     def latest_commit(self):
