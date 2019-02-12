@@ -2009,8 +2009,8 @@ class GitRepo(object):
         """
         print(self.repo.git_dir)
         print(self.repo_dir)
-        sys.stderr.write("self.repo_dir", self.repo_dir)
-        sys.stderr.write("self.repo.git_dir", self.repo.git_dir)
+        sys.stderr.write("self.repo_dir: {}\n".format(self.repo_dir))
+        sys.stderr.write("self.repo.git_dir: {}\n".format(self.repo.git_dir))
         return os.path.basename(self.repo_dir)
 
     def latest_commit(self):
