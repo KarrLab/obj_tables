@@ -1576,7 +1576,7 @@ class TestSchemaCommitChanges(unittest.TestCase):
         bad_yaml = os.path.join(temp_dir.name, 'bad_yaml.yaml')
         with open(bad_yaml, "w") as f:
             f.write("unbalanced blackets: ][")
-        with self.assertRaisesRegex(MigratorError, 
+        with self.assertRaisesRegex(MigratorError,
             "could not parse YAML schema commit changes file: '\S+':"):
             SchemaCommitChanges.load(bad_yaml)
 
