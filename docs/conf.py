@@ -43,6 +43,7 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinxcontrib.googleanalytics',
     'sphinxcontrib.spelling',
+    'sphinxprettysearchresults',
 ]
 
 # napoleon options
