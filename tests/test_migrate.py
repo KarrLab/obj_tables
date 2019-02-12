@@ -14,6 +14,7 @@ import unittest
 import getpass
 import errno
 import inspect
+import tempfile
 from tempfile import mkdtemp
 import shutil
 import numpy
@@ -1540,19 +1541,77 @@ class TestMigrationController(MigrationFixtures):
         self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
 
-class TestSchemaChangeSpec(MigrationFixtures):
+class TestSchemaCommitChanges(unittest.TestCase):
 
     def setUp(self):
-        super().setUp()
+        self.schema_commit_changes = SchemaCommitChanges(hash='6781a25e41c049b0e367c4cd99b35106038d72ef')
 
-    def tearDown(self):
-        super().tearDown()
+    def test_get_timestamp(self):
+        timestamp = SchemaCommitChanges.get_timestamp()
+        # good for 81 years:
+        self.assertTrue(timestamp.startswith('20'))
+        self.assertEqual(len(timestamp), 19)
 
-    def test_init(self):
-        pass
+    def test_generate_filename(self):
+        filename = self.schema_commit_changes.generate_filename()
+        self.assertTrue(filename.endswith('.yaml'))
+        self.assertTrue(2 <= len(filename.split('_')))
 
-    def test_(self):
-        pass
+    def test_make_template(self):
+        temp_dir = tempfile.TemporaryDirectory()
+        pathname = self.schema_commit_changes.make_template(temp_dir.name)
+        data = yaml.load(open(pathname, 'r'))
+        for attr in ['renamed_models', 'renamed_attributes']:
+            self.assertEqual(data[attr], [])
+        for attr in ['hash', 'transformations_file']:
+            self.assertTrue(isinstance(data[attr], str))
+
+    def test_load(self):
+        no_such_file = 'no such file'
+        with self.assertRaisesRegex(MigratorError, "could not read schema commit changes file: '.+'"):
+            SchemaCommitChanges.load(no_such_file)
+
+        # detect bad yaml
+        temp_dir = tempfile.TemporaryDirectory()
+        bad_yaml = os.path.join(temp_dir.name, 'bad_yaml.yaml')
+        with open(bad_yaml, "w") as f:
+            f.write("unbalanced blackets: ][")
+        with self.assertRaisesRegex(MigratorError, 
+            "could not parse YAML schema commit changes file: '\S+':"):
+            SchemaCommitChanges.load(bad_yaml)
+
+        with open(bad_yaml, "w") as f:
+            f.write("wrong_attr: []")
+        with self.assertRaisesRegex(MigratorError,
+            "schema commit changes file must have a dict with the attributes in \S+._REQUIRED_ATTRS: .+"):
+            SchemaCommitChanges.load(bad_yaml)
+
+        temp_dir = tempfile.TemporaryDirectory()
+        pathname = self.schema_commit_changes.make_template(temp_dir.name)
+        with self.assertRaisesRegex(MigratorError,
+            "schema commit changes file is empty \(an unmodified template\): '.+'"):
+            SchemaCommitChanges.load(pathname)
+
+    def test_generate_instance(self):
+        temp_dir = tempfile.TemporaryDirectory()
+        good_yaml = os.path.join(temp_dir.name, 'good_yaml.yaml')
+        data = dict(
+            hash='',
+            renamed_models=[('Foo', 'FooNew')],
+            renamed_attributes=[('Foo', 'Attr'), ('FooNew', 'AttrNew')],
+            transformations_file=''
+        )
+        with open(good_yaml, "w") as f:
+            f.write(yaml.dump(data))
+        schema_commit_changes = SchemaCommitChanges.generate_instance(good_yaml)
+        self.assertEqual(schema_commit_changes, SchemaCommitChanges(**data))
+
+    def test_eq(self):
+        self.assertTrue(self.schema_commit_changes != 1)
+        schema_commit_changes_copy = copy.deepcopy(self.schema_commit_changes)
+        self.assertEqual(self.schema_commit_changes, schema_commit_changes_copy)
+        schema_commit_changes_copy.hash += '_end'
+        self.assertTrue(self.schema_commit_changes != schema_commit_changes_copy)
 
 
 class TestGitRepo(unittest.TestCase):
