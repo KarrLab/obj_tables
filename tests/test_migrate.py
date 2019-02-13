@@ -1541,10 +1541,32 @@ class TestMigrationController(MigrationFixtures):
         self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
 
-class TestSchemaCommitChanges(unittest.TestCase):
+class CommitChangesFixtures(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
+        # get the repo once for the TestCase to speed up tests
+        cls.git_repo = GitRepo(cls.test_repo_url)
+
+    @classmethod
+    def tearDownClass(cls):
+        # remove the GitRepo so that its temp_dirs get deleted
+        del cls.git_repo
+
+
+class TestSchemaCommitChanges(CommitChangesFixtures):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
 
     def setUp(self):
-        self.schema_commit_changes = SchemaCommitChanges(hash='6781a25e41c049b0e367c4cd99b35106038d72ef')
+        self.empty_schema_commit_changes = SchemaCommitChanges(hash='6781a25e41c049b0e367c4cd99b35106038d72ef')
 
     def test_get_timestamp(self):
         timestamp = SchemaCommitChanges.get_timestamp()
@@ -1553,13 +1575,16 @@ class TestSchemaCommitChanges(unittest.TestCase):
         self.assertEqual(len(timestamp), 19)
 
     def test_generate_filename(self):
-        filename = self.schema_commit_changes.generate_filename()
+        filename = self.empty_schema_commit_changes.generate_filename()
         self.assertTrue(filename.endswith('.yaml'))
         self.assertTrue(2 <= len(filename.split('_')))
 
+    def test_make_templatex(self):
+        pathname = self.empty_schema_commit_changes.make_template('/tmp/foo')
+
     def test_make_template(self):
         temp_dir = tempfile.TemporaryDirectory()
-        pathname = self.schema_commit_changes.make_template(temp_dir.name)
+        pathname = self.empty_schema_commit_changes.make_template(temp_dir.name)
         data = yaml.load(open(pathname, 'r'))
         for attr in ['renamed_models', 'renamed_attributes']:
             self.assertEqual(data[attr], [])
@@ -1587,7 +1612,7 @@ class TestSchemaCommitChanges(unittest.TestCase):
             SchemaCommitChanges.load(bad_yaml)
 
         temp_dir = tempfile.TemporaryDirectory()
-        pathname = self.schema_commit_changes.make_template(temp_dir.name)
+        pathname = self.empty_schema_commit_changes.make_template(temp_dir.name)
         with self.assertRaisesRegex(MigratorError,
             "schema commit changes file is empty \(an unmodified template\): '.+'"):
             SchemaCommitChanges.load(pathname)
@@ -1607,26 +1632,23 @@ class TestSchemaCommitChanges(unittest.TestCase):
         self.assertEqual(schema_commit_changes, SchemaCommitChanges(**data))
 
     def test_eq(self):
-        self.assertTrue(self.schema_commit_changes != 1)
-        schema_commit_changes_copy = copy.deepcopy(self.schema_commit_changes)
-        self.assertEqual(self.schema_commit_changes, schema_commit_changes_copy)
+        self.assertTrue(self.empty_schema_commit_changes != 1)
+        schema_commit_changes_copy = copy.deepcopy(self.empty_schema_commit_changes)
+        self.assertEqual(self.empty_schema_commit_changes, schema_commit_changes_copy)
         schema_commit_changes_copy.hash += '_end'
-        self.assertTrue(self.schema_commit_changes != schema_commit_changes_copy)
+        self.assertTrue(self.empty_schema_commit_changes != schema_commit_changes_copy)
 
 
 # todo: don't run if Internet unavailable
-class TestGitRepo(unittest.TestCase):
+class TestGitRepo(CommitChangesFixtures):
 
     @classmethod
     def setUpClass(cls):
-        cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
-        # get the repo once for the TestCase to speed up tests
-        cls.git_repo = GitRepo(cls.test_repo_url)
+        super().setUpClass()
 
     @classmethod
     def tearDownClass(cls):
-        # remove the GitRepo so that its temp_dirs get deleted
-        del cls.git_repo
+        super().tearDownClass()
 
     def setUp(self):
         self.empty_git_repo = GitRepo()
