@@ -1703,25 +1703,34 @@ class MigrationController(object):
         return results
 
 
+# todo: import transformations file
 class SchemaCommitChanges(object):
     """ Specification of the changes to a schema in a git commit
 
     Attributes:
-        _REQUIRED_ATTRS (:obj:`list` of :obj:`str`): required attributes in a `SchemaCommitChanges`
-        hash (:obj:`str`): SHA1 hash for the git commit
-        renamed_models (:obj:`list`, optional): list of renamed models in the commit
-        renamed_attributes (:obj:`list`, optional): list of renamed attributes in the commit
+        _CHANGES_FILE_ATTRS (:obj:`list` of :obj:`str`): required attributes in a schema commit changes file
+        _ATTRIBUTES (:obj:`list` of :obj:`str`): attributes in a `SchemaCommitChanges` instance
+        git_repo (:obj:`GitRepo`): a git_repo whose data are being migrated
         transformations (:obj:`dict`, optional): the transformations for a migration to the schema,
             in a dictionary of callables
+        hash (:obj:`str`): hash from a schema commit changes file
+        renamed_models (:obj:`list`, optional): list of renamed models in the commit
+        renamed_attributes (:obj:`list`, optional): list of renamed attributes in the commit
+        transformations_file (:obj:`str`, optional): the name of a Python file containing transformations
     """
-    _REQUIRED_ATTRS = ['hash', 'renamed_models', 'renamed_attributes', 'transformations_file']
+    _CHANGES_FILE_ATTRS = ['hash', 'renamed_models', 'renamed_attributes', 'transformations_file']
 
-    # template for the name of a schema commit changes file
-    # the variables are filled in with the file's creation timestamp and the commit's git hash
+    _ATTRIBUTES = ['git_repo', 'transformations', 'hash', 'renamed_models', 'renamed_attributes',
+        'transformations_file']
+
+    # template for the name of a schema commit changes file; the format placeholders are replaced
+    # with the file's creation timestamp and the prefix of the commit's git hash, respectively
     _CHANGES_FILENAME_TEMPLATE = "schema_commit_changes_{}_{}.yaml"
     _HASH_PREFIX_LEN = 7
 
-    def __init__(self, hash=None, renamed_models=None, renamed_attributes=None, transformations_file=None):
+    def __init__(self, git_repo=None, hash=None, renamed_models=None, renamed_attributes=None,
+        transformations_file=None):
+        self.git_repo = git_repo
         self.hash = hash
         self.renamed_models = renamed_models
         self.renamed_attributes = renamed_attributes
@@ -1734,7 +1743,19 @@ class SchemaCommitChanges(object):
         Returns:
             :obj:`str`: the hash
         """
-        return self.hash
+        return self.git_repo.latest_hash()
+
+    @staticmethod
+    def get_hash_prefix(hash):
+        """ Get a commit hash's prefix
+
+        Args:
+            hash (:obj:`str`): git commit hash
+
+        Returns:
+            :obj:`str`: hash's prefix
+        """
+        return hash[:SchemaCommitChanges._HASH_PREFIX_LEN]
 
     @staticmethod
     def get_timestamp():
@@ -1744,8 +1765,35 @@ class SchemaCommitChanges(object):
             :obj:`str`: the timestamp
         """
         dt = datetime.datetime.now()
-        # todo: warning: not UTC if dt.tzinfo is not None
+        if dt.tzinfo is not None:
+            warn("timestamp not UTC because dt.tzinfo is set", MigrateWarning)
         return dt.strftime("%Y-%m-%d-%H-%M-%S")
+
+    def find_file(self, hash):
+        """ Find a schema commit changes file in a git repo
+
+        Args:
+            hash (:obj:`str`): the file's git commit hash
+
+        Raises:
+            :obj:`MigratorError`: if a file with the hash cannot be found, or multiple files
+                have the hash
+
+        Returns:
+            :obj:`str`: the filename of the file found
+        """
+        migrations_directory = os.path.join(self.git_repo.repo_dir, AutomatedMigration._MIGRATIONS_DIRECTORY)
+        # search with glob
+        pattern = self._CHANGES_FILENAME_TEMPLATE.format('*',  self.get_hash_prefix(hash))
+        files = list(Path(migrations_directory).glob(pattern))
+        num_files = len(files)
+        if not num_files:
+            raise MigratorError("no schema commit changes file in '{}' for hash {}".format(
+                migrations_directory, hash))
+        if 1 < num_files:
+            raise MigratorError("multiple schema commit changes files in '{}' for hash {}".format(
+                migrations_directory, hash))
+        return files[0]
 
     def generate_filename(self):
         """ Generate a filename for a template schema commit changes file
@@ -1756,7 +1804,7 @@ class SchemaCommitChanges(object):
             :obj:`str`: the filename
         """
         return SchemaCommitChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_timestamp(),
-            self.get_hash()[:SchemaCommitChanges._HASH_PREFIX_LEN])
+            self.get_hash_prefix(self.get_hash()))
 
     def make_template(self, changes_file_dir):
         """ Make a template schema commit changes file
@@ -1775,9 +1823,11 @@ class SchemaCommitChanges(object):
         """
         filename = self.generate_filename()
         pathname = os.path.join(changes_file_dir, filename)
+        if os.path.exists(pathname):
+            raise MigratorError("schema commit changes file '{}' already exists".format(pathname))
 
         with open(pathname, 'w') as file:
-            file.write(u'# template schema commit changes file\n')
+            file.write(u'# schema commit changes file\n')
             file.write(u"# stored in '{}'\n\n".format(filename))
             # generate YAML content
             template_data = dict(
@@ -1818,10 +1868,10 @@ class SchemaCommitChanges(object):
                 schema_commit_changes_file, e))
 
         if not isinstance(schema_commit_changes, dict) or \
-            any([attr not in schema_commit_changes for attr in SchemaCommitChanges._REQUIRED_ATTRS]):
+            any([attr not in schema_commit_changes for attr in SchemaCommitChanges._CHANGES_FILE_ATTRS]):
                 raise MigratorError("schema commit changes file must have a dict with the attributes in "
-                    "{}._REQUIRED_ATTRS: {}".format(SchemaCommitChanges.__name__,
-                    ', '.join(SchemaCommitChanges._REQUIRED_ATTRS)))
+                    "{}._CHANGES_FILE_ATTRS: {}".format(SchemaCommitChanges.__name__,
+                    ', '.join(SchemaCommitChanges._CHANGES_FILE_ATTRS)))
 
         # report empty schema commit changes files (unmodified templates)
         if schema_commit_changes['renamed_models'] == [] and \
@@ -1829,6 +1879,11 @@ class SchemaCommitChanges(object):
             schema_commit_changes['transformations_file'] == '':
                 raise MigratorError("schema commit changes file is empty (an unmodified template)"
                     ": '{}'".format(schema_commit_changes_file))
+
+        # import the transformations_file, if defined
+        if schema_commit_changes['transformations_file']:
+            dir = os.path.dirname(schema_commit_changes_file)
+            schema_module = SchemaModule(schema_commit_changes['transformations_file'], dir=dir)
 
         return schema_commit_changes
 
@@ -1848,6 +1903,8 @@ class SchemaCommitChanges(object):
         schema_commit_changes_dict = SchemaCommitChanges.load(schema_commit_changes_file)
         return SchemaCommitChanges(**schema_commit_changes_dict)
 
+    '''
+    # todo: decide what to do about comparing GitRepos
     def __eq__(self, other):
         """ Compare two :obj:`SchemaCommitChanges` objects
 
@@ -1860,11 +1917,12 @@ class SchemaCommitChanges(object):
         if other.__class__ is not self.__class__:
             return False
 
-        for attr in self._REQUIRED_ATTRS:
+        for attr in self._ATTRIBUTES:
             if getattr(self, attr) != getattr(other, attr):
                 return False
 
         return True
+    '''
 
 
 class AutomatedMigration(object):
@@ -1947,7 +2005,6 @@ class AutomatedMigration(object):
 
         By default, migrate to current version, make backups of models & migrate in place
         """
-        # get current directory
         # get repo
         # get commit hash
         # get config
@@ -2070,6 +2127,14 @@ class GitRepo(object):
             :obj:`nx.classes.digraph.DiGraph`: a DAG representing the repo commit history
         """
         return self.repo.head.ref.commit
+
+    def latest_hash(self):
+        """ Get the hash of the repo's latest commit
+
+        Returns:
+            :obj:`str`: the latest commit's SHA1 hash
+        """
+        return self.get_hash(self.latest_commit())
 
     def commits_as_graph(self):
         """ Convert the repo commit history to a DAG. Edges point from dependent commit to parent commit.

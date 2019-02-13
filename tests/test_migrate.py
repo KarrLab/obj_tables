@@ -31,6 +31,7 @@ import git
 import networkx as nx
 from networkx.algorithms.shortest_paths.generic import has_path
 import random
+import time
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
     RunMigration, MigrationSpec, SchemaCommitChanges, AutomatedMigration, GitRepo)
@@ -1555,6 +1556,7 @@ class CommitChangesFixtures(unittest.TestCase):
         del cls.git_repo
 
 
+from pathlib import Path
 class TestSchemaCommitChanges(CommitChangesFixtures):
 
     @classmethod
@@ -1563,10 +1565,11 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
 
     @classmethod
     def tearDownClass(cls):
-        super().tearDownClass()
+        # super().tearDownClass()
+        pass
 
     def setUp(self):
-        self.empty_schema_commit_changes = SchemaCommitChanges(hash='6781a25e41c049b0e367c4cd99b35106038d72ef')
+        self.schema_commit_changes = SchemaCommitChanges(self.git_repo)
 
     def test_get_timestamp(self):
         timestamp = SchemaCommitChanges.get_timestamp()
@@ -1574,17 +1577,39 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         self.assertTrue(timestamp.startswith('20'))
         self.assertEqual(len(timestamp), 19)
 
+    def test_find_file(self):
+        schema_commit_changes_file = \
+            self.schema_commit_changes.find_file('ba1f9d33a3e18a74f79f41903e7e88e118134d5f')
+        self.assertEqual(os.path.basename(schema_commit_changes_file),
+            'schema_commit_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
+
+        with self.assertRaisesRegex(MigratorError, "no schema commit changes file in '.+' for hash \S+"):
+            self.schema_commit_changes.find_file('not_a_hash_not_a_hash_not_a_hash_not_a_h')
+
+        migrations_directory = os.path.join(self.schema_commit_changes.git_repo.repo_dir,
+            AutomatedMigration._MIGRATIONS_DIRECTORY)
+        self.schema_commit_changes.make_template(migrations_directory)
+        time.sleep(2)
+        self.schema_commit_changes.make_template(migrations_directory)
+        with self.assertRaisesRegex(MigratorError,
+            "multiple schema commit changes files in '.+' for hash \S+"):
+            self.schema_commit_changes.find_file(self.schema_commit_changes.get_hash())
+
     def test_generate_filename(self):
-        filename = self.empty_schema_commit_changes.generate_filename()
+        filename = self.schema_commit_changes.generate_filename()
         self.assertTrue(filename.endswith('.yaml'))
         self.assertTrue(2 <= len(filename.split('_')))
 
+    '''
     def test_make_templatex(self):
-        pathname = self.empty_schema_commit_changes.make_template('/tmp/foo')
+        pathname = self.schema_commit_changes.make_template('/tmp/foo')
+        print()
+        print('more' , pathname)
+    '''
 
     def test_make_template(self):
         temp_dir = tempfile.TemporaryDirectory()
-        pathname = self.empty_schema_commit_changes.make_template(temp_dir.name)
+        pathname = self.schema_commit_changes.make_template(temp_dir.name)
         data = yaml.load(open(pathname, 'r'))
         for attr in ['renamed_models', 'renamed_attributes']:
             self.assertEqual(data[attr], [])
@@ -1608,11 +1633,11 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         with open(bad_yaml, "w") as f:
             f.write("wrong_attr: []")
         with self.assertRaisesRegex(MigratorError,
-            "schema commit changes file must have a dict with the attributes in \S+._REQUIRED_ATTRS: .+"):
+            "schema commit changes file must have a dict with the attributes in \S+._CHANGES_FILE_ATTRS: .+"):
             SchemaCommitChanges.load(bad_yaml)
 
         temp_dir = tempfile.TemporaryDirectory()
-        pathname = self.empty_schema_commit_changes.make_template(temp_dir.name)
+        pathname = self.schema_commit_changes.make_template(temp_dir.name)
         with self.assertRaisesRegex(MigratorError,
             "schema commit changes file is empty \(an unmodified template\): '.+'"):
             SchemaCommitChanges.load(pathname)
@@ -1629,14 +1654,18 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         with open(good_yaml, "w") as f:
             f.write(yaml.dump(data))
         schema_commit_changes = SchemaCommitChanges.generate_instance(good_yaml)
-        self.assertEqual(schema_commit_changes, SchemaCommitChanges(**data))
+        for attr in SchemaCommitChanges._CHANGES_FILE_ATTRS:
+            self.assertEqual(getattr(schema_commit_changes, attr), data[attr])
 
+    '''
+    # todo: wait until I decide what to do about comparing GitRepos
     def test_eq(self):
-        self.assertTrue(self.empty_schema_commit_changes != 1)
-        schema_commit_changes_copy = copy.deepcopy(self.empty_schema_commit_changes)
-        self.assertEqual(self.empty_schema_commit_changes, schema_commit_changes_copy)
+        self.assertTrue(self.schema_commit_changes != 1)
+        schema_commit_changes_copy = copy.deepcopy(self.schema_commit_changes)
+        self.assertEqual(self.schema_commit_changes, schema_commit_changes_copy)
         schema_commit_changes_copy.hash += '_end'
-        self.assertTrue(self.empty_schema_commit_changes != schema_commit_changes_copy)
+        self.assertTrue(self.schema_commit_changes != schema_commit_changes_copy)
+    '''
 
 
 # todo: don't run if Internet unavailable
@@ -1686,12 +1715,20 @@ class TestGitRepo(CommitChangesFixtures):
     def test_latest_commit(self):
         self.assertTrue(isinstance(self.git_repo.latest_commit(), git.objects.commit.Commit))
 
+    def test_latest_hash(self):
+        # todo: test with a frozen repo whose hash is known
+        hash = self.git_repo.latest_hash()
+        self.assertTrue(isinstance(hash, str))
+        self.assertEqual(len(hash), 40)
+
     def test_commits_as_graph(self):
         commit_DAG = self.git_repo.commits_as_graph()
         self.assertTrue(isinstance(commit_DAG, nx.classes.digraph.DiGraph))
 
     def test_get_hash(self):
+        # todo: test with a frozen repo whose hash is known
         hash = GitRepo.get_hash(self.git_repo.latest_commit())
+        self.assertTrue(isinstance(hash, str))
         self.assertEqual(len(hash), 40)
 
     def test_get_clone_at_commit(self):
