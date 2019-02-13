@@ -1990,16 +1990,65 @@ class GitRepo(object):
 
     Attributes:
         repo_dir (:obj:`str`): the repo's root directory
+        repo_url (:obj:`str`): the repo's url, if known
         repo (:obj:`git.Repo`): the repo
         commits_to_migrate (:obj:`list` of :obj:`git.objects.commit.Commit`): list of commits at which
             the schema needs to be migrated
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
         temp_dirs (:obj:`list` of :obj:`tempfile.TemporaryDirectory`): temp dirs to hold repo clones
     """
-    def __init__(self, repo_dir):
-        self.repo_dir = repo_dir
-        self.repo = git.Repo(repo_dir)
+    # placeholder repo name if name not known
+    _NAME_UNKNOWN = 'name_unknown'
+
+    def __init__(self, repo_location=None):
+        """ Initialize a GitRepo
+
+        Args:
+            repo_location (:obj:`str`, optional): the location of the repo, either its root directory or URL
+
+        Returns:
+            :obj:`str`: root directory for the repo (which contains the .git directory)
+        """
+        self.commit_DAG = None
         self.temp_dirs = []
+        self.repo = None
+        self.repo_dir = None
+        self.repo_url = None
+        if repo_location:
+            if os.path.isdir(repo_location):
+                # todo: trap exception
+                self.repo = git.Repo(repo_location)
+                self.repo_dir = repo_location
+            else:
+                directory = self.clone_repo_from_url(repo_location)
+                self.repo = git.Repo(directory)
+                self.repo_dir = directory
+                self.repo_url = repo_location
+
+    def clone_repo_from_url(self, url, directory=None):
+        """ Clone a repo from an URL
+
+        Args:
+            url (:obj:`str`): URL for the repo
+            directory (:obj:`str`, optional): directory to hold the repo; default is a temp dir
+
+        Returns:
+            :obj:`str`: root directory for the repo (which contains the .git directory)
+
+        Raises:
+            :obj:`MigratorError`: if repo cannot be cloned from `url`
+        """
+        if directory is None:
+            temp_dir = tempfile.TemporaryDirectory()
+            self.temp_dirs.append(temp_dir)
+            directory = temp_dir.name
+        elif not os.path.isdir(directory):
+            raise MigratorError("'{}' is not a directory".format(directory))
+        try:
+            repo = git.Repo.clone_from(url, directory)
+        except Exception as e:
+            raise MigratorError("repo cannot be cloned from '{}'\n{}".format(url, e))
+        return directory
 
     def repo_name(self):
         """ Get the repo's name
@@ -2007,11 +2056,12 @@ class GitRepo(object):
         Returns:
             :obj:`str`: the repo's name
         """
-        print(self.repo.git_dir)
-        print(self.repo_dir)
-        sys.stderr.write("self.repo_dir: {}\n".format(self.repo_dir))
-        sys.stderr.write("self.repo.git_dir: {}\n".format(self.repo.git_dir))
-        return os.path.basename(self.repo_dir)
+        if self.repo_url:
+            split_url = self.repo_url.split('/')
+            return split_url[-1]
+        elif self.repo_dir:
+            return os.path.basename(self.repo_dir)
+        return self._NAME_UNKNOWN
 
     def latest_commit(self):
         """ Get the repo's latest commit
@@ -2021,6 +2071,7 @@ class GitRepo(object):
         """
         return self.repo.head.ref.commit
 
+    # todo: test on a repo with branches & merges
     def commits_as_graph(self):
         """ Convert the repo commit history to a DAG. Edges point from dependent commit to parent commit.
 
@@ -2064,7 +2115,7 @@ class GitRepo(object):
             commit (:obj:`git.objects.commit.Commit`): a commit
 
         Returns:
-            :obj:`X`: the cloned repo
+            :obj:`git.Repo`: the cloned repo
         """
         # save TemporaryDirectory in self.temp_dirs so it will be destroyed when this GitRepo is destroyed
         temp_dir = tempfile.TemporaryDirectory()
@@ -2084,11 +2135,11 @@ class GitRepo(object):
         b and d can appear in either order in the sequece.
 
         Args:
-            commits_to_migrate (:obj:`list` of :obj:`X commit`): list of commits at which the schema
-                needs to be migrated
+            commits_to_migrate (:obj:`list` of :obj:`git.objects.commit.Commit`): list of commits at
+                which the schema needs to be migrated
 
         Returns:
-            :obj:`list` of :obj:`X node`: sequence of nodes from `self.commit_DAG`
+            :obj:`list` of :obj:`git.objects.commit.Commit`: sequence of nodes from `self.commit_DAG`
         """
         seq_with_schema_changes = []
 

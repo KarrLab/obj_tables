@@ -1614,26 +1614,52 @@ class TestSchemaCommitChanges(unittest.TestCase):
         self.assertTrue(self.schema_commit_changes != schema_commit_changes_copy)
 
 
+# todo: don't run if Internet unavailable
 class TestGitRepo(unittest.TestCase):
 
-    # todo: construct small test repo to test git-based methods
-    def setUp(self):
-        class MockGitRepo(GitRepo):
-            def __init__(self):
-                self.commit_DAG = None
-        self.fake_git_repo = MockGitRepo()
+    @classmethod
+    def setUpClass(cls):
+        cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
+        # get the repo once for the TestCase to speed up tests
+        cls.git_repo = GitRepo(cls.test_repo_url)
 
-        self.repo_root = os.path.dirname(os.path.dirname(__file__))
-        self.git_repo = GitRepo(self.repo_root)
+    @classmethod
+    def tearDownClass(cls):
+        # remove the GitRepo so that its temp_dirs get deleted
+        del cls.git_repo
+
+    def setUp(self):
+        self.empty_git_repo = GitRepo()
+        self.repo_root = self.git_repo.repo_dir
+        self.tmp_dir = mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dir)
 
     def test_init(self):
-        git_repo = self.git_repo
-        self.assertEqual(self.repo_root, git_repo.repo_dir)
+        self.assertTrue(isinstance(self.empty_git_repo, GitRepo))
+        self.assertTrue(isinstance(self.git_repo.repo, git.Repo))
+        self.assertEqual(self.repo_root, self.git_repo.repo_dir)
+        git_repo = GitRepo(self.git_repo.repo_dir)
         self.assertTrue(isinstance(git_repo.repo, git.Repo))
 
+    def test_clone_repo_from_url(self):
+        dir = self.empty_git_repo.clone_repo_from_url(self.test_repo_url)
+        self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
+        dir = self.empty_git_repo.clone_repo_from_url(self.test_repo_url, directory=self.tmp_dir)
+        self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
+
+        bad_dir = '/asdfdsf/no such dir'
+        with self.assertRaisesRegex(MigratorError, "'.+' is not a directory"):
+            self.empty_git_repo.clone_repo_from_url(self.test_repo_url, directory=bad_dir)
+
+        bad_url = 'http://www.ibm.com/nothing_here'
+        with self.assertRaisesRegex(MigratorError, "repo cannot be cloned from '.+'"):
+            self.empty_git_repo.clone_repo_from_url(bad_url)
+
     def test_repo_name(self):
-        # self.assertEqual(self.git_repo.repo_name(), 'obj_model')
-        pass
+        self.assertEqual(self.git_repo.repo_name(), 'test_repo')
+        self.assertEqual(self.empty_git_repo.repo_name(), GitRepo._NAME_UNKNOWN)
 
     def test_latest_commit(self):
         self.assertTrue(isinstance(self.git_repo.latest_commit(), git.objects.commit.Commit))
@@ -1671,28 +1697,28 @@ class TestGitRepo(unittest.TestCase):
                         "has a path {} -> {}".format(u, i, v, j, v, u))
 
     def test_commit_seq_with_schema_changes(self):
-        fake_git_repo = self.fake_git_repo
+        empty_git_repo = self.empty_git_repo
         # to simplify initial tests of commit_seq_with_schema_changes use integers, rather than commits
         single_path_edges = [(2, 1), (3, 2), (4, 3), (5, 4)]
-        fake_git_repo.commit_DAG = nx.DiGraph(single_path_edges)
-        sequence = fake_git_repo.commit_seq_with_schema_changes([4, 1, 2])
+        empty_git_repo.commit_DAG = nx.DiGraph(single_path_edges)
+        sequence = empty_git_repo.commit_seq_with_schema_changes([4, 1, 2])
         only_possible_sequence = [1, 2, 4]
         self.assertEqual(sequence, only_possible_sequence)
 
         multi_path_edges = [(2, 1), (3, 2), (7, 3), (8, 7), (4, 2), (6, 4), (5, 4), (6, 5), (7, 6)]
-        fake_git_repo.commit_DAG = nx.DiGraph(multi_path_edges)
+        empty_git_repo.commit_DAG = nx.DiGraph(multi_path_edges)
         n_tests = 20
         for _ in range(n_tests):
             first = 1
             stop = 9
             population = range(first, stop)
             commits_to_migrate = random.sample(population, random.choice(range(2, stop - first + 1)))
-            sequence = fake_git_repo.commit_seq_with_schema_changes(commits_to_migrate)
-            self.check_dependency(sequence, fake_git_repo.commit_DAG)
+            sequence = empty_git_repo.commit_seq_with_schema_changes(commits_to_migrate)
+            self.check_dependency(sequence, empty_git_repo.commit_DAG)
 
-        # create a topological sort of 50 obj_model commits
+        # create a topological sort of 5 test_repo commits
         self.git_repo.commit_DAG = self.git_repo.commits_as_graph()
-        commits_to_migrate = random.sample(self.git_repo.commit_DAG.nodes, 50)
+        commits_to_migrate = random.sample(self.git_repo.commit_DAG.nodes, 5)
         sequence = self.git_repo.commit_seq_with_schema_changes(commits_to_migrate)
         self.check_dependency(sequence, self.git_repo.commit_DAG)
 
