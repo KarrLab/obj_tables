@@ -2071,7 +2071,6 @@ class GitRepo(object):
         """
         return self.repo.head.ref.commit
 
-    # todo: test on a repo with branches & merges
     def commits_as_graph(self):
         """ Convert the repo commit history to a DAG. Edges point from dependent commit to parent commit.
 
