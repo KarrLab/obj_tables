@@ -1600,13 +1600,6 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         self.assertTrue(filename.endswith('.yaml'))
         self.assertTrue(2 <= len(filename.split('_')))
 
-    '''
-    def test_make_templatex(self):
-        pathname = self.schema_commit_changes.make_template('/tmp/foo')
-        print()
-        print('more' , pathname)
-    '''
-
     def test_make_template(self):
         temp_dir = tempfile.TemporaryDirectory()
         pathname = self.schema_commit_changes.make_template(temp_dir.name)
