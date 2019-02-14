@@ -2087,7 +2087,7 @@ class GitRepo(object):
         commits_to_migrate (:obj:`list` of :obj:`git.objects.commit.Commit`): list of commits at which
             the schema needs to be migrated
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
-        temp_dirs (:obj:`list` of :obj:`tempfile.TemporaryDirectory`): temp dirs to hold repo clones
+        temp_dirs (:obj:`list` of :obj:`tempfile.TemporaryDirectory`): temp dirs that hold repo clones
     """
     # default repo name if name not known
     _NAME_UNKNOWN = 'name_unknown'
@@ -2108,14 +2108,25 @@ class GitRepo(object):
         self.repo_url = None
         if repo_location:
             if os.path.isdir(repo_location):
-                # todo: trap exception
-                self.repo = git.Repo(repo_location)
+                try:
+                    self.repo = git.Repo(repo_location)
+                except git.exc.GitError as e:
+                    raise MigratorError("instantiating a git.Repo from directory '{}' failed:\n{}".format(
+                        repo_location, e))
                 self.repo_dir = repo_location
             else:
-                directory = self.clone_repo_from_url(repo_location)
-                self.repo = git.Repo(directory)
-                self.repo_dir = directory
+                self.repo, self.repo_dir = self.clone_repo_from_url(repo_location)
                 self.repo_url = repo_location
+
+    def get_temp_dir(self):
+        """ Get a temporary directory, which will be deleted when this GitRepo is destroyed
+
+        Returns:
+            :obj:`str`: the pathname to a temporary directory
+        """
+        temp_dir = tempfile.TemporaryDirectory()
+        self.temp_dirs.append(temp_dir)
+        return temp_dir.name
 
     def clone_repo_from_url(self, url, directory=None):
         """ Clone a repo from an URL
@@ -2125,22 +2136,21 @@ class GitRepo(object):
             directory (:obj:`str`, optional): directory to hold the repo; default is a temp dir
 
         Returns:
-            :obj:`str`: root directory for the repo (which contains the .git directory)
+            :obj:`tuple`: (:obj:`git.Repo`, :obj:`str`): the repo cloned, and its root directory
+                (which contains the .git directory)
 
         Raises:
             :obj:`MigratorError`: if repo cannot be cloned from `url`
         """
         if directory is None:
-            temp_dir = tempfile.TemporaryDirectory()
-            self.temp_dirs.append(temp_dir)
-            directory = temp_dir.name
+            directory = self.get_temp_dir()
         elif not os.path.isdir(directory):
             raise MigratorError("'{}' is not a directory".format(directory))
         try:
             repo = git.Repo.clone_from(url, directory)
         except Exception as e:
             raise MigratorError("repo cannot be cloned from '{}'\n{}".format(url, e))
-        return directory
+        return repo, directory
 
     def repo_name(self):
         """ Get the repo's name
@@ -2159,9 +2169,9 @@ class GitRepo(object):
         """ Get the repo's latest commit
 
         Returns:
-            :obj:`nx.classes.digraph.DiGraph`: a DAG representing the repo commit history
+            :obj:`git.objects.commit.Commit`: the repo's latest commit
         """
-        return self.repo.head.ref.commit
+        return self.repo.head.commit
 
     def latest_hash(self):
         """ Get the hash of the repo's latest commit
@@ -2207,24 +2217,24 @@ class GitRepo(object):
         """
         return commit.hexsha
 
-    def get_clone_at_commit(self, commit):
-        """ Clone a commit from this repo into a temp directory
+    def checkout_commit(self, commit):
+        """ Checkout a commit for this repo
 
         Args:
-            commit (:obj:`git.objects.commit.Commit`): a commit
+            commit (:obj:`git.objects.commit.Commit` or :obj:`str`): a commit or a commit's hash
 
-        Returns:
-            :obj:`git.Repo`: the cloned repo
+        Raises:
+            :obj:`MigratorError`: if the commit cannot be checked out
         """
-        # save TemporaryDirectory in self.temp_dirs so it will be destroyed when this GitRepo is destroyed
-        temp_dir = tempfile.TemporaryDirectory()
-        self.temp_dirs.append(temp_dir)
-        clone_repo_dir = os.path.join(temp_dir.name, "{}.git".format(self.repo_name()))
-        cloned_repo = self.repo.clone(clone_repo_dir)
-        return cloned_repo
-        # todo: similar to class git.refs.head.Head(repo, path, check_path=True)
-        hash = self.get_hash(commit)
-        cloned_repo.head.checkout(detach=hash)
+        if isinstance(commit, git.objects.commit.Commit):
+            hash = commit.hexsha
+        elif isinstance(commit, str):
+            hash = commit
+        # use git directly, as per https://gitpython.readthedocs.io/en/stable/tutorial.html#using-git-directly
+        try:
+            self.repo.git.checkout(hash, detach=True)
+        except git.exc.GitError as e:
+            raise MigratorError("checkout of '{}' to commit '{}' failed:\n{}".format(self.repo_name(), hash, e))
 
     def commit_seq_with_schema_changes(self, commits_to_migrate):
         """ Get a sequence of commits with schema changes, in an order consistent with dependencies

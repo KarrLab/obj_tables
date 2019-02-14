@@ -33,6 +33,7 @@ from networkx.algorithms.shortest_paths.generic import has_path
 import random
 import time
 from pathlib import Path
+import socket
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
     RunMigration, MigrationSpec, SchemaCommitChanges, AutomatedMigration, GitRepo)
@@ -1548,6 +1549,17 @@ class TestMigrationController(MigrationFixtures):
         self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
 
+def internet_connected():
+    # return True if the internet (actually www.google.com) is connected, false otherwise
+    try:
+        # connect to the host -- tells us if the host is actually reachable
+        socket.create_connection(("www.google.com", 80))
+        return True
+    except OSError:
+        pass
+    return False
+
+
 class CommitChangesFixtures(unittest.TestCase):
 
     @classmethod
@@ -1555,6 +1567,7 @@ class CommitChangesFixtures(unittest.TestCase):
         cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
         # get the repo once for the TestCase to speed up tests
         cls.git_repo = GitRepo(cls.test_repo_url)
+        cls.known_hash = 'ab34419496756675b6e8499e0948e697256f2698'
 
     @classmethod
     def tearDownClass(cls):
@@ -1562,6 +1575,7 @@ class CommitChangesFixtures(unittest.TestCase):
         del cls.git_repo
 
 
+@unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestSchemaCommitChanges(CommitChangesFixtures):
 
     @classmethod
@@ -1570,8 +1584,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
 
     @classmethod
     def tearDownClass(cls):
-        # super().tearDownClass()
-        pass
+        super().tearDownClass()
 
     def setUp(self):
         self.schema_commit_changes = SchemaCommitChanges(self.git_repo)
@@ -1705,7 +1718,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
     '''
 
 
-# todo: don't run if Internet unavailable
+@unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(CommitChangesFixtures):
 
     @classmethod
@@ -1731,10 +1744,25 @@ class TestGitRepo(CommitChangesFixtures):
         git_repo = GitRepo(self.git_repo.repo_dir)
         self.assertTrue(isinstance(git_repo.repo, git.Repo))
 
+    def test_get_temp_dir(self):
+        dir = self.empty_git_repo.get_temp_dir()
+        self.assertTrue(os.path.isdir(dir))
+
+        # check that TemporaryDirectory is destroyed when a GitRepo is destroyed
+        def make_git_repo():
+            temp_git_repo = GitRepo()
+            temp_git_repo.clone_repo_from_url(self.test_repo_url)
+            return [dir.name for dir in temp_git_repo.temp_dirs]
+        dirs = make_git_repo()
+        self.assertTrue(len(dirs))
+        for d in dirs:
+            self.assertFalse(os.path.isdir(d))
+
     def test_clone_repo_from_url(self):
-        dir = self.empty_git_repo.clone_repo_from_url(self.test_repo_url)
+        repo, dir = self.empty_git_repo.clone_repo_from_url(self.test_repo_url)
+        self.assertTrue(isinstance(repo, git.Repo))
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
-        dir = self.empty_git_repo.clone_repo_from_url(self.test_repo_url, directory=self.tmp_dir)
+        repo, dir = self.empty_git_repo.clone_repo_from_url(self.test_repo_url, directory=self.tmp_dir)
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
 
         bad_dir = '/asdfdsf/no such dir'
@@ -1768,17 +1796,15 @@ class TestGitRepo(CommitChangesFixtures):
         self.assertTrue(isinstance(hash, str))
         self.assertEqual(len(hash), 40)
 
-    def test_get_clone_at_commit(self):
-        clone = self.git_repo.get_clone_at_commit(self.git_repo.latest_commit())
+    def test_checkout_commit(self):
+        self.git_repo.checkout_commit(self.git_repo.latest_commit())
+        self.assertEqual(str(self.git_repo.repo.head.commit), self.git_repo.latest_commit().hexsha)
+        self.git_repo.checkout_commit(self.known_hash)
+        self.assertEqual(self.git_repo.repo.head.commit.hexsha, self.known_hash)
 
-        # check that TemporaryDirectory is destroyed when a GitRepo is destroyed
-        def make_git_repo():
-            git_repo = GitRepo(self.repo_root)
-            git_repo.get_clone_at_commit(self.git_repo.latest_commit())
-            return [dir.name for dir in git_repo.temp_dirs]
-        dirs = make_git_repo()
-        for d in dirs:
-            self.assertFalse(os.path.isdir(d))
+        no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
+        with self.assertRaisesRegex(MigratorError, "checkout of '\S+' to commit '\S+' failed"):
+            self.git_repo.checkout_commit(no_such_hash)
 
     def check_dependency(self, sequence, DAG):
         # check that sequence satisfies "any nodes u, v with a path u -> ... -> v in the DAG appear in
@@ -1817,6 +1843,21 @@ class TestGitRepo(CommitChangesFixtures):
         commits_to_migrate = random.sample(self.git_repo.commit_DAG.nodes, 5)
         sequence = self.git_repo.commit_seq_with_schema_changes(commits_to_migrate)
         self.check_dependency(sequence, self.git_repo.commit_DAG)
+
+
+@unittest.skipUnless(internet_connected(), "Internet not connected")
+class TestAutomatedMigration(CommitChangesFixtures):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+    def test_(self):
+        pass
 
 
 class TestRunMigration(MigrationFixtures):
