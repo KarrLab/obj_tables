@@ -498,23 +498,27 @@ class Migrator(object):
         return "{}{}".format(Migrator.MIGRATED_COPY_ATTR_PREFIX,
             '_' * (max_len + 1 - len(Migrator.MIGRATED_COPY_ATTR_PREFIX)))
 
-    def _validate_transformations(self):
+    @staticmethod
+    def _validate_transformations(transformations):
         """ Validate transformations
 
-        Ensure that self.transformations is a dict of callables
+        Ensure that transformations is a dict of callables
+
+        Args:
+            transformations (:obj:`object`): a transformations
 
         Returns:
-            :obj:`list` of `str`: errors in the renamed models
+            :obj:`list` of `str`: errors in `transformations`, if any
         """
         errors = []
-        if self.transformations:
-            if not isinstance(self.transformations, dict):
+        if transformations:
+            if not isinstance(transformations, dict):
                 return ["transformations should be a dict, but it is a(n) '{}'".format(type(
-                    self.transformations).__name__)]
-            if not set(self.transformations).issubset(self.SUPPORTED_TRANSFORMATIONS):
+                    transformations).__name__)]
+            if not set(transformations).issubset(Migrator.SUPPORTED_TRANSFORMATIONS):
                 errors.append("names of transformations {} aren't a subset of the supported "
-                    "transformations {}".format(set(self.transformations), set(self.SUPPORTED_TRANSFORMATIONS)))
-            for transform_name, transformation in self.transformations.items():
+                    "transformations {}".format(set(transformations), set(Migrator.SUPPORTED_TRANSFORMATIONS)))
+            for transform_name, transformation in transformations.items():
                 if not callable(transformation):
                     errors.append("value for transformation '{}' is a(n) '{}', which isn't callable".format(
                         transform_name, type(transformation).__name__))
@@ -649,7 +653,7 @@ class Migrator(object):
         self._load_defs_from_files()
 
         # validate transformations
-        self._validate_transformations()
+        self._validate_transformations(self.transformations)
 
         # validate model and attribute rename specifications
         errors = self._validate_renamed_models()
@@ -1703,7 +1707,6 @@ class MigrationController(object):
         return results
 
 
-# todo: import transformations file
 class SchemaCommitChanges(object):
     """ Specification of the changes to a schema in a git commit
 
@@ -1713,6 +1716,7 @@ class SchemaCommitChanges(object):
         git_repo (:obj:`GitRepo`): a git_repo whose data are being migrated
         transformations (:obj:`dict`, optional): the transformations for a migration to the schema,
             in a dictionary of callables
+        schema_commit_changes_file (:obj:`str`): the schema commit changes file
         hash (:obj:`str`): hash from a schema commit changes file
         renamed_models (:obj:`list`, optional): list of renamed models in the commit
         renamed_attributes (:obj:`list`, optional): list of renamed attributes in the commit
@@ -1720,17 +1724,18 @@ class SchemaCommitChanges(object):
     """
     _CHANGES_FILE_ATTRS = ['hash', 'renamed_models', 'renamed_attributes', 'transformations_file']
 
-    _ATTRIBUTES = ['git_repo', 'transformations', 'hash', 'renamed_models', 'renamed_attributes',
-        'transformations_file']
+    _ATTRIBUTES = ['git_repo', 'transformations', 'schema_commit_changes_file', 'hash',
+        'renamed_models', 'renamed_attributes', 'transformations_file']
 
     # template for the name of a schema commit changes file; the format placeholders are replaced
     # with the file's creation timestamp and the prefix of the commit's git hash, respectively
     _CHANGES_FILENAME_TEMPLATE = "schema_commit_changes_{}_{}.yaml"
     _HASH_PREFIX_LEN = 7
 
-    def __init__(self, git_repo=None, hash=None, renamed_models=None, renamed_attributes=None,
-        transformations_file=None):
+    def __init__(self, git_repo=None, schema_commit_changes_file=None, hash=None, renamed_models=None,
+        renamed_attributes=None, transformations_file=None):
         self.git_repo = git_repo
+        self.schema_commit_changes_file = schema_commit_changes_file
         self.hash = hash
         self.renamed_models = renamed_models
         self.renamed_attributes = renamed_attributes
@@ -1780,7 +1785,7 @@ class SchemaCommitChanges(object):
                 have the hash
 
         Returns:
-            :obj:`str`: the filename of the file found
+            :obj:`str`: the pathname of the file found
         """
         migrations_directory = os.path.join(self.git_repo.repo_dir, AutomatedMigration._MIGRATIONS_DIRECTORY)
         # search with glob
@@ -1793,7 +1798,7 @@ class SchemaCommitChanges(object):
         if 1 < num_files:
             raise MigratorError("multiple schema commit changes files in '{}' for hash {}".format(
                 migrations_directory, hash))
-        return files[0]
+        return str(files[0])
 
     def generate_filename(self):
         """ Generate a filename for a template schema commit changes file
@@ -1840,6 +1845,37 @@ class SchemaCommitChanges(object):
 
         return pathname
 
+    def import_transformations(self):
+        """ Import the transformation functions referenced in a schema commit changes file
+
+        Returns:
+            :obj:`dict`: the transformations for a migration to the schema, in a dictionary of callables
+
+        Raises:
+            :obj:`MigratorError`: if the transformations file cannot be imported,
+                or it does not have a 'transformations' attribute,
+                or 'transformations' isn't a dict of callables as specified by Migrator.SUPPORTED_TRANSFORMATIONS
+        """
+        if self.transformations_file:
+
+            # import the transformations_file, if defined
+            dir = os.path.dirname(self.schema_commit_changes_file)
+            transformations_schema_module = SchemaModule(self.transformations_file, dir=dir)
+            transformations_module = transformations_schema_module.import_module_for_migration()
+
+            # extract the transformations
+            if not hasattr(transformations_module, 'transformations'):
+                raise MigratorError("'{}' does not have a 'transformations' attribute".format(
+                    os.path.join(dir, self.transformations_file)))
+            transformations = getattr(transformations_module, 'transformations')
+
+            # validate transformations
+            errors = Migrator._validate_transformations(transformations)
+            if errors:
+                raise MigratorError('\n'.join(errors))
+
+            return transformations
+
     @staticmethod
     def load(schema_commit_changes_file):
         """ Load a schema commit changes file
@@ -1880,10 +1916,7 @@ class SchemaCommitChanges(object):
                 raise MigratorError("schema commit changes file is empty (an unmodified template)"
                     ": '{}'".format(schema_commit_changes_file))
 
-        # import the transformations_file, if defined
-        if schema_commit_changes['transformations_file']:
-            dir = os.path.dirname(schema_commit_changes_file)
-            schema_module = SchemaModule(schema_commit_changes['transformations_file'], dir=dir)
+        schema_commit_changes['schema_commit_changes_file'] = schema_commit_changes_file
 
         return schema_commit_changes
 

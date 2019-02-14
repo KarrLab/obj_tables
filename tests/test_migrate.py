@@ -32,6 +32,7 @@ import networkx as nx
 from networkx.algorithms.shortest_paths.generic import has_path
 import random
 import time
+from pathlib import Path
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
     RunMigration, MigrationSpec, SchemaCommitChanges, AutomatedMigration, GitRepo)
@@ -616,17 +617,22 @@ class TestMigrator(MigrationFixtures):
 
     def test_validate_transformations(self):
         migrator = Migrator()
-        self.assertEqual(migrator._validate_transformations(), [])
+        self.assertEqual(Migrator._validate_transformations(migrator.transformations), [])
+
         def a_callable(): pass
         migrator = Migrator(transformations=dict.fromkeys(Migrator.SUPPORTED_TRANSFORMATIONS, a_callable))
-        self.assertEqual(migrator._validate_transformations(), [])
+        self.assertEqual(Migrator._validate_transformations(migrator.transformations), [])
+
         migrator = Migrator(transformations=3)
-        self.assertIn("transformations should be a dict", migrator._validate_transformations()[0])
+        self.assertIn("transformations should be a dict",
+            Migrator._validate_transformations(migrator.transformations)[0])
+
         migrator = Migrator(transformations={'FOO':3, Migrator.PREPARE_EXISTING_MODELS:2})
-        self.assertRegex(migrator._validate_transformations()[0],
+        self.assertRegex(Migrator._validate_transformations(migrator.transformations)[0],
             "names of transformations .+ aren't a subset of the supported transformations")
+
         migrator = Migrator(transformations=dict.fromkeys(Migrator.SUPPORTED_TRANSFORMATIONS, 3))
-        errors = migrator._validate_transformations()
+        errors = Migrator._validate_transformations(migrator.transformations)
         for error in errors:
             self.assertRegex(error, "value for transformation '.+' is a\(n\) '.+', which isn't callable")
 
@@ -1556,7 +1562,6 @@ class CommitChangesFixtures(unittest.TestCase):
         del cls.git_repo
 
 
-from pathlib import Path
 class TestSchemaCommitChanges(CommitChangesFixtures):
 
     @classmethod
@@ -1609,7 +1614,23 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         for attr in ['hash', 'transformations_file']:
             self.assertTrue(isinstance(data[attr], str))
 
+    def test_import_transformations(self):
+        #import_transformations()
+        pass
+
     def test_load(self):
+        schema_commit_changes_file = \
+            self.schema_commit_changes.find_file('ba1f9d33a3e18a74f79f41903e7e88e118134d5f')
+        schema_commit_changes = SchemaCommitChanges.load(schema_commit_changes_file)
+        expected_schema_commit_changes = dict(
+            hash='ba1f9d33a3e18a74f79f41903e7e88e118134d5f',
+            renamed_attributes=[],
+            renamed_models=[['Test', 'TestNew']],
+            schema_commit_changes_file=schema_commit_changes_file,
+            transformations_file='transformations_ba1f9d3.py'
+        )
+        self.assertEqual(schema_commit_changes, expected_schema_commit_changes)
+
         no_such_file = 'no such file'
         with self.assertRaisesRegex(MigratorError, "could not read schema commit changes file: '.+'"):
             SchemaCommitChanges.load(no_such_file)
