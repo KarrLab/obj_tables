@@ -1614,9 +1614,32 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         for attr in ['hash', 'transformations_file']:
             self.assertTrue(isinstance(data[attr], str))
 
+        # quickly create another, which will likely have the same timestamp
+        with self.assertRaisesRegex(MigratorError, "schema commit changes file '.+' already exists"):
+            self.schema_commit_changes.make_template(temp_dir.name)
+
     def test_import_transformations(self):
-        #import_transformations()
-        pass
+        find_file = self.schema_commit_changes.find_file
+        schema_commit_changes_file = find_file('ba1f9d33a3e18a74f79f41903e7e88e118134d5f')
+        schema_commit_changes = SchemaCommitChanges.generate_instance(schema_commit_changes_file)
+        transformations = schema_commit_changes.import_transformations()
+        self.assertTrue(isinstance(transformations, dict))
+        self.assertEqual(transformations['PREPARE_EXISTING_MODELS'], transformations['MODIFY_MIGRATED_MODELS'])
+
+        schema_commit_changes_file = find_file('aaaaaaa')
+        schema_commit_changes = SchemaCommitChanges.generate_instance(schema_commit_changes_file)
+        transformations = schema_commit_changes.import_transformations()
+        self.assertTrue(transformations is None)
+
+        schema_commit_changes_file = find_file('ccccccc')
+        schema_commit_changes = SchemaCommitChanges.generate_instance(schema_commit_changes_file)
+        with self.assertRaisesRegex(MigratorError, "'.+' does not have a 'transformations' attribute"):
+            schema_commit_changes.import_transformations()
+
+        schema_commit_changes_file = find_file('bbbbbbb')
+        schema_commit_changes = SchemaCommitChanges.generate_instance(schema_commit_changes_file)
+        with self.assertRaisesRegex(MigratorError, "transformations should be a dict, but it is a.+"):
+            schema_commit_changes.import_transformations()
 
     def test_load(self):
         schema_commit_changes_file = \

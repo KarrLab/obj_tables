@@ -268,15 +268,19 @@ class SchemaModule(object):
     ERROR_NOTICE = """Migrate doesn't import all parent package directories of the schema.
 Therefore, the schema and Python it imports, directly or indirectly, cannot use relative imports or cycles of imports."""
 
-    def import_module_for_migration(self):
+    def import_module_for_migration(self, validate=True):
         """ Import a schema in a Python module
+
+        Args:
+            validate (:obj:`bool`, optional): whether to validate the module; default is True
 
         Returns:
             :obj:`Module`: the `Module` loaded from `self.module_path`
 
         Raises:
             :obj:`MigratorError`: if the schema at `self.module_path` cannot be imported,
-                or if any related attribute in any model references a model not in the module
+                or if validate is True and any related attribute in any model references a model
+                    not in the module
         """
         if self.get_path() in self.MODULES:
             return self.MODULES[self.get_path()]
@@ -321,9 +325,10 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
         # to avoid side effects do not allow changes to sys.modules
         sys.modules = saved['modules']
 
-        errors = self._check_imported_models(module=module)
-        if errors:
-            raise MigratorError('\n'.join(errors))
+        if validate:
+            errors = self._check_imported_models(module=module)
+            if errors:
+                raise MigratorError('\n'.join(errors))
 
         self.MODULES[self.get_path()] = module
 
@@ -1861,7 +1866,7 @@ class SchemaCommitChanges(object):
             # import the transformations_file, if defined
             dir = os.path.dirname(self.schema_commit_changes_file)
             transformations_schema_module = SchemaModule(self.transformations_file, dir=dir)
-            transformations_module = transformations_schema_module.import_module_for_migration()
+            transformations_module = transformations_schema_module.import_module_for_migration(validate=False)
 
             # extract the transformations
             if not hasattr(transformations_module, 'transformations'):
@@ -1928,10 +1933,7 @@ class SchemaCommitChanges(object):
             schema_commit_changes_file (:obj:`str`): path to the schema commit changes file
 
         Returns:
-            :obj:`SchemaCommitChanges`: pathname of the schema commit changes file that was written
-
-        Raises:
-            :obj:`MigratorError`: if the schema commit changes file already exists
+            :obj:`SchemaCommitChanges`: the `SchemaCommitChanges` instance
         """
         schema_commit_changes_dict = SchemaCommitChanges.load(schema_commit_changes_file)
         return SchemaCommitChanges(**schema_commit_changes_dict)
@@ -2087,7 +2089,7 @@ class GitRepo(object):
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
         temp_dirs (:obj:`list` of :obj:`tempfile.TemporaryDirectory`): temp dirs to hold repo clones
     """
-    # placeholder repo name if name not known
+    # default repo name if name not known
     _NAME_UNKNOWN = 'name_unknown'
 
     def __init__(self, repo_location=None):
