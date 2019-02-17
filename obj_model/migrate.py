@@ -1713,36 +1713,36 @@ class MigrationController(object):
         return results
 
 
-class SchemaCommitChanges(object):
+class SchemaChanges(object):
     """ Specification of the changes to a schema in a git commit
 
     Attributes:
-        _CHANGES_FILE_ATTRS (:obj:`list` of :obj:`str`): required attributes in a schema commit changes file
-        _ATTRIBUTES (:obj:`list` of :obj:`str`): attributes in a `SchemaCommitChanges` instance
+        _CHANGES_FILE_ATTRS (:obj:`list` of :obj:`str`): required attributes in a schema changes file
+        _ATTRIBUTES (:obj:`list` of :obj:`str`): attributes in a `SchemaChanges` instance
         git_repo (:obj:`GitRepo`): a git_repo whose data are being migrated
         transformations (:obj:`dict`, optional): the transformations for a migration to the schema,
             in a dictionary of callables
-        schema_commit_changes_file (:obj:`str`): the schema commit changes file
-        hash (:obj:`str`): hash from a schema commit changes file
+        schema_changes_file (:obj:`str`): the schema changes file
+        hash (:obj:`str`): hash from a schema changes file
         renamed_models (:obj:`list`, optional): list of renamed models in the commit
         renamed_attributes (:obj:`list`, optional): list of renamed attributes in the commit
         transformations_file (:obj:`str`, optional): the name of a Python file containing transformations
     """
     _CHANGES_FILE_ATTRS = ['hash', 'renamed_models', 'renamed_attributes', 'transformations_file']
 
-    _ATTRIBUTES = ['git_repo', 'transformations', 'schema_commit_changes_file', 'hash',
+    _ATTRIBUTES = ['git_repo', 'transformations', 'schema_changes_file', 'hash',
         'renamed_models', 'renamed_attributes', 'transformations_file']
 
-    # template for the name of a schema commit changes file; the format placeholders are replaced
+    # template for the name of a schema changes file; the format placeholders are replaced
     # with the file's creation timestamp and the prefix of the commit's git hash, respectively
-    _CHANGES_FILENAME_TEMPLATE = "schema_commit_changes_{}_{}.yaml"
+    _CHANGES_FILENAME_TEMPLATE = "schema_changes_{}_{}.yaml"
     _HASH_PREFIX_LEN = 7
     _SHA1_LEN = 40
 
-    def __init__(self, git_repo=None, schema_commit_changes_file=None, hash=None, renamed_models=None,
+    def __init__(self, git_repo=None, schema_changes_file=None, hash=None, renamed_models=None,
         renamed_attributes=None, transformations_file=None):
         self.git_repo = git_repo
-        self.schema_commit_changes_file = schema_commit_changes_file
+        self.schema_changes_file = schema_changes_file
         self.hash = hash
         self.renamed_models = renamed_models
         self.renamed_attributes = renamed_attributes
@@ -1767,7 +1767,7 @@ class SchemaCommitChanges(object):
         Returns:
             :obj:`str`: hash's prefix
         """
-        return hash[:SchemaCommitChanges._HASH_PREFIX_LEN]
+        return hash[:SchemaChanges._HASH_PREFIX_LEN]
 
     # todo: move to wc_utils
     @staticmethod
@@ -1781,81 +1781,80 @@ class SchemaCommitChanges(object):
         return dt.strftime("%Y-%m-%d-%H-%M-%S")
 
     @staticmethod
-    def hash_prefix_from_scc_file(schema_commit_changes_file):
-        """ Get the hash prefix from a schema commit changes filename
+    def hash_prefix_from_sc_file(schema_changes_file):
+        """ Get the hash prefix from a schema changes filename
 
         Args:
-            schema_commit_changes_file (:obj:`str`): the schema commit changes file
+            schema_changes_file (:obj:`str`): the schema changes file
 
         Returns:
-            :obj:`str`: the hash prefix in a schema commit changes filename
+            :obj:`str`: the hash prefix in a schema changes filename
         """
-        path = Path(schema_commit_changes_file)
+        path = Path(schema_changes_file)
         return path.stem.split('_')[-1]
 
     @staticmethod
-    def all_schema_commit_changes_files(migrations_directory):
-        """ Find all schema commit changes files in a git repo
+    def all_schema_changes_files(migrations_directory):
+        """ Find all schema changes files in a git repo
 
         Args:
             migrations_directory (:obj:`str`): path to the migrations directory in a git repo
 
         Raises:
-            :obj:`MigratorError`: if no schema commit changes files are found
+            :obj:`MigratorError`: if no schema changes files are found
 
         Returns:
-            :obj:`list`: of :obj:`str`: pathnames of the schema commit changes files
+            :obj:`list`: of :obj:`str`: pathnames of the schema changes files
         """
         # use glob to search
-        pattern = SchemaCommitChanges._CHANGES_FILENAME_TEMPLATE.format('*',  '*')
+        pattern = SchemaChanges._CHANGES_FILENAME_TEMPLATE.format('*',  '*')
         files = list(Path(migrations_directory).glob(pattern))
         num_files = len(files)
         if not num_files:
-            raise MigratorError("no schema commit changes files in '{}'".format(migrations_directory))
+            raise MigratorError("no schema changes files in '{}'".format(migrations_directory))
         return [str(file) for file in files]
 
-    # todo: refactor to remove redundancies with find_file
     @staticmethod
-    def all_schema_commit_changes_with_commits(git_repo):
-        """ Instantiate all schema commit changes in a git repo
+    def all_schema_changes_with_commits(git_repo):
+        """ Instantiate all schema changes in a git repo
 
-        Obtain all validated schema commit change files
+        Obtain all validated schema change files
 
         Args:
             git_repo (:obj:`GitRepo`): an initialized git repo
 
         Returns:
-            :obj:`tuple`: :obj:`list` of errors, :obj:`list` all validated schema commit change files
+            :obj:`tuple`: :obj:`list` of errors, :obj:`list` all validated schema change files
         """
         errors = []
-        schema_commit_changes_with_commits = []
+        schema_changes_with_commits = []
         migrations_directory = git_repo.migrations_dir()
-        for scc_file in SchemaCommitChanges.all_schema_commit_changes_files(migrations_directory):
+        for sc_file in SchemaChanges.all_schema_changes_files(migrations_directory):
             try:
-                hash_prefix = SchemaCommitChanges.hash_prefix_from_scc_file(scc_file)
-                scc_dict = SchemaCommitChanges.load(scc_file)
-                commit_hash = scc_dict['hash']
-                if SchemaCommitChanges.hash_prefix(commit_hash) != hash_prefix:
-                    errors.append("hash prefix in schema commit changes filename '{}' inconsistent "
-                        "with hash in file: '{}'".format(scc_file, scc_dict['hash']))
+                hash_prefix = SchemaChanges.hash_prefix_from_sc_file(sc_file)
+                sc_dict = SchemaChanges.load(sc_file)
+                commit_hash = sc_dict['hash']
+                if SchemaChanges.hash_prefix(commit_hash) != hash_prefix:
+                    errors.append("hash prefix in schema changes filename '{}' inconsistent "
+                        "with hash in file: '{}'".format(sc_file, sc_dict['hash']))
                     continue
 
                 # ensure that the hash corresponds to a commit
                 if git_repo.get_commit(commit_hash) is None:
                     errors.append("the hash in '{}', which is '{}', isn't the hash of a commit".format(
-                        scc_file, scc_dict['hash']))
+                        sc_file, sc_dict['hash']))
                     continue
 
-                schema_commit_changes_with_commits.append(SchemaCommitChanges.generate_instance(scc_file))
+                schema_changes_with_commits.append(SchemaChanges.generate_instance(sc_file))
 
             except MigratorError as e:
                 errors.append(str(e))
 
-        return errors, schema_commit_changes_with_commits
+        return errors, schema_changes_with_commits
 
     @staticmethod
     def find_file(git_repo, hash):
-        """ Find a schema commit changes file in a git repo
+        """ Find a schema changes file in a git repo
 
         Args:
             git_repo (:obj:`GitRepo`): an initialized git repo
@@ -1869,65 +1868,65 @@ class SchemaCommitChanges(object):
             :obj:`str`: the pathname of the file found
         """
         # search with glob
-        pattern = SchemaCommitChanges._CHANGES_FILENAME_TEMPLATE.format('*',
-            SchemaCommitChanges.hash_prefix(hash))
+        pattern = SchemaChanges._CHANGES_FILENAME_TEMPLATE.format('*',
+            SchemaChanges.hash_prefix(hash))
         migrations_directory = git_repo.migrations_dir()
         files = list(Path(migrations_directory).glob(pattern))
         num_files = len(files)
         if not num_files:
-            raise MigratorError("no schema commit changes file in '{}' for hash {}".format(
+            raise MigratorError("no schema changes file in '{}' for hash {}".format(
                 migrations_directory, hash))
         if 1 < num_files:
-            raise MigratorError("multiple schema commit changes files in '{}' for hash {}".format(
+            raise MigratorError("multiple schema changes files in '{}' for hash {}".format(
                 migrations_directory, hash))
-        schema_commit_changes_file = str(files[0])
+        schema_changes_file = str(files[0])
 
         # ensure that hash in name and file are consistent
-        scc_dict = SchemaCommitChanges.load(schema_commit_changes_file)
-        if SchemaCommitChanges.hash_prefix(scc_dict['hash']) != SchemaCommitChanges.hash_prefix(hash):
-            raise MigratorError("hash prefix in schema commit changes filename '{}' inconsistent "
-                "with hash in file: '{}'".format(schema_commit_changes_file, scc_dict['hash']))
+        sc_dict = SchemaChanges.load(schema_changes_file)
+        if SchemaChanges.hash_prefix(sc_dict['hash']) != SchemaChanges.hash_prefix(hash):
+            raise MigratorError("hash prefix in schema changes filename '{}' inconsistent "
+                "with hash in file: '{}'".format(schema_changes_file, sc_dict['hash']))
 
         # ensure that the hash corresponds to a commit
         if git_repo.get_commit(hash) is None:
             raise MigratorError("the hash in '{}', which is '{}', isn't the hash of a commit".format(
-                schema_commit_changes_file, scc_dict['hash']))
+                schema_changes_file, sc_dict['hash']))
 
-        return schema_commit_changes_file
+        return schema_changes_file
 
     def generate_filename(self):
-        """ Generate a filename for a template schema commit changes file
+        """ Generate a filename for a template schema changes file
 
         The filename includes the current repo hash.
 
         Returns:
             :obj:`str`: the filename
         """
-        return SchemaCommitChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_date_timestamp(),
+        return SchemaChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_date_timestamp(),
             self.hash_prefix(self.get_hash()))
 
     def make_template(self, changes_file_dir):
-        """ Make a template schema commit changes file
+        """ Make a template schema changes file
 
-        The template includes the current repo hash and empty values for `SchemaCommitChanges`
+        The template includes the current repo hash and empty values for `SchemaChanges`
         attributes.
 
         Args:
-            changes_file_dir (:obj:`str`): directory for the schema commit changes file
+            changes_file_dir (:obj:`str`): directory for the schema changes file
 
         Returns:
-            :obj:`str`: pathname of the schema commit changes file that was written
+            :obj:`str`: pathname of the schema changes file that was written
 
         Raises:
-            :obj:`MigratorError`: if the schema commit changes file already exists
+            :obj:`MigratorError`: if the schema changes file already exists
         """
         filename = self.generate_filename()
         pathname = os.path.join(changes_file_dir, filename)
         if os.path.exists(pathname):
-            raise MigratorError("schema commit changes file '{}' already exists".format(pathname))
+            raise MigratorError("schema changes file '{}' already exists".format(pathname))
 
         with open(pathname, 'w') as file:
-            file.write(u'# schema commit changes file\n')
+            file.write(u'# schema changes file\n')
             file.write(u"# stored in '{}'\n\n".format(filename))
             # generate YAML content
             template_data = dict(
@@ -1941,7 +1940,7 @@ class SchemaCommitChanges(object):
         return pathname
 
     def import_transformations(self):
-        """ Import the transformation functions referenced in a schema commit changes file
+        """ Import the transformation functions referenced in a schema changes file
 
         Returns:
             :obj:`dict`: the transformations for a migration to the schema, in a dictionary of callables
@@ -1954,7 +1953,7 @@ class SchemaCommitChanges(object):
         if self.transformations_file:
 
             # import the transformations_file, if defined
-            dir = os.path.dirname(self.schema_commit_changes_file)
+            dir = os.path.dirname(self.schema_changes_file)
             transformations_schema_module = SchemaModule(self.transformations_file, dir=dir)
             transformations_module = transformations_schema_module.import_module_for_migration(validate=False)
 
@@ -1972,71 +1971,71 @@ class SchemaCommitChanges(object):
             return transformations
 
     @staticmethod
-    def load(schema_commit_changes_file):
-        """ Load a schema commit changes file
+    def load(schema_changes_file):
+        """ Load a schema changes file
 
         Args:
-            schema_commit_changes_file (:obj:`str`): path to the schema commit changes file
+            schema_changes_file (:obj:`str`): path to the schema changes file
 
         Returns:
-            :obj:`dict`: the data in the schema commit changes file
+            :obj:`dict`: the data in the schema changes file
 
         Raises:
-            :obj:`MigratorError`: if the schema commit changes file cannot be found,
+            :obj:`MigratorError`: if the schema changes file cannot be found,
                 or is not proper YAML,
                 or does not have the right format,
                 or does not contain any changes
         """
         try:
-            fd = open(schema_commit_changes_file, 'r')
+            fd = open(schema_changes_file, 'r')
         except FileNotFoundError as e:
-            raise MigratorError("could not read schema commit changes file: '{}'".format(
-                schema_commit_changes_file))
+            raise MigratorError("could not read schema changes file: '{}'".format(
+                schema_changes_file))
         try:
-            schema_commit_changes = yaml.load(fd)
+            schema_changes = yaml.load(fd)
         except yaml.YAMLError as e:
-            raise MigratorError("could not parse YAML schema commit changes file: '{}':\n{}".format(
-                schema_commit_changes_file, e))
+            raise MigratorError("could not parse YAML schema changes file: '{}':\n{}".format(
+                schema_changes_file, e))
 
-        if not isinstance(schema_commit_changes, dict) or \
-            any([attr not in schema_commit_changes for attr in SchemaCommitChanges._CHANGES_FILE_ATTRS]):
-                raise MigratorError("schema commit changes file must have a dict with the attributes in "
-                    "{}._CHANGES_FILE_ATTRS: {}".format(SchemaCommitChanges.__name__,
-                    ', '.join(SchemaCommitChanges._CHANGES_FILE_ATTRS)))
+        if not isinstance(schema_changes, dict) or \
+            any([attr not in schema_changes for attr in SchemaChanges._CHANGES_FILE_ATTRS]):
+                raise MigratorError("schema changes file must have a dict with the attributes in "
+                    "{}._CHANGES_FILE_ATTRS: {}".format(SchemaChanges.__name__,
+                    ', '.join(SchemaChanges._CHANGES_FILE_ATTRS)))
 
-        if len(schema_commit_changes['hash']) != SchemaCommitChanges._SHA1_LEN:
-            raise MigratorError("schema commit changes file '{}' does not have a proper hash".format(
-                schema_commit_changes_file))
+        if len(schema_changes['hash']) != SchemaChanges._SHA1_LEN:
+            raise MigratorError("schema changes file '{}' does not have a proper hash".format(
+                schema_changes_file))
 
-        # report empty schema commit changes files (unmodified templates)
-        if schema_commit_changes['renamed_models'] == [] and \
-            schema_commit_changes['renamed_attributes'] == [] and \
-            schema_commit_changes['transformations_file'] == '':
-                raise MigratorError("schema commit changes file is empty (an unmodified template)"
-                    ": '{}'".format(schema_commit_changes_file))
+        # report empty schema changes files (unmodified templates)
+        if schema_changes['renamed_models'] == [] and \
+            schema_changes['renamed_attributes'] == [] and \
+            schema_changes['transformations_file'] == '':
+                raise MigratorError("schema changes file is empty (an unmodified template)"
+                    ": '{}'".format(schema_changes_file))
 
-        schema_commit_changes['schema_commit_changes_file'] = schema_commit_changes_file
+        schema_changes['schema_changes_file'] = schema_changes_file
 
-        return schema_commit_changes
+        return schema_changes
 
     @staticmethod
-    def generate_instance(schema_commit_changes_file):
-        """ Generate a `SchemaCommitChanges` instance from a schema commit changes file
+    def generate_instance(schema_changes_file):
+        """ Generate a `SchemaChanges` instance from a schema changes file
 
         Args:
-            schema_commit_changes_file (:obj:`str`): path to the schema commit changes file
+            schema_changes_file (:obj:`str`): path to the schema changes file
 
         Returns:
-            :obj:`SchemaCommitChanges`: the `SchemaCommitChanges` instance
+            :obj:`SchemaChanges`: the `SchemaChanges` instance
         """
-        schema_commit_changes_dict = SchemaCommitChanges.load(schema_commit_changes_file)
-        return SchemaCommitChanges(**schema_commit_changes_dict)
+        schema_changes_dict = SchemaChanges.load(schema_changes_file)
+        return SchemaChanges(**schema_changes_dict)
 
     def __str__(self):
         """ Provide a string representation
 
         Returns:
-            :obj:`str`: a string representation of this `SchemaCommitChanges`
+            :obj:`str`: a string representation of this `SchemaChanges`
         """
         rv = []
         for attr in self._ATTRIBUTES:
@@ -2046,13 +2045,13 @@ class SchemaCommitChanges(object):
     '''
     # todo: decide what to do about comparing GitRepos
     def __eq__(self, other):
-        """ Compare two :obj:`SchemaCommitChanges` objects
+        """ Compare two :obj:`SchemaChanges` objects
 
         Args:
             other (:obj:`Object`): other object
 
         Returns:
-            :obj:`bool`: true if :obj:`SchemaCommitChanges` objects are semantically equal
+            :obj:`bool`: true if :obj:`SchemaChanges` objects are semantically equal
         """
         if other.__class__ is not self.__class__:
             return False
@@ -2292,9 +2291,9 @@ class AutomatedMigration(object):
     The `target` repo contains a `migrations` directory that has:
 
     * A YAML format automated migration configuration file
-    * Some schema commit changes files, which may refer to associated transformations files. Hashes
+    * Some schema changes files, which may refer to associated transformations files. Hashes
     in the changes files refer to commits in the *schema* repo.
-    These files are managed by `SchemaCommitChanges` objects.
+    These files are managed by `SchemaChanges` objects.
 
     The automated migration configuration file contains the attributes described in `_CONFIG_ATTRIBUTES`:
 
@@ -2337,7 +2336,7 @@ class AutomatedMigration(object):
     }
 
     # attributes in a `AutomatedMigration`
-    _ATTRIBUTES = ['target_repo_location', 'target_git_repo', 'schema_git_repo', 'target_config_file', 'target_config', 'migration_spec', 'loaded_schema_commit_changes']
+    _ATTRIBUTES = ['target_repo_location', 'target_git_repo', 'schema_git_repo', 'target_config_file', 'target_config', 'migration_spec', 'loaded_schema_changes']
     _REQUIRED_ATTRIBUTES = ['target_repo_location', 'target_config_file']
 
     def __init__(self, **kwargs):
@@ -2372,13 +2371,13 @@ class AutomatedMigration(object):
         # clone and load schema repo
         self.schema_git_repo = GitRepo(self.target_config['schema_repo_url'])
 
-        # load all schema commit changes files, & make sure each one corresponds to a hash
-        empty_scc = SchemaCommitChanges(git_repo=self.target_git_repo)
-        errors, loaded_schema_commit_changes = empty_scc.all_schema_commit_changes_with_commits()
+        # load all schema changes files, & make sure each one corresponds to a hash
+        empty_scc = SchemaChanges(git_repo=self.target_git_repo)
+        errors, loaded_schema_changes = empty_scc.all_schema_changes_with_commits()
         if errors:
             raise MigratorError('\n'.join(errors))
 
-        self.loaded_schema_commit_changes = loaded_schema_commit_changes
+        self.loaded_schema_changes = loaded_schema_changes
 
     def get_name(self):
         """ Make a name for an automated migration
@@ -2389,7 +2388,7 @@ class AutomatedMigration(object):
         if self.target_git_repo is None or self.schema_git_repo is None:
             raise MigratorError("to generate name target_git_repo is None and schema_git_repo must be initialized")
         return self._NAME_FORMAT.format(self.target_git_repo.repo_name(), self.schema_git_repo.repo_name(),
-            SchemaCommitChanges.get_date_timestamp())
+            SchemaChanges.get_date_timestamp())
 
     def make_template_config_file(self):
         """ Create a template automated migration config file with its attributes
@@ -2482,14 +2481,14 @@ class AutomatedMigration(object):
         pass
 
     def generate_migration_spec(self):
-        """ Generate a `MigrationSpec` for all schema commit changes
+        """ Generate a `MigrationSpec` for all schema changes
 
         Returns:
             :obj:`MigrationSpec`: the partially instantiated `MigrationSpec` for all schema commit
                 changes files in `directory`
         """
         # instantiate a `MigrationSpec`, with  seq_of_renamed_models and seq_of_renamed_attributes
-        # validate the schema repo's schema commit changes files, and
+        # validate the schema repo's schema changes files, and
         # the associated transformations files and schemas
         name = self.get_name()
 

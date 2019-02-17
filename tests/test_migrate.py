@@ -36,7 +36,7 @@ from pathlib import Path
 import socket
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
-    RunMigration, MigrationSpec, SchemaCommitChanges, AutomatedMigration, GitRepo)
+    RunMigration, MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -330,6 +330,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
+@unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -608,6 +609,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
+@unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1247,6 +1249,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
+@unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1429,6 +1432,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
+@unittest.skip("speed up testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1605,7 +1609,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         super().tearDownClass()
 
     def setUp(self):
-        self.schema_commit_changes = SchemaCommitChanges(self.git_repo)
+        self.schema_changes = SchemaChanges(self.git_repo)
         self.test_data = dict(
             hash='a'*40,
             renamed_models=[('Foo', 'FooNew')],
@@ -1614,62 +1618,61 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         )
 
     def test_get_date_timestamp(self):
-        timestamp = SchemaCommitChanges.get_date_timestamp()
+        timestamp = SchemaChanges.get_date_timestamp()
         # good for 81 years:
         self.assertTrue(timestamp.startswith('20'))
         self.assertEqual(len(timestamp), 19)
 
-    def test_all_schema_commit_changes_files(self):
-        files = SchemaCommitChanges.all_schema_commit_changes_files(self.git_repo.migrations_dir())
+    def test_all_schema_changes_files(self):
+        files = SchemaChanges.all_schema_changes_files(self.git_repo.migrations_dir())
         self.assertEqual(len(files), 6)
         an_expected_file = os.path.join(self.git_repo.migrations_dir(),
-            'schema_commit_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
+            'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
         self.assertTrue(an_expected_file in files)
 
-        with self.assertRaisesRegex(MigratorError, "no schema commit changes files in '\S+'"):
-            SchemaCommitChanges.all_schema_commit_changes_files(self.empty_git_repo.migrations_dir())
+        with self.assertRaisesRegex(MigratorError, "no schema changes files in '\S+'"):
+            SchemaChanges.all_schema_changes_files(self.empty_git_repo.migrations_dir())
 
-    def test_all_schema_commit_changes_with_commits(self):
-        # todo: rename SchemaCommitChanges -> SchemaChanges
-        all_schema_commit_changes_with_commits = SchemaCommitChanges.all_schema_commit_changes_with_commits
-        errors, schema_commit_changes = all_schema_commit_changes_with_commits(self.git_repo)
+    def test_all_schema_changes_with_commits(self):
+        all_schema_changes_with_commits = SchemaChanges.all_schema_changes_with_commits
+        errors, schema_changes = all_schema_changes_with_commits(self.git_repo)
         self.assertEqual(len(errors), 5)
-        self.assertEqual(len(schema_commit_changes), 1)
-        self.assertEqual(schema_commit_changes[0].schema_commit_changes_file,
-            SchemaCommitChanges.find_file(self.git_repo, self.known_hash_ba1f9d3))
+        self.assertEqual(len(schema_changes), 1)
+        self.assertEqual(schema_changes[0].schema_changes_file,
+            SchemaChanges.find_file(self.git_repo, self.known_hash_ba1f9d3))
 
     def test_find_file(self):
-        schema_commit_changes_file = SchemaCommitChanges.find_file(self.git_repo, self.known_hash_ba1f9d3)
-        self.assertEqual(os.path.basename(schema_commit_changes_file),
-            'schema_commit_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
+        schema_changes_file = SchemaChanges.find_file(self.git_repo, self.known_hash_ba1f9d3)
+        self.assertEqual(os.path.basename(schema_changes_file),
+            'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
 
-        with self.assertRaisesRegex(MigratorError, "no schema commit changes file in '.+' for hash \S+"):
-            SchemaCommitChanges.find_file(self.git_repo, 'not_a_hash_not_a_hash_not_a_hash_not_a_h')
+        with self.assertRaisesRegex(MigratorError, "no schema changes file in '.+' for hash \S+"):
+            SchemaChanges.find_file(self.git_repo, 'not_a_hash_not_a_hash_not_a_hash_not_a_h')
 
         migrations_dir = self.git_repo.migrations_dir()
-        self.schema_commit_changes.make_template(migrations_dir)
+        self.schema_changes.make_template(migrations_dir)
         time.sleep(2)
-        self.schema_commit_changes.make_template(migrations_dir)
+        self.schema_changes.make_template(migrations_dir)
         with self.assertRaisesRegex(MigratorError,
-            "multiple schema commit changes files in '.+' for hash \S+"):
-            SchemaCommitChanges.find_file(self.git_repo, self.schema_commit_changes.get_hash())
+            "multiple schema changes files in '.+' for hash \S+"):
+            SchemaChanges.find_file(self.git_repo, self.schema_changes.get_hash())
 
         with self.assertRaisesRegex(MigratorError,
-            "hash prefix in schema commit changes filename '.+' inconsistent with hash in file: '\S+'"):
-            SchemaCommitChanges.find_file(self.git_repo, 'a'*40)
+            "hash prefix in schema changes filename '.+' inconsistent with hash in file: '\S+'"):
+            SchemaChanges.find_file(self.git_repo, 'a'*40)
 
         with self.assertRaisesRegex(MigratorError,
             "the hash in '.+', which is '.+', isn't the hash of a commit"):
-            SchemaCommitChanges.find_file(self.git_repo, 'abcdefabcdefabcdefabcdefabcdefabcdefabcd')
+            SchemaChanges.find_file(self.git_repo, 'abcdefabcdefabcdefabcdefabcdefabcdefabcd')
 
     def test_generate_filename(self):
-        filename = self.schema_commit_changes.generate_filename()
+        filename = self.schema_changes.generate_filename()
         self.assertTrue(filename.endswith('.yaml'))
         self.assertTrue(2 <= len(filename.split('_')))
 
     def test_make_template(self):
         temp_dir = tempfile.TemporaryDirectory()
-        pathname = self.schema_commit_changes.make_template(temp_dir.name)
+        pathname = self.schema_changes.make_template(temp_dir.name)
         data = yaml.load(open(pathname, 'r'))
         for attr in ['renamed_models', 'renamed_attributes']:
             self.assertEqual(data[attr], [])
@@ -1677,50 +1680,50 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
             self.assertTrue(isinstance(data[attr], str))
 
         # quickly create another, which will likely have the same timestamp
-        with self.assertRaisesRegex(MigratorError, "schema commit changes file '.+' already exists"):
-            self.schema_commit_changes.make_template(temp_dir.name)
+        with self.assertRaisesRegex(MigratorError, "schema changes file '.+' already exists"):
+            self.schema_changes.make_template(temp_dir.name)
 
     def test_import_transformations(self):
-        find_file = SchemaCommitChanges.find_file
-        schema_commit_changes_file = find_file(self.git_repo, self.known_hash_ba1f9d3)
-        schema_commit_changes = SchemaCommitChanges.generate_instance(schema_commit_changes_file)
-        transformations = schema_commit_changes.import_transformations()
+        find_file = SchemaChanges.find_file
+        schema_changes_file = find_file(self.git_repo, self.known_hash_ba1f9d3)
+        schema_changes = SchemaChanges.generate_instance(schema_changes_file)
+        transformations = schema_changes.import_transformations()
         self.assertTrue(isinstance(transformations, dict))
         self.assertEqual(transformations['PREPARE_EXISTING_MODELS'], transformations['MODIFY_MIGRATED_MODELS'])
 
-        schema_commit_changes_file = os.path.join(self.git_repo.migrations_dir(),
-            'schema_commit_changes_no-transformations-file_aaaaaaa.yaml')
-        schema_commit_changes = SchemaCommitChanges.generate_instance(schema_commit_changes_file)
-        transformations = schema_commit_changes.import_transformations()
+        schema_changes_file = os.path.join(self.git_repo.migrations_dir(),
+            'schema_changes_no-transformations-file_aaaaaaa.yaml')
+        schema_changes = SchemaChanges.generate_instance(schema_changes_file)
+        transformations = schema_changes.import_transformations()
         self.assertTrue(transformations is None)
 
-        schema_commit_changes_file = os.path.join(self.git_repo.migrations_dir(),
-            'schema_commit_changes_bad-transformations_ccccccc.yaml')
-        schema_commit_changes = SchemaCommitChanges.generate_instance(schema_commit_changes_file)
+        schema_changes_file = os.path.join(self.git_repo.migrations_dir(),
+            'schema_changes_bad-transformations_ccccccc.yaml')
+        schema_changes = SchemaChanges.generate_instance(schema_changes_file)
         with self.assertRaisesRegex(MigratorError, "'.+' does not have a 'transformations' attribute"):
-            schema_commit_changes.import_transformations()
+            schema_changes.import_transformations()
 
-        schema_commit_changes_file = os.path.join(self.git_repo.migrations_dir(),
-            'schema_commit_changes_bad-transformations_bbbbbbb.yaml')
-        schema_commit_changes = SchemaCommitChanges.generate_instance(schema_commit_changes_file)
+        schema_changes_file = os.path.join(self.git_repo.migrations_dir(),
+            'schema_changes_bad-transformations_bbbbbbb.yaml')
+        schema_changes = SchemaChanges.generate_instance(schema_changes_file)
         with self.assertRaisesRegex(MigratorError, "transformations should be a dict, but it is a.+"):
-            schema_commit_changes.import_transformations()
+            schema_changes.import_transformations()
 
     def test_load(self):
-        schema_commit_changes_file = SchemaCommitChanges.find_file(self.git_repo, self.known_hash_ba1f9d3)
-        schema_commit_changes = SchemaCommitChanges.load(schema_commit_changes_file)
-        expected_schema_commit_changes = dict(
+        schema_changes_file = SchemaChanges.find_file(self.git_repo, self.known_hash_ba1f9d3)
+        schema_changes = SchemaChanges.load(schema_changes_file)
+        expected_schema_changes = dict(
             hash=self.known_hash_ba1f9d3,
             renamed_attributes=[],
             renamed_models=[['Test', 'TestNew']],
-            schema_commit_changes_file=schema_commit_changes_file,
+            schema_changes_file=schema_changes_file,
             transformations_file='transformations_ba1f9d3.py'
         )
-        self.assertEqual(schema_commit_changes, expected_schema_commit_changes)
+        self.assertEqual(schema_changes, expected_schema_changes)
 
         no_such_file = 'no such file'
-        with self.assertRaisesRegex(MigratorError, "could not read schema commit changes file: '.+'"):
-            SchemaCommitChanges.load(no_such_file)
+        with self.assertRaisesRegex(MigratorError, "could not read schema changes file: '.+'"):
+            SchemaChanges.load(no_such_file)
 
         # detect bad yaml
         temp_dir = tempfile.TemporaryDirectory()
@@ -1728,49 +1731,49 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         with open(bad_yaml, "w") as f:
             f.write("unbalanced blackets: ][")
         with self.assertRaisesRegex(MigratorError,
-            "could not parse YAML schema commit changes file: '\S+':"):
-            SchemaCommitChanges.load(bad_yaml)
+            "could not parse YAML schema changes file: '\S+':"):
+            SchemaChanges.load(bad_yaml)
 
         with open(bad_yaml, "w") as f:
             f.write("wrong_attr: []")
         with self.assertRaisesRegex(MigratorError,
-            "schema commit changes file must have a dict with the attributes in \S+._CHANGES_FILE_ATTRS: .+"):
-            SchemaCommitChanges.load(bad_yaml)
+            "schema changes file must have a dict with the attributes in \S+._CHANGES_FILE_ATTRS: .+"):
+            SchemaChanges.load(bad_yaml)
 
         # make the hash too short
         self.test_data['hash'] = 'a'
         with open(bad_yaml, "w") as f:
             f.write(yaml.dump(self.test_data))
         with self.assertRaisesRegex(MigratorError,
-            "schema commit changes file '.+' does not have a proper hash"):
-            SchemaCommitChanges.load(bad_yaml)
+            "schema changes file '.+' does not have a proper hash"):
+            SchemaChanges.load(bad_yaml)
 
         temp_dir = tempfile.TemporaryDirectory()
-        pathname = self.schema_commit_changes.make_template(temp_dir.name)
+        pathname = self.schema_changes.make_template(temp_dir.name)
         with self.assertRaisesRegex(MigratorError,
-            "schema commit changes file is empty \(an unmodified template\): '.+'"):
-            SchemaCommitChanges.load(pathname)
+            "schema changes file is empty \(an unmodified template\): '.+'"):
+            SchemaChanges.load(pathname)
 
     def test_generate_instance(self):
         temp_dir = tempfile.TemporaryDirectory()
         good_yaml = os.path.join(temp_dir.name, 'good_yaml.yaml')
         with open(good_yaml, "w") as f:
             f.write(yaml.dump(self.test_data))
-        schema_commit_changes = SchemaCommitChanges.generate_instance(good_yaml)
-        for attr in SchemaCommitChanges._CHANGES_FILE_ATTRS:
-            self.assertEqual(getattr(schema_commit_changes, attr), self.test_data[attr])
+        schema_changes = SchemaChanges.generate_instance(good_yaml)
+        for attr in SchemaChanges._CHANGES_FILE_ATTRS:
+            self.assertEqual(getattr(schema_changes, attr), self.test_data[attr])
 
     def test_str(self):
-        for attr in SchemaCommitChanges._ATTRIBUTES:
-            self.assertIn(attr, str(self.schema_commit_changes))
+        for attr in SchemaChanges._ATTRIBUTES:
+            self.assertIn(attr, str(self.schema_changes))
     '''
     # todo: wait until I decide what to do about comparing GitRepos
     def test_eq(self):
-        self.assertTrue(self.schema_commit_changes != 1)
-        schema_commit_changes_copy = copy.deepcopy(self.schema_commit_changes)
-        self.assertEqual(self.schema_commit_changes, schema_commit_changes_copy)
-        schema_commit_changes_copy.hash += '_end'
-        self.assertTrue(self.schema_commit_changes != schema_commit_changes_copy)
+        self.assertTrue(self.schema_changes != 1)
+        schema_changes_copy = copy.deepcopy(self.schema_changes)
+        self.assertEqual(self.schema_changes, schema_changes_copy)
+        schema_changes_copy.hash += '_end'
+        self.assertTrue(self.schema_changes != schema_changes_copy)
     '''
 
 
@@ -1924,6 +1927,7 @@ class TestAutomatedMigration(CommitChangesFixtures):
         pass
 
 
+@unittest.skip("speed up testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
