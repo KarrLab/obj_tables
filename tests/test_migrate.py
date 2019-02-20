@@ -330,7 +330,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -609,7 +609,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1249,7 +1249,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1432,7 +1432,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1923,11 +1923,19 @@ class TestAutomatedMigration(CommitChangesFixtures):
     def tearDownClass(cls):
         super().tearDownClass()
 
+    def test_make_template_config_file(self):
+        path = AutomatedMigration.make_template_config_file(self.git_repo)
+        # print(path)
+        # check the file at path
+        with self.assertRaisesRegex(MigratorError,
+            "automated migration configuration file '.+' already exists"):
+            AutomatedMigration.make_template_config_file(self.git_repo)
+
     def test_(self):
         pass
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
