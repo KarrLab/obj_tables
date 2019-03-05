@@ -421,7 +421,7 @@ class TestSchemaModule(unittest.TestCase):
     def check_imported_module(self, schema_module, module_name, module):
         """ Check that an imported module has the right models and relationships between them
         """
-        self.assertEquals(module_name, module.__name__)
+        self.assertEqual(module_name, module.__name__)
 
         expected_models = {
             'small_existing': {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'},
@@ -442,15 +442,15 @@ class TestSchemaModule(unittest.TestCase):
         }
 
         model_defs = schema_module._get_model_defs(module)
-        self.assertEquals(expected_models[module_name], set(model_defs))
+        self.assertEqual(expected_models[module_name], set(model_defs))
         for left, right in expected_relationships[module_name]:
             left_model, left_attr = left
             right_model, right_attr = right
             left_related = getattr(model_defs[left_model], left_attr).related_class
-            self.assertEquals(left_related, model_defs[right_model],
+            self.assertEqual(left_related, model_defs[right_model],
                 "left_related: {}, model_defs[right_model]: {}".format(id(left_related), id(model_defs[right_model])))
             right_related = model_defs[right_model].Meta.related_attributes[right_attr].related_class
-            self.assertEquals(left_related, right_related)
+            self.assertEqual(left_related, right_related)
 
     def multiple_import_tests_of_test_package(self, test_package_dir):
         test_module = os.path.join(test_package_dir, 'test_module.py')
@@ -483,7 +483,7 @@ class TestSchemaModule(unittest.TestCase):
 
         A.__name__ = munged_name_a
         self.assertTrue(SchemaModule._model_name_is_munged(A))
-        self.assertEquals(SchemaModule._unmunge_model_name(A), name_a)
+        self.assertEqual(SchemaModule._unmunge_model_name(A), name_a)
         A.__name__ = SchemaModule._unmunge_model_name(A)
         self.assertFalse(SchemaModule._model_name_is_munged(A))
         with self.assertRaisesRegex(MigratorError, "\w+ isn't munged"):
@@ -511,7 +511,7 @@ class TestSchemaModule(unittest.TestCase):
                     self.assertIn(related_class.__name__, model_names,
                         "{}.{} references a {}, but it's not a model name in module {}".format(
                             model_name, attr_name, related_class.__name__, module.__name__))
-                    self.assertEquals(related_class, model_defs[related_class.__name__],
+                    self.assertEqual(related_class, model_defs[related_class.__name__],
                         "{}.{} references a {}, but it's not the model in module {}: {} != {}".format(
                             model_name, attr_name, related_class.__name__, module.__name__,
                             id(related_class), id(model_defs[related_class.__name__])))
@@ -522,12 +522,12 @@ class TestSchemaModule(unittest.TestCase):
         sm = SchemaModule(self.existing_defs_path)
         module = sm.import_module_for_migration()
         self.assertIn(sm.module_path, SchemaModule.MODULES)
-        self.assertEquals(module, SchemaModule.MODULES[sm.module_path])
+        self.assertEqual(module, SchemaModule.MODULES[sm.module_path])
         self.check_imported_module(sm, 'small_existing', module)
         self.check_related_attributes(sm)
 
         # importing self.existing_defs_path again returns same module from cache
-        self.assertEquals(module, sm.import_module_for_migration())
+        self.assertEqual(module, sm.import_module_for_migration())
 
         # import copy of self-contained module in another dir
         copy_of_small_existing = copy_file_to_tmp(self, 'small_existing.py')
