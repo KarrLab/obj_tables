@@ -2004,7 +2004,7 @@ class Species(obj_model.Model):
         """
         st = cls.species_type.related_class.id.pattern[1:-1]
         comp = cls.compartment.related_class.id.pattern[1:-1]
-        match = re.match(r'^(' + st + ')\[(' + comp + ')\]$', id)
+        match = re.match(r'^(' + st + r')\[(' + comp + r')\]$', id)
         if not match:
             raise ValueError('{} is not a valid id')
 

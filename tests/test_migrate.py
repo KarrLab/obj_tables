@@ -486,7 +486,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(SchemaModule._unmunge_model_name(A), name_a)
         A.__name__ = SchemaModule._unmunge_model_name(A)
         self.assertFalse(SchemaModule._model_name_is_munged(A))
-        with self.assertRaisesRegex(MigratorError, "\w+ isn't munged"):
+        with self.assertRaisesRegex(MigratorError, r"\w+ isn't munged"):
             SchemaModule._unmunge_model_name(A)
 
         SchemaModule._munge_all_model_names()
@@ -572,7 +572,7 @@ class TestSchemaModule(unittest.TestCase):
         # test _check_imported_models errors exception
         sm = SchemaModule(self.small_bad_related_path)
         with self.assertRaisesRegex(MigratorError,
-            "\w+\.\w+ references a \w+, but it's not the model in module \w+"):
+            r"\w+\.\w+ references a \w+, but it's not the model in module \w+"):
             sm.import_module_for_migration()
 
     def test_check_imported_models(self):
@@ -594,7 +594,7 @@ class TestSchemaModule(unittest.TestCase):
         f.write('# a module with no Models')
         f.close()
         sm = SchemaModule(empty_module)
-        with self.assertRaisesRegex(MigratorError, "No subclasses of obj_model\.Model found in '\S+'"):
+        with self.assertRaisesRegex(MigratorError, r"No subclasses of obj_model\.Model found in '\S+'"):
             sm.import_module_for_migration()
 
     def test_str(self):
@@ -637,7 +637,7 @@ class TestMigrator(MigrationFixtures):
         migrator = Migrator(transformations=dict.fromkeys(Migrator.SUPPORTED_TRANSFORMATIONS, 3))
         errors = Migrator._validate_transformations(migrator.transformations)
         for error in errors:
-            self.assertRegex(error, "value for transformation '.+' is a\(n\) '.+', which isn't callable")
+            self.assertRegex(error, r"value for transformation '.+' is a\(n\) '.+', which isn't callable")
 
     def test_validate_renamed_models(self):
         migrator_for_error_tests = self.migrator_for_error_tests
@@ -752,17 +752,17 @@ class TestMigrator(MigrationFixtures):
 
         inconsistencies = migrator_for_error_tests._get_inconsistencies('TestExisting', 'TestMigrated')
         self.assertRegex(inconsistencies[0],
-            "existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+")
+            r"existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+")
 
         inconsistencies = migrator_for_error_tests._get_inconsistencies('TestExisting2', 'TestMigrated2')
         self.assertRegex(inconsistencies[0],
-            ".+\..+\..+ is '.+', which differs from the migrated value of .+\..+\..+, which is '.+'")
+            r".+\..+\..+ is '.+', which differs from the migrated value of .+\..+\..+, which is '.+'")
         self.assertRegex(inconsistencies[1],
-            ".+\..+\..+ is '.+', which migrates to '.+', but it differs from .+\..+\..+, which is '.+'")
+            r".+\..+\..+ is '.+', which migrates to '.+', but it differs from .+\..+\..+, which is '.+'")
 
         inconsistencies = self.migrator_for_error_tests_2._get_inconsistencies('TestExisting2', 'TestMigrated2')
         self.assertRegex(inconsistencies[1],
-            "existing model '.+' is not migrated, but is referenced by migrated attribute .+\..+")
+            r"existing model '.+' is not migrated, but is referenced by migrated attribute .+\..+")
 
     def test_get_model_order(self):
         migrator = self.migrator
@@ -842,7 +842,7 @@ class TestMigrator(MigrationFixtures):
         inconsistent_migrator = Migrator(self.existing_defs_path, inconsistent_migrated_model_defs_path)
         inconsistent_migrator._load_defs_from_files()
         with self.assertRaisesRegex(MigratorError,
-            "existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+"):
+            r"existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+"):
             inconsistent_migrator.prepare()
 
     def test_migrate_model(self):
@@ -1291,7 +1291,7 @@ class TestMigrationSpec(MigrationFixtures):
         f = open(bad_yaml, "w")
         f.write("unbalanced blackets: ][")
         f.close()
-        with self.assertRaisesRegex(MigratorError, "could not parse YAML migration config file: '\S+'"):
+        with self.assertRaisesRegex(MigratorError, r"could not parse YAML migration config file: '\S+'"):
             MigrationSpec.get_migrations_config(bad_yaml)
 
     def test_validate(self):
@@ -1317,7 +1317,7 @@ class TestMigrationSpec(MigrationFixtures):
             setattr(md, renaming_list, [[], []])
             error = md.validate()[0]
             self.assertRegex(error,
-                "{} must have 1 .+ 1 migration.+ schema_files, but it has \d".format(renaming_list))
+                r"{} must have 1 .+ 1 migration.+ schema_files, but it has \d".format(renaming_list))
 
         for renaming_list in MigrationSpec._RENAMING_LISTS:
             md = copy.deepcopy(self.migration_spec)
@@ -1359,16 +1359,16 @@ class TestMigrationSpec(MigrationFixtures):
         md = copy.deepcopy(self.migration_spec)
         md.migrated_files = []
         error = md.validate()[0]
-        self.assertRegex(error, "existing_files and migrated_files must .+ but they have \d and \d entries, .+")
+        self.assertRegex(error, r"existing_files and migrated_files must .+ but they have \d and \d entries, .+")
 
         md.migrated_files = ['file_1', 'file_2']
         error = md.validate()[0]
-        self.assertRegex(error, "existing_files and migrated_files must .+ but they have \d and \d entries, .+")
+        self.assertRegex(error, r"existing_files and migrated_files must .+ but they have \d and \d entries, .+")
 
         md = copy.deepcopy(self.migration_spec)
         md.migrator = 'foo'
         error = md.validate()[0]
-        self.assertRegex(error, "'migrator' must be an element of \{.+\}")
+        self.assertRegex(error, r"'migrator' must be an element of \{.+\}")
 
     def test_normalize_filenames(self):
         tmp_path = temp_pathname(self, 'foo')
@@ -1468,7 +1468,7 @@ class TestMigrationController(MigrationFixtures):
 
         self.migration_spec.prepare()
         with self.assertWarnsRegex(UserWarning,
-            "\d+ instance\\(s\\) of existing model '\S+' lack\\(s\\) '\S+' non-default value"):
+            r"\d+ instance\(s\) of existing model '\S+' lack\(s\) '\S+' non-default value"):
             MigrationController.migrate_over_schema_sequence(self.migration_spec)
 
     def put_tmp_migrated_file_in_migration_spec(self, migration_spec, name):
@@ -1630,7 +1630,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
             'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
         self.assertTrue(an_expected_file in files)
 
-        with self.assertRaisesRegex(MigratorError, "no schema changes files in '\S+'"):
+        with self.assertRaisesRegex(MigratorError, r"no schema changes files in '\S+'"):
             SchemaChanges.all_schema_changes_files(self.empty_git_repo.migrations_dir())
 
     def test_all_schema_changes_with_commits(self):
@@ -1646,7 +1646,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         self.assertEqual(os.path.basename(schema_changes_file),
             'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
 
-        with self.assertRaisesRegex(MigratorError, "no schema changes file in '.+' for hash \S+"):
+        with self.assertRaisesRegex(MigratorError, r"no schema changes file in '.+' for hash \S+"):
             SchemaChanges.find_file(self.git_repo, 'not_a_hash_not_a_hash_not_a_hash_not_a_h')
 
         migrations_dir = self.git_repo.migrations_dir()
@@ -1654,11 +1654,11 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         time.sleep(2)
         self.schema_changes.make_template(migrations_dir)
         with self.assertRaisesRegex(MigratorError,
-            "multiple schema changes files in '.+' for hash \S+"):
+            r"multiple schema changes files in '.+' for hash \S+"):
             SchemaChanges.find_file(self.git_repo, self.schema_changes.get_hash())
 
         with self.assertRaisesRegex(MigratorError,
-            "hash prefix in schema changes filename '.+' inconsistent with hash in file: '\S+'"):
+            r"hash prefix in schema changes filename '.+' inconsistent with hash in file: '\S+'"):
             SchemaChanges.find_file(self.git_repo, 'a'*40)
 
         with self.assertRaisesRegex(MigratorError,
@@ -1731,13 +1731,13 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         with open(bad_yaml, "w") as f:
             f.write("unbalanced blackets: ][")
         with self.assertRaisesRegex(MigratorError,
-            "could not parse YAML schema changes file: '\S+':"):
+            r"could not parse YAML schema changes file: '\S+':"):
             SchemaChanges.load(bad_yaml)
 
         with open(bad_yaml, "w") as f:
             f.write("wrong_attr: []")
         with self.assertRaisesRegex(MigratorError,
-            "schema changes file must have a dict with the attributes in \S+._CHANGES_FILE_ATTRS: .+"):
+            r"schema changes file must have a dict with the attributes in \S+._CHANGES_FILE_ATTRS: .+"):
             SchemaChanges.load(bad_yaml)
 
         # make the hash too short
@@ -1751,7 +1751,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         temp_dir = tempfile.TemporaryDirectory()
         pathname = self.schema_changes.make_template(temp_dir.name)
         with self.assertRaisesRegex(MigratorError,
-            "schema changes file is empty \(an unmodified template\): '.+'"):
+            r"schema changes file is empty \(an unmodified template\): '.+'"):
             SchemaChanges.load(pathname)
 
     def test_generate_instance(self):
@@ -1870,7 +1870,7 @@ class TestGitRepo(CommitChangesFixtures):
         self.git_repo.checkout_commit(self.known_hash)
         self.assertEqual(self.git_repo.repo.head.commit.hexsha, self.known_hash)
 
-        with self.assertRaisesRegex(MigratorError, "checkout of '\S+' to commit '\S+' failed"):
+        with self.assertRaisesRegex(MigratorError, r"checkout of '\S+' to commit '\S+' failed"):
             self.git_repo.checkout_commit(self.no_such_hash)
 
     def check_dependency(self, sequence, DAG):

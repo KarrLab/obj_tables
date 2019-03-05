@@ -4356,7 +4356,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(Test1.get_nested_attr('id'), Test1.id)
         self.assertEqual(Test1.get_nested_attr(('id',)), Test1.id)
         self.assertEqual(Test1.get_nested_attr((('id',),)), Test1.id)
-        with self.assertRaisesRegex(KeyError, "\('id',\)"):
+        with self.assertRaisesRegex(KeyError, r"\('id',\)"):
             Test1.get_nested_attr(((('id',),),))
         with self.assertRaisesRegex(KeyError, "'id2'"):
             Test1.get_nested_attr('id2')
