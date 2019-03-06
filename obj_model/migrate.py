@@ -31,6 +31,7 @@ from obj_model import TabularOrientation, RelatedAttribute, get_models
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
+from wc_utils.util.files import normalize_filename
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
 
@@ -62,7 +63,7 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 #   add a few wc_lang versions
 # publicize work, in part to get feedback
 
-# todo: final bit of coverage
+# todo: final bits of coverage
 '''
 documentation notes:
 a schema must be imported from a self-contained module or a
@@ -131,34 +132,8 @@ class SchemaModule(object):
             dir (:obj:`str`, optional): a directory that contains `self.module_path`
         """
         self.module_path = module_path
-        self.abs_module_path = self._normalize_filename(self.module_path, dir=dir)
+        self.abs_module_path = normalize_filename(self.module_path, dir=dir)
         self.package_directory, self.package_name, self.module_name = self.parse_module_path(self.abs_module_path)
-
-    # todo: move to wc_utils
-    @staticmethod
-    def _normalize_filename(filename, dir=None):
-        """ Normalize a filename to its fully expanded, real, absolute path
-
-        Expand `filename` by interpreting a user’s home directory, environment variables, and
-        normalizing its path. If `filename` is not an absolute path and `dir` is provided then
-        return a full path of `filename` in `dir`.
-
-        Args:
-            filename (:obj:`str`): a filename
-            dir (:obj:`str`, optional): a directory that contains `filename`
-
-        Returns:
-            :obj:`str`: `filename`'s fully expanded, absolute path
-        """
-        filename = os.path.expanduser(filename)
-        filename = os.path.expandvars(filename)
-        if os.path.isabs(filename):
-            return os.path.normpath(filename)
-        elif dir:
-            # todo: raise exception if dir isn't absolute
-            return os.path.normpath(os.path.join(dir, filename))
-        else:
-            return os.path.abspath(filename)
 
     def get_path(self):
         return str(self.abs_module_path)
@@ -1311,7 +1286,7 @@ class Migrator(object):
         """
         migrated_files = []
         for file in files:
-            migrated_files.append(self.full_migrate(SchemaModule._normalize_filename(file)))
+            migrated_files.append(self.full_migrate(normalize_filename(file)))
         return migrated_files
 
     def __str__(self):
@@ -1539,21 +1514,20 @@ class MigrationSpec(object):
         return errors
 
     @staticmethod
-    def _normalize_filenames(filenames, relative_file=None):
-        """ Normalize a list of filenames
+    def _normalize_filenames(filenames, absolute_file=None):
+        """ Normalize filenames relative to directory containing existing file
 
         Args:
             filenames (:obj:`list` of :obj:`str`): list of filenames
-            relative_file (:obj:`str`, optional): file whose directory contains filenames
-                that aren't absolute paths
+            absolute_file (:obj:`str`, optional): file whose directory contains files in `filenames`
 
         Returns:
-            :obj:`list`: normalized list
+            :obj:`list` of :obj:`str`: absolute paths for files in `filenames`
         """
         dir = None
-        if relative_file:
-            dir = os.path.dirname(relative_file)
-        return [SchemaModule._normalize_filename(filename, dir=dir) for filename in filenames]
+        if absolute_file:
+            dir = os.path.dirname(absolute_file)
+        return [normalize_filename(filename, dir=dir) for filename in filenames]
 
     def standardize(self):
         """ Standardize the attributes of a `MigrationSpec`
@@ -2371,7 +2345,7 @@ class AutomatedMigration(object):
         errors = []
         expanded_files_to_migrate = []
         for file in self.target_config['files_to_migrate']:
-            abs_path = SchemaModule._normalize_filename(file, dir=self.target_git_repo.migrations_dir())
+            abs_path = normalize_filename(file, dir=self.target_git_repo.migrations_dir())
             if not os.path.isfile(abs_path):
                 errors.append("file to migrate '', with full path '', doesn't exist".format())
             else:

@@ -330,7 +330,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -348,18 +348,6 @@ class TestSchemaModule(unittest.TestCase):
         MigrationFixtures.rm_tmp_dirs(self)
         for file in self.files_to_delete:
             silent_remove(file)
-
-    def test_normalize_model_defs_file(self):
-        _normalize_filename = SchemaModule._normalize_filename
-
-        self.assertEqual(_normalize_filename('~'), _normalize_filename('~' + getpass.getuser()))
-        self.assertEqual(_normalize_filename('~'), _normalize_filename('$HOME'))
-        cur_dir = os.path.dirname(__file__)
-        self.assertEqual(cur_dir,
-            _normalize_filename(os.path.join(cur_dir, '..', os.path.basename(cur_dir))))
-        test_filename = os.path.join(cur_dir, 'test_filename')
-        self.assertEqual(test_filename, _normalize_filename('test_filename', dir=os.path.dirname(test_filename)))
-        self.assertEqual(os.path.join(os.getcwd(), 'test_filename'), _normalize_filename('test_filename'))
 
     def test_parse_module_path(self):
         parse_module_path = SchemaModule.parse_module_path
