@@ -46,7 +46,7 @@ from wc_utils.workbook.io import read as read_workbook
 from obj_model.expression import Expression
 
 # todo: move all static methods out of MigrationFixtures
-
+# todo: remove all '@unittest.skip("speed up testing")'
 
 def make_tmp_dirs_n_small_schemas(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
@@ -330,7 +330,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -609,7 +609,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1249,7 +1249,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1432,7 +1432,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1611,7 +1611,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
     def setUp(self):
         self.schema_changes = SchemaChanges(self.git_repo)
         self.test_data = dict(
-            hash='a'*40,
+            commit_hash='a'*40,
             renamed_models=[('Foo', 'FooNew')],
             renamed_attributes=[('Foo', 'Attr'), ('FooNew', 'AttrNew')],
             transformations_file=''
@@ -1676,7 +1676,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         data = yaml.load(open(pathname, 'r'))
         for attr in ['renamed_models', 'renamed_attributes']:
             self.assertEqual(data[attr], [])
-        for attr in ['hash', 'transformations_file']:
+        for attr in ['commit_hash', 'transformations_file']:
             self.assertTrue(isinstance(data[attr], str))
 
         # quickly create another, which will likely have the same timestamp
@@ -1713,7 +1713,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         schema_changes_file = SchemaChanges.find_file(self.git_repo, self.known_hash_ba1f9d3)
         schema_changes = SchemaChanges.load(schema_changes_file)
         expected_schema_changes = dict(
-            hash=self.known_hash_ba1f9d3,
+            commit_hash=self.known_hash_ba1f9d3,
             renamed_attributes=[],
             renamed_models=[['Test', 'TestNew']],
             schema_changes_file=schema_changes_file,
@@ -1741,7 +1741,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
             SchemaChanges.load(bad_yaml)
 
         # make the hash too short
-        self.test_data['hash'] = 'a'
+        self.test_data['commit_hash'] = 'a'
         with open(bad_yaml, "w") as f:
             f.write(yaml.dump(self.test_data))
         with self.assertRaisesRegex(MigratorError,
@@ -1772,7 +1772,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         self.assertTrue(self.schema_changes != 1)
         schema_changes_copy = copy.deepcopy(self.schema_changes)
         self.assertEqual(self.schema_changes, schema_changes_copy)
-        schema_changes_copy.hash += '_end'
+        schema_changes_copy.commit_hash += '_end'
         self.assertTrue(self.schema_changes != schema_changes_copy)
     '''
 
@@ -1845,9 +1845,9 @@ class TestGitRepo(CommitChangesFixtures):
 
     def test_latest_hash(self):
         # todo: test with a frozen repo whose hash is known
-        hash = self.git_repo.latest_hash()
-        self.assertTrue(isinstance(hash, str))
-        self.assertEqual(len(hash), 40)
+        commit_hash = self.git_repo.latest_hash()
+        self.assertTrue(isinstance(commit_hash, str))
+        self.assertEqual(len(commit_hash), 40)
 
     def test_get_commit(self):
         commit = self.git_repo.get_commit(self.known_hash)
@@ -1860,9 +1860,9 @@ class TestGitRepo(CommitChangesFixtures):
 
     def test_get_hash(self):
         # todo: test with a frozen repo whose hash is known
-        hash = GitRepo.get_hash(self.git_repo.latest_commit())
-        self.assertTrue(isinstance(hash, str))
-        self.assertEqual(len(hash), 40)
+        commit_hash = GitRepo.get_hash(self.git_repo.latest_commit())
+        self.assertTrue(isinstance(commit_hash, str))
+        self.assertEqual(len(commit_hash), 40)
 
     def test_checkout_commit(self):
         self.git_repo.checkout_commit(self.git_repo.latest_commit())
@@ -1935,7 +1935,7 @@ class TestAutomatedMigration(CommitChangesFixtures):
         pass
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
