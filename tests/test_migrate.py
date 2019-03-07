@@ -12,7 +12,6 @@ import sys
 import re
 import unittest
 import getpass
-import errno
 import inspect
 import tempfile
 from tempfile import mkdtemp
@@ -43,6 +42,7 @@ from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerA
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
     RelatedAttribute, TabularOrientation, migrate, obj_math, get_models)
 from wc_utils.workbook.io import read as read_workbook
+from wc_utils.util.files import remove_silently
 from obj_model.expression import Expression
 
 # todo: move all static methods out of MigrationFixtures
@@ -77,16 +77,6 @@ def copy_file_to_tmp(test_case, name):
     else:
         shutil.copy(os.path.join(test_case.fixtures_path, name), tmp_filename)
     return tmp_filename
-
-def silent_remove(filename):
-    # Best effort delete; see: https://stackoverflow.com/a/10840586/509882
-    try:
-        os.remove(filename)
-    except OSError as e:
-        # errno.ENOENT: no such file or directory
-        if e.errno != errno.ENOENT:
-            # re-raise exception if a different error occurred
-            raise
 
 def temp_pathname(testcase, name):
     # create a pathname for a file called name in new temp dir, which will be discarded by tearDown()
@@ -301,7 +291,7 @@ class MigrationFixtures(unittest.TestCase):
     def tearDown(self):
         MigrationFixtures.rm_tmp_dirs(self)
         for file in self.files_to_delete:
-            silent_remove(file)
+            remove_silently(file)
 
     @staticmethod
     def invert_renaming(renaming):
@@ -330,7 +320,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -347,7 +337,7 @@ class TestSchemaModule(unittest.TestCase):
     def tearDown(self):
         MigrationFixtures.rm_tmp_dirs(self)
         for file in self.files_to_delete:
-            silent_remove(file)
+            remove_silently(file)
 
     def test_parse_module_path(self):
         parse_module_path = SchemaModule.parse_module_path
@@ -1237,7 +1227,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1357,14 +1347,6 @@ class TestMigrationSpec(MigrationFixtures):
         md.migrator = 'foo'
         error = md.validate()[0]
         self.assertRegex(error, r"'migrator' must be an element of \{.+\}")
-
-    def test_normalize_filenames(self):
-        tmp_path = temp_pathname(self, 'foo')
-        self.assertEqual(MigrationSpec._normalize_filenames([tmp_path]), [tmp_path])
-        file_in_dir = os.path.join('dir_name', 'bar')
-        expected_abs_file_in_dir = os.path.join(os.path.dirname(tmp_path), file_in_dir)
-        self.assertEqual(MigrationSpec._normalize_filenames([tmp_path, file_in_dir], relative_file=tmp_path),
-            [tmp_path, expected_abs_file_in_dir])
 
     def test_standardize(self):
         md = MigrationSpec('name', schema_files=['f1.py', 'f2.py'])
@@ -1960,4 +1942,4 @@ class TestRunMigration(MigrationFixtures):
             # remove the migrated files so they do not contaminate tests/fixtures/migrate
             for _, migrated_filenames in results:
                 for migrated_file in migrated_filenames:
-                    silent_remove(migrated_file)
+                    remove_silently(migrated_file)

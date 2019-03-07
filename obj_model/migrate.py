@@ -1556,12 +1556,12 @@ class MigrationSpec(object):
         # normalize filenames
         if self.migrations_config_file:
             self.existing_files = self._normalize_filenames(self.existing_files,
-                relative_file=self.migrations_config_file)
+                absolute_file=self.migrations_config_file)
             self.schema_files = self._normalize_filenames(self.schema_files,
-                relative_file=self.migrations_config_file)
+                absolute_file=self.migrations_config_file)
             if self.migrated_files:
                 self.migrated_files = self._normalize_filenames(self.migrated_files,
-                    relative_file=self.migrations_config_file)
+                    absolute_file=self.migrations_config_file)
 
     def get_migrator(self):
         """ Obtain callable that creates `Migrator`s for this `MigrationSpec`
