@@ -1719,7 +1719,6 @@ class SchemaChanges(object):
     _HASH_PREFIX_LEN = 7
     _SHA1_LEN = 40
 
-    # todo: stop using git_repo
     def __init__(self, git_repo=None, schema_changes_file=None, commit_hash=None, renamed_models=None,
         renamed_attributes=None, transformations_file=None):
         self.git_repo = git_repo
@@ -1750,7 +1749,6 @@ class SchemaChanges(object):
         """
         return hash[:SchemaChanges._HASH_PREFIX_LEN]
 
-    # todo: move to wc_utils
     @staticmethod
     def get_date_timestamp():
         """ Get a current date timestamp, with second resolution
@@ -1918,7 +1916,9 @@ class SchemaChanges(object):
             )
             file.write(yaml.dump(template_data))
 
-        # todo: perhaps git add, commit & push the config file
+        # add the config file to the git repo, and print message encouraging a commit
+        self.git_repo.repo.index.add([pathname])
+        print("template created - run: git commit '{}'".format(pathname))
         return pathname
 
     def import_transformations(self):
@@ -2262,37 +2262,40 @@ class GitRepo(object):
 
 
 # todo: add logging
-# todo: consider workflow: someone changes the schema, & wants to easily migrate all target repos
+# todo: consider workflow: someone changes the schema, & wants to easily migrate all data repos
 class AutomatedMigration(object):
     """ Automate the migration of the data files in a repo
 
-    A *target* repo stores the data files that need to be migrated. A *schema* repo contains the
-    schemas that provide the data models for these files. The *target* and *schema* repos may be
+    A *data* repo stores the data files that need to be migrated. A *schema* repo contains the
+    schemas that provide the data models for these data files. The *data* and *schema* repos may be
     one repo or two different repos.
 
-    The `target` repo contains a `migrations` directory that has:
+    The `data` repo contains a `migrations` directory that has:
 
-    * A YAML format automated migration configuration file
+    * At least one automated migration configuration file, written in YAML
+
+    The `schema` repo contains a `migrations` directory that has:
+
     * Some schema changes files, which may refer to associated transformations files. Hashes
-    in the changes files refer to commits in the *schema* repo.
-    These files are managed by `SchemaChanges` objects.
+    in the changes files refer to commits in the `schema` repo. These files are managed by
+    `SchemaChanges` objects.
 
-    The automated migration configuration file contains the attributes described in `_CONFIG_ATTRIBUTES`:
+    An automated migration configuration file contains the attributes described in `_CONFIG_ATTRIBUTES`:
 
-    * The url of the *schema* repo
-    * The list of files to be migrated
-    * The path to the schema file in the *schema* repo
+    * The url of the `schema` repo
+    * A list of files to be migrated
+    * The path to the schema file in the `schema` repo
     * The type of migrator to use
 
-    `AutomatedMigration` uses this configuration information to migrate the files to
-    the latest version of the *schema* repo.
+    `AutomatedMigration` uses configuration information in the `data` and `schema` repos to migrate
+    data files in the `data` repo to the latest version of the `schema` repo.
 
     Attributes:
         # todo: update
-        target_repo_location (:obj:`GitRepo`): directory or url of the *target* repo
-        target_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the *target* repo
+        data_repo_location (:obj:`GitRepo`): directory or url of the *data* repo
+        data_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the *data* repo
         schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the *schema* repo
-        config_file (:obj:`str`): a YAML configuration file for the migration, stored in the *target*
+        config_file (:obj:`str`): a YAML configuration file for the migration, stored in the *data*
             repo's migrations directory
         migration_spec (:obj:`MigrationSpec`): the migration's specification
     """
@@ -2304,22 +2307,22 @@ class AutomatedMigration(object):
     _CONFIG_FILE = 'automated_migration_config.yaml'
 
     # template for the name of an automated migration; the format placeholders are replaced with
-    # 1) the name of the target repo, 2) the name of the schema repo, and 3) a datetimestamp
+    # 1) the name of the data repo, 2) the name of the schema repo, and 3) a datetime value
     _NAME_FORMAT = 'automated-migration_{}_{}_{}'
 
     # attributes in the automated migration configuration file
     # todo: default migrator
     _CONFIG_ATTRIBUTES = {
         # 'name': (type, description)
-        'files_to_migrate': ('list', 'paths to files in the target repo to migrate'),
+        'files_to_migrate': ('list', 'paths to files in the data repo to migrate'),
         'schema_repo_url': ('str', 'url of the schema repo'),
         'schema_file': ('str', 'relative path to the schema file in the schema repo'),
         'migrator': ('str', 'keyword for the type of migrator to use, a key in `MigrationSpec.MIGRATOR_CREATOR_MAP`'),
     }
 
     # attributes in a `AutomatedMigration`
-    _ATTRIBUTES = ['target_repo_location', 'target_git_repo', 'schema_git_repo', 'target_config_file', 'target_config', 'migration_spec', 'loaded_schema_changes', 'migration_spec_args']
-    _REQUIRED_ATTRIBUTES = ['target_repo_location', 'target_config_file']
+    _ATTRIBUTES = ['data_repo_location', 'data_git_repo', 'schema_git_repo', 'data_config_file', 'data_config', 'migration_spec', 'loaded_schema_changes', 'migration_spec_args']
+    _REQUIRED_ATTRIBUTES = ['data_repo_location', 'data_config_file']
 
     def __init__(self, **kwargs):
         for attr in self._ATTRIBUTES:
@@ -2335,27 +2338,27 @@ class AutomatedMigration(object):
         for attr, value in kwargs:
             setattr(self, attr, value)
 
-        # get target repo
-        self.target_git_repo = GitRepo(self.target_repo_location)
+        # get data repo
+        self.data_git_repo = GitRepo(self.data_repo_location)
 
-        # load target config file
-        self.target_config = self.load_config_file(self.target_config_file)
+        # load data config file
+        self.data_config = self.load_config_file(self.data_config_file)
 
-        # validate existence of target config data files
+        # validate existence of data config data files
         errors = []
         expanded_files_to_migrate = []
-        for file in self.target_config['files_to_migrate']:
-            abs_path = normalize_filename(file, dir=self.target_git_repo.migrations_dir())
+        for file in self.data_config['files_to_migrate']:
+            abs_path = normalize_filename(file, dir=self.data_git_repo.migrations_dir())
             if not os.path.isfile(abs_path):
                 errors.append("file to migrate '', with full path '', doesn't exist".format())
             else:
                 expanded_files_to_migrate.append(abs_path)
         if errors:
             raise MigratorError('\n'.join(errors))
-        self.target_config['files_to_migrate'] = expanded_files_to_migrate
+        self.data_config['files_to_migrate'] = expanded_files_to_migrate
 
         # clone and load schema repo
-        self.schema_git_repo = GitRepo(self.target_config['schema_repo_url'])
+        self.schema_git_repo = GitRepo(self.data_config['schema_repo_url'])
 
         # load all schema changes files & make sure each one corresponds to a hash
         errors, loaded_schema_changes = SchemaChanges.all_schema_changes_with_commits(self.schema_git_repo)
@@ -2370,17 +2373,17 @@ class AutomatedMigration(object):
         Returns:
             :obj:`str`: the name
         """
-        if self.target_git_repo is None or self.schema_git_repo is None:
-            raise MigratorError("to generate name target_git_repo is None and schema_git_repo must be initialized")
-        return self._NAME_FORMAT.format(self.target_git_repo.repo_name(), self.schema_git_repo.repo_name(),
+        if self.data_git_repo is None or self.schema_git_repo is None:
+            raise MigratorError("to generate name data_git_repo is None and schema_git_repo must be initialized")
+        return self._NAME_FORMAT.format(self.data_git_repo.repo_name(), self.schema_git_repo.repo_name(),
             SchemaChanges.get_date_timestamp())
 
     @staticmethod
-    def make_template_config_file(target_git_repo):
+    def make_template_config_file(data_git_repo):
         """ Create a template automated migration config file with its attributes
 
         Args:
-            target_git_repo (:obj:`GitRepo`): the target git repo that contains the data files to migrate
+            data_git_repo (:obj:`GitRepo`): the data git repo that contains the data files to migrate
 
         Returns:
             :obj:`str`: the pathname to the template automated migration config file that was written
@@ -2388,7 +2391,7 @@ class AutomatedMigration(object):
         Raises:
             :obj:`MigratorError`: if the automated migration configuration file already exists
         """
-        pathname = os.path.join(target_git_repo.migrations_dir(), AutomatedMigration._CONFIG_FILE)
+        pathname = os.path.join(data_git_repo.migrations_dir(), AutomatedMigration._CONFIG_FILE)
         if os.path.exists(pathname):
             raise MigratorError("automated migration configuration file '{}' already exists".format(pathname))
 
@@ -2482,7 +2485,7 @@ class AutomatedMigration(object):
         seq_of_transformations = []
         for schema_change in self.loaded_schema_changes:
             # get separate clone of each schema commit
-            git_repo = GitRepo(self.target_config['schema_repo_url'])
+            git_repo = GitRepo(self.data_config['schema_repo_url'])
             git_repo.checkout_commit(schema_change.commit_hash)
             schema_file = os.path.join(git_repo.migrations_dir(), self.schema_file)
             schema_files.append(schema_file)
@@ -2507,7 +2510,7 @@ class AutomatedMigration(object):
         # the associated transformations files and schemas
         migration_spec_args = {}
         migration_spec_args['name'] = self.get_name()
-        migration_spec_args['existing_files'] = self.target_config['files_to_migrate']
+        migration_spec_args['existing_files'] = self.data_config['files_to_migrate']
         self.get_seqs_of_schema_changes(migration_spec_args)
         # todo: migrator
         # migrator=,

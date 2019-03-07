@@ -1534,7 +1534,11 @@ def internet_connected():
     return False
 
 
-class CommitChangesFixtures(unittest.TestCase):
+class AutoMigrationFixtures(unittest.TestCase):
+
+    @classmethod
+    def make_tmp_dir(cls):
+        return mkdtemp(dir=cls.tmp_dir)
 
     @classmethod
     def setUpClass(cls):
@@ -1546,29 +1550,26 @@ class CommitChangesFixtures(unittest.TestCase):
         cls.known_hash_ba1f9d3 = 'ba1f9d33a3e18a74f79f41903e7e88e118134d5f'
         cls.totally_empty_git_repo = GitRepo()
 
-        # create empty repo containing a commit and a migrations directory
-        repo_dir = cls.make_tmp_dir()
-        repo = git.Repo.init(repo_dir)
-        empty_file = os.path.join(repo_dir, 'file')
-        open(empty_file, 'wb').close()
-        repo.index.add([empty_file])
-        repo.index.commit("initial commit")
-        cls.empty_git_repo = GitRepo(repo_dir)
-        Path(cls.empty_git_repo.migrations_dir()).mkdir()
-
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_dir)
         # remove the GitRepo so that its temp_dirs get deleted
         del cls.git_repo
 
-    @classmethod
-    def make_tmp_dir(cls):
-        return mkdtemp(dir=cls.tmp_dir)
+    def setUp(self):
+        # create empty repo containing a commit and a migrations directory
+        repo_dir = self.make_tmp_dir()
+        repo = git.Repo.init(repo_dir)
+        empty_file = os.path.join(repo_dir, 'file')
+        open(empty_file, 'wb').close()
+        repo.index.add([empty_file])
+        repo.index.commit("initial commit")
+        self.empty_git_repo = GitRepo(repo_dir)
+        Path(self.empty_git_repo.migrations_dir()).mkdir()
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
-class TestSchemaCommitChanges(CommitChangesFixtures):
+class TestSchemaChanges(AutoMigrationFixtures):
 
     @classmethod
     def setUpClass(cls):
@@ -1579,6 +1580,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         super().tearDownClass()
 
     def setUp(self):
+        super().setUp()
         self.schema_changes = SchemaChanges(self.git_repo)
         self.test_data = dict(
             commit_hash='a'*40,
@@ -1641,8 +1643,9 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         self.assertTrue(2 <= len(filename.split('_')))
 
     def test_make_template(self):
-        temp_dir = tempfile.TemporaryDirectory()
-        pathname = self.schema_changes.make_template(temp_dir.name)
+        schema_changes = SchemaChanges(self.empty_git_repo)
+        migrations_dir = schema_changes.git_repo.migrations_dir()
+        pathname = schema_changes.make_template(migrations_dir)
         data = yaml.load(open(pathname, 'r'))
         for attr in ['renamed_models', 'renamed_attributes']:
             self.assertEqual(data[attr], [])
@@ -1651,7 +1654,7 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
 
         # quickly create another, which will likely have the same timestamp
         with self.assertRaisesRegex(MigratorError, "schema changes file '.+' already exists"):
-            self.schema_changes.make_template(temp_dir.name)
+            schema_changes.make_template(migrations_dir)
 
     def test_import_transformations(self):
         find_file = SchemaChanges.find_file
@@ -1718,8 +1721,9 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
             "schema changes file '.+' does not have a proper hash"):
             SchemaChanges.load(bad_yaml)
 
-        temp_dir = tempfile.TemporaryDirectory()
-        pathname = self.schema_changes.make_template(temp_dir.name)
+        schema_changes = SchemaChanges(self.empty_git_repo)
+        migrations_dir = schema_changes.git_repo.migrations_dir()
+        pathname = schema_changes.make_template(migrations_dir)
         with self.assertRaisesRegex(MigratorError,
             r"schema changes file is empty \(an unmodified template\): '.+'"):
             SchemaChanges.load(pathname)
@@ -1746,9 +1750,8 @@ class TestSchemaCommitChanges(CommitChangesFixtures):
         self.assertTrue(self.schema_changes != schema_changes_copy)
     '''
 
-
 @unittest.skipUnless(internet_connected(), "Internet not connected")
-class TestGitRepo(CommitChangesFixtures):
+class TestGitRepo(AutoMigrationFixtures):
 
     @classmethod
     def setUpClass(cls):
@@ -1883,7 +1886,7 @@ class TestGitRepo(CommitChangesFixtures):
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
-class TestAutomatedMigration(CommitChangesFixtures):
+class TestAutomatedMigration(AutoMigrationFixtures):
 
     @classmethod
     def setUpClass(cls):
