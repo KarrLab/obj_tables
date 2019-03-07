@@ -1306,13 +1306,12 @@ class Migrator(object):
         return '\n'.join(rv)
 
 
-# todo: add transformations to MigrationSpec
 class MigrationSpec(object):
     """ Specification of a sequence of migrations for a list of existing files
 
     Attributes:
         _REQUIRED_ATTRS (:obj:`list` of :obj:`str`): required attributes in a `MigrationSpec`
-        _RENAMING_LISTS (:obj:`list` of :obj:`str`): model and attribute renaming lists in a `MigrationSpec`
+        _CHANGES_LISTS (:obj:`list` of :obj:`str`): lists of changes in a migration
         _ALLOWED_ATTRS (:obj:`list` of :obj:`str`): attributes allowed in a `MigrationSpec`
         name (:obj:`str`): name for this `MigrationSpec`
         migrator (:obj:`str`): the name of a Migrator to use for migrations, which must be a key in
@@ -1323,6 +1322,8 @@ class MigrationSpec(object):
         seq_of_renamed_models (:obj:`list` of :obj:`list`, optional): list of renamed models for use
             by a `Migrator` for each migration in a sequence of migrations
         seq_of_renamed_attributes (:obj:`list` of :obj:`list`, optional): list of renamed attributes
+            for use by a `Migrator` for each migration in a sequence of migrations
+        seq_of_transformations (:obj:`list` of :obj:`dict`, optional): list of transformations
             for use by a `Migrator` for each migration in a sequence of migrations
         migrated_files (:obj:`list`: of :obj:`str`, optional): migration destination files in 1-to-1
             correspondence with `existing_files`; if not provided, migrated files use a suffix or
@@ -1338,19 +1339,20 @@ class MigrationSpec(object):
     MIGRATOR_CREATOR_MAP = dict(standard_migrator=Migrator, wc_lang=Migrator.generate_wc_lang_migrator)
 
     _REQUIRED_ATTRS = ['name', 'migrator', 'existing_files', 'schema_files']
-    _RENAMING_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes']
-    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _RENAMING_LISTS + ['migrated_files', 'migrate_suffix',
+    _CHANGES_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes', 'seq_of_transformations']
+    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['migrated_files', 'migrate_suffix',
         'migrate_in_place', 'migrations_config_file', '_prepared', 'MIGRATOR_CREATOR_MAP']
 
     def __init__(self, name, migrator='standard_migrator', existing_files=None, schema_files=None,
-        seq_of_renamed_models=None, seq_of_renamed_attributes=None, migrated_files=None, migrate_suffix=None,
-        migrate_in_place=False, migrations_config_file=None):
+        seq_of_renamed_models=None, seq_of_renamed_attributes=None, seq_of_transformations=None,
+        migrated_files=None, migrate_suffix=None, migrate_in_place=False, migrations_config_file=None):
         self.name = name
         self.migrator = migrator
         self.existing_files = existing_files
         self.schema_files = schema_files
         self.seq_of_renamed_models = seq_of_renamed_models
         self.seq_of_renamed_attributes = seq_of_renamed_attributes
+        self.seq_of_transformations = seq_of_transformations
         self.migrated_files = migrated_files
         self.migrate_suffix = migrate_suffix
         self.migrate_in_place = migrate_in_place
@@ -1466,12 +1468,12 @@ class MigrationSpec(object):
             return ["schema_files must contain at least 2 model definitions, but it has only {}".format(
                 len(self.schema_files))]
 
-        for renaming_list in self._RENAMING_LISTS:
-            if getattr(self, renaming_list) is not None:
-                if len(getattr(self, renaming_list)) != len(self.schema_files) - 1:
+        for changes_list in self._CHANGES_LISTS:
+            if getattr(self, changes_list) is not None:
+                if len(getattr(self, changes_list)) != len(self.schema_files) - 1:
                     errors.append("{} must have 1 mapping for each of the {} migration(s) specified by "
-                        "schema_files, but it has {}".format(renaming_list,  len(self.schema_files) - 1,
-                        len(getattr(self, renaming_list))))
+                        "schema_files, but it has {}".format(changes_list,  len(self.schema_files) - 1,
+                        len(getattr(self, changes_list))))
 
         if self.seq_of_renamed_models:
             required_structure = "seq_of_renamed_models must be None, or a list of lists of pairs of strs"
@@ -1547,11 +1549,11 @@ class MigrationSpec(object):
                 migrated_renamed_attributes.append(a_migration_renaming)
             self.seq_of_renamed_attributes = migrated_renamed_attributes
 
-        # if a renaming_list isn't provided, replace it with a list of Nones indicating no renaming
+        # if a changes_list isn't provided, replace it with a list of Nones indicating no changes
         empty_per_migration_list = [None]*(len(self.schema_files) - 1)
-        for renaming_list in self._RENAMING_LISTS:
-            if getattr(self, renaming_list) is None:
-                setattr(self, renaming_list, empty_per_migration_list)
+        for changes_list in self._CHANGES_LISTS:
+            if getattr(self, changes_list) is None:
+                setattr(self, changes_list, empty_per_migration_list)
 
         # normalize filenames
         if self.migrations_config_file:
@@ -1595,7 +1597,7 @@ class MigrationSpec(object):
         """
         rv = []
         for attr in self._ALLOWED_ATTRS:
-            if attr in self._RENAMING_LISTS:
+            if attr in self._CHANGES_LISTS:
                 rv.append("{}:\n{}".format(attr, pformat(getattr(self, attr))))
             else:
                 rv.append("{}: {}".format(attr, getattr(self, attr)))
@@ -1700,13 +1702,13 @@ class SchemaChanges(object):
         _CHANGES_FILE_ATTRS (:obj:`list` of :obj:`str`): required attributes in a schema changes file
         _ATTRIBUTES (:obj:`list` of :obj:`str`): attributes in a `SchemaChanges` instance
         git_repo (:obj:`GitRepo`): a git_repo that defines the data model of data being migrated
-        transformations (:obj:`dict`, optional): the transformations for a migration to the schema,
-            in a dictionary of callables
         schema_changes_file (:obj:`str`): the schema changes file
         commit_hash (:obj:`str`): hash from a schema changes file
         renamed_models (:obj:`list`, optional): list of renamed models in the commit
         renamed_attributes (:obj:`list`, optional): list of renamed attributes in the commit
         transformations_file (:obj:`str`, optional): the name of a Python file containing transformations
+        transformations (:obj:`dict`, optional): the transformations for a migration to the schema,
+            in a dictionary of callables
     """
     _CHANGES_FILE_ATTRS = ['commit_hash', 'renamed_models', 'renamed_attributes', 'transformations_file']
 
@@ -1934,7 +1936,7 @@ class SchemaChanges(object):
         """
         if self.transformations_file:
 
-            # import the transformations_file, if defined
+            # import the transformations_file, if provided
             dir = os.path.dirname(self.schema_changes_file)
             transformations_schema_module = SchemaModule(self.transformations_file, dir=dir)
             transformations_module = transformations_schema_module.import_module_for_migration(validate=False)
@@ -1943,7 +1945,7 @@ class SchemaChanges(object):
             if not hasattr(transformations_module, 'transformations'):
                 raise MigratorError("'{}' does not have a 'transformations' attribute".format(
                     os.path.join(dir, self.transformations_file)))
-            transformations = getattr(transformations_module, 'transformations')
+            transformations = transformations_module.transformations
 
             # validate transformations
             errors = Migrator._validate_transformations(transformations)
@@ -2410,7 +2412,8 @@ class AutomatedMigration(object):
             # generate YAML content
             file.write(yaml.dump(config_data))
 
-        # todo: perhaps git add, commit & push the config file
+        # add the config to the git repo
+        data_git_repo.repo.index.add([pathname])
         return pathname
 
     @staticmethod
@@ -2505,7 +2508,7 @@ class AutomatedMigration(object):
             :obj:`MigrationSpec`: the partially instantiated `MigrationSpec` for all schema commit
                 changes files in `directory`
         """
-        # instantiate a `MigrationSpec`, with  seq_of_renamed_models and seq_of_renamed_attributes
+        # instantiate a `MigrationSpec`, with  seq_of_renamed_models and seq_of_renamed_attributes and seq_of_transformations
         # validate the schema repo's schema changes files, and
         # the associated transformations files and schemas
         migration_spec_args = {}

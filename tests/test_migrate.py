@@ -320,7 +320,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -587,7 +587,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1290,19 +1290,19 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertEqual(md.validate(),
             ["schema_files must contain at least 2 model definitions, but it has only 0"])
 
-        for renaming_list in MigrationSpec._RENAMING_LISTS:
+        for renaming_list in MigrationSpec._CHANGES_LISTS:
             md = copy.deepcopy(self.migration_spec)
             setattr(md, renaming_list, [[], []])
             error = md.validate()[0]
             self.assertRegex(error,
                 r"{} must have 1 .+ 1 migration.+ schema_files, but it has \d".format(renaming_list))
 
-        for renaming_list in MigrationSpec._RENAMING_LISTS:
+        for renaming_list in MigrationSpec._CHANGES_LISTS:
             md = copy.deepcopy(self.migration_spec)
             setattr(md, renaming_list, None)
             self.assertFalse(md.validate())
 
-        for renaming_list in MigrationSpec._RENAMING_LISTS:
+        for renaming_list in MigrationSpec._CHANGES_LISTS:
             md = copy.deepcopy(self.migration_spec)
             setattr(md, renaming_list, [None])
             self.assertEqual(md.validate(), [])
@@ -1351,7 +1351,7 @@ class TestMigrationSpec(MigrationFixtures):
     def test_standardize(self):
         md = MigrationSpec('name', schema_files=['f1.py', 'f2.py'])
         md.standardize()
-        for renaming in MigrationSpec._RENAMING_LISTS:
+        for renaming in MigrationSpec._CHANGES_LISTS:
             self.assertEqual(getattr(md, renaming), [None])
         for attr in ['existing_files', 'migrated_files']:
             self.assertEqual(getattr(md, attr), None)
@@ -1361,7 +1361,7 @@ class TestMigrationSpec(MigrationFixtures):
         md = migration_specs['simple_migration']
         migrations_config_file_dir = os.path.dirname(md.migrations_config_file)
         md.standardize()
-        for renaming in MigrationSpec._RENAMING_LISTS:
+        for renaming in MigrationSpec._CHANGES_LISTS:
             self.assertEqual(len(getattr(md, renaming)), len(md.schema_files) - 1)
             self.assertEqual(getattr(md, renaming), [None])
         for file_list in ['existing_files', 'schema_files']:
