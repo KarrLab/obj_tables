@@ -10,6 +10,7 @@
 from contextlib import contextmanager
 from datetime import date, time, datetime
 from obj_model import core
+import obj_model
 import abduct
 import attrdict
 import enum
@@ -24,6 +25,11 @@ import resource
 import six
 import sys
 import unittest
+import psutil
+import numpy as np
+import gc
+import os
+import objsize
 
 
 class Order(enum.Enum):
@@ -4795,36 +4801,24 @@ class TestErrors(unittest.TestCase):
                 parent2 = core.ManyToOneAttribute(
                     Parent2, related_name='children2')
 
-# todo: add psutil to requirements
-import obj_model
-import psutil
-import numpy as np
-import gc
-import os
-from pprint import pprint
 
+@unittest.skip('performance measurement')
 class TestCaching(unittest.TestCase):
 
     @staticmethod
-    def perf_no_caching(data_size=1000, measurement_period=1000, alpha=10):
-        """ Test performance of large obj_model networks
+    def perf_no_caching(obj_data_size=1000, measurement_period=1000, alpha=10):
+        """ Test performance of obj_model.Model networks that use large amounts of memory
+
+        Results depend on the underlying system, of course.
 
         Args:
-            data_size (:obj:`int`, optional): size of the data element in each Model in bytes;
+            obj_data_size (:obj:`int`, optional): size of the data element in each Model in bytes;
                 default = 1000
             measurement_period (:obj:`int`, optional): number of Models to create between each measurement;
                 default = 1000
             alpha (:obj:`int`, optional): maximum factor for slowdown of object creation before
                 ending a measurement
         """
-        # results depend on the underlying system, of course
-
-        # todo: performance test with many objects
-        # create many interconnected objects
-        # for every N objects measure
-        # total memory usage
-        # time to create the last N objects
-        # stop when time to create the last N objects = alpha * time to create the FIRST N objects
 
         class BigModel(core.Model):
             # include an id to make this cacheable
@@ -4833,21 +4827,24 @@ class TestCaching(unittest.TestCase):
             neighbors = core.ManyToManyAttribute('BigModel', related_name='neighbors')
 
         def get_mem_mbytes():
+            # get the maximum resident set size in MB
             process = psutil.Process(os.getpid())
             return process.memory_info().rss / (2 ** 20)
 
         def get_time_sec():
+            # get the current time in sec
             dt = datetime.today()  # Get timezone naive now
             return dt.timestamp()
 
-        # todo:
         # run garbage collection before starting
         gc.collect()
-        shape = int(data_size/2)
+
         last_time = start_time = get_time_sec()
         iteration = 0
-        # tuple: iteration, memory use, time (sec)
-        measurements = [(iteration, get_mem_mbytes(), 0)]
+
+        # measurement tuple: iteration, memory use by BigModels (MB), resident set size (MB), time since start (sec)
+        # todo: store in named tuple
+        measurements = [(iteration, 0, int(get_mem_mbytes()), 0.0)]
         big_models = []
         done = False
         while not done:
@@ -4856,8 +4853,9 @@ class TestCaching(unittest.TestCase):
             # make a BigModel and connect it to some other BigModels
             big_model = BigModel(
                 id='big_model_{}'.format(iteration),
-                data=np.zeros(shape, dtype=np.dtype(np.int16)),
-                # todo: connect to neighbors
+                # make data array containing obj_data_size bytes
+                data=np.zeros(int(obj_data_size/2), dtype=np.dtype(np.int16)),
+                # todo: connect to neighbors, with desired network properties
                 neighbors=[]
             )
             big_models.append(big_model)
@@ -4866,12 +4864,14 @@ class TestCaching(unittest.TestCase):
             if iteration == measurement_period:
                 duration_initial_measurement_period = get_time_sec() - start_time
 
-            # every measurement_period, make a measurement
+            # make a measurement every measurement_period
             if not iteration % measurement_period:
                 current_time = get_time_sec()
-                measurements.append((iteration, get_mem_mbytes(), int(current_time - start_time)))
+                size_objects_mbytes = int(objsize.get_deep_size(big_models) / (2 ** 20))
+                measurements.append((iteration, size_objects_mbytes, int(get_mem_mbytes()),
+                    current_time - start_time))
 
-                # if the time to execute a measurement period is alpha * bigger than the firat, exit
+                # exit if the time to execute a measurement period is alpha times bigger than the first period
                 done = current_time - last_time > alpha * duration_initial_measurement_period
 
                 last_time = current_time
@@ -4879,5 +4879,7 @@ class TestCaching(unittest.TestCase):
         return measurements
 
     def test_perf_no_caching(self):
-        measurements = self.perf_no_caching(data_size=10000, measurement_period=2000, alpha=4)
-        pprint(measurements)
+        measurements = self.perf_no_caching(obj_data_size=10000, measurement_period=5000, alpha=10)
+        print("\nnum objects\tobject memory (MB)\tresident set (MB)\ttime (s)")
+        for iteration, obj_memory, resident_set_memory, time in measurements:
+            print('{}\t{}\t{}\t{:.2f}'.format(iteration, obj_memory, resident_set_memory, time))

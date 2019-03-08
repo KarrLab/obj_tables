@@ -5,7 +5,9 @@ mock
 natsort
 networkx
 numpy
+objsize
 openpyxl
+psutil
 pytest
 pyyaml
 six
