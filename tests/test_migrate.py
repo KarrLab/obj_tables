@@ -1552,7 +1552,7 @@ class AutoMigrationFixtures(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree(cls.tmp_dir)
+        # shutil.rmtree(cls.tmp_dir)
         # remove the GitRepo so that its temp_dirs get deleted
         del cls.git_repo
 
@@ -1897,12 +1897,23 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         super().tearDownClass()
 
     def test_make_template_config_file(self):
-        path = AutomatedMigration.make_template_config_file(self.git_repo)
-        # print(path)
+        path = AutomatedMigration.make_template_config_file(self.git_repo, 'test_schema_repo')
+
         # check the file at path
+        data = yaml.load(open(path, 'r'))
+        for name, config_attr in AutomatedMigration._CONFIG_ATTRIBUTES.items():
+            attr_type, _ = config_attr
+            if attr_type == 'list':
+                self.assertEqual(data[name], [])
+            elif attr_type == 'str':
+                self.assertEqual(data[name], '')
+
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
-            AutomatedMigration.make_template_config_file(self.git_repo)
+            AutomatedMigration.make_template_config_file(self.git_repo, 'test_schema_repo')
+
+    def test_load_config_file(self):
+        pass
 
     def test_(self):
         pass
