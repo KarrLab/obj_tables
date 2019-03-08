@@ -160,6 +160,8 @@ class OntologyAttributeTestCase(unittest.TestCase):
 
         model_1 = Model(attr=self.ontology['SBO:0000000'])
         model_2 = Model(attr=copy.copy(model_1.attr))
+        print('pronto.__version__', pronto.__version__)
+        print('model_1.attr == model_1.attr', model_1.attr == model_1.attr)
 
         try:
             Model.attr.merge(model_1, model_2, {}, {})
