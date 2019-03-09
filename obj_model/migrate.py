@@ -1336,12 +1336,14 @@ class MigrationSpec(object):
     """
 
     # map migrator names to callables that create `Migrator`s
-    MIGRATOR_CREATOR_MAP = dict(standard_migrator=Migrator, wc_lang=Migrator.generate_wc_lang_migrator)
+    DEFAULT_MIGRATOR = 'standard_migrator'
+    MIGRATOR_CREATOR_MAP = {DEFAULT_MIGRATOR: Migrator, 'wc_lang': Migrator.generate_wc_lang_migrator}
 
     _REQUIRED_ATTRS = ['name', 'migrator', 'existing_files', 'schema_files']
     _CHANGES_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes', 'seq_of_transformations']
     _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['migrated_files', 'migrate_suffix',
-        'migrate_in_place', 'migrations_config_file', '_prepared', 'MIGRATOR_CREATOR_MAP']
+        'migrate_in_place', 'migrations_config_file', '_prepared', 'DEFAULT_MIGRATOR',
+        'MIGRATOR_CREATOR_MAP']
 
     def __init__(self, name, migrator='standard_migrator', existing_files=None, schema_files=None,
         seq_of_renamed_models=None, seq_of_renamed_attributes=None, seq_of_transformations=None,
@@ -2318,13 +2320,14 @@ class AutomatedMigration(object):
     _NAME_FORMAT = 'automated-migration_{}_{}_{}'
 
     # attributes in the automated migration configuration file
-    # todo: default migrator
     _CONFIG_ATTRIBUTES = {
-        # 'name': (type, description)
-        'files_to_migrate': ('list', 'paths to files in the data repo to migrate'),
-        'schema_repo_url': ('str', 'the URL of the schema repo'),
-        'schema_file': ('str', 'the relative path to the schema file in the schema repo'),
-        'migrator': ('str', 'the keyword for the type of migrator to use, a key in `MigrationSpec.MIGRATOR_CREATOR_MAP`'),
+        # 'name': (type, description, default)
+        'files_to_migrate': ('list', 'paths to files in the data repo to migrate', None),
+        'schema_repo_url': ('str', 'the URL of the schema repo', None),
+        'schema_file': ('str', 'the relative path to the schema file in the schema repo', None),
+        'migrator': ('str',
+            'the keyword for the type of migrator to use, a key in `MigrationSpec.MIGRATOR_CREATOR_MAP`',
+            MigrationSpec.DEFAULT_MIGRATOR),
     }
 
     # attributes in a `AutomatedMigration`
@@ -2425,18 +2428,21 @@ class AutomatedMigration(object):
 
         config_data = {}
         for name, config_attr in AutomatedMigration._CONFIG_ATTRIBUTES.items():
-            attr_type, _ = config_attr
+            attr_type, _, default = config_attr
             if attr_type == 'list':
                 config_data[name] = []
             elif attr_type == 'str':
-                config_data[name] = ''
+                if default:
+                    config_data[name] = default
+                else:
+                    config_data[name] = ''
 
         with open(pathname, 'w') as file:
             file.write(u'# automated migration configuration file\n\n')
             # add documentation about the config file attributes
             file.write(u'# description of the attributes:\n')
             for name, config_attr in AutomatedMigration._CONFIG_ATTRIBUTES.items():
-                _, description = config_attr
+                _, description, _ = config_attr
                 file.write("# '{}' contains {}\n".format(name, description))
 
             # generate YAML content
@@ -2474,13 +2480,13 @@ class AutomatedMigration(object):
                 automated_migration_config_file, e))
 
         if not isinstance(automated_migration_config, dict) or \
-            any([attr not in automated_migration_config for attr in AutomatedMigration._CONFIG_ATTRIBUTES]):
+            any([attr_name not in automated_migration_config for attr_name in AutomatedMigration._CONFIG_ATTRIBUTES]):
                 raise MigratorError("automated migration config file must have a dict with the attributes in "
                     "{}._CONFIG_ATTRIBUTES: {}".format(AutomatedMigration.__name__,
                     ', '.join(AutomatedMigration._CONFIG_ATTRIBUTES)))
 
         # all attributes must be initialized
-        if any([not automated_migration_config[attr] for attr in AutomatedMigration._CONFIG_ATTRIBUTES]):
+        if any([not automated_migration_config[attr_name] for attr_name in AutomatedMigration._CONFIG_ATTRIBUTES]):
                 raise MigratorError("all attributes in an automated migration config file must be "
                     "initialized, but they are: {}".format(pformat(automated_migration_config)))
 

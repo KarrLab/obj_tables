@@ -1544,15 +1544,18 @@ class AutoMigrationFixtures(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp_dir = mkdtemp()
         cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
-        # get the repo once for the TestCase to speed up tests
+        # get these repos once for the TestCase to speed up tests
         cls.git_repo = GitRepo(cls.test_repo_url)
         cls.known_hash = 'ab34419496756675b6e8499e0948e697256f2698'
         cls.known_hash_ba1f9d3 = 'ba1f9d33a3e18a74f79f41903e7e88e118134d5f'
+        cls.test_repo_clean_url = 'https://github.com/KarrLab/test_repo_clean'
+        cls.git_test_repo_clean = GitRepo(cls.test_repo_clean_url)
+
         cls.totally_empty_git_repo = GitRepo()
 
     @classmethod
     def tearDownClass(cls):
-        # shutil.rmtree(cls.tmp_dir)
+        shutil.rmtree(cls.tmp_dir)
         # remove the GitRepo so that its temp_dirs get deleted
         del cls.git_repo
 
@@ -1588,6 +1591,8 @@ class TestSchemaChanges(AutoMigrationFixtures):
             renamed_attributes=[('Foo', 'Attr'), ('FooNew', 'AttrNew')],
             transformations_file=''
         )
+        self.empty_schema_changes = SchemaChanges(self.empty_git_repo)
+        self.empty_migrations_dir = self.empty_schema_changes.git_repo.migrations_dir()
 
     def test_get_date_timestamp(self):
         timestamp = SchemaChanges.get_date_timestamp()
@@ -1643,9 +1648,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.assertTrue(2 <= len(filename.split('_')))
 
     def test_make_template(self):
-        schema_changes = SchemaChanges(self.empty_git_repo)
-        migrations_dir = schema_changes.git_repo.migrations_dir()
-        pathname = schema_changes.make_template(migrations_dir)
+        pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
         data = yaml.load(open(pathname, 'r'))
         for attr in ['renamed_models', 'renamed_attributes']:
             self.assertEqual(data[attr], [])
@@ -1654,7 +1657,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
 
         # quickly create another, which will likely have the same timestamp
         with self.assertRaisesRegex(MigratorError, "schema changes file '.+' already exists"):
-            schema_changes.make_template(migrations_dir)
+            self.empty_schema_changes.make_template(self.empty_migrations_dir)
 
     def test_import_transformations(self):
         find_file = SchemaChanges.find_file
@@ -1721,9 +1724,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
             "schema changes file '.+' does not have a proper hash"):
             SchemaChanges.load(bad_yaml)
 
-        schema_changes = SchemaChanges(self.empty_git_repo)
-        migrations_dir = schema_changes.git_repo.migrations_dir()
-        pathname = schema_changes.make_template(migrations_dir)
+        pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
         with self.assertRaisesRegex(MigratorError,
             r"schema changes file is empty \(an unmodified template\): '.+'"):
             SchemaChanges.load(pathname)
@@ -1897,12 +1898,16 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         super().tearDownClass()
 
     def test_make_template_config_file(self):
-        path = AutomatedMigration.make_template_config_file(self.git_repo, 'test_schema_repo')
+        self.git_test_repo_clean
+        path = AutomatedMigration.make_template_config_file(self.git_repo, 'test_repo_clean')
 
         # check the file at path
         data = yaml.load(open(path, 'r'))
         for name, config_attr in AutomatedMigration._CONFIG_ATTRIBUTES.items():
-            attr_type, _ = config_attr
+            if name == 'migrator':
+                self.assertEqual(data[name], MigrationSpec.DEFAULT_MIGRATOR)
+                continue
+            attr_type, _, _ = config_attr
             if attr_type == 'list':
                 self.assertEqual(data[name], [])
             elif attr_type == 'str':
@@ -1910,10 +1915,51 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
-            AutomatedMigration.make_template_config_file(self.git_repo, 'test_schema_repo')
+            AutomatedMigration.make_template_config_file(self.git_repo, 'test_repo_clean')
+
+        remove_silently(path)
 
     def test_load_config_file(self):
-        pass
+
+        # read config file with initialized values
+        pathname = os.path.join(self.git_test_repo_clean.migrations_dir(),
+            'automated_migration_config-test_repo_clean.yaml')
+        automated_migration_config = AutomatedMigration.load_config_file(pathname)
+        expected_automated_migration_config = dict(
+            files_to_migrate=['../tests/fixtures//empty_data_file_2.xlsx', '../tests/fixtures//empty_data_file_1.xlsx'],
+            migrator='standard_migrator',
+            schema_file='../test_repo_clean/core.py',
+            schema_repo_url='https://github.com/artgoldberg/test_repo_clean.git'
+        )
+        self.assertEqual(automated_migration_config, expected_automated_migration_config)
+
+        # test errors
+        with self.assertRaisesRegex(MigratorError, "could not read automated migration config file: .+"):
+            AutomatedMigration.load_config_file('no such file')
+
+        bad_yaml = os.path.join(self.tmp_dir, 'bad_yaml.yaml')
+        f = open(bad_yaml, "w")
+        f.write("unbalanced blackets: ][")
+        f.close()
+        with self.assertRaisesRegex(MigratorError, r"could not parse YAML automated migration config file: '\S+'"):
+            AutomatedMigration.load_config_file(bad_yaml)
+
+        # make a config file that's missing an attribute
+        saved_config_attributes = AutomatedMigration._CONFIG_ATTRIBUTES.copy()
+        del AutomatedMigration._CONFIG_ATTRIBUTES['files_to_migrate']
+        config_file = AutomatedMigration.make_template_config_file(self.git_repo, 'test_schema_repo')
+        # restore the attribute
+        AutomatedMigration._CONFIG_ATTRIBUTES = saved_config_attributes
+        with self.assertRaisesRegex(MigratorError, "automated migration config file must have a dict "
+            "with the attributes in AutomatedMigration._CONFIG_ATTRIBUTES: .+"):
+            AutomatedMigration.load_config_file(config_file)
+        remove_silently(config_file)
+
+        config_file = AutomatedMigration.make_template_config_file(self.git_repo, 'test_schema_repo')
+        with self.assertRaisesRegex(MigratorError,
+            "all attributes in an automated migration config file must be initialized, but they are:.+"):
+            AutomatedMigration.load_config_file(config_file)
+        remove_silently(config_file)
 
     def test_(self):
         pass
