@@ -320,7 +320,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -587,7 +587,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1227,7 +1227,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1267,7 +1267,7 @@ class TestMigrationSpec(MigrationFixtures):
         # test detecting bad yaml
         bad_yaml = os.path.join(self.tmp_dir, 'bad_yaml.yaml')
         f = open(bad_yaml, "w")
-        f.write("unbalanced blackets: ][")
+        f.write("unbalanced brackets: ][")
         f.close()
         with self.assertRaisesRegex(MigratorError, r"could not parse YAML migration config file: '\S+'"):
             MigrationSpec.get_migrations_config(bad_yaml)
@@ -1705,7 +1705,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         temp_dir = tempfile.TemporaryDirectory()
         bad_yaml = os.path.join(temp_dir.name, 'bad_yaml.yaml')
         with open(bad_yaml, "w") as f:
-            f.write("unbalanced blackets: ][")
+            f.write("unbalanced brackets: ][")
         with self.assertRaisesRegex(MigratorError,
             r"could not parse YAML schema changes file: '\S+':"):
             SchemaChanges.load(bad_yaml)
@@ -1897,8 +1897,12 @@ class TestAutomatedMigration(AutoMigrationFixtures):
     def tearDownClass(cls):
         super().tearDownClass()
 
+    def setUp(self):
+        self.clean_automated_migration = AutomatedMigration(
+            **dict(data_repo_location=self.test_repo_clean_url,
+                data_config_file_basename='automated_migration_config-test_repo_clean.yaml'))
+
     def test_make_template_config_file(self):
-        self.git_test_repo_clean
         path = AutomatedMigration.make_template_config_file(self.git_repo, 'test_repo_clean')
 
         # check the file at path
@@ -1929,7 +1933,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             files_to_migrate=['../tests/fixtures//empty_data_file_2.xlsx', '../tests/fixtures//empty_data_file_1.xlsx'],
             migrator='standard_migrator',
             schema_file='../test_repo_clean/core.py',
-            schema_repo_url='https://github.com/artgoldberg/test_repo_clean.git'
+            schema_repo_url='https://github.com/KarrLab/test_repo_clean'
         )
         self.assertEqual(automated_migration_config, expected_automated_migration_config)
 
@@ -1939,7 +1943,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         bad_yaml = os.path.join(self.tmp_dir, 'bad_yaml.yaml')
         f = open(bad_yaml, "w")
-        f.write("unbalanced blackets: ][")
+        f.write("unbalanced brackets: ][")
         f.close()
         with self.assertRaisesRegex(MigratorError, r"could not parse YAML automated migration config file: '\S+'"):
             AutomatedMigration.load_config_file(bad_yaml)
@@ -1961,8 +1965,48 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             AutomatedMigration.load_config_file(config_file)
         remove_silently(config_file)
 
+    def test_init(self):
+        config_basename = 'automated_migration_config-test_repo_clean.yaml'
+        automated_migration = AutomatedMigration(
+            **dict(data_repo_location=self.test_repo_clean_url, data_config_file_basename=config_basename))
+        self.assertEqual(automated_migration.data_repo_location, self.test_repo_clean_url)
+        self.assertEqual(automated_migration.data_config_file_basename, config_basename)
+        self.assertEqual(automated_migration.data_git_repo.repo_name(), 'test_repo_clean')
+        self.assertTrue(isinstance(automated_migration.data_config, dict))
+        self.assertEqual(automated_migration.schema_git_repo.repo_name(), 'test_repo_clean')
+
+        with self.assertRaisesRegex(MigratorError, "initialization of AutomatedMigration must provide "
+            "AutomatedMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
+            AutomatedMigration(**dict(data_repo_location=self.test_repo_clean_url))
+
     def test_validate(self):
-        pass
+        automated_migration = self.clean_automated_migration
+
+        expected_files_to_migrate = []
+        for f in ['../tests/fixtures//empty_data_file_2.xlsx', '../tests/fixtures//empty_data_file_1.xlsx']:
+            expected_files_to_migrate.append(os.path.normpath(
+                os.path.join(automated_migration.data_git_repo.migrations_dir(), f)))
+        automated_migration.validate()
+        self.assertEqual(expected_files_to_migrate, automated_migration.data_config['files_to_migrate'])
+        self.assertEqual(automated_migration.data_config['schema_repo_url'],
+            'https://github.com/KarrLab/test_repo_clean')
+        loaded_schema_changes = automated_migration.loaded_schema_changes
+        self.assertEqual(len(loaded_schema_changes), 1)
+        self.assertTrue(isinstance(loaded_schema_changes[0], SchemaChanges))
+
+        # test errors
+        os.rename(  # create error in all_schema_changes_with_commits()
+            os.path.join(automated_migration.schema_git_repo.migrations_dir(),
+                'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml'),
+            os.path.join(automated_migration.schema_git_repo.migrations_dir(),
+                'schema_changes_2019-02-13-14-05-42_badhash.yaml'))
+        with self.assertRaises(MigratorError):
+            automated_migration.validate()
+
+        remove_silently(expected_files_to_migrate[0])   # delete a file to migrate
+        with self.assertRaisesRegex(MigratorError,
+            "file to migrate '.+', with full path '.+', doesn't exist"):
+            automated_migration.validate()
 
     def test_get_name(self):
         pass
@@ -1986,6 +2030,9 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         pass
 
     def test_migrate(self):
+        pass
+
+    def test_prepare(self):
         pass
 
     def test_(self):
