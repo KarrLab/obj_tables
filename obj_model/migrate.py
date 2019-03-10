@@ -2331,7 +2331,8 @@ class AutomatedMigration(object):
     }
 
     # attributes in a `AutomatedMigration`
-    _ATTRIBUTES = ['data_repo_location', 'data_git_repo', 'schema_git_repo', 'data_config_file', 'data_config', 'migration_spec', 'loaded_schema_changes', 'migration_spec_args']
+    _ATTRIBUTES = ['data_repo_location', 'data_git_repo', 'schema_git_repo', 'data_config_file',
+        'data_config', 'migration_spec', 'loaded_schema_changes', 'migration_spec_args']
     _REQUIRED_ATTRIBUTES = ['data_repo_location', 'data_config_file']
 
     def __init__(self, **kwargs):

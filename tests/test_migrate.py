@@ -1961,6 +1961,33 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             AutomatedMigration.load_config_file(config_file)
         remove_silently(config_file)
 
+    def test_validate(self):
+        pass
+
+    def test_get_name(self):
+        pass
+
+    def test_get_data_file_version_hash(self):
+        pass
+
+    def test_write_data_file_version_hash(self):
+        pass
+
+    def test_get_seqs_of_schema_changes(self):
+        pass
+
+    def test_generate_migration_spec(self):
+        pass
+
+    def test_clone_schemas(self):
+        pass
+
+    def test_get_schema(self):
+        pass
+
+    def test_migrate(self):
+        pass
+
     def test_(self):
         pass
 
