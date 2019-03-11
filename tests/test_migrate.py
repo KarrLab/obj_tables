@@ -1178,7 +1178,7 @@ class TestMigrator(MigrationFixtures):
 
     def test_generate_wc_lang_migrator(self):
         migrator = Migrator.generate_wc_lang_migrator()
-        self.assertTrue(isinstance(migrator, Migrator))
+        self.assertIsInstance(migrator, Migrator)
         self.assertTrue(callable(migrator.transformations[Migrator.PREPARE_EXISTING_MODELS]))
 
         same_defs_migrator = Migrator.generate_wc_lang_migrator(existing_defs_file=self.wc_lang_schema_existing,
@@ -1653,7 +1653,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         for attr in ['renamed_models', 'renamed_attributes']:
             self.assertEqual(data[attr], [])
         for attr in ['commit_hash', 'transformations_file']:
-            self.assertTrue(isinstance(data[attr], str))
+            self.assertIsInstance(data[attr], str)
 
         # quickly create another, which will likely have the same timestamp
         with self.assertRaisesRegex(MigratorError, "schema changes file '.+' already exists"):
@@ -1664,7 +1664,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         schema_changes_file = find_file(self.git_repo, self.known_hash_ba1f9d3)
         schema_changes = SchemaChanges.generate_instance(schema_changes_file)
         transformations = schema_changes.import_transformations()
-        self.assertTrue(isinstance(transformations, dict))
+        self.assertIsInstance(transformations, dict)
         self.assertEqual(transformations['PREPARE_EXISTING_MODELS'], transformations['MODIFY_MIGRATED_MODELS'])
 
         schema_changes_file = os.path.join(self.git_repo.migrations_dir(),
@@ -1767,11 +1767,11 @@ class TestGitRepo(AutoMigrationFixtures):
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
 
     def test_init(self):
-        self.assertTrue(isinstance(self.totally_empty_git_repo, GitRepo))
-        self.assertTrue(isinstance(self.git_repo.repo, git.Repo))
+        self.assertIsInstance(self.totally_empty_git_repo, GitRepo)
+        self.assertIsInstance(self.git_repo.repo, git.Repo)
         self.assertEqual(self.repo_root, self.git_repo.repo_dir)
         git_repo = GitRepo(self.git_repo.repo_dir)
-        self.assertTrue(isinstance(git_repo.repo, git.Repo))
+        self.assertIsInstance(git_repo.repo, git.Repo)
         with self.assertRaisesRegex(MigratorError, "instantiating a git.Repo from directory '.+' failed"):
             GitRepo(self.tmp_dir)
 
@@ -1790,7 +1790,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
     def test_clone_repo_from_url(self):
         repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url)
-        self.assertTrue(isinstance(repo, git.Repo))
+        self.assertIsInstance(repo, git.Repo)
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
         repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url, directory=self.make_tmp_dir())
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
@@ -1812,30 +1812,30 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertEqual(self.git_repo.repo_name(), 'test_repo')
         self.assertEqual(self.totally_empty_git_repo.repo_name(), GitRepo._NAME_UNKNOWN)
         tmp_git_repo = GitRepo(self.git_repo.repo_dir)
-        self.assertTrue(isinstance(tmp_git_repo.repo_name(), str))
+        self.assertIsInstance(tmp_git_repo.repo_name(), str)
 
     def test_latest_commit(self):
-        self.assertTrue(isinstance(self.git_repo.latest_commit(), git.objects.commit.Commit))
+        self.assertIsInstance(self.git_repo.latest_commit(), git.objects.commit.Commit)
 
     def test_latest_hash(self):
         # todo: test with a frozen repo whose hash is known
         commit_hash = self.git_repo.latest_hash()
-        self.assertTrue(isinstance(commit_hash, str))
+        self.assertIsInstance(commit_hash, str)
         self.assertEqual(len(commit_hash), 40)
 
     def test_get_commit(self):
         commit = self.git_repo.get_commit(self.known_hash)
-        self.assertTrue(isinstance(commit, git.objects.commit.Commit))
+        self.assertIsInstance(commit, git.objects.commit.Commit)
         self.assertTrue(self.git_repo.get_commit(self.no_such_hash) is None)
 
     def test_commits_as_graph(self):
         commit_DAG = self.git_repo.commits_as_graph()
-        self.assertTrue(isinstance(commit_DAG, nx.classes.digraph.DiGraph))
+        self.assertIsInstance(commit_DAG, nx.classes.digraph.DiGraph)
 
     def test_get_hash(self):
         # todo: test with a frozen repo whose hash is known
         commit_hash = GitRepo.get_hash(self.git_repo.latest_commit())
-        self.assertTrue(isinstance(commit_hash, str))
+        self.assertIsInstance(commit_hash, str)
         self.assertEqual(len(commit_hash), 40)
 
     def test_checkout_commit(self):
@@ -1972,7 +1972,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertEqual(automated_migration.data_repo_location, self.test_repo_clean_url)
         self.assertEqual(automated_migration.data_config_file_basename, config_basename)
         self.assertEqual(automated_migration.data_git_repo.repo_name(), 'test_repo_clean')
-        self.assertTrue(isinstance(automated_migration.data_config, dict))
+        self.assertIsInstance(automated_migration.data_config, dict)
         self.assertEqual(automated_migration.schema_git_repo.repo_name(), 'test_repo_clean')
 
         with self.assertRaisesRegex(MigratorError, "initialization of AutomatedMigration must provide "
@@ -1992,7 +1992,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             'https://github.com/KarrLab/test_repo_clean')
         loaded_schema_changes = automated_migration.loaded_schema_changes
         self.assertEqual(len(loaded_schema_changes), 1)
-        self.assertTrue(isinstance(loaded_schema_changes[0], SchemaChanges))
+        self.assertIsInstance(loaded_schema_changes[0], SchemaChanges)
 
         # test errors
         os.rename(  # create an error in all_schema_changes_with_commits()
@@ -2075,7 +2075,7 @@ class TestRunMigration(MigrationFixtures):
                         self.assertIn(migrated_file, capture_output.get_text())
 
             for migration_disc, migrated_filenames in results:
-                self.assertTrue(isinstance(migration_disc, MigrationSpec))
+                self.assertIsInstance(migration_disc, MigrationSpec)
                 for migrated_file in migrated_filenames:
                     self.assertTrue(os.path.isfile(migrated_file))
 
