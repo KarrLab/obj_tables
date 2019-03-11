@@ -2317,7 +2317,8 @@ class AutomatedMigration(object):
 
     # template for the name of an automated migration; the format placeholders are replaced with
     # 1) the name of the data repo, 2) the name of the schema repo, and 3) a datetime value
-    _NAME_FORMAT = 'automated-migration_{}_{}_{}'
+    # assumes that the filled values do not contain ':'
+    _NAME_FORMAT = 'automated-migration:{}:{}:{}'
 
     # attributes in the automated migration configuration file
     _CONFIG_ATTRIBUTES = {
@@ -2491,7 +2492,7 @@ class AutomatedMigration(object):
             :obj:`MigratorError`: if the data or the schema git repo is not initialized
         """
         if self.data_git_repo is None or self.schema_git_repo is None:
-            raise MigratorError("To generate name data_git_repo and schema_git_repo must be initialized")
+            raise MigratorError("To run get_name() data_git_repo and schema_git_repo must be initialized")
         return self._NAME_FORMAT.format(self.data_git_repo.repo_name(), self.schema_git_repo.repo_name(),
             SchemaChanges.get_date_timestamp())
 

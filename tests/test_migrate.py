@@ -1995,7 +1995,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertTrue(isinstance(loaded_schema_changes[0], SchemaChanges))
 
         # test errors
-        os.rename(  # create error in all_schema_changes_with_commits()
+        os.rename(  # create an error in all_schema_changes_with_commits()
             os.path.join(automated_migration.schema_git_repo.migrations_dir(),
                 'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml'),
             os.path.join(automated_migration.schema_git_repo.migrations_dir(),
@@ -2009,7 +2009,13 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             automated_migration.validate()
 
     def test_get_name(self):
-        pass
+        self.assertIn('automated-migration:test_repo_clean:test_repo_clean:',
+            self.clean_automated_migration.get_name())
+
+        self.clean_automated_migration.data_git_repo = None
+        with self.assertRaisesRegex(MigratorError,
+            re.escape("To run get_name() data_git_repo and schema_git_repo must be initialized")):
+            self.clean_automated_migration.get_name()
 
     def test_get_data_file_version_hash(self):
         pass
