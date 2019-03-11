@@ -2267,6 +2267,11 @@ class GitRepo(object):
         return seq_with_schema_changes
 
 
+# todo: configure this to use wc_lang in tests/fixtures/migrate/wc_lang/wc_lang/core.py so that
+# obj_model doesn't depend on wc_lang
+from wc_lang.io import Reader
+from wc_lang.core import Model
+
 # todo: add logging
 # todo: consider workflow: someone changes the schema, & wants to easily migrate all data repos
 class AutomatedMigration(object):
@@ -2496,29 +2501,23 @@ class AutomatedMigration(object):
         return self._NAME_FORMAT.format(self.data_git_repo.repo_name(), self.schema_git_repo.repo_name(),
             SchemaChanges.get_date_timestamp())
 
-    def get_data_file_version_hash(self, data_file):
+    @staticmethod
+    def get_data_file_version_hash(data_file):
         """ Get the schema git commit hash in a data file
 
         Args:
-            data_file (:obj:`str`): data file
+            data_file (:obj:`str`): name of a data file
 
         Returns:
             :obj:`str`: the hash
         """
-        # todo: generalize beyond wc_lang
         # use wc_lang Reader to read the Model sheet in a data file
-        pass
-
-    def write_data_file_version_hash(self, data_file):
-        """ Write the schema git commit hash into a data file
-
-        Args:
-            data_file (:obj:`str`): data file
-
-        Raises:
-            :obj:`MigratorError`: if the schema git commit hash cannot be written into `data_file`
-        """
-        pass
+        models = Reader().run(data_file)
+        model = models[Model][0]
+        commit_hash = model.revision
+        return commit_hash
+        # todo: generalize and move from wc_lang to obj_model by making an optional meta-data Model
+        # that's automatically included in data files & has schema git hash, date written, obj_model version
 
     def get_seqs_of_schema_changes(self, migration_spec_args):
         # iterate through the schema changes, creating input for the `MigrationSpec`

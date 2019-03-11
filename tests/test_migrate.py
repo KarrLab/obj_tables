@@ -1901,6 +1901,8 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.test_repo_clean_url,
                 data_config_file_basename='automated_migration_config-test_repo_clean.yaml'))
+        self.fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
+        self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
     def test_make_template_config_file(self):
         path = AutomatedMigration.make_template_config_file(self.git_repo, 'test_repo_clean')
@@ -2018,10 +2020,8 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.clean_automated_migration.get_name()
 
     def test_get_data_file_version_hash(self):
-        pass
-
-    def test_write_data_file_version_hash(self):
-        pass
+        version_hash = AutomatedMigration.get_data_file_version_hash(self.wc_lang_model)
+        self.assertTrue(version_hash.startswith('3794e6c'))
 
     def test_get_seqs_of_schema_changes(self):
         pass
