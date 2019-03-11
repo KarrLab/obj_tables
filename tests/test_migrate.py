@@ -46,7 +46,7 @@ from wc_utils.util.files import remove_silently
 from obj_model.expression import Expression
 
 # todo: move all static methods out of MigrationFixtures
-# todo: remove all '@unittest.skip("speed up testing")'
+# todo: remove all '# @unittest.skip("speed up testing")'
 
 def make_tmp_dirs_n_small_schemas(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
@@ -320,7 +320,7 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -587,7 +587,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1227,7 +1227,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1402,7 +1402,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -2024,7 +2024,16 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertTrue(version_hash.startswith('3794e6c'))
 
     def test_get_seqs_of_schema_changes(self):
-        pass
+        self.clean_automated_migration.validate()
+        migration_spec_args = {}
+        self.clean_automated_migration.get_seqs_of_schema_changes(migration_spec_args)
+        for attr in ['seq_of_renamed_models', 'seq_of_renamed_attributes']:
+            self.assertEqual(len(migration_spec_args[attr]), 1)
+        self.assertEqual(os.path.basename(migration_spec_args['schema_files'][0]),
+            'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
+        self.assertEqual(migration_spec_args['seq_of_renamed_models'], [[['Test', 'TestNew']]])
+        self.assertEqual(migration_spec_args['seq_of_renamed_attributes'], [[]])
+        self.assertEqual(migration_spec_args['seq_of_transformations'], ['transformations_ba1f9d3.py'])
 
     def test_generate_migration_spec(self):
         pass
@@ -2045,7 +2054,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         pass
 
 
-@unittest.skip("speed up testing")
+# @unittest.skip("speed up testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):

@@ -7,6 +7,7 @@
 :License: MIT
 """
 import os
+import re
 import sys
 import argparse
 import importlib
@@ -27,7 +28,9 @@ import tempfile
 import datetime
 
 import obj_model
-from obj_model import TabularOrientation, RelatedAttribute, get_models
+from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
+    RegexAttribute, UrlAttribute, DateTimeAttribute)
+from obj_model.units import UnitAttribute
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
@@ -2267,10 +2270,44 @@ class GitRepo(object):
         return seq_with_schema_changes
 
 
-# todo: configure this to use wc_lang in tests/fixtures/migrate/wc_lang/wc_lang/core.py so that
-# obj_model doesn't depend on wc_lang
-from wc_lang.io import Reader
-from wc_lang.core import Model
+# replicate some of the definition of wc_lang.core.Model for use by get_data_file_version_hash()
+# this definition is simplified to avoid dependencies on other parts of wc_lang
+# also, this definition needs to be synched with the definition of wc_lang.core.Model
+# todo: generalize obj_model Model independent of wc_lang by making an optional meta-data Model
+# that's automatically included in data files & has schema git hash, date written, obj_model version
+class Model(obj_model.Model):
+    """ Model
+
+    Attributes:
+        id (:obj:`str`): unique identifier
+        name (:obj:`str`): name
+        version (:obj:`str`): version of the model
+        url (:obj:`str`): url of the model Git repository
+        branch (:obj:`str`): branch of the model Git repository
+        revision (:obj:`str`): revision of the model Git repository
+        time_units (:obj:`unit_registry.Unit`): time units
+        comments (:obj:`str`): comments
+        created (:obj:`datetime`): date created
+        updated (:obj:`datetime`): date updated
+    """
+    id = SlugAttribute()
+    name = StringAttribute()
+    version = RegexAttribute(min_length=1, pattern=r'^[0-9]+\.[0-9+]\.[0-9]+', flags=re.I)
+    url = UrlAttribute(verbose_name='URL')
+    branch = StringAttribute()
+    revision = StringAttribute()
+    time_units = StringAttribute()
+    comments = StringAttribute()
+    created = DateTimeAttribute()
+    updated = DateTimeAttribute()
+
+    class Meta(obj_model.Model.Meta):
+        attribute_order = ('id', 'name', 'version',
+                           'url', 'branch', 'revision',
+                           'time_units', 'comments',
+                           'created', 'updated')
+        tabular_orientation = TabularOrientation.column
+
 
 # todo: add logging
 # todo: consider workflow: someone changes the schema, & wants to easily migrate all data repos
@@ -2511,16 +2548,21 @@ class AutomatedMigration(object):
         Returns:
             :obj:`str`: the hash
         """
-        # use wc_lang Reader to read the Model sheet in a data file
-        models = Reader().run(data_file)
+        # use obj_model Reader to read the data file
+        obj_model_reader = obj_model.io.Reader.get_reader(data_file)()
+        models = obj_model_reader.run(data_file, models=[Model], ignore_extra_sheets=True,
+            ignore_sheet_order=True, include_all_attributes=False, ignore_extra_attributes=True,
+            ignore_attribute_order=True, validate=False)
         model = models[Model][0]
         commit_hash = model.revision
         return commit_hash
-        # todo: generalize and move from wc_lang to obj_model by making an optional meta-data Model
-        # that's automatically included in data files & has schema git hash, date written, obj_model version
 
     def get_seqs_of_schema_changes(self, migration_spec_args):
-        # iterate through the schema changes, creating input for the `MigrationSpec`
+        """ Iterate through the schema changes in the schema repo, and create input for a `MigrationSpec`
+
+        Args:
+            migration_spec_args (:obj:`dict`): arguments for the `MigrationSpec` constructor
+        """
         schema_files = []
         seq_of_renamed_models = []
         seq_of_renamed_attributes = []
@@ -2547,17 +2589,12 @@ class AutomatedMigration(object):
             :obj:`MigrationSpec`: the partially instantiated `MigrationSpec` for all schema commit
                 changes files in `directory`
         """
-        # instantiate a `MigrationSpec`, with  seq_of_renamed_models and seq_of_renamed_attributes and seq_of_transformations
-        # validate the schema repo's schema changes files, and
-        # the associated transformations files and schemas
         migration_spec_args = {}
         migration_spec_args['name'] = self.get_name()
         migration_spec_args['existing_files'] = self.data_config['files_to_migrate']
         self.get_seqs_of_schema_changes(migration_spec_args)
         # todo: migrator
-        # migrator=,
-
-        migration_spec = MigrationSpec(**migration_spec_args)
+        return MigrationSpec(**migration_spec_args)
 
     def clone_schemas(self):
         """ Get all schemas needed to migrate
