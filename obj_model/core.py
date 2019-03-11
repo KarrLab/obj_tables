@@ -2937,7 +2937,6 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             :obj:`bool`: True if attribute values are equal
         """
-        print("value_equal: val1: '{}'; val2: '{}'; val1 == val2: {}".format(val1, val2, val1 == val2))
         return val1 == val2
 
     def clean(self, value):
@@ -3231,8 +3230,6 @@ class LiteralAttribute(Attribute):
         """
         left_val = getattr(left, self.name)
         right_val = getattr(right, self.name)
-        print('left_val', left_val)
-        print('right_val', right_val)
         if not self.value_equal(left_val, right_val):
             raise ValueError('{}.{} must be equal'.format(left.__class__.__name__, self.name))
 
