@@ -1348,7 +1348,7 @@ class MigrationSpec(object):
         'migrate_in_place', 'migrations_config_file', '_prepared', 'DEFAULT_MIGRATOR',
         'MIGRATOR_CREATOR_MAP']
 
-    def __init__(self, name, migrator='standard_migrator', existing_files=None, schema_files=None,
+    def __init__(self, name, migrator=DEFAULT_MIGRATOR, existing_files=None, schema_files=None,
         seq_of_renamed_models=None, seq_of_renamed_attributes=None, seq_of_transformations=None,
         migrated_files=None, migrate_suffix=None, migrate_in_place=False, migrations_config_file=None):
         self.name = name
@@ -2586,14 +2586,14 @@ class AutomatedMigration(object):
         """ Generate a `MigrationSpec` for all schema changes
 
         Returns:
-            :obj:`MigrationSpec`: the partially instantiated `MigrationSpec` for all schema commit
-                changes files in `directory`
+            :obj:`MigrationSpec`: the partially instantiated `MigrationSpec` for all schema changes files in
+                the schema repo
         """
         migration_spec_args = {}
         migration_spec_args['name'] = self.get_name()
         migration_spec_args['existing_files'] = self.data_config['files_to_migrate']
         self.get_seqs_of_schema_changes(migration_spec_args)
-        # todo: migrator
+        migration_spec_args['migrator'] = MigrationSpec.MIGRATOR_CREATOR_MAP[self.data_config['migrator']]
         return MigrationSpec(**migration_spec_args)
 
     def clone_schemas(self):

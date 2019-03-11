@@ -1933,7 +1933,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         automated_migration_config = AutomatedMigration.load_config_file(pathname)
         expected_automated_migration_config = dict(
             files_to_migrate=['../tests/fixtures//empty_data_file_2.xlsx', '../tests/fixtures//empty_data_file_1.xlsx'],
-            migrator='standard_migrator',
+            migrator='wc_lang',
             schema_file='../test_repo_clean/core.py',
             schema_repo_url='https://github.com/KarrLab/test_repo_clean'
         )
@@ -2036,7 +2036,11 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertEqual(migration_spec_args['seq_of_transformations'], ['transformations_ba1f9d3.py'])
 
     def test_generate_migration_spec(self):
-        pass
+        self.clean_automated_migration.validate()
+        migration_spec = self.clean_automated_migration.generate_migration_spec()
+        self.assertEqual([os.path.basename(f) for f in migration_spec.existing_files],
+            ['empty_data_file_2.xlsx', 'empty_data_file_1.xlsx'])
+        self.assertEqual(migration_spec.migrator, Migrator.generate_wc_lang_migrator)
 
     def test_clone_schemas(self):
         pass
