@@ -4802,6 +4802,13 @@ class TestErrors(unittest.TestCase):
                     Parent2, related_name='children2')
 
 
+class BigModel(core.Model):
+    # include an id to make this cacheable
+    id = core.SlugAttribute()
+    data = obj_model.obj_math.NumpyArrayAttribute()
+    neighbors = core.ManyToManyAttribute('BigModel', related_name='neighbors')
+
+
 @unittest.skip('performance measurement')
 class TestCaching(unittest.TestCase):
 
@@ -4819,12 +4826,6 @@ class TestCaching(unittest.TestCase):
             alpha (:obj:`int`, optional): maximum factor for slowdown of object creation before
                 ending a measurement
         """
-
-        class BigModel(core.Model):
-            # include an id to make this cacheable
-            id = core.SlugAttribute()
-            data = obj_model.obj_math.NumpyArrayAttribute()
-            neighbors = core.ManyToManyAttribute('BigModel', related_name='neighbors')
 
         def get_mem_mbytes():
             # get the maximum resident set size in MB
@@ -4876,10 +4877,14 @@ class TestCaching(unittest.TestCase):
 
                 last_time = current_time
 
+        big_models = None
+        gc.collect()
         return measurements
 
     def test_perf_no_caching(self):
-        measurements = self.perf_no_caching(obj_data_size=10000, measurement_period=5000, alpha=10)
-        print("\nnum objects\tobject memory (MB)\tresident set (MB)\ttime (s)")
-        for iteration, obj_memory, resident_set_memory, time in measurements:
-            print('{}\t{}\t{}\t{:.2f}'.format(iteration, obj_memory, resident_set_memory, time))
+        for alpha in range(10, 15, 1):
+            print('\n\nalpha:', alpha)
+            measurements = self.perf_no_caching(obj_data_size=10000, measurement_period=2000, alpha=alpha)
+            print("\nnum objects\tobject memory (MB)\tresident set (MB)\ttime (s)")
+            for iteration, obj_memory, resident_set_memory, time in measurements:
+                print('{}\t{}\t{}\t{:.2f}'.format(iteration, obj_memory, resident_set_memory, time))
