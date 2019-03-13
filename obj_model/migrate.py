@@ -117,8 +117,8 @@ class SchemaModule(object):
     Attributes:
         module_path (:obj:`str`): path to the module
         abs_module_path (:obj:`str`): absolute path to the module
-        package_directory (:obj:`str`): if the module is in a package, the path to the package's directory;
-            otherwise `None`
+        directory (:obj:`str`): if the module is in a package, the path to the package's directory;
+            otherwise the directory containing the module 
         package_name (:obj:`str`): if the module is in a package, the name of the package containing the
             module; otherwise `None`
         module_name (:obj:`str`): the module's module name
@@ -136,22 +136,25 @@ class SchemaModule(object):
         """
         self.module_path = module_path
         self.abs_module_path = normalize_filename(self.module_path, dir=dir)
-        self.package_directory, self.package_name, self.module_name = self.parse_module_path(self.abs_module_path)
+        self.directory, self.package_name, self.module_name = self.parse_module_path(self.abs_module_path)
 
     def get_path(self):
         return str(self.abs_module_path)
 
     @staticmethod
     def parse_module_path(module_path):
-        """ Convert the path to a module into its package directory, package name, and module name
+        """ Parse the path to a module
 
-        Package directory and package name are `None` if the module is not in a package.
+        If the module is not in a package, provide its directory and module name.
+        If the module is in a package, provide its directory, package name and module name.
+        The directory can be used as a `sys.path` entry.
 
         Args:
             module_path (:obj:`str`): path of a Python module file
 
         Returns:
-            :obj:`tuple`: the module path's package directory, package name, and module name
+            :obj:`tuple`: a triple containing directory, package name and module name, as described
+            above. If the module is not in a package, then package name is `None`.
 
         Raises:
             :obj:`MigratorError`: if `module_path` is not the name of a Python file, or is not a file
@@ -163,7 +166,7 @@ class SchemaModule(object):
         if not path.is_file():
             raise MigratorError("'{}' is not a file".format(module_path))
 
-        # get highest directory that does not contain '__init__.py'
+        # go up directory hierarchy from path and get first directory that does not contain '__init__.py'
         dir = path.parent
         found_package = False
         while True:
@@ -174,22 +177,29 @@ class SchemaModule(object):
                 break
             found_package = True
             dir = dir.parent
-        package_directory, package_name = None, None
         if found_package:
-            package_directory = str(dir)
             # obtain package name between directory and module
-            package_name = str(path.relative_to(package_directory).parent).replace('/', '.')
+            package_name = str(path.relative_to(dir).parent).replace('/', '.')
             module_name = package_name + '.' + path.stem
+            return str(dir), package_name, module_name
 
         else:
-            # obtain module name
+            # obtain directory and module name
+            module_directory = path.parent
             module_name = path.stem
-
-        return package_directory, package_name, module_name
+            return str(module_directory), None, module_name
 
     # suffix for munged model names
     # include whitespace so munged Model names cannot collide with actual Model names
     MUNGED_MODEL_NAME_SUFFIX = '_MUNGED WITH SPACES'
+
+    def in_package(self):
+        """ Is the schema in a package
+
+        Returns:
+            :obj:`bool`: whether the schema is in a package
+        """
+        return self.package_name is not None
 
     @staticmethod
     def _munge_model_name(model):
@@ -283,13 +293,14 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
             obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
             # insert package directory at front of path so existing packages cannot conflict
-            if self.package_directory:
-                if self.package_directory not in sys.path:
-                    sys.path.insert(0, self.package_directory)
+            if self.in_package():
+                if self.directory not in sys.path:
+                    sys.path.insert(0, self.directory)
 
                 # if importing a schema in a package, temporarily put the parent package in sys.modules
                 # so that the schema and its indirect imports can use it
                 importlib.import_module(self.package_name)
+                # todo: import all sub-packages
 
             spec = importlib.util.spec_from_file_location(self.module_name, self.get_path())
             module = importlib.util.module_from_spec(spec)
@@ -379,7 +390,7 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
 
     def __str__(self):
         vals = []
-        for attr in ['module_path', 'abs_module_path', 'package_directory', 'package_name', 'module_name']:
+        for attr in ['module_path', 'abs_module_path', 'directory', 'package_name', 'module_name']:
             vals.append("{}: {}".format(attr, getattr(self, attr)))
         return '\n'.join(vals)
 
@@ -2596,7 +2607,7 @@ class AutomatedMigration(object):
         migration_spec_args['migrator'] = MigrationSpec.MIGRATOR_CREATOR_MAP[self.data_config['migrator']]
         return MigrationSpec(**migration_spec_args)
 
-    def clone_schemas(self):
+    def clone_schema_repos(self):
         """ Get all schemas needed to migrate
 
         By default, migrate to current version, make backups of models & migrate in place

@@ -64,6 +64,8 @@ def make_wc_lang_migration_fixtures(test_case):
     test_case.wc_lang_schema_modified = os.path.join(test_case.wc_lang_fixtures_path, 'core_modified.py')
     test_case.wc_lang_model_copy = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
     test_case.wc_lang_no_model_attrs = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
+    test_case.raw_wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang_33075c4', 'wc_lang')
+    test_case.raw_wc_lang_schema = os.path.join(test_case.raw_wc_lang_fixtures_path, 'core.py')
 
 def copy_file_to_tmp(test_case, name):
     # copy file 'name' to a new dir in the tmp dir and return its pathname
@@ -354,7 +356,7 @@ class TestSchemaModule(unittest.TestCase):
             parse_module_path(not_a_file)
 
         # module that's not in a package
-        expected_dir = None
+        expected_dir = self.fixtures_path
         expected_package = None
         expected_module = 'small_existing'
         self.assertEqual(parse_module_path(self.existing_defs_path),
@@ -368,21 +370,17 @@ class TestSchemaModule(unittest.TestCase):
             (expected_dir, expected_package, expected_module))
 
         # test at /; if files cannot be written to / these tests fail silently
-        # module in /
-        expected_module = 'small_existing'
         module_in_root = os.path.join('/', os.path.basename(self.existing_defs_path))
         # ensure that module_in_root is removed
         self.files_to_delete.add(module_in_root)
         shutil.copy(self.existing_defs_path, module_in_root)
-        expected_dir = None
+        expected_dir = '/'
         expected_package = None
+        expected_module = 'small_existing'
         self.assertEqual(parse_module_path(module_in_root),
             (expected_dir, expected_package, expected_module))
 
-        # package whose root is /
-        expected_module = 'tmp.small_existing'
-        module_in_pkg_in_root = os.path.join('/', 'tmp', os.path.basename(self.existing_defs_path))
-        # ensure that '/__init__.py' is removed
+        # package in /
         self.files_to_delete.add('/__init__.py')
         src_dst_copy_pairs = [
             (os.path.join(self.test_package, '__init__.py'), '/'),
@@ -391,8 +389,10 @@ class TestSchemaModule(unittest.TestCase):
         ]
         for src, dst in src_dst_copy_pairs:
             shutil.copy(src, dst)
+        module_in_pkg_in_root = os.path.join('/', 'tmp', os.path.basename(self.existing_defs_path))
         expected_dir = '/'
         expected_package = 'tmp'
+        expected_module = 'tmp.small_existing'
         self.assertEqual(parse_module_path(module_in_pkg_in_root),
             (expected_dir, expected_package, expected_module))
 
@@ -493,6 +493,11 @@ class TestSchemaModule(unittest.TestCase):
                         "{}.{} references a {}, but it's not the model in module {}: {} != {}".format(
                             model_name, attr_name, related_class.__name__, module.__name__,
                             id(related_class), id(model_defs[related_class.__name__])))
+
+    @unittest.skip("not working yet")
+    def test_import_module_for_migration_of_raw_wc_lang(self):
+        sm = SchemaModule(self.raw_wc_lang_schema)
+        self.check_related_attributes(sm)
 
     def test_import_module_for_migration(self):
 
@@ -2042,7 +2047,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             ['empty_data_file_2.xlsx', 'empty_data_file_1.xlsx'])
         self.assertEqual(migration_spec.migrator, Migrator.generate_wc_lang_migrator)
 
-    def test_clone_schemas(self):
+    def test_clone_schema_repos(self):
         pass
 
     def test_get_schema(self):
