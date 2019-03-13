@@ -8,7 +8,9 @@
 
 from obj_model import get_models as base_get_models
 from wc_lang import core
+# CUSTOMIZE
 # from wc_lang import io
+# END CUSTOMIZE
 from wc_utils.util import git
 
 
@@ -102,7 +104,9 @@ def migrate(in_path, wc_lang_version, out_path=None, set_repo_metadata_from_path
     if not out_path:
         out_path = in_path
 
+    # CUSTOMIZE
     from wc_lang import io
+    # END CUSTOMIZE
     model = io.Reader().run(in_path)[core.Model][0]
     model.wc_lang_version = wc_lang_version
     io.Writer().run(out_path, model, set_repo_metadata_from_path=set_repo_metadata_from_path)
