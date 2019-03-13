@@ -19,6 +19,7 @@ import collections
 import copy
 import itertools
 import math
+import pronto
 import pytest
 import re
 import resource
@@ -197,7 +198,11 @@ class Example1(core.Model):
 class Example2(core.Model):
     id = core.IntegerAttribute()
 
-class Test(core.Model): pass
+
+class Test(core.Model):
+    pass
+
+
 test_earlier = Test
 
 
@@ -4510,6 +4515,64 @@ class TestCore(unittest.TestCase):
             'id': 'test_1_2_1'}), 'parent', 'parent', 'id'), 'new_id_7')
         self.assertEqual(test_1.id, 'new_id_7')
 
+    def test_are_attr_paths_equal(self):
+        class Test1(core.Model):
+            id = core.SlugAttribute()
+
+        class Test2(core.Model):
+            id = core.SlugAttribute()
+            parent = core.ManyToOneAttribute(Test1, related_name='children')
+
+        class Test3(core.Model):
+            id = core.SlugAttribute()
+            parent = core.ManyToOneAttribute(Test2, related_name='children')
+
+        test_1 = Test1(id='test_1')
+        test_2 = test_1.children = [Test2(id='test_1_1'), Test2(id='test_1_2')]
+        test_1.children[0].children = [Test3(id='test_1_1_1'), Test3(id='test_1_1_2')]
+        test_1.children[1].children = [Test3(id='test_1_2_1'), Test3(id='test_1_2_2')]
+        test_3 = test_1.children[0].children + test_1.children[1].children
+
+        path_1 = (('children', {'id': 'test_1_2'}), ('children', {
+            'id': 'test_1_2_1'}), 'parent', 'parent', 'id')
+        path_2 = (('children2', {'id': 'test_1_2'}), ('children', {
+            'id': 'test_1_2_1'}), 'parent', 'parent', 'id')
+        path_3 = (('children', {'id': 'test_1_3'}), ('children', {
+            'id': 'test_1_2_1'}), 'parent', 'parent', 'id')
+        path_4 = (('children', {'id': 'test_1_2'}), ('children', {
+            'id': 'test_1_2_1'}), 'parent', 'parent2', 'id')
+        path_5 = (('children'), ('children', {
+            'id': 'test_1_2_1'}), 'parent', 'parent', 'id')
+        path_6 = (('children', {'id2': 'test_1_2'}), ('children', {
+            'id': 'test_1_2_1'}), 'parent', 'parent', 'id')
+
+        onto = pronto.Ontology('tests/fixtures/SBO.obo')
+        path_7 = (('children', {'id2': 'test_1_2'}), ('children', {
+            'id': onto['SBO:0000000']}), 'parent', 'parent', 'id')
+        path_8 = (('children', {'id2': 'test_1_2'}), ('children', {
+            'id': onto['SBO:0000001']}), 'parent', 'parent', 'id')
+
+        self.assertTrue(test_1.are_attr_paths_equal(path_1, path_1))
+        self.assertFalse(test_1.are_attr_paths_equal(path_1, path_2))
+        self.assertFalse(test_1.are_attr_paths_equal(path_2, path_1))
+        self.assertFalse(test_1.are_attr_paths_equal(path_1, path_3))
+        self.assertFalse(test_1.are_attr_paths_equal(path_3, path_1))
+        self.assertFalse(test_1.are_attr_paths_equal(path_1, path_4))
+        self.assertFalse(test_1.are_attr_paths_equal(path_4, path_1))
+        self.assertFalse(test_1.are_attr_paths_equal(path_1, path_5))
+        self.assertFalse(test_1.are_attr_paths_equal(path_5, path_1))
+        self.assertFalse(test_1.are_attr_paths_equal(path_1, path_6))
+        self.assertFalse(test_1.are_attr_paths_equal(path_6, path_1))
+
+        self.assertTrue(test_1.are_attr_paths_equal(path_7, path_7))
+        self.assertTrue(test_1.are_attr_paths_equal(path_8, path_8))
+        self.assertFalse(test_1.are_attr_paths_equal(path_7, path_8))
+        self.assertFalse(test_1.are_attr_paths_equal(path_8, path_7))
+
+        self.assertFalse(test_1.are_attr_paths_equal(path_1, 'children'))
+        self.assertFalse(test_1.are_attr_paths_equal('children', path_1))
+        self.assertTrue(test_1.are_attr_paths_equal('children', 'children'))
+
     def test_has_attr_vals(self):
         class TestModel(core.Model):
             attr_1 = core.StringAttribute()
@@ -4869,7 +4932,7 @@ class TestCaching(unittest.TestCase):
                 current_time = get_time_sec()
                 size_objects_mbytes = int(objsize.get_deep_size(big_models) / (2 ** 20))
                 measurements.append((iteration, size_objects_mbytes, int(get_mem_mbytes()),
-                    current_time - start_time))
+                                     current_time - start_time))
 
                 # exit if the time to execute a measurement period is alpha times bigger than the first period
                 done = current_time - last_time > alpha * duration_initial_measurement_period
