@@ -371,6 +371,7 @@ class TestSchemaModule(unittest.TestCase):
 
         try:
             # test at /
+            # if files cannot be written to / these tests fail silently
             module_in_root = os.path.join('/', os.path.basename(self.existing_defs_path))
             # ensure that module_in_root is removed
             self.files_to_delete.add(module_in_root)
@@ -398,7 +399,6 @@ class TestSchemaModule(unittest.TestCase):
                 (expected_dir, expected_package, expected_module))
 
         except PermissionError:
-            # if files cannot be written to / these tests fail silently
             pass
 
     def check_imported_module(self, schema_module, module_name, module):
