@@ -1,0 +1,38 @@
+# configuration files
+wc_lang.cfg
+
+# IDE config files
+.idea/
+
+# profiling data
+prof/
+
+#compiled files
+*.pyc
+__pycache__/
+*.egg-info/
+.cache/
+.pytest_cache/
+
+# coverage files
+.coverage*
+htmlcov/
+
+# documentation files
+docs/source/
+docs/_build/
+docs/.doctrees/
+
+# files for PyPI
+README.rst
+
+#temp Excel files
+.~lock.*.xlsx#
+.~lock.*.xls#
+~$*.xlsx
+~$*.xls
+.~*.xlsx
+
+# mac DS files
+.DS_Store
+

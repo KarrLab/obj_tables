@@ -1,0 +1,17 @@
+# description
+include README.rst
+
+# version
+include wc_lang/VERSION
+
+# license
+include LICENSE
+
+# requirements
+include requirements.txt
+
+# example
+recursive-include examples
+
+# configuration files
+recursive-include wc_lang *.cfg
