@@ -673,8 +673,10 @@ class ParsedExpression(object):
 
         try:
             g = tokenize.tokenize(BytesIO(self.expression.encode('utf-8')).readline)
-            # strip the leading ENCODING and trailing ENDMARKER tokens
+            # strip the leading ENCODING token and trailing NEWLINE and ENDMARKER tokens
             self._py_tokens = list(g)[1:-1]
+            if self._py_tokens and self._py_tokens[-1].type == token.NEWLINE:
+                self._py_tokens = self._py_tokens[:-1]
         except tokenize.TokenError as e:
             raise ParsedExpressionError("parsing '{}', a {}.{}, creates a Python syntax error: '{}'".format(
                 self.expression, self.model_cls.__name__, self.attr, str(e)))
@@ -727,8 +729,10 @@ class ParsedExpression(object):
         """
         try:
             g = tokenize.tokenize(BytesIO(expr.encode('utf-8')).readline)
-            # strip the leading ENCODING and trailing ENDMARKER tokens
+            # strip the leading ENCODING marker and trailing NEWLINE and ENDMARKER tokens
             tokens = list(g)[1:-1]
+            if tokens and tokens[-1].type == token.NEWLINE:
+                tokens = tokens[:-1]
         except tokenize.TokenError as e:
             raise ParsedExpressionError("parsing '{}' creates a Python syntax error: '{}'".format(
                 expr, str(e)))
@@ -737,10 +741,9 @@ class ParsedExpression(object):
                                         "of {} tokens expected".format(expr, len(tokens), len(self._py_tokens)))
 
         expanded_expr = []
-        for i in range(len(tokens)):
-            token = tokens[i]
-            expanded_expr.append(token.string)
-            ws = ' '*self._get_trailing_whitespace(i)
+        for i_tok, tok in enumerate(tokens):
+            expanded_expr.append(tok.string)
+            ws = ' ' * self._get_trailing_whitespace(i_tok)
             expanded_expr.append(ws)
         return ''.join(expanded_expr)
 
