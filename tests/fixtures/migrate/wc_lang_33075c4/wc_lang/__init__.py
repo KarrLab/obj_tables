@@ -15,8 +15,10 @@ from .core import (RateLawDirection, TaxonRank,
                    StopCondition, StopConditionExpression,
                    Evidence, Interpretation, DatabaseReference, Reference, Author, Change,
                    Validator)
+'''
 from . import config
 from . import io
 from . import sbml
 from . import transform
 from . import util
+'''

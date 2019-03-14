@@ -47,6 +47,8 @@ from obj_model.expression import Expression
 
 # todo: move all static methods out of MigrationFixtures
 # todo: remove all '# @unittest.skip("speed up testing")'
+# todo: combine test_import_module_for_migration_of_raw_wc_lang() into another test
+# todo: get new copy of wc_lang
 
 def make_tmp_dirs_n_small_schemas(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
@@ -501,9 +503,7 @@ class TestSchemaModule(unittest.TestCase):
                             model_name, attr_name, related_class.__name__, module.__name__,
                             id(related_class), id(model_defs[related_class.__name__])))
 
-    @unittest.expectedFailure
     def test_import_module_for_migration_of_raw_wc_lang(self):
-        print()
         sm = SchemaModule(self.tricky_package_schema)
         self.check_related_attributes(sm)
         sm = SchemaModule(self.raw_wc_lang_schema)
