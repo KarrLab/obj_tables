@@ -503,6 +503,7 @@ class TestSchemaModule(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_import_module_for_migration_of_raw_wc_lang(self):
+        print()
         sm = SchemaModule(self.tricky_package_schema)
         self.check_related_attributes(sm)
         sm = SchemaModule(self.raw_wc_lang_schema)

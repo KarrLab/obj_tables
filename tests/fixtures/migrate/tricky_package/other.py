@@ -1,1 +1,0 @@
-from tricky_package import another

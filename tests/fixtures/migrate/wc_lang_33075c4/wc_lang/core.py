@@ -34,12 +34,6 @@ This module also defines numerous classes that serve as attributes of these clas
 :License: MIT
 """
 
-import traceback
-
-# CUSTOMIZE
-# print('\nin core.py')
-# traceback.print_stack(limit=20)
-# END CUSTOMIZE
 
 from enum import Enum, EnumMeta
 from math import ceil, floor, exp, log, log10, isnan

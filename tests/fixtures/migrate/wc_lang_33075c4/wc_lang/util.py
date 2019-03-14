@@ -5,6 +5,12 @@
 :Copyright: 2016, Karr Lab
 :License: MIT
 """
+import traceback
+
+# CUSTOMIZE
+print('\nin wc_lang_33075c4/wc_lang/util.py')
+traceback.print_stack(limit=20)
+# END CUSTOMIZE
 
 from obj_model import get_models as base_get_models
 from wc_lang import core
