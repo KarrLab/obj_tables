@@ -259,9 +259,6 @@ class SchemaModule(object):
             if SchemaModule._model_name_is_munged(model):
                 model.__name__ = SchemaModule._unmunge_model_name(model)
 
-    ERROR_NOTICE = """Migrate doesn't import all parent package directories of the schema.
-Therefore, the schema and Python it imports, directly or indirectly, cannot use relative imports or cycles of imports."""
-
     def import_module_for_migration(self, validate=True):
         """ Import a schema in a Python module
 
@@ -292,22 +289,12 @@ Therefore, the schema and Python it imports, directly or indirectly, cannot use 
             # suspend global check that related attribute names don't clash
             obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
-            # insert package directory at front of path so existing packages cannot conflict
-            if self.in_package():
-                if self.directory not in sys.path:
-                    sys.path.insert(0, self.directory)
+            sys.path.insert(0, self.directory)
+            module = importlib.import_module(self.module_name)
 
-                # if importing a schema in a package, temporarily put the parent package in sys.modules
-                # so that the schema and its indirect imports can use it
-                importlib.import_module(self.package_name)
-                # todo: import all sub-packages
-
-            spec = importlib.util.spec_from_file_location(self.module_name, self.get_path())
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
-            raise MigratorError("'{}' cannot be imported and exec'ed: {}\n{}".format(
-                self.get_path(), e, SchemaModule.ERROR_NOTICE))
+            raise MigratorError("'{}' cannot be imported and exec'ed: {}".format(
+                self.get_path(), e))
         finally:
             # reset global variable
             obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True

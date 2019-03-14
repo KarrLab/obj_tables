@@ -37,8 +37,8 @@ This module also defines numerous classes that serve as attributes of these clas
 import traceback
 
 # CUSTOMIZE
-print('\nin core.py')
-traceback.print_stack(limit=20)
+# print('\nin core.py')
+# traceback.print_stack(limit=20)
 # END CUSTOMIZE
 
 from enum import Enum, EnumMeta

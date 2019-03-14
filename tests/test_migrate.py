@@ -66,6 +66,8 @@ def make_wc_lang_migration_fixtures(test_case):
     test_case.wc_lang_no_model_attrs = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
     test_case.raw_wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang_33075c4', 'wc_lang')
     test_case.raw_wc_lang_schema = os.path.join(test_case.raw_wc_lang_fixtures_path, 'core.py')
+    test_case.tricky_package_fixtures_path = os.path.join(test_case.fixtures_path, 'tricky_package')
+    test_case.tricky_package_schema = os.path.join(test_case.tricky_package_fixtures_path, 'test_module.py')
 
 def copy_file_to_tmp(test_case, name):
     # copy file 'name' to a new dir in the tmp dir and return its pathname
@@ -499,8 +501,10 @@ class TestSchemaModule(unittest.TestCase):
                             model_name, attr_name, related_class.__name__, module.__name__,
                             id(related_class), id(model_defs[related_class.__name__])))
 
-    @unittest.skip("not working yet")
+    @unittest.expectedFailure
     def test_import_module_for_migration_of_raw_wc_lang(self):
+        sm = SchemaModule(self.tricky_package_schema)
+        self.check_related_attributes(sm)
         sm = SchemaModule(self.raw_wc_lang_schema)
         self.check_related_attributes(sm)
 
