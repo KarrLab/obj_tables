@@ -31,6 +31,7 @@ from os.path import basename, dirname, splitext
 from weakref import WeakSet, WeakKeyDictionary
 from wc_utils.util.list import det_dedupe, is_sorted
 from wc_utils.util.misc import quote, OrderableNone
+from wc_utils.util.ontology import are_terms_equivalent
 from wc_utils.util.string import indent_forest
 from wc_utils.util.types import get_subclasses, get_superclasses
 from wc_utils.workbook.core import get_column_letter
@@ -42,6 +43,7 @@ import inflect
 import json
 import math
 import numbers
+import pronto
 import queue
 import re
 import six
@@ -256,6 +258,7 @@ class ModelMeta(type):
 
     # enable suspension of checking of same related attribute name so that obj_model schemas can be migrated
     CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
+
     @classmethod
     def validate_related_attributes(metacls, name, bases, namespace):
         """ Check the related attributes
@@ -302,8 +305,8 @@ class ModelMeta(type):
                         # check that name doesn't clash with another related
                         # attribute from a different model
                         if metacls.CHECK_SAME_RELATED_ATTRIBUTE_NAME and \
-                            attr.related_name in related_class.Meta.related_attributes and \
-                            related_class.Meta.related_attributes[attr.related_name] is not attr:
+                                attr.related_name in related_class.Meta.related_attributes and \
+                                related_class.Meta.related_attributes[attr.related_name] is not attr:
                             other_attr = related_class.Meta.related_attributes[
                                 attr.related_name]
                             raise ValueError('Attributes {}.{} and {}.{} cannot use the same related attribute name {}.{}'.format(
@@ -1276,7 +1279,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Get the value of an attribute or a nested attribute of a model
 
         Args:
-            attr_path (:obj:`list` of :obj:`list` of :obj:`str`):
+            attr_path (:obj:`list` of :obj:`list` of :obj:`object`):
                 the path to an attribute or nested attribute of a model
 
         Returns:
@@ -1289,19 +1292,7 @@ class Model(with_metaclass(ModelMeta, object)):
         # traverse to the final attribute
         value = self
         for attr in attr_path:
-            if isinstance(attr, (tuple, list)):
-                if len(attr) == 1:
-                    attr_name = attr[0]
-                    attr_get_one_filter = None
-                elif len(attr) == 2:
-                    attr_name = attr[0]
-                    attr_get_one_filter = attr[1]
-                else:
-                    raise ValueError('Attribute specification must be a string, 1-tuple, or 2-tuple')
-            else:
-                attr_name = attr
-                attr_get_one_filter = None
-
+            attr_name, attr_get_one_filter = self._parse_attr_path_el(attr)
             value = getattr(value, attr_name)
             if attr_get_one_filter:
                 value = value.get_one(**attr_get_one_filter)
@@ -1313,7 +1304,7 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Set the value of an attribute or a nested attribute of a model
 
         Args:
-            attr_path (:obj:`list` of :obj:`list` of :obj:`str`):
+            attr_path (:obj:`list` of :obj:`list` of :obj:`object`):
                 the path to an attribute or nested attribute of a model
             value (:obj:`object`): new value
 
@@ -1348,6 +1339,81 @@ class Model(with_metaclass(ModelMeta, object)):
 
         # return self
         return self
+
+    @classmethod
+    def are_attr_paths_equal(cls, attr_path, other_attr_path):
+        """ Determine if two attribute paths are semantically equal
+
+        Args:
+            attr_path (:obj:`list` of :obj:`list` of :obj:`object`):
+                the path to an attribute or nested attribute of a model
+            other_attr_path (:obj:`list` of :obj:`list` of :obj:`object`):
+                the path to another attribute or nested attribute of a model
+
+        Returns:
+            :obj:`bool`: :obj:`True` if the paths are semantically equal
+        """
+        if not isinstance(attr_path, (tuple, list)):
+            attr_path = (attr_path,)
+        if not isinstance(other_attr_path, (tuple, list)):
+            other_attr_path = (other_attr_path,)
+
+        # traverse over the path to the nested attribute
+        if len(attr_path) != len(other_attr_path):
+            return False
+
+        for attr, other_attr in zip(attr_path, other_attr_path):
+            attr_name, attr_get_one_filter = cls._parse_attr_path_el(attr)
+            other_attr_name, other_attr_get_one_filter = cls._parse_attr_path_el(other_attr)
+
+            if attr_name != other_attr_name:
+                return False
+
+            if attr_get_one_filter is None:
+                if other_attr_get_one_filter is not None:
+                    return False
+            elif other_attr_get_one_filter is None:
+                return False
+            else:
+                if set(attr_get_one_filter.keys()) != set(other_attr_get_one_filter.keys()):
+                    return False
+                for key in attr_get_one_filter.keys():
+                    attr_val = attr_get_one_filter[key]
+                    other_val = other_attr_get_one_filter[key]
+
+                    if not (attr_val == other_val or (isinstance(attr_val, pronto.Term) and are_terms_equivalent(attr_val, other_val))):
+                        return False
+
+        return True
+
+    @classmethod
+    def _parse_attr_path_el(cls, attr):
+        """ Parse an element of a path to a nested attribute
+
+        Args:
+            attr (:obj:`list` of :obj:`dict`): an element of a path to a nested attribute
+
+        Returns:
+            :obj:`str`: attribute name
+            :obj:`dict`: filter for values of attribute
+
+        Raises:
+            :obj:`ValueError`: if the attribute specification is not valid
+        """
+        if isinstance(attr, (tuple, list)):
+            if len(attr) == 1:
+                attr_name = attr[0]
+                attr_get_one_filter = None
+            elif len(attr) == 2:
+                attr_name = attr[0]
+                attr_get_one_filter = attr[1]
+            else:
+                raise ValueError('Attribute specification must be a string, 1-tuple, or 2-tuple')
+        else:
+            attr_name = attr
+            attr_get_one_filter = None
+
+        return (attr_name, attr_get_one_filter)
 
     def normalize(self):
         """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers into a canonical order because their

@@ -12,9 +12,17 @@ This module allows developers to define standalone (separate from databases) sch
 The `io` module provides methods to serialize and deserialize schema objects to/from Excel, csv, and tsv file(s).
 
 ## Installation
-```
-pip install git+git://github.com/KarrLab/obj_model.git#egg=obj_model
-```
+* Latest release from PyPI
+  ```
+  pip install obj_model
+  ```
+
+* Latest revision from GitHub
+  ```
+  pip install git+https://github.com/KarrLab/log.git#egg=log
+  pip install git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
+  pip install git+https://github.com/KarrLab/obj_model.git#egg=obj_model
+  ```
 
 ## Example usage
 
@@ -26,6 +34,7 @@ The software is released under the [MIT license](LICENSE).
 
 ## Development team
 This package was developed by the [Karr Lab](http://www.karrlab.org) at the Icahn School of Medicine at Mount Sinai in New York, USA.
+
 * Jonathan Karr
 * Arthur Goldberg
 

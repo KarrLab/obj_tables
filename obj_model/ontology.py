@@ -9,6 +9,7 @@
 from . import core
 import pronto
 import wc_utils.workbook.io
+import wc_utils.util.ontology
 
 
 class OntologyAttribute(core.LiteralAttribute):
@@ -87,6 +88,19 @@ class OntologyAttribute(core.LiteralAttribute):
             :obj:`object`: initial value
         """
         return self.default_cleaned_value
+
+    def value_equal(self, val1, val2, tol=0.):
+        """ Determine if attribute values are equal
+
+        Args:
+            val1 (:obj:`pronto.Term`): first value
+            val2 (:obj:`pronto.Term`): second value
+            tol (:obj:`float`, optional): equality tolerance
+
+        Returns:
+            :obj:`bool`: True if attribute values are equal
+        """
+        return wc_utils.util.ontology.are_terms_equivalent(val1, val2)
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type

@@ -1,11 +1,10 @@
 biopython
-enum34
 inflect
 natsort
 networkx
 numpy
 pint >= 0.9
-git+https://github.com/KarrLab/pronto.git#egg=pronto-0.12.2 >= 0.12.2
+pronto
 python_dateutil
 pyyaml
 setuptools
@@ -13,5 +12,5 @@ six
 stringcase
 sympy
 validate_email
-git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils-0.0.3
+wc_utils
 weakreflist

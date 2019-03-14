@@ -687,67 +687,67 @@ class TestIo(unittest.TestCase):
         ws = wb.create_sheet('Test models')
 
         cell = ws.cell(row=1, column=1)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Id'
 
         cell = ws.cell(row=1, column=2)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Value'
 
         cell = ws.cell(row=2, column=1)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Model-1'
 
         cell = ws.cell(row=2, column=2)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NUMERIC
+        cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
         cell.value = 2.
 
         cell = ws.cell(row=3, column=1)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Model-2'
 
         cell = ws.cell(row=3, column=2)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NUMERIC
+        cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
         cell.value = 3.
 
         cell = ws.cell(row=4, column=1)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Model-3'
 
         cell = ws.cell(row=4, column=2)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NUMERIC
+        cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
         cell.value = None
 
         cell = ws.cell(row=5, column=1)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Model-4'
 
         cell = ws.cell(row=5, column=2)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = None
 
         cell = ws.cell(row=6, column=1)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Model-5'
 
         cell = ws.cell(row=6, column=2)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = ''
 
         cell = ws.cell(row=7, column=1)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Model-6'
 
         cell = ws.cell(row=7, column=2)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NULL
+        cell.data_type = openpyxl.cell.cell.TYPE_NULL
         cell.value = None
 
         cell = ws.cell(row=8, column=1)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
         cell.value = 'Model-7'
 
         cell = ws.cell(row=8, column=2)
-        cell.data_type = openpyxl.cell.cell.Cell.TYPE_NUMERIC
+        cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
         cell.value = 5.
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
