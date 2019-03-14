@@ -8,8 +8,8 @@
 import traceback
 
 # CUSTOMIZE
-print('\nin wc_lang_33075c4/wc_lang/util.py')
-traceback.print_stack(limit=20)
+# print('\nin wc_lang_33075c4/wc_lang/util.py')
+# traceback.print_stack(limit=20)
 # END CUSTOMIZE
 
 from obj_model import get_models as base_get_models

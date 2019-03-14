@@ -2268,6 +2268,7 @@ class GitRepo(object):
         return seq_with_schema_changes
 
 
+# todo: REMOVE THIS
 # replicate some of the definition of wc_lang.core.Model for use by get_data_file_version_hash()
 # this definition is simplified to avoid dependencies on other parts of wc_lang
 # also, this definition needs to be synched with the definition of wc_lang.core.Model
@@ -2340,7 +2341,7 @@ class AutomatedMigration(object):
     Attributes:
         data_repo_location (:obj:`GitRepo`): directory or url of the *data* repo
         data_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a git clone of the *data* repo
-        schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the *schema* repo
+        schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the current version of the *schema* repo
         data_config_file_basename (:obj:`str`): the basename of the YAML configuration file for the
             migration, which is stored in the *data* repo's migrations directory
         data_config (:obj:`dict`): the data in the automated migration config file
@@ -2546,6 +2547,19 @@ class AutomatedMigration(object):
         Returns:
             :obj:`str`: the hash
         """
+        # todo
+        '''
+        make a normal method
+        use the schema in the self.schema_git_repo and SchemaChanges.find_file() to get the schema
+        use the schema to find Model storing the commit hash
+        '''
+        '''
+        the commit hash must be stored in data_file
+        the schema must specify a Model name and attribute in a _COMMIT_HASH attribute
+        E.g., wc_lang would contain
+            _COMMIT_HASH = 'Model.revision'
+        data_file must contain exactly one instance of the obj_model.Model containing the commit hash
+        '''
         # use obj_model Reader to read the data file
         obj_model_reader = obj_model.io.Reader.get_reader(data_file)()
         models = obj_model_reader.run(data_file, models=[Model], ignore_extra_sheets=True,

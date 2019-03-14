@@ -213,7 +213,7 @@ class TestCore(unittest.TestCase):
             Root, Leaf, UnrootedLeaf, Leaf3, Grandparent, Parent, Child,
             UniqueRoot, DateRoot, NotNoneDateRoot, OneToOneRoot, OneToOneLeaf,
             ManyToOneRoot, ManyToOneLeaf, OneToManyRoot, OneToManyLeaf, ManyToManyRoot, ManyToManyLeaf,
-            UniqueTogetherRoot, InlineRoot, Example0, Example1, Example2, test_earlier))
+            UniqueTogetherRoot, InlineRoot, Example0, Example1, Example2, test_earlier, BigModel))
         self.assertEqual(
             set(core.get_models(module=sys.modules[__name__])), models)
         self.assertEqual(models.difference(core.get_models()), set())
@@ -4867,6 +4867,7 @@ class TestErrors(unittest.TestCase):
 
 class BigModel(core.Model):
     # include an id to make this cacheable
+    # used in TestCaching.perf_no_caching
     id = core.SlugAttribute()
     data = obj_model.obj_math.NumpyArrayAttribute()
     neighbors = core.ManyToManyAttribute('BigModel', related_name='neighbors')
