@@ -95,6 +95,7 @@ migrate xlsx files in wc_sim to new wc_lang:
 # todo next: test OneToManyAttribute
 # todo next: documentation
 # todo next: simply infer the deleted_models
+# todo: deal with "yaml.load() without Loader=... is deprecated"
 
 class MigratorError(Exception):
     """ Exception raised for errors in obj_model.migrate

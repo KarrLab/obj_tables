@@ -47,8 +47,8 @@ from obj_model.expression import Expression
 
 # todo: move all static methods out of MigrationFixtures
 # todo: remove all '# @unittest.skip("speed up testing")'
-# todo: combine test_import_module_for_migration_of_raw_wc_lang() into another test
-# todo: get new copy of wc_lang
+# todo: combine tricky_package into test_package
+# todo: speedup migration and unittests; make smaller test data files
 
 def make_tmp_dirs_n_small_schemas(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
@@ -61,13 +61,11 @@ def make_tmp_dirs_n_small_schemas(test_case):
 
 def make_wc_lang_migration_fixtures(test_case):
     # set up wc_lang migration testing fixtures
-    test_case.wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang', 'wc_lang')
+    test_case.wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang_e0c1912', 'wc_lang')
     test_case.wc_lang_schema_existing = os.path.join(test_case.wc_lang_fixtures_path, 'core.py')
     test_case.wc_lang_schema_modified = os.path.join(test_case.wc_lang_fixtures_path, 'core_modified.py')
     test_case.wc_lang_model_copy = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
     test_case.wc_lang_no_model_attrs = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
-    test_case.raw_wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang_33075c4', 'wc_lang')
-    test_case.raw_wc_lang_schema = os.path.join(test_case.raw_wc_lang_fixtures_path, 'core.py')
     test_case.tricky_package_fixtures_path = os.path.join(test_case.fixtures_path, 'tricky_package')
     test_case.tricky_package_schema = os.path.join(test_case.tricky_package_fixtures_path, 'test_module.py')
 
@@ -502,12 +500,6 @@ class TestSchemaModule(unittest.TestCase):
                         "{}.{} references a {}, but it's not the model in module {}: {} != {}".format(
                             model_name, attr_name, related_class.__name__, module.__name__,
                             id(related_class), id(model_defs[related_class.__name__])))
-
-    def test_import_module_for_migration_of_raw_wc_lang(self):
-        sm = SchemaModule(self.tricky_package_schema)
-        self.check_related_attributes(sm)
-        sm = SchemaModule(self.raw_wc_lang_schema)
-        self.check_related_attributes(sm)
 
     def test_import_module_for_migration(self):
 
