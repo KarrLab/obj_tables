@@ -66,7 +66,6 @@ def make_wc_lang_migration_fixtures(test_case):
     test_case.wc_lang_schema_modified = os.path.join(test_case.wc_lang_fixtures_path, 'core_modified.py')
     test_case.wc_lang_model_copy = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
     test_case.wc_lang_no_model_attrs = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
-    # print('os.path.isfile(test_case.wc_lang_no_model_attrs)', os.path.isfile(test_case.wc_lang_no_model_attrs))
     test_case.tricky_package_fixtures_path = os.path.join(test_case.fixtures_path, 'tricky_package')
     test_case.tricky_package_schema = os.path.join(test_case.tricky_package_fixtures_path, 'test_module.py')
 
@@ -291,7 +290,6 @@ class MigrationFixtures(unittest.TestCase):
     @staticmethod
     def rm_tmp_dirs(test_case):
         shutil.rmtree(test_case.tmp_dir)
-        # xxx: error:
         shutil.rmtree(test_case.tmp_model_dir)
 
     def tearDown(self):
@@ -1195,8 +1193,6 @@ class TestMigrator(MigrationFixtures):
         same_defs_migrator.prepare()
         # migrate self.wc_lang_no_model_attrs twice with the generate_wc_lang_migrator
         # the 1st migration adds model attributes, & the 2nd tests that they exist
-        # print('os.path.isfile(self.wc_lang_no_model_attrs)', os.path.isfile(self.wc_lang_no_model_attrs))
-        # xxx: error:
         wc_lang_model_with_model_attrs = same_defs_migrator.full_migrate(self.wc_lang_no_model_attrs)
         self.assert_differing_workbooks(self.wc_lang_no_model_attrs, wc_lang_model_with_model_attrs)
         migrated_file = same_defs_migrator.full_migrate(wc_lang_model_with_model_attrs)
