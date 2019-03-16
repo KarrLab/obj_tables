@@ -625,7 +625,8 @@ class WorkbookReader(ReaderBase):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`dict`: model objects grouped by `Model` class
+            :obj:`obj`: if `group_objects_by_model` set returns :obj:`dict`: of model objects grouped by `Model` class;
+                else returns :obj:`list`: of all model objects
 
         Raises:
             :obj:`ValueError`: if

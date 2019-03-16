@@ -1908,6 +1908,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.test_repo_clean_url,
                 data_config_file_basename='automated_migration_config-test_repo_clean.yaml'))
+        self.test_repo_clean_fixtures = self.clean_automated_migration.data_git_repo.fixtures_dir()
         self.fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
@@ -2026,9 +2027,12 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             re.escape("To run get_name() data_git_repo and schema_git_repo must be initialized")):
             self.clean_automated_migration.get_name()
 
-    def test_get_data_file_version_hash(self):
-        version_hash = AutomatedMigration.get_data_file_version_hash(self.wc_lang_model)
-        self.assertTrue(version_hash.startswith('3794e6c'))
+    def test_get_data_file_git_commit_hash(self):
+        self.clean_automated_migration.validate()
+        test_file = os.path.join(self.test_repo_clean_fixtures, 'data_file.xlsx')
+        git_commit_hash = self.clean_automated_migration.get_data_file_git_commit_hash(test_file)
+        self.assertEqual(git_commit_hash, '7fc7603c9901980930ab519260010757adc56f27')
+        # todo: test errors
 
     def test_get_seqs_of_schema_changes(self):
         self.clean_automated_migration.validate()

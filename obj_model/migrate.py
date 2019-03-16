@@ -41,6 +41,8 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # TODOS
 # migration integrated into wc_lang & wc_kb
 #
+# refactor generate_wc_lang_migrator into method in wc_lang called by obj_model
+#   define abstract migrator here, and let schema optionally subclass it
 # commit schema changes specs
 #   one for each commit that changes schema
 #   contains commit hash, renamed_models, renamed_attributes, transformations
@@ -56,12 +58,6 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # schema hash in each model file
 #   initially, as is in wc_lang models
 #   eventually, ideally in a metadata Model
-# IMPT: import wc_lang/core.py WITHOUT hand modification
-#   choices
-#       try handling package_manager and relative imports automatically by
-#           1) try loading parent modules like import_module() does
-#           2) do something to make package_manager work
-#       hack: copy wc_lang repo, empty out __init__.py files, comment out indirect imports
 # testing
 #   add a few wc_lang versions
 # publicize work, in part to get feedback
@@ -868,6 +864,7 @@ class Migrator(object):
         Returns:
             :obj:`list` of `obj_model.Model`: the models in `existing_file`
         """
+        # todo: simplify these 2 commands into 1
         obj_model_reader = obj_model.io.Reader.get_reader(existing_file)()
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
         # data in model files must be already validated with the existing schema
@@ -2140,6 +2137,14 @@ class GitRepo(object):
         """
         return os.path.join(self.repo_dir, AutomatedMigration._MIGRATIONS_DIRECTORY)
 
+    def fixtures_dir(self):
+        """ Get the repo's fixtures directory
+
+        Returns:
+            :obj:`str`: the repo's fixtures directory
+        """
+        return os.path.join(self.repo_dir, 'tests', 'fixtures')
+
     def repo_name(self):
         """ Get the repo's name
 
@@ -2267,46 +2272,6 @@ class GitRepo(object):
                 seq_with_schema_changes.append(commit)
         seq_with_schema_changes.reverse()
         return seq_with_schema_changes
-
-
-# todo: REMOVE THIS
-# replicate some of the definition of wc_lang.core.Model for use by get_data_file_version_hash()
-# this definition is simplified to avoid dependencies on other parts of wc_lang
-# also, this definition needs to be synched with the definition of wc_lang.core.Model
-# todo: generalize obj_model Model independent of wc_lang by making an optional meta-data Model
-# that's automatically included in data files & has schema git hash, date written, obj_model version
-class Model(obj_model.Model):
-    """ Model
-
-    Attributes:
-        id (:obj:`str`): unique identifier
-        name (:obj:`str`): name
-        version (:obj:`str`): version of the model
-        url (:obj:`str`): url of the model Git repository
-        branch (:obj:`str`): branch of the model Git repository
-        revision (:obj:`str`): revision of the model Git repository
-        time_units (:obj:`unit_registry.Unit`): time units
-        comments (:obj:`str`): comments
-        created (:obj:`datetime`): date created
-        updated (:obj:`datetime`): date updated
-    """
-    id = SlugAttribute()
-    name = StringAttribute()
-    version = RegexAttribute(min_length=1, pattern=r'^[0-9]+\.[0-9+]\.[0-9]+', flags=re.I)
-    url = UrlAttribute(verbose_name='URL')
-    branch = StringAttribute()
-    revision = StringAttribute()
-    time_units = StringAttribute()
-    comments = StringAttribute()
-    created = DateTimeAttribute()
-    updated = DateTimeAttribute()
-
-    class Meta(obj_model.Model.Meta):
-        attribute_order = ('id', 'name', 'version',
-                           'url', 'branch', 'revision',
-                           'time_units', 'comments',
-                           'created', 'updated')
-        tabular_orientation = TabularOrientation.column
 
 
 # todo: add logging
@@ -2538,36 +2503,46 @@ class AutomatedMigration(object):
         return self._NAME_FORMAT.format(self.data_git_repo.repo_name(), self.schema_git_repo.repo_name(),
             SchemaChanges.get_date_timestamp())
 
-    @staticmethod
-    def get_data_file_version_hash(data_file):
+    def get_data_file_git_commit_hash(self, data_file):
         """ Get the schema git commit hash in a data file
+
+        The schema in `self.schema_git_repo` must specify a Model name and metadata attributes
+        in a `_GIT_METADATA` attribute. E.g., `wc_lang` contains:
+            `_GIT_METADATA = (Model, ('url', 'branch', 'revision'))`
 
         Args:
             data_file (:obj:`str`): name of a data file
 
         Returns:
             :obj:`str`: the hash
+
+        Raises:
+            :obj:`MigratorError`: if the schema in `self.schema_git_repo` lacks a `_GIT_METADATA` attribute
         """
-        # todo
-        '''
-        make a normal method
-        use the schema in the self.schema_git_repo and SchemaChanges.find_file() to get the schema
-        use the schema to find Model storing the commit hash
-        '''
-        '''
-        the commit hash must be stored in data_file
-        the schema must specify a Model name and attribute in a _COMMIT_HASH attribute
-        E.g., wc_lang would contain
-            _COMMIT_HASH = 'Model.revision'
-        data_file must contain exactly one instance of the obj_model.Model containing the commit hash
-        '''
+        # get the schema in the self.schema_git_repo and schema_file in the automated migration config file
+        schema_file = normalize_filename(self.data_config['schema_file'],
+            dir=self.schema_git_repo.migrations_dir())
+        schema_module = SchemaModule(schema_file)
+        module = schema_module.import_module_for_migration()
+
+        # use the schema to find the obj_model.Model storing the git metadata
+        if not hasattr(module, '_GIT_METADATA'):
+            raise MigratorError("schema '{}' does not have a _GIT_METADATA attribute".format(schema_file))
+        git_metadata = getattr(module, '_GIT_METADATA')
+        metadata_model_type = git_metadata[0]
+        _, _, revision_attr = git_metadata[1]
+
         # use obj_model Reader to read the data file
-        obj_model_reader = obj_model.io.Reader.get_reader(data_file)()
-        models = obj_model_reader.run(data_file, models=[Model], ignore_extra_sheets=True,
+        model_defs = schema_module.run()
+        models = obj_model.io.Reader().run(data_file, models=list(model_defs.values()), ignore_extra_sheets=True,
             ignore_sheet_order=True, include_all_attributes=False, ignore_extra_attributes=True,
-            ignore_attribute_order=True, validate=False)
-        model = models[Model][0]
-        commit_hash = model.revision
+            ignore_attribute_order=True, group_objects_by_model=True, validate=False)
+        # check that there's exactly 1 instance of the metadata_model_type
+        if len(models[metadata_model_type]) != 1:
+            raise MigratorError("the data file '{}' must contain exactly one instance of {}, the Model "
+                "containing the git metadata".format(data_file, metadata_model_type.__name__))
+        metadata_model = models[metadata_model_type][0]
+        commit_hash = getattr(metadata_model, revision_attr)
         return commit_hash
 
     def get_seqs_of_schema_changes(self, migration_spec_args):
