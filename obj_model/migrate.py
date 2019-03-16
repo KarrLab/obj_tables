@@ -2315,6 +2315,9 @@ class AutomatedMigration(object):
         migration_spec (:obj:`MigrationSpec`): the migration's specification
     """
 
+    # name of the git metadata configuration attribute in an obj_model schema
+    _GIT_METADATA = '_GIT_METADATA'
+
     # name of the migrations directory
     _MIGRATIONS_DIRECTORY = 'migrations'
 
@@ -2526,9 +2529,10 @@ class AutomatedMigration(object):
         module = schema_module.import_module_for_migration()
 
         # use the schema to find the obj_model.Model storing the git metadata
-        if not hasattr(module, '_GIT_METADATA'):
-            raise MigratorError("schema '{}' does not have a _GIT_METADATA attribute".format(schema_file))
-        git_metadata = getattr(module, '_GIT_METADATA')
+        if not hasattr(module, AutomatedMigration._GIT_METADATA):
+            raise MigratorError("schema '{}' does not have a {} attribute".format(schema_file,
+                AutomatedMigration._GIT_METADATA))
+        git_metadata = getattr(module, AutomatedMigration._GIT_METADATA)
         metadata_model_type = git_metadata[0]
         _, _, revision_attr = git_metadata[1]
 
@@ -2539,7 +2543,7 @@ class AutomatedMigration(object):
             ignore_attribute_order=True, group_objects_by_model=True, validate=False)
         # check that there's exactly 1 instance of the metadata_model_type
         if len(models[metadata_model_type]) != 1:
-            raise MigratorError("the data file '{}' must contain exactly one instance of {}, the Model "
+            raise MigratorError("data file '{}' must contain exactly one instance of {}, the Model "
                 "containing the git metadata".format(data_file, metadata_model_type.__name__))
         metadata_model = models[metadata_model_type][0]
         commit_hash = getattr(metadata_model, revision_attr)

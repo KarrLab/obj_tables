@@ -1909,6 +1909,10 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             **dict(data_repo_location=self.test_repo_clean_url,
                 data_config_file_basename='automated_migration_config-test_repo_clean.yaml'))
         self.test_repo_clean_fixtures = self.clean_automated_migration.data_git_repo.fixtures_dir()
+        self.buggy_automated_migration = AutomatedMigration(
+            **dict(data_repo_location=self.test_repo_url,
+                data_config_file_basename='automated_migration_config-test_repo.yaml'))
+
         self.fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
@@ -2032,7 +2036,17 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         test_file = os.path.join(self.test_repo_clean_fixtures, 'data_file.xlsx')
         git_commit_hash = self.clean_automated_migration.get_data_file_git_commit_hash(test_file)
         self.assertEqual(git_commit_hash, '7fc7603c9901980930ab519260010757adc56f27')
-        # todo: test errors
+
+        # test errors
+        with self.assertRaisesRegex(MigratorError, "schema '.+' does not have a _GIT_METADATA attribute"):
+            self.buggy_automated_migration.get_data_file_git_commit_hash('no_file')
+        automated_migration_w_bad_data_file = AutomatedMigration(
+            **dict(data_repo_location=self.test_repo_url,
+                data_config_file_basename='automated_migration_config-test_repo_good_schema.yaml'))
+        test_repo_fixtures = automated_migration_w_bad_data_file.data_git_repo.fixtures_dir()
+        test_file = os.path.join(test_repo_fixtures, 'bad_data_file.xlsx')
+        with self.assertRaisesRegex(MigratorError, "data file '.*' must contain exactly one instance of .*"):
+            automated_migration_w_bad_data_file.get_data_file_git_commit_hash(test_file)
 
     def test_get_seqs_of_schema_changes(self):
         self.clean_automated_migration.validate()
