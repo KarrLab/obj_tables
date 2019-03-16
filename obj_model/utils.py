@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 from itertools import chain
 from random import shuffle
 from obj_model.core import Model, Attribute, RelatedAttribute, InvalidObjectSet, InvalidObject, Validator
+from wc_utils.util import git
 
 
 def get_related_models(root_model, include_root_model=False):
@@ -189,3 +190,21 @@ def source_report(obj, attr_name):
         return "{}:{}:{}{}".format(filename, worksheet, column, row)
     else:
         return "{}:{}:{},{}".format(filename, worksheet, row, column)
+
+
+def set_git_repo_metadata_from_path(model, path='.', url_attr='url', branch_attr='branch',
+    commit_hash_attr='revision', ):
+    """ Use Git to set the Git repository URL, branch, and commit hash metadata for a model
+
+    Args:
+        model (:obj:`Model`): model
+        path (:obj:`str`, optional): path to the Git repository for the model
+        url_attr (:obj:`str`, optional): attribute in `model` for the git URL; default='url'
+        branch_attr (:obj:`str`, optional): attribute in `model` for the git branch; default='branch'
+        commit_hash_attr (:obj:`str`, optional): attribute in `model` for the git commit hash;
+            default='revision'
+    """
+    md = git.get_repo_metadata(dirname=path)
+    setattr(model, url_attr, md.url)
+    setattr(model, branch_attr, md.branch)
+    setattr(model, commit_hash_attr, md.revision)

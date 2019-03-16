@@ -6,9 +6,11 @@
 :License: MIT
 """
 from six import string_types
-from obj_model import core, utils
+import tempfile
 import sys
 import unittest
+import shutil
+from obj_model import core, utils
 
 
 class Root(core.Model):
@@ -188,3 +190,42 @@ class TestUtils(unittest.TestCase):
             self.assertTrue(check_sorted())
 
         self.assertGreater(n_random, 0.9 * n_trials)
+
+
+    class MedadataModel(core.Model):
+        url = core.StringAttribute()
+        branch = core.StringAttribute()
+        revision = core.StringAttribute()
+
+    def test_set_git_repo_metadata_from_path(self):
+
+        medadata_model = self.MedadataModel()
+        self.assertEqual(medadata_model.url, '')
+
+        utils.set_git_repo_metadata_from_path(medadata_model, path='.')
+        self.assertIn(medadata_model.url, [
+            'https://github.com/KarrLab/obj_model.git',
+            'ssh://git@github.com/KarrLab/obj_model.git',
+            'git@github.com:KarrLab/obj_model.git',
+        ])
+
+        class MedadataModel(core.Model):
+            url = core.StringAttribute()
+            branch = core.StringAttribute()
+            commit_hash = core.StringAttribute()
+
+        medadata_model = MedadataModel()
+        utils.set_git_repo_metadata_from_path(medadata_model, path='.', commit_hash_attr='commit_hash')
+        self.assertEqual(40, len(medadata_model.commit_hash))
+
+    def test_set_git_repo_metadata_from_path_error(self):
+        tempdir = tempfile.mkdtemp()
+
+        medadata_model = self.MedadataModel()
+        self.assertEqual(medadata_model.url, '')
+
+        with self.assertRaisesRegex(ValueError, 'is not a Git repository'):
+            utils.set_git_repo_metadata_from_path(medadata_model, path=tempdir)
+        self.assertEqual(medadata_model.url, '')
+
+        shutil.rmtree(tempdir)
