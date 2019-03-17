@@ -91,7 +91,6 @@ migrate xlsx files in wc_sim to new wc_lang:
 # todo next: test OneToManyAttribute
 # todo next: documentation
 # todo next: simply infer the deleted_models
-# todo: deal with "yaml.load() without Loader=... is deprecated"
 
 class MigratorError(Exception):
     """ Exception raised for errors in obj_model.migrate
@@ -1428,7 +1427,7 @@ class MigrationSpec(object):
             raise MigratorError("could not read migration config file: '{}'".format(migrations_config_file))
 
         try:
-            migrations_config = yaml.load(fd)
+            migrations_config = yaml.load(fd, Loader=yaml.FullLoader)
         except yaml.YAMLError as e:
             raise MigratorError("could not parse YAML migration config file: '{}':\n{}".format(
                 migrations_config_file, e))
@@ -1979,7 +1978,7 @@ class SchemaChanges(object):
             raise MigratorError("could not read schema changes file: '{}'".format(
                 schema_changes_file))
         try:
-            schema_changes = yaml.load(fd)
+            schema_changes = yaml.load(fd, Loader=yaml.FullLoader)
         except yaml.YAMLError as e:
             raise MigratorError("could not parse YAML schema changes file: '{}':\n{}".format(
                 schema_changes_file, e))
@@ -2444,7 +2443,7 @@ class AutomatedMigration(object):
             raise MigratorError("could not read automated migration config file: '{}'".format(
                 automated_migration_config_file))
         try:
-            automated_migration_config = yaml.load(fd)
+            automated_migration_config = yaml.load(fd, Loader=yaml.FullLoader)
         except yaml.YAMLError as e:
             raise MigratorError("could not parse YAML automated migration config file: '{}':\n{}".format(
                 automated_migration_config_file, e))

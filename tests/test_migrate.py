@@ -1656,7 +1656,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
 
     def test_make_template(self):
         pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
-        data = yaml.load(open(pathname, 'r'))
+        data = yaml.load(open(pathname, 'r'), Loader=yaml.FullLoader)
         for attr in ['renamed_models', 'renamed_attributes']:
             self.assertEqual(data[attr], [])
         for attr in ['commit_hash', 'transformations_file']:
@@ -1920,7 +1920,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         path = AutomatedMigration.make_template_config_file(self.git_repo, 'test_repo_clean')
 
         # check the file at path
-        data = yaml.load(open(path, 'r'))
+        data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
         for name, config_attr in AutomatedMigration._CONFIG_ATTRIBUTES.items():
             if name == 'migrator':
                 self.assertEqual(data[name], MigrationSpec.DEFAULT_MIGRATOR)

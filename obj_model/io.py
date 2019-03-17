@@ -542,7 +542,8 @@ class JsonReader(ReaderBase):
             if ext == '.json':
                 json_objs = json.load(file)
             elif ext in ['.yaml', '.yml']:
-                json_objs = yaml.load(file)
+                json_objs = yaml.load(file, Loader=yaml.FullLoader)
+
             else:
                 raise ValueError('Unsupported format {}'.format(ext))
 
