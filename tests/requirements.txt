@@ -9,6 +9,6 @@ objsize
 openpyxl
 psutil
 pytest
-pyyaml
+pyyaml >= 5.1
 six
 stringcase
