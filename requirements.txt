@@ -6,7 +6,7 @@ numpy
 pint >= 0.9
 pronto
 python_dateutil
-pyyaml
+pyyaml >= 5.1
 setuptools
 six
 stringcase
