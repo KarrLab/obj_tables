@@ -14,11 +14,12 @@ import wc_utils.workbook.io
 class EmpiricalFormulaAttribute(core.LiteralAttribute):
     """ Empirical formula attribute """
 
-    def __init__(self, default=None, verbose_name='', help="An empirical formula (e.g. 'H2O', 'CO2', or 'NaCl')",
+    def __init__(self, default=None, none_value=None, verbose_name='', help="An empirical formula (e.g. 'H2O', 'CO2', or 'NaCl')",
                  primary=False, unique=False):
         """
         Args:
             default (:obj:`chem.EmpiricalFormula`, :obj:`dict`, :obj:`str`, or :obj:`None`, optional): default value
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -27,7 +28,7 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
         if not isinstance(default, chem.EmpiricalFormula) and default is not None:
             default = chem.EmpiricalFormula(default)
 
-        super(EmpiricalFormulaAttribute, self).__init__(default=default,
+        super(EmpiricalFormulaAttribute, self).__init__(default=default, none_value=none_value,
                                                         verbose_name=verbose_name, help=help,
                                                         primary=primary, unique=unique)
 

@@ -4588,6 +4588,18 @@ class TestCore(unittest.TestCase):
         self.assertFalse(model.has_attr_vals(attr_2='abc'))
         self.assertFalse(model.has_attr_vals(attr_3='lmnop'))
 
+    def test_get_none_value(self):
+        attr = core.DateAttribute()
+        self.assertTrue(attr.value_equal(attr.get_none_value(), None))
+        self.assertEqual(attr.get_none_value(), None)        
+
+        attr = core.StringAttribute()
+        self.assertTrue(attr.value_equal(attr.get_none_value(), ''))
+        self.assertEqual(attr.get_none_value(), '')        
+
+        attr = core.FloatAttribute()
+        self.assertTrue(attr.value_equal(attr.get_none_value(), float('nan')))
+
 
 class ContextTestCase(unittest.TestCase):
     def test(self):

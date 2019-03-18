@@ -22,7 +22,8 @@ class OntologyAttribute(core.LiteralAttribute):
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
-    def __init__(self, ontology, namespace=None, terms=None, none=True, default=None, default_cleaned_value=None, verbose_name='', help='',
+    def __init__(self, ontology, namespace=None, terms=None, none=True, default=None, default_cleaned_value=None, none_value=None,
+                 verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
@@ -33,6 +34,7 @@ class OntologyAttribute(core.LiteralAttribute):
             default (:obj:`pronto.term.Term`, optional): default value
             default_cleaned_value (:obj:`pronto.term.Term`, optional): value to replace
                 :obj:`None` values with during cleaning
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -64,7 +66,7 @@ class OntologyAttribute(core.LiteralAttribute):
                 '`default_cleaned_value` must be `None` or in `terms`')
 
         super(OntologyAttribute, self).__init__(default=default,
-                                                default_cleaned_value=default_cleaned_value,
+                                                default_cleaned_value=default_cleaned_value, none_value=none_value,
                                                 verbose_name=verbose_name, help=help,
                                                 primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 

@@ -1798,6 +1798,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 other_val = getattr(other_obj, attr_name)
 
                 if not isinstance(attr, RelatedAttribute):
+                    print(obj.__class__, attr_name)
                     if not attr.value_equal(val, other_val, tol=tol):
                         difference['attributes'][
                             attr_name] = '{} != {}'.format(val, other_val)
@@ -2915,6 +2916,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         default_cleaned_value (:obj:`object`): value to replace
             :obj:`None` values with during cleaning, or function
             which computes the value to replace :obj:`None` values
+        none_value (:obj:`object`): none value
         verbose_name (:obj:`str`): verbose name
         help (:obj:`str`): help string
         primary (:obj:`bool`): indicate if attribute is primary attribute
@@ -2922,7 +2924,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         unique_case_insensitive (:obj:`bool`): if true, conduct case-insensitive test of uniqueness
     """
 
-    def __init__(self, init_value=None, default=None, default_cleaned_value=None, verbose_name='', help='',
+    def __init__(self, init_value=None, default=None, default_cleaned_value=None, none_value=None, verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
@@ -2931,6 +2933,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             default_cleaned_value (:obj:`object`, optional): value to replace
                 :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -2941,6 +2944,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         self.init_value = init_value
         self.default = default
         self.default_cleaned_value = default_cleaned_value
+        self.none_value = none_value
         self.verbose_name = verbose_name
         self.help = help
         self.primary = primary
@@ -2964,7 +2968,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             :obj:`object`: initial value
         """
-        if isinstance(self.default, (six.types.FunctionType, six.types.MethodType, six.types.LambdaType)):
+        if callable(self.default):
             return self.default()
 
         return copy.deepcopy(self.default)
@@ -2979,6 +2983,17 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
             return self.default_cleaned_value()
 
         return copy.deepcopy(self.default_cleaned_value)
+
+    def get_none_value(self):
+        """ Get none value
+
+        Returns:
+            :obj:`object`: none value
+        """
+        if callable(self.none_value):
+            return self.none_value()
+
+        return copy.deepcopy(self.none_value)
 
     def set_value(self, obj, new_value):
         """ Set value of attribute of object
@@ -3313,7 +3328,7 @@ class EnumAttribute(LiteralAttribute):
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
-    def __init__(self, enum_class, none=False, default=None, default_cleaned_value=None, verbose_name='', help='',
+    def __init__(self, enum_class, none=False, default=None, default_cleaned_value=None, none_value=None, verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
@@ -3322,6 +3337,7 @@ class EnumAttribute(LiteralAttribute):
             default (:obj:`object`, optional): default value
             default_cleaned_value (:obj:`Enum`, optional): value to replace
                 :obj:`None` values with during cleaning
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3343,6 +3359,7 @@ class EnumAttribute(LiteralAttribute):
 
         super(EnumAttribute, self).__init__(default=default,
                                             default_cleaned_value=default_cleaned_value,
+                                            none_value=none_value,
                                             verbose_name=verbose_name, help=help,
                                             primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
@@ -3491,11 +3508,12 @@ class BooleanAttribute(LiteralAttribute):
         default_cleaned_value (:obj:`bool`): value to replace :obj:`None` values with during cleaning
     """
 
-    def __init__(self, default=False, default_cleaned_value=None, verbose_name='', help='Enter a Boolean value'):
+    def __init__(self, default=False, default_cleaned_value=None, none_value=None, verbose_name='', help='Enter a Boolean value'):
         """
         Args:
             default (:obj:`bool`, optional): default value
             default_cleaned_value (:obj:`bool`, optional): value to replace :obj:`None` values with during cleaning
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
 
@@ -3509,6 +3527,7 @@ class BooleanAttribute(LiteralAttribute):
 
         super(BooleanAttribute, self).__init__(default=default,
                                                default_cleaned_value=default_cleaned_value,
+                                               none_value=none_value,
                                                verbose_name=verbose_name, help=help,
                                                primary=False, unique=False, unique_case_insensitive=False)
 
@@ -3604,7 +3623,7 @@ class FloatAttribute(NumericAttribute):
     """
 
     def __init__(self, min=float('nan'), max=float('nan'), nan=True,
-                 default=float('nan'), default_cleaned_value=float('nan'), verbose_name='', help='',
+                 default=float('nan'), default_cleaned_value=float('nan'), none_value=float('nan'), verbose_name='', help='',
                  primary=False, unique=False):
         """
         Args:
@@ -3634,6 +3653,7 @@ class FloatAttribute(NumericAttribute):
 
         super(FloatAttribute, self).__init__(default=default,
                                              default_cleaned_value=default_cleaned_value,
+                                             none_value=none_value,
                                              verbose_name=verbose_name, help=help,
                                              primary=primary, unique=unique, unique_case_insensitive=False)
 
@@ -3794,7 +3814,7 @@ class PositiveFloatAttribute(FloatAttribute):
     """ Positive float attribute """
 
     def __init__(self, max=float('nan'), nan=True, default=float('nan'), default_cleaned_value=float('nan'),
-                 verbose_name='', help='', primary=False, unique=False):
+                 none_value=float('nan'), verbose_name='', help='', primary=False, unique=False):
         """
         Args:
             max (:obj:`float`, optional): maximum value
@@ -3809,6 +3829,7 @@ class PositiveFloatAttribute(FloatAttribute):
         super(PositiveFloatAttribute, self).__init__(min=0., max=max, nan=nan,
                                                      default=default,
                                                      default_cleaned_value=default_cleaned_value,
+                                                     none_value=none_value,
                                                      verbose_name=verbose_name, help=help,
                                                      primary=primary, unique=unique)
 
@@ -3893,13 +3914,14 @@ class IntegerAttribute(NumericAttribute):
     """
 
     def __init__(self, min=None, max=None, default=None, default_cleaned_value=None,
-                 verbose_name='', help='', primary=False, unique=False):
+                 none_value=None, verbose_name='', help='', primary=False, unique=False):
         """
         Args:
             min (:obj:`int`, optional): minimum value
             max (:obj:`int`, optional): maximum value
             default (:obj:`int`, optional): default value
             default_cleaned_value (:obj:`int`, optional): value to replace :obj:`None` values with during cleaning
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -3921,6 +3943,7 @@ class IntegerAttribute(NumericAttribute):
 
         super(IntegerAttribute, self).__init__(default=default,
                                                default_cleaned_value=default_cleaned_value,
+                                               none_value=none_value,
                                                verbose_name=verbose_name, help=help,
                                                primary=primary, unique=unique, unique_case_insensitive=False)
 
@@ -4070,13 +4093,14 @@ class PositiveIntegerAttribute(IntegerAttribute):
     """ Positive integer attribute """
 
     def __init__(self, max=None, default=None, default_cleaned_value=None,
-                 verbose_name='', help='', primary=False, unique=False):
+                 none_value=None, verbose_name='', help='', primary=False, unique=False):
         """
         Args:
             min (:obj:`int`, optional): minimum value
             max (:obj:`int`, optional): maximum value
             default (:obj:`int`, optional): default value
             default_cleaned_value (:obj:`int`, optional): value to replace :obj:`None` values with during cleaning
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -4085,6 +4109,7 @@ class PositiveIntegerAttribute(IntegerAttribute):
         super(PositiveIntegerAttribute, self).__init__(min=0, max=max,
                                                        default=default,
                                                        default_cleaned_value=default_cleaned_value,
+                                                       none_value=none_value,
                                                        verbose_name=verbose_name, help=help,
                                                        primary=primary, unique=unique)
 
@@ -4163,7 +4188,7 @@ class StringAttribute(LiteralAttribute):
         max_length (:obj:`int`): maximum length
     """
 
-    def __init__(self, min_length=0, max_length=255, default='', default_cleaned_value='',
+    def __init__(self, min_length=0, max_length=255, default='', default_cleaned_value='', none_value='',
                  verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
@@ -4194,6 +4219,7 @@ class StringAttribute(LiteralAttribute):
 
         super(StringAttribute, self).__init__(default=default,
                                               default_cleaned_value=default_cleaned_value,
+                                              none_value=none_value,
                                               verbose_name=verbose_name, help=help,
                                               primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
@@ -4311,7 +4337,7 @@ class StringAttribute(LiteralAttribute):
 class LongStringAttribute(StringAttribute):
     """ Long string attribute """
 
-    def __init__(self, min_length=0, max_length=2**32 - 1, default='', default_cleaned_value='',
+    def __init__(self, min_length=0, max_length=2**32 - 1, default='', default_cleaned_value='', none_value='',
                  verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
@@ -4330,6 +4356,7 @@ class LongStringAttribute(StringAttribute):
         super(LongStringAttribute, self).__init__(min_length=min_length, max_length=max_length,
                                                   default=default,
                                                   default_cleaned_value=default_cleaned_value,
+                                                  none_value=none_value,
                                                   verbose_name=verbose_name, help=help,
                                                   primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
@@ -4343,7 +4370,7 @@ class RegexAttribute(StringAttribute):
     """
 
     def __init__(self, pattern, flags=0, min_length=0, max_length=None, default='', default_cleaned_value='',
-                 verbose_name='', help='',
+                 none_value='', verbose_name='', help='',
                  primary=False, unique=False):
         """
         Args:
@@ -4361,7 +4388,7 @@ class RegexAttribute(StringAttribute):
 
         unique_case_insensitive = bin(flags)[-2] == '1'
         super(RegexAttribute, self).__init__(min_length=min_length, max_length=max_length,
-                                             default=default, default_cleaned_value=default_cleaned_value,
+                                             default=default, default_cleaned_value=default_cleaned_value, none_value=none_value,
                                              verbose_name=verbose_name, help=help,
                                              primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
         self.pattern = pattern
@@ -4489,7 +4516,7 @@ class DateAttribute(LiteralAttribute):
             which computes the value to replace :obj:`None` values
     """
 
-    def __init__(self, none=True, default=None, default_cleaned_value=None,
+    def __init__(self, none=True, default=None, default_cleaned_value=None, none_value=None,
                  verbose_name='', help='', primary=False, unique=False):
         """
         Args:
@@ -4505,6 +4532,7 @@ class DateAttribute(LiteralAttribute):
         """
         super(DateAttribute, self).__init__(default=default,
                                             default_cleaned_value=default_cleaned_value,
+                                            none_value=none_value,
                                             verbose_name=verbose_name, help=help,
                                             primary=primary, unique=unique)
         self.none = none
@@ -4660,7 +4688,8 @@ class TimeAttribute(LiteralAttribute):
             which computes the value to replace :obj:`None` values
     """
 
-    def __init__(self, none=True, default=None, default_cleaned_value=None, verbose_name='', help='', primary=False, unique=False):
+    def __init__(self, none=True, default=None, default_cleaned_value=None, none_value=None,
+        verbose_name='', help='', primary=False, unique=False):
         """
         Args:
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
@@ -4668,6 +4697,7 @@ class TimeAttribute(LiteralAttribute):
             default_cleaned_value (:obj:`time`, optional): value to replace
                 :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -4675,6 +4705,7 @@ class TimeAttribute(LiteralAttribute):
         """
         super(TimeAttribute, self).__init__(default=default,
                                             default_cleaned_value=default_cleaned_value,
+                                            none_value=none_value,
                                             verbose_name=verbose_name, help=help,
                                             primary=primary, unique=unique)
         self.none = none
@@ -4825,7 +4856,7 @@ class DateTimeAttribute(LiteralAttribute):
             which computes the value to replace :obj:`None` values
     """
 
-    def __init__(self, none=True, default=None, default_cleaned_value=None,
+    def __init__(self, none=True, default=None, default_cleaned_value=None, none_value=None,
                  verbose_name='', help='', primary=False, unique=False):
         """
         Args:
@@ -4834,6 +4865,7 @@ class DateTimeAttribute(LiteralAttribute):
             default_cleaned_value (:obj:`datetime`, optional): value to replace
                 :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -4841,6 +4873,7 @@ class DateTimeAttribute(LiteralAttribute):
         """
         super(DateTimeAttribute, self).__init__(default=default,
                                                 default_cleaned_value=default_cleaned_value,
+                                                none_value=none_value,
                                                 verbose_name=verbose_name, help=help,
                                                 primary=primary, unique=unique)
         self.none = none
@@ -5538,7 +5571,7 @@ class RelatedAttribute(Attribute):
     """
 
     def __init__(self, related_class, related_name='',
-                 init_value=None, default=None, default_cleaned_value=None,
+                 init_value=None, default=None, default_cleaned_value=None, none_value=None,
                  related_init_value=None, related_default=None,
                  min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', help=''):
@@ -5551,6 +5584,7 @@ class RelatedAttribute(Attribute):
             default_cleaned_value (:obj:`object`, optional): value to replace
                 :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
+            none_value (:obj:`object`, optional): none value
             related_init_value (:obj:`object`, optional): related initial value
             related_default (:obj:`object`, optional): related default value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
@@ -5590,7 +5624,7 @@ class RelatedAttribute(Attribute):
 
         super(RelatedAttribute, self).__init__(
             init_value=init_value, default=default, default_cleaned_value=default_cleaned_value,
-            verbose_name=verbose_name, help=help,
+            none_value=none_value, verbose_name=verbose_name, help=help,
             primary=False, unique=False, unique_case_insensitive=False)
         self.primary_class = None
         self.related_class = related_class
@@ -5720,7 +5754,7 @@ class OneToOneAttribute(RelatedAttribute):
     """ Represents a one-to-one relationship between two types of objects. """
 
     def __init__(self, related_class, related_name='',
-                 default=None, default_cleaned_value=None, related_default=None,
+                 default=None, default_cleaned_value=None, related_default=None, none_value=None,
                  min_related=0, min_related_rev=0,
                  verbose_name='', verbose_related_name='', help=''):
         """
@@ -5732,6 +5766,7 @@ class OneToOneAttribute(RelatedAttribute):
                 :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): callable which returns default related value
+            none_value (:obj:`object`, optional): none value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
             verbose_name (:obj:`str`, optional): verbose name
@@ -5741,7 +5776,7 @@ class OneToOneAttribute(RelatedAttribute):
         super(OneToOneAttribute, self).__init__(related_class, related_name=related_name,
                                                 init_value=None, default=default,
                                                 default_cleaned_value=default_cleaned_value,
-                                                related_init_value=None, related_default=related_default,
+                                                related_init_value=None, related_default=related_default, none_value=none_value,
                                                 min_related=min_related, max_related=1,
                                                 min_related_rev=min_related_rev, max_related_rev=1,
                                                 verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
@@ -6036,7 +6071,7 @@ class ManyToOneAttribute(RelatedAttribute):
     """
 
     def __init__(self, related_class, related_name='',
-                 default=None, default_cleaned_value=None, related_default=list(),
+                 default=None, default_cleaned_value=None, related_default=list(), none_value=None,
                  min_related=0, min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', help='',
                  related_manager=ManyToOneRelatedManager):
@@ -6049,6 +6084,7 @@ class ManyToOneAttribute(RelatedAttribute):
                 :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): callable which returns the default related value
+            none_value (:obj:`object`, optional): none value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
             max_related_rev (:obj:`int`, optional): maximum number of related objects in the reverse direction
@@ -6060,7 +6096,7 @@ class ManyToOneAttribute(RelatedAttribute):
         super(ManyToOneAttribute, self).__init__(
             related_class, related_name=related_name,
             init_value=None, default=default, default_cleaned_value=default_cleaned_value,
-            related_init_value=related_manager, related_default=related_default,
+            related_init_value=related_manager, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
             verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
         self.related_manager = related_manager
@@ -6360,7 +6396,7 @@ class OneToManyAttribute(RelatedAttribute):
     """
 
     def __init__(self, related_class, related_name='',  default=list(), default_cleaned_value=list(),
-                 related_default=None,
+                 related_default=None, none_value=list,
                  min_related=0, max_related=float('inf'), min_related_rev=0,
                  verbose_name='', verbose_related_name='', help='',
                  related_manager=OneToManyRelatedManager):
@@ -6373,6 +6409,7 @@ class OneToManyAttribute(RelatedAttribute):
                 :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): function which returns the default related value
+            none_value (:obj:`object`, optional): none value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
@@ -6384,7 +6421,7 @@ class OneToManyAttribute(RelatedAttribute):
         super(OneToManyAttribute, self).__init__(
             related_class, related_name=related_name,
             init_value=related_manager, default=default, default_cleaned_value=default_cleaned_value,
-            related_init_value=None, related_default=related_default,
+            related_init_value=None, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
             verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
         self.related_manager = related_manager
@@ -6685,7 +6722,7 @@ class ManyToManyAttribute(RelatedAttribute):
     """
 
     def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
-                 related_default=list(),
+                 related_default=list(), none_value=list,
                  min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', help='',
                  related_manager=ManyToManyRelatedManager):
@@ -6698,6 +6735,7 @@ class ManyToManyAttribute(RelatedAttribute):
                 :obj:`None` values with during cleaning, or function
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): function which returns the default related values
+            none_value (:obj:`object`, optional): none value
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
@@ -6710,7 +6748,7 @@ class ManyToManyAttribute(RelatedAttribute):
         super(ManyToManyAttribute, self).__init__(
             related_class, related_name=related_name,
             init_value=related_manager, default=default, default_cleaned_value=default_cleaned_value,
-            related_init_value=related_manager, related_default=related_default,
+            related_init_value=related_manager, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
             verbose_name=verbose_name, help=help, verbose_related_name=verbose_related_name)
         self.related_manager = related_manager

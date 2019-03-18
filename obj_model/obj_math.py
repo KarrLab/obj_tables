@@ -22,13 +22,14 @@ class NumpyArrayAttribute(core.LiteralAttribute):
         default (:obj:`numpy.ndarray`): default value
     """
 
-    def __init__(self, min_length=0, max_length=float('inf'), default=None, verbose_name='', help='',
+    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', help='',
                  primary=False, unique=False):
         """
         Args:
             min_length (:obj:`int`, optional): minimum length
             max_length (:obj:`int`, optional): maximum length
             default (:obj:`numpy.array`, optional): default value
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -41,7 +42,7 @@ class NumpyArrayAttribute(core.LiteralAttribute):
         if not isinstance(max_length, (six.integer_types, float)) or max_length < min_length:
             raise ValueError('`max_length` must be an integer greater than or equal to `min_length`')
 
-        super(NumpyArrayAttribute, self).__init__(default=default,
+        super(NumpyArrayAttribute, self).__init__(default=default, none_value=none_value,
                                                   verbose_name=verbose_name, help=help,
                                                   primary=primary, unique=unique)
 
@@ -194,13 +195,14 @@ class SympyBasicAttribute(core.LiteralAttribute):
         default (:obj:`sympy.Basic`): default value
     """
 
-    def __init__(self, type=sympy.Basic, default=None, verbose_name='', help='',
+    def __init__(self, type=sympy.Basic, default=None, none_value=None, verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             type (:obj:`sympy.core.assumptions.ManagedProperties`, optional): attribute type (e.g. :obj:`sympy.Basic`,
                 :obj:`sympy.Expr`, :obj:`sympy.Symbol`)
             default (:obj:`sympy.Basic`, optional): default value
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -210,7 +212,7 @@ class SympyBasicAttribute(core.LiteralAttribute):
         if default is not None and not isinstance(default, type):
             raise ValueError('Default must be a `{}` or `None`'.format(str(type)[8:-2]))
 
-        super(SympyBasicAttribute, self).__init__(default=default,
+        super(SympyBasicAttribute, self).__init__(default=default, none_value=none_value,
                                                   verbose_name=verbose_name, help=help,
                                                   primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
@@ -319,18 +321,19 @@ class SympyExprAttribute(SympyBasicAttribute):
         default (:obj:`sympy.Expr`): default value
     """
 
-    def __init__(self, default=None, verbose_name='', help='',
+    def __init__(self, default=None, none_value=None, verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             default (:obj:`sympy.Expr`, optional): default value
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
         """
-        super(SympyExprAttribute, self).__init__(type=sympy.Expr, default=default, verbose_name=verbose_name, help=help,
+        super(SympyExprAttribute, self).__init__(type=sympy.Expr, default=default, none_value=none_value, verbose_name=verbose_name, help=help,
                                                  primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
     def serialize(self, value):
@@ -369,18 +372,19 @@ class SympySymbolAttribute(SympyBasicAttribute):
         default (:obj:`sympy.Symbol`): default value
     """
 
-    def __init__(self, default=None, verbose_name='', help='',
+    def __init__(self, default=None, none_value=None, verbose_name='', help='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             default (:obj:`sympy.Symbol`, optional): default value
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
         """
-        super(SympySymbolAttribute, self).__init__(type=sympy.Symbol, default=default, verbose_name=verbose_name, help=help,
+        super(SympySymbolAttribute, self).__init__(type=sympy.Symbol, default=default, none_value=none_value, verbose_name=verbose_name, help=help,
                                                    primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
     def serialize(self, value):

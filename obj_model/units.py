@@ -24,7 +24,7 @@ class UnitAttribute(core.LiteralAttribute):
     """
 
     def __init__(self, registry, choices=None, none=True, default=None, default_cleaned_value=None,
-                 verbose_name='', help="Units (e.g. 'second', 'meter', or 'gram')",
+                 none_value=None, verbose_name='', help="Units (e.g. 'second', 'meter', or 'gram')",
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
@@ -33,6 +33,7 @@ class UnitAttribute(core.LiteralAttribute):
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`str`, optional): default value
             default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
+            none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
             help (:obj:`str`, optional): help string
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
@@ -58,7 +59,7 @@ class UnitAttribute(core.LiteralAttribute):
                     raise ValueError('choices must be instances of `registry.Unit`')
 
         super(UnitAttribute, self).__init__(default=default,
-                                            default_cleaned_value=default_cleaned_value,
+                                            default_cleaned_value=default_cleaned_value, none_value=none_value,
                                             verbose_name=verbose_name, help=help,
                                             primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
