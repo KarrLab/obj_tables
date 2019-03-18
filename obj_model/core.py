@@ -1798,7 +1798,6 @@ class Model(with_metaclass(ModelMeta, object)):
                 other_val = getattr(other_obj, attr_name)
 
                 if not isinstance(attr, RelatedAttribute):
-                    print(obj.__class__, attr_name)
                     if not attr.value_equal(val, other_val, tol=tol):
                         difference['attributes'][
                             attr_name] = '{} != {}'.format(val, other_val)
