@@ -1215,7 +1215,7 @@ class ParsedExpression(object):
 
         compiled_namespace = {func.__name__: func for func in self.valid_functions}
         if with_units and self.unit_registry:
-            compiled_namespace['__dimensionless__'] = self.unit_registry['dimensionless']
+            compiled_namespace['__dimensionless__'] = self.unit_registry.parse_expression('dimensionless')
 
         return compiled_expression, compiled_namespace
 
