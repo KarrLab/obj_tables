@@ -1893,14 +1893,15 @@ class SchemaChanges(object):
         return SchemaChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_date_timestamp(),
             self.hash_prefix(self.get_hash()))
 
-    def make_template(self, changes_file_dir, verbose=False):
+    def make_template(self, changes_file_dir=None, verbose=False):
         """ Make a template schema changes file
 
         The template includes the current repo hash and empty values for `SchemaChanges`
         attributes.
 
         Args:
-            changes_file_dir (:obj:`str`): directory for the schema changes file
+            changes_file_dir (:obj:`str`, optional): directory for the schema changes file; default is
+                migrations dir of current git repo
             verbose (:obj:`bool`): whether to print status and reminder; default=False
 
         Returns:
@@ -1910,6 +1911,8 @@ class SchemaChanges(object):
             :obj:`MigratorError`: if the schema changes file already exists
         """
         filename = self.generate_filename()
+        if not changes_file_dir and self.git_repo:
+            changes_file_dir = self.git_repo.migrations_dir()
         pathname = os.path.join(changes_file_dir, filename)
         if os.path.exists(pathname):
             raise MigratorError("schema changes file '{}' already exists".format(pathname))
@@ -1927,9 +1930,10 @@ class SchemaChanges(object):
             file.write(yaml.dump(template_data))
 
         # add the config file to the git repo, and print message encouraging a commit
-        self.git_repo.repo.index.add([pathname])
+        if self.git_repo:
+            self.git_repo.repo.index.add([pathname])
         if verbose:
-            print("template created - run: git commit '{}'".format(pathname))
+            print("created schema changes template '{}': edit it and run 'git commit'".format(pathname))
         return pathname
 
     def import_transformations(self):
@@ -2070,11 +2074,13 @@ class GitRepo(object):
     # default repo name if name not known
     _NAME_UNKNOWN = 'name_unknown'
 
-    def __init__(self, repo_location=None):
+    def __init__(self, repo_location=None, search_parent_directories=False):
         """ Initialize a GitRepo
 
         Args:
             repo_location (:obj:`str`, optional): the location of the repo, either its root directory or URL
+            search_parent_directories (:obj:`bool`, optional): `search_parent_directories` option to `git.Repo()`;
+                if set, all parent directories will be searched for a valid repo as well; default=False
 
         Returns:
             :obj:`str`: root directory for the repo (which contains the .git directory)
@@ -2088,11 +2094,11 @@ class GitRepo(object):
         if repo_location:
             if os.path.isdir(repo_location):
                 try:
-                    self.repo = git.Repo(repo_location)
+                    self.repo = git.Repo(repo_location, search_parent_directories=search_parent_directories)
                 except git.exc.GitError as e:
                     raise MigratorError("instantiating a git.Repo from directory '{}' failed".format(
                         repo_location))
-                self.repo_dir = repo_location
+                self.repo_dir = os.path.dirname(self.repo.git_dir)
             else:
                 self.repo, self.repo_dir = self.clone_repo_from_url(repo_location)
                 self.repo_url = repo_location

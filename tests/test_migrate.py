@@ -1658,6 +1658,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.assertTrue(2 <= len(filename.split('_')))
 
     def test_make_template(self):
+        # todo: test changes_file_dir alternatives
         pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
         data = yaml.load(open(pathname, 'r'), Loader=yaml.FullLoader)
         for attr in ['renamed_models', 'renamed_attributes']:
@@ -1774,6 +1775,7 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertIsInstance(git_repo.repo, git.Repo)
         with self.assertRaisesRegex(MigratorError, "instantiating a git.Repo from directory '.+' failed"):
             GitRepo(self.tmp_dir)
+        # todo: test search_parent_directories
 
     def test_get_temp_dir(self):
         self.assertTrue(os.path.isdir(self.totally_empty_git_repo.get_temp_dir()))
