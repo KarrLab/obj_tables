@@ -1169,6 +1169,7 @@ class Model(obj_model.Model):
         for attr in self.Meta.attributes.values():
             if isinstance(attr, obj_model.RelatedAttribute):
                 attr.merge(self, other, other_objs_in_self, self_objs_in_other)
+_GIT_METADATA = (Model, ('url', 'branch', 'revision'))
 
 
 class Taxon(obj_model.Model):

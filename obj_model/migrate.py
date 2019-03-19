@@ -23,7 +23,7 @@ from warnings import warn
 from pprint import pprint, pformat
 import git
 import networkx as nx
-from networkx.algorithms.dag import topological_sort
+from networkx.algorithms.dag import topological_sort, ancestors
 import tempfile
 import datetime
 
@@ -114,7 +114,7 @@ class SchemaModule(object):
         module_path (:obj:`str`): path to the module
         abs_module_path (:obj:`str`): absolute path to the module
         directory (:obj:`str`): if the module is in a package, the path to the package's directory;
-            otherwise the directory containing the module 
+            otherwise the directory containing the module
         package_name (:obj:`str`): if the module is in a package, the name of the package containing the
             module; otherwise `None`
         module_name (:obj:`str`): the module's module name
@@ -1167,10 +1167,12 @@ class Migrator(object):
         """ Migrate all model instances from existing to migrated model definitions
 
         Supports:
-            * delete attributes from existing schema
-            * add attributes in migrated schema
-            * add model definitions in migrated schema
-            * models with expressions
+
+        * delete attributes from existing schema
+        * add attributes in migrated schema
+        * add model definitions in migrated schema
+        * models with expressions
+
         Assumes that otherwise the schemas are identical
 
         Args:
@@ -1465,18 +1467,18 @@ class MigrationSpec(object):
             return errors
 
         if len(self.schema_files) < 2:
-            return ["schema_files must contain at least 2 model definitions, but it has only {}".format(
+            return ["a migration spec must contain at least 2 model definitions, but it has only {}".format(
                 len(self.schema_files))]
 
         for changes_list in self._CHANGES_LISTS:
             if getattr(self, changes_list) is not None:
                 if len(getattr(self, changes_list)) != len(self.schema_files) - 1:
-                    errors.append("{} must have 1 mapping for each of the {} migration(s) specified by "
-                        "schema_files, but it has {}".format(changes_list,  len(self.schema_files) - 1,
+                    errors.append("{} must have 1 mapping for each of the {} migration(s) specified, "
+                        "but it has {}".format(changes_list,  len(self.schema_files) - 1,
                         len(getattr(self, changes_list))))
 
         if self.seq_of_renamed_models:
-            required_structure = "seq_of_renamed_models must be None, or a list of lists of pairs of strs"
+            required_structure = "seq_of_renamed_models must be None, or a list of lists of pairs of strings"
             try:
                 for renaming in self.seq_of_renamed_models:
                     if renaming is not None:
@@ -1487,7 +1489,8 @@ class MigrationSpec(object):
                 errors.append(required_structure + ", but examining it raises a '{}' error".format(str(e)))
 
         if self.seq_of_renamed_attributes:
-            required_structure = "seq_of_renamed_attributes must be None, or a list of lists of pairs of pairs of strs"
+            required_structure = ( "seq_of_renamed_attributes must be None, or a list of lists of pairs "
+                "of pairs of strings")
             try:
                 for renamings in self.seq_of_renamed_attributes:
                     if renamings is not None:
@@ -1614,7 +1617,7 @@ class MigrationController(object):
 
     @staticmethod
     def migrate_over_schema_sequence(migration_spec):
-        """ Migrate a model file over a sequence of schemas
+        """ Migrate some model files over a sequence of schemas
 
         Args:
             migration_spec (:obj:`MigrationSpec`): a migration specification
@@ -1821,7 +1824,9 @@ class SchemaChanges(object):
                     continue
 
                 # ensure that the hash corresponds to a commit
-                if git_repo.get_commit(commit_hash) is None:
+                try:
+                    git_repo.get_commit(commit_hash)
+                except MigratorError:
                     errors.append("the hash in '{}', which is '{}', isn't the hash of a commit".format(
                         sc_file, sc_dict['commit_hash']))
                     continue
@@ -1869,7 +1874,9 @@ class SchemaChanges(object):
                 "with hash in file: '{}'".format(schema_changes_file, sc_dict['commit_hash']))
 
         # ensure that the hash corresponds to a commit
-        if git_repo.get_commit(commit_hash) is None:
+        try:
+            git_repo.get_commit(commit_hash)
+        except MigratorError:
             raise MigratorError("the hash in '{}', which is '{}', isn't the hash of a commit".format(
                 schema_changes_file, sc_dict['commit_hash']))
 
@@ -1953,7 +1960,6 @@ class SchemaChanges(object):
             errors = Migrator._validate_transformations(transformations)
             if errors:
                 raise MigratorError('\n'.join(errors))
-
             return transformations
 
     @staticmethod
@@ -1985,23 +1991,21 @@ class SchemaChanges(object):
 
         if not isinstance(schema_changes, dict) or \
             any([attr not in schema_changes for attr in SchemaChanges._CHANGES_FILE_ATTRS]):
-                raise MigratorError("schema changes file must have a dict with the attributes in "
-                    "{}._CHANGES_FILE_ATTRS: {}".format(SchemaChanges.__name__,
-                    ', '.join(SchemaChanges._CHANGES_FILE_ATTRS)))
+                raise MigratorError("schema changes file '{}' must have a dict with these attributes:\n{}".format(
+                    schema_changes_file, ', '.join(SchemaChanges._CHANGES_FILE_ATTRS)))
 
         if len(schema_changes['commit_hash']) != SchemaChanges._SHA1_LEN:
-            raise MigratorError("schema changes file '{}' does not have a proper hash".format(
+            raise MigratorError("schema changes file '{}' does not have a proper git hash".format(
                 schema_changes_file))
 
         # report empty schema changes files (unmodified templates)
         if schema_changes['renamed_models'] == [] and \
             schema_changes['renamed_attributes'] == [] and \
             schema_changes['transformations_file'] == '':
-                raise MigratorError("schema changes file is empty (an unmodified template)"
-                    ": '{}'".format(schema_changes_file))
+                raise MigratorError("schema changes file '{}' is empty (an unmodified template)".format(
+                    schema_changes_file))
 
         schema_changes['schema_changes_file'] = schema_changes_file
-
         return schema_changes
 
     @staticmethod
@@ -2174,24 +2178,54 @@ class GitRepo(object):
         """
         return self.get_hash(self.latest_commit())
 
-    def get_commit(self, commit_hash):
-        """ Get the commit with the given hash
-
-        Return `None` if this repo doen't have a commit with the hash `commit_hash`.
+    def get_commit(self, commit_or_hash):
+        """ Pass on a commit or convert a hash to its commit
 
         Args:
-            commit_hash (:obj:`str`): a commit hash
+            commit_or_hash (:obj:`str` or :obj:`git.objects.commit.Commit`): the hash of a commit or a commit
+                in the repo
 
         Returns:
-            :obj:`git.objects.commit.Commit`: the repo's commit with the hash `commit_hash`, or `None`
-                if no commit has that hash
+            :obj:`git.objects.commit.Commit`: a commit
+
+        Raises:
+            :obj:`MigratorError`: if `commit_or_hash` is not a commit and cannot be converted into one
         """
-        if commit_hash in self.git_hash_map:
-            return self.git_hash_map[commit_hash]
-        return None
+        if isinstance(commit_or_hash, str):
+            if commit_or_hash in self.git_hash_map:
+                return self.git_hash_map[commit_or_hash]
+        elif isinstance(commit_or_hash, git.objects.commit.Commit):
+            return commit_or_hash
+        raise MigratorError("commit_or_hash {} cannot be converted into a commit".format(commit_or_hash))
+
+    def get_commits(self, commits_or_hashes):
+        """ Get the commits with the given commits or hashes
+
+        Args:
+            commits_or_hashes (:obj:`list` of :obj:`str`): an iterator over commits or commit hashes
+
+        Returns:
+            :obj:`list` of :obj:`git.objects.commit.Commit`: list of the repo's commits with the
+                commits or hashes in `commits_or_hashes`
+
+        Raises:
+            :obj:`MigratorError`: if any of the commits or hashes don't identify a commit in the repo
+        """
+        if not commits_or_hashes:
+            return []
+        commits = []
+        bad_hashes = []
+        for hash in commits_or_hashes:
+            try:
+                commits.append(self.get_commit(hash))
+            except MigratorError:
+                bad_hashes.append(hash)
+        if bad_hashes:
+            raise MigratorError("No commit found for {}".format(", or ".join(bad_hashes)))
+        return commits
 
     def commits_as_graph(self):
-        """ Convert the repo commit history to a DAG. Edges point from dependent commit to parent commit.
+        """ Make a DAG that represents the repo commit dependencies - edges point from dependent commit to parent commit
 
         The DAG contains all commits in the repo on which the latest commit depends. Also creates
         `git_hash_map`, a map from all git hashes to their commits.
@@ -2202,20 +2236,18 @@ class GitRepo(object):
         self.git_hash_map = {}
         commit_graph = nx.DiGraph()
         latest = self.latest_commit()
-        commit_graph.add_node(latest)
         self.git_hash_map[self.get_hash(latest)] = latest
         commits_to_explore = {latest}
-        commits_found = {latest}
+        commits_explored = set()
         while commits_to_explore:
             commit = commits_to_explore.pop()
             for parent in commit.parents:
-                if parent in commits_found:
-                    continue
-                commits_found.add(parent)
-                commits_to_explore.add(parent)
                 # edges point from dependent commit to parent commit
                 commit_graph.add_edge(commit, parent)
                 self.git_hash_map[self.get_hash(parent)] = parent
+                if parent not in commits_explored:
+                    commits_to_explore.add(parent)
+            commits_explored.add(commit)
         return commit_graph
 
     @staticmethod
@@ -2249,25 +2281,39 @@ class GitRepo(object):
         except git.exc.GitError as e:
             raise MigratorError("checkout of '{}' to commit '{}' failed:\n{}".format(self.repo_name(), commit_hash, e))
 
-    def commit_seq_with_schema_changes(self, commits_to_migrate):
-        """ Get a sequence of commits with schema changes, in an order consistent with dependencies
+    def get_dependents(self, commit_or_hash):
+        """ Get all commits that depend on a commit, including transitively
+
+        Args:
+            commit_or_hash (:obj:`str` or :obj:`git.objects.commit.Commit`): the hash of a commit or a commit
+                in the repo
+
+        Returns:
+            :obj:`set` of :obj:`git.objects.commit.Commit`: all commits that depend on `commit_or_hash`
+        """
+        commit = self.get_commit(commit_or_hash)
+        return ancestors(self.commit_DAG, commit)
+
+    def commits_in_dependency_consistent_seq(self, commits):
+        """ Order some git commits into a sequence that's consistent with the repo's dependencies
 
         Note that the sequence found is not deterministic, because nodes without dependency relationships
-        can appear in any order. E.g., in a graph with the paths a -> b -> c and a -> d -> c, nodes
+        can appear in any order. E.g., in a commit DAG with the paths a -> b -> c and a -> d -> c, nodes
         b and d can appear in either order in the sequece.
 
         Args:
-            commits_to_migrate (:obj:`list` of :obj:`git.objects.commit.Commit`): list of commits at
-                which the schema needs to be migrated
+            commits (:obj:`list` of :obj:`git.objects.commit.Commit`): commits to include in the
+                returned sequence
 
         Returns:
-            :obj:`list` of :obj:`git.objects.commit.Commit`: sequence of nodes from `self.commit_DAG`
+            :obj:`list` of :obj:`git.objects.commit.Commit`: the elements of `commits`, in a sequence
+                that's consistent with git commit dependencies in the repository, ordered from
+                from antecedent to dependent
         """
         seq_with_schema_changes = []
-
-        commits_to_migrate = set(commits_to_migrate)
+        commits = set(commits)
         for commit in topological_sort(self.commit_DAG):
-            if commit in commits_to_migrate:
+            if commit in commits:
                 seq_with_schema_changes.append(commit)
         seq_with_schema_changes.reverse()
         return seq_with_schema_changes
@@ -2462,7 +2508,7 @@ class AutomatedMigration(object):
         return automated_migration_config
 
     def validate(self):
-        """ Validate and load data config data files and schema changes files
+        """ Validate files to migrate, and load all schema changes files
 
         Args:
             automated_migration_config_file (:obj:`str`): path to the automated migration config file
@@ -2506,7 +2552,7 @@ class AutomatedMigration(object):
             SchemaChanges.get_date_timestamp())
 
     def get_data_file_git_commit_hash(self, data_file):
-        """ Get the schema git commit hash in a data file
+        """ Get the git commit hash of the schema repo that describes a data file
 
         The schema in `self.schema_git_repo` must specify a Model name and metadata attributes
         in a `_GIT_METADATA` attribute. E.g., `wc_lang` contains:
@@ -2548,89 +2594,122 @@ class AutomatedMigration(object):
         commit_hash = getattr(metadata_model, revision_attr)
         return commit_hash
 
-    def get_seqs_of_schema_changes(self, migration_spec_args):
-        """ Iterate through the schema changes in the schema repo, and create input for a `MigrationSpec`
+    def generate_migration_spec(self, data_file, schema_changes):
+        """ Generate a `MigrationSpec` from a sequence of schema changes
+
+        The migration will migrate the file in place.
 
         Args:
-            migration_spec_args (:obj:`dict`): arguments for the `MigrationSpec` constructor
-        """
-        schema_files = []
-        seq_of_renamed_models = []
-        seq_of_renamed_attributes = []
-        seq_of_transformations = []
-        for schema_change in self.loaded_schema_changes:
-            # get separate clone of each schema commit
-            git_repo = GitRepo(self.data_config['schema_repo_url'])
-            git_repo.checkout_commit(schema_change.commit_hash)
-            schema_file = os.path.join(git_repo.migrations_dir(), schema_change.schema_changes_file)
-            schema_files.append(schema_file)
-            seq_of_renamed_models.append(schema_change.renamed_models)
-            seq_of_renamed_attributes.append(schema_change.renamed_attributes)
-            seq_of_transformations.append(schema_change.transformations_file)
-
-        migration_spec_args['schema_files'] = schema_files
-        migration_spec_args['seq_of_renamed_models'] = seq_of_renamed_models
-        migration_spec_args['seq_of_renamed_attributes'] = seq_of_renamed_attributes
-        migration_spec_args['seq_of_transformations'] = seq_of_transformations
-
-    def generate_migration_spec(self):
-        """ Generate a `MigrationSpec` for all schema changes
+            data_file (:obj:`str`): the existing data file that will be migrated
+            schema_changes (:obj:`list` of :obj:`SchemaChanges`): a sequence of schema changes
 
         Returns:
-            :obj:`MigrationSpec`: the partially instantiated `MigrationSpec` for all schema changes files in
-                the schema repo
-        """
-        migration_spec_args = {}
-        migration_spec_args['name'] = self.get_name()
-        migration_spec_args['existing_files'] = self.data_config['files_to_migrate']
-        self.get_seqs_of_schema_changes(migration_spec_args)
-        migration_spec_args['migrator'] = MigrationSpec.MIGRATOR_CREATOR_MAP[self.data_config['migrator']]
-        return MigrationSpec(**migration_spec_args)
-
-    def clone_schema_repos(self):
-        """ Get all schemas needed to migrate
-
-        By default, migrate to current version, make backups of models & migrate in place
-        """
-        pass
-        # find schema associated with each file
-
-    def get_schema(self, commit_hash):
-        """ Get the schema specified by the hash
-
-        Args:
-            commit_hash (:obj:`str`): hash of the commit version
-
-        Returns:
-            :obj:`str`: pathname of the schema file in a clone of the git commit
+            :obj:`MigrationSpec`: a `MigrationSpec` to migrate the file through the sequence of schema changes
 
         Raises:
-            :obj:`MigratorError`: if the git's commit cannot be cloned
+            :obj:`MigratorError`: if the `MigrationSpec` created does not validate
         """
-        # form the commit's URL
-        # clone the commit into a temporary directory
-        # return the schema's path in the clone
-        pass
+        spec_args = {}
+        # todo: more compact name
+        spec_args['name'] = "{}:{}".format(data_file, self.get_name())
+        spec_args['existing_files'] = [data_file]
+
+        # get the schema for the data file
+        git_repo = GitRepo(self.data_config['schema_repo_url'])
+        commit_hash = self.get_data_file_git_commit_hash(data_file)
+        git_repo.checkout_commit(commit_hash)
+        data_file_schema_file = normalize_filename(self.data_config['schema_file'], dir=git_repo.migrations_dir())
+        spec_args['schema_files'] = [data_file_schema_file]
+
+        spec_args['seq_of_renamed_models'] = []
+        spec_args['seq_of_renamed_attributes'] = []
+        spec_args['seq_of_transformations'] = []
+        for schema_change in schema_changes:
+            # make separate clone of each schema commit
+            git_repo = GitRepo(self.data_config['schema_repo_url'])
+            git_repo.checkout_commit(schema_change.commit_hash)
+            schema_file = normalize_filename(self.data_config['schema_file'], dir=git_repo.migrations_dir())
+            spec_args['schema_files'].append(schema_file)
+            spec_args['seq_of_renamed_models'].append(schema_change.renamed_models)
+            spec_args['seq_of_renamed_attributes'].append(schema_change.renamed_attributes)
+            spec_args['seq_of_transformations'].append(schema_change.transformations_file)
+
+        spec_args['migrator'] = self.data_config['migrator']
+        spec_args['migrate_in_place'] = True
+        migration_spec = MigrationSpec(**spec_args)
+        migration_spec.prepare()
+        return migration_spec
+
+    def schema_changes_for_data_file(self, data_file):
+        """ Generate a sequence of `SchemaChanges` for migrating a data file
+
+        Args:
+            data_file (:obj:`str`): a data file in the data git repo
+
+        Returns:
+            :obj:`list`: a sequence of `SchemaChanges` for migrating a data file
+        """
+        # get the schema for the data file
+        commit_hash = self.get_data_file_git_commit_hash(data_file)
+        # schema_git_repo = GitRepo(self.data_config['schema_repo_url'])
+        # schema_changes = SchemaChanges(git_repo=schema_git_repo, commit_hash=commit_hash)
+
+        # make a SchemaChanges for each schema change in the file's schema's dependents
+        hashes_of_schema_changes = [sc.commit_hash for sc in self.loaded_schema_changes]
+        hashes_of_dependents = \
+            [GitRepo.get_hash(dependent) for dependent in self.schema_git_repo.get_dependents(commit_hash)]
+        hashes_of_dependent_schema_changes = set(hashes_of_schema_changes).intersection(hashes_of_dependents)
+        commits = self.schema_git_repo.get_commits(hashes_of_dependent_schema_changes)
+
+        # create a SchemaChanges for each migration of data_file
+        seq_of_schema_changes = []
+        for commit in self.schema_git_repo.commits_in_dependency_consistent_seq(commits):
+            schema_changes_file = SchemaChanges.find_file(self.schema_git_repo, GitRepo.get_hash(commit))
+            seq_of_schema_changes.append(SchemaChanges.generate_instance(schema_changes_file))
+        return seq_of_schema_changes
 
     def prepare(self):
         """ Prepare for migration
 
+        * Validate files to migrate, and load all schema changes files
+        * Clone each schema change
+        * Generate and prepare a migration spec for the migration
         """
+        # todo: partition data files by their associated commit
+        # temporarily, make a separate migration spec for each data file
+        '''
+        for each data file:
+            make a migration spec
+            determine file's commit and get its schema file
+            make schema change with the commit & no changes
+            for each schema change downstream in topo_sort from file's commit:
+                get schema change (and add to migration spec)
+        '''
         self.validate()
+        self.migration_spec = self.generate_migration_spec(data_file)
+        self.migration_spec.prepare()
 
     def migrate(self):
         """ Migrate the repo's data files
 
-        By default, migrate to current version, make backups of models & migrate in place
+        By default, migrate to the current version of the schema repo, and migrate data files in place
+
+        Returns:
+            :obj:`list`: the migrated files
         """
-        # get repo
-        # get commit hash
-        # get config
-        # initialize MigrationSpec
-        # backup the data files
+        self.prepare()
         # migrate
+        _, all_migrated_files = MigrationController.migrate_over_schema_sequence(self.migration_spec)
         # test the migration
-        # report migration results
+        # todo: migrated files are in a tmp dir holding the data_git_repo; make them available to the user
+        # the user might want to review the migrated data and then commit the changes
+        # could copy the migrated files into a directory provided by the user
+        return all_migrated_files
+
+    def test(self):
+        """ Test a migration
+
+        """
         pass
 
 
