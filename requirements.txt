@@ -1,4 +1,5 @@
 biopython
+gitpython
 inflect
 natsort
 networkx
