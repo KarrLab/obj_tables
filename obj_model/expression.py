@@ -533,6 +533,20 @@ class Expression(object):
         setattr(new_obj, model_type.Meta.primary_attribute.name, primary_attr)
         return new_obj
 
+    def merge_attrs(self, other, other_objs_in_self, self_objs_in_other):
+        """ Merge attributes of two objects
+
+        Args:
+            other (:obj:`Model`): other model
+            other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
+                in a model
+            self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
+                in another model
+        """
+        for cls, other_related_objs in other._parsed_expression.related_objects.items():
+            for obj_id, other_obj in other_related_objs.items():
+                self._parsed_expression.related_objects[cls][obj_id] = other_objs_in_self.get(other_obj, other_obj)
+
 
 class ParsedExpressionError(Exception):
     """ Exception raised for errors in `ParsedExpression`
