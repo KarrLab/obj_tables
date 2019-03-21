@@ -104,7 +104,7 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
         terms = []
         for attr in self.related_class.Meta.attributes.values():
             if isinstance(attr, RelatedAttribute) and \
-                attr.related_class.__name__ in self.related_class.Meta.expression_term_models:
+                    attr.related_class.__name__ in self.related_class.Meta.expression_term_models:
                 terms.append(attr.related_class.Meta.verbose_name_plural)
         if terms:
             if len(terms) == 1:
@@ -178,7 +178,7 @@ class ExpressionManyToOneAttribute(ManyToOneAttribute):
         terms = []
         for attr in self.related_class.Meta.attributes.values():
             if isinstance(attr, RelatedAttribute) and \
-                attr.related_class.__name__ in self.related_class.Meta.expression_term_models:
+                    attr.related_class.__name__ in self.related_class.Meta.expression_term_models:
                 terms.append(attr.related_class.Meta.verbose_name_plural)
         if terms:
             if len(terms) == 1:
@@ -1185,8 +1185,40 @@ class ParsedExpression(object):
             with_units (:obj:`bool`, optional): if :obj:`True`, include units
 
         Returns:
-            :obj:`str`: compile expression for `eval`
+            :obj:`str`: compiled expression for `eval`
             :obj:`dict`: compiled namespace
+        """
+
+        str_expression = self.get_str(self._obj_model_token_to_str, with_units=with_units)
+        compiled_expression = compile(str_expression, '<ParsedExpression>', 'eval')
+
+        compiled_namespace = {func.__name__: func for func in self.valid_functions}
+        if with_units and self.unit_registry:
+            compiled_namespace['__dimensionless__'] = self.unit_registry.parse_expression('dimensionless')
+
+        return compiled_expression, compiled_namespace
+
+    def _obj_model_token_to_str(self, token):
+        """ Get a string representation of a token that represents an instance of :obj:`Model`.
+
+        Args:
+            token (:obj:`ObjModelToken`): token that represents an instance of :obj:`Model`
+
+        Returns:
+            :obj:`str`: string representation of a token that represents an instance of :obj:`Model`.
+        """
+        return '{}["{}"]'.format(token.model_type.__name__, token.model.get_primary_attribute())
+
+    def get_str(self, obj_model_token_to_str, with_units=False):
+        """ Generate string representation of expression, e.g. for evaluation by `eval` method
+
+        Args:
+            obj_model_token_to_str (:obj:`callable`): method to get string representation of a token that represents
+                an instance of :obj:`Model`.
+            with_units (:obj:`bool`, optional): if :obj:`True`, include units
+
+        Returns:
+            :obj:`str`: string representation of expression
 
         Raises:
             :obj:`ParsedExpressionError`: if the expression is invalid
@@ -1195,29 +1227,23 @@ class ParsedExpression(object):
             raise ParsedExpressionError("Cannot evaluate '{}', as it not been successfully tokenized".format(
                 self.expression))
 
-        compiled_tokens = []
+        tokens = []
         idx = 0
         while idx < len(self._obj_model_tokens):
             obj_model_token = self._obj_model_tokens[idx]
             if obj_model_token.code == ObjModelTokenCodes.obj_id:
-                val = '{}["{}"]'.format(obj_model_token.model_type.__name__, obj_model_token.model.get_primary_attribute())
-                compiled_tokens.append(val)
+                val = obj_model_token_to_str(obj_model_token)
+                tokens.append(val)
             elif obj_model_token.code == ObjModelTokenCodes.number:
                 if with_units:
-                    compiled_tokens.append(obj_model_token.token_string + ' * __dimensionless__')
+                    tokens.append(obj_model_token.token_string + ' * __dimensionless__')
                 else:
-                    compiled_tokens.append(obj_model_token.token_string)
+                    tokens.append(obj_model_token.token_string)
             else:
-                compiled_tokens.append(obj_model_token.token_string)
+                tokens.append(obj_model_token.token_string)
             idx += 1
 
-        compiled_expression = compile(' '.join(compiled_tokens), '<ParsedExpression>', 'eval')
-
-        compiled_namespace = {func.__name__: func for func in self.valid_functions}
-        if with_units and self.unit_registry:
-            compiled_namespace['__dimensionless__'] = self.unit_registry.parse_expression('dimensionless')
-
-        return compiled_expression, compiled_namespace
+        return ' '.join(tokens)
 
     def __str__(self):
         rv = []
