@@ -1223,13 +1223,14 @@ class ParsedExpression(object):
         """
         return '{}["{}"]'.format(token.model_type.__name__, token.model.get_primary_attribute())
 
-    def get_str(self, obj_model_token_to_str, with_units=False):
+    def get_str(self, obj_model_token_to_str, with_units=False, number_units=' * __dimensionless__'):
         """ Generate string representation of expression, e.g. for evaluation by `eval` method
 
         Args:
             obj_model_token_to_str (:obj:`callable`): method to get string representation of a token that represents
                 an instance of :obj:`Model`.
             with_units (:obj:`bool`, optional): if :obj:`True`, include units
+            number_units (:obj:`str`, optional): default units for numbers
 
         Returns:
             :obj:`str`: string representation of expression
@@ -1250,7 +1251,7 @@ class ParsedExpression(object):
                 tokens.append(val)
             elif obj_model_token.code == ObjModelTokenCodes.number:
                 if with_units:
-                    tokens.append(obj_model_token.token_string + ' * __dimensionless__')
+                    tokens.append(obj_model_token.token_string + number_units)
                 else:
                     tokens.append(obj_model_token.token_string)
             else:
