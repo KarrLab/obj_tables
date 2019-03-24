@@ -1564,11 +1564,13 @@ class AutoMigrationFixtures(unittest.TestCase):
 
         cls.totally_empty_git_repo = GitRepo()
 
+        cls.fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
+
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_dir)
-        # remove the GitRepo so that its temp_dirs get deleted
-        del cls.git_repo
+        # remove the GitRepo's temp_dirs
+        cls.git_repo.del_temp_dirs()
 
     def setUp(self):
         # create empty repo containing a commit and a migrations directory
@@ -1599,7 +1601,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.test_data = dict(
             commit_hash='a'*40,
             renamed_models=[('Foo', 'FooNew')],
-            renamed_attributes=[('Foo', 'Attr'), ('FooNew', 'AttrNew')],
+            renamed_attributes=[[('Foo', 'Attr'), ('FooNew', 'AttrNew')]],
             transformations_file=''
         )
         self.empty_schema_changes = SchemaChanges(self.empty_git_repo)
@@ -1725,18 +1727,36 @@ class TestSchemaChanges(AutoMigrationFixtures):
             r"schema changes file '.+' must have a dict with these attributes:"):
             SchemaChanges.load(bad_yaml)
 
-        # make the hash too short
-        self.test_data['commit_hash'] = 'a'
-        with open(bad_yaml, "w") as f:
-            f.write(yaml.dump(self.test_data))
-        with self.assertRaisesRegex(MigratorError,
-            "schema changes file '.+' does not have a proper git hash"):
-            SchemaChanges.load(bad_yaml)
-
         pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
         with self.assertRaisesRegex(MigratorError,
             r"schema changes file '.+' is empty \(an unmodified template\)"):
             SchemaChanges.load(pathname)
+
+    def test_validate(self):
+        schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
+            'good_schema_changes_2019-03.yaml')
+        self.assertFalse(SchemaChanges.validate(SchemaChanges.load(schema_changes_file)))
+
+        schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
+            'bad_types_schema_changes_2019-03.yaml')
+        schema_changes_kwargs = SchemaChanges.load(schema_changes_file)
+        errors = SchemaChanges.validate(schema_changes_kwargs)
+        self.assertTrue(any([re.search('commit_hash must be a str', e) for e in errors]))
+        self.assertTrue(any([re.search('transformations_file must be a str', e) for e in errors]))
+        self.assertTrue(any([re.search("renamed_models .* a list of pairs of strings, but is '.*'$", e)
+            for e in errors]))
+        self.assertTrue(any([re.search('renamed_models .*list of pairs of strings, .* examining it raises', e)
+            for e in errors]))
+        self.assertTrue(any([re.search("renamed_attributes.*list of pairs of pairs of strings, but is '.*'$", e)
+            for e in errors]))
+        self.assertTrue(any([re.search("renamed_attributes.*list of.*but.*'.*',.*examining it raises.*error$", e)
+            for e in errors]))
+
+        schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
+            'short_hash_schema_changes_2019-03.yaml')
+        schema_changes_kwargs = SchemaChanges.load(schema_changes_file)
+        errors = SchemaChanges.validate(schema_changes_kwargs)
+        self.assertRegex(errors[0], "commit_hash is '.*', which isn't the right length for a git hash")
 
     def test_generate_instance(self):
         temp_dir = tempfile.TemporaryDirectory()
@@ -1956,7 +1976,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             **dict(data_repo_location=self.test_repo_url,
                 data_config_file_basename='automated_migration_config-test_repo.yaml'))
 
-        self.fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
     def test_make_template_config_file(self):

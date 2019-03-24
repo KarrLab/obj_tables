@@ -1,0 +1,9 @@
+# schema changes file
+# stored in 'bad_schema_changes_2019-03-23-17-43-25_aaaaaaa.yaml'
+
+commit_hash: 3
+renamed_attributes: [[[Test, existing_attr], [Test, migrated_attr]],
+    [[Test, existing_attr], [3, existing_attr]],
+    1.2]
+renamed_models: [[3, 'hi'], 7]
+transformations_file: [milk, pumpkin pie]
