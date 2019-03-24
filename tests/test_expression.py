@@ -64,6 +64,10 @@ class SubFunctionExpression(Model, Expression):
 
     def validate(self): return Expression.validate(self, self.parent_sub_function)
 
+    def merge_attrs(self, other, other_objs_in_self, self_objs_in_other):
+        super(SubFunctionExpression, self).merge_attrs(other, other_objs_in_self, self_objs_in_other)
+        Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
+
 
 class SubFunction(Model):
     id = SlugAttribute()
@@ -89,6 +93,10 @@ class BooleanSubFunctionExpression(Model, Expression):
     def deserialize(cls, value, objects): return Expression.deserialize(cls, value, objects)
 
     def validate(self): return Expression.validate(self, self.boolean_sub_function)
+
+    def merge_attrs(self, other, other_objs_in_self, self_objs_in_other):
+        super(BooleanSubFunctionExpression, self).merge_attrs(other, other_objs_in_self, self_objs_in_other)
+        Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
 
 
 class BooleanSubFunction(Model):
@@ -117,6 +125,10 @@ class LinearSubFunctionExpression(Model, Expression):
     def deserialize(cls, value, objects): return Expression.deserialize(cls, value, objects)
 
     def validate(self): return Expression.validate(self, self.linear_sub_function)
+
+    def merge_attrs(self, other, other_objs_in_self, self_objs_in_other):
+        super(LinearSubFunctionExpression, self).merge_attrs(other, other_objs_in_self, self_objs_in_other)
+        Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
 
 
 class LinearSubFunction(Model):
@@ -147,6 +159,10 @@ class FunctionExpression(Model, Expression):
     def deserialize(cls, value, objects): return Expression.deserialize(cls, value, objects)
 
     def validate(self): return Expression.validate(self, self.function)
+
+    def merge_attrs(self, other, other_objs_in_self, self_objs_in_other):
+        super(FunctionExpression, self).merge_attrs(other, other_objs_in_self, self_objs_in_other)
+        Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
 
 
 class Function(Model):
@@ -325,6 +341,45 @@ class ExpressionTestCase(unittest.TestCase):
 
         self.assertIsInstance(Expression.make_obj(BaseModel(), LinearSubFunction, 'func_1',
                                                   'p_1 * p_2 + p_3', objects), InvalidObject)
+
+    def test_merge(self):
+        model_a = BaseModel(id='model')
+        model_b = BaseModel(id='model')
+        model_ab = BaseModel(id='model')
+        objects_a = {
+            Parameter: {
+                'p_1': Parameter(model=model_a, id='p_1'),
+                'p_2': Parameter(model=model_a, id='p_2'),
+                'p_3': Parameter(model=model_a, id='p_3'),
+            },
+        }
+        objects_b = {
+            Parameter: {
+                'p_1': Parameter(model=model_b, id='p_1'),
+                'p_2': Parameter(model=model_b, id='p_2'),
+                'p_3': Parameter(model=model_b, id='p_3'),
+            },
+        }
+        objects_ab = {
+            Parameter: {
+                'p_1': Parameter(model=model_ab, id='p_1'),
+                'p_2': Parameter(model=model_ab, id='p_2'),
+                'p_3': Parameter(model=model_ab, id='p_3'),
+            },
+        }
+
+        func_1_a = Expression.make_obj(model_a, Function, 'func_1', 'p_1 + p_2', objects_a)
+        func_2_b = Expression.make_obj(model_b, Function, 'func_2', 'p_1 + p_3', objects_b)
+        func_1_ab = Expression.make_obj(model_ab, Function, 'func_1', 'p_1 + p_2', objects_ab)
+        func_2_ab = Expression.make_obj(model_ab, Function, 'func_2', 'p_1 + p_3', objects_ab)
+
+        merged_model = model_a.copy()
+        merged_model.merge(model_b.copy())
+        self.assertTrue(merged_model.is_equal(model_ab))
+
+        merged_model = model_b.copy()
+        merged_model.merge(model_a.copy())
+        self.assertTrue(merged_model.is_equal(model_ab))
 
 
 class ParsedExpressionTestCase(unittest.TestCase):

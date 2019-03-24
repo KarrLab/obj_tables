@@ -4591,14 +4591,21 @@ class TestCore(unittest.TestCase):
     def test_get_none_value(self):
         attr = core.DateAttribute()
         self.assertTrue(attr.value_equal(attr.get_none_value(), None))
-        self.assertEqual(attr.get_none_value(), None)        
+        self.assertEqual(attr.get_none_value(), None)
 
         attr = core.StringAttribute()
         self.assertTrue(attr.value_equal(attr.get_none_value(), ''))
-        self.assertEqual(attr.get_none_value(), '')        
+        self.assertEqual(attr.get_none_value(), '')
 
         attr = core.FloatAttribute()
         self.assertTrue(attr.value_equal(attr.get_none_value(), float('nan')))
+
+    def test_get_none_value(self):
+        attr = core.StringAttribute(none_value='abc')
+        self.assertEqual(attr.get_none_value(), 'abc')
+
+        attr = core.StringAttribute(none_value=lambda: 'def')
+        self.assertEqual(attr.get_none_value(), 'def')
 
 
 class ContextTestCase(unittest.TestCase):

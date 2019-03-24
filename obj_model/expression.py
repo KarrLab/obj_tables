@@ -533,6 +533,20 @@ class Expression(object):
         setattr(new_obj, model_type.Meta.primary_attribute.name, primary_attr)
         return new_obj
 
+    def merge_attrs(self, other, other_objs_in_self, self_objs_in_other):
+        """ Merge attributes of two objects
+
+        Args:
+            other (:obj:`Model`): other model
+            other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
+                in a model
+            self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
+                in another model
+        """
+        for cls, other_related_objs in other._parsed_expression.related_objects.items():
+            for obj_id, other_obj in other_related_objs.items():
+                self._parsed_expression.related_objects[cls][obj_id] = other_objs_in_self.get(other_obj, other_obj)
+
 
 class ParsedExpressionError(Exception):
     """ Exception raised for errors in `ParsedExpression`
@@ -1209,13 +1223,14 @@ class ParsedExpression(object):
         """
         return '{}["{}"]'.format(token.model_type.__name__, token.model.get_primary_attribute())
 
-    def get_str(self, obj_model_token_to_str, with_units=False):
+    def get_str(self, obj_model_token_to_str, with_units=False, number_units=' * __dimensionless__'):
         """ Generate string representation of expression, e.g. for evaluation by `eval` method
 
         Args:
             obj_model_token_to_str (:obj:`callable`): method to get string representation of a token that represents
                 an instance of :obj:`Model`.
             with_units (:obj:`bool`, optional): if :obj:`True`, include units
+            number_units (:obj:`str`, optional): default units for numbers
 
         Returns:
             :obj:`str`: string representation of expression
@@ -1236,7 +1251,7 @@ class ParsedExpression(object):
                 tokens.append(val)
             elif obj_model_token.code == ObjModelTokenCodes.number:
                 if with_units:
-                    tokens.append(obj_model_token.token_string + ' * __dimensionless__')
+                    tokens.append(obj_model_token.token_string + number_units)
                 else:
                     tokens.append(obj_model_token.token_string)
             else:
