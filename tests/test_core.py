@@ -481,7 +481,7 @@ class TestCore(unittest.TestCase):
 
                 class Meta(core.Model.Meta):
                     attribute_order = (1,)
-        self.assertIn('must contain attribute names', str(context.exception))
+        self.assertIn('must be a tuple of strings', str(context.exception))
 
         bad_name = 'ERROR'
         with self.assertRaises(ValueError) as context:
@@ -490,7 +490,7 @@ class TestCore(unittest.TestCase):
 
                 class Meta(core.Model.Meta):
                     attribute_order = (bad_name,)
-        self.assertIn("'{}' not found in attributes of".format(
+        self.assertIn("does not have an attribute with name '{}'".format(
             bad_name), str(context.exception))
 
         with self.assertRaises(ValueError) as context:

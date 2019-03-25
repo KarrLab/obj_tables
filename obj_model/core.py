@@ -158,22 +158,23 @@ class ModelMeta(type):
             raise ValueError('Attribute cannot have reserved name `__id`')
 
         if not isinstance(namespace['Meta'].attribute_order, (tuple, list)):
-            raise ValueError('`attribute_order` must be a tuple of strings of the names of attributes')
+            raise ValueError('`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}'.format(
+                name, name))
 
         for attr_name in namespace['Meta'].attribute_order:
             if not isinstance(attr_name, str):
-                raise ValueError("`attribute_order` for {} must contain attribute names; '{}' is "
-                                 "not a string".format(name, attr_name))
+                raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}; "
+                                 "{} '{}' is not a string".format(name, name, attr_name.__class__.__name__, attr_name))
 
             if attr_name not in namespace:
                 is_attr = False
                 for base in bases:
-                    if attr_name in dir(base):
+                    if hasattr(base, attr_name):
                         is_attr = True
 
                 if not is_attr:
-                    raise ValueError("`attribute_order` must contain attribute names; '{}' not found in "
-                                     "attributes of {}".format(attr_name, name))
+                    raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}; "
+                                     "{} does not have an attribute with name '{}'".format(name, name, name, attr_name))
 
         metacls.validate_attr_tuples(name, bases, namespace, 'unique_together')
         metacls.validate_attr_tuples(name, bases, namespace, 'indexed_attrs_tuples')
@@ -4688,7 +4689,7 @@ class TimeAttribute(LiteralAttribute):
     """
 
     def __init__(self, none=True, default=None, default_cleaned_value=None, none_value=None,
-        verbose_name='', help='', primary=False, unique=False):
+                 verbose_name='', help='', primary=False, unique=False):
         """
         Args:
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
