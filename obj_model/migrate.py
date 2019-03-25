@@ -69,6 +69,7 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # todo: move or copy schema_changes and automated_migration_config_file creation from migration_test_repo/__main__.py
 # to here so they can be used by programmers doing migration
 
+# todo: make schema changes files that have been finished read-only and push permissions to git
 # JK ideas:
 # todo: tuning: rather then repeatedly clone a repo, either 1) have it checkout different commits as needed,
 # or b) copy the directory and checkout different commits in different dirs; test performance on big repos

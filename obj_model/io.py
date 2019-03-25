@@ -427,7 +427,7 @@ class Writer(WriterBase):
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
-            get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
+            get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
                 not explictly included in `Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
