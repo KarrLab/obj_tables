@@ -1558,9 +1558,11 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.known_hash_ba1f9d3 = 'ba1f9d33a3e18a74f79f41903e7e88e118134d5f'
         cls.schema_changes_file = SchemaChanges.find_file(cls.git_repo, cls.known_hash_ba1f9d3)
 
-        cls.test_repo_clean_url = 'https://github.com/KarrLab/test_repo_clean'
-        cls.git_test_repo_clean = GitRepo(cls.test_repo_clean_url)
-        cls.clean_schema_changes_file = SchemaChanges.find_file(cls.git_test_repo_clean, cls.known_hash_ba1f9d3)
+        cls.migration_test_repo_url = 'https://github.com/KarrLab/migration_test_repo'
+        cls.migration_test_repo_known_hash = '095bca3a645c523709820926989ce58eadd98936'
+        cls.git_migration_test_repo = GitRepo(cls.migration_test_repo_url)
+        cls.clean_schema_changes_file = SchemaChanges.find_file(cls.git_migration_test_repo,
+            cls.migration_test_repo_known_hash)
 
         cls.totally_empty_git_repo = GitRepo()
 
@@ -1660,17 +1662,24 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.assertTrue(2 <= len(filename.split('_')))
 
     def test_make_template(self):
-        # todo: test changes_file_dir alternatives
-        pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
-        data = yaml.load(open(pathname, 'r'), Loader=yaml.FullLoader)
-        for attr in ['renamed_models', 'renamed_attributes']:
-            self.assertEqual(data[attr], [])
-        for attr in ['commit_hash', 'transformations_file']:
-            self.assertIsInstance(data[attr], str)
+        for changes_file_dir in [None, self.empty_migrations_dir]:
+            pathname = self.empty_schema_changes.make_template(changes_file_dir)
+            data = yaml.load(open(pathname, 'r'), Loader=yaml.FullLoader)
+            for attr in ['renamed_models', 'renamed_attributes']:
+                self.assertEqual(data[attr], [])
+            for attr in ['commit_hash', 'transformations_file']:
+                self.assertIsInstance(data[attr], str)
+            os.remove(pathname)
 
-        # quickly create another, which will likely have the same timestamp
+        # instantly create two, which will likely have the same timestamp
+        pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
         with self.assertRaisesRegex(MigratorError, "schema changes file '.+' already exists"):
             self.empty_schema_changes.make_template(self.empty_migrations_dir)
+        os.remove(pathname)
+
+        with capturer.CaptureOutput(relay=False) as capture_output:
+            self.empty_schema_changes.make_template(self.empty_migrations_dir, verbose=True)
+            self.assertIn('created schema changes template', capture_output.get_text())
 
     def test_import_transformations(self):
         find_file = SchemaChanges.find_file
@@ -1766,6 +1775,11 @@ class TestSchemaChanges(AutoMigrationFixtures):
         schema_changes = SchemaChanges.generate_instance(good_yaml)
         for attr in SchemaChanges._CHANGES_FILE_ATTRS:
             self.assertEqual(getattr(schema_changes, attr), self.test_data[attr])
+
+        schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
+            'bad_types_schema_changes_2019-03.yaml')
+        with self.assertRaises(MigratorError):
+            SchemaChanges.generate_instance(schema_changes_file)
 
     def test_str(self):
         for attr in SchemaChanges._ATTRIBUTES:
@@ -1872,6 +1886,10 @@ class TestGitRepo(AutoMigrationFixtures):
         # todo: real test!
         commit_DAG = self.git_repo.commits_as_graph()
         self.assertIsInstance(commit_DAG, nx.classes.digraph.DiGraph)
+        known_paths = [
+            # (tag or hash 1, tag or hash 2, hops on path)
+            (, ),
+        ]
 
     def test_get_hash(self):
         # todo: test with a frozen repo whose hash is known
@@ -1967,11 +1985,11 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
     def setUp(self):
         self.clean_automated_migration = AutomatedMigration(
-            **dict(data_repo_location=self.test_repo_clean_url,
-                data_config_file_basename='automated_migration_config-test_repo_clean.yaml'))
-        self.test_repo_clean_fixtures = self.clean_automated_migration.data_git_repo.fixtures_dir()
-        self.test_repo_clean_data_file = os.path.join(self.test_repo_clean_fixtures, 'data_file.xlsx')
-        self.test_repo_clean_data_file_2 = os.path.join(self.test_repo_clean_fixtures, 'data_file_2.xlsx')
+            **dict(data_repo_location=self.migration_test_repo_url,
+                data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
+        self.migration_test_repo_fixtures = self.clean_automated_migration.data_git_repo.fixtures_dir()
+        self.migration_test_repo_data_file_1 = os.path.join(self.migration_test_repo_fixtures, 'data_file_1.xlsx')
+        self.migration_test_repo_data_file_2 = os.path.join(self.migration_test_repo_fixtures, 'data_file_2.xlsx')
         self.buggy_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.test_repo_url,
                 data_config_file_basename='automated_migration_config-test_repo.yaml'))
@@ -1979,7 +1997,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
     def test_make_template_config_file(self):
-        path = AutomatedMigration.make_template_config_file(self.git_repo, 'test_repo_clean')
+        path = AutomatedMigration.make_template_config_file(self.git_repo, 'migration_test_repo')
 
         # check the file at path
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
@@ -1995,21 +2013,21 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
-            AutomatedMigration.make_template_config_file(self.git_repo, 'test_repo_clean')
+            AutomatedMigration.make_template_config_file(self.git_repo, 'migration_test_repo')
 
         remove_silently(path)
 
     def test_load_config_file(self):
 
         # read config file with initialized values
-        pathname = os.path.join(self.git_test_repo_clean.migrations_dir(),
-            'automated_migration_config-test_repo_clean.yaml')
+        pathname = os.path.join(self.git_migration_test_repo.migrations_dir(),
+            'automated_migration_config-migration_test_repo.yaml')
         automated_migration_config = AutomatedMigration.load_config_file(pathname)
         expected_automated_migration_config = dict(
-            files_to_migrate=['../tests/fixtures/data_file.xlsx', '../tests/fixtures/data_file_2.xlsx'],
-            migrator='wc_lang',
-            schema_file='../test_repo_clean/core.py',
-            schema_repo_url='https://github.com/KarrLab/test_repo_clean'
+            files_to_migrate=['../tests/fixtures/data_file_1.xlsx'],
+            migrator='standard_migrator',
+            schema_file='../migration_test_repo/core.py',
+            schema_repo_url='https://github.com/KarrLab/migration_test_repo'
         )
         self.assertEqual(automated_migration_config, expected_automated_migration_config)
 
@@ -2042,35 +2060,35 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         remove_silently(config_file)
 
     def test_init(self):
-        config_basename = 'automated_migration_config-test_repo_clean.yaml'
+        config_basename = 'automated_migration_config-migration_test_repo.yaml'
         automated_migration = AutomatedMigration(
-            **dict(data_repo_location=self.test_repo_clean_url, data_config_file_basename=config_basename))
-        self.assertEqual(automated_migration.data_repo_location, self.test_repo_clean_url)
+            **dict(data_repo_location=self.migration_test_repo_url, data_config_file_basename=config_basename))
+        self.assertEqual(automated_migration.data_repo_location, self.migration_test_repo_url)
         self.assertEqual(automated_migration.data_config_file_basename, config_basename)
-        self.assertEqual(automated_migration.data_git_repo.repo_name(), 'test_repo_clean')
+        self.assertEqual(automated_migration.data_git_repo.repo_name(), 'migration_test_repo')
         self.assertIsInstance(automated_migration.data_config, dict)
-        self.assertEqual(automated_migration.schema_git_repo.repo_name(), 'test_repo_clean')
+        self.assertEqual(automated_migration.schema_git_repo.repo_name(), 'migration_test_repo')
 
         with self.assertRaisesRegex(MigratorError, "initialization of AutomatedMigration must provide "
             "AutomatedMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
-            AutomatedMigration(**dict(data_repo_location=self.test_repo_clean_url))
+            AutomatedMigration(**dict(data_repo_location=self.migration_test_repo_url))
 
     def test_validate(self):
         automated_migration = self.clean_automated_migration
 
-        expected_files_to_migrate = [self.test_repo_clean_data_file, self.test_repo_clean_data_file_2]
+        expected_files_to_migrate = [self.migration_test_repo_data_file_1]
         automated_migration.validate()
         self.assertEqual(expected_files_to_migrate, automated_migration.data_config['files_to_migrate'])
         self.assertEqual(automated_migration.data_config['schema_repo_url'],
-            'https://github.com/KarrLab/test_repo_clean')
+            'https://github.com/KarrLab/migration_test_repo')
         loaded_schema_changes = automated_migration.loaded_schema_changes
-        self.assertEqual(len(loaded_schema_changes), 6)
+        self.assertEqual(len(loaded_schema_changes), 2)
         self.assertIsInstance(loaded_schema_changes[0], SchemaChanges)
 
         # test errors
         os.rename(  # create an error in all_schema_changes_with_commits()
             os.path.join(automated_migration.schema_git_repo.migrations_dir(),
-                'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml'),
+                'schema_changes_2019-03-23-17-43-25_095bca3.yaml'),
             os.path.join(automated_migration.schema_git_repo.migrations_dir(),
                 'schema_changes_2019-02-13-14-05-42_badhash.yaml'))
         with self.assertRaises(MigratorError):
@@ -2082,7 +2100,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             automated_migration.validate()
 
     def test_get_name(self):
-        self.assertIn('automated-migration:test_repo_clean:test_repo_clean:',
+        self.assertIn('automated-migration:migration_test_repo:migration_test_repo:',
             self.clean_automated_migration.get_name())
 
         self.clean_automated_migration.data_git_repo = None
@@ -2092,8 +2110,8 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
     def test_get_data_file_git_commit_hash(self):
         self.clean_automated_migration.validate()
-        git_commit_hash = self.clean_automated_migration.get_data_file_git_commit_hash(self.test_repo_clean_data_file_2)
-        self.assertEqual(git_commit_hash, '6002677d4d43b894a1ab026a70bdf91cec515a5c')
+        git_commit_hash = self.clean_automated_migration.get_data_file_git_commit_hash(self.migration_test_repo_data_file_1)
+        self.assertEqual(git_commit_hash, 'e6565109959d4d6eb831ba682891b084c36ea936')
 
         # test errors
         with self.assertRaisesRegex(MigratorError, "schema '.+' does not have a _GIT_METADATA attribute"):
@@ -2110,10 +2128,10 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         clean_auto_migration = self.clean_automated_migration
         clean_auto_migration.validate()
         # todo: really need a schema changes file that comes after the schema for the data file
-        migration_spec = self.clean_automated_migration.generate_migration_spec(self.test_repo_clean_data_file,
+        migration_spec = self.clean_automated_migration.generate_migration_spec(self.migration_test_repo_data_file_1,
             [SchemaChanges.generate_instance(self.clean_schema_changes_file)])
-        self.assertEqual(migration_spec.migrator, 'wc_lang')
-        self.assertEqual(migration_spec.existing_files[0], self.test_repo_clean_data_file)
+        self.assertEqual(migration_spec.migrator, 'standard_migrator')
+        self.assertEqual(migration_spec.existing_files[0], self.migration_test_repo_data_file_1)
         self.assertEqual(len(migration_spec.schema_files), 2)
         self.assertEqual(migration_spec.migrate_in_place, True)
         self.assertEqual(migration_spec._prepared, True)
@@ -2121,20 +2139,21 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         # test error
         seq_of_schema_changes = []
         with self.assertRaises(MigratorError):
-            self.clean_automated_migration.generate_migration_spec(self.test_repo_clean_data_file,
+            self.clean_automated_migration.generate_migration_spec(self.migration_test_repo_data_file_1,
                 seq_of_schema_changes)
 
     def test_schema_changes_for_data_file(self):
         clean_auto_migration = self.clean_automated_migration
         clean_auto_migration.validate()
-        schema_changes = clean_auto_migration.schema_changes_for_data_file(self.test_repo_clean_data_file_2)
-        commits_related_2_test_repo_clean_data_file_2 = [
-            ('SCHEMA_OF_data_file_2', 'add data file tests/fixtures/data_file_2.xlsx'),
-            ('SCHEMA_CHANGE_34a6516', 'modify schema in core.py'),
-            ('SCHEMA_CHANGE_3fa1a22', 'make changes in schema that inverts changes in commit 34a6516')
+        schema_changes = clean_auto_migration.schema_changes_for_data_file(self.migration_test_repo_data_file_1)
+        commits_related_2_migration_test_repo_data_file_1 = [
+            # tag, hash prefix
+            ('MAKE_DATA_FILE_ON_master', '6e77a67'),
+            ('CHANGE_SCHEMA_ON_master', '095bca3'),
+            ('REVERSE_SCHEMA_CHANGES_IN_095bca_ON_master', '65b6591')
         ]
-        for sc, commit in zip(schema_changes, commits_related_2_test_repo_clean_data_file_2[1:]):
-            hash_prefix = commit[0].split('_')[-1]
+        for sc, commit_note in zip(schema_changes, commits_related_2_migration_test_repo_data_file_1[1:]):
+            _, hash_prefix = commit_note
             self.assertEqual(SchemaChanges.hash_prefix(sc.commit_hash), hash_prefix)
 
     def test_prepare(self):

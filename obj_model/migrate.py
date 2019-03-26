@@ -1948,8 +1948,7 @@ class SchemaChanges(object):
             file.write(yaml.dump(template_data))
 
         # add the config file to the git repo, and print message encouraging a commit
-        if self.git_repo:
-            self.git_repo.repo.index.add([pathname])
+        self.git_repo.repo.index.add([pathname])
         if verbose:
             print("created schema changes template '{}': edit it and run 'git commit'".format(pathname))
         return pathname
