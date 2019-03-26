@@ -2179,6 +2179,11 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         migrated_files = self.clean_automated_migration.migrate()
         # test round-trip
         print('migrated_files', migrated_files)
+        # since migrates in-place, save existing files, then compare
+
+    def test_str(self):
+        for attr, line in zip(AutomatedMigration._ATTRIBUTES, str(self.clean_automated_migration).split('\n')):
+            self.assertRegex(line, "{}: .+".format(attr))
 
 
 # @unittest.skip("speed up testing")

@@ -2131,6 +2131,7 @@ class SchemaChanges(object):
     '''
 
 
+# todo: make __str__()
 class GitRepo(object):
     """ Methods for processing a git repo and its commit history
 
@@ -2829,6 +2830,12 @@ class AutomatedMigration(object):
         """ Test a migration
 
         """
+        '''
+        ensure that all of these are OK:
+            schema changes files
+            automatic config files
+            schemas
+        '''
         pass
 
     def __str__(self):
