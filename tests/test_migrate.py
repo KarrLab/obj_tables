@@ -2077,6 +2077,16 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             "AutomatedMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
             AutomatedMigration(**dict(data_repo_location=self.migration_test_repo_url))
 
+    def test_clean_up(self):
+        all_tmp_dirs = []
+        for git_repo in self.clean_automated_migration.git_repos:
+            all_tmp_dirs.extend(git_repo.temp_dirs)
+        for d in all_tmp_dirs:
+            self.assertTrue(os.path.isdir(d))
+        self.clean_automated_migration.clean_up()
+        for d in all_tmp_dirs:
+            self.assertFalse(os.path.isdir(d))
+
     def test_validate(self):
         automated_migration = self.clean_automated_migration
 
