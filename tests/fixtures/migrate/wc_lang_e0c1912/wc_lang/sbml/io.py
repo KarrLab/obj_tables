@@ -12,7 +12,8 @@ Representations include
 """
 
 from wc_lang.sbml.util import LibSbmlInterface
-from wc_utils.util.ontology import wcm_ontology, are_terms_equivalent
+from wc_onto import onto
+from wc_utils.util.ontology import are_terms_equivalent
 import abc
 import libsbml
 import obj_model
@@ -121,7 +122,7 @@ class SbmlExporter(object):
         # convert each submodel to an SBML model
         sbml_submodels = {}
         for submodel in model.submodels:
-            if not are_terms_equivalent(submodel.framework, wcm_ontology['WCM:dynamic_flux_balance_analysis']):
+            if not are_terms_equivalent(submodel.framework, onto['WC:dynamic_flux_balance_analysis']):
                 continue
             sbml_submodels[submodel] = SubmodelSbmlExporter.run(submodel)
         return sbml_submodels
@@ -147,7 +148,7 @@ class SubmodelSbmlExporter(object):
             :obj:`libsbml.SBMLDocument`: SBML-encoded submodel
         """
         packages = {}
-        if are_terms_equivalent(submodel.framework, wcm_ontology['WCM:dynamic_flux_balance_analysis']):
+        if are_terms_equivalent(submodel.framework, onto['WC:dynamic_flux_balance_analysis']):
             packages['fbc'] = 2
 
         # Create an empty libsbml.SBMLDocument object.
@@ -212,7 +213,7 @@ class SubmodelSbmlExporter(object):
             + submodel.get_children(kind='submodel', __type=wc_lang.core.Species) \
             + submodel.get_children(kind='submodel', __type=wc_lang.core.Parameter) \
             + submodel.reactions
-        if are_terms_equivalent(submodel.framework, wcm_ontology['WCM:dynamic_flux_balance_analysis']):
+        if are_terms_equivalent(submodel.framework, onto['WC:dynamic_flux_balance_analysis']):
             if submodel.dfba_obj:
                 objects.append(submodel.dfba_obj)
             objects.extend(submodel.dfba_obj_reactions)
