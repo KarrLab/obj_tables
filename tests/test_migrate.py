@@ -1113,7 +1113,11 @@ class TestMigrator(MigrationFixtures):
 
         # round trip test of model in tsv file
         # todo: fix
+        # see issue pyexcel issue https://github.com/pyexcel/pyexcel/issues/180
         '''
+        print()
+        print('self.existing_rt_model_defs_path',self.existing_rt_model_defs_path)
+        print('self.example_existing_model_tsv',self.example_existing_model_tsv)
         existing_2_migrated_migrator.full_migrate(self.example_existing_model_tsv,
             migrated_file=self.existing_2_migrated_migrated_tsv_file)
         migrated_2_existing_migrator.full_migrate(self.existing_2_migrated_migrated_tsv_file,
@@ -1888,7 +1892,7 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertIsInstance(commit_DAG, nx.classes.digraph.DiGraph)
         known_paths = [
             # (tag or hash 1, tag or hash 2, hops on path)
-            (, ),
+            ('', ''),
         ]
 
     def test_get_hash(self):
