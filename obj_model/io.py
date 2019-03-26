@@ -31,8 +31,8 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
-from wc_utils.workbook.core import get_column_letter, Hyperlink
-from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, WorksheetValidation, WorksheetValidationOrientation
+from wc_utils.workbook.core import get_column_letter
+from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 
@@ -284,13 +284,18 @@ class WorkbookWriter(WriterBase):
         sheet_name = TOC_NAME
 
         content = [['Table', 'Description', 'Number of objects']]
+        hyperlinks = []
         for i_model, model in enumerate(models):
+            if model.Meta.tabular_orientation == TabularOrientation.inline:
+                continue
+
             if model.Meta.tabular_orientation == TabularOrientation.row:
                 ws_name = model.Meta.verbose_name_plural
             else:
                 ws_name = model.Meta.verbose_name
-            link = Hyperlink('#{}!A1'.format(ws_name), string=ws_name, tip='Click to view {}'.format(ws_name.lower()))
-            content.append([link, model.Meta.help, len(grouped_objects.get(model, []))])
+            hyperlinks.append(Hyperlink(i_model + 1, 0, "internal:'{}'!A1".format(ws_name),
+                                        tip='Click to view {}'.format(ws_name.lower())))
+            content.append([ws_name, model.Meta.help, len(grouped_objects.get(model, []))])
 
         style = WorksheetStyle(
             head_row_font_bold=True,
@@ -302,6 +307,7 @@ class WorkbookWriter(WriterBase):
             extra_rows=0,
             extra_columns=0,
             row_height=15.01,
+            hyperlinks=hyperlinks,
         )
 
         writer.write_worksheet(sheet_name, content, style=style)
