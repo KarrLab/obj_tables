@@ -399,6 +399,38 @@ class TestCore(unittest.TestCase):
         self.assertEqual(set(core.Model.get_all_related([g0, g1])),
                          connected_models_0 | connected_models_1)
 
+    def test_get_related_unidirectional(self):
+        class Level0(core.Model):
+            id = core.SlugAttribute(primary=True, unique=True)
+
+        class Level1(core.Model):
+            id = core.SlugAttribute(primary=True, unique=True)
+            level0s = core.ManyToManyAttribute(Level0, related_name='level1s')
+
+        class Level2(core.Model):
+            id = core.SlugAttribute(primary=True, unique=True)
+            level1s = core.ManyToManyAttribute(Level1, related_name='level2s')
+
+        obj0 = root = Level0(id='obj0')
+        obj1_0 = root.level1s.create(id='obj1_0')
+        obj1_1 = root.level1s.create(id='obj1_1')
+        obj2_0_0 = obj1_0.level2s.create(id='obj2_0_0')
+        obj2_0_1 = obj1_0.level2s.create(id='obj2_0_1')
+        obj2_1_0 = obj1_1.level2s.create(id='obj2_1_0')
+        obj2_1_1 = obj1_1.level2s.create(id='obj2_1_1')
+
+        self.assertEqual(set(obj0.get_related()), set([obj0, obj1_0, obj1_1, obj2_0_0, obj2_0_1, obj2_1_0, obj2_1_1]))
+        self.assertEqual(set(obj0.get_related(reverse=False)), set())
+        self.assertEqual(set(obj0.get_related(forward=False)), set([obj1_0, obj1_1, obj2_0_0, obj2_0_1, obj2_1_0, obj2_1_1]))
+
+        self.assertEqual(set(obj1_0.get_related()), set([obj0, obj1_0, obj1_1, obj2_0_0, obj2_0_1, obj2_1_0, obj2_1_1]))
+        self.assertEqual(set(obj1_0.get_related(reverse=False)), set([obj0]))
+        self.assertEqual(set(obj1_0.get_related(forward=False)), set([obj2_0_0, obj2_0_1]))
+
+        self.assertEqual(set(obj2_0_0.get_related()), set([obj0, obj1_0, obj1_1, obj2_0_0, obj2_0_1, obj2_1_0, obj2_1_1]))
+        self.assertEqual(set(obj2_0_0.get_related(reverse=False)), set([obj0, obj1_0]))
+        self.assertEqual(set(obj2_0_0.get_related(forward=False)), set())
+
     def test_equal(self):
         root1 = Root(label='a')
         root2 = Root(label='b')
@@ -481,7 +513,7 @@ class TestCore(unittest.TestCase):
 
                 class Meta(core.Model.Meta):
                     attribute_order = (1,)
-        self.assertIn('must contain attribute names', str(context.exception))
+        self.assertIn('must be a tuple of strings', str(context.exception))
 
         bad_name = 'ERROR'
         with self.assertRaises(ValueError) as context:
@@ -490,7 +522,7 @@ class TestCore(unittest.TestCase):
 
                 class Meta(core.Model.Meta):
                     attribute_order = (bad_name,)
-        self.assertIn("'{}' not found in attributes of".format(
+        self.assertIn("does not have an attribute with name '{}'".format(
             bad_name), str(context.exception))
 
         with self.assertRaises(ValueError) as context:
