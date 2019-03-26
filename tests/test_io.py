@@ -140,8 +140,7 @@ class TestIo(unittest.TestCase):
         self.tmp_dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        print(self.tmp_dirname)
-        #shutil.rmtree(self.tmp_dirname)
+        shutil.rmtree(self.tmp_dirname)
 
     def test_dummy_model(self):
         # test integrity of relationships
@@ -834,6 +833,32 @@ class TestIo(unittest.TestCase):
         nodes_2 = WorkbookReader().run(filename, [Node])[Node]
         for node, node_2 in zip(nodes, nodes_2):
             self.assertTrue(node_2.is_equal(node))
+
+    def test_toc(self):
+        class Model1(core.Model):
+            id = core.SlugAttribute()
+
+        class Model2(core.Model):
+            id = core.SlugAttribute()
+
+        objs = [
+            Model1(id='model1_0'),
+            Model1(id='model1_1'),
+            Model2(id='model2_0'),
+            Model2(id='model2_1'),
+        ]
+
+        path = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_model.io.Writer().run(path, objs, [Model1, Model2])
+        objs_2 = obj_model.io.Reader().run(path, [Model1, Model2])
+        for obj, obj_2 in zip(objs, objs_2):
+            self.assertTrue(obj_2.is_equal(obj))
+
+        path = os.path.join(self.tmp_dirname, 'test*.csv')
+        obj_model.io.Writer().run(path, objs, [Model1, Model2])
+        objs_2 = obj_model.io.Reader().run(path, [Model1, Model2])
+        for obj, obj_2 in zip(objs, objs_2):
+            self.assertTrue(obj_2.is_equal(obj))
 
 
 class TestMisc(unittest.TestCase):

@@ -98,11 +98,15 @@ class ModelMeta(type):
             Meta.unique_together = copy.deepcopy(bases[0].Meta.unique_together)
             Meta.indexed_attrs_tuples = copy.deepcopy(
                 bases[0].Meta.indexed_attrs_tuples)
+            Meta.help = bases[0].Meta.help
             Meta.tabular_orientation = bases[0].Meta.tabular_orientation
             Meta.frozen_columns = bases[0].Meta.frozen_columns
             Meta.ordering = copy.deepcopy(bases[0].Meta.ordering)
             Meta.children = copy.deepcopy(bases[0].Meta.children)
             Meta.merge = bases[0].Meta.merge
+
+        # validate attribute inheritance
+        metacls.validate_meta(name, bases, namespace)
 
         # validate attributes
         metacls.validate_attributes(name, bases, namespace)
@@ -145,6 +149,16 @@ class ModelMeta(type):
         return cls
 
     @classmethod
+    def validate_meta(metacls, name, bases, namespace):
+        if namespace['Meta'].verbose_name == 'Table of contents':
+            raise ValueError('Verbose name for {} cannot be "Table of contents", '
+                             'which is reserved for the table of contents'.format(name))
+
+        if namespace['Meta'].verbose_name_plural == 'Table of contents':
+            raise ValueError('Plural verbose name for {} cannot be "Table of contents", '
+                             'which is reserved for the table of contents'.format(name))
+
+    @classmethod
     def validate_attributes(metacls, name, bases, namespace):
         """ Validate attribute values
 
@@ -165,7 +179,7 @@ class ModelMeta(type):
             if not isinstance(attr_name_or_group, (str, AttributeGroup)):
                 raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}"
                                  " or groups of attributes; {} '{}' is not a string or group of attributes".format(
-                                    name, name, attr_name_or_group.__class__.__name__, attr_name_or_group))
+                                     name, name, attr_name_or_group.__class__.__name__, attr_name_or_group))
 
             if isinstance(attr_name_or_group, str):
                 attr_names = [attr_name_or_group]
@@ -182,7 +196,7 @@ class ModelMeta(type):
                     if not is_attr:
                         raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}"
                                          " or groups of attributes; {} does not have an attribute with name '{}'".format(
-                                            name, name, name, attr_name))
+                                             name, name, name, attr_name))
 
         metacls.validate_attr_tuples(name, bases, namespace, 'unique_together')
         metacls.validate_attr_tuples(name, bases, namespace, 'indexed_attrs_tuples')
@@ -978,6 +992,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 groups of attributes, in the order in which they should be displayed
             verbose_name (:obj:`str`): verbose name to refer to an instance of the model
             verbose_name_plural (:obj:`str`): plural verbose name for multiple instances of the model
+            help (:obj:`str`): description of the model (e.g., to print in the table of contents in Excel)
             tabular_orientation (:obj:`TabularOrientation`): orientation of model objects in table (e.g. Excel)
             frozen_columns (:obj:`int`): number of Excel columns to freeze
             inheritance (:obj:`tuple` of `class`): tuple of all superclasses
@@ -994,6 +1009,7 @@ class Model(with_metaclass(ModelMeta, object)):
         attribute_order = ()
         verbose_name = ''
         verbose_name_plural = ''
+        help = ''
         tabular_orientation = TabularOrientation.row
         frozen_columns = 1
         inheritance = None
@@ -7238,7 +7254,7 @@ class AttributeGroup(object):
 
         Returns:
             :obj:`bool`: True, if the attribute groups are semantically equal
-        """        
+        """
         return self is other or (self.__class__ == other.__class__ and self.name == other.name and self.attr_names == other.attr_names)
 
     def __hash__(self):

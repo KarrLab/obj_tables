@@ -31,10 +31,13 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
-from wc_utils.workbook.core import get_column_letter
+from wc_utils.workbook.core import get_column_letter, Hyperlink
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, WorksheetValidation, WorksheetValidationOrientation
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
+
+
+TOC_NAME = 'Table of contents'
 
 
 class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
@@ -50,7 +53,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            extra_entries=0):
+            toc=True, extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -68,6 +71,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
         """
         pass  # pragma: no cover
@@ -78,7 +82,7 @@ class JsonWriter(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            extra_entries=0):
+            toc=False, extra_entries=0):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -95,6 +99,7 @@ class JsonWriter(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
 
         Raises:
@@ -154,7 +159,7 @@ class WorkbookWriter(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            extra_entries=0):
+            toc=True, extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -174,6 +179,7 @@ class WorkbookWriter(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
 
         Raises:
@@ -237,7 +243,7 @@ class WorkbookWriter(WriterBase):
         unordered_models = natsorted(set(grouped_objects.keys()).difference(set(models)),
                                      lambda model: model.Meta.verbose_name, alg=ns.IGNORECASE)
 
-        # add sheets
+        # initialize workbook
         _, ext = splitext(path)
         writer_cls = wc_utils.workbook.io.get_writer(ext)
         writer = writer_cls(path,
@@ -245,8 +251,14 @@ class WorkbookWriter(WriterBase):
                             version=version, language=language, creator=creator)
         writer.initialize_workbook()
 
+        # add table of contents to workbook
+        all_models = models + unordered_models
+        if toc:
+            self.write_toc(writer, all_models, grouped_objects)
+
+        # add sheets to workbook
         encoded = {}
-        for model in chain(models, unordered_models):
+        for model in all_models:
             if model.Meta.tabular_orientation == TabularOrientation.inline:
                 continue
 
@@ -258,7 +270,41 @@ class WorkbookWriter(WriterBase):
             self.write_model(writer, model, objects, include_all_attributes=include_all_attributes, encoded=encoded,
                              extra_entries=extra_entries)
 
+        # finalize workbook
         writer.finalize_workbook()
+
+    def write_toc(self, writer, models, grouped_objects):
+        """ Write a worksheet with a table of contents
+
+        Args:
+            writer (:obj:`wc_utils.workbook.io.Writer`): io writer
+            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
+                appear in the table of contents
+        """
+        sheet_name = TOC_NAME
+
+        content = [['Table', 'Description', 'Number of objects']]
+        for i_model, model in enumerate(models):
+            if model.Meta.tabular_orientation == TabularOrientation.row:
+                ws_name = model.Meta.verbose_name_plural
+            else:
+                ws_name = model.Meta.verbose_name
+            link = Hyperlink('#{}!A1'.format(ws_name), string=ws_name, tip='Click to view {}'.format(ws_name.lower()))
+            content.append([link, model.Meta.help, len(grouped_objects.get(model, []))])
+
+        style = WorksheetStyle(
+            head_row_font_bold=True,
+            head_row_fill_pattern='solid',
+            head_row_fill_fgcolor='CCCCCC',
+            merged_head_fill_fgcolor='AAAAAA',
+            head_rows=1,
+            head_columns=0,
+            extra_rows=0,
+            extra_columns=0,
+            row_height=15.01,
+        )
+
+        writer.write_worksheet(sheet_name, content, style=style)
 
     def write_model(self, writer, model, objects, include_all_attributes=True, encoded=None, extra_entries=0):
         """ Write a list of model objects to a file
@@ -443,7 +489,7 @@ class Writer(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            extra_entries=0):
+            toc=True, extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -463,13 +509,14 @@ class Writer(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, models=models, get_related=get_related,
                      include_all_attributes=include_all_attributes, validate=validate,
                      title=title, description=description, keywords=keywords,
-                     language=language, creator=creator, extra_entries=extra_entries)
+                     language=language, creator=creator, toc=toc, extra_entries=extra_entries)
 
 
 class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
@@ -686,6 +733,9 @@ class WorkbookReader(ReaderBase):
 
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
+        if TOC_NAME in sheet_names:
+            sheet_names.remove(TOC_NAME)
+
         ambiguous_sheet_names = self.get_ambiguous_sheet_names(sheet_names, models)
         if ambiguous_sheet_names:
             msg = 'The following sheets cannot be unambiguously mapped to models:'
@@ -1260,7 +1310,7 @@ def convert(source, destination, models,
 
 
 def create_template(path, models, title=None, description=None, keywords=None,
-                    version=None, language=None, creator=None, extra_entries=10):
+                    version=None, language=None, creator=None, toc=True, extra_entries=10):
     """ Create a template for a model
 
     Args:
@@ -1274,12 +1324,13 @@ def create_template(path, models, title=None, description=None, keywords=None,
         version (:obj:`str`, optional): version
         language (:obj:`str`, optional): language
         creator (:obj:`str`, optional): creator
+        toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
         extra_entries (:obj:`int`, optional): additional entries to display
     """
     Writer.get_writer(path)().run(path, [], models,
                                   title=title, description=description, keywords=keywords,
                                   version=version, language=language, creator=creator,
-                                  extra_entries=extra_entries)
+                                  toc=toc, extra_entries=extra_entries)
 
 
 def get_ordered_attributes(cls, include_all_attributes=True):
