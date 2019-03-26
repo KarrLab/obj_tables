@@ -158,23 +158,31 @@ class ModelMeta(type):
             raise ValueError('Attribute cannot have reserved name `__id`')
 
         if not isinstance(namespace['Meta'].attribute_order, (tuple, list)):
-            raise ValueError('`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}'.format(
-                name, name))
+            raise ValueError('`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}'
+                             ' or groups of attributes'.format(name, name))
 
-        for attr_name in namespace['Meta'].attribute_order:
-            if not isinstance(attr_name, str):
-                raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}; "
-                                 "{} '{}' is not a string".format(name, name, attr_name.__class__.__name__, attr_name))
+        for attr_name_or_group in namespace['Meta'].attribute_order:
+            if not isinstance(attr_name_or_group, (str, AttributeGroup)):
+                raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}"
+                                 " or groups of attributes; {} '{}' is not a string or group of attributes".format(
+                                    name, name, attr_name_or_group.__class__.__name__, attr_name_or_group))
 
-            if attr_name not in namespace:
-                is_attr = False
-                for base in bases:
-                    if hasattr(base, attr_name):
-                        is_attr = True
+            if isinstance(attr_name_or_group, str):
+                attr_names = [attr_name_or_group]
+            else:
+                attr_names = attr_name_or_group.attr_names
 
-                if not is_attr:
-                    raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}; "
-                                     "{} does not have an attribute with name '{}'".format(name, name, name, attr_name))
+            for attr_name in attr_names:
+                if attr_name not in namespace:
+                    is_attr = False
+                    for base in bases:
+                        if hasattr(base, attr_name):
+                            is_attr = True
+
+                    if not is_attr:
+                        raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}"
+                                         " or groups of attributes; {} does not have an attribute with name '{}'".format(
+                                            name, name, name, attr_name))
 
         metacls.validate_attr_tuples(name, bases, namespace, 'unique_together')
         metacls.validate_attr_tuples(name, bases, namespace, 'indexed_attrs_tuples')
@@ -966,7 +974,8 @@ class Model(with_metaclass(ModelMeta, object)):
                 attribute values must be unique
             indexed_attrs_tuples (:obj:`tuple` of `tuple`'s of attribute names): tuples of attributes on
                 which instances of this `Model` will be indexed by the `Model`'s `Manager`
-            attribute_order (:obj:`tuple` of `str`): tuple of attribute names, in the order in which they should be displayed
+            attribute_order (:obj:`tuple` of :obj:`str` or :obj:`AttributeGroup`): tuple of attribute names or 
+                groups of attributes, in the order in which they should be displayed
             verbose_name (:obj:`str`): verbose name to refer to an instance of the model
             verbose_name_plural (:obj:`str`): plural verbose name for multiple instances of the model
             tabular_orientation (:obj:`TabularOrientation`): orientation of model objects in table (e.g. Excel)
@@ -1193,9 +1202,41 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:`int`: index of attribute within `Meta.attribute_order`
         """
-        if attr.name not in cls.Meta.attribute_order:
+        flat_attr_order = cls.get_flat_attr_order()
+        if attr.name not in flat_attr_order:
             raise ValueError('{} not in `attribute_order` for {}'.format(attr.name, cls.__name__))
-        return cls.Meta.attribute_order.index(attr.name)
+        return flat_attr_order.index(attr.name)
+
+    @classmethod
+    def get_flat_attr_order(cls):
+        """ Get the flattened order of the attributes
+
+        Returns:
+            :obj:`list` of :obj:`str`: list of the names of attributes
+        """
+        flat_attr_order = []
+        for attr_or_group in cls.Meta.attribute_order:
+            if isinstance(attr_or_group, str):
+                flat_attr_order.append(attr_or_group)
+            else:
+                flat_attr_order.extend(attr_or_group.attr_names)
+        return flat_attr_order
+
+    @classmethod
+    def get_attr_group_order(cls):
+        """ Get the order of the groups of attributes
+
+        Returns:
+            :obj:`list` of :obj:`dict`: list of the labels and sizes of each attribute group,
+                in the order they should be printed in Excel
+        """
+        attr_group_order = []
+        for attr_or_group in cls.Meta.attribute_order:
+            if isinstance(attr_or_group, str):
+                attr_group_order.append({'name': None, 'cols': 1})
+            else:
+                attr_group_order.append({'name': attr_or_group.name, 'cols': len(attr_or_group.attr_names)})
+        return attr_group_order
 
     @classmethod
     def validate_related_attributes(cls):
@@ -2277,10 +2318,11 @@ class Model(with_metaclass(ModelMeta, object)):
         all_attrs = cls.Meta.attributes.copy()
         all_attrs.update(cls.Meta.related_attributes)
         ordered_attrs = []
-        for name in cls.Meta.attribute_order:
+        flat_attr_order = cls.get_flat_attr_order()
+        for name in flat_attr_order:
             ordered_attrs.append((name, all_attrs[name]))
         for name in all_attrs.keys():
-            if name not in cls.Meta.attribute_order:
+            if name not in flat_attr_order:
                 ordered_attrs.append((name, all_attrs[name]))
         for name, attr in ordered_attrs:
             val = getattr(self, name)
@@ -7165,6 +7207,47 @@ class InvalidModel(object):
         attrs = natsorted(
             self.attributes, key=lambda x: x.attribute.name, alg=ns.IGNORECASE)
         return indent_forest(attrs)
+
+
+class AttributeGroup(object):
+    """ Group of related attributes
+
+    Attributes:
+        name (:obj:`str`): name; the phrase that should be printed in the row above the individual attributes
+            in Excel
+        attr_names (:obj:`tuple` of :obj:`str`): tuple of the names of the attributes, in the order
+            in which they should be printed across Excel columns
+    """
+
+    def __init__(self, name, attr_names):
+        """
+        Args:
+            name (:obj:`str`): name; the phrase that should be printed in the row above the individual attributes
+                in Excel
+            attr_names (:obj:`tuple` of :obj:`str`): tuple of the names of the attributes, in the order
+                in which they should be printed across Excel columns
+        """
+        self.name = name
+        self.attr_names = attr_names
+
+    def __eq__(self, other):
+        """ Check if two attribute groups are semantically equal
+
+        Args:
+            other (:obj:`AttributeGroup`): another attribute group
+
+        Returns:
+            :obj:`bool`: True, if the attribute groups are semantically equal
+        """        
+        return self is other or (self.__class__ == other.__class__ and self.name == other.name and self.attr_names == other.attr_names)
+
+    def __hash__(self):
+        """ Generate a hash
+
+        Returns:
+            :obj:`int`: hash
+        """
+        return hash((self.name, self.attr_names))
 
 
 class InvalidObject(object):

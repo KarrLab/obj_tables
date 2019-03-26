@@ -140,7 +140,8 @@ class TestIo(unittest.TestCase):
         self.tmp_dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.tmp_dirname)
+        print(self.tmp_dirname)
+        #shutil.rmtree(self.tmp_dirname)
 
     def test_dummy_model(self):
         # test integrity of relationships
@@ -793,6 +794,46 @@ class TestIo(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, 'The model cannot be loaded'):
             WorkbookReader().run(filename, [TestModel])
+
+    def test_attribute_groups(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name1 = core.StringAttribute()
+            name2 = core.StringAttribute()
+            synonyms = core.LongStringAttribute()
+            val1 = core.FloatAttribute()
+            val2 = core.FloatAttribute()
+            val3 = core.FloatAttribute()
+            comments = core.LongStringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',
+                                   core.AttributeGroup('Names', ('name1', 'name2')),
+                                   'synonyms',
+                                   core.AttributeGroup('Val', ('val1', 'val2', 'val3')),
+                                   'comments')
+
+        nodes = [
+            Node(id='node0', name1='0_1', name2='0_2', synonyms='0:1, 0:2', val1=0.1, val2=0.2, val3=0.3),
+            Node(id='node1', name1='1_1', name2='1_2', synonyms='1:1, 1:2', val1=1.1, val2=1.2, val3=1.3),
+            Node(id='node2', name1='2_1', name2='2_2', synonyms='2:1, 2:2', val1=2.1, val2=2.2, val3=2.3),
+        ]
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        writer = WorkbookWriter()
+        writer.run(filename, nodes, [Node])
+        nodes_2 = WorkbookReader().run(filename, [Node])[Node]
+        for node, node_2 in zip(nodes, nodes_2):
+            self.assertTrue(node_2.is_equal(node))
+
+        # column orientation
+        Node.Meta.tabular_orientation = core.TabularOrientation.column
+        filename = os.path.join(self.tmp_dirname, 'test2.xlsx')
+        writer = WorkbookWriter()
+        writer.run(filename, nodes, [Node])
+        nodes_2 = WorkbookReader().run(filename, [Node])[Node]
+        for node, node_2 in zip(nodes, nodes_2):
+            self.assertTrue(node_2.is_equal(node))
 
 
 class TestMisc(unittest.TestCase):
@@ -2050,10 +2091,10 @@ class UtilsTestCase(unittest.TestCase):
                 attribute_order = ('id2', 'name2', )
 
         # all attributes
-        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root))
-        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf))
-        unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(UnrootedLeaf))
-        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3))
+        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root)[0])
+        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf)[0])
+        unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(UnrootedLeaf)[0])
+        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3)[0])
 
         self.assertEqual(set(root_attrs), set(Root.Meta.attributes.keys()))
         self.assertEqual(set(leaf_attrs), set(Leaf.Meta.attributes.keys()))
@@ -2070,10 +2111,11 @@ class UtilsTestCase(unittest.TestCase):
             'enum2', 'enum3', 'float2', 'float3', 'id', 'multi_word_name', 'name', 'root', 'root2', ))
 
         # only explicitly defined attributes
-        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root, include_all_attributes=False))
-        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf, include_all_attributes=False))
-        unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(UnrootedLeaf, include_all_attributes=False))
-        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3, include_all_attributes=False))
+        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root, include_all_attributes=False)[0])
+        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf, include_all_attributes=False)[0])
+        unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(
+            UnrootedLeaf, include_all_attributes=False)[0])
+        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3, include_all_attributes=False)[0])
 
         self.assertLessEqual(set(root_attrs), set(Root.Meta.attributes.keys()))
         self.assertLessEqual(set(leaf_attrs), set(Leaf.Meta.attributes.keys()))

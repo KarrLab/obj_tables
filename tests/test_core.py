@@ -4640,6 +4640,28 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.get_none_value(), 'def')
 
 
+class AttributeGroupTestCase(unittest.TestCase):
+    def test(self):
+        group_1 = core.AttributeGroup('group', ('a', 'b', 'c'))
+        group_2 = core.AttributeGroup('group', ('a', 'b', 'c'))
+        group_3 = core.AttributeGroup('group-b', ('a', 'b', 'c'))
+        group_4 = core.AttributeGroup('group', ('a', 'b'))
+        self.assertEqual(group_1, group_1)
+        self.assertEqual(group_1, group_2)
+        self.assertNotEqual(group_1, group_3)
+        self.assertNotEqual(group_1, group_4)
+
+        self.assertIn(group_1, [group_1])
+        self.assertIn(group_2, [group_1])
+        self.assertNotIn(group_3, [group_1])
+        self.assertNotIn(group_4, [group_1])
+
+        self.assertIn(group_1, {group_1: 'a'})
+        self.assertIn(group_2, {group_1: 'a'})
+        self.assertNotIn(group_3, {group_1: 'a'})
+        self.assertNotIn(group_4, {group_1: 'a'})
+
+
 class ContextTestCase(unittest.TestCase):
     def test(self):
         class Parent(core.Model):

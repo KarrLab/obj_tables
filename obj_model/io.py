@@ -274,13 +274,26 @@ class WorkbookWriter(WriterBase):
         """
 
         # attribute order
-        attributes = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+        attributes, attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
 
         # column labels
-        headings = [[attr.verbose_name for attr in attributes]]
+        headings = []
+        merge_ranges = []
+        if attr_groups is not None:
+            group_headings = []
+            i_col = 0
+            for attr_group in attr_groups:
+                if attr_group['cols'] >= 0:
+                    group_headings.append(attr_group['name'])
+                    group_headings.extend([None] * (attr_group['cols'] - 1))
+                    if attr_group['cols'] > 1:
+                        merge_ranges.append((0, i_col, 0, i_col + attr_group['cols'] - 1))
+                i_col += attr_group['cols']
+            headings.append(group_headings)
+        headings.append([attr.verbose_name for attr in attributes])
 
         header_map = collections.defaultdict(list)
-        for heading in headings[0]:
+        for heading in headings[-1]:
             l = heading.lower()
             header_map[l].append(heading)
         duplicate_headers = list(filter(lambda x: 1 < len(x), header_map.values()))
@@ -305,15 +318,15 @@ class WorkbookWriter(WriterBase):
 
         # validations
         field_validations = []
-        attr_order = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+        attr_order, _ = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
         for attr in attr_order:
             field_validations.append(attr.get_excel_validation())
         validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.tabular_orientation.name],
                                          fields=field_validations)
 
-        self.write_sheet(writer, model, data, headings, validation, extra_entries=extra_entries)
+        self.write_sheet(writer, model, data, headings, validation, extra_entries=extra_entries, merge_ranges=merge_ranges)
 
-    def write_sheet(self, writer, model, data, headings, validation, extra_entries=0):
+    def write_sheet(self, writer, model, data, headings, validation, extra_entries=0, merge_ranges=None):
         """ Write data to sheet
 
         Args:
@@ -323,6 +336,7 @@ class WorkbookWriter(WriterBase):
             headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headingsvalidations
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
+            merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
         """
         style = self.create_worksheet_style(model, extra_entries=extra_entries)
         if model.Meta.tabular_orientation == TabularOrientation.row:
@@ -330,12 +344,23 @@ class WorkbookWriter(WriterBase):
             row_headings = []
             column_headings = headings
             style.auto_filter = True
+            if merge_ranges:
+                style.merge_ranges = merge_ranges
+                style.head_rows = 2
+            else:
+                style.merge_ranges = []
         else:
             sheet_name = model.Meta.verbose_name
             row_headings = headings
             column_headings = []
             data = transpose(data)
             style.auto_filter = False
+            if merge_ranges:
+                style.merge_ranges = [(start_col, start_row, end_col, end_row)
+                                      for start_row, start_col, end_row, end_col in merge_ranges]
+                style.head_columns = 2
+            else:
+                style.merge_ranges = []
 
         # merge data, headings
         for i_row, row_heading in enumerate(transpose(row_headings)):
@@ -345,10 +370,10 @@ class WorkbookWriter(WriterBase):
                 row = []
                 data.append(row)
 
-            for val in row_heading:
+            for val in reversed(row_heading):
                 row.insert(0, val)
 
-        for i_row in range(len(row_headings)):
+        for _ in row_headings:
             for column_heading in column_headings:
                 column_heading.insert(
                     0, None)  # pragma: no cover # unreachable because row_headings and column_headings cannot both be non-empty
@@ -373,6 +398,7 @@ class WorkbookWriter(WriterBase):
             head_row_font_bold=True,
             head_row_fill_pattern='solid',
             head_row_fill_fgcolor='CCCCCC',
+            merged_head_fill_fgcolor='AAAAAA',
             extra_rows=0,
             extra_columns=0,
             row_height=15.01,
@@ -831,12 +857,17 @@ class WorkbookReader(ReaderBase):
             return ([], [], None, [])
 
         # get worksheet
+        _, attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
         if model.Meta.tabular_orientation == TabularOrientation.row:
-            data, _, headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=1)
+            data, _, all_headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=1 + (attr_groups is not None))
         else:
-            data, headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=1)
+            data, all_headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=1 + (attr_groups is not None))
             data = transpose(data)
-        headings = headings[0]
+        if attr_groups is None:
+            group_headings = None
+        else:
+            group_headings = all_headings[0]
+        headings = all_headings[-1]
 
         # prohibit duplicate headers
         header_map = collections.defaultdict(list)
@@ -883,7 +914,7 @@ class WorkbookReader(ReaderBase):
 
         # optionally, check that all attributes have column headings
         if not ignore_missing_attributes:
-            all_attributes = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+            all_attributes, all_attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
             missing_attrs = set(all_attributes).difference(set(attributes))
             if missing_attrs:
                 error = 'The following attributes must be defined:\n  {}'.format('\n  '.join(attr.name for attr in missing_attrs))
@@ -891,7 +922,7 @@ class WorkbookReader(ReaderBase):
 
         # optionally, check that the attributes are defined in the canonical order
         if not ignore_attribute_order:
-            canonical_attr_order = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+            canonical_attr_order, canonical_attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
             canonical_attr_order = list(filter(lambda attr: attr in attributes, canonical_attr_order))
             if attributes != canonical_attr_order:
                 column_headings = []
@@ -1260,25 +1291,35 @@ def get_ordered_attributes(cls, include_all_attributes=True):
 
     Returns:
         :obj:`tuple` of :obj:`Attribute`: attributes in the order they should be printed
+        :obj:`tuple` of :obj:`dict`: group names and number of columns in each group
     """
     # get names of attributes in desired order
+    attr_names = cls.get_flat_attr_order()
+    attr_groups = cls.get_attr_group_order()
+
     if include_all_attributes:
-        ordered_attr_names = list(cls.Meta.attribute_order)
+        ordered_attr_names = attr_names
 
         unordered_attr_names = set()
         for base in cls.Meta.inheritance:
             for attr_name in base.__dict__.keys():
                 if isinstance(getattr(base, attr_name), Attribute) and attr_name not in ordered_attr_names:
                     unordered_attr_names.add(attr_name)
-
         unordered_attr_names = natsorted(unordered_attr_names, alg=ns.IGNORECASE)
 
-        attr_names = tuple(ordered_attr_names + unordered_attr_names)
-    else:
-        attr_names = cls.Meta.attribute_order
+        attr_groups = attr_groups + [{'name': None, 'cols': 1} for _ in unordered_attr_names]
+        attr_names = ordered_attr_names + unordered_attr_names
+
+    has_attr_groups = False
+    for attr_group in attr_groups:
+        if attr_group['cols'] > 1:
+            has_attr_groups = True
+            break
+    if not has_attr_groups:
+        attr_groups = None
 
     # get attributes in desired order
-    return [cls.Meta.attributes[attr_name] for attr_name in attr_names]
+    return ([cls.Meta.attributes[attr_name] for attr_name in attr_names], attr_groups)
 
 
 class IoWarning(ObjModelWarning):
