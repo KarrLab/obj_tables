@@ -2009,7 +2009,7 @@ class Model(with_metaclass(ModelMeta, object)):
         return (None, InvalidAttribute(attr, ['No object with primary attribute value "{}"'.format(value)]))
 
     @staticmethod
-    def get_all_related(objs):
+    def get_all_related(objs, forward=True, reverse=True):
         """ Optimally obtain all objects related to objects in `objs`
 
         The set of all :obj:`Model`s can be viewed as a graph whose nodes are :obj:`Model` instances
@@ -2018,7 +2018,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
         The algorithm here finds all :obj:`Model`s that are reachable from a set of instances
         in `O(n)`, where `n` is the size of the reachable set. This algorithm is optimal.
-        It achieves this performance because `get_related(obj)` takes `O(n(c))` where `n(c)` is the
+        It achieves this performance because `obj.get_related()` takes `O(n(c))` where `n(c)` is the
         number of nodes in the component containing `obj`, and each component is only explored
         once because all of a component's nodes are stored in `found_objs` when the component is first
         explored.
@@ -2027,6 +2027,8 @@ class Model(with_metaclass(ModelMeta, object)):
 
         Args:
             objs (:obj:`iterator` of :obj:`Model`, optional): some objects
+            forward (:obj:`bool`, optional): if :obj:`True`, get all forward related objects
+            reverse (:obj:`bool`, optional): if :obj:`True`, get all reverse related objects
 
         Returns:
             :obj:`list` of :obj:`Model`: all objects in `objs` and all objects related to them,
@@ -2036,13 +2038,17 @@ class Model(with_metaclass(ModelMeta, object)):
         for obj in objs:
             if obj not in found_objs:
                 found_objs[obj] = None
-                for related_obj in obj.get_related():
+                for related_obj in obj.get_related(forward=forward, reverse=reverse):
                     if related_obj not in found_objs:
                         found_objs[related_obj] = None
         return list(found_objs)
 
-    def get_related(self):
+    def get_related(self, forward=True, reverse=True):
         """ Get all related objects reachable from `self`
+
+        Args:
+            forward (:obj:`bool`, optional): if :obj:`True`, get all forward related objects
+            reverse (:obj:`bool`, optional): if :obj:`True`, get all reverse related objects
 
         Returns:
             :obj:`list` of :obj:`Model`: related objects, without any duplicates
@@ -2058,7 +2064,12 @@ class Model(with_metaclass(ModelMeta, object)):
                 init_iter = False
 
                 cls = obj.__class__
-                for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
+                attrs = []
+                if forward:
+                    attrs = chain(attrs, cls.Meta.attributes.items())
+                if reverse:
+                    attrs = chain(attrs, cls.Meta.related_attributes.items())
+                for attr_name, attr in attrs:
                     if isinstance(attr, RelatedAttribute):
                         value = getattr(obj, attr_name)
 
