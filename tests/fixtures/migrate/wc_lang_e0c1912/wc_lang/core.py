@@ -437,8 +437,8 @@ class IdentifierOneToManyAttribute(OneToManyAttribute):
         Returns:
             :obj:`str`: string representation
         """
-        sorted_db_refs = sorted(identifiers, key=lambda identifier: (identifier.namespace, identifier.id))
-        return ', '.join(identifier.serialize() for identifier in sorted_db_refs)
+        sorted_identifiers = sorted(identifiers, key=lambda identifier: (identifier.namespace, identifier.id))
+        return ', '.join(identifier.serialize() for identifier in sorted_identifiers)
 
     def deserialize(self, value, objects, decoded=None):
         """ Deserialize value
@@ -521,8 +521,8 @@ class IdentifierManyToManyAttribute(ManyToManyAttribute):
         Returns:
             :obj:`str`: string representation
         """
-        sorted_db_refs = sorted(identifiers, key=lambda identifier: (identifier.namespace, identifier.id))
-        return ', '.join(identifier.serialize() for identifier in sorted_db_refs)
+        sorted_identifiers = sorted(identifiers, key=lambda identifier: (identifier.namespace, identifier.id))
+        return ', '.join(identifier.serialize() for identifier in sorted_identifiers)
 
     def deserialize(self, value, objects, decoded=None):
         """ Deserialize value
