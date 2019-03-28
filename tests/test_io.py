@@ -1059,7 +1059,7 @@ class TestMisc(unittest.TestCase):
         with pytest.warns(IoWarning):
             writer.run(filename, nodes, [Node8])
 
-        with self.assertRaisesRegex(ValueError, 'Duplicate, case insensitive, header fields:'):
+        with self.assertRaisesRegex(ValueError, 'Duplicate, case insensitive, headers:'):
             WorkbookReader().run(filename, [Node8])
 
     def test_row_and_column_headings(self):

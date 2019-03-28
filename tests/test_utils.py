@@ -62,19 +62,43 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(set(utils.get_related_models(DisjointChild, include_root_model=True)), set([DisjointChild, DisjointParent]))
 
     def test_get_attribute_by_name(self):
-        self.assertEqual(utils.get_attribute_by_name(Root, 'id'), Root.Meta.attributes['id'])
-        self.assertEqual(utils.get_attribute_by_name(Root, 'id2'), None)
+        self.assertEqual(utils.get_attribute_by_name(Root, None, None), None)
+        
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'id'), Root.Meta.attributes['id'])
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'id2'), None)
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'Identifier', verbose_name=True), Root.Meta.attributes['id'])
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'Identifier2', verbose_name=True), None)
 
-        self.assertEqual(utils.get_attribute_by_name(Root, 'ID', case_insensitive=True), Root.Meta.attributes['id'])
-        self.assertEqual(utils.get_attribute_by_name(Root, 'ID', case_insensitive=False), None)
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'ID', case_insensitive=True), Root.Meta.attributes['id'])
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'ID', case_insensitive=False), None)
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'identifier', verbose_name=True, case_insensitive=True), Root.Meta.attributes['id'])
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'identifier', verbose_name=True, case_insensitive=False), None)
 
-    def test_get_attribute_by_verbose_name(self):
-        self.assertEqual(utils.get_attribute_by_verbose_name(Root, 'Identifier'), Root.Meta.attributes['id'])
-        self.assertEqual(utils.get_attribute_by_verbose_name(Root, 'Identifier2'), None)
+        class GroupsModel(core.Model):
+            val1 = core.FloatAttribute(verbose_name='Value')
+            units1 = core.StringAttribute(verbose_name='Units')
+            val2 = core.FloatAttribute(verbose_name='Value')
+            units2 = core.StringAttribute(verbose_name='Units')
+            val3 = core.FloatAttribute(verbose_name='Value')
+            units3 = core.StringAttribute(verbose_name='Units')
 
-        self.assertEqual(utils.get_attribute_by_verbose_name(
-            Root, 'identifier', case_insensitive=True), Root.Meta.attributes['id'])
-        self.assertEqual(utils.get_attribute_by_verbose_name(Root, 'identifier', case_insensitive=False), None)
+            class Meta(core.Model.Meta):
+                attribute_order = (core.AttributeGroup('Group 1', ('val1', 'units1')), 
+                                   core.AttributeGroup('Group 2', ('val2', 'units2')),
+                                   'val3', 'units3')
+
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 1', 'val1'), GroupsModel.Meta.attributes['val1'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 1', 'units1'), GroupsModel.Meta.attributes['units1'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 2', 'val2'), GroupsModel.Meta.attributes['val2'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 2', 'units2'), GroupsModel.Meta.attributes['units2'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, None, 'val3'), GroupsModel.Meta.attributes['val3'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, None, 'units3'), GroupsModel.Meta.attributes['units3'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 1', 'Value', verbose_name=True), GroupsModel.Meta.attributes['val1'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 1', 'Units', verbose_name=True), GroupsModel.Meta.attributes['units1'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 2', 'Value', verbose_name=True), GroupsModel.Meta.attributes['val2'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 2', 'Units', verbose_name=True), GroupsModel.Meta.attributes['units2'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, None, 'Value', verbose_name=True), GroupsModel.Meta.attributes['val3'])
+        self.assertEqual(utils.get_attribute_by_name(GroupsModel, None, 'Units', verbose_name=True), GroupsModel.Meta.attributes['units3'])
 
     def test_group_objects_by_model(self):
         (root, nodes, leaves) = (self.root, self.nodes, self.leaves)

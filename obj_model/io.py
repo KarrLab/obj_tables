@@ -336,8 +336,7 @@ class WorkbookWriter(WriterBase):
             i_col = 0
             for attr_group in attr_groups:
                 if attr_group['cols'] >= 0:
-                    group_headings.append(attr_group['name'])
-                    group_headings.extend([None] * (attr_group['cols'] - 1))
+                    group_headings.extend([attr_group['name']] * attr_group['cols'])
                     if attr_group['cols'] > 1:
                         merge_ranges.append((0, i_col, 0, i_col + attr_group['cols'] - 1))
                 i_col += attr_group['cols']
@@ -920,34 +919,40 @@ class WorkbookReader(ReaderBase):
             data, all_headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=1 + (attr_groups is not None))
             data = transpose(data)
         if attr_groups is None:
-            group_headings = None
+            group_headings = [None] * len(all_headings[-1])
         else:
             group_headings = all_headings[0]
+
         headings = all_headings[-1]
 
         # prohibit duplicate headers
-        header_map = collections.defaultdict(list)
-        for heading in headings:
+        header_map = collections.defaultdict(lambda: 0)
+        for group_heading, heading in zip(group_headings, headings):
+            if group_heading is None:
+                g = None
+            else:
+                g = group_heading.lower()
+
             if heading is None:
                 continue
-            l = heading.lower()
-            header_map[l].append(heading)
-        duplicate_headers = list(filter(lambda x: 1 < len(x), header_map.values()))
+            l = heading.lower()            
+
+            header_map[(g, l)] += 1
+        duplicate_headers = [x for x, y in header_map.items() if y > 1]
         if duplicate_headers:
             errors = []
-            for dupes in duplicate_headers:
-                str = ', '.join(map(lambda s: "'{}'".format(s), dupes))
-                errors.append("{}:'{}': Duplicate, case insensitive, header fields: {}".format(
-                    basename(reader.path), sheet_name, str))
+            for dup_group, dup in duplicate_headers:
+                errors.append("{}:'{}': Duplicate, case insensitive, headers: {}: {}".format(
+                    basename(reader.path), sheet_name, dup_group, dup))
             return ([], [], errors, [])
 
         # acquire attributes by header order
         attributes = []
         good_columns = []
         errors = []
-        for idx, heading in enumerate(headings, start=1):
-            attr = utils.get_attribute_by_name(model, heading, case_insensitive=True) or \
-                utils.get_attribute_by_verbose_name(model, heading, case_insensitive=True)
+        for idx, (group_heading, heading) in enumerate(zip(group_headings, headings), start=1):
+            attr = utils.get_attribute_by_name(model, group_heading, heading, case_insensitive=True) or \
+                utils.get_attribute_by_name(model, group_heading, heading, case_insensitive=True, verbose_name=True)
 
             if attr is not None:
                 attributes.append(attr)
@@ -992,9 +997,9 @@ class WorkbookReader(ReaderBase):
 
         # save model location in file
         attribute_seq = []
-        for heading in headings:
-            attr = utils.get_attribute_by_name(model, heading, case_insensitive=True) or \
-                utils.get_attribute_by_verbose_name(model, heading, case_insensitive=True)
+        for group_heading, heading in zip(group_headings, headings):
+            attr = utils.get_attribute_by_name(model, group_heading, heading, case_insensitive=True) or \
+                utils.get_attribute_by_name(model, group_heading, heading, case_insensitive=True, verbose_name=True)
             if attr is None:
                 attribute_seq.append('')
             else:

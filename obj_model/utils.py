@@ -9,7 +9,7 @@
 from __future__ import unicode_literals
 from itertools import chain
 from random import shuffle
-from obj_model.core import Model, Attribute, RelatedAttribute, InvalidObjectSet, InvalidObject, Validator
+from obj_model.core import Model, Attribute, RelatedAttribute, AttributeGroup, InvalidObjectSet, InvalidObject, Validator
 from wc_utils.util import git
 
 
@@ -44,12 +44,14 @@ def get_related_models(root_model, include_root_model=False):
     return related_models
 
 
-def get_attribute_by_name(cls, name, case_insensitive=False):
+def get_attribute_by_name(cls, group_name, name, verbose_name=False, case_insensitive=False):
     """ Return the attribute of `Model` class `cls` with name `name`
 
     Args:
         cls (:obj:`class`): Model class
+        group_name (:obj:`str`): name of attribute group
         name (:obj:`str`): attribute name
+        verbose_name (:obj:`str`): if :obj:`True`, search for attributes by verbose name; otherwise search for attributes by name
         case_insensitive (:obj:`bool`, optional): if True, ignore case
 
     Returns:
@@ -59,33 +61,34 @@ def get_attribute_by_name(cls, name, case_insensitive=False):
 
     if not name:
         return None
-    for attr_name, attr in cls.Meta.attributes.items():
-        if not case_insensitive and attr_name == name:
+
+    attr_names_to_search = []
+    attr_names_in_groups = []
+    for attr_name_or_group in cls.Meta.attribute_order:
+        if isinstance(attr_name_or_group, AttributeGroup):
+            if group_name is not None:
+                if attr_name_or_group.name == group_name:
+                    attr_names_to_search = attr_name_or_group.attr_names
+                    break
+            else:
+                attr_names_in_groups.extend(attr_name_or_group.attr_names)
+        else:
+            if group_name is None:
+                attr_names_to_search.append(attr_name_or_group)
+
+    if not group_name:
+        attr_names_to_search.extend(list(set(cls.Meta.attributes.keys()).difference(set(attr_names_in_groups))))
+
+    if verbose_name:
+        attr_attr_name = 'verbose_name'
+    else:
+        attr_attr_name = 'name'
+
+    for attr_name in attr_names_to_search:
+        attr = cls.Meta.attributes[attr_name]
+        if not case_insensitive and getattr(attr, attr_attr_name) == name:
             return attr
-        if case_insensitive and attr_name.lower() == name.lower():
-            return attr
-    return None
-
-
-def get_attribute_by_verbose_name(cls, verbose_name, case_insensitive=False):
-    """ Return the attribute of `Model` class `cls` with verbose name `verbose_name`
-
-    Args:
-        cls (:obj:`class`): Model class
-        verbose_name (:obj:`str`): verbose attribute name
-        case_insensitive (:obj:`bool`, optional): if True, ignore case
-
-    Returns:
-        :obj:`Attribute`: attribute with verbose name equal to the value of `verbose_name` or `None`
-        if there is no matching attribute
-    """
-
-    if not verbose_name:
-        return None
-    for attr_name, attr in cls.Meta.attributes.items():
-        if not case_insensitive and attr.verbose_name == verbose_name:
-            return attr
-        if case_insensitive and attr.verbose_name.lower() == verbose_name.lower():
+        if case_insensitive and getattr(attr, attr_attr_name).lower() == name.lower():
             return attr
     return None
 
@@ -193,7 +196,7 @@ def source_report(obj, attr_name):
 
 
 def set_git_repo_metadata_from_path(model, path='.', url_attr='url', branch_attr='branch',
-    commit_hash_attr='revision', ):
+                                    commit_hash_attr='revision', ):
     """ Use Git to set the Git repository URL, branch, and commit hash metadata for a model
 
     Args:
