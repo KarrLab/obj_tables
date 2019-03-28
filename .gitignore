@@ -30,3 +30,7 @@ docs/_build
 # mac nuisance files
 .DS_Store
 .DS_Store?
+
+# WPS temporary files
+.~*.docx
+.~*.xlsx

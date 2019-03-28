@@ -43,7 +43,7 @@ DfbaObjSpecies
 DfbaObjReaction                 TBD
 Parameter                       Parameter                                                             Implemented
 Reference
-DatabaseReference
+Identifier
 
 wc_lang attribute to SBML mapping:
 
