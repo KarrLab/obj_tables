@@ -7381,7 +7381,7 @@ def get_models(module=None, inline=True):
         models = get_subclasses(Model)
 
     if not inline:
-        for model in models:
+        for model in list(models):
             if model.Meta.tabular_orientation == TabularOrientation.inline:
                 models.remove(model)
 
