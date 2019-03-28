@@ -470,6 +470,17 @@ class TestCore(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, 'is an invalid keyword argument for'):
             TestModel(name='x')
 
+    def test_validate_meta_errors(self):
+        with self.assertRaisesRegex(ValueError, 'cannot be'):
+            class TestModel1(core.Model):
+                class Meta(core.Model.Meta):
+                    verbose_name = 'Table of contents'
+
+        with self.assertRaisesRegex(ValueError, 'cannot be'):
+            class TestModel2(core.Model):
+                class Meta(core.Model.Meta):
+                    verbose_name_plural = 'Table of contents'
+
     def test_model_validate_related_attributes(self):
         class TestParent(core.Model):
             children = core.OneToManyAttribute('__undefined__', related_name='parent')
@@ -4638,6 +4649,28 @@ class TestCore(unittest.TestCase):
 
         attr = core.StringAttribute(none_value=lambda: 'def')
         self.assertEqual(attr.get_none_value(), 'def')
+
+
+class AttributeGroupTestCase(unittest.TestCase):
+    def test(self):
+        group_1 = core.AttributeGroup('group', ('a', 'b', 'c'))
+        group_2 = core.AttributeGroup('group', ('a', 'b', 'c'))
+        group_3 = core.AttributeGroup('group-b', ('a', 'b', 'c'))
+        group_4 = core.AttributeGroup('group', ('a', 'b'))
+        self.assertEqual(group_1, group_1)
+        self.assertEqual(group_1, group_2)
+        self.assertNotEqual(group_1, group_3)
+        self.assertNotEqual(group_1, group_4)
+
+        self.assertIn(group_1, [group_1])
+        self.assertIn(group_2, [group_1])
+        self.assertNotIn(group_3, [group_1])
+        self.assertNotIn(group_4, [group_1])
+
+        self.assertIn(group_1, {group_1: 'a'})
+        self.assertIn(group_2, {group_1: 'a'})
+        self.assertNotIn(group_3, {group_1: 'a'})
+        self.assertNotIn(group_4, {group_1: 'a'})
 
 
 class ContextTestCase(unittest.TestCase):

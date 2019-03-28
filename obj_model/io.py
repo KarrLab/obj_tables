@@ -32,9 +32,12 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
                             InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.workbook.core import get_column_letter
-from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, WorksheetValidation, WorksheetValidationOrientation
+from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
+
+
+TOC_NAME = 'Table of contents'
 
 
 class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
@@ -50,7 +53,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            extra_entries=0):
+            toc=True, extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -68,6 +71,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
         """
         pass  # pragma: no cover
@@ -78,7 +82,7 @@ class JsonWriter(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            extra_entries=0):
+            toc=False, extra_entries=0):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -95,6 +99,7 @@ class JsonWriter(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
 
         Raises:
@@ -154,7 +159,7 @@ class WorkbookWriter(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            extra_entries=0):
+            toc=True, extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -174,6 +179,7 @@ class WorkbookWriter(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
 
         Raises:
@@ -237,7 +243,7 @@ class WorkbookWriter(WriterBase):
         unordered_models = natsorted(set(grouped_objects.keys()).difference(set(models)),
                                      lambda model: model.Meta.verbose_name, alg=ns.IGNORECASE)
 
-        # add sheets
+        # initialize workbook
         _, ext = splitext(path)
         writer_cls = wc_utils.workbook.io.get_writer(ext)
         writer = writer_cls(path,
@@ -245,8 +251,14 @@ class WorkbookWriter(WriterBase):
                             version=version, language=language, creator=creator)
         writer.initialize_workbook()
 
+        # add table of contents to workbook
+        all_models = models + unordered_models
+        if toc:
+            self.write_toc(writer, all_models, grouped_objects)
+
+        # add sheets to workbook
         encoded = {}
-        for model in chain(models, unordered_models):
+        for model in all_models:
             if model.Meta.tabular_orientation == TabularOrientation.inline:
                 continue
 
@@ -258,7 +270,47 @@ class WorkbookWriter(WriterBase):
             self.write_model(writer, model, objects, include_all_attributes=include_all_attributes, encoded=encoded,
                              extra_entries=extra_entries)
 
+        # finalize workbook
         writer.finalize_workbook()
+
+    def write_toc(self, writer, models, grouped_objects):
+        """ Write a worksheet with a table of contents
+
+        Args:
+            writer (:obj:`wc_utils.workbook.io.Writer`): io writer
+            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
+                appear in the table of contents
+        """
+        sheet_name = TOC_NAME
+
+        content = [['Table', 'Description', 'Number of objects']]
+        hyperlinks = []
+        for i_model, model in enumerate(models):
+            if model.Meta.tabular_orientation == TabularOrientation.inline:
+                continue
+
+            if model.Meta.tabular_orientation == TabularOrientation.row:
+                ws_name = model.Meta.verbose_name_plural
+            else:
+                ws_name = model.Meta.verbose_name
+            hyperlinks.append(Hyperlink(i_model + 1, 0, "internal:'{}'!A1".format(ws_name),
+                                        tip='Click to view {}'.format(ws_name.lower())))
+            content.append([ws_name, model.Meta.help, len(grouped_objects.get(model, []))])
+
+        style = WorksheetStyle(
+            head_row_font_bold=True,
+            head_row_fill_pattern='solid',
+            head_row_fill_fgcolor='CCCCCC',
+            merged_head_fill_fgcolor='AAAAAA',
+            head_rows=1,
+            head_columns=0,
+            extra_rows=0,
+            extra_columns=0,
+            row_height=15.01,
+            hyperlinks=hyperlinks,
+        )
+
+        writer.write_worksheet(sheet_name, content, style=style)
 
     def write_model(self, writer, model, objects, include_all_attributes=True, encoded=None, extra_entries=0):
         """ Write a list of model objects to a file
@@ -274,13 +326,26 @@ class WorkbookWriter(WriterBase):
         """
 
         # attribute order
-        attributes = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+        attributes, attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
 
         # column labels
-        headings = [[attr.verbose_name for attr in attributes]]
+        headings = []
+        merge_ranges = []
+        if attr_groups is not None:
+            group_headings = []
+            i_col = 0
+            for attr_group in attr_groups:
+                if attr_group['cols'] >= 0:
+                    group_headings.append(attr_group['name'])
+                    group_headings.extend([None] * (attr_group['cols'] - 1))
+                    if attr_group['cols'] > 1:
+                        merge_ranges.append((0, i_col, 0, i_col + attr_group['cols'] - 1))
+                i_col += attr_group['cols']
+            headings.append(group_headings)
+        headings.append([attr.verbose_name for attr in attributes])
 
         header_map = collections.defaultdict(list)
-        for heading in headings[0]:
+        for heading in headings[-1]:
             l = heading.lower()
             header_map[l].append(heading)
         duplicate_headers = list(filter(lambda x: 1 < len(x), header_map.values()))
@@ -305,15 +370,15 @@ class WorkbookWriter(WriterBase):
 
         # validations
         field_validations = []
-        attr_order = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+        attr_order, _ = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
         for attr in attr_order:
             field_validations.append(attr.get_excel_validation())
         validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.tabular_orientation.name],
                                          fields=field_validations)
 
-        self.write_sheet(writer, model, data, headings, validation, extra_entries=extra_entries)
+        self.write_sheet(writer, model, data, headings, validation, extra_entries=extra_entries, merge_ranges=merge_ranges)
 
-    def write_sheet(self, writer, model, data, headings, validation, extra_entries=0):
+    def write_sheet(self, writer, model, data, headings, validation, extra_entries=0, merge_ranges=None):
         """ Write data to sheet
 
         Args:
@@ -323,6 +388,7 @@ class WorkbookWriter(WriterBase):
             headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headingsvalidations
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
+            merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
         """
         style = self.create_worksheet_style(model, extra_entries=extra_entries)
         if model.Meta.tabular_orientation == TabularOrientation.row:
@@ -330,12 +396,23 @@ class WorkbookWriter(WriterBase):
             row_headings = []
             column_headings = headings
             style.auto_filter = True
+            if merge_ranges:
+                style.merge_ranges = merge_ranges
+                style.head_rows = 2
+            else:
+                style.merge_ranges = []
         else:
             sheet_name = model.Meta.verbose_name
             row_headings = headings
             column_headings = []
             data = transpose(data)
             style.auto_filter = False
+            if merge_ranges:
+                style.merge_ranges = [(start_col, start_row, end_col, end_row)
+                                      for start_row, start_col, end_row, end_col in merge_ranges]
+                style.head_columns = 2
+            else:
+                style.merge_ranges = []
 
         # merge data, headings
         for i_row, row_heading in enumerate(transpose(row_headings)):
@@ -345,10 +422,10 @@ class WorkbookWriter(WriterBase):
                 row = []
                 data.append(row)
 
-            for val in row_heading:
+            for val in reversed(row_heading):
                 row.insert(0, val)
 
-        for i_row in range(len(row_headings)):
+        for _ in row_headings:
             for column_heading in column_headings:
                 column_heading.insert(
                     0, None)  # pragma: no cover # unreachable because row_headings and column_headings cannot both be non-empty
@@ -373,6 +450,7 @@ class WorkbookWriter(WriterBase):
             head_row_font_bold=True,
             head_row_fill_pattern='solid',
             head_row_fill_fgcolor='CCCCCC',
+            merged_head_fill_fgcolor='AAAAAA',
             extra_rows=0,
             extra_columns=0,
             row_height=15.01,
@@ -417,7 +495,7 @@ class Writer(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            extra_entries=0):
+            toc=True, extra_entries=0):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -437,13 +515,14 @@ class Writer(WriterBase):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
+            toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, models=models, get_related=get_related,
                      include_all_attributes=include_all_attributes, validate=validate,
                      title=title, description=description, keywords=keywords,
-                     language=language, creator=creator, extra_entries=extra_entries)
+                     language=language, creator=creator, toc=toc, extra_entries=extra_entries)
 
 
 class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
@@ -660,6 +739,9 @@ class WorkbookReader(ReaderBase):
 
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
+        if TOC_NAME in sheet_names:
+            sheet_names.remove(TOC_NAME)
+
         ambiguous_sheet_names = self.get_ambiguous_sheet_names(sheet_names, models)
         if ambiguous_sheet_names:
             msg = 'The following sheets cannot be unambiguously mapped to models:'
@@ -831,12 +913,17 @@ class WorkbookReader(ReaderBase):
             return ([], [], None, [])
 
         # get worksheet
+        _, attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
         if model.Meta.tabular_orientation == TabularOrientation.row:
-            data, _, headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=1)
+            data, _, all_headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=1 + (attr_groups is not None))
         else:
-            data, headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=1)
+            data, all_headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=1 + (attr_groups is not None))
             data = transpose(data)
-        headings = headings[0]
+        if attr_groups is None:
+            group_headings = None
+        else:
+            group_headings = all_headings[0]
+        headings = all_headings[-1]
 
         # prohibit duplicate headers
         header_map = collections.defaultdict(list)
@@ -883,7 +970,7 @@ class WorkbookReader(ReaderBase):
 
         # optionally, check that all attributes have column headings
         if not ignore_missing_attributes:
-            all_attributes = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+            all_attributes, all_attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
             missing_attrs = set(all_attributes).difference(set(attributes))
             if missing_attrs:
                 error = 'The following attributes must be defined:\n  {}'.format('\n  '.join(attr.name for attr in missing_attrs))
@@ -891,7 +978,7 @@ class WorkbookReader(ReaderBase):
 
         # optionally, check that the attributes are defined in the canonical order
         if not ignore_attribute_order:
-            canonical_attr_order = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+            canonical_attr_order, canonical_attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
             canonical_attr_order = list(filter(lambda attr: attr in attributes, canonical_attr_order))
             if attributes != canonical_attr_order:
                 column_headings = []
@@ -1229,7 +1316,7 @@ def convert(source, destination, models,
 
 
 def create_template(path, models, title=None, description=None, keywords=None,
-                    version=None, language=None, creator=None, extra_entries=10):
+                    version=None, language=None, creator=None, toc=True, extra_entries=10):
     """ Create a template for a model
 
     Args:
@@ -1243,12 +1330,13 @@ def create_template(path, models, title=None, description=None, keywords=None,
         version (:obj:`str`, optional): version
         language (:obj:`str`, optional): language
         creator (:obj:`str`, optional): creator
+        toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
         extra_entries (:obj:`int`, optional): additional entries to display
     """
     Writer.get_writer(path)().run(path, [], models,
                                   title=title, description=description, keywords=keywords,
                                   version=version, language=language, creator=creator,
-                                  extra_entries=extra_entries)
+                                  toc=toc, extra_entries=extra_entries)
 
 
 def get_ordered_attributes(cls, include_all_attributes=True):
@@ -1260,25 +1348,35 @@ def get_ordered_attributes(cls, include_all_attributes=True):
 
     Returns:
         :obj:`tuple` of :obj:`Attribute`: attributes in the order they should be printed
+        :obj:`tuple` of :obj:`dict`: group names and number of columns in each group
     """
     # get names of attributes in desired order
+    attr_names = cls.get_flat_attr_order()
+    attr_groups = cls.get_attr_group_order()
+
     if include_all_attributes:
-        ordered_attr_names = list(cls.Meta.attribute_order)
+        ordered_attr_names = attr_names
 
         unordered_attr_names = set()
         for base in cls.Meta.inheritance:
             for attr_name in base.__dict__.keys():
                 if isinstance(getattr(base, attr_name), Attribute) and attr_name not in ordered_attr_names:
                     unordered_attr_names.add(attr_name)
-
         unordered_attr_names = natsorted(unordered_attr_names, alg=ns.IGNORECASE)
 
-        attr_names = tuple(ordered_attr_names + unordered_attr_names)
-    else:
-        attr_names = cls.Meta.attribute_order
+        attr_groups = attr_groups + [{'name': None, 'cols': 1} for _ in unordered_attr_names]
+        attr_names = ordered_attr_names + unordered_attr_names
+
+    has_attr_groups = False
+    for attr_group in attr_groups:
+        if attr_group['cols'] > 1:
+            has_attr_groups = True
+            break
+    if not has_attr_groups:
+        attr_groups = None
 
     # get attributes in desired order
-    return [cls.Meta.attributes[attr_name] for attr_name in attr_names]
+    return ([cls.Meta.attributes[attr_name] for attr_name in attr_names], attr_groups)
 
 
 class IoWarning(ObjModelWarning):

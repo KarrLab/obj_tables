@@ -44,6 +44,7 @@ from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerA
 from wc_utils.workbook.io import read as read_workbook
 from wc_utils.util.files import remove_silently
 from obj_model.expression import Expression
+from obj_model.io import TOC_NAME
 
 # todo: move all static methods out of MigrationFixtures
 # todo: remove all '# @unittest.skip("speed up testing")'
@@ -313,6 +314,12 @@ class MigrationFixtures(unittest.TestCase):
         # test whether a pair of model files are identical, or not identical if equal=False
         existing_workbook = read_workbook(existing_model_file)
         migrated_workbook = read_workbook(migrated_model_file)
+
+        if TOC_NAME in existing_workbook:
+            existing_workbook.pop(TOC_NAME)
+        if TOC_NAME in migrated_workbook:
+            migrated_workbook.pop(TOC_NAME)
+
         if equal:
             if not existing_workbook == migrated_workbook:
                 # for debugging
