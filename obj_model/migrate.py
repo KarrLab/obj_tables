@@ -2441,7 +2441,7 @@ class AutomatedMigration(object):
     data files in the `data` repo to the latest version of the `schema` repo.
 
     Attributes:
-        data_repo_location (:obj:`GitRepo`): directory or url of the *data* repo
+        data_repo_location (:obj:`str`): directory or url of the *data* repo
         data_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a git clone of the *data* repo
         schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the current version of the *schema* repo
         data_config_file_basename (:obj:`str`): the basename of the YAML configuration file for the
@@ -2667,7 +2667,7 @@ class AutomatedMigration(object):
         The schema in `self.schema_git_repo` must specify a Model name and metadata attributes
         in a `_GIT_METADATA` attribute. E.g., `wc_lang` contains:
 
-            `_GIT_METADATA = (Model, ('url', 'branch', 'revision'))`
+            `_GIT_METADATA = (GitMetadataModel, ('url', 'branch', 'revision'))`
 
         Args:
             data_file (:obj:`str`): name of a data file
@@ -2676,7 +2676,9 @@ class AutomatedMigration(object):
             :obj:`str`: the hash
 
         Raises:
-            :obj:`MigratorError`: if the schema in `self.schema_git_repo` lacks a `_GIT_METADATA` attribute
+            :obj:`MigratorError`: if the schema in `self.schema_git_repo` lacks a `_GIT_METADATA` attribute,
+                the `GitMetadataModel` contains related attributes, or `data_file` contains multiple
+                `GitMetadataModel` instances
         """
         # get the schema in the self.schema_git_repo and schema_file in the automated migration config file
         schema_file = normalize_filename(self.data_config['schema_file'],
@@ -2692,10 +2694,15 @@ class AutomatedMigration(object):
         metadata_model_type = git_metadata[0]
         _, _, revision_attr = git_metadata[1]
 
+        # metadata_model_type cannot contain related attributes
+        if metadata_model_type.get_related_attrs():
+            raise MigratorError("GitMetadataModel '{}' contains related attributes".format(
+                metadata_model_type.__name__))
+
         # use obj_model Reader to read the data file
-        model_defs = schema_module.run()
-        models = obj_model.io.Reader().run(data_file, models=list(model_defs.values()), ignore_extra_sheets=True,
-            ignore_sheet_order=True, include_all_attributes=False, ignore_extra_attributes=True,
+        models = obj_model.io.Reader().run(data_file, models=metadata_model_type,
+            ignore_missing_sheets=True, ignore_extra_sheets=True, ignore_sheet_order=True,
+            include_all_attributes=False, ignore_extra_attributes=True,
             ignore_attribute_order=True, group_objects_by_model=True, validate=False)
         # check that there's exactly 1 instance of the metadata_model_type
         if len(models[metadata_model_type]) != 1:
@@ -2765,7 +2772,7 @@ class AutomatedMigration(object):
         # get the schema for the data file
         commit_hash = self.get_data_file_git_commit_hash(data_file)
 
-        # make a SchemaChanges for each schema change in the file's schema's dependents
+        # make a SchemaChanges for each schema change in the file's schema dependents
         hashes_of_schema_changes = [sc.commit_hash for sc in self.loaded_schema_changes]
         hashes_of_dependents = \
             [GitRepo.get_hash(dependent) for dependent in self.schema_git_repo.get_dependents(commit_hash)]
@@ -2792,6 +2799,7 @@ class AutomatedMigration(object):
         Raises:
             :obj:`MigratorError`: if the `AutomatedMigration` doesn't validate
         """
+        # todo: shouldn't return anything
         self.validate()
         self.migration_specs = []
         for file_to_migrate in self.data_config['files_to_migrate']:
@@ -2826,17 +2834,56 @@ class AutomatedMigration(object):
         self.clean_up()
         return all_migrated_files
 
-    def test(self):
+    def test_schemas(self):
+        self.prepare()
+        for migration_spec in self.migration_specs:
+            for schema_file in migration_spec.schema_files:
+                try:
+                    SchemaModule(schema_file).import_module_for_migration()
+                    print("successfully imported: '{}'".format(schema_file))
+                except MigratorError as e:
+                    print("cannot import: '{}'".format(schema_file))
+                    print("\t{}".format(e))
+
+    '''
+    @staticmethod
+    def test_migration(data_repo_location):
         """ Test a migration
 
+        Check ...
+
+        The trickiest part of a migration is importing the schema. Unfortunately, imports that use the Python `import`
+        command may fail with migration's import, which uses the library call `importlib.import_module`. This should be called
+        whenever a schema that may be migrated is changed.
+
+        This method reports:
+
+        * all validation errors in automatic config files
+        * all validation errors in schema changes files
+
+        It does not alter any files.
+
+        Args:
+            data_repo_location (:obj:`str`): directory or url of the *data* repo
         """
-        '''
+        assumes that only
         ensure that all of these are OK:
             schema changes files
+            transformations
             automatic config files
             schemas
+        git_repos = []
+        data_git_repo = GitRepo(data_repo_location)
+        git_repos.append(data_git_repo)
+
+        # get and validate all automatic config files
+        data_git_repo.migrations_dir()
+
+        self.data_git_repo.migrations_dir()
+        #  each automatic config file
+        # validate schema changes files
+        # ensure that schemas import
         '''
-        pass
 
     def __str__(self):
         """ Provide a string representation
