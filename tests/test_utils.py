@@ -62,43 +62,59 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(set(utils.get_related_models(DisjointChild, include_root_model=True)), set([DisjointChild, DisjointParent]))
 
     def test_get_attribute_by_name(self):
-        self.assertEqual(utils.get_attribute_by_name(Root, None, None), None)
-        
-        self.assertEqual(utils.get_attribute_by_name(Root, None, 'id'), Root.Meta.attributes['id'])
-        self.assertEqual(utils.get_attribute_by_name(Root, None, 'id2'), None)
-        self.assertEqual(utils.get_attribute_by_name(Root, None, 'Identifier', verbose_name=True), Root.Meta.attributes['id'])
-        self.assertEqual(utils.get_attribute_by_name(Root, None, 'Identifier2', verbose_name=True), None)
+        self.assertEqual(utils.get_attribute_by_name(Root, None, None), (None, None))
 
-        self.assertEqual(utils.get_attribute_by_name(Root, None, 'ID', case_insensitive=True), Root.Meta.attributes['id'])
-        self.assertEqual(utils.get_attribute_by_name(Root, None, 'ID', case_insensitive=False), None)
-        self.assertEqual(utils.get_attribute_by_name(Root, None, 'identifier', verbose_name=True, case_insensitive=True), Root.Meta.attributes['id'])
-        self.assertEqual(utils.get_attribute_by_name(Root, None, 'identifier', verbose_name=True, case_insensitive=False), None)
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'id'), (None, Root.Meta.attributes['id']))
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'id2'), (None, None))
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'Identifier', verbose_name=True), (None, Root.Meta.attributes['id']))
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'Identifier2', verbose_name=True), (None, None))
 
-        class GroupsModel(core.Model):
-            val1 = core.FloatAttribute(verbose_name='Value')
-            units1 = core.StringAttribute(verbose_name='Units')
-            val2 = core.FloatAttribute(verbose_name='Value')
-            units2 = core.StringAttribute(verbose_name='Units')
-            val3 = core.FloatAttribute(verbose_name='Value')
-            units3 = core.StringAttribute(verbose_name='Units')
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'ID', case_insensitive=True), (None, Root.Meta.attributes['id']))
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'ID', case_insensitive=False), (None, None))
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'identifier', verbose_name=True,
+                                                     case_insensitive=True), (None, Root.Meta.attributes['id']))
+        self.assertEqual(utils.get_attribute_by_name(Root, None, 'identifier', verbose_name=True, case_insensitive=False), (None, None))
+
+        class Parent(core.Model):
+            quantity_1 = core.OneToOneAttribute('Quantity', related_name='parent_q_1')
+            quantity_2 = core.OneToOneAttribute('Quantity', related_name='parent_q_2')
+            value = core.FloatAttribute()
+            units = core.StringAttribute()
 
             class Meta(core.Model.Meta):
-                attribute_order = (core.AttributeGroup('Group 1', ('val1', 'units1')), 
-                                   core.AttributeGroup('Group 2', ('val2', 'units2')),
-                                   'val3', 'units3')
+                attribute_order = ('quantity_1', 'quantity_2', 'value', 'units')
 
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 1', 'val1'), GroupsModel.Meta.attributes['val1'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 1', 'units1'), GroupsModel.Meta.attributes['units1'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 2', 'val2'), GroupsModel.Meta.attributes['val2'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 2', 'units2'), GroupsModel.Meta.attributes['units2'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, None, 'val3'), GroupsModel.Meta.attributes['val3'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, None, 'units3'), GroupsModel.Meta.attributes['units3'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 1', 'Value', verbose_name=True), GroupsModel.Meta.attributes['val1'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 1', 'Units', verbose_name=True), GroupsModel.Meta.attributes['units1'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 2', 'Value', verbose_name=True), GroupsModel.Meta.attributes['val2'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, 'Group 2', 'Units', verbose_name=True), GroupsModel.Meta.attributes['units2'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, None, 'Value', verbose_name=True), GroupsModel.Meta.attributes['val3'])
-        self.assertEqual(utils.get_attribute_by_name(GroupsModel, None, 'Units', verbose_name=True), GroupsModel.Meta.attributes['units3'])
+        class Quantity(core.Model):
+            value = core.FloatAttribute()
+            units = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('value', 'units')
+                tabular_orientation = core.TabularOrientation.multiple_cells
+
+            def serialize(self):
+                return '{} {}'.format(value, units)
+
+        self.assertEqual(utils.get_attribute_by_name(Parent, 'quantity_1', 'value'),
+                         (Parent.Meta.attributes['quantity_1'], Quantity.Meta.attributes['value']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, 'quantity_1', 'units'),
+                         (Parent.Meta.attributes['quantity_1'], Quantity.Meta.attributes['units']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, 'quantity_2', 'value'),
+                         (Parent.Meta.attributes['quantity_2'], Quantity.Meta.attributes['value']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, 'quantity_2', 'units'),
+                         (Parent.Meta.attributes['quantity_2'], Quantity.Meta.attributes['units']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, None, 'value'), (None, Parent.Meta.attributes['value']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, None, 'units'), (None, Parent.Meta.attributes['units']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, 'Quantity 1', 'Value', verbose_name=True),
+                         (Parent.Meta.attributes['quantity_1'], Quantity.Meta.attributes['value']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, 'Quantity 1', 'Units', verbose_name=True),
+                         (Parent.Meta.attributes['quantity_1'], Quantity.Meta.attributes['units']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, 'Quantity 2', 'Value', verbose_name=True),
+                         (Parent.Meta.attributes['quantity_2'], Quantity.Meta.attributes['value']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, 'Quantity 2', 'Units', verbose_name=True),
+                         (Parent.Meta.attributes['quantity_2'], Quantity.Meta.attributes['units']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, None, 'Value', verbose_name=True), (None, Parent.Meta.attributes['value']))
+        self.assertEqual(utils.get_attribute_by_name(Parent, None, 'Units', verbose_name=True), (None, Parent.Meta.attributes['units']))
 
     def test_group_objects_by_model(self):
         (root, nodes, leaves) = (self.root, self.nodes, self.leaves)
@@ -214,7 +230,6 @@ class TestUtils(unittest.TestCase):
             self.assertTrue(check_sorted())
 
         self.assertGreater(n_random, 0.9 * n_trials)
-
 
     class MedadataModel(core.Model):
         url = core.StringAttribute()

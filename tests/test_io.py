@@ -140,7 +140,8 @@ class TestIo(unittest.TestCase):
         self.tmp_dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.tmp_dirname)
+        print(self.tmp_dirname)
+        # shutil.rmtree(self.tmp_dirname)
 
     def test_dummy_model(self):
         # test integrity of relationships
@@ -794,43 +795,73 @@ class TestIo(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'The model cannot be loaded'):
             WorkbookReader().run(filename, [TestModel])
 
-    def test_attribute_groups(self):
+    def test_tabular_orientation_multiple_cells(self):
         class Node(core.Model):
             id = core.SlugAttribute()
-            name1 = core.StringAttribute()
-            name2 = core.StringAttribute()
-            synonyms = core.LongStringAttribute()
-            val1 = core.FloatAttribute()
-            val2 = core.FloatAttribute()
-            val3 = core.FloatAttribute()
+            quantity_1 = core.OneToOneAttribute('Quantity', related_name='node_1')
+            quantity_2 = core.ManyToOneAttribute('Quantity', related_name='node_2_list')
             comments = core.LongStringAttribute()
 
             class Meta(core.Model.Meta):
-                attribute_order = ('id',
-                                   core.AttributeGroup('Names', ('name1', 'name2')),
-                                   'synonyms',
-                                   core.AttributeGroup('Val', ('val1', 'val2', 'val3')),
-                                   'comments')
+                attribute_order = ('id', 'quantity_1', 'quantity_2', 'comments')
+
+        class Quantity(core.Model):
+            value = core.FloatAttribute()
+            unit = core.ManyToOneAttribute('Unit', related_name='quantities_1')
+            units = core.ManyToManyAttribute('Unit', related_name='quantities_2')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.multiple_cells
+                attribute_order = ('value', 'unit', 'units')
+
+            def serialize(self):
+                return '{} {}'.format(self.value, self.unit.id)
+
+        class Unit(core.Model):
+            id = core.SlugAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
+        u1 = Unit(id='m')
+        u2 = Unit(id='s')
+        u3 = Unit(id='g')
+        u4 = Unit(id='l')
+        u5 = Unit(id='k')
+        q1 = Quantity(value=1., unit=u1, units=[u3, u4])
+        q2 = Quantity(value=2., unit=u1, units=[u4])
+        q3 = Quantity(value=2., unit=u2, units=[])
+        q4 = Quantity(value=3., unit=u2, units=[u5])
 
         nodes = [
-            Node(id='node0', name1='0_1', name2='0_2', synonyms='0:1, 0:2', val1=0.1, val2=0.2, val3=0.3),
-            Node(id='node1', name1='1_1', name2='1_2', synonyms='1:1, 1:2', val1=1.1, val2=1.2, val3=1.3),
-            Node(id='node2', name1='2_1', name2='2_2', synonyms='2:1, 2:2', val1=2.1, val2=2.2, val3=2.3),
+            Node(id='node0', quantity_1=q1, quantity_2=q3, comments='node 0'),
+            Node(id='node1', quantity_1=q2, quantity_2=q3, comments='node 1'),
+            Node(id='node2', quantity_1=None, quantity_2=q4, comments='node 2'),
+            Node(id='node3', quantity_1=None, quantity_2=None, comments='node 3'),
         ]
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         writer = WorkbookWriter()
-        writer.run(filename, nodes, [Node])
-        nodes_2 = WorkbookReader().run(filename, [Node])[Node]
+        writer.run(filename, nodes, [Node, Unit])
+        nodes_2 = WorkbookReader().run(filename, [Node, Unit])[Node]
         for node, node_2 in zip(nodes, nodes_2):
             self.assertTrue(node_2.is_equal(node))
+
+        # error
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        wb = read_workbook(filename)
+        wb['Nodes'][2][1] = 'a'
+        filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
+        write_workbook(filename, wb)
+        with self.assertRaisesRegex(ValueError, 'model cannot be loaded'):
+            WorkbookReader().run(filename, [Node, Unit])
 
         # column orientation
         Node.Meta.tabular_orientation = core.TabularOrientation.column
         filename = os.path.join(self.tmp_dirname, 'test2.xlsx')
         writer = WorkbookWriter()
-        writer.run(filename, nodes, [Node])
-        nodes_2 = WorkbookReader().run(filename, [Node])[Node]
+        writer.run(filename, nodes, [Node, Unit])
+        nodes_2 = WorkbookReader().run(filename, [Node, Unit])[Node]
         for node, node_2 in zip(nodes, nodes_2):
             self.assertTrue(node_2.is_equal(node))
 
@@ -1593,6 +1624,53 @@ class StrictReadingTestCase(unittest.TestCase):
             WorkbookReader().run(filename, [Model])
         WorkbookReader().run(filename, [Model], ignore_missing_attributes=True)
 
+    def test_missing_attribute_inline(self):
+        class Quantity(core.Model):
+            value = core.FloatAttribute()
+            units = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('value', 'units')
+                tabular_orientation = core.TabularOrientation.multiple_cells
+
+            def serialize(self):
+                return '{} {}'.format(self.value, self.units)
+
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr1 = core.StringAttribute()
+            attr2 = core.StringAttribute()
+            quantity = core.OneToOneAttribute(Quantity, related_name='model')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr1', 'attr2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row([None, None, None, 'Quantity', 'Quantity']))
+        ws.append(Row(['Id', 'Attr1', 'Attr2', 'Value', 'Units']))
+        ws.append(Row(['m1', '1', '2', 1.2, 'g']))
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
+        WorkbookReader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row([None, None]))
+        ws.append(Row(['Id', 'Attr2']))
+        ws.append(Row(['m1', '2']))
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
+        with self.assertRaises(ValueError):
+            WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model], ignore_missing_attributes=True)
+
     def test_extra_attribute(self):
         class Model(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -1660,6 +1738,170 @@ class StrictReadingTestCase(unittest.TestCase):
             "\n      A1: Id"
             "\n      B1: Attr1"
             "\n      C1: Attr2"
+        )):
+            WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
+
+    def test_different_attribute_order_transpose(self):
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr1 = core.StringAttribute()
+            attr2 = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr1', 'attr2')
+                tabular_orientation = core.TabularOrientation.column
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'm1']))
+        ws.append(Row(['Attr1', '1']))
+        ws.append(Row(['Attr2', '2']))
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
+        WorkbookReader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row(['Id', 'm1']))
+        ws.append(Row(['Attr2', '2']))
+        ws.append(Row(['Attr1', '1']))
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
+        with self.assertRaisesRegex(ValueError, (
+            "The rows of worksheet 'Models' must be defined in this order:"
+            "\n      A1: Id"
+            "\n      A2: Attr1"
+            "\n      A3: Attr2"
+        )):
+            WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
+
+    def test_different_attribute_order_inline(self):
+        class Quantity(core.Model):
+            value = core.FloatAttribute()
+            units = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('value', 'units')
+                tabular_orientation = core.TabularOrientation.multiple_cells
+
+            def serialize(self):
+                return '{} {}'.format(self.value, self.units)
+
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr1 = core.StringAttribute()
+            attr2 = core.StringAttribute()
+            quantity = core.OneToOneAttribute(Quantity, related_name='model')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr1', 'attr2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row([None, None, None, 'Quantity', 'Quantity']))
+        ws.append(Row(['Id', 'Attr1', 'Attr2', 'Value', 'Units']))
+        ws.append(Row(['m1', '1', '2', 1.1, 's']))
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
+        WorkbookReader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row([None, None, None, 'Quantity', 'Quantity']))
+        ws.append(Row(['Id', 'Attr2', 'Attr1', 'Value', 'Units']))
+        ws.append(Row(['m1', '2', '1', 1.1, 's']))
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
+        with self.assertRaisesRegex(ValueError, (
+            "The columns of worksheet 'Models' must be defined in this order:"
+            "\n      A1: "
+            "\n      A2: Id"
+            "\n      B1: "
+            "\n      B2: Attr1"
+            "\n      C1: "
+            "\n      C2: Attr2"
+            "\n      D1: Quantity"
+            "\n      D2: Value"
+            "\n      E1: Quantity"
+            "\n      E2: Units"
+        )):
+            WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
+
+    def test_different_attribute_order_inline_transpose(self):
+        class Quantity(core.Model):
+            value = core.FloatAttribute()
+            units = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('value', 'units')
+                tabular_orientation = core.TabularOrientation.multiple_cells
+
+            def serialize(self):
+                return '{} {}'.format(self.value, self.units)
+
+        class Model(core.Model):
+            id = core.StringAttribute(primary=True, unique=True)
+            attr1 = core.StringAttribute()
+            attr2 = core.StringAttribute()
+            quantity = core.OneToOneAttribute(Quantity, related_name='model')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'attr1', 'attr2')
+                tabular_orientation = core.TabularOrientation.column
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer_cls = get_writer('.xlsx')
+        writer = writer_cls(filename)
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row([None, 'Id', 'm1']))
+        ws.append(Row([None, 'Attr1', '1']))
+        ws.append(Row([None, 'Attr2', '2']))
+        ws.append(Row(['Quantity', 'Value', 1.1]))
+        ws.append(Row(['Quantity', 'Units', 's']))
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
+        WorkbookReader().run(filename, [Model])
+
+        wb = Workbook()
+        wb['Models'] = ws = Worksheet()
+        ws.append(Row([None, 'Id', 'm1']))
+        ws.append(Row([None, 'Attr2', '2']))
+        ws.append(Row([None, 'Attr1', '1']))
+        ws.append(Row(['Quantity', 'Value', 1.1]))
+        ws.append(Row(['Quantity', 'Units', 's']))
+        writer.run(wb, style={
+            Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
+        })
+        with self.assertRaisesRegex(ValueError, (
+            "The rows of worksheet 'Models' must be defined in this order:"
+            "\n      A1: "
+            "\n      B1: Id"
+            "\n      A2: "
+            "\n      B2: Attr1"
+            "\n      A3: "
+            "\n      B3: Attr2"
+            "\n      A4: Quantity"
+            "\n      B4: Value"
+            "\n      A5: Quantity"
+            "\n      B5: Units"
         )):
             WorkbookReader().run(filename, [Model])
         WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
@@ -2116,10 +2358,10 @@ class UtilsTestCase(unittest.TestCase):
                 attribute_order = ('id2', 'name2', )
 
         # all attributes
-        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root)[0])
-        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf)[0])
-        unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(UnrootedLeaf)[0])
-        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3)[0])
+        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root))
+        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf))
+        unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(UnrootedLeaf))
+        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3))
 
         self.assertEqual(set(root_attrs), set(Root.Meta.attributes.keys()))
         self.assertEqual(set(leaf_attrs), set(Leaf.Meta.attributes.keys()))
@@ -2136,11 +2378,11 @@ class UtilsTestCase(unittest.TestCase):
             'enum2', 'enum3', 'float2', 'float3', 'id', 'multi_word_name', 'name', 'root', 'root2', ))
 
         # only explicitly defined attributes
-        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root, include_all_attributes=False)[0])
-        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf, include_all_attributes=False)[0])
+        root_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Root, include_all_attributes=False))
+        leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf, include_all_attributes=False))
         unrooted_leaf_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(
-            UnrootedLeaf, include_all_attributes=False)[0])
-        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3, include_all_attributes=False)[0])
+            UnrootedLeaf, include_all_attributes=False))
+        leaf3_attrs = tuple(attr.name for attr in obj_model.io.get_ordered_attributes(Leaf3, include_all_attributes=False))
 
         self.assertLessEqual(set(root_attrs), set(Root.Meta.attributes.keys()))
         self.assertLessEqual(set(leaf_attrs), set(Leaf.Meta.attributes.keys()))
@@ -2151,6 +2393,68 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(leaf_attrs, ('id',))
         self.assertEqual(unrooted_leaf_attrs, ('id',))
         self.assertEqual(leaf3_attrs, ('id2', 'name2',))
+
+    def test_get_ordered_attributes_error(self):
+        class Unit(core.Model):
+            id = core.SlugAttribute()
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.cell
+                attribute_order = ('id',)
+
+            def serialize(self):
+                return self.id
+
+        class Quantity(core.Model):
+            value = core.FloatAttribute()
+            unit = core.OneToOneAttribute(Unit, related_name='quantity')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.multiple_cells
+                attribute_order = ('value', 'unit')
+
+            def serialize(self):
+                return '{} {}'.format(self.value, self.unit.id)
+
+        class Model(core.Model):
+            quantity = core.OneToOneAttribute(Quantity, related_name='model')
+
+        obj_model.io.get_ordered_attributes(Model)
+        obj_model.io.get_ordered_attributes(Quantity)
+        obj_model.io.get_ordered_attributes(Unit)
+
+        class Unit(core.Model):
+            id = core.SlugAttribute()
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.multiple_cells
+                attribute_order = ('id',)
+
+            def serialize(self):
+                return self.id
+
+            @classmethod
+            def deserialize(cls, value, objects):
+                return cls(id=value)
+
+        class Quantity(core.Model):
+            value = core.FloatAttribute()
+            unit = core.OneToOneAttribute(Unit, related_name='quantity')
+
+            class Meta(core.Model.Meta):
+                tabular_orientation = core.TabularOrientation.multiple_cells
+                attribute_order = ('value', 'unit')
+
+            def serialize(self):
+                return '{} {}'.format(self.value, self.unit.id)
+
+        class Model(core.Model):
+            quantity = core.OneToOneAttribute(Quantity, related_name='model')
+
+        obj_model.io.get_ordered_attributes(Model)
+        with self.assertRaisesRegex(ValueError, 'cannot have relationships'):
+            obj_model.io.get_ordered_attributes(Quantity)
+        obj_model.io.get_ordered_attributes(Unit)
 
 
 class ExcelValidationTestCase(unittest.TestCase):
