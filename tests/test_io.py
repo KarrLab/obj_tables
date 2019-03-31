@@ -103,7 +103,7 @@ class OneToManyInline(core.Model):
 
     class Meta(core.Model.Meta):
         attribute_order = ('id',)
-        tabular_orientation = core.TabularOrientation.inline
+        tabular_orientation = core.TabularOrientation.cell
 
 
 class TestIo(unittest.TestCase):
@@ -1846,21 +1846,21 @@ class InlineJsonTestCase(unittest.TestCase):
             name = core.StringAttribute()
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class GrandChild(core.Model):
             name = core.StringAttribute()
             sibling = core.OneToOneAttribute(OtherGrandChild, related_name='sibling')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class Child(core.Model):
             name = core.StringAttribute()
             children = core.OneToManyAttribute(GrandChild, related_name='parent')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -1893,7 +1893,7 @@ class InlineJsonTestCase(unittest.TestCase):
             child = core.ManyToOneAttribute(GrandChild, related_name='parents')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -1938,7 +1938,7 @@ class InlineJsonTestCase(unittest.TestCase):
             children = core.OneToManyAttribute(GrandChild, related_name='parent')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -1983,7 +1983,7 @@ class InlineJsonTestCase(unittest.TestCase):
             children = core.ManyToManyAttribute(GrandChild, related_name='parents')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -2028,7 +2028,7 @@ class InlineJsonTestCase(unittest.TestCase):
             child = core.OneToOneAttribute(GrandChild, related_name='parent')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)

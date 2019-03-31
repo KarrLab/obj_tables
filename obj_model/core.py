@@ -958,11 +958,13 @@ class TabularOrientation(Enum):
 
     * `row`: the first row contains attribute names; subsequents rows store objects
     * `column`: the first column contains attribute names; subsequents columns store objects
-    * `inline`: a cell contains a table, as a comma-separated list for example
+    * `cell`: a cell contains a table, as a comma-separated list for example
+    * `multiple_cells`: multiple cells within a row or column
     """
     row = 1
     column = 2
-    inline = 3
+    cell = 3
+    multiple_cells = 4
 
 
 class Model(with_metaclass(ModelMeta, object)):
@@ -1269,7 +1271,7 @@ class Model(with_metaclass(ModelMeta, object)):
                     attr.related_class, attr.primary_class.__name__, attr_name))
 
         # tabular orientation
-        if cls.Meta.tabular_orientation == TabularOrientation.inline:
+        if cls.Meta.tabular_orientation == TabularOrientation.cell:
             if len(cls.Meta.related_attributes) == 0:
                 raise ValueError(
                     'Inline model "{}" should have at least one one-to-one or one-to-many attribute'.format(cls.__name__))
@@ -2515,13 +2517,13 @@ class Model(with_metaclass(ModelMeta, object)):
                                 'deserialize' in attr.__class__.__dict__:
                             pass
                         elif not related_class.Meta.primary_attribute:
-                            if related_class.Meta.tabular_orientation == TabularOrientation.inline:
+                            if related_class.Meta.tabular_orientation == TabularOrientation.cell:
                                 warnings.warn('Primary class: {}: Related class {} must have a primary attribute'.format(
                                     attr.primary_class.__name__, related_class.__name__), SchemaWarning)
                             else:
                                 return False
                         elif not related_class.Meta.primary_attribute.unique and not related_class.Meta.unique_together:
-                            if related_class.Meta.tabular_orientation == TabularOrientation.inline:
+                            if related_class.Meta.tabular_orientation == TabularOrientation.cell:
                                 warnings.warn('Primary attribute {} of related class {} must be unique'.format(
                                     related_class.Meta.primary_attribute.name, related_class.__name__), SchemaWarning)
                             else:
@@ -2582,7 +2584,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
                 if depth <= max_depth:
 
-                    if encode_primary_objects or cls.Meta.tabular_orientation == TabularOrientation.inline:
+                    if encode_primary_objects or cls.Meta.tabular_orientation == TabularOrientation.cell:
                         for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
                             val = getattr(obj, attr_name)
                             if isinstance(attr, RelatedAttribute):
@@ -2649,7 +2651,7 @@ class Model(with_metaclass(ModelMeta, object)):
                     elif isinstance(attr_json, list):
                         attr_val = []
                         for sub_attr_json in attr_json:
-                            if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.inline:
+                            if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.cell:
                                 sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
                                 if sub_sub_obj is None:
                                     sub_sub_obj = other_cls()
@@ -2661,7 +2663,7 @@ class Model(with_metaclass(ModelMeta, object)):
                             attr_val.append(sub_sub_obj)
 
                     else:
-                        if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.inline:
+                        if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.cell:
                             attr_val = decoded.get(attr_json['__id'], None)
                             if attr_val is None:
                                 attr_val = other_cls()
@@ -5992,7 +5994,7 @@ class OneToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
                               indent=8)
 
@@ -6017,7 +6019,7 @@ class OneToOneAttribute(RelatedAttribute):
         if not value:
             return (None, None)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             try:
                 obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
                                                    primary_objects=objects, decoded=decoded)
@@ -6324,7 +6326,7 @@ class ManyToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
                               indent=8)
 
@@ -6349,7 +6351,7 @@ class ManyToOneAttribute(RelatedAttribute):
         if not value:
             return (None, None)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             try:
                 obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
                                                    primary_objects=objects, decoded=decoded)
@@ -6642,7 +6644,7 @@ class OneToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
                               indent=8)
 
@@ -6670,7 +6672,7 @@ class OneToManyAttribute(RelatedAttribute):
         if not values:
             return (list(), None)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             try:
                 objs = []
                 for v in json.loads(values):
@@ -6988,7 +6990,7 @@ class ManyToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
                               indent=8)
 
@@ -7016,7 +7018,7 @@ class ManyToManyAttribute(RelatedAttribute):
         if not values:
             return (list(), None)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             try:
                 objs = []
                 for v in json.loads(values):
@@ -7382,7 +7384,7 @@ def get_models(module=None, inline=True):
 
     if not inline:
         for model in list(models):
-            if model.Meta.tabular_orientation == TabularOrientation.inline:
+            if model.Meta.tabular_orientation in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
                 models.remove(model)
 
     return models

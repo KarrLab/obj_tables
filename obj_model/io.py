@@ -215,7 +215,7 @@ class WorkbookWriter(WriterBase):
             if model not in models:
                 models.append(model)
 
-        models = list(filter(lambda model: model.Meta.tabular_orientation != TabularOrientation.inline, models))
+        models = list(filter(lambda model: model.Meta.tabular_orientation not in [TabularOrientation.cell, TabularOrientation.multiple_cells], models))
 
         if not models:
             raise ValueError('At least one `Model` must be provided')
@@ -259,7 +259,7 @@ class WorkbookWriter(WriterBase):
         # add sheets to workbook
         encoded = {}
         for model in all_models:
-            if model.Meta.tabular_orientation == TabularOrientation.inline:
+            if model.Meta.tabular_orientation in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
                 continue
 
             if model in grouped_objects:
@@ -286,7 +286,7 @@ class WorkbookWriter(WriterBase):
         content = [['Table', 'Description', 'Number of objects']]
         hyperlinks = []
         for i_model, model in enumerate(models):
-            if model.Meta.tabular_orientation == TabularOrientation.inline:
+            if model.Meta.tabular_orientation in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
                 continue
 
             if model.Meta.tabular_orientation == TabularOrientation.row:
