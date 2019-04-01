@@ -1450,7 +1450,7 @@ class DfbaObjectiveExpression(obj_model.Model, Expression):
                                             verbose_name='dFBA objective reactions', verbose_related_name='dFBA objective expression')
 
     class Meta(obj_model.Model.Meta, Expression.Meta):
-        tabular_orientation = TabularOrientation.inline
+        tabular_orientation = TabularOrientation.cell
         expression_valid_functions = ()
         expression_term_models = ('Reaction', 'DfbaObjReaction')
         verbose_name = 'dFBA objective expression'
@@ -2230,7 +2230,7 @@ class ObservableExpression(obj_model.Model, Expression):
     observables = ManyToManyAttribute('Observable', related_name='observable_expressions')
 
     class Meta(obj_model.Model.Meta, Expression.Meta):
-        tabular_orientation = TabularOrientation.inline
+        tabular_orientation = TabularOrientation.cell
         expression_term_models = ('Species', 'Observable')
         expression_is_linear = True
         expression_unit_registry = unit_registry
@@ -2344,7 +2344,7 @@ class FunctionExpression(obj_model.Model, Expression):
     compartments = ManyToManyAttribute(Compartment, related_name='function_expressions')
 
     class Meta(obj_model.Model.Meta, Expression.Meta):
-        tabular_orientation = TabularOrientation.inline
+        tabular_orientation = TabularOrientation.cell
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
         children = {
@@ -2493,7 +2493,7 @@ class StopConditionExpression(obj_model.Model, Expression):
     compartments = ManyToManyAttribute(Compartment, related_name='stop_condition_expressions')
 
     class Meta(obj_model.Model.Meta, Expression.Meta):
-        tabular_orientation = TabularOrientation.inline
+        tabular_orientation = TabularOrientation.cell
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_type = bool
         expression_unit_registry = unit_registry
@@ -2879,7 +2879,7 @@ class SpeciesCoefficient(obj_model.Model):
         unique_together = (('species', 'coefficient'),)
         attribute_order = ('species', 'coefficient')
         frozen_columns = 1
-        tabular_orientation = TabularOrientation.inline
+        tabular_orientation = TabularOrientation.cell
         ordering = ('species', 'coefficient')
         children = {
             'submodel': ('species',),
@@ -3001,7 +3001,7 @@ class RateLawExpression(obj_model.Model, Expression):
 
     class Meta(obj_model.Model.Meta, Expression.Meta):
         attribute_order = ('expression', 'species', 'parameters')
-        tabular_orientation = TabularOrientation.inline
+        tabular_orientation = TabularOrientation.cell
         ordering = ('expression',)
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
@@ -3874,7 +3874,7 @@ class Identifier(obj_model.Model):
 
     class Meta(obj_model.Model.Meta):
         unique_together = (('namespace', 'id', ), )
-        tabular_orientation = TabularOrientation.inline
+        tabular_orientation = TabularOrientation.cell
         attribute_order = ('namespace', 'id')
         frozen_columns = 2
         ordering = ('namespace', 'id', )

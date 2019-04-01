@@ -9,7 +9,7 @@
 from __future__ import unicode_literals
 from itertools import chain
 from random import shuffle
-from obj_model.core import Model, Attribute, RelatedAttribute, AttributeGroup, InvalidObjectSet, InvalidObject, Validator
+from obj_model.core import Model, Attribute, RelatedAttribute, InvalidObjectSet, InvalidObject, Validator, TabularOrientation
 from wc_utils.util import git
 
 
@@ -44,53 +44,43 @@ def get_related_models(root_model, include_root_model=False):
     return related_models
 
 
-def get_attribute_by_name(cls, group_name, name, verbose_name=False, case_insensitive=False):
+def get_attribute_by_name(cls, group_name, attr_name, verbose_name=False, case_insensitive=False):
     """ Return the attribute of `Model` class `cls` with name `name`
 
     Args:
         cls (:obj:`class`): Model class
         group_name (:obj:`str`): name of attribute group
-        name (:obj:`str`): attribute name
+        attr_name (:obj:`str`): attribute name
         verbose_name (:obj:`str`): if :obj:`True`, search for attributes by verbose name; otherwise search for attributes by name
         case_insensitive (:obj:`bool`, optional): if True, ignore case
 
     Returns:
-        :obj:`Attribute`: attribute with name equal to the value of `name` or `None`
-        if there is no matching attribute
+        :obj:`Attribute`: attribute with name equal to the value of `group_name` or `None` if there is no matching attribute
+        :obj:`Attribute`: attribute with name equal to the value of `attr_name` or `None` if there is no matching attribute
     """
 
-    if not name:
-        return None
+    if not attr_name:
+        return (None, None)
 
-    attr_names_to_search = []
-    attr_names_in_groups = []
-    for attr_name_or_group in cls.Meta.attribute_order:
-        if isinstance(attr_name_or_group, AttributeGroup):
-            if group_name is not None:
-                if attr_name_or_group.name == group_name:
-                    attr_names_to_search = attr_name_or_group.attr_names
-                    break
-            else:
-                attr_names_in_groups.extend(attr_name_or_group.attr_names)
+    attr_order = list(cls.Meta.attribute_order)
+    attr_order.extend(list(set(cls.Meta.attributes.keys()).difference(set(attr_order))))
+
+    for attr_name_to_search in attr_order:
+        attr = cls.Meta.attributes[attr_name_to_search]
+        if group_name is None:
+            if (not case_insensitive and ((not verbose_name and attr.name == attr_name)
+                                          or (verbose_name and attr.verbose_name == attr_name))) or \
+                (case_insensitive and ((not verbose_name and attr.name.lower() == attr_name.lower())
+                                       or (verbose_name and attr.verbose_name.lower() == attr_name.lower()))):
+                return (None, attr)
         else:
-            if group_name is None:
-                attr_names_to_search.append(attr_name_or_group)
+            if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells:
+                if attr.name.lower() == group_name.lower() or attr.verbose_name.lower() == group_name.lower():
+                    sub_attr = get_attribute_by_name(attr.related_class, None, attr_name, verbose_name=verbose_name,
+                                                     case_insensitive=case_insensitive)
+                    return (attr, sub_attr[1])
 
-    if not group_name:
-        attr_names_to_search.extend(list(set(cls.Meta.attributes.keys()).difference(set(attr_names_in_groups))))
-
-    if verbose_name:
-        attr_attr_name = 'verbose_name'
-    else:
-        attr_attr_name = 'name'
-
-    for attr_name in attr_names_to_search:
-        attr = cls.Meta.attributes[attr_name]
-        if not case_insensitive and getattr(attr, attr_attr_name) == name:
-            return attr
-        if case_insensitive and getattr(attr, attr_attr_name).lower() == name.lower():
-            return attr
-    return None
+    return (None, None)
 
 
 def group_objects_by_model(objects):

@@ -15,7 +15,8 @@ import unittest
 class ChemAttributeTestCase(unittest.TestCase):
 
     def test_empirical_formula_attribute(self):
-        attr = obj_model.chem.EmpiricalFormulaAttribute(default=None)
+        attr = obj_model.chem.EmpiricalFormulaAttribute()
+        primary_attr = obj_model.chem.EmpiricalFormulaAttribute(primary=True, unique=True)
         self.assertEqual(attr.default, None)
 
         attr = obj_model.chem.EmpiricalFormulaAttribute(default='C1H1O2')
@@ -76,3 +77,49 @@ class ChemAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin('C1HO2'), chem.EmpiricalFormula('CHO2'))
         self.assertEqual(attr.from_builtin({'C': 1, 'H': 1, 'O': 2}), chem.EmpiricalFormula('CHO2'))
         self.assertEqual(attr.from_builtin({'C': 1, 'H': 1, 'O': 2}), chem.EmpiricalFormula('C1HO2'))
+
+        # get_excel_validation
+        attr.get_excel_validation()
+        primary_attr.get_excel_validation()
+
+    def test_structure_attribute(self):
+        attr = obj_model.chem.ChemicalStructureAttribute()
+        primary_attr = obj_model.chem.ChemicalStructureAttribute(primary=True, unique=True)
+
+        smiles = '[OH2]'
+        self.assertEqual(attr.deserialize(smiles), (smiles, None))
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertNotEqual(attr.deserialize(1)[1], None)
+
+        # serialize
+        self.assertEqual(attr.serialize(smiles), smiles)
+        self.assertEqual(attr.serialize('',), '')
+        self.assertEqual(attr.serialize(None), '')
+
+        # validate
+        self.assertEqual(attr.validate(None, smiles), None)
+        self.assertEqual(attr.validate(None, None), None)
+        self.assertNotEqual(attr.validate(None, ''), None)
+        self.assertNotEqual(attr.validate(None, 1), None)
+
+        self.assertNotEqual(primary_attr.validate(None, None), None)
+        self.assertNotEqual(primary_attr.validate(None, ''), None)
+
+        # validate_unique
+        self.assertEqual(primary_attr.validate_unique(None, ['a', 'b']), None)
+        self.assertNotEqual(primary_attr.validate_unique(None, ['b', 'b']), None)
+
+        # to_builtin
+        self.assertEqual(attr.to_builtin(smiles), smiles)
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(''), None)
+
+        # from_builtin
+        self.assertEqual(attr.from_builtin(smiles), smiles)
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin(''), None)
+
+        # get_excel_validation
+        attr.get_excel_validation()
+        primary_attr.get_excel_validation()

@@ -173,7 +173,7 @@ class UniqueTogetherRoot(core.Model):
 class InlineRoot(core.Model):
 
     class Meta(core.Model.Meta):
-        tabular_orientation = core.TabularOrientation.inline
+        tabular_orientation = core.TabularOrientation.cell
 
 
 class Example0(core.Model):
@@ -491,7 +491,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True)
 
             class Meta (core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class TestParent(core.Model):
             pass
@@ -4031,7 +4031,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=False)
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
@@ -4042,7 +4042,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=False)
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
@@ -4060,7 +4060,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True)
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.inline
+                tabular_orientation = core.TabularOrientation.cell
 
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
@@ -4649,28 +4649,6 @@ class TestCore(unittest.TestCase):
 
         attr = core.StringAttribute(none_value=lambda: 'def')
         self.assertEqual(attr.get_none_value(), 'def')
-
-
-class AttributeGroupTestCase(unittest.TestCase):
-    def test(self):
-        group_1 = core.AttributeGroup('group', ('a', 'b', 'c'))
-        group_2 = core.AttributeGroup('group', ('a', 'b', 'c'))
-        group_3 = core.AttributeGroup('group-b', ('a', 'b', 'c'))
-        group_4 = core.AttributeGroup('group', ('a', 'b'))
-        self.assertEqual(group_1, group_1)
-        self.assertEqual(group_1, group_2)
-        self.assertNotEqual(group_1, group_3)
-        self.assertNotEqual(group_1, group_4)
-
-        self.assertIn(group_1, [group_1])
-        self.assertIn(group_2, [group_1])
-        self.assertNotIn(group_3, [group_1])
-        self.assertNotIn(group_4, [group_1])
-
-        self.assertIn(group_1, {group_1: 'a'})
-        self.assertIn(group_2, {group_1: 'a'})
-        self.assertNotIn(group_3, {group_1: 'a'})
-        self.assertNotIn(group_4, {group_1: 'a'})
 
 
 class ContextTestCase(unittest.TestCase):

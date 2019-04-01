@@ -172,31 +172,24 @@ class ModelMeta(type):
             raise ValueError('Attribute cannot have reserved name `__id`')
 
         if not isinstance(namespace['Meta'].attribute_order, (tuple, list)):
-            raise ValueError('`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}'
-                             ' or groups of attributes'.format(name, name))
+            raise ValueError('`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}'.format(name, name))
 
-        for attr_name_or_group in namespace['Meta'].attribute_order:
-            if not isinstance(attr_name_or_group, (str, AttributeGroup)):
-                raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}"
-                                 " or groups of attributes; {} '{}' is not a string or group of attributes".format(
-                                     name, name, attr_name_or_group.__class__.__name__, attr_name_or_group))
+        for attr_name in namespace['Meta'].attribute_order:
+            if not isinstance(attr_name, str):
+                raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}; "
+                                 "'{}' is not a string".format(
+                                     name, name, attr_name))
 
-            if isinstance(attr_name_or_group, str):
-                attr_names = [attr_name_or_group]
-            else:
-                attr_names = attr_name_or_group.attr_names
+            if attr_name not in namespace:
+                is_attr = False
+                for base in bases:
+                    if hasattr(base, attr_name):
+                        is_attr = True
 
-            for attr_name in attr_names:
-                if attr_name not in namespace:
-                    is_attr = False
-                    for base in bases:
-                        if hasattr(base, attr_name):
-                            is_attr = True
-
-                    if not is_attr:
-                        raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}"
-                                         " or groups of attributes; {} does not have an attribute with name '{}'".format(
-                                             name, name, name, attr_name))
+                if not is_attr:
+                    raise ValueError("`{}.Meta.attribute_order` must be a tuple of strings of the names of attributes of {}; "
+                                     "{} does not have an attribute with name '{}'".format(
+                                         name, name, name, attr_name))
 
         metacls.validate_attr_tuples(name, bases, namespace, 'unique_together')
         metacls.validate_attr_tuples(name, bases, namespace, 'indexed_attrs_tuples')
@@ -958,11 +951,13 @@ class TabularOrientation(Enum):
 
     * `row`: the first row contains attribute names; subsequents rows store objects
     * `column`: the first column contains attribute names; subsequents columns store objects
-    * `inline`: a cell contains a table, as a comma-separated list for example
+    * `cell`: a cell contains a table, as a comma-separated list for example
+    * `multiple_cells`: multiple cells within a row or column
     """
     row = 1
     column = 2
-    inline = 3
+    cell = 3
+    multiple_cells = 4
 
 
 class Model(with_metaclass(ModelMeta, object)):
@@ -988,8 +983,7 @@ class Model(with_metaclass(ModelMeta, object)):
                 attribute values must be unique
             indexed_attrs_tuples (:obj:`tuple` of `tuple`'s of attribute names): tuples of attributes on
                 which instances of this `Model` will be indexed by the `Model`'s `Manager`
-            attribute_order (:obj:`tuple` of :obj:`str` or :obj:`AttributeGroup`): tuple of attribute names or 
-                groups of attributes, in the order in which they should be displayed
+            attribute_order (:obj:`tuple` of :obj:`str`): tuple of attribute names, in the order in which they should be displayed
             verbose_name (:obj:`str`): verbose name to refer to an instance of the model
             verbose_name_plural (:obj:`str`): plural verbose name for multiple instances of the model
             help (:obj:`str`): description of the model (e.g., to print in the table of contents in Excel)
@@ -1218,41 +1212,10 @@ class Model(with_metaclass(ModelMeta, object)):
         Returns:
             :obj:`int`: index of attribute within `Meta.attribute_order`
         """
-        flat_attr_order = cls.get_flat_attr_order()
+        flat_attr_order = cls.Meta.attribute_order
         if attr.name not in flat_attr_order:
             raise ValueError('{} not in `attribute_order` for {}'.format(attr.name, cls.__name__))
         return flat_attr_order.index(attr.name)
-
-    @classmethod
-    def get_flat_attr_order(cls):
-        """ Get the flattened order of the attributes
-
-        Returns:
-            :obj:`list` of :obj:`str`: list of the names of attributes
-        """
-        flat_attr_order = []
-        for attr_or_group in cls.Meta.attribute_order:
-            if isinstance(attr_or_group, str):
-                flat_attr_order.append(attr_or_group)
-            else:
-                flat_attr_order.extend(attr_or_group.attr_names)
-        return flat_attr_order
-
-    @classmethod
-    def get_attr_group_order(cls):
-        """ Get the order of the groups of attributes
-
-        Returns:
-            :obj:`list` of :obj:`dict`: list of the labels and sizes of each attribute group,
-                in the order they should be printed in Excel
-        """
-        attr_group_order = []
-        for attr_or_group in cls.Meta.attribute_order:
-            if isinstance(attr_or_group, str):
-                attr_group_order.append({'name': None, 'cols': 1})
-            else:
-                attr_group_order.append({'name': attr_or_group.name, 'cols': len(attr_or_group.attr_names)})
-        return attr_group_order
 
     @classmethod
     def validate_related_attributes(cls):
@@ -1269,7 +1232,7 @@ class Model(with_metaclass(ModelMeta, object)):
                     attr.related_class, attr.primary_class.__name__, attr_name))
 
         # tabular orientation
-        if cls.Meta.tabular_orientation == TabularOrientation.inline:
+        if cls.Meta.tabular_orientation == TabularOrientation.cell:
             if len(cls.Meta.related_attributes) == 0:
                 raise ValueError(
                     'Inline model "{}" should have at least one one-to-one or one-to-many attribute'.format(cls.__name__))
@@ -2334,7 +2297,7 @@ class Model(with_metaclass(ModelMeta, object)):
         all_attrs = cls.Meta.attributes.copy()
         all_attrs.update(cls.Meta.related_attributes)
         ordered_attrs = []
-        flat_attr_order = cls.get_flat_attr_order()
+        flat_attr_order = cls.Meta.attribute_order
         for name in flat_attr_order:
             ordered_attrs.append((name, all_attrs[name]))
         for name in all_attrs.keys():
@@ -2514,14 +2477,18 @@ class Model(with_metaclass(ModelMeta, object)):
                                 'serialize' in attr.__class__.__dict__ and \
                                 'deserialize' in attr.__class__.__dict__:
                             pass
+                        elif isinstance(attr, (OneToOneAttribute, ManyToOneAttribute)) and \
+                            attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells and \
+                                'serialize' in attr.related_class.__dict__:
+                            pass
                         elif not related_class.Meta.primary_attribute:
-                            if related_class.Meta.tabular_orientation == TabularOrientation.inline:
+                            if related_class.Meta.tabular_orientation == TabularOrientation.cell:
                                 warnings.warn('Primary class: {}: Related class {} must have a primary attribute'.format(
                                     attr.primary_class.__name__, related_class.__name__), SchemaWarning)
                             else:
                                 return False
                         elif not related_class.Meta.primary_attribute.unique and not related_class.Meta.unique_together:
-                            if related_class.Meta.tabular_orientation == TabularOrientation.inline:
+                            if related_class.Meta.tabular_orientation == TabularOrientation.cell:
                                 warnings.warn('Primary attribute {} of related class {} must be unique'.format(
                                     related_class.Meta.primary_attribute.name, related_class.__name__), SchemaWarning)
                             else:
@@ -2582,7 +2549,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
                 if depth <= max_depth:
 
-                    if encode_primary_objects or cls.Meta.tabular_orientation == TabularOrientation.inline:
+                    if encode_primary_objects or cls.Meta.tabular_orientation == TabularOrientation.cell:
                         for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
                             val = getattr(obj, attr_name)
                             if isinstance(attr, RelatedAttribute):
@@ -2649,7 +2616,7 @@ class Model(with_metaclass(ModelMeta, object)):
                     elif isinstance(attr_json, list):
                         attr_val = []
                         for sub_attr_json in attr_json:
-                            if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.inline:
+                            if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.cell:
                                 sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
                                 if sub_sub_obj is None:
                                     sub_sub_obj = other_cls()
@@ -2661,7 +2628,7 @@ class Model(with_metaclass(ModelMeta, object)):
                             attr_val.append(sub_sub_obj)
 
                     else:
-                        if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.inline:
+                        if decode_primary_objects or other_cls.Meta.tabular_orientation == TabularOrientation.cell:
                             attr_val = decoded.get(attr_json['__id'], None)
                             if attr_val is None:
                                 attr_val = other_cls()
@@ -5992,7 +5959,7 @@ class OneToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
                               indent=8)
 
@@ -6017,7 +5984,7 @@ class OneToOneAttribute(RelatedAttribute):
         if not value:
             return (None, None)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             try:
                 obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
                                                    primary_objects=objects, decoded=decoded)
@@ -6324,7 +6291,7 @@ class ManyToOneAttribute(RelatedAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
                               indent=8)
 
@@ -6349,7 +6316,7 @@ class ManyToOneAttribute(RelatedAttribute):
         if not value:
             return (None, None)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             try:
                 obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
                                                    primary_objects=objects, decoded=decoded)
@@ -6642,7 +6609,7 @@ class OneToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
                               indent=8)
 
@@ -6670,7 +6637,7 @@ class OneToManyAttribute(RelatedAttribute):
         if not values:
             return (list(), None)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             try:
                 objs = []
                 for v in json.loads(values):
@@ -6988,7 +6955,7 @@ class ManyToManyAttribute(RelatedAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
                               indent=8)
 
@@ -7016,7 +6983,7 @@ class ManyToManyAttribute(RelatedAttribute):
         if not values:
             return (list(), None)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.inline:
+        if self.related_class.Meta.tabular_orientation == TabularOrientation.cell:
             try:
                 objs = []
                 for v in json.loads(values):
@@ -7225,47 +7192,6 @@ class InvalidModel(object):
         return indent_forest(attrs)
 
 
-class AttributeGroup(object):
-    """ Group of related attributes
-
-    Attributes:
-        name (:obj:`str`): name; the phrase that should be printed in the row above the individual attributes
-            in Excel
-        attr_names (:obj:`tuple` of :obj:`str`): tuple of the names of the attributes, in the order
-            in which they should be printed across Excel columns
-    """
-
-    def __init__(self, name, attr_names):
-        """
-        Args:
-            name (:obj:`str`): name; the phrase that should be printed in the row above the individual attributes
-                in Excel
-            attr_names (:obj:`tuple` of :obj:`str`): tuple of the names of the attributes, in the order
-                in which they should be printed across Excel columns
-        """
-        self.name = name
-        self.attr_names = attr_names
-
-    def __eq__(self, other):
-        """ Check if two attribute groups are semantically equal
-
-        Args:
-            other (:obj:`AttributeGroup`): another attribute group
-
-        Returns:
-            :obj:`bool`: True, if the attribute groups are semantically equal
-        """
-        return self is other or (self.__class__ == other.__class__ and self.name == other.name and self.attr_names == other.attr_names)
-
-    def __hash__(self):
-        """ Generate a hash
-
-        Returns:
-            :obj:`int`: hash
-        """
-        return hash((self.name, self.attr_names))
-
-
 class InvalidObject(object):
     """ Represents an invalid object and its errors
 
@@ -7382,7 +7308,7 @@ def get_models(module=None, inline=True):
 
     if not inline:
         for model in list(models):
-            if model.Meta.tabular_orientation == TabularOrientation.inline:
+            if model.Meta.tabular_orientation in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
                 models.remove(model)
 
     return models

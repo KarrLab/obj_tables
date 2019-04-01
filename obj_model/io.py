@@ -215,7 +215,8 @@ class WorkbookWriter(WriterBase):
             if model not in models:
                 models.append(model)
 
-        models = list(filter(lambda model: model.Meta.tabular_orientation != TabularOrientation.inline, models))
+        models = list(filter(lambda model: model.Meta.tabular_orientation not in [
+                      TabularOrientation.cell, TabularOrientation.multiple_cells], models))
 
         if not models:
             raise ValueError('At least one `Model` must be provided')
@@ -259,7 +260,7 @@ class WorkbookWriter(WriterBase):
         # add sheets to workbook
         encoded = {}
         for model in all_models:
-            if model.Meta.tabular_orientation == TabularOrientation.inline:
+            if model.Meta.tabular_orientation in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
                 continue
 
             if model in grouped_objects:
@@ -286,7 +287,7 @@ class WorkbookWriter(WriterBase):
         content = [['Table', 'Description', 'Number of objects']]
         hyperlinks = []
         for i_model, model in enumerate(models):
-            if model.Meta.tabular_orientation == TabularOrientation.inline:
+            if model.Meta.tabular_orientation in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
                 continue
 
             if model.Meta.tabular_orientation == TabularOrientation.row:
@@ -324,35 +325,7 @@ class WorkbookWriter(WriterBase):
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
             extra_entries (:obj:`int`, optional): additional entries to display
         """
-
-        # attribute order
-        attributes, attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
-
-        # column labels
-        headings = []
-        merge_ranges = []
-        if attr_groups is not None:
-            group_headings = []
-            i_col = 0
-            for attr_group in attr_groups:
-                if attr_group['cols'] >= 0:
-                    group_headings.extend([attr_group['name']] * attr_group['cols'])
-                    if attr_group['cols'] > 1:
-                        merge_ranges.append((0, i_col, 0, i_col + attr_group['cols'] - 1))
-                i_col += attr_group['cols']
-            headings.append(group_headings)
-        headings.append([attr.verbose_name for attr in attributes])
-
-        header_map = collections.defaultdict(list)
-        for heading in headings[-1]:
-            l = heading.lower()
-            header_map[l].append(heading)
-        duplicate_headers = list(filter(lambda x: 1 < len(x), header_map.values()))
-        if duplicate_headers:
-            errors = []
-            for dupes in duplicate_headers:
-                str = ', '.join(map(lambda s: "'{}'".format(s), dupes))
-                warn('Duplicate, case insensitive, header fields: {}'.format(str), IoWarning)
+        attrs, _, headings, merge_ranges, field_validations = get_fields(model, include_all_attributes=include_all_attributes)
 
         # objects
         model.sort(objects)
@@ -360,18 +333,27 @@ class WorkbookWriter(WriterBase):
         data = []
         for obj in objects:
             obj_data = []
-            for attr in attributes:
+            for attr in attrs:
+                val = getattr(obj, attr.name)
                 if isinstance(attr, RelatedAttribute):
-                    obj_data.append(attr.serialize(getattr(obj, attr.name), encoded=encoded))
+                    if attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells:
+                        sub_attrs = get_ordered_attributes(attr.related_class, include_all_attributes=include_all_attributes)
+                        for sub_attr in sub_attrs:
+                            if val:
+                                sub_val = getattr(val, sub_attr.name)
+                                if isinstance(sub_attr, RelatedAttribute):
+                                    obj_data.append(sub_attr.serialize(sub_val, encoded=encoded))
+                                else:
+                                    obj_data.append(sub_attr.serialize(sub_val))
+                            else:
+                                obj_data.append(None)
+                    else:
+                        obj_data.append(attr.serialize(getattr(obj, attr.name), encoded=encoded))
                 else:
                     obj_data.append(attr.serialize(getattr(obj, attr.name)))
             data.append(obj_data)
 
         # validations
-        field_validations = []
-        attr_order, _ = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
-        for attr in attr_order:
-            field_validations.append(attr.get_excel_validation())
         validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.tabular_orientation.name],
                                          fields=field_validations)
 
@@ -912,30 +894,30 @@ class WorkbookReader(ReaderBase):
             return ([], [], None, [])
 
         # get worksheet
-        _, attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
+        exp_attrs, exp_sub_attrs, exp_headings, _, _ = get_fields(model, include_all_attributes=include_all_attributes)
         if model.Meta.tabular_orientation == TabularOrientation.row:
-            data, _, all_headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=1 + (attr_groups is not None))
+            data, _, headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=len(exp_headings))
         else:
-            data, all_headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=1 + (attr_groups is not None))
+            data, headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=len(exp_headings))
             data = transpose(data)
-        if attr_groups is None:
-            group_headings = [None] * len(all_headings[-1])
+        if len(exp_headings) == 1:
+            group_headings = [None] * len(headings[-1])
         else:
-            group_headings = all_headings[0]
+            group_headings = headings[0]
 
-        headings = all_headings[-1]
+        attr_headings = headings[-1]
 
         # prohibit duplicate headers
         header_map = collections.defaultdict(lambda: 0)
-        for group_heading, heading in zip(group_headings, headings):
+        for group_heading, attr_heading in zip(group_headings, attr_headings):
             if group_heading is None:
                 g = None
             else:
                 g = group_heading.lower()
 
-            if heading is None:
+            if attr_heading is None:
                 continue
-            l = heading.lower()            
+            l = attr_heading.lower()
 
             header_map[(g, l)] += 1
         duplicate_headers = [x for x, y in header_map.items() if y > 1]
@@ -947,23 +929,25 @@ class WorkbookReader(ReaderBase):
             return ([], [], errors, [])
 
         # acquire attributes by header order
-        attributes = []
+        sub_attrs = []
         good_columns = []
         errors = []
-        for idx, (group_heading, heading) in enumerate(zip(group_headings, headings), start=1):
-            attr = utils.get_attribute_by_name(model, group_heading, heading, case_insensitive=True) or \
-                utils.get_attribute_by_name(model, group_heading, heading, case_insensitive=True, verbose_name=True)
+        for idx, (group_heading, attr_heading) in enumerate(zip(group_headings, attr_headings), start=1):
+            group_attr, attr = utils.get_attribute_by_name(model, group_heading, attr_heading, case_insensitive=True)
+            if not attr:
+                group_attr, attr = utils.get_attribute_by_name(
+                    model, group_heading, attr_heading, case_insensitive=True, verbose_name=True)
 
             if attr is not None:
-                attributes.append(attr)
+                sub_attrs.append((group_attr, attr))
             if attr is None and not ignore_extra_attributes:
                 row, col, hdr_entries = self.header_row_col_names(idx, ext, model.Meta.tabular_orientation)
-                if heading is None or heading == '':
+                if attr_heading is None or attr_heading == '':
                     errors.append("Empty header field in row {}, col {} - delete empty {}(s)".format(
                         row, col, hdr_entries))
                 else:
                     errors.append("Header '{}' in row {}, col {} does not match any attribute".format(
-                        heading, row, col))
+                        attr_heading, row, col))
             if ignore_extra_attributes:
                 if attr is None:
                     good_columns.append(0)
@@ -975,35 +959,56 @@ class WorkbookReader(ReaderBase):
 
         # optionally, check that all attributes have column headings
         if not ignore_missing_attributes:
-            all_attributes, all_attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
-            missing_attrs = set(all_attributes).difference(set(attributes))
-            if missing_attrs:
-                error = 'The following attributes must be defined:\n  {}'.format('\n  '.join(attr.name for attr in missing_attrs))
+            missing_sub_attrs = set(exp_sub_attrs).difference(set(sub_attrs))
+            if missing_sub_attrs:
+                msgs = []
+                for missing_group_attr, missing_attr in missing_sub_attrs:
+                    if missing_group_attr:
+                        msgs.append(missing_group_attr.name + '.' + missing_attr.name)
+                    else:
+                        msgs.append(missing_attr.name)
+                error = 'The following attributes must be defined:\n  {}'.format('\n  '.join(msgs))
                 return ([], [], [error], [])
 
         # optionally, check that the attributes are defined in the canonical order
         if not ignore_attribute_order:
-            canonical_attr_order, canonical_attr_groups = get_ordered_attributes(model, include_all_attributes=include_all_attributes)
-            canonical_attr_order = list(filter(lambda attr: attr in attributes, canonical_attr_order))
-            if attributes != canonical_attr_order:
-                column_headings = []
-                for i_attr, attr in enumerate(canonical_attr_order):
-                    column_headings.append('{}1: {}'.format(
-                        get_column_letter(i_attr + 1),
-                        attr.verbose_name))
-                error = "The columns of worksheet '{}' must be defined in this order:\n  {}".format(
-                    sheet_name, '\n  '.join(column_headings))
+            canonical_sub_attrs = list(filter(lambda sub_attr: sub_attr in sub_attrs, exp_sub_attrs))
+            if sub_attrs != canonical_sub_attrs:
+                if model.Meta.tabular_orientation == TabularOrientation.row:
+                    orientation = 'columns'
+                else:
+                    orientation = 'rows'
+
+                if len(exp_headings) == 1:
+                    if model.Meta.tabular_orientation == TabularOrientation.row:
+                        msgs = ['{}1: {}'.format(get_column_letter(i + 1), a) for i, a in enumerate(exp_headings[0])]
+                    else:
+                        msgs = ['A{}: {}'.format(i + 1, a) for i, a in enumerate(exp_headings[0])]
+                else:
+                    if model.Meta.tabular_orientation == TabularOrientation.row:
+                        msgs = ['{}1: {}\n  {}2: {}'.format(get_column_letter(i + 1), g or '', get_column_letter(i + 1), a)
+                                for i, (g, a) in enumerate(zip(exp_headings[0], exp_headings[1]))]
+                    else:
+                        msgs = ['A{}: {}\n  B{}: {}'.format(i + 1, g or '', i + 1, a)
+                                for i, (g, a) in enumerate(zip(exp_headings[0], exp_headings[1]))]
+
+                error = "The {} of worksheet '{}' must be defined in this order:\n  {}".format(
+                    orientation, sheet_name, '\n  '.join(msgs))
                 return ([], [], [error], [])
 
         # save model location in file
         attribute_seq = []
-        for group_heading, heading in zip(group_headings, headings):
-            attr = utils.get_attribute_by_name(model, group_heading, heading, case_insensitive=True) or \
-                utils.get_attribute_by_name(model, group_heading, heading, case_insensitive=True, verbose_name=True)
+        for group_heading, attr_heading in zip(group_headings, attr_headings):
+            group_attr, attr = utils.get_attribute_by_name(model, group_heading, attr_heading, case_insensitive=True)
+            if not attr:
+                group_attr, attr = utils.get_attribute_by_name(
+                    model, group_heading, attr_heading, case_insensitive=True, verbose_name=True)
             if attr is None:
                 attribute_seq.append('')
-            else:
+            elif group_attr is None:
                 attribute_seq.append(attr.name)
+            else:
+                attribute_seq.append(group_attr.name + '.' + attr.name)
 
         # load the data into objects
         objects = []
@@ -1020,25 +1025,25 @@ class WorkbookReader(ReaderBase):
             if ignore_extra_attributes:
                 obj_data = list(compress(obj_data, good_columns))
 
-            for attr, attr_value in zip(attributes, obj_data):
+            for (group_attr, sub_attr), attr_value in zip(sub_attrs, obj_data):
                 try:
-                    if not isinstance(attr, RelatedAttribute):
-                        value, deserialize_error = attr.deserialize(attr_value)
-                        validation_error = attr.validate(attr.__class__, value)
+                    if not group_attr and not isinstance(sub_attr, RelatedAttribute):
+                        value, deserialize_error = sub_attr.deserialize(attr_value)
+                        validation_error = sub_attr.validate(sub_attr.__class__, value)
                         if deserialize_error or validation_error:
                             if deserialize_error:
-                                deserialize_error.set_location_and_value(utils.source_report(obj, attr.name),
+                                deserialize_error.set_location_and_value(utils.source_report(obj, sub_attr.name),
                                                                          attr_value)
                                 obj_errors.append(deserialize_error)
                             if validation_error:
-                                validation_error.set_location_and_value(utils.source_report(obj, attr.name),
+                                validation_error.set_location_and_value(utils.source_report(obj, sub_attr.name),
                                                                         attr_value)
                                 obj_errors.append(validation_error)
-                        setattr(obj, attr.name, value)
+                        setattr(obj, sub_attr.name, value)
 
                 except Exception as e:
-                    error = InvalidAttribute(attr, ["{}".format(e)])
-                    error.set_location_and_value(utils.source_report(obj, attr.name), attr_value)
+                    error = InvalidAttribute(sub_attr, ["{}".format(e)])
+                    error.set_location_and_value(utils.source_report(obj, sub_attr.name), attr_value)
                     obj_errors.append(error)
 
             if obj_errors:
@@ -1049,7 +1054,7 @@ class WorkbookReader(ReaderBase):
         model.get_manager().insert_all_new()
         if not validate:
             errors = []
-        return (attributes, data, errors, objects)
+        return (sub_attrs, data, errors, objects)
 
     def read_sheet(self, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0):
         """ Read file into a two-dimensional list
@@ -1114,14 +1119,50 @@ class WorkbookReader(ReaderBase):
 
         errors = []
         for obj_data, obj in zip(data, objects):
-            for attr, attr_value in zip(attributes, obj_data):
-                if isinstance(attr, RelatedAttribute):
-                    value, error = attr.deserialize(attr_value, objects_by_primary_attribute, decoded=decoded)
+            for (group_attr, sub_attr), attr_value in zip(attributes, obj_data):
+                if group_attr is None and isinstance(sub_attr, RelatedAttribute):
+                    value, error = sub_attr.deserialize(attr_value, objects_by_primary_attribute, decoded=decoded)
                     if error:
-                        error.set_location_and_value(utils.source_report(obj, attr.name), attr_value)
+                        error.set_location_and_value(utils.source_report(obj, sub_attr.name), attr_value)
                         errors.append(error)
                     else:
-                        setattr(obj, attr.name, value)
+                        setattr(obj, sub_attr.name, value)
+
+                elif group_attr and attr_value not in [None, '']:
+                    if isinstance(sub_attr, RelatedAttribute):
+                        value, error = sub_attr.deserialize(attr_value, objects_by_primary_attribute, decoded=decoded)
+                    else:
+                        value, error = sub_attr.deserialize(attr_value)
+
+                    if error:
+                        error.set_location_and_value(utils.source_report(obj, group_attr.name + '.' + sub_attr.name), attr_value)
+                        errors.append(error)
+                    else:
+                        sub_obj = getattr(obj, group_attr.name)
+                        if not sub_obj:
+                            sub_obj = group_attr.related_class()
+                            setattr(obj, group_attr.name, sub_obj)
+                        setattr(sub_obj, sub_attr.name, value)
+
+            for attr in model.Meta.attributes.values():
+                if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells:
+                    val = getattr(obj, attr.name)
+                    if val:
+                        if attr.related_class not in objects_by_primary_attribute:
+                            objects_by_primary_attribute[attr.related_class] = {}
+                        serialized_val = val.serialize()
+                        same_val = objects_by_primary_attribute[attr.related_class].get(serialized_val, None)
+                        if same_val:
+                            for sub_attr in attr.related_class.Meta.attributes.values():
+                                sub_val = getattr(val, sub_attr.name)
+                                if isinstance(sub_val, list):
+                                    setattr(val, sub_attr.name, [])
+                                else:
+                                    setattr(val, sub_attr.name, None)
+
+                            setattr(obj, attr.name, same_val)
+                        else:
+                            objects_by_primary_attribute[attr.related_class][serialized_val] = val
 
         return errors
 
@@ -1344,20 +1385,81 @@ def create_template(path, models, title=None, description=None, keywords=None,
                                   toc=toc, extra_entries=extra_entries)
 
 
-def get_ordered_attributes(cls, include_all_attributes=True):
-    """ Get the attributes for a class in the order that they should be printed
+def get_fields(cls, include_all_attributes=True):
+    """ Get the attributes, headings, and validation for a worksheet
 
     Args:
+        cls (:obj:`type`): Model type (subclass of :obj:`Model`)
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
             not explictly included in `Model.Meta.attribute_order`
 
     Returns:
-        :obj:`tuple` of :obj:`Attribute`: attributes in the order they should be printed
-        :obj:`tuple` of :obj:`dict`: group names and number of columns in each group
+        :obj:`list` of :obj:`Attribute`: attributes in the order they should be printed
+        :obj:`list` of tuple of :obj:`Attribute`: attributes in the order they should be printed
+        :obj:`list`: field headings
+        :obj:`list`: list of field headings to merge
+        :obj:`list`: list of field validations
+    """
+    # attribute order
+    attrs = get_ordered_attributes(cls, include_all_attributes=include_all_attributes)
+
+    # column labels
+    sub_attrs = []
+    has_group_headings = False
+    group_headings = []
+    attr_headings = []
+    merge_ranges = []
+    field_validations = []
+
+    i_col = 0
+    for attr in attrs:
+        if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells:
+            this_sub_attrs = get_ordered_attributes(attr.related_class, include_all_attributes=include_all_attributes)
+            sub_attrs.extend([(attr, sub_attr) for sub_attr in this_sub_attrs])
+            has_group_headings = True
+            group_headings.extend([attr.verbose_name] * len(this_sub_attrs))
+            attr_headings.extend([sub_attr.verbose_name for sub_attr in this_sub_attrs])
+            merge_ranges.append((0, i_col, 0, i_col + len(this_sub_attrs) - 1))
+            i_col += len(this_sub_attrs)
+            field_validations.extend([sub_attr.get_excel_validation() for sub_attr in this_sub_attrs])
+        else:
+            sub_attrs.append((None, attr))
+            group_headings.append(None)
+            attr_headings.append(attr.verbose_name)
+            i_col += 1
+            field_validations.append(attr.get_excel_validation())
+
+    header_map = collections.defaultdict(list)
+    for group_heading, attr_heading in zip(group_headings, attr_headings):
+        header_map[((group_heading or '').lower(), attr_heading.lower())].append((group_heading, attr_heading))
+    duplicate_headers = list(filter(lambda x: 1 < len(x), header_map.values()))
+    if duplicate_headers:
+        errors = []
+        for dupes in duplicate_headers:
+            str = ', '.join(map(lambda s: "'{}.{}'".format(s[0], s[1]), dupes))
+            warn('Duplicate, case insensitive, header fields: {}'.format(str), IoWarning)
+
+    headings = []
+    if has_group_headings:
+        headings.append(group_headings)
+    headings.append(attr_headings)
+
+    return (attrs, sub_attrs, headings, merge_ranges, field_validations)
+
+
+def get_ordered_attributes(cls, include_all_attributes=True):
+    """ Get the attributes for a class in the order that they should be printed
+
+    Args:
+        cls (:obj:`type`): Model type (subclass of :obj:`Model`)
+        include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+            not explictly included in `Model.Meta.attribute_order`
+
+    Returns:
+        :obj:`list` of :obj:`Attribute`: attributes in the order they should be printed
     """
     # get names of attributes in desired order
-    attr_names = cls.get_flat_attr_order()
-    attr_groups = cls.get_attr_group_order()
+    attr_names = cls.Meta.attribute_order
 
     if include_all_attributes:
         ordered_attr_names = attr_names
@@ -1369,19 +1471,20 @@ def get_ordered_attributes(cls, include_all_attributes=True):
                     unordered_attr_names.add(attr_name)
         unordered_attr_names = natsorted(unordered_attr_names, alg=ns.IGNORECASE)
 
-        attr_groups = attr_groups + [{'name': None, 'cols': 1} for _ in unordered_attr_names]
-        attr_names = ordered_attr_names + unordered_attr_names
-
-    has_attr_groups = False
-    for attr_group in attr_groups:
-        if attr_group['cols'] > 1:
-            has_attr_groups = True
-            break
-    if not has_attr_groups:
-        attr_groups = None
+        attr_names = list(attr_names) + unordered_attr_names
 
     # get attributes in desired order
-    return ([cls.Meta.attributes[attr_name] for attr_name in attr_names], attr_groups)
+    attrs = [cls.Meta.attributes[attr_name] for attr_name in attr_names]
+
+    # error check
+    if cls.Meta.tabular_orientation == TabularOrientation.multiple_cells:
+        for attr in attrs:
+            if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells:
+                raise ValueError('Classes with orientation "multiple_cells" cannot have relationships '
+                                 'to other classes with the same orientation')
+
+    # return attributes
+    return attrs
 
 
 class IoWarning(ObjModelWarning):
