@@ -268,7 +268,7 @@ class SchemaModule(object):
             if SchemaModule._model_name_is_munged(model):
                 model.__name__ = SchemaModule._unmunge_model_name(model)
 
-    def import_module_for_migration(self, validate=True):
+    def import_module_for_migration(self, validate=True, debug=False, attr=None, print_code=False):
         """ Import a schema in a Python module
 
         Args:
@@ -293,6 +293,38 @@ class SchemaModule(object):
         saved = {}
         for sys_attr in sys_attrs:
             saved[sys_attr] = getattr(sys, sys_attr).copy()
+
+        def print_file(fn, max=100):
+            print('\timporting: {}:'.format(fn))
+            n = 0
+            for line in open(fn, 'r').readlines():
+                print('\t\t', line, end='')
+                n += 1
+                if max<=n:
+                    print('\tExceeded max () lines'.format(max))
+                    break
+            print()
+
+        if debug:
+            print("\n\n== importing {} from '{}' ==".format(self.module_name, self.directory))
+            if print_code:
+                if '.' in self.module_name:
+                    nested_modules = self.module_name.split('.')
+                    for i in range(len(nested_modules)):
+                        path = os.path.join(self.directory, *nested_modules[:i], '__init__.py')
+                        if os.path.isfile(path):
+                            print_file(path)
+                self.module_name, self.directory
+                print_file(self.get_path())
+
+            for p in sys.path:
+                print('\t', p)
+            if attr:
+                print('modules defining {}:'.format(attr))
+                for name, module in sys.modules.items():
+                    if hasattr(module, attr):
+                        print('\t', name, module)
+                        print('\tmodule.attr:', getattr(module, attr))
 
         try:
 
@@ -2151,10 +2183,14 @@ class GitRepo(object):
             the schema needs to be migrated
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
         git_hash_map (:obj:`dict`): map from all git hashes to their commits
-        temp_dirs (:obj:`list` of :obj:`tempfile.TemporaryDirectory`): temp dirs that hold repo clones
+        temp_dirs (:obj:`list` of :obj:`tempfile.TemporaryDirectory`): temporary directories
+            that hold repo clones
     """
     # default repo name if name not known
     _NAME_UNKNOWN = 'name_unknown'
+
+    # name of an empty subdirectory in a temp dir that can be used as a destination for shutil.copytree()
+    EMPTY_SUBDIR = 'empty_subdir'
 
     def __init__(self, repo_location=None, search_parent_directories=False):
         """ Initialize a GitRepo
@@ -2186,6 +2222,7 @@ class GitRepo(object):
                 self.repo_url = repo_location
             self.commit_DAG = self.commits_as_graph()
 
+
     def get_temp_dir(self):
         """ Get a temporary directory, which must eventually be deleted by calling `del_temp_dirs`
 
@@ -2197,7 +2234,7 @@ class GitRepo(object):
         return temp_dir
 
     def del_temp_dirs(self):
-        """ Delete the temp dirs created by get_temp_dir
+        """ Delete the temp dirs created by `get_temp_dir`
 
         Returns:
             :obj:`str`: the pathname to a temporary directory
@@ -2228,6 +2265,23 @@ class GitRepo(object):
         except Exception as e:
             raise MigratorError("repo cannot be cloned from '{}'\n{}".format(url, e))
         return repo, directory
+
+    def copy(self):
+        """ Copy this `GitRepo` into a new directory
+
+        This is a performance optimization because copying is faster than cloning over the network.
+        Use `copy` if you need multiple copies of a repo, such as multiple instances checked out to
+        different commits.
+
+        Returns:
+            :obj:`GitRepo`: a new `GitRepo` that's a copy of `self` in a new temporary directory
+        """
+        tmp_dir = self.get_temp_dir()
+        dst = os.path.join(tmp_dir, self.EMPTY_SUBDIR)
+        if not self.repo_dir:
+            raise MigratorError("cannot copy an empty GitRepo")
+        shutil.copytree(self.repo_dir, dst)
+        return GitRepo(dst)
 
     def migrations_dir(self):
         """ Get the repo's migrations directory
@@ -2620,7 +2674,7 @@ class AutomatedMigration(object):
         self.git_repos.append(git_repo)
 
     def clean_up(self):
-        """ Delete the temp dirs used by this `AutomatedMigration`'s git repo
+        """ Delete the temp dirs used by this `AutomatedMigration`'s git repos
         """
         for git_repo in self.git_repos:
             git_repo.del_temp_dirs()
@@ -2740,7 +2794,7 @@ class AutomatedMigration(object):
         spec_args['existing_files'] = [data_file]
 
         # get the schema for the data file
-        git_repo = GitRepo(self.data_config['schema_repo_url'])
+        git_repo = self.schema_git_repo.copy()
         self.save_git_repo(git_repo)
         commit_hash = self.get_data_file_git_commit_hash(data_file)
         git_repo.checkout_commit(commit_hash)
@@ -2752,8 +2806,8 @@ class AutomatedMigration(object):
         spec_args['seq_of_renamed_attributes'] = []
         spec_args['seq_of_transformations'] = []
         for schema_change in schema_changes:
-            # make separate clone of each schema commit
-            git_repo = GitRepo(self.data_config['schema_repo_url'])
+            # make a copy of each schema commit
+            git_repo = self.schema_git_repo.copy()
             self.save_git_repo(git_repo)
             git_repo.checkout_commit(schema_change.commit_hash)
             schema_file = normalize_filename(self.data_config['schema_file'], dir=git_repo.migrations_dir())
@@ -2843,13 +2897,15 @@ class AutomatedMigration(object):
         self.clean_up()
         return all_migrated_files
 
-    def test_schemas(self):
+    def test_schemas(self, debug=False, attr=None):
         self.prepare()
         errors = []
+        print_code = debug
         for migration_spec in self.migration_specs:
             for schema_file in migration_spec.schema_files:
                 try:
-                    SchemaModule(schema_file).import_module_for_migration()
+                    SchemaModule(schema_file).import_module_for_migration(debug=debug, attr=attr,
+                        print_code=print_code)
                     print("successfully imported: '{}'".format(schema_file))
                 except MigratorError as e:
                     errors.append("cannot import: '{}'\n\t{}".format(schema_file, e))
