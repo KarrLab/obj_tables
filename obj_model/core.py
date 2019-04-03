@@ -3468,7 +3468,7 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        if value:
+        if value is not None:
             return value.name
         return ''
 
