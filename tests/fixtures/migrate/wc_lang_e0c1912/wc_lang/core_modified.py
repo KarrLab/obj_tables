@@ -3515,7 +3515,7 @@ class Evidence(obj_model.Model):
     units = UnitAttribute(unit_registry, none=True)
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:evidence'].rchildren(),
+                             terms=onto['WC:observation'].rchildren(),
                              default=None, none=True)
     taxon = StringAttribute()
     genetic_variant = StringAttribute()
@@ -3630,7 +3630,7 @@ class Interpretation(obj_model.Model):
     units = UnitAttribute(unit_registry, none=True)
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:interpretation'].rchildren(),
+                             terms=onto['WC:conclusion'].rchildren(),
                              default=None, none=True)
     method = LongStringAttribute()
     identifiers = IdentifierManyToManyAttribute(related_name='interpretations')
