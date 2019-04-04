@@ -1846,7 +1846,8 @@ class TestGitRepo(AutoMigrationFixtures):
         repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url)
         self.assertIsInstance(repo, git.Repo)
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
-        repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url, directory=self.make_tmp_dir())
+        repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url,
+            directory=self.make_tmp_dir())
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
 
         bad_dir = '/asdfdsf/no such dir'
@@ -1856,6 +1857,20 @@ class TestGitRepo(AutoMigrationFixtures):
         bad_url = 'http://www.ibm.com/nothing_here'
         with self.assertRaisesRegex(MigratorError, "repo cannot be cloned from '.+'"):
             self.totally_empty_git_repo.clone_repo_from_url(bad_url)
+
+    def test_copy(self):
+        repo_copy = self.git_migration_test_repo.copy()
+        self.assertEqual(repo_copy.latest_hash(), self.git_migration_test_repo.latest_hash())
+        self.assertNotEqual(repo_copy.migrations_dir(), self.git_migration_test_repo.migrations_dir())
+        # checkout an earlier version of the repo
+        repo_copy.checkout_commit(self.migration_test_repo_known_hash)
+        self.assertNotEqual(repo_copy.latest_hash(), self.git_migration_test_repo.latest_hash())
+        repo_copy_copy = repo_copy.copy()
+        self.assertEqual(repo_copy.latest_hash(), repo_copy_copy.latest_hash())
+        self.assertNotEqual(repo_copy.migrations_dir(), repo_copy_copy.migrations_dir())
+
+        with self.assertRaisesRegex(MigratorError, "cannot copy an empty GitRepo"):
+            self.totally_empty_git_repo.copy()
 
     def test_migrations_dir(self):
         self.assertTrue(os.path.isdir(self.git_repo.migrations_dir()))
@@ -2197,15 +2212,28 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         files_prepared = self.clean_automated_migration.prepare()
         self.assertEqual(files_prepared, self.clean_automated_migration.data_config['files_to_migrate'])
 
-    @unittest.skip("broken on tests/test_migrate.py::TestAutomatedMigration")
+    # @unittest.skip("broken on tests/test_migrate.py::TestAutomatedMigration")
     def test_test_schemas(self):
-        self.assertEqual(self.clean_automated_migration.test_schemas(), [])
+        with capturer.CaptureOutput(relay=False) as capture_output:
+            self.clean_automated_migration.test_schemas(debug=True, attr='Reference')
+            self.assertIn('importing:', capture_output.get_text())
+            self.assertIn('== importing', capture_output.get_text())
+            self.assertIn('modules defining', capture_output.get_text())
 
-    @unittest.skip("broken on Circle")
+        # todo: fix the error this finds when testing tests/test_migrate.py::TestAutomatedMigration
+        errors = self.clean_automated_migration.test_schemas(debug=False)
+        print('\ntest_test_schemas errors:')
+        for e in errors:
+            print(e)
+        # self.assertEqual(self.clean_automated_migration.test_schemas(), [])
+
+    @unittest.skip("broken")
     def test_migrate(self):
         print()
         migrated_files = self.clean_automated_migration.migrate()
         print('migrated_files', migrated_files)
+        for migrated_file in migrated_files:
+            self.assertTrue(os.path.isfile(migrated_file))
         # test round-trip
         # since migrates in-place, save existing files, then compare
 
