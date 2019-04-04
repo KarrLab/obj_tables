@@ -34,3 +34,6 @@ docs/_build
 # WPS temporary files
 .~*.docx
 .~*.xlsx
+
+# temporary files for migration tests
+tests/fixtures/migrate/tmp/
