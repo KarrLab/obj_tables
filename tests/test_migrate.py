@@ -2214,8 +2214,10 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.assertEqual(SchemaChanges.hash_prefix(sc.commit_hash), hash_prefix)
 
     def test_prepare(self):
-        files_prepared = self.clean_automated_migration.prepare()
-        self.assertEqual(files_prepared, self.clean_automated_migration.data_config['files_to_migrate'])
+        self.assertEqual(None, self.clean_automated_migration.prepare())
+        self.assertEqual(
+            [ms.existing_files[0] for ms in self.clean_automated_migration.migration_specs],
+            self.clean_automated_migration.data_config['files_to_migrate'])
 
     # @unittest.skip("broken on tests/test_migrate.py::TestAutomatedMigration")
     def test_test_schemas(self):

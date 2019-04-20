@@ -89,7 +89,6 @@ migrate xlsx files in wc_sim to new wc_lang:
 4: migrate them
 '''
 # todo next: generic transformations in YAML config
-# todo: good wc_lang migration example
 
 # todo: wc_lang migration without a config file
 # todo: migration steps for wc_lang commits
@@ -2892,21 +2891,15 @@ class AutomatedMigration(object):
         * Clone each schema change
         * Generate and prepare a migration spec for the migration
 
-        Returns:
-            :obj:`list`: existing files that have been prepared for migration
-
         Raises:
             :obj:`MigratorError`: if the `AutomatedMigration` doesn't validate
         """
-        # todo: shouldn't return anything
         self.validate()
         self.migration_specs = []
         for file_to_migrate in self.data_config['files_to_migrate']:
             schema_changes = self.schema_changes_for_data_file(file_to_migrate)
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
             self.migration_specs.append(migration_spec)
-        files_prepared = [ms.existing_files[0] for ms in self.migration_specs]
-        return files_prepared
 
     def migrate(self):
         """ Migrate the repo's data files
