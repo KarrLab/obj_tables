@@ -69,13 +69,10 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # todo: move or copy schema_changes and automated_migration_config_file creation from migration_test_repo/__main__.py
 # to here so they can be used by programmers doing migration
 
-# todo: make schema changes files that have been finished read-only and push permissions to git
 # JK ideas:
-# todo: tuning: rather then repeatedly clone a repo, either 1) have it checkout different commits as needed,
-# or b) copy the directory and checkout different commits in different dirs; test performance on big repos
 # todo: support a set of schema modifications as a single schema change (perhaps a range of commits)
 # todo: how original is obj_model.migration? literature search, ask David Nickerson, Pedro Mendez
-# check Kappa, PySB, BioNetGet, SBML, COPASI, JWS-online, Simmune at NIH
+# check SBML, Kappa, PySB, BioNetGet, SBML, COPASI, JWS-online, Simmune at NIH
 '''
 documentation notes:
 a schema must be imported from a self-contained module or a
@@ -93,17 +90,15 @@ migrate xlsx files in wc_sim to new wc_lang:
 '''
 # todo next: generic transformations in YAML config
 # todo: good wc_lang migration example
-# todo: does SBML have migration?
 
 # todo: wc_lang migration without a config file
 # todo: migration steps for wc_lang commits
 # todo: retain or control column and row order
 # todo: Preload a schema’s required packages from requirements.txt, and set sys.path to hold just the schema’s directory
 # to avoid collisions and enable relative imports
-# todo: deleted models: handle automatically (model that's not present in migrated schema or renamed is deleted), or add to config attributes
+# todo: deleted models: handle automatically (assume model that's not present in migrated schema or renamed is deleted), or add to config attributes
 # todo next: test OneToManyAttribute
 # todo next: documentation
-# todo next: simply infer the deleted_models
 
 class MigratorError(Exception):
     """ Exception raised for errors in obj_model.migrate
@@ -909,7 +904,6 @@ class Migrator(object):
         Returns:
             :obj:`list` of `obj_model.Model`: the models in `existing_file`
         """
-        # todo: simplify these 2 commands into 1
         obj_model_reader = obj_model.io.Reader.get_reader(existing_file)()
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
         # data in model files must be already validated with the existing schema
@@ -1856,7 +1850,7 @@ class SchemaChanges(object):
     def all_schema_changes_with_commits(git_repo):
         """ Instantiate all schema changes in a git repo
 
-        Obtain all validated schema change files
+        Obtain all validated schema change files.
 
         Args:
             git_repo (:obj:`GitRepo`): an initialized git repo
@@ -2183,22 +2177,24 @@ class GitRepo(object):
             the schema needs to be migrated
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
         git_hash_map (:obj:`dict`): map from all git hashes to their commits
-        temp_dirs (:obj:`list` of :obj:`tempfile.TemporaryDirectory`): temporary directories
-            that hold repo clones
+        temp_dirs (:obj:`list` of :obj:`str`): temporary directories that hold repo clones
     """
     # default repo name if name not known
     _NAME_UNKNOWN = 'name_unknown'
 
-    # name of an empty subdirectory in a temp dir that can be used as a destination for shutil.copytree()
+    # name of an empty subdirectory in a temp dir that can be used as a destination for `shutil.copytree()`
     EMPTY_SUBDIR = 'empty_subdir'
 
     def __init__(self, repo_location=None, search_parent_directories=False):
-        """ Initialize a GitRepo
+        """ Initialize a `GitRepo`
+
+        If `repo_location` is an URL, then clone the repo into a temporary directory.
 
         Args:
-            repo_location (:obj:`str`, optional): the location of the repo, either its root directory or URL
+            repo_location (:obj:`str`, optional): the location of the repo, either its root directory or its URL
             search_parent_directories (:obj:`bool`, optional): `search_parent_directories` option to `git.Repo()`;
-                if set, all parent directories will be searched for a valid repo as well; default=False
+                if set and `repo_location` is a directory, then all of its parent directories will
+                    be searched for a valid repo; default=False
 
         Returns:
             :obj:`str`: root directory for the repo (which contains the .git directory)
@@ -2221,7 +2217,6 @@ class GitRepo(object):
                 self.repo, self.repo_dir = self.clone_repo_from_url(repo_location)
                 self.repo_url = repo_location
             self.commit_DAG = self.commits_as_graph()
-
 
     def get_temp_dir(self):
         """ Get a temporary directory, which must eventually be deleted by calling `del_temp_dirs`
@@ -2247,11 +2242,11 @@ class GitRepo(object):
 
         Args:
             url (:obj:`str`): URL for the repo
-            directory (:obj:`str`, optional): directory to hold the repo; default is a temp dir
+            directory (:obj:`str`, optional): directory to hold the repo; if not provided, the repo
+                is stored in a new temporary dir
 
         Returns:
             :obj:`tuple`: (:obj:`git.Repo`, :obj:`str`): the repo cloned, and its root directory
-                (which contains the .git directory)
 
         Raises:
             :obj:`MigratorError`: if repo cannot be cloned from `url`
@@ -2266,17 +2261,24 @@ class GitRepo(object):
             raise MigratorError("repo cannot be cloned from '{}'\n{}".format(url, e))
         return repo, directory
 
-    def copy(self):
+    def copy(self, tmp_dir=None):
         """ Copy this `GitRepo` into a new directory
 
         This is a performance optimization because copying is faster than cloning over the network.
         Use `copy` if you need multiple copies of a repo, such as multiple instances checked out to
         different commits.
 
+        Args:
+            tmp_dir (:obj:`str`, optional): directory to hold the repo; if not provided, the repo
+                will be stored in a new temporary dir
+
         Returns:
             :obj:`GitRepo`: a new `GitRepo` that's a copy of `self` in a new temporary directory
         """
-        tmp_dir = self.get_temp_dir()
+        if tmp_dir is None:
+            tmp_dir = self.get_temp_dir()
+        elif not os.path.isdir(directory):
+            raise MigratorError("'{}' is not a directory".format(tmp_dir))
         dst = os.path.join(tmp_dir, self.EMPTY_SUBDIR)
         if not self.repo_dir:
             raise MigratorError("cannot copy an empty GitRepo")
@@ -2499,13 +2501,14 @@ class AutomatedMigration(object):
     `SchemaChanges` objects. Migration will not work if changes to the schema are not documented in
     a schems changes file.
 
-    `AutomatedMigration` uses configuration information in the `data` and `schema` repos to migrate
-    data files in the `data` repo to the latest version of the `schema` repo.
+    `AutomatedMigration` uses configuration information in the *data* and *schema* repos to migrate
+    data files in the *data* repo to the latest version of the *schema* repo.
 
     Attributes:
         data_repo_location (:obj:`str`): directory or url of the *data* repo
         data_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a git clone of the *data* repo
-        schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the current version of the *schema* repo
+        schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the current version of the
+            *schema* repo
         data_config_file_basename (:obj:`str`): the basename of the YAML configuration file for the
             migration, which is stored in the *data* repo's migrations directory
         data_config (:obj:`dict`): the data in the automated migration config file
@@ -2566,7 +2569,7 @@ class AutomatedMigration(object):
         self.data_git_repo = GitRepo(self.data_repo_location)
         self.save_git_repo(self.data_git_repo)
 
-        # todo: determine data_config_file_basename automatically if there's only one
+        # todo: determine data_config_file_basename automatically if there's only one in the data repo
         # load data config file
         self.data_config = self.load_config_file(
             os.path.join(self.data_git_repo.migrations_dir(), self.data_config_file_basename))

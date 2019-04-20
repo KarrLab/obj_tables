@@ -48,7 +48,6 @@ from obj_model.io import TOC_NAME
 
 # todo: move all static methods out of MigrationFixtures
 # todo: remove all '# @unittest.skip("speed up testing")'
-# todo: combine tricky_package into test_package
 # todo: speedup migration and unittests; make smaller test data files
 
 def make_tmp_dirs_n_small_schemas(test_case):
@@ -67,8 +66,6 @@ def make_wc_lang_migration_fixtures(test_case):
     test_case.wc_lang_schema_modified = os.path.join(test_case.wc_lang_fixtures_path, 'core_modified.py')
     test_case.wc_lang_model_copy = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
     test_case.wc_lang_no_model_attrs = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
-    test_case.tricky_package_fixtures_path = os.path.join(test_case.fixtures_path, 'tricky_package')
-    test_case.tricky_package_schema = os.path.join(test_case.tricky_package_fixtures_path, 'test_module.py')
 
 def copy_file_to_tmp(test_case, name):
     # copy file 'name' to a new dir in the tmp dir and return its pathname

@@ -1,2 +1,0 @@
-from tricky_package import test_module
-from tricky_package import util
