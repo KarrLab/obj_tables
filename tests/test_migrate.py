@@ -2003,6 +2003,14 @@ class TestGitRepo(AutoMigrationFixtures):
         sequence = self.git_repo.commits_in_dependency_consistent_seq(commits_to_migrate)
         self.check_dependency(sequence, self.git_repo.commit_DAG)
 
+    def test_str(self):
+        empty_git_repo = GitRepo()
+        attrs = ['repo_dir', 'repo_url', 'repo', 'commit_DAG', 'git_hash_map', 'temp_dirs']
+        for git_repo in [empty_git_repo, self.git_migration_test_repo]:
+            v = str(git_repo)
+            for a in attrs:
+                self.assertIn(a, v)
+
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestAutomatedMigration(AutoMigrationFixtures):
@@ -2235,8 +2243,9 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         # since migrates in-place, save existing files, then compare
 
     def test_str(self):
-        for attr, line in zip(AutomatedMigration._ATTRIBUTES, str(self.clean_automated_migration).split('\n')):
-            self.assertRegex(line, "{}: .+".format(attr))
+        str_val = str(self.clean_automated_migration)
+        for attr in AutomatedMigration._ATTRIBUTES:
+            self.assertRegex(str_val, "{}: .+".format(attr))
 
 
 # @unittest.skip("speed up testing")

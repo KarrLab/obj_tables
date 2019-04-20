@@ -2165,7 +2165,6 @@ class SchemaChanges(object):
     '''
 
 
-# todo: make __str__()
 class GitRepo(object):
     """ Methods for processing a git repo and its commit history
 
@@ -2173,8 +2172,6 @@ class GitRepo(object):
         repo_dir (:obj:`str`): the repo's root directory
         repo_url (:obj:`str`): the repo's url, if known
         repo (:obj:`git.Repo`): the repo
-        commits_to_migrate (:obj:`list` of :obj:`git.objects.commit.Commit`): list of commits at which
-            the schema needs to be migrated
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
         git_hash_map (:obj:`dict`): map from all git hashes to their commits
         temp_dirs (:obj:`list` of :obj:`str`): temporary directories that hold repo clones
@@ -2470,6 +2467,42 @@ class GitRepo(object):
                 seq_with_schema_changes.append(commit)
         seq_with_schema_changes.reverse()
         return seq_with_schema_changes
+
+    def __str__(self):
+        """ Provide a string representation
+
+        Returns:
+            :obj:`str`: a string representation of this `GitRepo`
+        """
+        scalar_attrs = ['repo_dir', 'repo_url', 'repo']
+        rv = []
+        for attr in scalar_attrs:
+            val = getattr(self, attr)
+            if val:
+                rv.append("{}: {}".format(attr, val))
+            else:
+                rv.append("{}: not initialized".format(attr))
+
+        if self.commit_DAG:
+            rv.append("commit_DAG (child -> parent):\n\t{}".format(
+                "\n\t".join(
+                    ["{} -> {}".format(SchemaChanges.hash_prefix(GitRepo.get_hash(u)),
+                        SchemaChanges.hash_prefix(GitRepo.get_hash(v)))
+                            for (u, v) in self.commit_DAG.edges])))
+        else:
+            rv.append("commit_DAG: empty")
+
+        if self.git_hash_map:
+            rv.append("git_hash_map: {} entries".format(len(self.git_hash_map)))
+        else:
+            rv.append("git_hash_map: empty")
+
+        if self.temp_dirs:
+            rv.append("temp_dirs:\n\t{}".format("\n\t".join(self.temp_dirs)))
+        else:
+            rv.append("temp_dirs: none used")
+
+        return '\n'.join(rv)
 
 
 # todo: test migration that checks whether all schema changes and automated migration configuration files can be read,
