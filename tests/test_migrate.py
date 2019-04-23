@@ -1116,18 +1116,12 @@ class TestMigrator(MigrationFixtures):
         migrated_2_existing_migrator.prepare()
 
         # round trip test of model in tsv file
-        # todo: fix
-        # see issue pyexcel issue https://github.com/pyexcel/pyexcel/issues/180
-        '''
-        print()
-        print('self.existing_rt_model_defs_path',self.existing_rt_model_defs_path)
-        print('self.example_existing_model_tsv',self.example_existing_model_tsv)
+        # this fails if _strptime is not imported in advance
         existing_2_migrated_migrator.full_migrate(self.example_existing_model_tsv,
             migrated_file=self.existing_2_migrated_migrated_tsv_file)
         migrated_2_existing_migrator.full_migrate(self.existing_2_migrated_migrated_tsv_file,
             migrated_file=self.round_trip_migrated_tsv_file)
         self.assert_equal_workbooks(self.example_existing_model_tsv, self.round_trip_migrated_tsv_file)
-        '''
 
         # round trip test of model in xlsx file
         tmp_existing_2_migrated_xlsx_file = os.path.join(self.tmp_model_dir, 'existing_2_migrated_xlsx_file.xlsx')

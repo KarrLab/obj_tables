@@ -28,6 +28,11 @@ import networkx as nx
 from networkx.algorithms.dag import topological_sort, ancestors
 import tempfile
 import datetime
+# import _strptime to avoid a KeyError caused by a side-effect in this code:
+#	1) Use SchemaModule.import_module_for_migration() to import a schema
+#	2) Call datetime.datetime.strptime(), which raises "KeyError: '_strptime'" which is very
+#      likely caused by an 'import _strptime' statement in datetime.py
+import _strptime
 
 import obj_model
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
@@ -2935,7 +2940,6 @@ class AutomatedMigration(object):
                 try:
                     SchemaModule(schema_file).import_module_for_migration(debug=debug, attr=attr,
                         print_code=print_code)
-                    print("successfully imported: '{}'".format(schema_file))
                 except MigratorError as e:
                     errors.append("cannot import: '{}'\n\t{}".format(schema_file, e))
         return errors
@@ -3022,9 +3026,13 @@ class RunMigration(object):
                 print("    '{}' -> '{}'".format(existing_file, migrated_file))
         return results
 
+
+'''
+todo: move to __main__.py
 if __name__ == '__main__':  # pragma: no cover     # reachable only from command line
     try:
         args = RunMigration.parse_args(sys.argv[1:])
         RunMigration.main(args)
     except KeyboardInterrupt:
         pass
+'''
