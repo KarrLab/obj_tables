@@ -1820,7 +1820,14 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertIsInstance(git_repo.repo, git.Repo)
         with self.assertRaisesRegex(MigratorError, "instantiating a git.Repo from directory '.+' failed"):
             GitRepo(self.tmp_dir)
-        # todo: test search_parent_directories
+
+        # test search_parent_directories
+        git_repo_from_root = GitRepo(repo_location=self.git_migration_test_repo.repo_dir)
+        repo_child_dir = os.path.join(self.git_migration_test_repo.repo_dir, 'migration_test_repo')
+        git_repo_from_child = GitRepo(repo_location=repo_child_dir, search_parent_directories=True)
+        self.assertEqual(git_repo_from_root.repo_dir, git_repo_from_child.repo_dir)
+        with self.assertRaisesRegex(MigratorError, "instantiating a git.Repo from directory '.+' failed"):
+            GitRepo(repo_location=repo_child_dir, search_parent_directories=False)
 
     def test_get_temp_dir(self):
         self.assertTrue(os.path.isdir(self.totally_empty_git_repo.get_temp_dir()))
