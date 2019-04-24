@@ -1593,8 +1593,8 @@ class AutoMigrationFixtures(unittest.TestCase):
         open(empty_file, 'wb').close()
         repo.index.add([empty_file])
         repo.index.commit("initial commit")
-        self.empty_git_repo = GitRepo(repo_dir)
-        Path(self.empty_git_repo.migrations_dir()).mkdir()
+        self.nearly_empty_git_repo = GitRepo(repo_dir)
+        Path(self.nearly_empty_git_repo.migrations_dir()).mkdir()
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
@@ -1617,7 +1617,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
             renamed_attributes=[[('Foo', 'Attr'), ('FooNew', 'AttrNew')]],
             transformations_file=''
         )
-        self.empty_schema_changes = SchemaChanges(self.empty_git_repo)
+        self.empty_schema_changes = SchemaChanges(self.nearly_empty_git_repo)
         self.empty_migrations_dir = self.empty_schema_changes.git_repo.migrations_dir()
 
     def test_get_date_timestamp(self):
@@ -1634,7 +1634,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.assertTrue(an_expected_file in files)
 
         with self.assertRaisesRegex(MigratorError, r"no schema changes files in '\S+'"):
-            SchemaChanges.all_schema_changes_files(self.empty_git_repo.migrations_dir())
+            SchemaChanges.all_schema_changes_files(self.nearly_empty_git_repo.migrations_dir())
 
     def test_all_schema_changes_with_commits(self):
         all_schema_changes_with_commits = SchemaChanges.all_schema_changes_with_commits
@@ -1809,6 +1809,7 @@ class TestGitRepo(AutoMigrationFixtures):
         super().tearDownClass()
 
     def setUp(self):
+        super().setUp()
         self.repo_root = self.git_repo.repo_dir
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
 
@@ -1889,10 +1890,10 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertIsInstance(self.git_repo.head_commit(), git.objects.commit.Commit)
 
     def test_latest_hash(self):
-        # todo: test with a frozen repo whose hash is known
-        commit_hash = self.git_repo.latest_hash()
+        commit_hash = self.nearly_empty_git_repo.latest_hash()
         self.assertIsInstance(commit_hash, str)
         self.assertEqual(len(commit_hash), 40)
+        self.assertEqual(commit_hash, self.nearly_empty_git_repo.repo.head.commit.hexsha)
 
     def test_get_commit(self):
         commit = self.git_repo.get_commit(self.known_hash)
@@ -1916,13 +1917,15 @@ class TestGitRepo(AutoMigrationFixtures):
             self.git_repo.get_commits([self.known_hash, self.no_such_hash, self.no_such_hash])
 
     def test_commits_as_graph(self):
-        # todo: real test!
         commit_DAG = self.git_repo.commits_as_graph()
         self.assertIsInstance(commit_DAG, nx.classes.digraph.DiGraph)
         known_paths = [
             # (tag or hash 1, tag or hash 2, hops on path)
             ('', ''),
         ]
+
+    def test_git_hash_map(self):
+        pass
 
     def test_get_hash(self):
         # todo: test with a frozen repo whose hash is known
