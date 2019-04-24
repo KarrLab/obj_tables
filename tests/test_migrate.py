@@ -1304,7 +1304,7 @@ class TestMigrationSpec(MigrationFixtures):
         error = ms.validate()[0]
         self.assertRegex(error,
             ("a migration spec containing git hashes must have 1 hash for each schema "
-                "file, but this spec has \d git hash\(es\) and \d schemas"))
+                r"file, but this spec has \d git hash\(es\) and \d schemas"))
         ms.git_hashes = ['a'*40, 'a'*40]
         self.assertEqual(ms.validate(), [])
 
@@ -2105,7 +2105,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertEqual(automated_migration.schema_git_repo.repo_name(), 'migration_test_repo')
 
         with self.assertRaisesRegex(MigratorError, "initialization of AutomatedMigration must provide "
-            "AutomatedMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
+            r"AutomatedMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
             AutomatedMigration(**dict(data_repo_location=self.migration_test_repo_url))
 
     def test_clean_up(self):
