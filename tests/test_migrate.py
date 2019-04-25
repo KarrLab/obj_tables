@@ -1567,6 +1567,7 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.git_repo = GitRepo(cls.test_repo_url)
         cls.known_hash = 'ab34419496756675b6e8499e0948e697256f2698'
         cls.known_hash_ba1f9d3 = 'ba1f9d33a3e18a74f79f41903e7e88e118134d5f'
+        cls.hash_commit_tag_ROOT = 'd848093'
         cls.schema_changes_file = SchemaChanges.find_file(cls.git_repo, cls.known_hash_ba1f9d3)
 
         cls.migration_test_repo_url = 'https://github.com/KarrLab/migration_test_repo'
@@ -1952,21 +1953,27 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertEqual(sorted(expected_commit_edges), sorted(actual_commit_edges))
 
     def test_get_hash(self):
-        # todo: test with a frozen repo whose hash is known
-        commit_hash = GitRepo.get_hash(self.git_repo.head_commit())
+        root_commit = None
+        for tag in git.refs.tag.TagReference.iter_items(self.git_repo.repo):
+            if str(tag) == 'ROOT':
+                root_commit = tag.commit
+        if root_commit is None:
+            self.fail("Could not find commit with tag ROOT")
+        commit_hash = GitRepo.get_hash(root_commit)
         self.assertIsInstance(commit_hash, str)
-        self.assertEqual(len(commit_hash), 40)
+        self.assertEqual(GitRepo.hash_prefix(commit_hash), self.hash_commit_tag_ROOT)
 
     def test_checkout_commit(self):
-        # use private repo because this checks out earlier commits
-        git_repo = GitRepo(self.test_repo_url)
-        git_repo.checkout_commit(git_repo.head_commit())
-        self.assertEqual(str(git_repo.repo.head.commit), git_repo.head_commit().hexsha)
-        git_repo.checkout_commit(self.known_hash)
-        self.assertEqual(git_repo.repo.head.commit.hexsha, self.known_hash)
+        # copy repo because this checks out earlier commits
+        git_repo_copy = self.git_repo.copy()
+        git_repo_copy.checkout_commit(git_repo_copy.head_commit())
+        self.assertEqual(str(git_repo_copy.repo.head.commit), git_repo_copy.head_commit().hexsha)
+        git_repo_copy.checkout_commit(self.known_hash)
+        self.assertEqual(git_repo_copy.repo.head.commit.hexsha, self.known_hash)
 
         with self.assertRaisesRegex(MigratorError, r"checkout of '\S+' to commit '\S+' failed"):
-            git_repo.checkout_commit(self.no_such_hash)
+            # checkout of commit from wrong repo will fail
+            git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
 
     def check_dependency(self, sequence, DAG):
         # check that sequence satisfies "any nodes u, v with a path u -> ... -> v in the DAG appear in
@@ -1980,7 +1987,7 @@ class TestGitRepo(AutoMigrationFixtures):
                     self.fail("{} @ {} precedes {} @ {} in sequence, but DAG "
                         "has a path {} -> {}".format(u, i, v, j, v, u))
 
-    # todo: method to convert hash prefix to full hash so we can use short hashes
+    # todo: convert hash prefix to full hash so we can use short hashes
     def test_get_dependents(self):
         before_splitting = self.git_repo.get_commit('d848093018c0660ea3e4728d3c21f3751a53757f')
         clone_1_commit = self.git_repo.get_commit('35f3eb4fe0ebf8f421958d9300c5de94a40fb70e')
@@ -2239,7 +2246,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         ]
         for sc, commit_desc in zip(schema_changes, commit_descs_related_2_migration_test_repo_data_file_1):
             _, hash_prefix = commit_desc
-            self.assertEqual(SchemaChanges.hash_prefix(sc.commit_hash), hash_prefix)
+            self.assertEqual(GitRepo.hash_prefix(sc.commit_hash), hash_prefix)
 
     def test_prepare(self):
         self.assertEqual(None, self.clean_automated_migration.prepare())
@@ -2264,7 +2271,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
     @unittest.skip("broken")
     def test_migrate(self):
-        print()
         migrated_files = self.clean_automated_migration.migrate()
         print('migrated_files', migrated_files)
         for migrated_file in migrated_files:

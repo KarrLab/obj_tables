@@ -1773,7 +1773,6 @@ class SchemaChanges(object):
     # template for the name of a schema changes file; the format placeholders are replaced
     # with the file's creation timestamp and the prefix of the commit's git hash, respectively
     _CHANGES_FILENAME_TEMPLATE = "schema_changes_{}_{}.yaml"
-    _HASH_PREFIX_LEN = 7
     _SHA1_LEN = 40
 
     def __init__(self, git_repo=None, schema_changes_file=None, commit_hash=None, renamed_models=None,
@@ -1793,18 +1792,6 @@ class SchemaChanges(object):
             :obj:`str`: the hash
         """
         return self.git_repo.latest_hash()
-
-    @staticmethod
-    def hash_prefix(hash):
-        """ Get a commit hash's prefix
-
-        Args:
-            hash (:obj:`str`): git commit hash
-
-        Returns:
-            :obj:`str`: hash's prefix
-        """
-        return hash[:SchemaChanges._HASH_PREFIX_LEN]
 
     @staticmethod
     def get_date_timestamp():
@@ -1870,7 +1857,7 @@ class SchemaChanges(object):
                 hash_prefix = SchemaChanges.hash_prefix_from_sc_file(sc_file)
                 sc_dict = SchemaChanges.load(sc_file)
                 commit_hash = sc_dict['commit_hash']
-                if SchemaChanges.hash_prefix(commit_hash) != hash_prefix:
+                if GitRepo.hash_prefix(commit_hash) != hash_prefix:
                     errors.append("hash prefix in schema changes filename '{}' inconsistent "
                         "with hash in file: '{}'".format(sc_file, sc_dict['commit_hash']))
                     continue
@@ -1907,7 +1894,7 @@ class SchemaChanges(object):
         """
         # search with glob
         pattern = SchemaChanges._CHANGES_FILENAME_TEMPLATE.format('*',
-            SchemaChanges.hash_prefix(commit_hash))
+            GitRepo.hash_prefix(commit_hash))
         migrations_directory = git_repo.migrations_dir()
         files = list(Path(migrations_directory).glob(pattern))
         num_files = len(files)
@@ -1921,7 +1908,7 @@ class SchemaChanges(object):
 
         # ensure that hash in name and file are consistent
         sc_dict = SchemaChanges.load(schema_changes_file)
-        if SchemaChanges.hash_prefix(sc_dict['commit_hash']) != SchemaChanges.hash_prefix(commit_hash):
+        if GitRepo.hash_prefix(sc_dict['commit_hash']) != GitRepo.hash_prefix(commit_hash):
             raise MigratorError("hash prefix in schema changes filename '{}' inconsistent "
                 "with hash in file: '{}'".format(schema_changes_file, sc_dict['commit_hash']))
 
@@ -1943,7 +1930,7 @@ class SchemaChanges(object):
             :obj:`str`: the filename
         """
         return SchemaChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_date_timestamp(),
-            self.hash_prefix(self.get_hash()))
+            GitRepo.hash_prefix(self.get_hash()))
 
     def make_template(self, changes_file_dir=None, verbose=False):
         """ Make a template schema changes file
@@ -2186,6 +2173,8 @@ class GitRepo(object):
     # name of an empty subdirectory in a temp dir that can be used as a destination for `shutil.copytree()`
     EMPTY_SUBDIR = 'empty_subdir'
 
+    _HASH_PREFIX_LEN = 7
+
     def __init__(self, repo_location=None, search_parent_directories=False):
         """ Initialize a `GitRepo`
 
@@ -2333,7 +2322,9 @@ class GitRepo(object):
         return self.get_hash(self.head_commit())
 
     def get_commit(self, commit_or_hash):
-        """ Pass on a commit or convert a hash to its commit
+        """ Obtain a commit from its hash
+
+        Also, if `commit_or_hash` is a commit, simply return it.
 
         Args:
             commit_or_hash (:obj:`str` or :obj:`git.objects.commit.Commit`): the hash of a commit or a commit
@@ -2405,6 +2396,18 @@ class GitRepo(object):
         return commit_graph
 
     @staticmethod
+    def hash_prefix(hash):
+        """ Get a commit hash's prefix
+
+        Args:
+            hash (:obj:`str`): git commit hash
+
+        Returns:
+            :obj:`str`: hash's prefix
+        """
+        return hash[:GitRepo._HASH_PREFIX_LEN]
+
+    @staticmethod
     def get_hash(commit):
         """ Get a commit's hash
 
@@ -2425,12 +2428,9 @@ class GitRepo(object):
         Raises:
             :obj:`MigratorError`: if the commit cannot be checked out
         """
-        if isinstance(commit_identifier, git.objects.commit.Commit):
-            commit_hash = commit_identifier.hexsha
-        elif isinstance(commit_identifier, str):   # pragma: can't tell coverage false branch cannot be covered
-            commit_hash = commit_identifier
-        # use git directly, as per https://gitpython.readthedocs.io/en/stable/tutorial.html#using-git-directly
         try:
+            commit_hash = GitRepo.get_hash(self.get_commit(commit_identifier))
+            # use git directly, as per https://gitpython.readthedocs.io/en/stable/tutorial.html#using-git-directly
             self.repo.git.checkout(commit_hash, detach=True)
         except git.exc.GitError as e:
             raise MigratorError("checkout of '{}' to commit '{}' failed:\n{}".format(self.repo_name(), commit_hash, e))
@@ -2478,8 +2478,8 @@ class GitRepo(object):
         Returns:
             :obj:`str`: a string representation of this `GitRepo`
         """
-        scalar_attrs = ['repo_dir', 'repo_url', 'repo']
         rv = []
+        scalar_attrs = ['repo_dir', 'repo_url', 'repo']
         for attr in scalar_attrs:
             val = getattr(self, attr)
             if val:
@@ -2487,11 +2487,17 @@ class GitRepo(object):
             else:
                 rv.append("{}: not initialized".format(attr))
 
+        if self.repo:
+            rv.append("latest commit:\n\thash: {}\n\tsummary: {}\n\tUT timestamp: {}".format(
+                GitRepo.get_hash(self.head_commit()),
+                self.head_commit().summary,
+                datetime.datetime.fromtimestamp(self.head_commit().committed_date).strftime('%c')))
+
         if self.commit_DAG:
             rv.append("commit_DAG (child -> parent):\n\t{}".format(
                 "\n\t".join(
-                    ["{} -> {}".format(SchemaChanges.hash_prefix(GitRepo.get_hash(u)),
-                        SchemaChanges.hash_prefix(GitRepo.get_hash(v)))
+                    ["{} -> {}".format(GitRepo.hash_prefix(GitRepo.get_hash(u)),
+                        GitRepo.hash_prefix(GitRepo.get_hash(v)))
                             for (u, v) in self.commit_DAG.edges])))
         else:
             rv.append("commit_DAG: empty")
