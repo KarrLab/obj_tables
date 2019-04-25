@@ -33,6 +33,7 @@ import random
 import time
 from pathlib import Path
 import socket
+import filecmp
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
     RunMigration, MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo)
@@ -1858,16 +1859,48 @@ class TestGitRepo(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "repo cannot be cloned from '.+'"):
             self.totally_empty_git_repo.clone_repo_from_url(bad_url)
 
+    # todo: put in wc_util & unit test
+    @staticmethod
+    def are_dir_trees_equal(dir1, dir2, ignore=None):
+        """ Compare two directories recursively
+
+        Files in directories being compared are considered equal if their names and contents are equal.
+        Based on https://stackoverflow.com/a/6681395.
+
+        Args:
+            dir1 (:obj:`str`): path of left (first) directory
+            dir2 (:obj:`str`): path of right (second) directory
+
+        Returns:
+            :obj:`bool`: True if `dir1` and `dir2` are the same and no exceptions were raised while
+                accessing the directories and files; false otherwise.
+        """
+        dirs_cmp = filecmp.dircmp(dir1, dir2, ignore=ignore)
+        if dirs_cmp.left_only or dirs_cmp.right_only or dirs_cmp.funny_files:
+            return False
+        _, mismatch, errors =  filecmp.cmpfiles(dir1, dir2, dirs_cmp.common_files, shallow=False)
+        if mismatch or errors:
+            return False
+        for common_dir in dirs_cmp.common_dirs:
+            new_dir1 = os.path.join(dir1, common_dir)
+            new_dir2 = os.path.join(dir2, common_dir)
+            if not TestGitRepo.are_dir_trees_equal(new_dir1, new_dir2, ignore=ignore):
+                return False
+        return True
+
     def test_copy(self):
         repo_copy = self.git_migration_test_repo.copy()
         self.assertEqual(repo_copy.latest_hash(), self.git_migration_test_repo.latest_hash())
         self.assertNotEqual(repo_copy.migrations_dir(), self.git_migration_test_repo.migrations_dir())
+        self.assertTrue(TestGitRepo.are_dir_trees_equal(self.git_migration_test_repo.repo_dir, repo_copy.repo_dir, ignore=[]))
+
         # checkout an earlier version of the repo
         repo_copy.checkout_commit(self.migration_test_repo_known_hash)
         self.assertNotEqual(repo_copy.latest_hash(), self.git_migration_test_repo.latest_hash())
         repo_copy_copy = repo_copy.copy()
         self.assertEqual(repo_copy.latest_hash(), repo_copy_copy.latest_hash())
         self.assertNotEqual(repo_copy.migrations_dir(), repo_copy_copy.migrations_dir())
+        self.assertTrue(TestGitRepo.are_dir_trees_equal(repo_copy.repo_dir, repo_copy_copy.repo_dir, ignore=[]))
 
         with self.assertRaisesRegex(MigratorError, "cannot copy an empty GitRepo"):
             self.totally_empty_git_repo.copy()

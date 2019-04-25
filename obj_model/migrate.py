@@ -2254,9 +2254,9 @@ class GitRepo(object):
     def copy(self, tmp_dir=None):
         """ Copy this `GitRepo` into a new directory
 
-        This is a performance optimization because copying is faster than cloning over the network.
-        Use `copy` if you need multiple copies of a repo, such as multiple instances checked out to
-        different commits.
+        For better performance use `copy()` instead of `GitRepo()` or `clone_repo_from_url` if you
+        need multiple copies of a repo, such as multiple instances checked out to different commits.
+        This is an optimization because copying is faster than cloning over the network.
 
         Args:
             tmp_dir (:obj:`str`, optional): directory to hold the repo; if not provided, the repo
