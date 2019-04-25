@@ -2422,6 +2422,9 @@ class GitRepo(object):
     def checkout_commit(self, commit_identifier):
         """ Checkout a commit for this repo
 
+        Use `checkout_commit` carefully. If it checkouts a new commit, then other operations on the
+        repo may behave differently.
+
         Args:
             commit_identifier (:obj:`git.objects.commit.Commit` or :obj:`str`): a commit or a commit's hash
 

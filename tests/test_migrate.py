@@ -2275,7 +2275,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         print('migrated_files', migrated_files)
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
-        # test round-trip
+        # todo: test round-trip
         # since migrates in-place, save existing files, then compare
 
     def test_str(self):

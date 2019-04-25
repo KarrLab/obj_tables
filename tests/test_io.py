@@ -140,8 +140,7 @@ class TestIo(unittest.TestCase):
         self.tmp_dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        print(self.tmp_dirname)
-        # shutil.rmtree(self.tmp_dirname)
+        shutil.rmtree(self.tmp_dirname)
 
     def test_dummy_model(self):
         # test integrity of relationships
