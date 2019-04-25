@@ -2379,7 +2379,7 @@ class GitRepo(object):
         return commits
 
     def commits_as_graph(self):
-        """ Make a DAG that represents the repo commit dependencies - edges point from dependent commit to parent commit
+        """ Make a DAG for this repo's commit dependencies - edges point from dependent commit to parent commit
 
         The DAG contains all commits in the repo on which the latest commit depends. Also creates
         `git_hash_map`, a map from all git hashes to their commits.

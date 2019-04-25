@@ -1919,13 +1919,37 @@ class TestGitRepo(AutoMigrationFixtures):
     def test_commits_as_graph(self):
         commit_DAG = self.git_repo.commits_as_graph()
         self.assertIsInstance(commit_DAG, nx.classes.digraph.DiGraph)
-        known_paths = [
-            # (tag or hash 1, tag or hash 2, hops on path)
-            ('', ''),
+        expected_child_parent_edges = [
+            # child -> parent commits in test_repo_url == 'https://github.com/KarrLab/test_repo'
+            # commits identified by their tags
+            # use 'git log --all --decorate --oneline --graph' to see graph of commits
+            ('MERGE_FIRST_N_SECOND', 'SECOND_CLONE_3'),
+            ('MERGE_FIRST_N_SECOND', 'FIRST_CLONE_2'),
+            ('SECOND_CLONE_3', 'MERGE_SECOND_N_THIRD'),
+            ('MERGE_SECOND_N_THIRD', 'THIRD_CLONE_2'),
+            ('MERGE_SECOND_N_THIRD', 'SECOND_CLONE_2'),
+            ('SECOND_CLONE_2', 'SECOND_CLONE_1'),
+            ('THIRD_CLONE_2', 'THIRD_CLONE_1'),
+            ('FIRST_CLONE_2', 'FIRST_CLONE_1'),
+            ('THIRD_CLONE_1', 'ROOT'),
+            ('SECOND_CLONE_1', 'ROOT'),
+            ('FIRST_CLONE_1', 'ROOT'),
         ]
 
-    def test_git_hash_map(self):
-        pass
+        # get tagged commits and the expected commit edges obtained by commits_as_graph()
+        tags_to_commits = {}
+        for tag in git.refs.tag.TagReference.iter_items(self.git_repo.repo):
+            tags_to_commits[str(tag)] = tag.commit
+        commits = tags_to_commits.values()
+        expected_commit_edges = [(tags_to_commits[child].hexsha, tags_to_commits[parent].hexsha)
+            for child, parent in expected_child_parent_edges]
+
+        # obtain actual commit edges for the tagged commits
+        actual_commit_edges = []
+        for (u, v) in commit_DAG.edges():
+            if u in commits and v in commits:
+                actual_commit_edges.append((u.hexsha, v.hexsha))
+        self.assertEqual(sorted(expected_commit_edges), sorted(actual_commit_edges))
 
     def test_get_hash(self):
         # todo: test with a frozen repo whose hash is known
