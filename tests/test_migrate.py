@@ -6,37 +6,37 @@
 :License: MIT
 """
 
-import capturer
-import os
-import sys
-import re
-import unittest
-import getpass
-import inspect
-import tempfile
-from tempfile import mkdtemp
-import shutil
-import numpy
-import copy
-import warnings
 from argparse import Namespace
-import yaml
-from pprint import pprint, pformat
 from itertools import chain
-import inspect
-import cProfile
-import pstats
-import git
-import networkx as nx
 from networkx.algorithms.shortest_paths.generic import has_path
-import random
-import time
 from pathlib import Path
-import socket
+from pprint import pprint, pformat
+from tempfile import mkdtemp
+from virtualenvapi.manage import VirtualEnvironment
+import capturer
+import copy
+import cProfile
 import filecmp
+import getpass
+import git
+import inspect
+import networkx as nx
+import numpy
+import os
+import pstats
+import random
+import re
+import shutil
+import socket
+import sys
+import tempfile
+import time
+import unittest
+import warnings
+import yaml
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
-    RunMigration, MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo)
+    RunMigration, MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo, VirtualEnvUtil)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -332,7 +332,26 @@ class MigrationFixtures(unittest.TestCase):
 # @unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
+    executed = False
+    num = 1
     def setUp(self):
+        """
+        methods = ['test_check_imported_models', 'test_get_model_defs', 'test_import_module_for_migration', 'test_munging', 'test_parse_module_path', 'test_run', 'test_str']
+        # run one at random
+        methods_that_can_run = random.choices(methods, k=TestSchemaModule.num)
+        '''
+        print('methods_that_can_run', methods_that_can_run)
+        print('TestSchemaModule.num', TestSchemaModule.num)
+        print('TestSchemaModule.executed', TestSchemaModule.executed)
+        '''
+        if self._testMethodName in methods_that_can_run and not TestSchemaModule.executed:
+            self._executed = self._testMethodName
+            print('EXECUTING', self._testMethodName, end='')
+            TestSchemaModule.executed = True
+        else:
+            TestSchemaModule.num += 1
+            self.skipTest("run random method")
+        """
         make_tmp_dirs_n_small_schemas(self)
         make_wc_lang_migration_fixtures(self)
 
@@ -344,6 +363,13 @@ class TestSchemaModule(unittest.TestCase):
         self.files_to_delete = set()
 
     def tearDown(self):
+        # print('self._outcome', self._outcome)
+        # print('dir(self._outcome)', dir(self._outcome))
+        '''
+        for a in 'success result'.split():
+            print(a, getattr(self._outcome, a))
+        '''
+
         MigrationFixtures.rm_tmp_dirs(self)
         for file in self.files_to_delete:
             remove_silently(file)
@@ -599,10 +625,12 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
+        if self._testMethodName != 'test_generate_wc_lang_migrator':
+            self.skipTest("speed up testing")
         super().setUp()
 
     def tearDown(self):
@@ -1237,7 +1265,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1422,7 +1450,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1543,6 +1571,7 @@ class TestMigrationController(MigrationFixtures):
         self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
 
+# todo: move to wc_utils
 def internet_connected():
     # return True if the internet (actually www.google.com) is connected, false otherwise
     try:
@@ -1599,6 +1628,7 @@ class AutoMigrationFixtures(unittest.TestCase):
         Path(self.nearly_empty_git_repo.migrations_dir()).mkdir()
 
 
+@unittest.skip("speed up testing")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestSchemaChanges(AutoMigrationFixtures):
 
@@ -1798,7 +1828,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         for attr in SchemaChanges._ATTRIBUTES:
             self.assertIn(attr, str(self.schema_changes))
 
-
+@unittest.skip("speed up testing")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(AutoMigrationFixtures):
 
@@ -1859,7 +1889,7 @@ class TestGitRepo(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "repo cannot be cloned from '.+'"):
             self.totally_empty_git_repo.clone_repo_from_url(bad_url)
 
-    # todo: put in wc_util & unit test
+    # todo: put in wc_util with unittests
     @staticmethod
     def are_dir_trees_equal(dir1, dir2, ignore=None):
         """ Compare two directories recursively
@@ -1870,6 +1900,7 @@ class TestGitRepo(AutoMigrationFixtures):
         Args:
             dir1 (:obj:`str`): path of left (first) directory
             dir2 (:obj:`str`): path of right (second) directory
+            ignore (:obj:`list`, optional): passed as the `ignore` argument to `filecmp.dircmp()`
 
         Returns:
             :obj:`bool`: True if `dir1` and `dir2` are the same and no exceptions were raised while
@@ -2079,7 +2110,7 @@ class TestGitRepo(AutoMigrationFixtures):
             for a in attrs:
                 self.assertIn(a, v)
 
-
+print("Method\tFailed\tErrors")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestAutomatedMigration(AutoMigrationFixtures):
 
@@ -2092,6 +2123,9 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         super().tearDownClass()
 
     def setUp(self):
+        if self._testMethodName in ['test_make_template_config_file', 'test_load_config_file', 'test_clean_up',
+            'test_validate', 'test_get_name', 'test_get_data_file_git_commit_hash', 'test_test_schemas', 'test_str']:
+            self.skipTest("speed up testing")
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
@@ -2104,6 +2138,17 @@ class TestAutomatedMigration(AutoMigrationFixtures):
                 data_config_file_basename='automated_migration_config-test_repo.yaml'))
 
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
+
+    def tearDown(self):
+        # print('self._outcome', self._outcome)
+        # print('dir(self._outcome)', dir(self._outcome))
+        if self._testMethodName == 'test_migrate':
+            '''
+            for a in 'success errors'.split():
+                print('Automated migr outcome:', a, getattr(self._outcome, a))
+            '''
+            failed = bool(getattr(self._outcome, 'errors'))
+            print("{}\t{}".format(failed, getattr(self._outcome, 'errors')))
 
     def test_make_template_config_file(self):
         path = AutomatedMigration.make_template_config_file(self.git_repo, 'migration_test_repo')
@@ -2127,7 +2172,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         remove_silently(path)
 
     def test_load_config_file(self):
-
         # read config file with initialized values
         pathname = os.path.join(self.git_migration_test_repo.migrations_dir(),
             'automated_migration_config-migration_test_repo.yaml')
@@ -2302,10 +2346,12 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             print(e)
         # self.assertEqual(self.clean_automated_migration.test_schemas(), [])
 
-    @unittest.skip("broken")
     def test_migrate(self):
+        #print('\n=========== test_migrate ===========')
+        #SchemaModule.DEBUG = True
         migrated_files = self.clean_automated_migration.migrate()
-        print('migrated_files', migrated_files)
+        SchemaModule.DEBUG = False
+        #print('migrated_files', migrated_files)
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
         # todo: test round-trip
@@ -2317,7 +2363,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.assertRegex(str_val, "{}: .+".format(attr))
 
 
-# @unittest.skip("speed up testing")
+@unittest.skip("speed up testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
@@ -2355,3 +2401,69 @@ class TestRunMigration(MigrationFixtures):
             for _, migrated_filenames in results:
                 for migrated_file in migrated_filenames:
                     remove_silently(migrated_file)
+
+
+@unittest.skipUnless(internet_connected(), "Internet not connected")
+class TestVirtualEnvUtil(unittest.TestCase):
+    # INCOMPLETE: started and not finished
+
+    def setUp(self):
+        self.tmp_dir = mkdtemp()
+        self.test_virt_env_util = VirtualEnvUtil('test', dir=self.tmp_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dir)
+
+    def test_init(self):
+        virt_env_util_1 = VirtualEnvUtil('test_name')
+        virt_env_util_2 = VirtualEnvUtil('test_name', dir=self.tmp_dir)
+        for virt_env_util in [virt_env_util_1, virt_env_util_2]:
+            self.assertEqual(virt_env_util.name, 'test_name')
+            self.assertTrue(os.path.isdir(virt_env_util.virtualenv_dir))
+            self.assertTrue(isinstance(virt_env_util.env, VirtualEnvironment))
+
+        with self.assertRaisesRegex(ValueError, "name '.*' may not contain whitespace"):
+            VirtualEnvUtil('name with\twhitespace')
+
+    def test_is_installed(self):
+        pass
+
+    def run_and_check_install(self, pip_spec, package, debug=False):
+        # todo: get & reuse parser for pip specs
+        if debug:
+            print('installing', pip_spec, end='')
+        start = time.time()
+        self.test_virt_env_util.install_from_pip_spec(pip_spec)
+        duration = time.time() - start
+        if debug:
+            print(" took {0:.1f} sec".format(duration))
+        self.assertTrue(self.test_virt_env_util.is_installed(package))
+        # todo: check that the package has the right version (esp. if hash specified) & can be used
+
+    def test_install_from_pip_spec(self):
+        # test PyPI package
+        self.run_and_check_install('six', 'six')
+        # test PyPI package with version
+        self.run_and_check_install('django==1.4', 'django')
+        # test WC egg
+        self.run_and_check_install('git+https://github.com/KarrLab/log.git#egg=log', 'log')
+        # test WC URL commit specified by hash
+        self.run_and_check_install(
+            'git+git://github.com/KarrLab/wc_onto.git@ced0ba452bbdf332c9f687b78c2fedc68c666ff2', 'wc-onto')
+        # test wc_lang commit
+        self.run_and_check_install(
+            'git+git://github.com/KarrLab/wc_lang.git@6f1d13ea4bafac443a4fcee3e97a85874fd6bd04', 'wc-lang')
+        # as of 4/19, https://pip.pypa.io/en/latest/reference/pip_install/#git describes pip package spec. forms for git
+
+    def test_activate_and_deactivate(self):
+        pass
+
+    def test_install_from_pip_spec_exception(self):
+        pass
+
+    def test_destroy_and_destroyed(self):
+        virt_env_util = VirtualEnvUtil('test_name')
+        self.assertTrue(os.path.isdir(virt_env_util.virtualenv_dir))
+        virt_env_util.destroy()
+        self.assertFalse(os.path.isdir(virt_env_util.virtualenv_dir))
+        self.assertTrue(virt_env_util.destroyed())

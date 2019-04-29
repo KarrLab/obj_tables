@@ -33,6 +33,8 @@ import datetime
 #	2) Call datetime.datetime.strptime(), which raises "KeyError: '_strptime'" which is very
 #      likely caused by an 'import _strptime' statement in datetime.py
 import _strptime
+from virtualenvapi.manage import VirtualEnvironment
+import virtualenvapi
 
 import obj_model
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
@@ -267,6 +269,8 @@ class SchemaModule(object):
             if SchemaModule._model_name_is_munged(model):
                 model.__name__ = SchemaModule._unmunge_model_name(model)
 
+    DEBUG=False
+    PRINT_CODE=False
     def import_module_for_migration(self, validate=True, debug=False, attr=None, print_code=False):
         """ Import a schema in a Python module
 
@@ -304,7 +308,7 @@ class SchemaModule(object):
                     break
             print()
 
-        if debug:
+        if debug or self.DEBUG:
             print("\n\n== importing {} from '{}' ==".format(self.module_name, self.directory))
             if print_code:
                 if '.' in self.module_name:
@@ -1690,7 +1694,7 @@ class MigrationController(object):
         all_models, all_migrated_files = [], []
         for existing_file, migrated_file in zip(ms.existing_files, migrated_files):
             num_migrations = len(ms.schema_files) - 1
-            # since 0 < num_migrations this loop always executes and branch coverage reports that
+            # since 0 < num_migrations the next loop always executes and branch coverage reports that
             # the 'for' line doesn't jump to return; this cannot be annotated with 'pragma: no cover'
             for i in range(num_migrations):
                 # create Migrator for each pair of schemas
@@ -2419,6 +2423,7 @@ class GitRepo(object):
         """
         return commit.hexsha
 
+    # todo: optionally copy first, and return the new repo
     def checkout_commit(self, commit_identifier):
         """ Checkout a commit for this repo
 
@@ -2927,17 +2932,22 @@ class AutomatedMigration(object):
         # migrate
         all_migrated_files = []
         for migration_spec in self.migration_specs:
-            print("\n\nmigrating", migration_spec.existing_files[0], "with migrator type", migration_spec.migrator)
+            # print("\n\nmigrating", migration_spec.existing_files[0], "with migrator type", migration_spec.migrator)
             migrated_filenames = MigrationController.migrate_from_spec(migration_spec)
             single_migrated_file = migrated_filenames[0]
             all_migrated_files.append(single_migrated_file)
-            print('migrated:', single_migrated_file)
-        # test the migration
-        # todo: migrated files are in a tmp dir holding the data_git_repo; make them available to the user
+            # print('migrated:', single_migrated_file)
+        # todo: how do errors get reported?
         # the user might want to review the migrated data and then commit the changes
-        # could copy the migrated files into a directory provided by the user
         # todo: automatically clean up an AutomatedMigration as it goes out of scope
-        self.clean_up()
+        # self.clean_up()
+        '''
+        alternative ways to provide migrated files:
+            like now, in a list that user accesses: but they need to be copied to a temp dir that isn't removed by clean_up()
+            copied back to overwrite their originals: but what about errors?, and this is inconsistent with having 'overwrite=False'
+            copied into a directory provided by the user, or, optionally, to a temp dir: perhaps best
+                to achieve uniqueness, must be stored in locations relative to their location in the data repo
+        '''
         return all_migrated_files
 
     def test_schemas(self, debug=False, attr=None):
@@ -3045,3 +3055,73 @@ if __name__ == '__main__':  # pragma: no cover     # reachable only from command
     except KeyboardInterrupt:
         pass
 '''
+
+
+class VirtualEnvUtil(object):
+    # INCOMPLETE: started and not finished
+    """ Support creation, use and distruction of virtual environments for Python packages
+
+    Attributes:
+        name (:obj:`str`): name of the `VirtualEnvUtil`
+    """
+
+    def __init__(self, name, dir=None):
+        """ Initialize a `VirtualEnvUtil`
+
+        Args:
+            name (:obj:`str`): name for the `VirtualEnvUtil`
+            dir (:obj:`str`, optional): a directory to hold the `VirtualEnvUtil`
+        """
+        if re.search('\s', name):
+            raise ValueError("name '{}' may not contain whitespace".format(name))
+        self.name = name
+        if dir is None:
+            dir = tempfile.mkdtemp()
+        self.virtualenv_dir = os.path.join(dir, name)
+        if os.path.isdir(self.virtualenv_dir):
+            raise ValueError("directory '{}' already exists".format(self.virtualenv_dir))
+        os.mkdir(self.virtualenv_dir)
+        self.env = VirtualEnvironment(self.virtualenv_dir)
+
+    def is_installed(self, pip_spec):
+        return self.env.is_installed(pip_spec)
+
+    def install_from_pip_spec(self, pip_spec):
+        """ Install a package from a `pip` specification
+
+        Args:
+            pip_spec (:obj:`str`): a `pip` specification for a package to load
+
+        Raises:
+            :obj:`ValueError`: if the package described by `pip_spec` cannot be installed
+        """
+        try:
+            self.env.install(pip_spec)
+        except virtualenvapi.exceptions.PackageInstallationException as e:
+            print('returncode', e.returncode)
+            print('output', e.output)
+            print('package', e.package)
+
+    def activate(self):
+        """ Use this `VirtualEnvUtil`
+        """
+        # put the env on sys.path
+        pass
+
+    def deactivate(self):
+        """ Stop using this `VirtualEnvUtil`
+        """
+        # remove this env from sys.path
+        pass
+
+    def destroy(self):
+        """ Destroy this `VirtualEnvUtil`
+
+        Distruction deletes the directory storing the `VirtualEnvUtil`
+        """
+        shutil.rmtree(self.virtualenv_dir)
+        
+    def destroyed(self):
+        """ Test whether this `VirtualEnvUtil` has been destroyed
+        """
+        return not os.path.isdir(self.virtualenv_dir)

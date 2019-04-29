@@ -13,5 +13,6 @@ six
 stringcase
 sympy
 validate_email
+virtualenvapi
 wc_utils
 weakreflist
