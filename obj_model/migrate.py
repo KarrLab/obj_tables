@@ -32,8 +32,6 @@ import datetime
 #	2) Call datetime.datetime.strptime(), which raises "KeyError: '_strptime'" which is very
 #      likely caused by an 'import _strptime' statement in datetime.py
 import _strptime
-from virtualenvapi.manage import VirtualEnvironment
-import virtualenvapi
 
 import obj_model
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
@@ -2523,7 +2521,6 @@ class GitRepo(object):
 # todo: test migration that checks whether all schema changes and automated migration configuration files can be read,
 # all all schemas can be imported, all data files can be read
 # todo: add logging
-# todo: consider workflow: someone changes the schema, & wants to easily migrate all data repos
 class AutomatedMigration(object):
     """ Automate the migration of the data files in a repo
 
@@ -2531,7 +2528,7 @@ class AutomatedMigration(object):
     schemas that provide the data models for these data files. The *data* and *schema* repos may be
     the same repo or two different repos.
 
-    The `data` repo contains a `migrations` directory that has:
+    The `data` repo must contain a `migrations` directory that has:
 
     * At least one automated migration configuration file, written in YAML
 
@@ -2917,10 +2914,14 @@ class AutomatedMigration(object):
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
             self.migration_specs.append(migration_spec)
 
-    def migrate(self):
+    def migrate(self, dir=None):
         """ Migrate the repo's data files
 
         By default, migrate to the current version of the schema repo, and migrate data files in place
+
+        Args:
+            dir (:obj:`str`, optional): directory to hold the migrated files; if not provided, a
+                temp dir is created to hold them, and the caller is responsible for deleting it
 
         Returns:
             :obj:`list`: the migrated files
@@ -2937,12 +2938,23 @@ class AutomatedMigration(object):
         # todo: how do errors get reported?
         # the user might want to review the migrated data and then commit the changes
         # todo: automatically clean up an AutomatedMigration as it goes out of scope
-        # self.clean_up()
+        if not os.path.isdir(self.data_repo_location):
+            # data repo is in a tmp dir -- move migrated files to dir
+            if dir is not None:
+                dir = tempfile.mkdtemp()
+            for migrated_file in all_migrated_files:
+                pass
+
+        self.clean_up()
         '''
+        if AutomatedMigration() is initialized with git repo dir
+            migrated files are stored there
+        else:
+            migrated files are stored in a tmp dir
+        perhaps only allow the former from the command line
+
         alternative ways to provide migrated files:
-            like now, in a list that user accesses: but they need to be copied to a temp dir that isn't removed by clean_up()
             copied back to overwrite their originals: but what about errors?, and this is inconsistent with having 'overwrite=False'
-            copied into a directory provided by the user, or, optionally, to a temp dir: perhaps best
                 to achieve uniqueness, must be stored in locations relative to their location in the data repo
         '''
         return all_migrated_files
@@ -3055,7 +3067,10 @@ if __name__ == '__main__':  # pragma: no cover     # reachable only from command
 
 
 class VirtualEnvUtil(object):
-    # INCOMPLETE: started and not finished
+    # INCOMPLETE: started and not finished; not tested
+    # NEEDS:
+    # from virtualenvapi.manage import VirtualEnvironment
+    # import virtualenvapi
     """ Support creation, use and distruction of virtual environments for Python packages
 
     Attributes:
