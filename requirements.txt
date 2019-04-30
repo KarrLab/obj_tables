@@ -1,4 +1,5 @@
 biopython
+bpforms
 gitpython
 inflect
 natsort
@@ -8,11 +9,13 @@ pint >= 0.9
 pronto
 python_dateutil
 pyyaml >= 5.1
+scipy
 setuptools
 six
 stringcase
 sympy
 validate_email
 virtualenv_api
+wc_onto
 wc_utils
 weakreflist
