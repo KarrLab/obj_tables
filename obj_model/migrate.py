@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """ Support schema migration
 
 :Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
@@ -269,8 +268,6 @@ class SchemaModule(object):
             if SchemaModule._model_name_is_munged(model):
                 model.__name__ = SchemaModule._unmunge_model_name(model)
 
-    DEBUG=False
-    PRINT_CODE=False
     def import_module_for_migration(self, validate=True, debug=False, attr=None, print_code=False):
         """ Import a schema in a Python module
 
@@ -308,7 +305,7 @@ class SchemaModule(object):
                     break
             print()
 
-        if debug or self.DEBUG:
+        if debug:
             print("\n\n== importing {} from '{}' ==".format(self.module_name, self.directory))
             if print_code:
                 if '.' in self.module_name:
@@ -3120,7 +3117,7 @@ class VirtualEnvUtil(object):
         Distruction deletes the directory storing the `VirtualEnvUtil`
         """
         shutil.rmtree(self.virtualenv_dir)
-        
+
     def destroyed(self):
         """ Test whether this `VirtualEnvUtil` has been destroyed
         """

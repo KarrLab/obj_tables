@@ -23,7 +23,7 @@ migration_with_renaming:
 wc_lang_migration:
     # use fully_instantiated_wc_lang_model.xlsx so round-trip test makes identical existing and migrated files
     existing_files: [fully_instantiated_wc_lang_model.xlsx]
-    schema_files: [wc_lang_e0c1912/wc_lang/core.py, wc_lang_e0c1912/wc_lang/core_modified.py, wc_lang_e0c1912/wc_lang/core.py]
+    schema_files: [wc_lang_fixture/wc_lang/core.py, wc_lang_fixture/wc_lang/core_modified.py, wc_lang_fixture/wc_lang/core.py]
     seq_of_renamed_models: [
         # for 1st migration:
         [[Parameter, ParameterRenamed]],

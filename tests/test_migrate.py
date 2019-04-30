@@ -6,6 +6,8 @@
 :License: MIT
 """
 
+# todo: speedup migration and unittests; make smaller test data files
+
 from argparse import Namespace
 from itertools import chain
 from networkx.algorithms.shortest_paths.generic import has_path
@@ -44,12 +46,9 @@ from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerA
     RelatedAttribute, TabularOrientation, migrate, obj_math, get_models)
 from wc_utils.workbook.io import read as read_workbook
 from wc_utils.util.files import remove_silently
+from wc_utils.util.misc import internet_connected
 from obj_model.expression import Expression
 from obj_model.io import TOC_NAME
-
-# todo: move all static methods out of MigrationFixtures
-# todo: remove all '# @unittest.skip("speed up testing")'
-# todo: speedup migration and unittests; make smaller test data files
 
 def make_tmp_dirs_n_small_schemas(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
@@ -62,7 +61,7 @@ def make_tmp_dirs_n_small_schemas(test_case):
 
 def make_wc_lang_migration_fixtures(test_case):
     # set up wc_lang migration testing fixtures
-    test_case.wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang_e0c1912', 'wc_lang')
+    test_case.wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang_fixture', 'wc_lang')
     test_case.wc_lang_schema_existing = os.path.join(test_case.wc_lang_fixtures_path, 'core.py')
     test_case.wc_lang_schema_modified = os.path.join(test_case.wc_lang_fixtures_path, 'core_modified.py')
     test_case.wc_lang_model_copy = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
@@ -205,6 +204,19 @@ def make_migrators_in_memory(test_case):
     good_migrator._validate_renamed_models()
     good_migrator._validate_renamed_attrs()
 
+def rm_tmp_dirs(test_case):
+    # remove a test_case's temp dirs
+    shutil.rmtree(test_case.tmp_dir)
+    shutil.rmtree(test_case.tmp_model_dir)
+
+def invert_renaming(renaming):
+    # invert a list of renamed_models or renamed_attributes
+    inverted_renaming = []
+    for entry in renaming:
+        existing, migrated = entry
+        inverted_renaming.append((migrated, existing))
+    return inverted_renaming
+
 
 class MigrationFixtures(unittest.TestCase):
     """ Reused fixture set up and tear down
@@ -286,24 +298,10 @@ class MigrationFixtures(unittest.TestCase):
             objects)
         return model
 
-    @staticmethod
-    def rm_tmp_dirs(test_case):
-        shutil.rmtree(test_case.tmp_dir)
-        shutil.rmtree(test_case.tmp_model_dir)
-
     def tearDown(self):
-        MigrationFixtures.rm_tmp_dirs(self)
+        rm_tmp_dirs(self)
         for file in self.files_to_delete:
             remove_silently(file)
-
-    @staticmethod
-    def invert_renaming(renaming):
-        # invert a list of renamed_models or renamed_attributes
-        inverted_renaming = []
-        for entry in renaming:
-            existing, migrated = entry
-            inverted_renaming.append((migrated, existing))
-        return inverted_renaming
 
     def assert_differing_workbooks(self, existing_model_file, migrated_model_file):
         self.assert_equal_workbooks(existing_model_file, migrated_model_file, equal=False)
@@ -329,29 +327,9 @@ class MigrationFixtures(unittest.TestCase):
             self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
-# @unittest.skip("speed up testing")
 class TestSchemaModule(unittest.TestCase):
 
-    executed = False
-    num = 1
     def setUp(self):
-        """
-        methods = ['test_check_imported_models', 'test_get_model_defs', 'test_import_module_for_migration', 'test_munging', 'test_parse_module_path', 'test_run', 'test_str']
-        # run one at random
-        methods_that_can_run = random.choices(methods, k=TestSchemaModule.num)
-        '''
-        print('methods_that_can_run', methods_that_can_run)
-        print('TestSchemaModule.num', TestSchemaModule.num)
-        print('TestSchemaModule.executed', TestSchemaModule.executed)
-        '''
-        if self._testMethodName in methods_that_can_run and not TestSchemaModule.executed:
-            self._executed = self._testMethodName
-            print('EXECUTING', self._testMethodName, end='')
-            TestSchemaModule.executed = True
-        else:
-            TestSchemaModule.num += 1
-            self.skipTest("run random method")
-        """
         make_tmp_dirs_n_small_schemas(self)
         make_wc_lang_migration_fixtures(self)
 
@@ -363,14 +341,7 @@ class TestSchemaModule(unittest.TestCase):
         self.files_to_delete = set()
 
     def tearDown(self):
-        # print('self._outcome', self._outcome)
-        # print('dir(self._outcome)', dir(self._outcome))
-        '''
-        for a in 'success result'.split():
-            print(a, getattr(self._outcome, a))
-        '''
-
-        MigrationFixtures.rm_tmp_dirs(self)
+        rm_tmp_dirs(self)
         for file in self.files_to_delete:
             remove_silently(file)
 
@@ -625,12 +596,9 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-@unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
-        if self._testMethodName != 'test_generate_wc_lang_migrator':
-            self.skipTest("speed up testing")
         super().setUp()
 
     def tearDown(self):
@@ -1140,8 +1108,8 @@ class TestMigrator(MigrationFixtures):
 
         # make migrated -> existing migrator
         migrated_2_existing_migrator = Migrator(self.migrated_rt_model_defs_path, self.existing_rt_model_defs_path,
-            renamed_models=self.invert_renaming(self.existing_2_migrated_renamed_models),
-            renamed_attributes=self.invert_renaming(self.existing_2_migrated_renamed_attributes))
+            renamed_models=invert_renaming(self.existing_2_migrated_renamed_models),
+            renamed_attributes=invert_renaming(self.existing_2_migrated_renamed_attributes))
         migrated_2_existing_migrator.prepare()
 
         # round trip test of model in tsv file
@@ -1265,7 +1233,6 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-@unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1450,7 +1417,6 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-@unittest.skip("speed up testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1468,8 +1434,8 @@ class TestMigrationController(MigrationFixtures):
         # round-trip test: existing -> migrated -> migrated -> existing
         schema_files = [self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path,
             self.migrated_rt_model_defs_path, self.existing_rt_model_defs_path]
-        migrated_2_existing_renamed_models = self.invert_renaming(self.existing_2_migrated_renamed_models)
-        migrated_2_existing_renamed_attributes = self.invert_renaming(self.existing_2_migrated_renamed_attributes)
+        migrated_2_existing_renamed_models = invert_renaming(self.existing_2_migrated_renamed_models)
+        migrated_2_existing_renamed_attributes = invert_renaming(self.existing_2_migrated_renamed_attributes)
         seq_of_renamed_models = [self.existing_2_migrated_renamed_models, [], migrated_2_existing_renamed_models]
         seq_of_renamed_attributes = [self.existing_2_migrated_renamed_attributes, [], migrated_2_existing_renamed_attributes]
 
@@ -1571,18 +1537,6 @@ class TestMigrationController(MigrationFixtures):
         self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
 
-# todo: move to wc_utils
-def internet_connected():
-    # return True if the internet (actually www.google.com) is connected, false otherwise
-    try:
-        # connect to the host -- tells us if the host is actually reachable
-        socket.create_connection(("www.google.com", 80))
-        return True
-    except OSError:
-        pass
-    return False
-
-
 class AutoMigrationFixtures(unittest.TestCase):
 
     @classmethod
@@ -1628,7 +1582,6 @@ class AutoMigrationFixtures(unittest.TestCase):
         Path(self.nearly_empty_git_repo.migrations_dir()).mkdir()
 
 
-@unittest.skip("speed up testing")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestSchemaChanges(AutoMigrationFixtures):
 
@@ -1828,7 +1781,6 @@ class TestSchemaChanges(AutoMigrationFixtures):
         for attr in SchemaChanges._ATTRIBUTES:
             self.assertIn(attr, str(self.schema_changes))
 
-@unittest.skip("speed up testing")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(AutoMigrationFixtures):
 
@@ -2051,7 +2003,7 @@ class TestGitRepo(AutoMigrationFixtures):
                     self.fail("{} @ {} precedes {} @ {} in sequence, but DAG "
                         "has a path {} -> {}".format(u, i, v, j, v, u))
 
-    # todo: convert hash prefix to full hash so we can use short hashes
+    # todo: method to convert hash prefix to full hash so we can use short hashes
     def test_get_dependents(self):
         before_splitting = self.git_repo.get_commit('d848093018c0660ea3e4728d3c21f3751a53757f')
         clone_1_commit = self.git_repo.get_commit('35f3eb4fe0ebf8f421958d9300c5de94a40fb70e')
@@ -2110,7 +2062,7 @@ class TestGitRepo(AutoMigrationFixtures):
             for a in attrs:
                 self.assertIn(a, v)
 
-print("Method\tFailed\tErrors")
+# print("Method\tFailed\tErrors")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestAutomatedMigration(AutoMigrationFixtures):
 
@@ -2123,9 +2075,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         super().tearDownClass()
 
     def setUp(self):
-        if self._testMethodName in ['test_make_template_config_file', 'test_load_config_file', 'test_clean_up',
-            'test_validate', 'test_get_name', 'test_get_data_file_git_commit_hash', 'test_test_schemas', 'test_str']:
-            self.skipTest("speed up testing")
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
@@ -2138,17 +2087,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
                 data_config_file_basename='automated_migration_config-test_repo.yaml'))
 
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
-
-    def tearDown(self):
-        # print('self._outcome', self._outcome)
-        # print('dir(self._outcome)', dir(self._outcome))
-        if self._testMethodName == 'test_migrate':
-            '''
-            for a in 'success errors'.split():
-                print('Automated migr outcome:', a, getattr(self._outcome, a))
-            '''
-            failed = bool(getattr(self._outcome, 'errors'))
-            print("{}\t{}".format(failed, getattr(self._outcome, 'errors')))
 
     def test_make_template_config_file(self):
         path = AutomatedMigration.make_template_config_file(self.git_repo, 'migration_test_repo')
@@ -2350,8 +2288,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         #print('\n=========== test_migrate ===========')
         #SchemaModule.DEBUG = True
         migrated_files = self.clean_automated_migration.migrate()
-        SchemaModule.DEBUG = False
-        #print('migrated_files', migrated_files)
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
         # todo: test round-trip
@@ -2363,7 +2299,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.assertRegex(str_val, "{}: .+".format(attr))
 
 
-@unittest.skip("speed up testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
