@@ -2337,7 +2337,7 @@ class TestRunMigration(MigrationFixtures):
                     remove_silently(migrated_file)
 
 
-@unittest.expectedFailure
+@unittest.skip("not ready to run")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestVirtualEnvUtil(unittest.TestCase):
     # INCOMPLETE: started and not finished
