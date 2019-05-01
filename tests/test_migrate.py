@@ -2178,30 +2178,28 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.assertFalse(os.path.isdir(d))
 
     def test_validate(self):
-        automated_migration = self.clean_automated_migration
-
         expected_files_to_migrate = [self.migration_test_repo_data_file_1]
-        automated_migration.validate()
-        self.assertEqual(expected_files_to_migrate, automated_migration.data_config['files_to_migrate'])
-        self.assertEqual(automated_migration.data_config['schema_repo_url'],
+        self.clean_automated_migration.validate()
+        self.assertEqual(expected_files_to_migrate, self.clean_automated_migration.data_config['files_to_migrate'])
+        self.assertEqual(self.clean_automated_migration.data_config['schema_repo_url'],
             'https://github.com/KarrLab/migration_test_repo')
-        loaded_schema_changes = automated_migration.loaded_schema_changes
+        loaded_schema_changes = self.clean_automated_migration.loaded_schema_changes
         self.assertEqual(len(loaded_schema_changes), 1)
         self.assertIsInstance(loaded_schema_changes[0], SchemaChanges)
 
         # test errors
         os.rename(  # create an error in all_schema_changes_with_commits()
-            os.path.join(automated_migration.schema_git_repo.migrations_dir(),
+            os.path.join(self.clean_automated_migration.schema_git_repo.migrations_dir(),
                 'schema_changes_2019-03-26-20-16-45_820a5d1.yaml'),
-            os.path.join(automated_migration.schema_git_repo.migrations_dir(),
+            os.path.join(self.clean_automated_migration.schema_git_repo.migrations_dir(),
                 'schema_changes_2019-02-13-14-05-42_badhash.yaml'))
         with self.assertRaises(MigratorError):
-            automated_migration.validate()
+            self.clean_automated_migration.validate()
 
         remove_silently(expected_files_to_migrate[0])   # delete a file to migrate
         with self.assertRaisesRegex(MigratorError,
             "file to migrate '.+', with full path '.+', doesn't exist"):
-            automated_migration.validate()
+            self.clean_automated_migration.validate()
 
     def test_get_name(self):
         self.assertIn('automated-migration:migration_test_repo:migration_test_repo:',
@@ -2236,15 +2234,16 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             automated_migration_w_bad_data_file_2.get_data_file_git_commit_hash(test_file)
 
     def test_generate_migration_spec(self):
-        clean_auto_migration = self.clean_automated_migration
-        clean_auto_migration.validate()
-        migration_spec = self.clean_automated_migration.generate_migration_spec(self.migration_test_repo_data_file_1,
+        self.clean_automated_migration.validate()
+        migration_spec = self.clean_automated_migration.generate_migration_spec(
+            self.migration_test_repo_data_file_1,
             [SchemaChanges.generate_instance(self.clean_schema_changes_file)])
         self.assertEqual(migration_spec.migrator, 'standard_migrator')
         self.assertEqual(migration_spec.existing_files[0], self.migration_test_repo_data_file_1)
         self.assertEqual(len(migration_spec.schema_files), 2)
         self.assertEqual(len(migration_spec.git_hashes), 2)
-        self.assertTrue(migration_spec.git_hashes[0].startswith(self.migration_test_repo_data_file_1_hash_prefix))
+        self.assertTrue(migration_spec.git_hashes[0].startswith(
+            self.migration_test_repo_data_file_1_hash_prefix))
         self.assertEqual(migration_spec.migrate_in_place, True)
         self.assertEqual(migration_spec._prepared, True)
 
@@ -2255,9 +2254,9 @@ class TestAutomatedMigration(AutoMigrationFixtures):
                 seq_of_schema_changes)
 
     def test_schema_changes_for_data_file(self):
-        clean_auto_migration = self.clean_automated_migration
-        clean_auto_migration.validate()
-        schema_changes = clean_auto_migration.schema_changes_for_data_file(self.migration_test_repo_data_file_1)
+        self.clean_automated_migration.validate()
+        schema_changes = self.clean_automated_migration.schema_changes_for_data_file(
+            self.migration_test_repo_data_file_1)
         commit_descs_related_2_migration_test_repo_data_file_1 = [
             # tag, hash prefix
             ('MODIFY_SCHEMA_on_master', '820a5d1'),
