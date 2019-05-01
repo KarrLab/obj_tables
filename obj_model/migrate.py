@@ -2163,7 +2163,7 @@ class GitRepo(object):
 
     Attributes:
         repo_dir (:obj:`str`): the repo's root directory
-        repo_url (:obj:`str`): the repo's url, if known
+        repo_url (:obj:`str`): the repo's URL, if known
         repo (:obj:`git.Repo`): the repo
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
         git_hash_map (:obj:`dict`): map from all git hashes to their commits
@@ -2537,7 +2537,7 @@ class AutomatedMigration(object):
 
     An automated migration configuration file contains the attributes described in `_CONFIG_ATTRIBUTES`:
 
-    * The url of the `schema` repo
+    * The URL of the `schema` repo
     * A list of files to be migrated
     * The path to the schema file in the `schema` repo
     * The type of migrator to use
@@ -2553,7 +2553,7 @@ class AutomatedMigration(object):
     data files in the *data* repo to the latest version of the *schema* repo.
 
     Attributes:
-        data_repo_location (:obj:`str`): directory or url of the *data* repo
+        data_repo_location (:obj:`str`): directory or URL of the *data* repo
         data_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a git clone of the *data* repo
         schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the current version of the
             *schema* repo
@@ -2917,54 +2917,51 @@ class AutomatedMigration(object):
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
             self.migration_specs.append(migration_spec)
 
-    def migrate(self, dir=None):
+    def migrate(self, tmp_dir=None):
         """ Migrate the repo's data files
 
-        By default, migrate to the current version of the schema repo, and migrate data files in place
+        By default, migrate to the current version of the schema repo, and migrate data files in place.
+        If the data repo passed to `AutomatedMigration` was a directory, then the migrated
+        data files will be stored in that directory.
 
         Args:
-            dir (:obj:`str`, optional): directory to hold the migrated files; if not provided, a
-                temp dir is created to hold them, and the caller is responsible for deleting it
+            tmp_dir (:obj:`str`, optional): if the data repo passed to `AutomatedMigration` was an URL,
+                then the migrated files will be returned in directory controlled by `tmp_dir`.
+                If `tmp_dir` is provided then it will contain the migrated files; if not, then
+                a temporary directory is created to hold them, and the caller is responsible for
+                deleting it.
 
         Returns:
-            :obj:`list`: the migrated files
+            :obj:`tuple` of :obj:`list`, :obj:`str`: the migrated files, and the value of `tmp_dir`
         """
         self.prepare()
         # migrate
         all_migrated_files = []
         for migration_spec in self.migration_specs:
-            # print("\n\nmigrating", migration_spec.existing_files[0], "with migrator type", migration_spec.migrator)
             migrated_filenames = MigrationController.migrate_from_spec(migration_spec)
             single_migrated_file = migrated_filenames[0]
             all_migrated_files.append(single_migrated_file)
-            # print('migrated:', single_migrated_file)
-        # todo: how do errors get reported?
-        # the user might want to review the migrated data and then commit the changes
-        # todo: automatically clean up an AutomatedMigration as it goes out of scope
+
         if not os.path.isdir(self.data_repo_location):
-            # data repo is in a tmp dir -- move migrated files to dir
-            if dir is not None:
-                dir = tempfile.mkdtemp()
+            # data repo is in a temp dir made by GitRepo.clone_repo_from_url -- copy migrated files to tmp_dir
+            dest_files = []
+            if tmp_dir is None:
+                tmp_dir = tempfile.mkdtemp()
             for migrated_file in all_migrated_files:
                 # migrated_file is relative to self.data_git_repo.repo_dir
-                # move it to Path.relative_to
-                relative_migrated_file = Path(migrated_file).relative_to(self.data_git_repo.repo_dir)
-                dest = os.path.join(dir, relative_migrated_file)
-                # move migrated_file
-                shutil.move(migrated_file, dest)
+                relative_migrated_file = os.path.relpath(migrated_file, self.data_git_repo.repo_dir)
+                dest = os.path.join(tmp_dir, relative_migrated_file)
+                dest_files.append(dest)
+                os.makedirs(os.path.dirname(dest))
+                # copy migrated_file
+                shutil.copyfile(migrated_file, dest)
         self.clean_up()
-        '''
-        if AutomatedMigration() is initialized with git repo dir
-            migrated files are stored there
-        else:
-            migrated files are stored in a tmp dir
-        perhaps only allow the former from the command line
 
-        alternative ways to provide migrated files:
-            copied back to overwrite their originals: but what about errors?, and this is inconsistent with having 'overwrite=False'
-                to achieve uniqueness, must be stored in locations relative to their location in the data repo
-        '''
-        return all_migrated_files
+        # return the paths of the migrated files
+        if not os.path.isdir(self.data_repo_location):
+            return dest_files, tmp_dir
+        else:
+            return all_migrated_files, tmp_dir
 
     def test_schemas(self, debug=False, attr=None):
         self.prepare()
@@ -2979,9 +2976,7 @@ class AutomatedMigration(object):
                     errors.append("cannot import: '{}'\n\t{}".format(schema_file, e))
         return errors
 
-    '''
-    @staticmethod
-    def test_migration(data_repo_location):
+    def test_migration(self):
         """ Test a migration
 
         Check ...
@@ -2992,31 +2987,24 @@ class AutomatedMigration(object):
 
         This method reports:
 
-        * all validation errors in automatic config files
-        * all validation errors in schema changes files
+        * any validation errors in automatic config files
+        * any validation errors in schema changes files
+        * any errors in transformations
+        * any failures to import schemas
 
         It does not alter any files.
 
         Args:
-            data_repo_location (:obj:`str`): directory or url of the *data* repo
+            data_repo_location (:obj:`str`): directory or URL of the *data* repo
         """
-        assumes that only
-        ensure that all of these are OK:
-            schema changes files
-            transformations
-            automatic config files
-            schemas
-        git_repos = []
-        data_git_repo = GitRepo(data_repo_location)
-        git_repos.append(data_git_repo)
-
-        # get and validate all automatic config files
-        data_git_repo.migrations_dir()
-
-        self.data_git_repo.migrations_dir()
-        #  each automatic config file
-        # validate schema changes files
-        # ensure that schemas import
+        pass
+        '''
+        todo:
+            ensure that all of these are OK:
+                automatic config files
+                schema changes files
+                transformations
+                schemas
         '''
 
     def __str__(self):

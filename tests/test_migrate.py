@@ -595,6 +595,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
+# @unittest.skip("speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1232,6 +1233,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
+# @unittest.skip("speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1416,6 +1418,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
+# @unittest.skip("speed up testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1582,6 +1585,7 @@ class AutoMigrationFixtures(unittest.TestCase):
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
+# @unittest.skip("speed up testing")
 class TestSchemaChanges(AutoMigrationFixtures):
 
     @classmethod
@@ -1781,6 +1785,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
             self.assertIn(attr, str(self.schema_changes))
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
+# @unittest.skip("speed up testing")
 class TestGitRepo(AutoMigrationFixtures):
 
     @classmethod
@@ -2061,7 +2066,6 @@ class TestGitRepo(AutoMigrationFixtures):
             for a in attrs:
                 self.assertIn(a, v)
 
-# print("Method\tFailed\tErrors")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestAutomatedMigration(AutoMigrationFixtures):
 
@@ -2283,14 +2287,35 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             print(e)
         # self.assertEqual(self.clean_automated_migration.test_schemas(), [])
 
-    @unittest.skip("still broken on Circle")
+    # @unittest.skip("still broken on Circle")
     def test_migrate(self):
-        #print('\n=========== test_migrate ===========')
-        #SchemaModule.DEBUG = True
-        migrated_files = self.clean_automated_migration.migrate()
+        migrated_files, new_temp_dir = self.clean_automated_migration.migrate()
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
+        self.assertTrue(os.path.isdir(new_temp_dir))
+        shutil.rmtree(new_temp_dir)
+
+        # provide dir for migrate()
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            automated_migration_from_url = AutomatedMigration(
+                **dict(data_repo_location=self.migration_test_repo_url,
+                    data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
+            migrated_files, temp_dir = automated_migration_from_url.migrate(tmp_dir=tmp_dir_name)
+            for migrated_file in migrated_files:
+                self.assertTrue(os.path.isfile(migrated_file))
+            self.assertEqual(temp_dir, tmp_dir_name)
+
+        # test with pre-existing repo
+        migration_test_repo = self.git_migration_test_repo.copy()
+        automated_migration_existing_repo = AutomatedMigration(
+            **dict(data_repo_location=migration_test_repo.repo_dir,
+                data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
+        migrated_files, _ = automated_migration_existing_repo.migrate()
+        for migrated_file in migrated_files:
+            self.assertTrue(os.path.isfile(migrated_file))
+
         # todo: test round-trip
+        # make schema that reverses changes in schema_changes_2019-03-26-20-16-45_820a5d1.yaml
         # since migrates in-place, save existing files, then compare
 
     def test_str(self):
@@ -2299,6 +2324,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.assertRegex(str_val, "{}: .+".format(attr))
 
 
+# @unittest.skip("speed up testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
