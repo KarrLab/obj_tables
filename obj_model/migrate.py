@@ -27,11 +27,14 @@ import networkx as nx
 from networkx.algorithms.dag import topological_sort, ancestors
 import tempfile
 import datetime
-# import _strptime to avoid a KeyError caused by a side-effect in this code:
+# hack to deal with failures in importlib.import_module
+# import _strptime & bpforms to avoid KeyErrors that seem to be caused by 'import _package'
+# statements in which '_package' starts with an underscore. E.g., this problem happens with datetime:
 #	1) Use SchemaModule.import_module_for_migration() to import a schema
 #	2) Call datetime.datetime.strptime(), which raises "KeyError: '_strptime'" which is very
 #      likely caused by an 'import _strptime' statement in datetime.py
 import _strptime
+import bpforms
 
 import obj_model
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
@@ -2943,8 +2946,12 @@ class AutomatedMigration(object):
             if dir is not None:
                 dir = tempfile.mkdtemp()
             for migrated_file in all_migrated_files:
-                pass
-
+                # migrated_file is relative to self.data_git_repo.repo_dir
+                # move it to Path.relative_to
+                relative_migrated_file = Path(migrated_file).relative_to(self.data_git_repo.repo_dir)
+                dest = os.path.join(dir, relative_migrated_file)
+                # move migrated_file
+                shutil.move(migrated_file, dest)
         self.clean_up()
         '''
         if AutomatedMigration() is initialized with git repo dir
