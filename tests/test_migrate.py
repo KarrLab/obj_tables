@@ -69,6 +69,7 @@ def make_wc_lang_migration_fixtures(test_case):
 def copy_file_to_tmp(test_case, name):
     # copy file 'name' to a new dir in the tmp dir and return its pathname
     # 'name' may either be an absolute pathname, or the name of a file in fixtures
+    # returns the pathname of the file copy
     basename = name
     if os.path.isabs(name):
         basename = os.path.basename(name)
@@ -216,6 +217,29 @@ def invert_renaming(renaming):
         inverted_renaming.append((migrated, existing))
     return inverted_renaming
 
+def assert_differing_workbooks(test_case, existing_model_file, migrated_model_file):
+    assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, equal=False)
+
+def assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, equal=True):
+    # test whether a pair of model files are identical, or not identical if equal=False
+    existing_workbook = read_workbook(existing_model_file)
+    migrated_workbook = read_workbook(migrated_model_file)
+
+    if TOC_NAME in existing_workbook:
+        existing_workbook.pop(TOC_NAME)
+    if TOC_NAME in migrated_workbook:
+        migrated_workbook.pop(TOC_NAME)
+
+    if equal:
+        if not existing_workbook == migrated_workbook:
+            # for debugging
+            print("differences between existing_model_file '{}' and migrated_model_file '{}'".format(
+                existing_model_file, migrated_model_file))
+            print(existing_workbook.difference(migrated_workbook))
+        test_case.assertEqual(existing_workbook, migrated_workbook)
+    else:
+        test_case.assertNotEqual(existing_workbook, migrated_workbook)
+
 
 class MigrationFixtures(unittest.TestCase):
     """ Reused fixture set up and tear down
@@ -301,29 +325,6 @@ class MigrationFixtures(unittest.TestCase):
         rm_tmp_dirs(self)
         for file in self.files_to_delete:
             remove_silently(file)
-
-    def assert_differing_workbooks(self, existing_model_file, migrated_model_file):
-        self.assert_equal_workbooks(existing_model_file, migrated_model_file, equal=False)
-
-    def assert_equal_workbooks(self, existing_model_file, migrated_model_file, equal=True):
-        # test whether a pair of model files are identical, or not identical if equal=False
-        existing_workbook = read_workbook(existing_model_file)
-        migrated_workbook = read_workbook(migrated_model_file)
-
-        if TOC_NAME in existing_workbook:
-            existing_workbook.pop(TOC_NAME)
-        if TOC_NAME in migrated_workbook:
-            migrated_workbook.pop(TOC_NAME)
-
-        if equal:
-            if not existing_workbook == migrated_workbook:
-                # for debugging
-                print("differences between existing_model_file '{}' and migrated_model_file '{}'".format(
-                    existing_model_file, migrated_model_file))
-                print(existing_workbook.difference(migrated_workbook))
-            self.assertEqual(existing_workbook, migrated_workbook)
-        else:
-            self.assertNotEqual(existing_workbook, migrated_workbook)
 
 
 class TestSchemaModule(unittest.TestCase):
@@ -1062,7 +1063,7 @@ class TestMigrator(MigrationFixtures):
         models = list(no_change_migrator.existing_defs.values())
         # this compares all Models in self.example_existing_model_copy and self.example_migrated_model because it follows the refs from Test
         self.compare_model(ExistingTest, models, self.example_existing_model_copy, self.example_migrated_model)
-        self.assert_equal_workbooks(self.example_existing_model_copy, self.example_migrated_model)
+        assert_equal_workbooks(self, self.example_existing_model_copy, self.example_migrated_model)
 
         test_suffix = '_MIGRATED_FILE'
         migrated_filename = no_change_migrator.full_migrate(self.example_existing_model_copy, migrate_suffix=test_suffix)
@@ -1092,7 +1093,7 @@ class TestMigrator(MigrationFixtures):
         migrated_file = migrator.full_migrate(self.example_existing_model_copy)
 
         # test that inverted transformations make no changes
-        self.assert_equal_workbooks(self.example_existing_model_copy, migrated_file)
+        assert_equal_workbooks(self, self.example_existing_model_copy, migrated_file)
 
     def test_full_migrate(self):
 
@@ -1118,14 +1119,14 @@ class TestMigrator(MigrationFixtures):
             migrated_file=self.existing_2_migrated_migrated_tsv_file)
         migrated_2_existing_migrator.full_migrate(self.existing_2_migrated_migrated_tsv_file,
             migrated_file=self.round_trip_migrated_tsv_file)
-        self.assert_equal_workbooks(self.example_existing_model_tsv, self.round_trip_migrated_tsv_file)
+        assert_equal_workbooks(self, self.example_existing_model_tsv, self.round_trip_migrated_tsv_file)
 
         # round trip test of model in xlsx file
         tmp_existing_2_migrated_xlsx_file = os.path.join(self.tmp_model_dir, 'existing_2_migrated_xlsx_file.xlsx')
         existing_2_migrated_migrator.full_migrate(self.example_existing_rt_model_copy,
             migrated_file=tmp_existing_2_migrated_xlsx_file)
         round_trip_migrated_xlsx_file = migrated_2_existing_migrator.full_migrate(tmp_existing_2_migrated_xlsx_file)
-        self.assert_equal_workbooks(self.example_existing_rt_model_copy, round_trip_migrated_xlsx_file)
+        assert_equal_workbooks(self, self.example_existing_rt_model_copy, round_trip_migrated_xlsx_file)
 
     def run_check_model_test(self, model, model_def, attr_name, default_value):
         # test _check_model() by setting an attribute to its default
@@ -1171,7 +1172,7 @@ class TestMigrator(MigrationFixtures):
         self.migrator.full_migrate(self.example_existing_model_copy, migrate_in_place=True)
 
         # validate
-        self.assert_equal_workbooks(example_migrated_model, self.example_existing_model_copy)
+        assert_equal_workbooks(self, example_migrated_model, self.example_existing_model_copy)
 
     def test_exceptions(self):
         bad_module = os.path.join(self.tmp_dir, 'bad_module.py')
@@ -1193,9 +1194,9 @@ class TestMigrator(MigrationFixtures):
         # migrate self.wc_lang_no_model_attrs twice with the generate_wc_lang_migrator
         # the 1st migration adds model attributes, & the 2nd tests that they exist
         wc_lang_model_with_model_attrs = same_defs_migrator.full_migrate(self.wc_lang_no_model_attrs)
-        self.assert_differing_workbooks(self.wc_lang_no_model_attrs, wc_lang_model_with_model_attrs)
+        assert_differing_workbooks(self, self.wc_lang_no_model_attrs, wc_lang_model_with_model_attrs)
         migrated_file = same_defs_migrator.full_migrate(wc_lang_model_with_model_attrs)
-        self.assert_equal_workbooks(wc_lang_model_with_model_attrs, migrated_file)
+        assert_equal_workbooks(self, wc_lang_model_with_model_attrs, migrated_file)
 
         bad_kwargs = dict(existing_defs_file='existing_defs.py', migrated_defs_file='migrated_defs.py',
             transformations='foo')
@@ -1215,7 +1216,7 @@ class TestMigrator(MigrationFixtures):
 
     def test_run(self):
         migrated_files = self.no_change_migrator.run([self.example_existing_model_copy])
-        self.assert_equal_workbooks(self.example_existing_model_copy, migrated_files[0])
+        assert_equal_workbooks(self, self.example_existing_model_copy, migrated_files[0])
 
     def test_str(self):
         self.wc_lang_changes_migrator.prepare()
@@ -1450,7 +1451,7 @@ class TestMigrationController(MigrationFixtures):
             migrated_files=[migrated_filename])
         migration_spec.prepare()
         _, migrated_filenames = MigrationController.migrate_over_schema_sequence(migration_spec)
-        self.assert_equal_workbooks(self.example_existing_rt_model_copy, migrated_filenames[0])
+        assert_equal_workbooks(self, self.example_existing_rt_model_copy, migrated_filenames[0])
 
         self.migration_spec.prepare()
         with self.assertWarnsRegex(UserWarning,
@@ -1462,6 +1463,7 @@ class TestMigrationController(MigrationFixtures):
         migration_spec.migrated_files = [migrated_filename]
         return migrated_filename
 
+    # @unittest.skip("speed up tests")
     def test_migrate_from_spec(self):
         migration_specs = MigrationSpec.load(self.config_file)
 
@@ -1469,18 +1471,19 @@ class TestMigrationController(MigrationFixtures):
         tmp_migrated_filename = self.put_tmp_migrated_file_in_migration_spec(migration_spec, 'migration.xlsx')
         migrated_filenames = MigrationController.migrate_from_spec(migration_spec)
         self.assertEqual(tmp_migrated_filename, migrated_filenames[0])
-        self.assert_equal_workbooks(migration_spec.existing_files[0], migrated_filenames[0])
+        assert_equal_workbooks(self, migration_spec.existing_files[0], migrated_filenames[0])
 
         migration_spec = migration_specs['migration_with_renaming']
         self.put_tmp_migrated_file_in_migration_spec(migration_spec, 'round_trip_migrated_xlsx_file.xlsx')
         round_trip_migrated_xlsx_files = MigrationController.migrate_from_spec(migration_spec)
-        self.assert_equal_workbooks(migration_spec.existing_files[0], round_trip_migrated_xlsx_files[0])
+        assert_equal_workbooks(self, migration_spec.existing_files[0], round_trip_migrated_xlsx_files[0])
 
         migration_spec = migration_specs['wc_lang_migration']
         self.put_tmp_migrated_file_in_migration_spec(migration_spec, 'example-wc_lang-model_migrated.xlsx')
         round_trip_migrated_wc_lang_files = MigrationController.migrate_from_spec(migration_spec)
-        self.assert_equal_workbooks(migration_spec.existing_files[0], round_trip_migrated_wc_lang_files[0])
+        assert_equal_workbooks(self, migration_spec.existing_files[0], round_trip_migrated_wc_lang_files[0])
 
+    # @unittest.skip("speed up tests")
     def test_migrate_from_config(self):
         # these are round-trip migrations
 
@@ -1493,7 +1496,7 @@ class TestMigrationController(MigrationFixtures):
 
         results = MigrationController.migrate_from_config(self.config_file)
         for migration_spec, migrated_files in results:
-            self.assert_equal_workbooks(migration_spec.existing_files[0], migrated_files[0])
+            assert_equal_workbooks(self, migration_spec.existing_files[0], migrated_files[0])
 
     @unittest.skip("optional performance test")
     def test_migrate_from_config_performance(self):
@@ -1510,6 +1513,7 @@ class TestMigrationController(MigrationFixtures):
         print("Profile for 'MigrationController.migrate_from_config(self.config_file)'")
         profile.strip_dirs().sort_stats('cumulative').print_stats(20)
 
+    # @unittest.skip("speed up tests")
     def test_wc_lang_migration(self):
         # round-trip migrate through changed schema
 
@@ -1536,7 +1540,7 @@ class TestMigrationController(MigrationFixtures):
         _, rt_through_changes_wc_lang_models = \
             MigrationController.migrate_over_schema_sequence(rt_through_changes_migration)
         # validate round trip
-        self.assert_equal_workbooks(fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
+        assert_equal_workbooks(self, fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
 
 class AutoMigrationFixtures(unittest.TestCase):
@@ -2081,6 +2085,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
+        self.clean_automated_migration.validate()
         self.migration_test_repo_fixtures = self.clean_automated_migration.data_git_repo.fixtures_dir()
         self.migration_test_repo_data_file_1 = os.path.join(self.migration_test_repo_fixtures, 'data_file_1.xlsx')
         self.migration_test_repo_data_file_1_hash_prefix = '182289c'
@@ -2179,13 +2184,13 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
     def test_validate(self):
         expected_files_to_migrate = [self.migration_test_repo_data_file_1]
-        self.clean_automated_migration.validate()
         self.assertEqual(expected_files_to_migrate, self.clean_automated_migration.data_config['files_to_migrate'])
         self.assertEqual(self.clean_automated_migration.data_config['schema_repo_url'],
             'https://github.com/KarrLab/migration_test_repo')
         loaded_schema_changes = self.clean_automated_migration.loaded_schema_changes
-        self.assertEqual(len(loaded_schema_changes), 1)
-        self.assertIsInstance(loaded_schema_changes[0], SchemaChanges)
+        self.assertEqual(len(loaded_schema_changes), 2)
+        for change in loaded_schema_changes:
+            self.assertIsInstance(change, SchemaChanges)
 
         # test errors
         os.rename(  # create an error in all_schema_changes_with_commits()
@@ -2211,8 +2216,8 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.clean_automated_migration.get_name()
 
     def test_get_data_file_git_commit_hash(self):
-        self.clean_automated_migration.validate()
-        git_commit_hash = self.clean_automated_migration.get_data_file_git_commit_hash(self.migration_test_repo_data_file_1)
+        git_commit_hash = self.clean_automated_migration.get_data_file_git_commit_hash(
+            self.migration_test_repo_data_file_1)
         self.assertTrue(git_commit_hash.startswith(self.migration_test_repo_data_file_1_hash_prefix))
 
         # test exceptions
@@ -2234,7 +2239,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             automated_migration_w_bad_data_file_2.get_data_file_git_commit_hash(test_file)
 
     def test_generate_migration_spec(self):
-        self.clean_automated_migration.validate()
         migration_spec = self.clean_automated_migration.generate_migration_spec(
             self.migration_test_repo_data_file_1,
             [SchemaChanges.generate_instance(self.clean_schema_changes_file)])
@@ -2254,7 +2258,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
                 seq_of_schema_changes)
 
     def test_schema_changes_for_data_file(self):
-        self.clean_automated_migration.validate()
         schema_changes = self.clean_automated_migration.schema_changes_for_data_file(
             self.migration_test_repo_data_file_1)
         commit_descs_related_2_migration_test_repo_data_file_1 = [
@@ -2287,19 +2290,26 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         # self.assertEqual(self.clean_automated_migration.test_schemas(), [])
 
     @unittest.skip("still broken on Circle")
-    def test_migrate(self):
-        migrated_files, new_temp_dir = self.clean_automated_migration.migrate()
+    def test_automated_migrate(self):
+        # test round-trip
+        # since migrates in-place, save existing file for comparison
+        existing_file = self.clean_automated_migration.data_config['files_to_migrate'][0]
+        basename = os.path.basename(existing_file)
+        existing_file_copy = os.path.join(mkdtemp(dir=self.tmp_dir), basename)
+        shutil.copy(existing_file, existing_file_copy)
+        migrated_files, new_temp_dir = self.clean_automated_migration.automated_migrate()
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
         self.assertTrue(os.path.isdir(new_temp_dir))
+        assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
         shutil.rmtree(new_temp_dir)
 
-        # provide dir for migrate()
+        # provide dir for automated_migrate()
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             automated_migration_from_url = AutomatedMigration(
                 **dict(data_repo_location=self.migration_test_repo_url,
                     data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
-            migrated_files, temp_dir = automated_migration_from_url.migrate(tmp_dir=tmp_dir_name)
+            migrated_files, temp_dir = automated_migration_from_url.automated_migrate(tmp_dir=tmp_dir_name)
             for migrated_file in migrated_files:
                 self.assertTrue(os.path.isfile(migrated_file))
             self.assertEqual(temp_dir, tmp_dir_name)
@@ -2309,14 +2319,11 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         automated_migration_existing_repo = AutomatedMigration(
             **dict(data_repo_location=migration_test_repo.repo_dir,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
-        migrated_files, _ = automated_migration_existing_repo.migrate()
+        migrated_files, _ = automated_migration_existing_repo.automated_migrate()
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
 
         # todo: test multiple files in the automated_migration_config
-        # todo: test round-trip
-        # make schema that reverses changes in schema_changes_2019-03-26-20-16-45_820a5d1.yaml
-        # since migrates in-place, save existing files, then compare
 
     def test_str(self):
         str_val = str(self.clean_automated_migration)
@@ -2338,6 +2345,7 @@ class TestRunMigration(MigrationFixtures):
         args = RunMigration.parse_args(cli_args=cl.split())
         self.assertEqual(args.migrations_config_file, self.config_file)
 
+    # @unittest.skip("speed up tests")
     def test_main(self):
         for warnings in [True, False]:
             # Prepare to remove the migrated_files if the test fails

@@ -2845,9 +2845,9 @@ class AutomatedMigration(object):
         spec_args['existing_files'] = [data_file]
 
         # get the schema for the data file
+        commit_hash = self.get_data_file_git_commit_hash(data_file)
         git_repo = self.schema_git_repo.copy()
         self.save_git_repo(git_repo)
-        commit_hash = self.get_data_file_git_commit_hash(data_file)
         git_repo.checkout_commit(commit_hash)
         data_file_schema_file = normalize_filename(self.data_config['schema_file'], dir=git_repo.migrations_dir())
         spec_args['schema_files'] = [data_file_schema_file]
@@ -2900,12 +2900,13 @@ class AutomatedMigration(object):
             seq_of_schema_changes.append(SchemaChanges.generate_instance(schema_changes_file))
         return seq_of_schema_changes
 
+    # todo: migrate multiple files per migration spec
     def prepare(self):
         """ Prepare for migration
 
         * Validate this `AutomatedMigration`
         * Clone each schema change
-        * Generate and prepare a migration spec for the migration
+        * Generate and prepare migration specs for the migration, one for each file
 
         Raises:
             :obj:`MigratorError`: if the `AutomatedMigration` doesn't validate
@@ -2917,7 +2918,7 @@ class AutomatedMigration(object):
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
             self.migration_specs.append(migration_spec)
 
-    def migrate(self, tmp_dir=None):
+    def automated_migrate(self, tmp_dir=None):
         """ Migrate the repo's data files
 
         By default, migrate to the current version of the schema repo, and migrate data files in place.
