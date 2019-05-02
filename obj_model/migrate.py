@@ -27,13 +27,28 @@ import networkx as nx
 from networkx.algorithms.dag import topological_sort, ancestors
 import tempfile
 import datetime
-# hack to deal with failures in importlib.import_module
-# import _strptime & bpforms to avoid KeyErrors that seem to be caused by 'import _package'
-# statements in which '_package' starts with an underscore. E.g., this problem happens with datetime:
-#	1) Use SchemaModule.import_module_for_migration() to import a schema
-#	2) Call datetime.datetime.strptime(), which raises "KeyError: '_strptime'" which is very
-#      likely caused by an 'import _strptime' statement in datetime.py
+# import hacks to deal with failures of unknown origin
+# import _strptime to avoid
+#   KeyError: '_strptime'
+# at /usr/local/lib/python3.6/site-packages/pyexcel_io/service.py:31: KeyError
+# caused by
+#    self = <obj_model.io.WorkbookReader object at 0x7fea3058a978>
+#    path = '/root/host/Documents/wc_dev_repos/obj_model/tests/fixtures/migrate/tmp/tmprowc9lh0/tsv_example/test-*.tsv'
+#    ...
+#        def run(self, path, models=None,
+# at obj_model/io.py:792:
 import _strptime
+
+# import bpforms to avoid
+#   KeyError: 'bson.binary'
+# at /usr/local/lib/python3.6/site-packages/bson/__init__.py:107: KeyError
+# caused by
+#     self.no_change_migrator_model = self.set_up_fun_expr_fixtures(
+#         self.wc_lang_no_change_migrator, 'Parameter', 'Parameter')
+# in:
+#     class MigrationFixtures(unittest.TestCase):
+#         def setUp(self):
+# at '/Users/arthur_at_sinai/gitOnMyLaptopLocal/wc_dev_repos/obj_model/tests/test_migrate.py: 248
 import bpforms
 
 import obj_model
