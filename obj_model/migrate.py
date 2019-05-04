@@ -147,21 +147,27 @@ class SchemaModule(object):
         package_name (:obj:`str`): if the module is in a package, the name of the package containing the
             module; otherwise `None`
         module_name (:obj:`str`): the module's module name
+        annotation (:obj:`str`): an optional annotation, often the original path of a module
+            that's been copied; used for debugging
     """
 
     # cached schema modules that have been imported, indexed by full pathnames
     MODULES = {}
+    # optional annotation for modules
+    MODULE_ANNOTATIONS = {}
 
-    def __init__(self, module_path, dir=None):
+    def __init__(self, module_path, dir=None, annotation=None):
         """ Initialize a `SchemaModule`
 
         Args:
             module_path (:obj:`str`): path to the module
             dir (:obj:`str`, optional): a directory that contains `self.module_path`
+            annotation (:obj:`str`, optional): an annotation about the schema
         """
         self.module_path = module_path
         self.abs_module_path = normalize_filename(self.module_path, dir=dir)
         self.directory, self.package_name, self.module_name = self.parse_module_path(self.abs_module_path)
+        self.annotation = annotation
 
     def get_path(self):
         return str(self.abs_module_path)
@@ -284,11 +290,15 @@ class SchemaModule(object):
             if SchemaModule._model_name_is_munged(model):
                 model.__name__ = SchemaModule._unmunge_model_name(model)
 
-    def import_module_for_migration(self, validate=True, debug=False, attr=None, print_code=False):
-        """ Import a schema in a Python module
+    # todo: delete or document other options
+    def import_module_for_migration(self, validate=True, required_attrs=None, debug=False,
+        attr=None, print_code=False, global_check=False):
+        """ Import a schema from a Python module
 
         Args:
             validate (:obj:`bool`, optional): whether to validate the module; default is True
+            required_attrs (:obj:`list` of :obj:`str`, optional): list of attributes that must be
+                present in the imported module
 
         Returns:
             :obj:`Module`: the `Module` loaded from `self.module_path`
@@ -297,9 +307,18 @@ class SchemaModule(object):
             :obj:`MigratorError`: if the schema at `self.module_path` cannot be imported,
                 or if validate is True and any related attribute in any model references a model
                     not in the module
+                or if the module is missing a required attribute
         """
-        if self.get_path() in self.MODULES:
-            return self.MODULES[self.get_path()]
+        print('SchemaModule.MODULES:')
+        for path, module in SchemaModule.MODULES.items():
+            print('\t', module)
+            if path in SchemaModule.MODULE_ANNOTATIONS:
+                print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path])
+
+        # if a schema has already been imported, return its module so each schema has one internal representation
+        if self.get_path() in SchemaModule.MODULES:
+            print('reusing', self.get_path())
+            return SchemaModule.MODULES[self.get_path()]
 
         # temporarily munge names of all models in modules imported for migration so they're not reused
         SchemaModule._munge_all_model_names()
@@ -310,6 +329,7 @@ class SchemaModule(object):
         for sys_attr in sys_attrs:
             saved[sys_attr] = getattr(sys, sys_attr).copy()
 
+        """
         def print_file(fn, max=100):
             print('\timporting: {}:'.format(fn))
             n = 0
@@ -341,11 +361,13 @@ class SchemaModule(object):
                     if hasattr(module, attr):
                         print('\t', name, module)
                         print('\tmodule.attr:', getattr(module, attr))
+        """
 
         try:
 
             # suspend global check that related attribute names don't clash
-            obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
+            if global_check:
+                obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
             sys.path.insert(0, self.directory)
             module = importlib.import_module(self.module_name)
@@ -355,7 +377,8 @@ class SchemaModule(object):
                 self.get_path(), e))
         finally:
             # reset global variable
-            obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
+            if global_check:
+                obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
             # unmunge names of all models in modules imported for migration
             SchemaModule._unmunge_all_munged_model_names()
 
@@ -365,12 +388,27 @@ class SchemaModule(object):
             # to avoid side effects do not allow changes to sys.modules
             sys.modules = saved['modules']
 
+        if required_attrs:
+            # module must have the required attributes
+            errors = []
+            for required_attr in required_attrs:
+                if not hasattr(module, required_attr):
+                    errors.append("module in '{}' missing required attribute '{}'".format(
+                        self.get_path(), required_attr))
+            if errors:
+                raise MigratorError('\n'.join(errors))
+
         if validate:
             errors = self._check_imported_models(module=module)
             if errors:
                 raise MigratorError('\n'.join(errors))
 
-        self.MODULES[self.get_path()] = module
+        # save an imported schema in SchemaModule.MODULES, indexed by its path
+        # results will be unpredictable if different code is imported from the same path
+        SchemaModule.MODULES[self.get_path()] = module
+        # save the SchemaModule's annotation, if available
+        if self.annotation:
+            SchemaModule.MODULE_ANNOTATIONS[self.get_path()] = self.annotation
 
         return module
 
@@ -2179,6 +2217,7 @@ class GitRepo(object):
     Attributes:
         repo_dir (:obj:`str`): the repo's root directory
         repo_url (:obj:`str`): the repo's URL, if known
+        original_location (:obj:`str`): the repo's original root directory or URL, used for debugging
         repo (:obj:`git.Repo`): the repo
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
         git_hash_map (:obj:`dict`): map from all git hashes to their commits
@@ -2192,16 +2231,18 @@ class GitRepo(object):
 
     _HASH_PREFIX_LEN = 7
 
-    def __init__(self, repo_location=None, search_parent_directories=False):
+    def __init__(self, repo_location=None, search_parent_directories=False, original_location=None):
         """ Initialize a `GitRepo`
 
         If `repo_location` is an URL, then clone the repo into a temporary directory.
 
         Args:
-            repo_location (:obj:`str`, optional): the location of the repo, either its root directory or its URL
+            repo_location (:obj:`str`, optional): the location of the repo, either its directory or its URL
             search_parent_directories (:obj:`bool`, optional): `search_parent_directories` option to `git.Repo()`;
                 if set and `repo_location` is a directory, then all of its parent directories will
                     be searched for a valid repo; default=False
+            original_location (:obj:`str`, optional): the original location of the repo, either its
+                root directory or its URL
 
         Returns:
             :obj:`str`: root directory for the repo (which contains the .git directory)
@@ -2212,6 +2253,7 @@ class GitRepo(object):
         self.repo = None
         self.repo_dir = None
         self.repo_url = None
+        self.original_location = original_location
         if repo_location:
             if os.path.isdir(repo_location):
                 try:
@@ -2224,6 +2266,8 @@ class GitRepo(object):
                 self.repo, self.repo_dir = self.clone_repo_from_url(repo_location)
                 self.repo_url = repo_location
             self.commit_DAG = self.commits_as_graph()
+            if self.original_location is None:
+                self.original_location = repo_location
 
     def get_temp_dir(self):
         """ Get a temporary directory, which must eventually be deleted by calling `del_temp_dirs`
@@ -2271,7 +2315,7 @@ class GitRepo(object):
     def copy(self, tmp_dir=None):
         """ Copy this `GitRepo` into a new directory
 
-        For better performance use `copy()` instead of `GitRepo()` or `clone_repo_from_url` if you
+        For better performance use `copy()` instead of `GitRepo()` or `clone_repo_from_url()` if you
         need multiple copies of a repo, such as multiple instances checked out to different commits.
         This is an optimization because copying is faster than cloning over the network.
 
@@ -2290,7 +2334,7 @@ class GitRepo(object):
         if not self.repo_dir:
             raise MigratorError("cannot copy an empty GitRepo")
         shutil.copytree(self.repo_dir, dst)
-        return GitRepo(dst)
+        return GitRepo(dst, original_location=self.original_location)
 
     def migrations_dir(self):
         """ Get the repo's migrations directory
@@ -2811,13 +2855,11 @@ class AutomatedMigration(object):
         # get the schema in the self.schema_git_repo and schema_file in the automated migration config file
         schema_file = normalize_filename(self.data_config['schema_file'],
             dir=self.schema_git_repo.migrations_dir())
-        schema_module = SchemaModule(schema_file)
-        module = schema_module.import_module_for_migration()
+        schema_module = SchemaModule(schema_file, annotation=self.schema_git_repo.original_location)
+        module = schema_module.import_module_for_migration(
+            required_attrs=[AutomatedMigration._GIT_METADATA])
 
         # use the schema to find the obj_model.Model storing the git metadata
-        if not hasattr(module, AutomatedMigration._GIT_METADATA):
-            raise MigratorError("schema '{}' does not have a {} attribute".format(schema_file,
-                AutomatedMigration._GIT_METADATA))
         git_metadata = getattr(module, AutomatedMigration._GIT_METADATA)
         metadata_model_type = git_metadata[0]
         _, _, revision_attr = git_metadata[1]
@@ -2978,6 +3020,11 @@ class AutomatedMigration(object):
             return dest_files, tmp_dir
         else:
             return all_migrated_files, tmp_dir
+
+    def check_schema_module(self, module):
+        if not hasattr(module, AutomatedMigration._GIT_METADATA):
+            raise MigratorError("schema '{}' does not have a {} attribute".format(schema_file,
+                AutomatedMigration._GIT_METADATA))
 
     def test_schemas(self, debug=False, attr=None):
         self.prepare()
