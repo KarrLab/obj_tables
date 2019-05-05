@@ -294,8 +294,8 @@ class SchemaModule(object):
                 model.__name__ = SchemaModule._unmunge_model_name(model)
 
     # todo: delete or document other options
-    def import_module_for_migration(self, validate=True, required_attrs=None, debug=False,
-        attr=None, print_code=False, global_check=False):
+    def import_module_for_migration(self, validate=True, required_attrs=None, debug=True,
+        attr=None, print_code=True, global_check=False):
         """ Import a schema from a Python module
 
         Args:
@@ -334,7 +334,6 @@ class SchemaModule(object):
         for sys_attr in sys_attrs:
             saved[sys_attr] = getattr(sys, sys_attr).copy()
 
-        """
         def print_file(fn, max=100):
             print('\timporting: {}:'.format(fn))
             n = 0
@@ -358,23 +357,25 @@ class SchemaModule(object):
                 self.module_name, self.directory
                 print_file(self.get_path())
 
-            for p in sys.path:
-                print('\t', p)
             if attr:
                 print('modules defining {}:'.format(attr))
                 for name, module in sys.modules.items():
                     if hasattr(module, attr):
                         print('\t', name, module)
                         print('\tmodule.attr:', getattr(module, attr))
-        """
 
         try:
 
+            # todo: move outside the try:
             # suspend global check that related attribute names don't clash
             if global_check:
                 obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
             sys.path.insert(0, self.directory)
+            if debug:
+                print('sys.path:')
+                for p in sys.path:
+                    print('\t', p, file=stderr)
             print('import_module', self.module_name, self.annotation, file=stderr)
             module = importlib.import_module(self.module_name)
 
@@ -382,9 +383,11 @@ class SchemaModule(object):
             raise MigratorError("'{}' cannot be imported and exec'ed: {}".format(
                 self.get_path(), e))
         finally:
+            # todo: restore state in same order as saving
             # reset global variable
             if global_check:
                 obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
+
             # unmunge names of all models in modules imported for migration
             SchemaModule._unmunge_all_munged_model_names()
 
@@ -2890,6 +2893,7 @@ class AutomatedMigration(object):
                 "containing the git metadata".format(data_file, metadata_model_type.__name__))
         metadata_model = models[metadata_model_type][0]
         commit_hash = getattr(metadata_model, revision_attr)
+        print('get_data_file_git_commit_hash', data_file, commit_hash, file=sys.stderr)
         return commit_hash
 
     def generate_migration_spec(self, data_file, schema_changes):

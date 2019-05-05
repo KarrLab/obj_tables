@@ -10,6 +10,7 @@ NOT_NEEDED = True
 SPEED_UP_TESTING = True
 SKIP_OTHER_AUTO_MIGRATION = True
 MAKE_test_automated_migrate_SUCCEED = True
+print('\nMAKE_test_automated_migrate_SUCCEED',MAKE_test_automated_migrate_SUCCEED)
 
 # todo: speedup migration and unittests; make smaller test data files
 
@@ -2168,10 +2169,13 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             **dict(data_repo_location=self.migration_test_repo_url,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
         self.clean_automated_migration.validate()
+        self.clean_automated_migration_2 = AutomatedMigration(
+            **dict(data_repo_location=self.migration_test_repo_url,
+                data_config_file_basename='automated_migration_config-migration_test_repo_2.yaml'))
+        self.clean_automated_migration_2.validate()
         self.migration_test_repo_fixtures = self.clean_automated_migration.data_git_repo.fixtures_dir()
         self.migration_test_repo_data_file_1 = os.path.join(self.migration_test_repo_fixtures, 'data_file_1.xlsx')
         self.migration_test_repo_data_file_1_hash_prefix = '182289c'
-        self.migration_test_repo_data_file_2 = os.path.join(self.migration_test_repo_fixtures, 'data_file_2.xlsx')
         self.buggy_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.test_repo_url,
                 data_config_file_basename='automated_migration_config-test_repo.yaml'))
@@ -2400,7 +2404,13 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             print(e)
         # self.assertEqual(self.clean_automated_migration.test_schemas(), [])
 
+    def test_automated_migrate_2(self):
+        print('\n-------   test_automated_migrate_2  -----', file=sys.stderr)
+        migrated_files, new_temp_dir = self.clean_automated_migration_2.automated_migrate()
+        shutil.rmtree(new_temp_dir)
+
     # @unittest.skip("still broken on Circle")
+    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_automated_migrate(self):
         # test round-trip
         # since migrates in-place, save existing file for comparison
@@ -2488,7 +2498,7 @@ class TestRunMigration(MigrationFixtures):
 @unittest.skip("not ready to run")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestVirtualEnvUtil(unittest.TestCase):
-    # INCOMPLETE: started and not finished
+    # INCOMPLETE: not finished
 
     def setUp(self):
         self.tmp_dir = mkdtemp()
