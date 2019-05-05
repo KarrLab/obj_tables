@@ -538,7 +538,7 @@ class TestSchemaModule(unittest.TestCase):
 
     def test_import_module_for_migration(self):
 
-        print('\n-------   test_import_module_for_migration   -----', file=sys.stderr)
+        print('\n-------   test_import_module_for_migration   -----')
         # import self-contained module
         sm = SchemaModule(self.existing_defs_path)
         if MAKE_test_automated_migrate_SUCCEED:
@@ -1616,7 +1616,7 @@ class AutoMigrationFixtures(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print('migrate: AutoMigrationFixtures.setUpClass', file=sys.stderr)
+        print('migrate: AutoMigrationFixtures.setUpClass')
         cls.tmp_dir = mkdtemp()
         cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
         # get these repos once for the TestCase to speed up tests
@@ -1643,7 +1643,7 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.git_repo.del_temp_dirs()
 
     def setUp(self):
-        print('migrate: AutoMigrationFixtures.setUp', file=sys.stderr)
+        print('migrate: AutoMigrationFixtures.setUp')
         # create empty repo containing a commit and a migrations directory
         repo_dir = self.make_tmp_dir()
         repo = git.Repo.init(repo_dir)
@@ -2164,7 +2164,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             'test_validate', 'test_get_name', 'test_get_data_file_git_commit_hash', 'test_test_schemas', 'test_str']:
             self.skipTest("speed up testing")
         """
-        print('migrate: TestAutomatedMigration.setUp', file=sys.stderr)
+        print('migrate: TestAutomatedMigration.setUp')
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
@@ -2405,7 +2405,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         # self.assertEqual(self.clean_automated_migration.test_schemas(), [])
 
     def test_automated_migrate_2(self):
-        print('\n-------   test_automated_migrate_2  -----', file=sys.stderr)
+        print('\n-------   test_automated_migrate_2  -----')
         migrated_files, new_temp_dir = self.clean_automated_migration_2.automated_migrate()
         shutil.rmtree(new_temp_dir)
 
@@ -2414,7 +2414,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
     def test_automated_migrate(self):
         # test round-trip
         # since migrates in-place, save existing file for comparison
-        print('\n-------   test_automated_migrate   -----', file=sys.stderr)
+        print('\n-------   test_automated_migrate   -----')
         existing_file = self.clean_automated_migration.data_config['files_to_migrate'][0]
         basename = os.path.basename(existing_file)
         existing_file_copy = os.path.join(mkdtemp(dir=self.tmp_dir), basename)
@@ -2422,7 +2422,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         migrated_files, new_temp_dir = self.clean_automated_migration.automated_migrate()
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
         shutil.rmtree(new_temp_dir)
-        print('-------   FINISHED test_automated_migrate   -----', file=sys.stderr)
+        print('-------   FINISHED test_automated_migrate   -----')
 
         """
         # provide dir for automated_migrate()

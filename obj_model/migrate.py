@@ -312,17 +312,17 @@ class SchemaModule(object):
                     not in the module
                 or if the module is missing a required attribute
         """
-        print('import_module_for_migration', self.module_name, self.annotation, file=stderr)
+        print('import_module_for_migration', self.module_name, self.annotation)
         traceback.print_stack(limit=10)
-        print('SchemaModule.MODULES:', file=stderr)
+        print('SchemaModule.MODULES:')
         for path, module in SchemaModule.MODULES.items():
-            print('\t', module, file=stderr)
+            print('\t', module)
             if path in SchemaModule.MODULE_ANNOTATIONS:
-                print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path], file=stderr)
+                print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path])
 
         # if a schema has already been imported, return its module so each schema has one internal representation
         if self.get_path() in SchemaModule.MODULES:
-            print('reusing', self.get_path(), file=stderr)
+            print('reusing', self.get_path())
             return SchemaModule.MODULES[self.get_path()]
 
         # temporarily munge names of all models in modules imported for migration so they're not reused
@@ -375,8 +375,8 @@ class SchemaModule(object):
             if debug:
                 print('sys.path:')
                 for p in sys.path:
-                    print('\t', p, file=stderr)
-            print('import_module', self.module_name, self.annotation, file=stderr)
+                    print('\t', p)
+            print('import_module', self.module_name, self.annotation)
             module = importlib.import_module(self.module_name)
 
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
@@ -1762,7 +1762,7 @@ class MigrationController(object):
                 # todo: pass commit hash of schema files to migrator_creator & then to SchemaModule annotation
                 # in ms.git_hashes[i], ms.git_hashes[i+1]
                 print("migrating from {}:{} to {}:{}".format(ms.schema_files[i], ms.git_hashes[i],
-                    ms.schema_files[i+1], ms.git_hashes[i+1]), file=sys.stderr)
+                    ms.schema_files[i+1], ms.git_hashes[i+1]))
                 migrator = migrator_creator(existing_defs_file=ms.schema_files[i],
                     migrated_defs_file=ms.schema_files[i+1], renamed_models=ms.seq_of_renamed_models[i],
                     renamed_attributes=ms.seq_of_renamed_attributes[i])
@@ -2893,7 +2893,7 @@ class AutomatedMigration(object):
                 "containing the git metadata".format(data_file, metadata_model_type.__name__))
         metadata_model = models[metadata_model_type][0]
         commit_hash = getattr(metadata_model, revision_attr)
-        print('get_data_file_git_commit_hash', data_file, commit_hash, file=sys.stderr)
+        print('get_data_file_git_commit_hash', data_file, commit_hash)
         return commit_hash
 
     def generate_migration_spec(self, data_file, schema_changes):
@@ -2984,7 +2984,7 @@ class AutomatedMigration(object):
         """
         self.validate()
         self.migration_specs = []
-        print("self.data_config['files_to_migrate']", self.data_config['files_to_migrate'], file=sys.stderr)
+        print("self.data_config['files_to_migrate']", self.data_config['files_to_migrate'])
         for file_to_migrate in self.data_config['files_to_migrate']:
             schema_changes = self.schema_changes_for_data_file(file_to_migrate)
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
@@ -3007,12 +3007,12 @@ class AutomatedMigration(object):
         Returns:
             :obj:`tuple` of :obj:`list`, :obj:`str`: the migrated files, and the value of `tmp_dir`
         """
-        print('migrate: automated_migrate', file=sys.stderr)
+        print('migrate: automated_migrate')
         self.prepare()
         # migrate
         all_migrated_files = []
         for migration_spec in self.migration_specs:
-            print('migrate: migration_spec:\n{}'.format(migration_spec), file=sys.stderr)
+            print('migrate: migration_spec:\n{}'.format(migration_spec))
             migrated_filenames = MigrationController.migrate_from_spec(migration_spec)
             single_migrated_file = migrated_filenames[0]
             all_migrated_files.append(single_migrated_file)
