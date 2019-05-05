@@ -5,6 +5,7 @@
 :Copyright: 2018, Karr Lab
 :License: MIT
 """
+import traceback
 import os
 import re
 import sys
@@ -50,6 +51,8 @@ import _strptime
 #         def setUp(self):
 # at '/Users/arthur_at_sinai/gitOnMyLaptopLocal/wc_dev_repos/obj_model/tests/test_migrate.py: 248
 import bpforms
+
+from sys import stderr
 
 import obj_model
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
@@ -309,15 +312,17 @@ class SchemaModule(object):
                     not in the module
                 or if the module is missing a required attribute
         """
-        print('SchemaModule.MODULES:')
+        print('import_module_for_migration', self.module_name, self.annotation, file=stderr)
+        traceback.print_stack(limit=10)
+        print('SchemaModule.MODULES:', file=stderr)
         for path, module in SchemaModule.MODULES.items():
-            print('\t', module)
+            print('\t', module, file=stderr)
             if path in SchemaModule.MODULE_ANNOTATIONS:
-                print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path])
+                print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path], file=stderr)
 
         # if a schema has already been imported, return its module so each schema has one internal representation
         if self.get_path() in SchemaModule.MODULES:
-            print('reusing', self.get_path())
+            print('reusing', self.get_path(), file=stderr)
             return SchemaModule.MODULES[self.get_path()]
 
         # temporarily munge names of all models in modules imported for migration so they're not reused
@@ -370,6 +375,7 @@ class SchemaModule(object):
                 obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
             sys.path.insert(0, self.directory)
+            print('import_module', self.module_name, self.annotation, file=stderr)
             module = importlib.import_module(self.module_name)
 
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
@@ -1750,6 +1756,10 @@ class MigrationController(object):
             for i in range(num_migrations):
                 # create Migrator for each pair of schemas
                 migrator_creator = migration_spec.get_migrator()
+                # todo: pass commit hash of schema files to migrator_creator & then to SchemaModule annotation
+                # in ms.git_hashes[i], ms.git_hashes[i+1]
+                print("migrating from {}:{} to {}:{}".format(ms.schema_files[i], ms.git_hashes[i],
+                    ms.schema_files[i+1], ms.git_hashes[i+1]), file=sys.stderr)
                 migrator = migrator_creator(existing_defs_file=ms.schema_files[i],
                     migrated_defs_file=ms.schema_files[i+1], renamed_models=ms.seq_of_renamed_models[i],
                     renamed_attributes=ms.seq_of_renamed_attributes[i])
@@ -2318,6 +2328,7 @@ class GitRepo(object):
         For better performance use `copy()` instead of `GitRepo()` or `clone_repo_from_url()` if you
         need multiple copies of a repo, such as multiple instances checked out to different commits.
         This is an optimization because copying is faster than cloning over the network.
+        To avoid `bytecode is stale` errors, doesn't copy `__pycache__` directories.
 
         Args:
             tmp_dir (:obj:`str`, optional): directory to hold the repo; if not provided, the repo
@@ -2333,7 +2344,7 @@ class GitRepo(object):
         dst = os.path.join(tmp_dir, self.EMPTY_SUBDIR)
         if not self.repo_dir:
             raise MigratorError("cannot copy an empty GitRepo")
-        shutil.copytree(self.repo_dir, dst)
+        shutil.copytree(self.repo_dir, dst, ignore=shutil.ignore_patterns('*__pycache__*'))
         return GitRepo(dst, original_location=self.original_location)
 
     def migrations_dir(self):
@@ -2614,8 +2625,7 @@ class AutomatedMigration(object):
     Attributes:
         data_repo_location (:obj:`str`): directory or URL of the *data* repo
         data_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a git clone of the *data* repo
-        schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the current version of the
-            *schema* repo
+        schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the *schema* repo
         data_config_file_basename (:obj:`str`): the basename of the YAML configuration file for the
             migration, which is stored in the *data* repo's migrations directory
         data_config (:obj:`dict`): the data in the automated migration config file
@@ -2674,7 +2684,7 @@ class AutomatedMigration(object):
 
         # get data repo
         self.data_git_repo = GitRepo(self.data_repo_location)
-        self.save_git_repo(self.data_git_repo)
+        self.record_git_repo(self.data_git_repo)
 
         # todo: determine data_config_file_basename automatically if there's only one in the data repo
         # load data config file
@@ -2683,7 +2693,7 @@ class AutomatedMigration(object):
 
         # clone and load the schema repo
         self.schema_git_repo = GitRepo(self.data_config['schema_repo_url'])
-        self.save_git_repo(self.schema_git_repo)
+        self.record_git_repo(self.schema_git_repo)
 
     @staticmethod
     def make_template_config_file(data_git_repo, schema_repo_name):
@@ -2775,8 +2785,8 @@ class AutomatedMigration(object):
 
         return automated_migration_config
 
-    def save_git_repo(self, git_repo):
-        """ Save a git repo so that it's temp dir can be deleted later
+    def record_git_repo(self, git_repo):
+        """ Record a new git repo so that its temp dir can be deleted later
 
         Args:
             git_repo (:obj:`GitRepo`): a git repo
@@ -2852,7 +2862,7 @@ class AutomatedMigration(object):
                 the `GitMetadataModel` contains related attributes, or `data_file` contains multiple
                 `GitMetadataModel` instances
         """
-        # get the schema in the self.schema_git_repo and schema_file in the automated migration config file
+        # get the schema in self.schema_git_repo and schema_file in the automated migration config file
         schema_file = normalize_filename(self.data_config['schema_file'],
             dir=self.schema_git_repo.migrations_dir())
         schema_module = SchemaModule(schema_file, annotation=self.schema_git_repo.original_location)
@@ -2904,7 +2914,7 @@ class AutomatedMigration(object):
         # get the schema for the data file
         commit_hash = self.get_data_file_git_commit_hash(data_file)
         git_repo = self.schema_git_repo.copy()
-        self.save_git_repo(git_repo)
+        self.record_git_repo(git_repo)
         git_repo.checkout_commit(commit_hash)
         data_file_schema_file = normalize_filename(self.data_config['schema_file'], dir=git_repo.migrations_dir())
         spec_args['schema_files'] = [data_file_schema_file]
@@ -2916,7 +2926,7 @@ class AutomatedMigration(object):
         for schema_change in schema_changes:
             # make a copy of each schema commit
             git_repo = self.schema_git_repo.copy()
-            self.save_git_repo(git_repo)
+            self.record_git_repo(git_repo)
             git_repo.checkout_commit(schema_change.commit_hash)
             schema_file = normalize_filename(self.data_config['schema_file'], dir=git_repo.migrations_dir())
             spec_args['schema_files'].append(schema_file)
@@ -2970,6 +2980,7 @@ class AutomatedMigration(object):
         """
         self.validate()
         self.migration_specs = []
+        print("self.data_config['files_to_migrate']", self.data_config['files_to_migrate'], file=sys.stderr)
         for file_to_migrate in self.data_config['files_to_migrate']:
             schema_changes = self.schema_changes_for_data_file(file_to_migrate)
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
@@ -2992,10 +3003,12 @@ class AutomatedMigration(object):
         Returns:
             :obj:`tuple` of :obj:`list`, :obj:`str`: the migrated files, and the value of `tmp_dir`
         """
+        print('migrate: automated_migrate', file=sys.stderr)
         self.prepare()
         # migrate
         all_migrated_files = []
         for migration_spec in self.migration_specs:
+            print('migrate: migration_spec:\n{}'.format(migration_spec), file=sys.stderr)
             migrated_filenames = MigrationController.migrate_from_spec(migration_spec)
             single_migrated_file = migrated_filenames[0]
             all_migrated_files.append(single_migrated_file)
