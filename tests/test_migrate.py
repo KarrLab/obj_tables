@@ -542,7 +542,7 @@ class TestSchemaModule(unittest.TestCase):
         # import self-contained module
         sm = SchemaModule(self.existing_defs_path)
         if MAKE_test_automated_migrate_SUCCEED:
-            module = sm.import_module_for_migration()
+            module = sm.import_module_for_migration(mod_patterns=['migrat', 'wc_lang', 'small'])
 
         """
         self.assertIn(sm.module_path, SchemaModule.MODULES)
@@ -2140,13 +2140,7 @@ class TestGitRepo(AutoMigrationFixtures):
             for a in attrs:
                 self.assertIn(a, v)
 
-"""
-print()
-print("Method executed\tOutcome\tErrors")
 
-with open(log_file, 'a') as f:
-    print("Method executed\tOutcome\tErrors", file=f)
-"""
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestAutomatedMigration(AutoMigrationFixtures):
 
@@ -2326,6 +2320,14 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.clean_automated_migration.get_name()
 
     @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
+    def test_get_metadata_model(self):
+        self.assertEqual(self.clean_automated_migration.metadata_model, None)
+        metadata_model = self.clean_automated_migration.get_metadata_model()
+        self.assertTrue(self.clean_automated_migration.metadata_model is not None)
+        self.assertEqual(metadata_model.type.__name__, 'GitMetadata')
+        self.assertEqual(metadata_model.version_attr, 'revision')
+
+    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_get_data_file_git_commit_hash(self):
         git_commit_hash = self.clean_automated_migration.get_data_file_git_commit_hash(
             self.migration_test_repo_data_file_1)
@@ -2381,7 +2383,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             _, hash_prefix = commit_desc
             self.assertEqual(GitRepo.hash_prefix(sc.commit_hash), hash_prefix)
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_prepare(self):
         self.assertEqual(None, self.clean_automated_migration.prepare())
         self.assertEqual(

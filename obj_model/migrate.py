@@ -295,13 +295,15 @@ class SchemaModule(object):
 
     # todo: delete or document other options
     def import_module_for_migration(self, validate=True, required_attrs=None, debug=True,
-        attr=None, print_code=True, global_check=False):
+        mod_patterns=None, print_code=True, global_check=False):
         """ Import a schema from a Python module
 
         Args:
             validate (:obj:`bool`, optional): whether to validate the module; default is True
             required_attrs (:obj:`list` of :obj:`str`, optional): list of attributes that must be
                 present in the imported module
+            mod_patterns (:obj:`list` of :obj:`str`, optional): RE patterns used to search for
+                modules in `sys.modules` output by debugging
 
         Returns:
             :obj:`Module`: the `Module` loaded from `self.module_path`
@@ -312,17 +314,22 @@ class SchemaModule(object):
                     not in the module
                 or if the module is missing a required attribute
         """
-        print('import_module_for_migration', self.module_name, self.annotation)
-        traceback.print_stack(limit=10)
-        print('SchemaModule.MODULES:')
-        for path, module in SchemaModule.MODULES.items():
-            print('\t', module)
-            if path in SchemaModule.MODULE_ANNOTATIONS:
-                print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path])
+        if debug:
+            print('import_module_for_migration', self.module_name, self.annotation)
+            traceback.print_stack(limit=10)
+            if SchemaModule.MODULES:
+                print('SchemaModule.MODULES:')
+                for path, module in SchemaModule.MODULES.items():
+                    print('\t', module)
+                    if path in SchemaModule.MODULE_ANNOTATIONS:
+                        print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path])
+            else:
+                print('no SchemaModule.MODULES')
 
         # if a schema has already been imported, return its module so each schema has one internal representation
         if self.get_path() in SchemaModule.MODULES:
-            print('reusing', self.get_path())
+            if debug:
+                print('reusing', self.get_path())
             return SchemaModule.MODULES[self.get_path()]
 
         # temporarily munge names of all models in modules imported for migration so they're not reused
@@ -357,12 +364,17 @@ class SchemaModule(object):
                 self.module_name, self.directory
                 print_file(self.get_path())
 
-            if attr:
-                print('modules defining {}:'.format(attr))
+            if mod_patterns:
+                print("sys.modules entries matching RE patterns: '{}':".format("', '".join(mod_patterns)))
+                compiled_mod_patterns = [re.compile(mod_pattern) for mod_pattern in mod_patterns]
                 for name, module in sys.modules.items():
-                    if hasattr(module, attr):
-                        print('\t', name, module)
-                        print('\tmodule.attr:', getattr(module, attr))
+                    for compiled_mod_pattern in compiled_mod_patterns:
+                        if compiled_mod_pattern.search(name):
+                            if hasattr(module, '__file__'):
+                                print('\t', name, module.__file__)
+                            else:
+                                print('\t', name)
+                            continue
 
         try:
 
@@ -376,12 +388,13 @@ class SchemaModule(object):
                 print('sys.path:')
                 for p in sys.path:
                     print('\t', p)
-            print('import_module', self.module_name, self.annotation)
+                print('import_module', self.module_name, self.annotation)
+            # todo: END move outside the try
             module = importlib.import_module(self.module_name)
 
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
-            raise MigratorError("'{}' cannot be imported and exec'ed: {}".format(
-                self.get_path(), e))
+            raise MigratorError("'{}' cannot be imported and exec'ed: {}: {}".format(
+                self.get_path(), e.__class__.__name__, e))
         finally:
             # todo: restore state in same order as saving
             # reset global variable
@@ -2078,7 +2091,7 @@ class SchemaChanges(object):
 
     @staticmethod
     def load(schema_changes_file):
-        """ Load a schema changes file
+        """ Read a schema changes file
 
         Args:
             schema_changes_file (:obj:`str`): path to the schema changes file
@@ -2629,6 +2642,10 @@ class AutomatedMigration(object):
         data_repo_location (:obj:`str`): directory or URL of the *data* repo
         data_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a git clone of the *data* repo
         schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the *schema* repo
+        metadata_model (:obj:`AutomatedMigration.MetadataModel`): data files
+            use a `Model`, defined by the *schema*, to store metadata that identifies the
+            schema that they use; `metadata_model` provides the Model's type and the attribute that
+            stores the version
         data_config_file_basename (:obj:`str`): the basename of the YAML configuration file for the
             migration, which is stored in the *data* repo's migrations directory
         data_config (:obj:`dict`): the data in the automated migration config file
@@ -2639,6 +2656,8 @@ class AutomatedMigration(object):
 
     # name of the git metadata configuration attribute in an obj_model schema
     _GIT_METADATA = '_GIT_METADATA'
+
+    MetadataModel = collections.namedtuple('MetadataModel', ['type', 'version_attr',])
 
     # name of the migrations directory
     _MIGRATIONS_DIRECTORY = 'migrations'
@@ -2665,7 +2684,7 @@ class AutomatedMigration(object):
 
     # attributes in a `AutomatedMigration`
     _ATTRIBUTES = ['data_repo_location', 'data_git_repo', 'schema_git_repo', 'data_config_file_basename',
-        'data_config', 'loaded_schema_changes', 'migration_specs', 'git_repos']
+        'data_config', 'loaded_schema_changes', 'migration_specs', 'git_repos', 'metadata_model']
     _REQUIRED_ATTRIBUTES = ['data_repo_location', 'data_config_file_basename']
 
     def __init__(self, **kwargs):
@@ -2846,33 +2865,33 @@ class AutomatedMigration(object):
         return self._NAME_FORMAT.format(self.data_git_repo.repo_name(), self.schema_git_repo.repo_name(),
             SchemaChanges.get_date_timestamp())
 
-    def get_data_file_git_commit_hash(self, data_file):
-        """ Get the git commit hash of the schema repo that describes a data file
+    def get_metadata_model(self):
+        """ Get the `metadata_model` for the schema
 
         The schema in `self.schema_git_repo` must specify a Model name and metadata attributes
-        in a `_GIT_METADATA` attribute. E.g., `wc_lang` contains:
+        in a `_GIT_METADATA` attribute. E.g., `migration_test_repo` contains:
 
             `_GIT_METADATA = (GitMetadataModel, ('url', 'branch', 'revision'))`
 
-        Args:
-            data_file (:obj:`str`): name of a data file
-
         Returns:
-            :obj:`str`: the hash
+            :obj:`str`: the `metadata_model` for the schema
 
         Raises:
             :obj:`MigratorError`: if the schema in `self.schema_git_repo` lacks a `_GIT_METADATA` attribute,
-                the `GitMetadataModel` contains related attributes, or `data_file` contains multiple
-                `GitMetadataModel` instances
+                or the `GitMetadataModel` contains related attributes
         """
+        if self.metadata_model:
+            return self.metadata_model
+
         # get the schema in self.schema_git_repo and schema_file in the automated migration config file
         schema_file = normalize_filename(self.data_config['schema_file'],
             dir=self.schema_git_repo.migrations_dir())
         schema_module = SchemaModule(schema_file, annotation=self.schema_git_repo.original_location)
         module = schema_module.import_module_for_migration(
-            required_attrs=[AutomatedMigration._GIT_METADATA])
+            # todo: remove mod_patterns
+            required_attrs=[AutomatedMigration._GIT_METADATA], mod_patterns=['migrat', 'wc_lang', 'small'])
 
-        # use the schema to find the obj_model.Model storing the git metadata
+        # use the schema to find the obj_model.Model that stores git metadata
         git_metadata = getattr(module, AutomatedMigration._GIT_METADATA)
         metadata_model_type = git_metadata[0]
         _, _, revision_attr = git_metadata[1]
@@ -2882,17 +2901,35 @@ class AutomatedMigration(object):
             raise MigratorError("GitMetadataModel '{}' contains related attributes".format(
                 metadata_model_type.__name__))
 
+        self.metadata_model = AutomatedMigration.MetadataModel(metadata_model_type, revision_attr)
+        return self.metadata_model
+
+    def get_data_file_git_commit_hash(self, data_file):
+        """ Get the git commit hash of the schema repo that describes a data file
+
+        Args:
+            data_file (:obj:`str`): name of a data file
+
+        Returns:
+            :obj:`str`: the hash
+
+        Raises:
+            :obj:`MigratorError`: if `data_file` contains multiple `GitMetadataModel` instances
+        """
+
+        metadata_model = self.get_metadata_model()
+
         # use obj_model Reader to read the data file
-        models = obj_model.io.Reader().run(data_file, models=metadata_model_type,
+        models = obj_model.io.Reader().run(data_file, models=metadata_model.type,
             ignore_missing_sheets=True, ignore_extra_sheets=True, ignore_sheet_order=True,
             include_all_attributes=False, ignore_extra_attributes=True,
             ignore_attribute_order=True, group_objects_by_model=True, validate=False)
-        # check that there's exactly 1 instance of the metadata_model_type
-        if len(models[metadata_model_type]) != 1:
+        # check that the file has exactly 1 instance of the metadata_model's type
+        if len(models[metadata_model.type]) != 1:
             raise MigratorError("data file '{}' must contain exactly one instance of {}, the Model "
-                "containing the git metadata".format(data_file, metadata_model_type.__name__))
-        metadata_model = models[metadata_model_type][0]
-        commit_hash = getattr(metadata_model, revision_attr)
+                "containing the git metadata".format(data_file, metadata_model.type.__name__))
+        metadata_model_obj = models[metadata_model.type][0]
+        commit_hash = getattr(metadata_model_obj, metadata_model.version_attr)
         print('get_data_file_git_commit_hash', data_file, commit_hash)
         return commit_hash
 
@@ -3044,6 +3081,7 @@ class AutomatedMigration(object):
                 AutomatedMigration._GIT_METADATA))
 
     def test_schemas(self, debug=False, attr=None):
+        # test that each schema can be independently imported
         self.prepare()
         errors = []
         print_code = debug
