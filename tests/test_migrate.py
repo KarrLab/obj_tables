@@ -6,9 +6,6 @@
 :License: MIT
 """
 
-SPEED_UP_TESTING = True
-SKIP_OTHER_AUTO_MIGRATION = False
-
 # todo: speedup migration and unittests; make smaller test data files
 # todo: ensure that all tmp files are being deleted
 
@@ -577,7 +574,6 @@ class TestSchemaModule(unittest.TestCase):
         sm = SchemaModule(self.wc_lang_schema_existing)
         self.check_related_attributes(sm)
 
-        """
         # import modified wc_lang
         sm = SchemaModule(self.wc_lang_schema_modified)
         self.check_related_attributes(sm)
@@ -605,15 +601,19 @@ class TestSchemaModule(unittest.TestCase):
         with self.assertRaisesRegex(MigratorError,
             "module in '.+' missing required attribute 'no_such_attribute'"):
             SchemaModule(module_missing_attr).import_module_for_migration(required_attrs=['no_such_attribute'])
-        """
 
         # import a module that's new and has an annotation
         module_with_annotation = os.path.join(self.tmp_dir, 'module_with_annotation.py')
         f = open(module_with_annotation, "w")
-        f.write('# no code needed\n')
+        f.write('# no code needed')
+        # flush & fsynch to ensure that all internal buffers associated with f are written to disk
+        # hopefully will stop intermittent, undiagnosed failures in import_module_for_migration() below
+        f.flush()
+        os.fsync(f.fileno())
         f.close()
+        # add 2 sec sleep to help with intermittent 'No module named 'module_with_annotation' error
+        time.sleep(2)
         sm = SchemaModule(module_with_annotation, annotation='test_annotation')
-        # this module won't validate
         sm.import_module_for_migration(validate=False)
         self.assertEqual('test_annotation', SchemaModule.MODULE_ANNOTATIONS[module_with_annotation])
 
@@ -651,7 +651,6 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1289,7 +1288,6 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1474,7 +1472,6 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1518,7 +1515,6 @@ class TestMigrationController(MigrationFixtures):
         migration_spec.migrated_files = [migrated_filename]
         return migrated_filename
 
-    @unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
     def test_migrate_from_spec(self):
         migration_specs = MigrationSpec.load(self.config_file)
 
@@ -1538,7 +1534,6 @@ class TestMigrationController(MigrationFixtures):
         round_trip_migrated_wc_lang_files = MigrationController.migrate_from_spec(migration_spec)
         assert_equal_workbooks(self, migration_spec.existing_files[0], round_trip_migrated_wc_lang_files[0])
 
-    @unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
     def test_migrate_from_config(self):
         # these are round-trip migrations
 
@@ -1568,7 +1563,6 @@ class TestMigrationController(MigrationFixtures):
         print("Profile for 'MigrationController.migrate_from_config(self.config_file)'")
         profile.strip_dirs().sort_stats('cumulative').print_stats(20)
 
-    @unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
     def test_wc_lang_migration(self):
         # round-trip migrate through changed schema
 
@@ -1644,7 +1638,6 @@ class AutoMigrationFixtures(unittest.TestCase):
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
-@unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
 class TestSchemaChanges(AutoMigrationFixtures):
 
     @classmethod
@@ -1844,7 +1837,6 @@ class TestSchemaChanges(AutoMigrationFixtures):
             self.assertIn(attr, str(self.schema_changes))
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
-@unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
 class TestGitRepo(AutoMigrationFixtures):
 
     @classmethod
@@ -2160,7 +2152,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_make_template_config_file(self):
         path = AutomatedMigration.make_template_config_file(self.git_repo, 'migration_test_repo')
 
@@ -2182,7 +2173,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         remove_silently(path)
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_load_config_file(self):
         # read config file with initialized values
         pathname = os.path.join(self.git_migration_test_repo.migrations_dir(),
@@ -2224,7 +2214,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             AutomatedMigration.load_config_file(config_file)
         remove_silently(config_file)
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_init(self):
         config_basename = 'automated_migration_config-migration_test_repo.yaml'
         automated_migration = AutomatedMigration(
@@ -2239,7 +2228,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             r"AutomatedMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
             AutomatedMigration(**dict(data_repo_location=self.migration_test_repo_url))
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_clean_up(self):
         all_tmp_dirs = []
         for git_repo in self.clean_automated_migration.git_repos:
@@ -2250,7 +2238,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         for d in all_tmp_dirs:
             self.assertFalse(os.path.isdir(d))
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_validate(self):
         expected_files_to_migrate = [self.migration_test_repo_data_file_1]
         self.assertEqual(expected_files_to_migrate, self.clean_automated_migration.data_config['files_to_migrate'])
@@ -2275,7 +2262,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             "file to migrate '.+', with full path '.+', doesn't exist"):
             self.clean_automated_migration.validate()
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_get_name(self):
         self.assertIn('automated-migration:migration_test_repo:migration_test_repo:',
             self.clean_automated_migration.get_name())
@@ -2285,7 +2271,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             re.escape("To run get_name() data_git_repo and schema_git_repo must be initialized")):
             self.clean_automated_migration.get_name()
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_get_metadata_model(self):
         self.assertEqual(self.clean_automated_migration.metadata_model, None)
         metadata_model = self.clean_automated_migration.get_metadata_model()
@@ -2293,7 +2278,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertEqual(metadata_model.type.__name__, 'GitMetadata')
         self.assertEqual(metadata_model.version_attr, 'revision')
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_get_data_file_git_commit_hash(self):
         git_commit_hash = self.clean_automated_migration.get_data_file_git_commit_hash(
             self.migration_test_repo_data_file_1)
@@ -2317,7 +2301,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             "data file '.*' must contain .*instance of .*, the Model containing the git metadata"):
             automated_migration_w_bad_data_file_2.get_data_file_git_commit_hash(test_file)
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_generate_migration_spec(self):
         migration_spec = self.clean_automated_migration.generate_migration_spec(
             self.migration_test_repo_data_file_1,
@@ -2337,7 +2320,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.clean_automated_migration.generate_migration_spec(self.migration_test_repo_data_file_1,
                 seq_of_schema_changes)
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_schema_changes_for_data_file(self):
         schema_changes = self.clean_automated_migration.schema_changes_for_data_file(
             self.migration_test_repo_data_file_1)
@@ -2349,25 +2331,21 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             _, hash_prefix = commit_desc
             self.assertEqual(GitRepo.hash_prefix(sc.commit_hash), hash_prefix)
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_prepare(self):
         self.assertEqual(None, self.clean_automated_migration.prepare())
         self.assertEqual(
             [ms.existing_files[0] for ms in self.clean_automated_migration.migration_specs],
             self.clean_automated_migration.data_config['files_to_migrate'])
 
-    # @unittest.skip("broken on tests/test_migrate.py::TestAutomatedMigration")
     def test_verify_schemas(self):
         errors = self.clean_automated_migration.verify_schemas()
         self.assertEqual(errors, [])
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_automated_migrate_2(self):
         migrated_files, new_temp_dir = self.clean_automated_migration_2.automated_migrate()
         shutil.rmtree(new_temp_dir)
 
     # @unittest.skip("still broken on Circle")
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_automated_migrate(self):
         # test round-trip
         # since migrates in-place, save existing file for comparison
@@ -2379,7 +2357,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
         shutil.rmtree(new_temp_dir)
 
-        """
         # provide dir for automated_migrate()
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             automated_migration_from_url = AutomatedMigration(
@@ -2398,18 +2375,15 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         migrated_files, _ = automated_migration_existing_repo.automated_migrate()
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
-        """
 
         # todo: test multiple files in the automated_migration_config
 
-    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_str(self):
         str_val = str(self.clean_automated_migration)
         for attr in AutomatedMigration._ATTRIBUTES:
             self.assertRegex(str_val, "{}: .+".format(attr))
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
@@ -2423,7 +2397,6 @@ class TestRunMigration(MigrationFixtures):
         args = RunMigration.parse_args(cli_args=cl.split())
         self.assertEqual(args.migrations_config_file, self.config_file)
 
-    @unittest.skipIf(SPEED_UP_TESTING, "speed up testing")
     def test_main(self):
         for warnings in [True, False]:
             # Prepare to remove the migrated_files if the test fails
