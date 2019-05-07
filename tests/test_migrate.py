@@ -6,13 +6,11 @@
 :License: MIT
 """
 
-NOT_NEEDED = True
 SPEED_UP_TESTING = True
-SKIP_OTHER_AUTO_MIGRATION = True
-MAKE_test_automated_migrate_SUCCEED = True
-print('\nMAKE_test_automated_migrate_SUCCEED',MAKE_test_automated_migrate_SUCCEED)
+SKIP_OTHER_AUTO_MIGRATION = False
 
 # todo: speedup migration and unittests; make smaller test data files
+# todo: ensure that all tmp files are being deleted
 
 from argparse import Namespace
 from itertools import chain
@@ -55,7 +53,7 @@ from wc_utils.util.misc import internet_connected
 from obj_model.expression import Expression
 from obj_model.io import TOC_NAME
 
-def make_tmp_dirs_n_small_schemas(test_case):
+def make_tmp_dirs_n_small_schemas_paths(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
     test_case.tmp_dir = mkdtemp()
     # create tmp dir in 'fixtures/migrate/tmp' so it can be accessed from Docker container's host
@@ -252,7 +250,7 @@ class MigrationFixtures(unittest.TestCase):
     """
 
     def setUp(self):
-        make_tmp_dirs_n_small_schemas(self)
+        make_tmp_dirs_n_small_schemas_paths(self)
         self.migrator = Migrator(self.existing_defs_path, self.migrated_defs_path)
         self.migrator._load_defs_from_files()
 
@@ -332,32 +330,11 @@ class MigrationFixtures(unittest.TestCase):
         for file in self.files_to_delete:
             remove_silently(file)
 
-log_file = 'debug.log'
+
 class TestSchemaModule(unittest.TestCase):
 
-    executed = False
-    num = 1
     def setUp(self):
-        """
-        methods = ['test_check_imported_models', 'test_get_model_defs', 'test_import_module_for_migration', 'test_run']
-        # run one at random
-        methods_that_can_run = random.choices(methods, k=TestSchemaModule.num)
-        '''
-        print('methods_that_can_run', methods_that_can_run)
-        print('TestSchemaModule.num', TestSchemaModule.num)
-        print('TestSchemaModule.executed', TestSchemaModule.executed)
-        '''
-        if self._testMethodName in methods_that_can_run and not TestSchemaModule.executed:
-            self._executed = self._testMethodName
-            print(self._testMethodName, end='')
-            with open(log_file, 'a') as f:
-                print(self._testMethodName, end='', file=f)
-            TestSchemaModule.executed = True
-        else:
-            TestSchemaModule.num += 1
-            self.skipTest("run random method")
-        """
-        make_tmp_dirs_n_small_schemas(self)
+        make_tmp_dirs_n_small_schemas_paths(self)
         make_wc_lang_migration_fixtures(self)
 
         self.test_package = os.path.join(self.fixtures_path, 'test_package')
@@ -368,15 +345,10 @@ class TestSchemaModule(unittest.TestCase):
         self.files_to_delete = set()
 
     def tearDown(self):
-        '''
-        for a in 'success result'.split():
-            print(a, getattr(self._outcome, a))
-        '''
         rm_tmp_dirs(self)
         for file in self.files_to_delete:
             remove_silently(file)
 
-    @unittest.skipIf(NOT_NEEDED, "not needed")
     def test_parse_module_path(self):
         parse_module_path = SchemaModule.parse_module_path
 
@@ -472,22 +444,50 @@ class TestSchemaModule(unittest.TestCase):
             self.assertEqual(left_related, right_related)
 
     def multiple_import_tests_of_test_package(self, test_package_dir):
-        test_module = os.path.join(test_package_dir, 'test_module.py')
+        # test import of test_package and submodules in it
+
+        ##- in parallel, ensure that other modules remain in sys.modules, using module_not_in_test_package
+        ##- which is imported by test_package/pkg_dir/code.py
+        ##- 1: ensure that module_not_in_test_package.py is not in sys.modules
+        self.assertFalse('module_not_in_test_package' in sys.modules)
+        ##- 1: copy module_not_in_test_package.py to a new tmp dir T
+        tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
+        ##- 2: put T on sys.path
+        sys.path.append(os.path.dirname(tmp_path))
 
         # import module in a package
+        test_module = os.path.join(test_package_dir, 'test_module.py')
         sm = SchemaModule(test_module)
         module = sm.import_module_for_migration()
         self.check_imported_module(sm, 'test_package.test_module', module)
         self.check_related_attributes(sm)
 
         # import module two dirs down in a package
+        ##- 3: use import_module_for_migration to import test_package.pkg_dir.code, which should
+        ##-    import module_not_in_test_package
         code = os.path.join(test_package_dir, 'pkg_dir', 'code.py')
         sm = SchemaModule(code)
         module = sm.import_module_for_migration()
         self.check_imported_module(sm, 'test_package.pkg_dir.code', module)
         self.check_related_attributes(sm)
 
-    @unittest.skipIf(NOT_NEEDED, "not needed")
+        # test deletion of imported schemas from sys.modules after importlib.import_module()
+        # ensure that the schema and its submodels get deleted from sys.modules
+        modules_that_sys_dot_modules_shouldnt_have = [
+            'test_package',
+            'test_package.pkg_dir',
+            'test_package.pkg_dir.code',
+            'test_package.test_module',
+        ]
+        for module in modules_that_sys_dot_modules_shouldnt_have:
+            self.assertTrue(module not in sys.modules)
+
+        ##- 4: confirm that import_module_for_migration left module_not_in_test_package in sys.modules
+        self.assertTrue('module_not_in_test_package' in sys.modules)
+        ##- 5: cleanup: remove module_not_in_test_package from sys.modules, & remove T from sys.path
+        del sys.modules['module_not_in_test_package']
+        del sys.path[sys.path.index(os.path.dirname(tmp_path))]
+
     def test_munging(self):
 
         class A(obj_model.Model):
@@ -537,14 +537,10 @@ class TestSchemaModule(unittest.TestCase):
                             id(related_class), id(model_defs[related_class.__name__])))
 
     def test_import_module_for_migration(self):
-
-        print('\n-------   test_import_module_for_migration   -----')
         # import self-contained module
         sm = SchemaModule(self.existing_defs_path)
-        if MAKE_test_automated_migrate_SUCCEED:
-            module = sm.import_module_for_migration(mod_patterns=['migrat', 'wc_lang', 'small'])
+        module = sm.import_module_for_migration()
 
-        """
         self.assertIn(sm.module_path, SchemaModule.MODULES)
         self.assertEqual(module, SchemaModule.MODULES[sm.module_path])
         self.check_imported_module(sm, 'small_existing', module)
@@ -563,7 +559,7 @@ class TestSchemaModule(unittest.TestCase):
         # test import from a package
         self.multiple_import_tests_of_test_package(self.test_package)
 
-        # put package in new dir that's not on sys.path
+        # put the package in new dir that's not on sys.path
         test_package_copy = temp_pathname(self, 'test_package')
         shutil.copytree(self.test_package, test_package_copy)
         self.multiple_import_tests_of_test_package(test_package_copy)
@@ -581,9 +577,11 @@ class TestSchemaModule(unittest.TestCase):
         sm = SchemaModule(self.wc_lang_schema_existing)
         self.check_related_attributes(sm)
 
+        """
         # import modified wc_lang
         sm = SchemaModule(self.wc_lang_schema_modified)
         self.check_related_attributes(sm)
+        # todo: does wc_lang.core have _GIT_METADATA?
 
         # test a copy of wc_lang
         wc_lang_copy = temp_pathname(self, 'wc_lang')
@@ -607,26 +605,24 @@ class TestSchemaModule(unittest.TestCase):
         with self.assertRaisesRegex(MigratorError,
             "module in '.+' missing required attribute 'no_such_attribute'"):
             SchemaModule(module_missing_attr).import_module_for_migration(required_attrs=['no_such_attribute'])
-
+        """
 
         # import a module that's new and has an annotation
         module_with_annotation = os.path.join(self.tmp_dir, 'module_with_annotation.py')
         f = open(module_with_annotation, "w")
-        f.write('# no code needed')
+        f.write('# no code needed\n')
         f.close()
         sm = SchemaModule(module_with_annotation, annotation='test_annotation')
+        # this module won't validate
         sm.import_module_for_migration(validate=False)
         self.assertEqual('test_annotation', SchemaModule.MODULE_ANNOTATIONS[module_with_annotation])
-        """
 
-    @unittest.skipIf(NOT_NEEDED, "not needed")
     def test_check_imported_models(self):
         for good_schema_path in [self.existing_defs_path, self.migrated_defs_path, self.wc_lang_schema_existing,
             self.wc_lang_schema_modified]:
             sm = SchemaModule(good_schema_path)
             self.assertEqual(sm._check_imported_models(), [])
 
-    @unittest.skipIf(NOT_NEEDED, "not needed")
     def test_get_model_defs(self):
         sm = SchemaModule(self.existing_defs_path)
         module = sm.import_module_for_migration()
@@ -643,14 +639,12 @@ class TestSchemaModule(unittest.TestCase):
         with self.assertRaisesRegex(MigratorError, r"No subclasses of obj_model\.Model found in '\S+'"):
             sm.import_module_for_migration()
 
-    @unittest.skipIf(NOT_NEEDED, "not needed")
     def test_str(self):
         sm = SchemaModule(self.existing_defs_path)
         for attr in ['module_path', 'abs_module_path', 'module_name']:
             self.assertIn(attr, str(sm))
         self.assertIn(self.existing_defs_path, str(sm))
 
-    @unittest.skipIf(NOT_NEEDED, "not needed")
     def test_run(self):
         sm = SchemaModule(self.existing_defs_path)
         models = sm.run()
@@ -661,10 +655,6 @@ class TestSchemaModule(unittest.TestCase):
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
-        '''
-        if self._testMethodName != 'test_generate_wc_lang_migrator':
-            self.skipTest("speed up testing")
-        '''
         super().setUp()
 
     def tearDown(self):
@@ -1616,7 +1606,6 @@ class AutoMigrationFixtures(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        print('migrate: AutoMigrationFixtures.setUpClass')
         cls.tmp_dir = mkdtemp()
         cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
         # get these repos once for the TestCase to speed up tests
@@ -1643,7 +1632,6 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.git_repo.del_temp_dirs()
 
     def setUp(self):
-        print('migrate: AutoMigrationFixtures.setUp')
         # create empty repo containing a commit and a migrations directory
         repo_dir = self.make_tmp_dir()
         repo = git.Repo.init(repo_dir)
@@ -2153,16 +2141,12 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         super().tearDownClass()
 
     def setUp(self):
-        """
-        if self._testMethodName in ['test_make_template_config_file', 'test_load_config_file', 'test_clean_up',
-            'test_validate', 'test_get_name', 'test_get_data_file_git_commit_hash', 'test_test_schemas', 'test_str']:
-            self.skipTest("speed up testing")
-        """
-        print('migrate: TestAutomatedMigration.setUp')
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
-                data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
+                data_config_file_basename='automated_migration_config-migration_test_repo.yaml',
+                debug__import_module_for_migration=False))
         self.clean_automated_migration.validate()
+        # todo: remove self.clean_automated_migration_2
         self.clean_automated_migration_2 = AutomatedMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
                 data_config_file_basename='automated_migration_config-migration_test_repo_2.yaml'))
@@ -2175,24 +2159,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
                 data_config_file_basename='automated_migration_config-test_repo.yaml'))
 
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
-
-    """
-    def tearDown(self):
-        # print('self._outcome', self._outcome)
-        # print('dir(self._outcome)', dir(self._outcome))
-        if self._testMethodName == 'test_automated_migrate':
-            '''
-            for a in 'success errors'.split():
-                print('Automated migr outcome:', a, getattr(self._outcome, a))
-            '''
-            failed = bool(getattr(self._outcome, 'errors'))
-            result = 'success'
-            if failed:
-                result = 'failure'
-            print("\t{}\t{}".format(result, getattr(self._outcome, 'errors')))
-            with open(log_file, 'a') as f:
-                print("\t{}\t{}".format(result, getattr(self._outcome, 'errors')), file=f)
-    """
 
     @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_make_template_config_file(self):
@@ -2383,30 +2349,20 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             _, hash_prefix = commit_desc
             self.assertEqual(GitRepo.hash_prefix(sc.commit_hash), hash_prefix)
 
+    @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
     def test_prepare(self):
         self.assertEqual(None, self.clean_automated_migration.prepare())
         self.assertEqual(
             [ms.existing_files[0] for ms in self.clean_automated_migration.migration_specs],
             self.clean_automated_migration.data_config['files_to_migrate'])
 
-    @unittest.skip("broken on tests/test_migrate.py::TestAutomatedMigration")
+    # @unittest.skip("broken on tests/test_migrate.py::TestAutomatedMigration")
+    def test_verify_schemas(self):
+        errors = self.clean_automated_migration.verify_schemas()
+        self.assertEqual(errors, [])
+
     @unittest.skipIf(SKIP_OTHER_AUTO_MIGRATION, "speed up auto migration")
-    def test_test_schemas(self):
-        with capturer.CaptureOutput(relay=False) as capture_output:
-            self.clean_automated_migration.test_schemas(debug=True, attr='Reference')
-            self.assertIn('importing:', capture_output.get_text())
-            self.assertIn('== importing', capture_output.get_text())
-            self.assertIn('modules defining', capture_output.get_text())
-
-        # todo: fix the error this finds when testing tests/test_migrate.py::TestAutomatedMigration
-        errors = self.clean_automated_migration.test_schemas(debug=False)
-        print('\ntest_test_schemas errors:')
-        for e in errors:
-            print(e)
-        # self.assertEqual(self.clean_automated_migration.test_schemas(), [])
-
     def test_automated_migrate_2(self):
-        print('\n-------   test_automated_migrate_2  -----')
         migrated_files, new_temp_dir = self.clean_automated_migration_2.automated_migrate()
         shutil.rmtree(new_temp_dir)
 
@@ -2415,7 +2371,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
     def test_automated_migrate(self):
         # test round-trip
         # since migrates in-place, save existing file for comparison
-        print('\n-------   test_automated_migrate   -----')
         existing_file = self.clean_automated_migration.data_config['files_to_migrate'][0]
         basename = os.path.basename(existing_file)
         existing_file_copy = os.path.join(mkdtemp(dir=self.tmp_dir), basename)
@@ -2423,7 +2378,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         migrated_files, new_temp_dir = self.clean_automated_migration.automated_migrate()
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
         shutil.rmtree(new_temp_dir)
-        print('-------   FINISHED test_automated_migrate   -----')
 
         """
         # provide dir for automated_migrate()
@@ -2523,7 +2477,7 @@ class TestVirtualEnvUtil(unittest.TestCase):
         pass
 
     def run_and_check_install(self, pip_spec, package, debug=False):
-        # todo: get & reuse parser for pip specs
+        # run and check pip's installation of a package
         if debug:
             print('installing', pip_spec, end='')
         start = time.time()

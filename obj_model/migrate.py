@@ -5,7 +5,6 @@
 :Copyright: 2018, Karr Lab
 :License: MIT
 """
-import traceback
 import os
 import re
 import sys
@@ -293,17 +292,19 @@ class SchemaModule(object):
             if SchemaModule._model_name_is_munged(model):
                 model.__name__ = SchemaModule._unmunge_model_name(model)
 
-    # todo: delete or document other options
-    def import_module_for_migration(self, validate=True, required_attrs=None, debug=True,
-        mod_patterns=None, print_code=True, global_check=False):
-        """ Import a schema from a Python module
+    def import_module_for_migration(self, validate=True, required_attrs=None, debug=False,
+        mod_patterns=None, print_code=False):
+        """ Import a schema from a Python module in a file
 
         Args:
-            validate (:obj:`bool`, optional): whether to validate the module; default is True
+            validate (:obj:`bool`, optional): whether to validate the module; default is `True`
             required_attrs (:obj:`list` of :obj:`str`, optional): list of attributes that must be
                 present in the imported module
+            debug (:obj:`bool`, optional): if true, print debugging output; default is `False`
             mod_patterns (:obj:`list` of :obj:`str`, optional): RE patterns used to search for
                 modules in `sys.modules` output by debugging
+            print_code (:obj:`bool`, optional): if true, while debugging print code being imported;
+                default is `False`
 
         Returns:
             :obj:`Module`: the `Module` loaded from `self.module_path`
@@ -314,13 +315,19 @@ class SchemaModule(object):
                     not in the module
                 or if the module is missing a required attribute
         """
+        # todo: remove much of this debugging when import_module_for_migration works reliably
         if debug:
             print('import_module_for_migration', self.module_name, self.annotation)
-            traceback.print_stack(limit=10)
             if SchemaModule.MODULES:
                 print('SchemaModule.MODULES:')
                 for path, module in SchemaModule.MODULES.items():
-                    print('\t', module)
+                    # todo: put this code for printing a module in a function & reuse below
+                    name = getattr(module, '__name__')
+                    package = getattr(module, '__package__')
+                    if package:
+                        name = package + '.' + name
+                    file = module.__file__ if hasattr(module, '__file__') else ''
+                    print('\t', name, file)
                     if path in SchemaModule.MODULE_ANNOTATIONS:
                         print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path])
             else:
@@ -340,6 +347,8 @@ class SchemaModule(object):
         saved = {}
         for sys_attr in sys_attrs:
             saved[sys_attr] = getattr(sys, sys_attr).copy()
+        # temporarily put the directory holding the module being imported on sys.path
+        sys.path.insert(0, self.directory)
 
         def print_file(fn, max=100):
             print('\timporting: {}:'.format(fn))
@@ -376,63 +385,85 @@ class SchemaModule(object):
                                 print('\t', name)
                             continue
 
+            # todo: evaluate whether this suspension of check that related attribute names don't clash is still needed
+            obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
+
+            print('sys.path:')
+            for p in sys.path:
+                print('\t', p)
+            print('import_module', self.module_name, self.annotation)
+
         try:
-
-            # todo: move outside the try:
-            # suspend global check that related attribute names don't clash
-            if global_check:
-                obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
-
-            sys.path.insert(0, self.directory)
-            if debug:
-                print('sys.path:')
-                for p in sys.path:
-                    print('\t', p)
-                print('import_module', self.module_name, self.annotation)
-            # todo: END move outside the try
-            module = importlib.import_module(self.module_name)
+            new_module = importlib.import_module(self.module_name)
 
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
             raise MigratorError("'{}' cannot be imported and exec'ed: {}: {}".format(
                 self.get_path(), e.__class__.__name__, e))
         finally:
-            # todo: restore state in same order as saving
+
             # reset global variable
-            if global_check:
-                obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
+            obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
 
             # unmunge names of all models in modules imported for migration
             SchemaModule._unmunge_all_munged_model_names()
 
-            # restore sys.path
+            # to avoid side effects restore sys.path
             sys.path = saved['path']
 
-            # to avoid side effects do not allow changes to sys.modules
-            sys.modules = saved['modules']
+            # sort the set difference to make this code deterministic
+            new_modules = sorted(set(sys.modules) - set(saved['modules']))
+            if debug:
+                if new_modules:
+                    print('new modules:')
+                    for k in new_modules:
+                        module = sys.modules[k]
+                        name = getattr(module, '__name__')
+                        package = getattr(module, '__package__')
+                        if package:
+                            name = package + '.' + name
+                        file = module.__file__ if hasattr(module, '__file__') else ''
+                        print('\t', name, file)
+
+                changed_modules = [k for k in set(sys.modules) & set(saved['modules'])
+                    if sys.modules[k] != saved['modules'][k]]
+                if changed_modules:
+                    print('changed modules:')
+                    for k in changed_modules:
+                        print(k)
+
+            # to enable the loading of many versions of schema modules, remove them from sys.modules
+            # to improve performance, do not remove other modules
+            def first_component_module_name(module_name):
+                return module_name.split('.')[0]
+            first_component_imported_module = first_component_module_name(self.module_name)
+            for k in new_modules:
+                if first_component_module_name(k) == first_component_imported_module:
+                    del sys.modules[k]
+            # todo: decide what to do about CHANGED modules; restore them, or leave them alone?
 
         if required_attrs:
             # module must have the required attributes
             errors = []
             for required_attr in required_attrs:
-                if not hasattr(module, required_attr):
+                if not hasattr(new_module, required_attr):
                     errors.append("module in '{}' missing required attribute '{}'".format(
                         self.get_path(), required_attr))
             if errors:
                 raise MigratorError('\n'.join(errors))
 
         if validate:
-            errors = self._check_imported_models(module=module)
+            errors = self._check_imported_models(module=new_module)
             if errors:
                 raise MigratorError('\n'.join(errors))
 
         # save an imported schema in SchemaModule.MODULES, indexed by its path
         # results will be unpredictable if different code is imported from the same path
-        SchemaModule.MODULES[self.get_path()] = module
+        SchemaModule.MODULES[self.get_path()] = new_module
         # save the SchemaModule's annotation, if available
         if self.annotation:
             SchemaModule.MODULE_ANNOTATIONS[self.get_path()] = self.annotation
 
-        return module
+        return new_module
 
     def _get_model_defs(self, module):
         """ Obtain the `obj_model.Model`s in a module
@@ -1774,8 +1805,6 @@ class MigrationController(object):
                 migrator_creator = migration_spec.get_migrator()
                 # todo: pass commit hash of schema files to migrator_creator & then to SchemaModule annotation
                 # in ms.git_hashes[i], ms.git_hashes[i+1]
-                print("migrating from {}:{} to {}:{}".format(ms.schema_files[i], ms.git_hashes[i],
-                    ms.schema_files[i+1], ms.git_hashes[i+1]))
                 migrator = migrator_creator(existing_defs_file=ms.schema_files[i],
                     migrated_defs_file=ms.schema_files[i+1], renamed_models=ms.seq_of_renamed_models[i],
                     renamed_attributes=ms.seq_of_renamed_attributes[i])
@@ -2609,7 +2638,7 @@ class GitRepo(object):
 
 # todo: test migration that checks whether all schema changes and automated migration configuration files can be read,
 # all all schemas can be imported, all data files can be read
-# todo: add logging
+# todo: add logging & remove debug__import_module_for_migration
 class AutomatedMigration(object):
     """ Automate the migration of the data files in a repo
 
@@ -2652,6 +2681,7 @@ class AutomatedMigration(object):
         loaded_schema_changes (:obj:`list`) all validated schema change files
         migration_specs (:obj:`MigrationSpec`): the migration's specification
         git_repos (:obj:`list` of :obj:`GitRepo`) all `GitRepo`s create by this `AutomatedMigration`
+        debug__import_module_for_migration (:obj:`bool`): whether to debug import_module_for_migration
     """
 
     # name of the git metadata configuration attribute in an obj_model schema
@@ -2684,7 +2714,8 @@ class AutomatedMigration(object):
 
     # attributes in a `AutomatedMigration`
     _ATTRIBUTES = ['data_repo_location', 'data_git_repo', 'schema_git_repo', 'data_config_file_basename',
-        'data_config', 'loaded_schema_changes', 'migration_specs', 'git_repos', 'metadata_model']
+        'data_config', 'loaded_schema_changes', 'migration_specs', 'git_repos', 'metadata_model',
+        'debug__import_module_for_migration']
     _REQUIRED_ATTRIBUTES = ['data_repo_location', 'data_config_file_basename']
 
     def __init__(self, **kwargs):
@@ -2888,8 +2919,7 @@ class AutomatedMigration(object):
             dir=self.schema_git_repo.migrations_dir())
         schema_module = SchemaModule(schema_file, annotation=self.schema_git_repo.original_location)
         module = schema_module.import_module_for_migration(
-            # todo: remove mod_patterns
-            required_attrs=[AutomatedMigration._GIT_METADATA], mod_patterns=['migrat', 'wc_lang', 'small'])
+            required_attrs=[AutomatedMigration._GIT_METADATA], debug=self.debug__import_module_for_migration)
 
         # use the schema to find the obj_model.Model that stores git metadata
         git_metadata = getattr(module, AutomatedMigration._GIT_METADATA)
@@ -2930,7 +2960,6 @@ class AutomatedMigration(object):
                 "containing the git metadata".format(data_file, metadata_model.type.__name__))
         metadata_model_obj = models[metadata_model.type][0]
         commit_hash = getattr(metadata_model_obj, metadata_model.version_attr)
-        print('get_data_file_git_commit_hash', data_file, commit_hash)
         return commit_hash
 
     def generate_migration_spec(self, data_file, schema_changes):
@@ -3021,7 +3050,6 @@ class AutomatedMigration(object):
         """
         self.validate()
         self.migration_specs = []
-        print("self.data_config['files_to_migrate']", self.data_config['files_to_migrate'])
         for file_to_migrate in self.data_config['files_to_migrate']:
             schema_changes = self.schema_changes_for_data_file(file_to_migrate)
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
@@ -3044,12 +3072,10 @@ class AutomatedMigration(object):
         Returns:
             :obj:`tuple` of :obj:`list`, :obj:`str`: the migrated files, and the value of `tmp_dir`
         """
-        print('migrate: automated_migrate')
         self.prepare()
         # migrate
         all_migrated_files = []
         for migration_spec in self.migration_specs:
-            print('migrate: migration_spec:\n{}'.format(migration_spec))
             migrated_filenames = MigrationController.migrate_from_spec(migration_spec)
             single_migrated_file = migrated_filenames[0]
             all_migrated_files.append(single_migrated_file)
@@ -3080,16 +3106,23 @@ class AutomatedMigration(object):
             raise MigratorError("schema '{}' does not have a {} attribute".format(schema_file,
                 AutomatedMigration._GIT_METADATA))
 
-    def test_schemas(self, debug=False, attr=None):
-        # test that each schema can be independently imported
+    def verify_schemas(self):
+        """ Verify that each schema can be independently imported
+
+        It can be difficult to import a schema via `importlib.import_module()` in
+        `import_module_for_migration()`. This method tests that proactively.
+
+        Returns:
+            :obj:`list` of :obj:`str`: all errors obtained
+        """
         self.prepare()
         errors = []
-        print_code = debug
         for migration_spec in self.migration_specs:
             for schema_file in migration_spec.schema_files:
                 try:
-                    SchemaModule(schema_file).import_module_for_migration(debug=debug, attr=attr,
-                        print_code=print_code)
+                    SchemaModule(schema_file).import_module_for_migration(
+                        required_attrs=[AutomatedMigration._GIT_METADATA],
+                        debug=self.debug__import_module_for_migration)
                 except MigratorError as e:
                     errors.append("cannot import: '{}'\n\t{}".format(schema_file, e))
         return errors
