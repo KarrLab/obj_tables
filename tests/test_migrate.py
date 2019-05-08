@@ -454,6 +454,7 @@ class TestSchemaModule(unittest.TestCase):
         SchemaModule(module_not_in_test_package).import_module_for_migration(debug=True,
             mod_patterns=['module_not_.*'], validate=False)
         print('broken test: #1')
+        print("'module_not_in_test_package' in sys.modules", 'module_not_in_test_package' in sys.modules)
         # self.assertFalse('module_not_in_test_package' in sys.modules)
         ##- 1: copy module_not_in_test_package.py to a new tmp dir T
         tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
@@ -489,10 +490,12 @@ class TestSchemaModule(unittest.TestCase):
         for module in modules_that_sys_dot_modules_shouldnt_have:
             pass
             print('broken test: #2')
+            print('module not in sys.modules', module not in sys.modules)
             # self.assertTrue(module not in sys.modules)
 
         ##- 4: confirm that import_module_for_migration left module_not_in_test_package in sys.modules
         print('broken test: #3')
+        print("'module_not_in_test_package' in sys.modules", 'module_not_in_test_package' in sys.modules)
         # self.assertTrue('module_not_in_test_package' in sys.modules)
         ##- 5: cleanup: remove module_not_in_test_package from sys.modules, & remove T from sys.path
         print('broken test: #4')
