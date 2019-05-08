@@ -383,7 +383,7 @@ class SchemaModule(object):
                                 print('\t', name, module.__file__)
                             else:
                                 print('\t', name)
-                            continue
+                            break
 
             # todo: evaluate whether this suspension of check that related attribute names don't clash is still needed
             obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
