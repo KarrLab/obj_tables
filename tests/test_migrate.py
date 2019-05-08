@@ -471,7 +471,7 @@ class TestSchemaModule(unittest.TestCase):
         sm = SchemaModule(code)
         print('import_module_for_migration before broken test: #2')
         print('import_module_for_migration before broken test: #3')
-        module = sm.import_module_for_migration(debug=True, mod_patterns='test_package')
+        module = sm.import_module_for_migration(debug=True, mod_patterns=['test_package'])
         self.check_imported_module(sm, 'test_package.pkg_dir.code', module)
         self.check_related_attributes(sm)
 
@@ -612,6 +612,14 @@ class TestSchemaModule(unittest.TestCase):
         with self.assertRaisesRegex(MigratorError,
             "module in '.+' missing required attribute 'no_such_attribute'"):
             SchemaModule(module_missing_attr).import_module_for_migration(required_attrs=['no_such_attribute'])
+
+        # test exception for bad mod_patterns type
+        copy_of_small_existing = copy_file_to_tmp(self, 'small_existing.py')
+        sm = SchemaModule(copy_of_small_existing)
+        with self.assertRaisesRegex(MigratorError, "mod_patterns must be an itertor that's not a string"):
+            sm.import_module_for_migration(debug=True, mod_patterns=3)
+        with self.assertRaisesRegex(MigratorError, "mod_patterns must be an itertor that's not a string"):
+            sm.import_module_for_migration(debug=True, mod_patterns='hi mom')
 
         '''
         # suspend this unimportant test which repreatedly fails for reasons that aren't clear
@@ -2407,10 +2415,16 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
 
-        # todo: test multiple files in the automated_migration_config
-
         # test separate data and schema repos
         # data file in test_repo and schema in migration_test_repo
+        '''
+        automated_migration_separate_data_n_schema_repos = AutomatedMigration(
+            **dict(data_repo_location=migration_test_repo.repo_dir,
+                data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
+        '''
+
+        # todo: test multiple files in the automated_migration_config
+
 
     def test_str(self):
         str_val = str(self.clean_automated_migration)
