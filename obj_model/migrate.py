@@ -3223,7 +3223,7 @@ class VirtualEnvUtil(object):   # pragma: no cover
             name (:obj:`str`): name for the `VirtualEnvUtil`
             dir (:obj:`str`, optional): a directory to hold the `VirtualEnvUtil`
         """
-        if re.search('\s', name):
+        if re.search(r'\s', name):
             raise ValueError("name '{}' may not contain whitespace".format(name))
         self.name = name
         if dir is None:
