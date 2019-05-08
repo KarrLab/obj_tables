@@ -2177,16 +2177,12 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         super().tearDownClass()
 
     def setUp(self):
+        self.tmp_model_dir = self.make_tmp_dir()
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml',
                 debug__import_module_for_migration=False))
         self.clean_automated_migration.validate()
-        # todo: remove self.clean_automated_migration_2
-        self.clean_automated_migration_2 = AutomatedMigration(
-            **dict(data_repo_location=self.migration_test_repo_url,
-                data_config_file_basename='automated_migration_config-migration_test_repo_2.yaml'))
-        self.clean_automated_migration_2.validate()
         self.migration_test_repo_fixtures = self.clean_automated_migration.data_git_repo.fixtures_dir()
         self.migration_test_repo_data_file_1 = os.path.join(self.migration_test_repo_fixtures, 'data_file_1.xlsx')
         self.migration_test_repo_data_file_1_hash_prefix = '182289c'
@@ -2385,16 +2381,18 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         errors = self.clean_automated_migration.verify_schemas()
         self.assertEqual(errors, [])
 
-    def test_automated_migrate(self):
-        # test round-trip
+    def round_trip_automated_migrate(self, automated_migration):
+        # test a round-trip migration
         # since migrates in-place, save existing file for comparison
-        existing_file = self.clean_automated_migration.data_config['files_to_migrate'][0]
-        basename = os.path.basename(existing_file)
-        existing_file_copy = os.path.join(mkdtemp(dir=self.tmp_dir), basename)
-        shutil.copy(existing_file, existing_file_copy)
-        migrated_files, new_temp_dir = self.clean_automated_migration.automated_migrate()
+        existing_file = automated_migration.data_config['files_to_migrate'][0]
+        existing_file_copy = copy_file_to_tmp(self, existing_file)
+        migrated_files, new_temp_dir = automated_migration.automated_migrate()
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
         shutil.rmtree(new_temp_dir)
+
+    def test_automated_migrate(self):
+        # test round-trip
+        self.round_trip_automated_migrate(self.clean_automated_migration)
 
         # provide dir for automated_migrate()
         with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -2415,16 +2413,21 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
 
-        # test separate data and schema repos
+        # test distinct data and schema repos
         # data file in test_repo and schema in migration_test_repo
-        '''
+        test_repo_copy = self.git_repo.copy()
         automated_migration_separate_data_n_schema_repos = AutomatedMigration(
-            **dict(data_repo_location=migration_test_repo.repo_dir,
+            **dict(data_repo_location=test_repo_copy.repo_dir,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
-        '''
+        automated_migration_separate_data_n_schema_repos.prepare()
+        existing_file = automated_migration_separate_data_n_schema_repos.data_config['files_to_migrate'][0]
+        basename = os.path.basename(existing_file)
+        existing_file_copy = os.path.join(mkdtemp(dir=self.tmp_dir), basename)
+        shutil.copy(existing_file, existing_file_copy)
+        migrated_files, _ = automated_migration_separate_data_n_schema_repos.automated_migrate()
+        assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
 
         # todo: test multiple files in the automated_migration_config
-
 
     def test_str(self):
         str_val = str(self.clean_automated_migration)
