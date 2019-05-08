@@ -623,18 +623,22 @@ class TestSchemaModule(unittest.TestCase):
         '''
 
         # test debug of import_module_for_migration
-        sm = SchemaModule(copy_file_to_tmp(self, self.existing_defs_path))
-        with capturer.CaptureOutput(relay=True) as capture_output:
+        wc_lang_copy_2 = temp_pathname(self, 'wc_lang')
+        shutil.copytree(self.wc_lang_fixtures_path, wc_lang_copy_2)
+        path = os.path.join(wc_lang_copy_2, 'core.py')
+        sm = SchemaModule(path)
+        with capturer.CaptureOutput(relay=False) as capture_output:
             sm.import_module_for_migration(debug=True, print_code=True, mod_patterns=['obj_model'])
             expected_texts = [
                 'import_module_for_migration',
                 'SchemaModule.MODULES',
-                'small_existing',
-                'importing small_existing',
+                'importing wc_lang.core',
+                'Exceeded max',
                 'sys.modules entries matching RE patterns',
                 'obj_model',
                 'sys.path:',
-                'new modules:']
+                'new modules:',
+                'wc_lang.wc_lang']
             for expected_text in expected_texts:
                 self.assertIn(expected_text, capture_output.get_text())
 

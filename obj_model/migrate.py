@@ -357,7 +357,7 @@ class SchemaModule(object):
                 print('\t\t', line, end='')
                 n += 1
                 if max<=n:
-                    print('\tExceeded max () lines'.format(max))
+                    print('\tExceeded max ({}) lines'.format(max))
                     break
             print()
 
