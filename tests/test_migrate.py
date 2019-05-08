@@ -549,6 +549,7 @@ class TestSchemaModule(unittest.TestCase):
                             id(related_class), id(model_defs[related_class.__name__])))
 
     def test_import_module_for_migration(self):
+        print()
         # import self-contained module
         sm = SchemaModule(self.existing_defs_path)
         module = sm.import_module_for_migration()
@@ -667,7 +668,6 @@ class TestSchemaModule(unittest.TestCase):
 
     @unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
     def test_check_imported_models(self):
-        print()
         for good_schema_path in [self.existing_defs_path, self.migrated_defs_path, self.wc_lang_schema_existing,
             self.wc_lang_schema_modified]:
             sm = SchemaModule(good_schema_path)
