@@ -445,7 +445,9 @@ class TestSchemaModule(unittest.TestCase):
 
         ##- in parallel, ensure that other modules remain in sys.modules, using module_not_in_test_package
         ##- which is imported by test_package/pkg_dir/code.py
-        ##- 1: ensure that module_not_in_test_package.py is not in sys.modules
+        ##- 0: use import_module_for_migration to ensure that module_not_in_test_package is not in sys.modules
+        module_not_in_test_package = os.path.join(self.fixtures_path, 'module_not_in_test_package.py')
+        SchemaModule(module_not_in_test_package).import_module_for_migration(validate=False)
         self.assertFalse('module_not_in_test_package' in sys.modules)
         ##- 1: copy module_not_in_test_package.py to a new tmp dir T
         tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
@@ -2448,10 +2450,9 @@ class TestRunMigration(MigrationFixtures):
                     remove_silently(migrated_file)
 
 
-@unittest.skip("not ready to run")
+@unittest.skip("INCOMPLETE: not finished")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestVirtualEnvUtil(unittest.TestCase):
-    # INCOMPLETE: not finished
 
     def setUp(self):
         self.tmp_dir = mkdtemp()

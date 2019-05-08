@@ -3201,18 +3201,7 @@ class RunMigration(object):
         return results
 
 
-'''
-todo: move to __main__.py
-if __name__ == '__main__':  # pragma: no cover     # reachable only from command line
-    try:
-        args = RunMigration.parse_args(sys.argv[1:])
-        RunMigration.main(args)
-    except KeyboardInterrupt:
-        pass
-'''
-
-
-class VirtualEnvUtil(object):
+class VirtualEnvUtil(object):   # pragma: no cover
     # INCOMPLETE: started and not finished; not tested
     # NEEDS:
     # from virtualenvapi.manage import VirtualEnvironment
