@@ -6,9 +6,6 @@
 :License: MIT
 """
 
-SKIP_FOR_SPEED = False
-SKIP_SM_TESTS = False
-
 # todo: speedup migration and unittests; make smaller test data files
 # todo: ensure that all tmp files are being deleted
 # todo: cleanup use of temp dirs & files
@@ -245,6 +242,7 @@ def assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, 
     else:
         test_case.assertNotEqual(existing_workbook, migrated_workbook)
 
+
 class MigrationFixtures(unittest.TestCase):
     """ Reused fixture set up and tear down
     """
@@ -330,6 +328,7 @@ class MigrationFixtures(unittest.TestCase):
         for file in self.files_to_delete:
             remove_silently(file)
 
+
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -348,7 +347,6 @@ class TestSchemaModule(unittest.TestCase):
         for file in self.files_to_delete:
             remove_silently(file)
 
-    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_parse_module_path(self):
         parse_module_path = SchemaModule.parse_module_path
 
@@ -451,8 +449,7 @@ class TestSchemaModule(unittest.TestCase):
         ##- 0: if first_time, use import_module_for_migration to ensure that module_not_in_test_package is not in sys.modules
         module_not_in_test_package = os.path.join(self.fixtures_path, 'module_not_in_test_package.py')
         if first_time:
-            SchemaModule(module_not_in_test_package).import_module_for_migration(debug=True,
-                mod_patterns=['module_not_.*'], validate=False)
+            SchemaModule(module_not_in_test_package).import_module_for_migration(validate=False)
             self.assertFalse('module_not_in_test_package' in sys.modules)
         ##- 1: copy module_not_in_test_package.py to a new tmp dir T
         tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
@@ -471,7 +468,7 @@ class TestSchemaModule(unittest.TestCase):
         ##-    import module_not_in_test_package
         code = os.path.join(test_package_dir, 'pkg_dir', 'code.py')
         sm = SchemaModule(code)
-        module = sm.import_module_for_migration(debug=True, mod_patterns=['test_package'])
+        module = sm.import_module_for_migration()
         self.check_imported_module(sm, 'test_package.pkg_dir.code', module)
         self.check_related_attributes(sm)
 
@@ -492,7 +489,6 @@ class TestSchemaModule(unittest.TestCase):
         del sys.modules['module_not_in_test_package']
         del sys.path[sys.path.index(os.path.dirname(tmp_path))]
 
-    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_munging(self):
 
         class A(obj_model.Model):
@@ -541,7 +537,6 @@ class TestSchemaModule(unittest.TestCase):
                             id(related_class), id(model_defs[related_class.__name__])))
 
     def test_import_module_for_migration(self):
-        print()
         # import self-contained module
         sm = SchemaModule(self.existing_defs_path)
         module = sm.import_module_for_migration()
@@ -613,19 +608,20 @@ class TestSchemaModule(unittest.TestCase):
         # test exception for bad mod_patterns type
         copy_of_small_existing = copy_file_to_tmp(self, 'small_existing.py')
         sm = SchemaModule(copy_of_small_existing)
-        with self.assertRaisesRegex(MigratorError, "mod_patterns must be an itertor that's not a string"):
-            sm.import_module_for_migration(debug=True, mod_patterns=3)
-        with self.assertRaisesRegex(MigratorError, "mod_patterns must be an itertor that's not a string"):
-            sm.import_module_for_migration(debug=True, mod_patterns='hi mom')
+        with capturer.CaptureOutput(relay=False) as capture_output:
+            with self.assertRaisesRegex(MigratorError, "mod_patterns must be an iterator that's not a string"):
+                sm.import_module_for_migration(debug=True, mod_patterns=3)
+            with self.assertRaisesRegex(MigratorError, "mod_patterns must be an iterator that's not a string"):
+                sm.import_module_for_migration(debug=True, mod_patterns='hi mom')
 
-        '''
-        # suspend this unimportant test which repreatedly fails for reasons that aren't clear
+        # suspend this unimportant test which intermittently fails for reasons that aren't clear
         # the error is: obj_model.migrate.MigratorError: '<filename>' cannot be imported and exec'ed: ...
         # ModuleNotFoundError: No module named 'module_with_annotation'
         # import a module that's new and has an annotation
         module_with_annotation = os.path.join(self.tmp_dir, 'module_with_annotation.py')
         f = open(module_with_annotation, "w")
         f.write('# no code needed')
+        """
         # flush & fsynch to ensure that all internal buffers associated with f are written to disk
         # hopefully will stop intermittent, undiagnosed failures in import_module_for_migration() below
         f.flush()
@@ -633,10 +629,10 @@ class TestSchemaModule(unittest.TestCase):
         f.close()
         # add 2 sec sleep to help with intermittent 'No module named 'module_with_annotation' error
         time.sleep(2)
+        """
         sm = SchemaModule(module_with_annotation, annotation='test_annotation')
         sm.import_module_for_migration(validate=False)
         self.assertEqual('test_annotation', SchemaModule.MODULE_ANNOTATIONS[module_with_annotation])
-        '''
 
         # test debug of import_module_for_migration
         wc_lang_copy_2 = temp_pathname(self, 'wc_lang')
@@ -658,14 +654,12 @@ class TestSchemaModule(unittest.TestCase):
             for expected_text in expected_texts:
                 self.assertIn(expected_text, capture_output.get_text())
 
-    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_check_imported_models(self):
         for good_schema_path in [self.existing_defs_path, self.migrated_defs_path, self.wc_lang_schema_existing,
             self.wc_lang_schema_modified]:
             sm = SchemaModule(good_schema_path)
             self.assertEqual(sm._check_imported_models(), [])
 
-    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_get_model_defs(self):
         sm = SchemaModule(self.existing_defs_path)
         module = sm.import_module_for_migration()
@@ -682,20 +676,18 @@ class TestSchemaModule(unittest.TestCase):
         with self.assertRaisesRegex(MigratorError, r"No subclasses of obj_model\.Model found in '\S+'"):
             sm.import_module_for_migration()
 
-    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_str(self):
         sm = SchemaModule(self.existing_defs_path)
         for attr in ['module_path', 'abs_module_path', 'module_name']:
             self.assertIn(attr, str(sm))
         self.assertIn(self.existing_defs_path, str(sm))
 
-    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_run(self):
         sm = SchemaModule(self.existing_defs_path)
         models = sm.run()
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
-@unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1332,7 +1324,7 @@ class TestMigrator(MigrationFixtures):
         for attr in Migrator.SCALAR_ATTRS:
             self.assertNotRegex(str_value, '^' + attr + '$')
 
-@unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1516,7 +1508,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(name, migration_spec_str)
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
-@unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1636,6 +1628,7 @@ class TestMigrationController(MigrationFixtures):
         # validate round trip
         assert_equal_workbooks(self, fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
+
 class AutoMigrationFixtures(unittest.TestCase):
 
     @classmethod
@@ -1681,7 +1674,6 @@ class AutoMigrationFixtures(unittest.TestCase):
         Path(self.nearly_empty_git_repo.migrations_dir()).mkdir()
 
 
-@unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestSchemaChanges(AutoMigrationFixtures):
 
@@ -1881,7 +1873,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         for attr in SchemaChanges._ATTRIBUTES:
             self.assertIn(attr, str(self.schema_changes))
 
-@unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(AutoMigrationFixtures):
 
@@ -2167,7 +2159,6 @@ class TestGitRepo(AutoMigrationFixtures):
                 self.assertIn(a, v)
 
 
-@unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestAutomatedMigration(AutoMigrationFixtures):
 
@@ -2437,7 +2428,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         for attr in AutomatedMigration._ATTRIBUTES:
             self.assertRegex(str_val, "{}: .+".format(attr))
 
-@unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):

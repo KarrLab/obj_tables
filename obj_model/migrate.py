@@ -383,7 +383,7 @@ class SchemaModule(object):
             if mod_patterns:
                 if not isinstance(mod_patterns, collections.Iterable) or isinstance(mod_patterns, str):
                     raise MigratorError(
-                        "mod_patterns must be an itertor that's not a string; but it is a(n) '{}'".format(
+                        "mod_patterns must be an iterator that's not a string; but it is a(n) '{}'".format(
                         type(mod_patterns).__name__))
                 print("sys.modules entries matching RE patterns: '{}':".format("', '".join(mod_patterns)))
                 compiled_mod_patterns = [re.compile(mod_pattern) for mod_pattern in mod_patterns]
