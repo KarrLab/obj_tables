@@ -442,6 +442,13 @@ class TestSchemaModule(unittest.TestCase):
             right_related = model_defs[right_model].Meta.related_attributes[right_attr].related_class
             self.assertEqual(left_related, right_related)
 
+    def broken_test_check(self, id, test, expected):
+        result = eval(test)
+        if result == expected:
+            print("=== Test", id, test, "SUCCEEDS ===")
+        else:
+            print("=== Test", id, test, "FAILS ===")
+
     def multiple_import_tests_of_test_package(self, test_package_dir):
         print('broken test investigation: test_package_dir:', test_package_dir)
         # test import of test_package and submodules in it
@@ -454,7 +461,7 @@ class TestSchemaModule(unittest.TestCase):
         SchemaModule(module_not_in_test_package).import_module_for_migration(debug=True,
             mod_patterns=['module_not_.*'], validate=False)
         print('broken test: #1')
-        print("'module_not_in_test_package' in sys.modules", 'module_not_in_test_package' in sys.modules)
+        self.broken_test_check('broken test: #1', "'module_not_in_test_package' in sys.modules", False)
         # self.assertFalse('module_not_in_test_package' in sys.modules)
         ##- 1: copy module_not_in_test_package.py to a new tmp dir T
         tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
@@ -490,15 +497,15 @@ class TestSchemaModule(unittest.TestCase):
         for module in modules_that_sys_dot_modules_shouldnt_have:
             pass
             print('broken test: #2')
-            print('module not in sys.modules', module not in sys.modules)
+            self.module = module
+            self.broken_test_check('broken test: #2', "self.module not in sys.modules", True)
             # self.assertTrue(module not in sys.modules)
 
         ##- 4: confirm that import_module_for_migration left module_not_in_test_package in sys.modules
         print('broken test: #3')
-        print("'module_not_in_test_package' in sys.modules", 'module_not_in_test_package' in sys.modules)
+        self.broken_test_check('broken test: #3', "'module_not_in_test_package' in sys.modules", True)
         # self.assertTrue('module_not_in_test_package' in sys.modules)
         ##- 5: cleanup: remove module_not_in_test_package from sys.modules, & remove T from sys.path
-        print('broken test: #4')
         # del sys.modules['module_not_in_test_package']
         del sys.path[sys.path.index(os.path.dirname(tmp_path))]
 
