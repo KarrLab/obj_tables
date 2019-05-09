@@ -235,8 +235,10 @@ class SchemaModule(object):
         return self.package_name is not None
 
     @staticmethod
-    def _munge_model_name(model):
-        """ Munge `model`'s name
+    def _munged_model_name(model):
+        """ Provide munged name for `model`
+
+        If `model`'s name is already munged, return the name.
 
         Args:
             model (:obj:`obj_model.Model`): a model
@@ -244,11 +246,16 @@ class SchemaModule(object):
         Returns:
             :obj:`str`: a munged name for model, made by appending `SchemaModule.MUNGED_MODEL_NAME_SUFFIX`
         """
-        return "{}{}".format(model.__name__, SchemaModule.MUNGED_MODEL_NAME_SUFFIX)
+        if not SchemaModule._model_name_is_munged(model):
+            return "{}{}".format(model.__name__, SchemaModule.MUNGED_MODEL_NAME_SUFFIX)
+        else:
+            return model.__name__
 
     @staticmethod
-    def _unmunge_model_name(model):
-        """ Ununge `model`'s name
+    def _unmunged_model_name(model):
+        """ Provide unmunged name for `model`
+
+        If `model`'s name isn't munged, return the name.
 
         Args:
             model (:obj:`obj_model.Model`): a model
@@ -256,14 +263,11 @@ class SchemaModule(object):
         Returns:
             :obj:`str`: an unmunged name for `model`, made by removing the suffix
                 `SchemaModule.MUNGED_MODEL_NAME_SUFFIX`
-
-        Raises:
-            :obj:`MigratorError`: if `model` isn't munged
         """
         if SchemaModule._model_name_is_munged(model):
             return model.__name__[:-len(SchemaModule.MUNGED_MODEL_NAME_SUFFIX)]
         else:
-            raise MigratorError("{} isn't munged".format(model.__name__))
+            return model.__name__
 
     @staticmethod
     def _model_name_is_munged(model):
@@ -282,15 +286,14 @@ class SchemaModule(object):
         """ Munge the names of all models, so the models cannot be found by name and reused
         """
         for model in get_models():
-            model.__name__ = SchemaModule._munge_model_name(model)
+            model.__name__ = SchemaModule._munged_model_name(model)
 
     @staticmethod
     def _unmunge_all_munged_model_names():
         """ Unmunge the names of all models so they can be used, inverting `_munge_all_model_names`
         """
         for model in get_models():
-            if SchemaModule._model_name_is_munged(model):
-                model.__name__ = SchemaModule._unmunge_model_name(model)
+            model.__name__ = SchemaModule._unmunged_model_name(model)
 
     def import_module_for_migration(self, validate=True, required_attrs=None, debug=False,
         mod_patterns=None, print_code=False):
@@ -315,7 +318,6 @@ class SchemaModule(object):
                     not in the module
                 or if the module is missing a required attribute
         """
-        # todo: remove much of this debugging when import_module_for_migration works reliably
         if debug:
             print('import_module_for_migration', self.module_name, self.annotation)
             if SchemaModule.MODULES:
@@ -339,7 +341,7 @@ class SchemaModule(object):
                 print('reusing', self.get_path())
             return SchemaModule.MODULES[self.get_path()]
 
-        # temporarily munge names of all models in modules imported for migration so they're not reused
+        # temporarily munge names of all models so they're not reused
         SchemaModule._munge_all_model_names()
 
         # copy sys.paths and sys.modules so they can be restored
@@ -349,6 +351,9 @@ class SchemaModule(object):
             saved[sys_attr] = getattr(sys, sys_attr).copy()
         # temporarily put the directory holding the module being imported on sys.path
         sys.path.insert(0, self.directory)
+
+        # todo: evaluate whether this suspension of check that related attribute names don't clash is still needed
+        obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
         def print_file(fn, max=100):
             print('\timporting: {}:'.format(fn))
@@ -389,9 +394,6 @@ class SchemaModule(object):
                                 print('\t', name)
                             break
 
-            # todo: evaluate whether this suspension of check that related attribute names don't clash is still needed
-            obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
-
             print('sys.path:')
             for p in sys.path:
                 print('\t', p)
@@ -408,7 +410,7 @@ class SchemaModule(object):
             # reset global variable
             obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
 
-            # unmunge names of all models in modules imported for migration
+            # unmunge names of all models, so they're normal for all other wc code
             SchemaModule._unmunge_all_munged_model_names()
 
             # to avoid side effects restore sys.path
@@ -443,7 +445,7 @@ class SchemaModule(object):
             for k in new_modules:
                 if first_component_module_name(k) == first_component_imported_module:
                     del sys.modules[k]
-            # todo: decide what to do about CHANGED modules; restore them, or leave them alone?
+            # leave CHANGED modules alone
 
         if required_attrs:
             # module must have the required attributes

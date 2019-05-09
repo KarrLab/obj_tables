@@ -7,6 +7,7 @@
 """
 
 SKIP_FOR_SPEED = True
+SKIP_SM_TESTS = False
 
 # todo: speedup migration and unittests; make smaller test data files
 # todo: ensure that all tmp files are being deleted
@@ -347,7 +348,7 @@ class TestSchemaModule(unittest.TestCase):
         for file in self.files_to_delete:
             remove_silently(file)
 
-    @unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_parse_module_path(self):
         parse_module_path = SchemaModule.parse_module_path
 
@@ -445,9 +446,9 @@ class TestSchemaModule(unittest.TestCase):
     def broken_test_check(self, id, test, expected):
         result = eval(test)
         if result == expected:
-            print("=== Test", id, test, "SUCCEEDS ===")
+            print("=== SUCCESS", id, test, " ===")
         else:
-            print("=== Test", id, test, "FAILS ===")
+            print("=== FAILURE", id, test, " ===")
 
     def multiple_import_tests_of_test_package(self, test_package_dir):
         print('broken test investigation: test_package_dir:', test_package_dir)
@@ -509,7 +510,7 @@ class TestSchemaModule(unittest.TestCase):
         # del sys.modules['module_not_in_test_package']
         del sys.path[sys.path.index(os.path.dirname(tmp_path))]
 
-    @unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_munging(self):
 
         class A(obj_model.Model):
@@ -519,17 +520,16 @@ class TestSchemaModule(unittest.TestCase):
                 attribute_order = ('id',)
 
         name_a = A.__name__
-        munged_name_a = SchemaModule._munge_model_name(A)
+        munged_name_a = SchemaModule._munged_model_name(A)
         self.assertTrue(munged_name_a.startswith(name_a))
         self.assertTrue(munged_name_a.endswith(SchemaModule.MUNGED_MODEL_NAME_SUFFIX))
 
         A.__name__ = munged_name_a
         self.assertTrue(SchemaModule._model_name_is_munged(A))
-        self.assertEqual(SchemaModule._unmunge_model_name(A), name_a)
-        A.__name__ = SchemaModule._unmunge_model_name(A)
+        self.assertEqual(SchemaModule._munged_model_name(A), munged_name_a)
+        self.assertEqual(SchemaModule._unmunged_model_name(A), name_a)
+        A.__name__ = SchemaModule._unmunged_model_name(A)
         self.assertFalse(SchemaModule._model_name_is_munged(A))
-        with self.assertRaisesRegex(MigratorError, r"\w+ isn't munged"):
-            SchemaModule._unmunge_model_name(A)
 
         SchemaModule._munge_all_model_names()
         for model in get_models():
@@ -676,14 +676,14 @@ class TestSchemaModule(unittest.TestCase):
             for expected_text in expected_texts:
                 self.assertIn(expected_text, capture_output.get_text())
 
-    @unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_check_imported_models(self):
         for good_schema_path in [self.existing_defs_path, self.migrated_defs_path, self.wc_lang_schema_existing,
             self.wc_lang_schema_modified]:
             sm = SchemaModule(good_schema_path)
             self.assertEqual(sm._check_imported_models(), [])
 
-    @unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_get_model_defs(self):
         sm = SchemaModule(self.existing_defs_path)
         module = sm.import_module_for_migration()
@@ -700,14 +700,14 @@ class TestSchemaModule(unittest.TestCase):
         with self.assertRaisesRegex(MigratorError, r"No subclasses of obj_model\.Model found in '\S+'"):
             sm.import_module_for_migration()
 
-    @unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_str(self):
         sm = SchemaModule(self.existing_defs_path)
         for attr in ['module_path', 'abs_module_path', 'module_name']:
             self.assertIn(attr, str(sm))
         self.assertIn(self.existing_defs_path, str(sm))
 
-    @unittest.skipIf(SKIP_FOR_SPEED, "skip for speed")
+    @unittest.skipIf(SKIP_SM_TESTS, "skip for speed")
     def test_run(self):
         sm = SchemaModule(self.existing_defs_path)
         models = sm.run()
@@ -2214,7 +2214,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
     def test_make_template_config_file(self):
-        path = AutomatedMigration.make_template_config_file(self.git_repo, 'migration_test_repo')
+        path = AutomatedMigration.make_template_config_file(self.git_repo, 'example_test_repo')
 
         # check the file at path
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
@@ -2230,7 +2230,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
-            AutomatedMigration.make_template_config_file(self.git_repo, 'migration_test_repo')
+            AutomatedMigration.make_template_config_file(self.git_repo, 'example_test_repo')
 
         remove_silently(path)
 
