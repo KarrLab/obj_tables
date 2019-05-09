@@ -27,33 +27,6 @@ import networkx as nx
 from networkx.algorithms.dag import topological_sort, ancestors
 import tempfile
 import datetime
-"""
-# import hacks to deal with failures of unknown origin
-# import _strptime to avoid
-#   KeyError: '_strptime'
-# at /usr/local/lib/python3.6/site-packages/pyexcel_io/service.py:31: KeyError
-# caused by
-#    self = <obj_model.io.WorkbookReader object at 0x7fea3058a978>
-#    path = '/root/host/Documents/wc_dev_repos/obj_model/tests/fixtures/migrate/tmp/tmprowc9lh0/tsv_example/test-*.tsv'
-#    ...
-#        def run(self, path, models=None,
-# at obj_model/io.py:792:
-import _strptime
-
-# import bpforms to avoid
-#   KeyError: 'bson.binary'
-# at /usr/local/lib/python3.6/site-packages/bson/__init__.py:107: KeyError
-# caused by
-#     self.no_change_migrator_model = self.set_up_fun_expr_fixtures(
-#         self.wc_lang_no_change_migrator, 'Parameter', 'Parameter')
-# in:
-#     class MigrationFixtures(unittest.TestCase):
-#         def setUp(self):
-# at '/Users/arthur_at_sinai/gitOnMyLaptopLocal/wc_dev_repos/obj_model/tests/test_migrate.py: 248
-import bpforms
-"""
-
-from sys import stderr
 
 import obj_model
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
@@ -89,9 +62,8 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 # testing
 #   add a few wc_lang versions
 # publicize work, in part to get feedback
+# check documentation
 
-# todo: add a schema check method that tries to import all schemas needed, and if any fails,
-# prints extensive debugging info
 # todo: move or copy schema_changes and automated_migration_config_file creation from migration_test_repo/__main__.py
 # to here so they can be used by programmers doing migration
 
@@ -102,7 +74,8 @@ from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 '''
 documentation notes:
 a schema must be imported from a self-contained module or a
-complete package, as otherwise import statements within the package may use another version of it on sys.path.
+complete package, as otherwise import statements within the package may use other, inconsistent
+versions of its submodules from other locations.
 
 Migration is not composable. It should be run independently of other obj_model code.
 '''
@@ -114,16 +87,21 @@ migrate xlsx files in wc_sim to new wc_lang:
 3. create a config file for the wc model files
 4: migrate them
 '''
-# todo next: generic transformations in YAML config
 
 # todo: wc_lang migration without a config file
-# todo: migration steps for wc_lang commits
 # todo: retain or control column and row order
 # todo: Preload a schema’s required packages from requirements.txt, and set sys.path to hold just the schema’s directory
 # to avoid collisions and enable relative imports
 # todo: deleted models: handle automatically (assume model that's not present in migrated schema or renamed is deleted), or add to config attributes
 # todo next: test OneToManyAttribute
 # todo next: documentation
+# todo: would be more intuitive to express renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
+# todo: add logging to AutomatedMigration
+# todo: in AutomatedMigration, migrate multiple files per migration spec
+# todo: in AutomatedMigration, implement test_migration
+# todo: finish building VirtualEnvUtil & supporting different dependencies for different schema versions
+# todo: automatically retry git requests, perhaps using the requests package as JK suggests
+
 
 class MigratorError(Exception):
     """ Exception raised for errors in obj_model.migrate
@@ -152,7 +130,7 @@ class SchemaModule(object):
             module; otherwise `None`
         module_name (:obj:`str`): the module's module name
         annotation (:obj:`str`): an optional annotation, often the original path of a module
-            that's been copied; used for debugging
+            that hass been copied; used for debugging
     """
 
     # cached schema modules that have been imported, indexed by full pathnames
@@ -299,7 +277,7 @@ class SchemaModule(object):
 
     def import_module_for_migration(self, validate=True, required_attrs=None, debug=False,
         mod_patterns=None, print_code=False):
-        """ Import a schema from a Python module in a file
+        """ Import a schema from a Python module in a file, which may be in a package
 
         Args:
             validate (:obj:`bool`, optional): whether to validate the module; default is `True`
@@ -307,7 +285,8 @@ class SchemaModule(object):
                 present in the imported module
             debug (:obj:`bool`, optional): if true, print debugging output; default is `False`
             mod_patterns (:obj:`list` of :obj:`str`, optional): RE patterns used to search for
-                modules in `sys.modules` output by debugging
+                modules in `sys.modules`; modules whose names match a pattern
+                are output when `debug` is true
             print_code (:obj:`bool`, optional): if true, while debugging print code being imported;
                 default is `False`
 
@@ -346,7 +325,7 @@ class SchemaModule(object):
         # temporarily munge names of all models so they're not reused
         SchemaModule._munge_all_model_names()
 
-        # copy sys.paths and sys.modules so they can be restored
+        # copy sys.paths so it can be restored & sys.modules so new modules in self.module can be deleted
         sys_attrs = ['path', 'modules']
         saved = {}
         for sys_attr in sys_attrs:
@@ -447,7 +426,7 @@ class SchemaModule(object):
             for k in new_modules:
                 if first_component_module_name(k) == first_component_imported_module:
                     del sys.modules[k]
-            # leave CHANGED modules alone
+            # leave changed modules alone
 
         if required_attrs:
             # module must have the required attributes
@@ -538,7 +517,7 @@ class SchemaModule(object):
             vals.append("{}: {}".format(attr, getattr(self, attr)))
         return '\n'.join(vals)
 
-# todo: would be more intuitive to express renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
+
 class Migrator(object):
     """ Support schema migration
 
@@ -709,6 +688,7 @@ class Migrator(object):
 
     def _validate_renamed_attrs(self):
         """ Validate renamed attributes
+
 
         Ensure that renamed attributes:
         * properly reference the existing and migrated schemas, and
@@ -1779,6 +1759,7 @@ class MigrationController(object):
     """ Manage migrations
 
     Manage migrations on several dimensions:
+
     * Migrate a single model file through a sequence of schemas
     * Perform migrations parameterized by a configuration file
     """
@@ -1870,6 +1851,9 @@ class MigrationController(object):
 
 class SchemaChanges(object):
     """ Specification of the changes to a schema in a git commit
+
+    More generally, a `SchemaChanges` can encode the set of changes to a schema over the sequence
+    if git commits since the previous `SchemaChanges`.
 
     Attributes:
         _CHANGES_FILE_ATTRS (:obj:`list` of :obj:`str`): required attributes in a schema changes file
@@ -2158,7 +2142,6 @@ class SchemaChanges(object):
                 raise MigratorError("schema changes file '{}' must have a dict with these attributes:\n{}".format(
                     schema_changes_file, ', '.join(SchemaChanges._CHANGES_FILE_ATTRS)))
 
-        # todo: perhaps this should cause a warning
         # report empty schema changes files (unmodified templates)
         if schema_changes['renamed_models'] == [] and \
             schema_changes['renamed_attributes'] == [] and \
@@ -2252,27 +2235,6 @@ class SchemaChanges(object):
             rv.append("{}: {}".format(attr, getattr(self, attr)))
         return '\n'.join(rv)
 
-    '''
-    # todo: decide what to do about comparing GitRepos
-    def __eq__(self, other):
-        """ Compare two :obj:`SchemaChanges` objects
-
-        Args:
-            other (:obj:`Object`): other object
-
-        Returns:
-            :obj:`bool`: true if :obj:`SchemaChanges` objects are semantically equal
-        """
-        if other.__class__ is not self.__class__:
-            return False
-
-        for attr in self._ATTRIBUTES:
-            if getattr(self, attr) != getattr(other, attr):
-                return False
-
-        return True
-    '''
-
 
 class GitRepo(object):
     """ Methods for processing a git repo and its commit history
@@ -2283,7 +2245,7 @@ class GitRepo(object):
         original_location (:obj:`str`): the repo's original root directory or URL, used for debugging
         repo (:obj:`git.Repo`): the repo
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
-        git_hash_map (:obj:`dict`): map from all git hashes to their commits
+        git_hash_map (:obj:`dict`): map from each git hash in the repo to its commit
         temp_dirs (:obj:`list` of :obj:`str`): temporary directories that hold repo clones
     """
     # default repo name if name not known
@@ -2427,7 +2389,7 @@ class GitRepo(object):
             return split_url[-1]
         elif self.repo_dir:
             return os.path.basename(self.repo_dir)
-        # todo: get the name even if the repo is in tmp dir
+        # todo: get the name even if the repo is in tmp dir by using the original location
         return self._NAME_UNKNOWN
 
     def head_commit(self):
@@ -2544,7 +2506,6 @@ class GitRepo(object):
         """
         return commit.hexsha
 
-    # todo: optionally copy first, and return the new repo
     def checkout_commit(self, commit_identifier):
         """ Checkout a commit for this repo
 
@@ -2644,9 +2605,6 @@ class GitRepo(object):
         return '\n'.join(rv)
 
 
-# todo: test migration that checks whether all schema changes and automated migration configuration files can be read,
-# all all schemas can be imported, all data files can be read
-# todo: add logging & remove debug__import_module_for_migration
 class AutomatedMigration(object):
     """ Automate the migration of the data files in a repo
 
@@ -2689,7 +2647,6 @@ class AutomatedMigration(object):
         loaded_schema_changes (:obj:`list`) all validated schema change files
         migration_specs (:obj:`MigrationSpec`): the migration's specification
         git_repos (:obj:`list` of :obj:`GitRepo`) all `GitRepo`s create by this `AutomatedMigration`
-        debug__import_module_for_migration (:obj:`bool`): whether to debug import_module_for_migration
     """
 
     # name of the git metadata configuration attribute in an obj_model schema
@@ -2722,8 +2679,7 @@ class AutomatedMigration(object):
 
     # attributes in a `AutomatedMigration`
     _ATTRIBUTES = ['data_repo_location', 'data_git_repo', 'schema_git_repo', 'data_config_file_basename',
-        'data_config', 'loaded_schema_changes', 'migration_specs', 'git_repos', 'metadata_model',
-        'debug__import_module_for_migration']
+        'data_config', 'loaded_schema_changes', 'migration_specs', 'git_repos', 'metadata_model']
     _REQUIRED_ATTRIBUTES = ['data_repo_location', 'data_config_file_basename']
 
     def __init__(self, **kwargs):
@@ -2926,8 +2882,7 @@ class AutomatedMigration(object):
         schema_file = normalize_filename(self.data_config['schema_file'],
             dir=self.schema_git_repo.migrations_dir())
         schema_module = SchemaModule(schema_file, annotation=self.schema_git_repo.original_location)
-        module = schema_module.import_module_for_migration(
-            required_attrs=[AutomatedMigration._GIT_METADATA], debug=self.debug__import_module_for_migration)
+        module = schema_module.import_module_for_migration(required_attrs=[AutomatedMigration._GIT_METADATA])
 
         # use the schema to find the obj_model.Model that stores git metadata
         git_metadata = getattr(module, AutomatedMigration._GIT_METADATA)
@@ -3045,7 +3000,6 @@ class AutomatedMigration(object):
             seq_of_schema_changes.append(SchemaChanges.generate_instance(schema_changes_file))
         return seq_of_schema_changes
 
-    # todo: migrate multiple files per migration spec
     def prepare(self):
         """ Prepare for migration
 
@@ -3129,8 +3083,7 @@ class AutomatedMigration(object):
             for schema_file in migration_spec.schema_files:
                 try:
                     SchemaModule(schema_file).import_module_for_migration(
-                        required_attrs=[AutomatedMigration._GIT_METADATA],
-                        debug=self.debug__import_module_for_migration)
+                        required_attrs=[AutomatedMigration._GIT_METADATA])
                 except MigratorError as e:
                     errors.append("cannot import: '{}'\n\t{}".format(schema_file, e))
         return errors
@@ -3215,6 +3168,8 @@ class VirtualEnvUtil(object):   # pragma: no cover
     # from virtualenvapi.manage import VirtualEnvironment
     # import virtualenvapi
     """ Support creation, use and distruction of virtual environments for Python packages
+
+    Will be used to allow different schema versions depend on different package versions
 
     Attributes:
         name (:obj:`str`): name of the `VirtualEnvUtil`
