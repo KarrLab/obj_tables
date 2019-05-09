@@ -27,6 +27,7 @@ import networkx as nx
 from networkx.algorithms.dag import topological_sort, ancestors
 import tempfile
 import datetime
+"""
 # import hacks to deal with failures of unknown origin
 # import _strptime to avoid
 #   KeyError: '_strptime'
@@ -50,6 +51,7 @@ import _strptime
 #         def setUp(self):
 # at '/Users/arthur_at_sinai/gitOnMyLaptopLocal/wc_dev_repos/obj_model/tests/test_migrate.py: 248
 import bpforms
+"""
 
 from sys import stderr
 
