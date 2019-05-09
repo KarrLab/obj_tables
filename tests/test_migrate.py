@@ -6,7 +6,7 @@
 :License: MIT
 """
 
-SKIP_FOR_SPEED = True
+SKIP_FOR_SPEED = False
 SKIP_SM_TESTS = False
 
 # todo: speedup migration and unittests; make smaller test data files
@@ -451,18 +451,18 @@ class TestSchemaModule(unittest.TestCase):
             print("=== FAILURE", id, test, " ===")
 
     def multiple_import_tests_of_test_package(self, test_package_dir):
-        print('broken test investigation: test_package_dir:', test_package_dir)
+        print('BROKEN TEST investigation: test_package_dir:', test_package_dir)
         # test import of test_package and submodules in it
 
         ##- in parallel, ensure that other modules remain in sys.modules, using module_not_in_test_package
         ##- which is imported by test_package/pkg_dir/code.py
         ##- 0: use import_module_for_migration to ensure that module_not_in_test_package is not in sys.modules
         module_not_in_test_package = os.path.join(self.fixtures_path, 'module_not_in_test_package.py')
-        print('import_module_for_migration before broken test: #1')
+        print('import_module_for_migration before BROKEN TEST: #1')
         SchemaModule(module_not_in_test_package).import_module_for_migration(debug=True,
             mod_patterns=['module_not_.*'], validate=False)
-        print('broken test: #1')
-        self.broken_test_check('broken test: #1', "'module_not_in_test_package' in sys.modules", False)
+        print('BROKEN TEST: #1')
+        self.broken_test_check('BROKEN TEST: #1', "'module_not_in_test_package' in sys.modules", False)
         # self.assertFalse('module_not_in_test_package' in sys.modules)
         ##- 1: copy module_not_in_test_package.py to a new tmp dir T
         tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
@@ -481,8 +481,8 @@ class TestSchemaModule(unittest.TestCase):
         ##-    import module_not_in_test_package
         code = os.path.join(test_package_dir, 'pkg_dir', 'code.py')
         sm = SchemaModule(code)
-        print('import_module_for_migration before broken test: #2')
-        print('import_module_for_migration before broken test: #3')
+        print('import_module_for_migration before BROKEN TEST: #2')
+        print('import_module_for_migration before BROKEN TEST: #3')
         module = sm.import_module_for_migration(debug=True, mod_patterns=['test_package'])
         self.check_imported_module(sm, 'test_package.pkg_dir.code', module)
         self.check_related_attributes(sm)
@@ -497,14 +497,14 @@ class TestSchemaModule(unittest.TestCase):
         ]
         for module in modules_that_sys_dot_modules_shouldnt_have:
             pass
-            print('broken test: #2')
+            print('BROKEN TEST: #2')
             self.module = module
-            self.broken_test_check('broken test: #2', "self.module not in sys.modules", True)
+            self.broken_test_check('BROKEN TEST: #2', "self.module not in sys.modules", True)
             # self.assertTrue(module not in sys.modules)
 
         ##- 4: confirm that import_module_for_migration left module_not_in_test_package in sys.modules
-        print('broken test: #3')
-        self.broken_test_check('broken test: #3', "'module_not_in_test_package' in sys.modules", True)
+        print('BROKEN TEST: #3')
+        self.broken_test_check('BROKEN TEST: #3', "'module_not_in_test_package' in sys.modules", True)
         # self.assertTrue('module_not_in_test_package' in sys.modules)
         ##- 5: cleanup: remove module_not_in_test_package from sys.modules, & remove T from sys.path
         # del sys.modules['module_not_in_test_package']
