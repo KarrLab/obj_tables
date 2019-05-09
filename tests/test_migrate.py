@@ -450,20 +450,21 @@ class TestSchemaModule(unittest.TestCase):
         else:
             print("=== FAILURE", id, test, " ===")
 
-    def multiple_import_tests_of_test_package(self, test_package_dir):
+    def multiple_import_tests_of_test_package(self, test_package_dir, first_time=False):
         print('BROKEN TEST investigation: test_package_dir:', test_package_dir)
         # test import of test_package and submodules in it
 
         ##- in parallel, ensure that other modules remain in sys.modules, using module_not_in_test_package
         ##- which is imported by test_package/pkg_dir/code.py
-        ##- 0: use import_module_for_migration to ensure that module_not_in_test_package is not in sys.modules
+        ##- 0: if first_time, use import_module_for_migration to ensure that module_not_in_test_package is not in sys.modules
         module_not_in_test_package = os.path.join(self.fixtures_path, 'module_not_in_test_package.py')
         print('import_module_for_migration before BROKEN TEST: #1')
-        SchemaModule(module_not_in_test_package).import_module_for_migration(debug=True,
-            mod_patterns=['module_not_.*'], validate=False)
-        print('BROKEN TEST: #1')
-        self.broken_test_check('BROKEN TEST: #1', "'module_not_in_test_package' in sys.modules", False)
-        # self.assertFalse('module_not_in_test_package' in sys.modules)
+        if first_time:
+            SchemaModule(module_not_in_test_package).import_module_for_migration(debug=True,
+                mod_patterns=['module_not_.*'], validate=False)
+            print('BROKEN TEST: #1')
+            self.broken_test_check('BROKEN TEST: #1', "'module_not_in_test_package' in sys.modules", False)
+            # self.assertFalse('module_not_in_test_package' in sys.modules)
         ##- 1: copy module_not_in_test_package.py to a new tmp dir T
         tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
         ##- 2: put T on sys.path
@@ -580,7 +581,7 @@ class TestSchemaModule(unittest.TestCase):
         self.check_related_attributes(sm)
 
         # test import from a package
-        self.multiple_import_tests_of_test_package(self.test_package)
+        self.multiple_import_tests_of_test_package(self.test_package, first_time=True)
 
         # put the package in new dir that's not on sys.path
         test_package_copy = temp_pathname(self, 'test_package')
