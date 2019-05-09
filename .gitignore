@@ -10,14 +10,13 @@ htmlcov/
 
 # compiled files
 *.pyc
+__pycache__/
 build/
 dist/
 
 # pytest files
-__pycache__/
 .cache/
 .pytest_cache/
-pytest.ini
 
 # documentation files
 README.rst
