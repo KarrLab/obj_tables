@@ -53,7 +53,7 @@ jobs:
           command: |
             set +e
 
-            karr_lab_build_utils3 run-tests --test-path tests/test_migrate.py --verbose --with-xunit --with-coverage
+            karr_lab_build_utils3 run-tests --with-xunit --with-coverage
             TEST_EXIT_CODE_PY3=$?
 
             # Calculate exit code and save to file for reading by the next step
