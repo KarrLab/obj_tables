@@ -442,20 +442,20 @@ class TestSchemaModule(unittest.TestCase):
             right_related = model_defs[right_model].Meta.related_attributes[right_attr].related_class
             self.assertEqual(left_related, right_related)
 
-    def multiple_import_tests_of_test_package(self, test_package_dir, first_time=False):
+    def multiple_import_tests_of_test_package(self, test_package_dir):
         # test import of test_package and submodules in it
 
         # import module in a package
         test_module = os.path.join(test_package_dir, 'test_module.py')
         sm = SchemaModule(test_module)
-        module = sm.import_module_for_migration()
+        module = sm.import_module_for_migration(debug=True)
         self.check_imported_module(sm, 'test_package.test_module', module)
         self.check_related_attributes(sm)
 
         # import module two dirs down in a package
         code = os.path.join(test_package_dir, 'pkg_dir', 'code.py')
         sm = SchemaModule(code)
-        module = sm.import_module_for_migration()
+        module = sm.import_module_for_migration(debug=True)
         self.check_imported_module(sm, 'test_package.pkg_dir.code', module)
         self.check_related_attributes(sm)
 
@@ -538,7 +538,7 @@ class TestSchemaModule(unittest.TestCase):
         self.check_related_attributes(sm)
 
         # test import from a package
-        self.multiple_import_tests_of_test_package(self.test_package, first_time=True)
+        self.multiple_import_tests_of_test_package(self.test_package)
 
         # put the package in new dir that's not on sys.path
         test_package_copy = temp_pathname(self, 'test_package')
@@ -561,7 +561,6 @@ class TestSchemaModule(unittest.TestCase):
         # import modified wc_lang
         sm = SchemaModule(self.wc_lang_schema_modified)
         self.check_related_attributes(sm)
-        # todo: does wc_lang.core have _GIT_METADATA?
 
         # test a copy of wc_lang
         wc_lang_copy = temp_pathname(self, 'wc_lang')
@@ -625,7 +624,6 @@ class TestSchemaModule(unittest.TestCase):
         # ensure that modules which are not sub-modules of a package remain in sys.modules
         # use module_not_in_test_package, which will be imported by test_package/pkg_dir/code.py
         # 0: ensure that module_not_in_test_package is not in sys.modules
-        print()
         module_not_in_test_package = os.path.join(self.fixtures_path, 'module_not_in_test_package.py')
         if 'module_not_in_test_package' in sys.modules:
             del sys.modules['module_not_in_test_package']
@@ -647,7 +645,7 @@ class TestSchemaModule(unittest.TestCase):
 
         # 3: use import_module_for_migration to import test_package.pkg_dir.code, which will
         #    import module_not_in_test_package
-        SchemaModule(core_path).import_module_for_migration(debug=True, print_code=True)
+        SchemaModule(core_path).import_module_for_migration()
 
         # 4: confirm that import_module_for_migration left module_not_in_test_package in sys.modules
         self.assertTrue('module_not_in_test_package' in sys.modules)
