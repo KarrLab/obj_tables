@@ -445,18 +445,6 @@ class TestSchemaModule(unittest.TestCase):
     def multiple_import_tests_of_test_package(self, test_package_dir, first_time=False):
         # test import of test_package and submodules in it
 
-        ##- in parallel, ensure that other modules remain in sys.modules, using module_not_in_test_package
-        ##- which is imported by test_package/pkg_dir/code.py
-        ##- 0: if first_time, use import_module_for_migration to ensure that module_not_in_test_package is not in sys.modules
-        module_not_in_test_package = os.path.join(self.fixtures_path, 'module_not_in_test_package.py')
-        if first_time:
-            SchemaModule(module_not_in_test_package).import_module_for_migration(validate=False)
-            self.assertFalse('module_not_in_test_package' in sys.modules)
-        ##- 1: copy module_not_in_test_package.py to a new tmp dir T
-        tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
-        ##- 2: put T on sys.path
-        sys.path.append(os.path.dirname(tmp_path))
-
         # import module in a package
         test_module = os.path.join(test_package_dir, 'test_module.py')
         sm = SchemaModule(test_module)
@@ -465,8 +453,6 @@ class TestSchemaModule(unittest.TestCase):
         self.check_related_attributes(sm)
 
         # import module two dirs down in a package
-        ##- 3: use import_module_for_migration to import test_package.pkg_dir.code, which should
-        ##-    import module_not_in_test_package
         code = os.path.join(test_package_dir, 'pkg_dir', 'code.py')
         sm = SchemaModule(code)
         module = sm.import_module_for_migration()
@@ -483,12 +469,6 @@ class TestSchemaModule(unittest.TestCase):
         ]
         for module in modules_that_sys_dot_modules_shouldnt_have:
             self.assertTrue(module not in sys.modules)
-
-        ##- 4: confirm that import_module_for_migration left module_not_in_test_package in sys.modules
-        self.assertTrue('module_not_in_test_package' in sys.modules)
-        ##- 5: cleanup: remove module_not_in_test_package from sys.modules, & remove T from sys.path
-        del sys.modules['module_not_in_test_package']
-        del sys.path[sys.path.index(os.path.dirname(tmp_path))]
 
     def test_munging(self):
 
@@ -641,6 +621,28 @@ class TestSchemaModule(unittest.TestCase):
                 'wc_lang.wc_lang']
             for expected_text in expected_texts:
                 self.assertIn(expected_text, capture_output.get_text())
+
+        # ensure that other modules remain in sys.modules, using module_not_in_test_package
+        # which will be imported by test_package/pkg_dir/code.py
+        # 0: use import_module_for_migration to ensure that module_not_in_test_package is not in sys.modules
+        module_not_in_test_package = os.path.join(self.fixtures_path, 'module_not_in_test_package.py')
+        SchemaModule(module_not_in_test_package).import_module_for_migration(validate=False)
+        self.assertFalse('module_not_in_test_package' in sys.modules)
+        """
+        "import module_not_in_test_package"
+        # 1: copy module_not_in_test_package.py to a new tmp dir T
+        tmp_path = copy_file_to_tmp(self, 'module_not_in_test_package.py')
+        # 2: put T on sys.path
+        sys.path.append(os.path.dirname(tmp_path))
+
+        # 3: use import_module_for_migration to import test_package.pkg_dir.code, which should
+        #    import module_not_in_test_package
+        # 4: confirm that import_module_for_migration left module_not_in_test_package in sys.modules
+        self.assertTrue('module_not_in_test_package' in sys.modules)
+        # 5: cleanup: remove module_not_in_test_package from sys.modules, & remove T from sys.path
+        del sys.modules['module_not_in_test_package']
+        del sys.path[sys.path.index(os.path.dirname(tmp_path))]
+        """
 
     def test_check_imported_models(self):
         for good_schema_path in [self.existing_defs_path, self.migrated_defs_path, self.wc_lang_schema_existing,
