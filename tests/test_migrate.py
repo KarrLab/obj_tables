@@ -468,7 +468,11 @@ class TestSchemaModule(unittest.TestCase):
             'test_package.test_module',
         ]
         for module in modules_that_sys_dot_modules_shouldnt_have:
-            self.assertTrue(module not in sys.modules)
+            if module not in sys.modules:
+                print('SUCCESS for', module)
+            else:
+                print('FAILURE for', module)
+            # self.assertTrue(module not in sys.modules)
 
     def test_munging(self):
 
