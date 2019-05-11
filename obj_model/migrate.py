@@ -5,28 +5,28 @@
 :Copyright: 2018, Karr Lab
 :License: MIT
 """
-import os
-import re
-import sys
+from enum import Enum
+from networkx.algorithms.dag import topological_sort, ancestors
+from pathlib import Path
+from pprint import pprint, pformat
+from six import integer_types, string_types
+from warnings import warn
 import argparse
+import collections
+import copy
+import datetime
+import git
 import importlib
 import importlib.util
-import collections
-from pathlib import Path
 import inspect
-import copy
-import warnings
-import shutil
-import yaml
-from six import integer_types, string_types
-from enum import Enum
-from warnings import warn
-from pprint import pprint, pformat
-import git
 import networkx as nx
-from networkx.algorithms.dag import topological_sort, ancestors
+import os
+import re
+import shutil
+import sys
 import tempfile
-import datetime
+import warnings
+import yaml
 
 import obj_model
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
@@ -90,8 +90,6 @@ migrate xlsx files in wc_sim to new wc_lang:
 
 # todo: wc_lang migration without a config file
 # todo: retain or control column and row order
-# todo: Preload a schema’s required packages from requirements.txt, and set sys.path to hold just the schema’s directory
-# to avoid collisions and enable relative imports
 # todo: deleted models: handle automatically (assume model that's not present in migrated schema or renamed is deleted), or add to config attributes
 # todo next: test OneToManyAttribute
 # todo next: documentation
@@ -300,7 +298,7 @@ class SchemaModule(object):
                 or if the module is missing a required attribute
         """
         if debug:
-            print('import_module_for_migration', self.module_name, self.annotation)
+            print('\nimport_module_for_migration', self.module_name, self.annotation)
             if SchemaModule.MODULES:
                 print('SchemaModule.MODULES:')
                 for path, module in SchemaModule.MODULES.items():
@@ -348,7 +346,7 @@ class SchemaModule(object):
             print()
 
         if debug:
-            print("\n\n== importing {} from '{}' ==".format(self.module_name, self.directory))
+            print("\n== importing {} from '{}' ==".format(self.module_name, self.directory))
             if print_code:
                 if '.' in self.module_name:
                     nested_modules = self.module_name.split('.')
@@ -394,7 +392,7 @@ class SchemaModule(object):
             # unmunge names of all models, so they're normal for all other wc code
             SchemaModule._unmunge_all_munged_model_names()
 
-            # to avoid side effects restore sys.path
+            # to avoid accessing the schema via other import statements restore sys.path
             sys.path = saved['path']
 
             # sort the set difference to make this code deterministic

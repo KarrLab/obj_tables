@@ -337,7 +337,7 @@ class TestSchemaModule(unittest.TestCase):
         make_wc_lang_migration_fixtures(self)
 
         self.test_package = os.path.join(self.fixtures_path, 'test_package')
-        self.test_module = os.path.join(self.test_package, 'test_module.py')
+        self.module_for_testing = os.path.join(self.test_package, 'module_for_testing.py')
         self.code = os.path.join(self.test_package, 'pkg_dir', 'code.py')
 
         # files to delete that are not in a temp directory
@@ -372,8 +372,8 @@ class TestSchemaModule(unittest.TestCase):
         # module in package
         expected_dir = self.fixtures_path
         expected_package = 'test_package'
-        expected_module = 'test_package.test_module'
-        self.assertEqual(parse_module_path(self.test_module),
+        expected_module = 'test_package.module_for_testing'
+        self.assertEqual(parse_module_path(self.module_for_testing),
             (expected_dir, expected_package, expected_module))
 
         try:
@@ -415,7 +415,7 @@ class TestSchemaModule(unittest.TestCase):
 
         expected_models = {
             'small_existing': {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'},
-            'test_package.test_module': {'Foo', 'Test', 'Reference'},
+            'test_package.module_for_testing': {'Foo', 'Test', 'Reference'},
             'test_package.pkg_dir.code': {'Foo'},
         }
 
@@ -425,7 +425,7 @@ class TestSchemaModule(unittest.TestCase):
                 (('Subtest', 'test'), ('Test', 'subtests')),
                 (('Subtest', 'references'), ('Reference', 'subtests'))
             ],
-            'test_package.test_module': [
+            'test_package.module_for_testing': [
                 (('Test', 'references'), ('Reference', 'tests')),
             ],
             'test_package.pkg_dir.code': [],
@@ -446,16 +446,16 @@ class TestSchemaModule(unittest.TestCase):
         # test import of test_package and submodules in it
 
         # import module in a package
-        test_module = os.path.join(test_package_dir, 'test_module.py')
-        sm = SchemaModule(test_module)
-        module = sm.import_module_for_migration(debug=True)
-        self.check_imported_module(sm, 'test_package.test_module', module)
+        module_for_testing = os.path.join(test_package_dir, 'module_for_testing.py')
+        sm = SchemaModule(module_for_testing)
+        module = sm.import_module_for_migration()
+        self.check_imported_module(sm, 'test_package.module_for_testing', module)
         self.check_related_attributes(sm)
 
         # import module two dirs down in a package
         code = os.path.join(test_package_dir, 'pkg_dir', 'code.py')
         sm = SchemaModule(code)
-        module = sm.import_module_for_migration(debug=True)
+        module = sm.import_module_for_migration()
         self.check_imported_module(sm, 'test_package.pkg_dir.code', module)
         self.check_related_attributes(sm)
 
@@ -465,14 +465,10 @@ class TestSchemaModule(unittest.TestCase):
             'test_package',
             'test_package.pkg_dir',
             'test_package.pkg_dir.code',
-            'test_package.test_module',
+            'test_package.module_for_testing',
         ]
         for module in modules_that_sys_dot_modules_shouldnt_have:
-            if module not in sys.modules:
-                print('SUCCESS for', module)
-            else:
-                print('FAILURE for', module)
-            # self.assertTrue(module not in sys.modules)
+            self.assertTrue(module not in sys.modules)
 
     def test_munging(self):
 
@@ -522,24 +518,16 @@ class TestSchemaModule(unittest.TestCase):
                             id(related_class), id(model_defs[related_class.__name__])))
 
     def test_import_module_for_migration(self):
-        # import self-contained module
-        sm = SchemaModule(self.existing_defs_path)
+        # import copy of schema in single file from a new dir
+        copy_of_small_existing = copy_file_to_tmp(self, 'small_existing.py')
+        sm = SchemaModule(copy_of_small_existing)
         module = sm.import_module_for_migration()
 
-        self.assertIn(sm.module_path, SchemaModule.MODULES)
-        self.assertEqual(module, SchemaModule.MODULES[sm.module_path])
         self.check_imported_module(sm, 'small_existing', module)
         self.check_related_attributes(sm)
 
         # importing self.existing_defs_path again returns same module from cache
         self.assertEqual(module, sm.import_module_for_migration())
-
-        # import copy of self-contained module in another dir
-        copy_of_small_existing = copy_file_to_tmp(self, 'small_existing.py')
-        sm = SchemaModule(copy_of_small_existing)
-        module = sm.import_module_for_migration()
-        self.check_imported_module(sm, 'small_existing', module)
-        self.check_related_attributes(sm)
 
         # test import from a package
         self.multiple_import_tests_of_test_package(self.test_package)
@@ -593,9 +581,11 @@ class TestSchemaModule(unittest.TestCase):
         copy_of_small_existing = copy_file_to_tmp(self, 'small_existing.py')
         sm = SchemaModule(copy_of_small_existing)
         with capturer.CaptureOutput(relay=False) as capture_output:
-            with self.assertRaisesRegex(MigratorError, "mod_patterns must be an iterator that's not a string"):
+            with self.assertRaisesRegex(MigratorError,
+                "mod_patterns must be an iterator that's not a string"):
                 sm.import_module_for_migration(debug=True, mod_patterns=3)
-            with self.assertRaisesRegex(MigratorError, "mod_patterns must be an iterator that's not a string"):
+            with self.assertRaisesRegex(MigratorError,
+                "mod_patterns must be an iterator that's not a string"):
                 sm.import_module_for_migration(debug=True, mod_patterns='hi mom')
 
         module_with_annotation = os.path.join(self.tmp_dir, 'module_with_annotation.py')
@@ -651,7 +641,7 @@ class TestSchemaModule(unittest.TestCase):
         #    import module_not_in_test_package
         SchemaModule(core_path).import_module_for_migration()
 
-        # 4: confirm that import_module_for_migration left module_not_in_test_package in sys.modules
+        # 4: confirm that import_module_for_migration() left module_not_in_test_package in sys.modules
         self.assertTrue('module_not_in_test_package' in sys.modules)
 
         # 5: cleanup: remove module_not_in_test_package from sys.modules, & remove T from sys.path
@@ -690,7 +680,6 @@ class TestSchemaModule(unittest.TestCase):
         sm = SchemaModule(self.existing_defs_path)
         models = sm.run()
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
-
 
 class TestMigrator(MigrationFixtures):
 
@@ -1349,8 +1338,6 @@ class TestMigrator(MigrationFixtures):
         str_value = str(empty_migrator)
         for attr in Migrator.SCALAR_ATTRS:
             self.assertNotRegex(str_value, '^' + attr + '$')
-
-
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1536,8 +1523,6 @@ class TestMigrationSpec(MigrationFixtures):
         migration_spec_str = str(migration_spec)
         self.assertIn(name, migration_spec_str)
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
-
-
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -2459,8 +2444,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         str_val = str(self.clean_automated_migration)
         for attr in AutomatedMigration._ATTRIBUTES:
             self.assertRegex(str_val, "{}: .+".format(attr))
-
-
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
