@@ -15,6 +15,5 @@ six
 stringcase
 sympy
 validate_email
-wc_onto
 wc_utils
 weakreflist
