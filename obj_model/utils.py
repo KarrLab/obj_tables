@@ -187,10 +187,10 @@ def source_report(obj, attr_name):
 
 def set_git_repo_metadata_from_path(model, path='.', url_attr='url', branch_attr='branch',
                                     commit_hash_attr='revision', ):
-    """ Use Git to set the Git repository URL, branch, and commit hash metadata for a model
+    """ Use Git to set the Git repository URL, branch, and commit hash metadata attributes of a model
 
     Args:
-        model (:obj:`Model`): model
+        model (:obj:`Model`): model whose Git attributes will be set
         path (:obj:`str`, optional): path to the Git repository for the model
         url_attr (:obj:`str`, optional): attribute in `model` for the git URL; default='url'
         branch_attr (:obj:`str`, optional): attribute in `model` for the git branch; default='branch'
