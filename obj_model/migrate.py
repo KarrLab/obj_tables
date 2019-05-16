@@ -3274,6 +3274,59 @@ class CementControllers(object):
                 print('\t', f)
 
 
+    class TestMigrationController(Controller):
+        """ Test all migrations configured in migration config files """
+
+        class Meta:
+            label = 'test_migrations'
+            stacked_on = 'base'
+            stacked_type = 'embedded'
+
+        @ex(
+            help='Test all migrations configured in migration config files',
+            arguments = []
+        )
+        def test_migrations(self):
+            pass
+
+
+    class MigrateController(Controller):
+        """ Migrate all data files configured in migration config files """
+
+        class Meta:
+            label = 'migrate_configured_data_files'
+            stacked_on = 'base'
+            stacked_type = 'embedded'
+
+        @ex(
+            help='Migrate all data files configured in migration config files',
+            arguments = []
+        )
+        def migrate_configured_data_files(self):
+            pass
+
+
+    class MigrateFileController(Controller):
+        """ Migrate specified data file(s) """
+
+        class Meta:
+            label = 'migrate_data'
+            stacked_on = 'base'
+            stacked_type = 'embedded'
+
+        @ex(
+            help='Migrate specified data file(s)',
+            arguments = [
+                (['schema_url'], {'type': str, 'help': 'URL of the schema in its git repository'}),
+                (['file_to_migrate'],
+                    dict(action='store', type=str, nargs='+',
+                    help='a file to migrate')),
+            ]
+        )
+        def migrate_data(self):
+            args = self.app.pargs
+
+
 class VirtualEnvUtil(object):   # pragma: no cover
     # INCOMPLETE: started and not finished; not tested
     # NEEDS:

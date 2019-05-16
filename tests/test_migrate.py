@@ -2551,6 +2551,19 @@ class TestRunMigration(MigrationFixtures):
                     remove_silently(migrated_file)
 
 
+@unittest.skipUnless(internet_connected(), "Internet not connected")
+class TestCementControllers(unittest.TestCase):
+
+    def test_make_changes_template(self):
+        pass
+
+    def test_(self):
+        pass
+
+    def test_(self):
+        pass
+
+
 @unittest.skip("INCOMPLETE: not finished")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestVirtualEnvUtil(unittest.TestCase):
