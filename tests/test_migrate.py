@@ -23,6 +23,7 @@ import cProfile
 import filecmp
 import getpass
 import git
+import github
 import inspect
 import networkx as nx
 import numpy
@@ -681,6 +682,7 @@ class TestSchemaModule(unittest.TestCase):
         models = sm.run()
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
+
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1338,6 +1340,8 @@ class TestMigrator(MigrationFixtures):
         str_value = str(empty_migrator)
         for attr in Migrator.SCALAR_ATTRS:
             self.assertNotRegex(str_value, '^' + attr + '$')
+
+
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1523,6 +1527,8 @@ class TestMigrationSpec(MigrationFixtures):
         migration_spec_str = str(migration_spec)
         self.assertIn(name, migration_spec_str)
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
+
+
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1668,7 +1674,6 @@ class AutoMigrationFixtures(unittest.TestCase):
             cls.migration_test_repo_known_hash)
 
         cls.totally_empty_git_repo = GitRepo()
-
         cls.fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
 
     @classmethod
@@ -1904,13 +1909,22 @@ class TestGitRepo(AutoMigrationFixtures):
     def tearDownClass(cls):
         super().tearDownClass()
 
+    def make_test_repo(self, github_api_token, name):
+        # create a test GitHub repository
+        # return its URL
+        g = github.Github(github_api_token)
+        org = g.get_organization('KarrLab')
+        org.create_repo(name=name, private=True, auto_init=True)
+        return 'https://github.com/KarrLab/{}.git'.format(name)
+
+    def delete_test_repo(self, name):
+
     def setUp(self):
         super().setUp()
         self.repo_root = self.git_repo.repo_dir
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
 
     def test_init(self):
-        self.assertIsInstance(self.totally_empty_git_repo, GitRepo)
         self.assertIsInstance(self.git_repo.repo, git.Repo)
         self.assertEqual(self.repo_root, self.git_repo.repo_dir)
         self.assertEqual(self.git_repo.original_location, self.test_repo_url)
@@ -2000,8 +2014,9 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertNotEqual(repo_copy.migrations_dir(), repo_copy_copy.migrations_dir())
         self.assertTrue(TestGitRepo.are_dir_trees_equal(repo_copy.repo_dir, repo_copy_copy.repo_dir, ignore=[]))
 
+        empty_git_repo = GitRepo()
         with self.assertRaisesRegex(MigratorError, "cannot copy an empty GitRepo"):
-            self.totally_empty_git_repo.copy()
+            empty_git_repo.copy()
 
     def test_migrations_dir(self):
         self.assertTrue(os.path.isdir(self.git_repo.migrations_dir()))
@@ -2014,7 +2029,8 @@ class TestGitRepo(AutoMigrationFixtures):
 
     def test_repo_name(self):
         self.assertEqual(self.git_repo.repo_name(), 'test_repo')
-        self.assertEqual(self.totally_empty_git_repo.repo_name(), GitRepo._NAME_UNKNOWN)
+        empty_git_repo = GitRepo()
+        self.assertEqual(empty_git_repo.repo_name(), GitRepo._NAME_UNKNOWN)
         tmp_git_repo = GitRepo(self.git_repo.repo_dir)
         self.assertIsInstance(tmp_git_repo.repo_name(), str)
 
@@ -2105,6 +2121,23 @@ class TestGitRepo(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, r"checkout of '\S+' to commit '\S+' failed"):
             # checkout of commit from wrong repo will fail
             git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
+
+    def test_add_file(self):
+        new_file = os.path.join(self.git_repo.repo_dir, 'new_file')
+        open(new_file, "wb").close()
+        self.git_repo.add_file(new_file)
+        # todo: confirm that new_file has been added
+
+        no_such_file = os.path.join(self.git_repo.repo_dir, 'no such file')
+        with self.assertRaisesRegex(MigratorError, r"adding file '.+' to repo '\S+' failed:"):
+            self.git_repo.add_file(no_such_file)
+
+    def test_commit_changes(self):
+        new_file = os.path.join(self.git_repo.repo_dir, 'new_file')
+        open(new_file, "wb").close()
+        self.git_repo.add_file(new_file)
+        self.git_repo.commit_changes('new commit')
+        # todo: confirm that commit has been done
 
     def check_dependency(self, sequence, DAG):
         # check that sequence satisfies "any nodes u, v with a path u -> ... -> v in the DAG appear in
@@ -2444,6 +2477,8 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         str_val = str(self.clean_automated_migration)
         for attr in AutomatedMigration._ATTRIBUTES:
             self.assertRegex(str_val, "{}: .+".format(attr))
+
+
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):

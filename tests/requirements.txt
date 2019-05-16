@@ -1,6 +1,7 @@
 abduct
 attrdict
 configobj
+github
 mock
 natsort
 networkx
