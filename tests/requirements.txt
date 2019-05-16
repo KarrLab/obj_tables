@@ -1,7 +1,6 @@
 abduct
 attrdict
 configobj
-github
 mock
 natsort
 networkx
@@ -9,6 +8,7 @@ numpy
 objsize
 openpyxl
 psutil
+pygithub
 pytest
 pyyaml >= 5.1
 six
