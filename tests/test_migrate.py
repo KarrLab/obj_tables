@@ -39,6 +39,7 @@ import time
 import unittest
 import warnings
 import yaml
+from .config import core
 
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
     RunMigration, MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo, VirtualEnvUtil)
@@ -1909,20 +1910,30 @@ class TestGitRepo(AutoMigrationFixtures):
     def tearDownClass(cls):
         super().tearDownClass()
 
-    def make_test_repo(self, github_api_token, name):
+    def make_test_repo(self, name):
         # create a test GitHub repository
         # return its URL
-        g = github.Github(github_api_token)
+        g = github.Github(self.github_api_token)
         org = g.get_organization('KarrLab')
         org.create_repo(name=name, private=True, auto_init=True)
         return 'https://github.com/KarrLab/{}.git'.format(name)
 
     def delete_test_repo(self, name):
+        g = github.Github(self.github_api_token)
+        repo = g.get_repo("KarrLab/{}".format(name))
+        repo.delete()
 
     def setUp(self):
         super().setUp()
         self.repo_root = self.git_repo.repo_dir
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
+        config = core.get_config()['obj_model']
+        self.github_api_token = config['github_api_token']
+        self.test_github_repo_name = 'test_repo_1'
+        self.test_github_repo_url = self.make_test_repo(self.test_github_repo_name)
+
+    def tearDown(self):
+        self.delete_test_repo(self.test_github_repo_name)
 
     def test_init(self):
         self.assertIsInstance(self.git_repo.repo, git.Repo)
