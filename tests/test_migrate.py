@@ -18,6 +18,7 @@ from pathlib import Path
 from pprint import pprint, pformat
 from tempfile import mkdtemp
 import capturer
+import cement
 import copy
 import cProfile
 import filecmp
@@ -39,10 +40,11 @@ import time
 import unittest
 import warnings
 import yaml
-from .config import core
 
+from .config import core
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
-    RunMigration, MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo, VirtualEnvUtil)
+    RunMigration, MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo, VirtualEnvUtil,
+    CementControllers)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -1716,7 +1718,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
             transformations_file=''
         )
         self.empty_schema_changes = SchemaChanges(self.nearly_empty_git_repo)
-        self.empty_migrations_dir = self.empty_schema_changes.git_repo.migrations_dir()
+        self.empty_migrations_dir = self.empty_schema_changes.schema_repo.migrations_dir()
 
     def test_get_date_timestamp(self):
         timestamp = SchemaChanges.get_date_timestamp()
@@ -1750,9 +1752,9 @@ class TestSchemaChanges(AutoMigrationFixtures):
             SchemaChanges.find_file(self.git_repo, 'not_a_hash_not_a_hash_not_a_hash_not_a_h')
 
         migrations_dir = self.git_repo.migrations_dir()
-        self.schema_changes.make_template(migrations_dir)
+        self.schema_changes.make_template(changes_file_dir=migrations_dir)
         time.sleep(2)
-        self.schema_changes.make_template(migrations_dir)
+        self.schema_changes.make_template(changes_file_dir=migrations_dir)
         with self.assertRaisesRegex(MigratorError,
             r"multiple schema changes files in '.+' for hash \S+"):
             SchemaChanges.find_file(self.git_repo, self.schema_changes.get_hash())
@@ -1772,7 +1774,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
 
     def test_make_template(self):
         for changes_file_dir in [None, self.empty_migrations_dir]:
-            pathname = self.empty_schema_changes.make_template(changes_file_dir)
+            pathname = self.empty_schema_changes.make_template(changes_file_dir=changes_file_dir)
             data = yaml.load(open(pathname, 'r'), Loader=yaml.FullLoader)
             for attr in ['renamed_models', 'renamed_attributes']:
                 self.assertEqual(data[attr], [])
@@ -1781,14 +1783,10 @@ class TestSchemaChanges(AutoMigrationFixtures):
             os.remove(pathname)
 
         # instantly create two, which will likely have the same timestamp
-        pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
+        pathname = self.empty_schema_changes.make_template(changes_file_dir=self.empty_migrations_dir)
         with self.assertRaisesRegex(MigratorError, "schema changes file '.+' already exists"):
-            self.empty_schema_changes.make_template(self.empty_migrations_dir)
+            self.empty_schema_changes.make_template(changes_file_dir=self.empty_migrations_dir)
         os.remove(pathname)
-
-        with capturer.CaptureOutput(relay=False) as capture_output:
-            self.empty_schema_changes.make_template(self.empty_migrations_dir, verbose=True)
-            self.assertIn('created schema changes template', capture_output.get_text())
 
     def test_import_transformations(self):
         find_file = SchemaChanges.find_file
@@ -1846,7 +1844,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
             r"schema changes file '.+' must have a dict with these attributes:"):
             SchemaChanges.load(bad_yaml)
 
-        pathname = self.empty_schema_changes.make_template(self.empty_migrations_dir)
+        pathname = self.empty_schema_changes.make_template(changes_file_dir=self.empty_migrations_dir)
         with self.assertRaisesRegex(MigratorError,
             r"schema changes file '.+' is empty \(an unmodified template\)"):
             SchemaChanges.load(pathname)
@@ -2137,7 +2135,7 @@ class TestGitRepo(AutoMigrationFixtures):
             # checkout of commit from wrong repo will fail
             git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
 
-    @unittest.skip("skip until obj_model.cfg is in karr_lab_build_config")
+    # @unittest.skip("skip until obj_model.cfg is in karr_lab_build_config")
     def test_add_file_and_commit_changes(self):
         empty_repo = self.test_github_repo.repo
         origin = empty_repo.remotes.origin
@@ -2172,6 +2170,25 @@ class TestGitRepo(AutoMigrationFixtures):
 
         with self.assertRaisesRegex(MigratorError, r"commiting repo '\S+' failed:"):
             self.test_github_repo.commit_changes(2)
+
+    def test_push(self):
+        # todo: NEW
+        '''
+        check this by hand:
+            copy an existing GitHub repo to a new GitHub repo
+            clone the new repo
+            make & commit a change
+            push the change
+            test by cloning the new repo again and checking whether it contains the change
+            delete the new GitHub repo
+        or:
+            clone an existing GitHub repo
+            make & commit a change
+            push the change
+            test by cloning the repo again and checking whether it contains the change
+            rollback the commit
+        '''
+        pass
 
     def check_dependency(self, sequence, DAG):
         # check that sequence satisfies "any nodes u, v with a path u -> ... -> v in the DAG appear in
@@ -2550,6 +2567,21 @@ class TestRunMigration(MigrationFixtures):
             for _, migrated_filenames in results:
                 for migrated_file in migrated_filenames:
                     remove_silently(migrated_file)
+
+
+class App(cement.App):
+    """ Define App to facilitate testing. """
+    class Meta:
+        label = 'obj-model'
+        base_controller = 'base'
+        handlers = [
+            CementControllers.BaseController,
+            CementControllers.SchemaChangesTemplateController,
+            CementControllers.AutomatedMigrationConfigController,
+            CementControllers.TestMigrationController,
+            CementControllers.MigrateController,
+            CementControllers.MigrateFileController
+        ]
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")

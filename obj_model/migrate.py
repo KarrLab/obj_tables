@@ -1858,7 +1858,7 @@ class SchemaChanges(object):
     Attributes:
         _CHANGES_FILE_ATTRS (:obj:`list` of :obj:`str`): required attributes in a schema changes file
         _ATTRIBUTES (:obj:`list` of :obj:`str`): attributes in a `SchemaChanges` instance
-        git_repo (:obj:`GitRepo`): a Git repo that defines the data model (schema) of the data being
+        schema_repo (:obj:`GitRepo`): a Git repo that defines the data model (schema) of the data being
             migrated
         schema_changes_file (:obj:`str`): the schema changes file
         commit_hash (:obj:`str`): hash from a schema changes file
@@ -1870,7 +1870,7 @@ class SchemaChanges(object):
     """
     _CHANGES_FILE_ATTRS = ['commit_hash', 'renamed_models', 'renamed_attributes', 'transformations_file']
 
-    _ATTRIBUTES = ['git_repo', 'transformations', 'schema_changes_file', 'commit_hash',
+    _ATTRIBUTES = ['schema_repo', 'transformations', 'schema_changes_file', 'commit_hash',
         'renamed_models', 'renamed_attributes', 'transformations_file']
 
     # template for the name of a schema changes file; the format placeholders are replaced
@@ -1878,9 +1878,9 @@ class SchemaChanges(object):
     _CHANGES_FILENAME_TEMPLATE = "schema_changes_{}_{}.yaml"
     _SHA1_LEN = 40
 
-    def __init__(self, git_repo=None, schema_changes_file=None, commit_hash=None, renamed_models=None,
+    def __init__(self, schema_repo=None, schema_changes_file=None, commit_hash=None, renamed_models=None,
         renamed_attributes=None, transformations_file=None):
-        self.git_repo = git_repo
+        self.schema_repo = schema_repo
         self.schema_changes_file = schema_changes_file
         self.commit_hash = commit_hash
         self.renamed_models = renamed_models
@@ -1894,7 +1894,7 @@ class SchemaChanges(object):
         Returns:
             :obj:`str`: the hash
         """
-        return self.git_repo.latest_hash()
+        return self.schema_repo.latest_hash()
 
     @staticmethod
     def get_date_timestamp():
@@ -1941,20 +1941,20 @@ class SchemaChanges(object):
         return [str(file) for file in files]
 
     @staticmethod
-    def all_schema_changes_with_commits(git_repo):
+    def all_schema_changes_with_commits(schema_repo):
         """ Instantiate all schema changes in a git repo
 
         Obtain all validated schema change files.
 
         Args:
-            git_repo (:obj:`GitRepo`): an initialized git repo
+            schema_repo (:obj:`GitRepo`): an initialized repo for the schema
 
         Returns:
             :obj:`tuple`: :obj:`list` of errors, :obj:`list` all validated schema change files
         """
         errors = []
         schema_changes_with_commits = []
-        migrations_directory = git_repo.migrations_dir()
+        migrations_directory = schema_repo.migrations_dir()
         for sc_file in SchemaChanges.all_schema_changes_files(migrations_directory):
             try:
                 hash_prefix = SchemaChanges.hash_prefix_from_sc_file(sc_file)
@@ -1967,7 +1967,7 @@ class SchemaChanges(object):
 
                 # ensure that the hash corresponds to a commit
                 try:
-                    git_repo.get_commit(commit_hash)
+                    schema_repo.get_commit(commit_hash)
                 except MigratorError:
                     errors.append("the hash in '{}', which is '{}', isn't the hash of a commit".format(
                         sc_file, sc_dict['commit_hash']))
@@ -1981,11 +1981,11 @@ class SchemaChanges(object):
         return errors, schema_changes_with_commits
 
     @staticmethod
-    def find_file(git_repo, commit_hash):
+    def find_file(schema_repo, commit_hash):
         """ Find a schema changes file in a git repo
 
         Args:
-            git_repo (:obj:`GitRepo`): an initialized git repo
+            schema_repo (:obj:`GitRepo`): an initialized repo for the schema
             commit_hash (:obj:`str`): a git commit hash
 
         Returns:
@@ -1998,7 +1998,7 @@ class SchemaChanges(object):
         # search with glob
         pattern = SchemaChanges._CHANGES_FILENAME_TEMPLATE.format('*',
             GitRepo.hash_prefix(commit_hash))
-        migrations_directory = git_repo.migrations_dir()
+        migrations_directory = schema_repo.migrations_dir()
         files = list(Path(migrations_directory).glob(pattern))
         num_files = len(files)
         if not num_files:
@@ -2017,7 +2017,7 @@ class SchemaChanges(object):
 
         # ensure that the hash corresponds to a commit
         try:
-            git_repo.get_commit(commit_hash)
+            schema_repo.get_commit(commit_hash)
         except MigratorError:
             raise MigratorError("the hash in '{}', which is '{}', isn't the hash of a commit".format(
                 schema_changes_file, sc_dict['commit_hash']))
@@ -2035,16 +2035,19 @@ class SchemaChanges(object):
         return SchemaChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_date_timestamp(),
             GitRepo.hash_prefix(self.get_hash()))
 
-    def make_template(self, changes_file_dir=None, verbose=False):
+    def make_template(self, schema_url=None, commit_hash=None, changes_file_dir=None):
         """ Make a template schema changes file
 
         The template includes the current repo hash and empty values for `SchemaChanges`
         attributes.
 
         Args:
+            schema_url (:obj:`str`, optional): URL of the schema repo; if not provided, `self.schema_repo`
+                must be already initialized
+            commit_hash (:obj:`str`, optional): hash of the schema repo commit which the template
+                schema changes file describes; default is the most recent commit
             changes_file_dir (:obj:`str`, optional): directory for the schema changes file; default is
-                migrations dir of current git repo
-            verbose (:obj:`bool`): whether to print status and reminder; default=False
+                migrations directory of current git repo
 
         Returns:
             :obj:`str`: pathname of the schema changes file that was written
@@ -2052,9 +2055,17 @@ class SchemaChanges(object):
         Raises:
             :obj:`MigratorError`: if the schema changes file already exists
         """
+        # todo: NEW: fully cover these
+        if schema_url:
+            # clone the schema at schema_url
+            self.schema_repo = GitRepo()
+            self.schema_repo.clone_repo_from_url(schema_url)
+        if commit_hash:
+            self.schema_repo.checkout_commit(commit_hash)
+
         filename = self.generate_filename()
-        if not changes_file_dir and self.git_repo:
-            changes_file_dir = self.git_repo.migrations_dir()
+        if not changes_file_dir and self.schema_repo:
+            changes_file_dir = self.schema_repo.migrations_dir()
 
         # if changes_file_dir doesn't exist, make it
         os.makedirs(changes_file_dir, exist_ok=True)
@@ -2075,10 +2086,8 @@ class SchemaChanges(object):
             )
             file.write(yaml.dump(template_data))
 
-        # add the config file to the git repo, and print message encouraging a commit
-        self.git_repo.repo.index.add([pathname])
-        if verbose:
-            print("created schema changes template '{}': edit it and run 'git commit'".format(pathname))
+        # add the config file to the git repo
+        self.schema_repo.repo.index.add([pathname])
         return pathname
 
     def import_transformations(self):
@@ -2556,6 +2565,28 @@ class GitRepo(object):
             self.repo.index.commit(message)
         except (git.exc.GitError, AttributeError) as e:
             raise MigratorError("commiting repo '{}' failed:\n{}".format(self.repo_name(), e))
+
+    def push(self):
+        """ Push the changes in this repo to remote
+
+        Raises:
+            :obj:`MigratorError`: if the push fails
+        """
+        try:
+            origin = self.repo.remotes.origin
+            ## adapted from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
+            # todo: NEW: are these needed if the repo is a clone? probably not
+            # create local branch "master" from remote "master"
+            self.repo.create_head('master', origin.refs.master)
+            # set local "master" to track remote "master
+            self.repo.heads.master.set_tracking_branch(origin.refs.master)
+            # checkout local "master" to working tree
+            self.repo.heads.master.checkout()
+            rv = origin.push()
+            if not rv:
+                raise MigratorError("push of repo '{}' failed".format(self.repo_name()))
+        except (git.exc.GitError, AttributeError) as e:
+            raise MigratorError("push of repo '{}' failed:\n{}".format(self.repo_name(), e))
 
     def get_dependents(self, commit_or_hash):
         """ Get all commits that depend on a commit, including transitively
@@ -3203,7 +3234,7 @@ class CementControllers(object):
     """
 
     class SchemaChangesTemplateController(Controller):
-        """ Create a schema changes file template """
+        """ Create a template schema changes file """
 
         class Meta:
             label = 'make_changes_template'
@@ -3211,33 +3242,30 @@ class CementControllers(object):
             stacked_type = 'embedded'
 
         @ex(
-            help='Create a schema changes template file',
+            help='Create a template schema changes file',
             arguments = [
                 (['schema_url'], {'type': str, 'help': 'URL of the schema repo'}),
                 (['--commit'], {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'})
             ]
         )
         def make_changes_template(self):
-            # todo: perhaps move this into SchemaChanges
-            # todo: catch exceptions and report them on stderr
+            # todo: NEW: catch exceptions and report them on stderr
             args = self.app.pargs
             print('args.schema_url', args.schema_url)
             print('args.commit', args.commit)
-            # clone the schema URL
-            schema_git_repo = GitRepo()
-            schema_git_repo.clone_repo_from_url(args.schema_url)
-            if args.commit:
-                checkout_commit(args.commit)
-            schema_changes = SchemaChanges(git_repo=schema_git_repo)
-            # create schema changes file template
-            schema_changes_template_file = schema_changes.make_template()
+            # create template schema changes file
+            schema_changes = SchemaChanges()
+            schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
+                commit_hash=args.commit)
             # add the file to the repo
-            schema_git_repo.add_file(schema_changes_template_file)
+            # todo: NEW: use or remove, depending on need:
+            # schema_changes.schema_repo.add_file(schema_changes_template_file)
             # commit & push a change containing the new schema changes file template
-            schema_git_repo.commit_changes("Add a schema changes template file for commit {}".format(
+            schema_changes.schema_repo.commit_changes("Add a schema changes template file for commit {}".format(
                 schema_git_repo.latest_hash()))
-
+            schema_changes.schema_repo.push()
             # output the URL for the template, and pointer to instructions to complete its contents
+            print("template schema changes file created in '{}'".format())
 
 
     class AutomatedMigrationConfigController(Controller):
@@ -3325,6 +3353,17 @@ class CementControllers(object):
         )
         def migrate_data(self):
             args = self.app.pargs
+
+
+    class BaseController(Controller):
+        """ Base controller for command line application """
+
+        class Meta:
+            label = 'base'
+
+        @ex(hide=True)
+        def _default(self):
+            self._parser.print_help()
 
 
 class VirtualEnvUtil(object):   # pragma: no cover
