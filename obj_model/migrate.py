@@ -2554,7 +2554,7 @@ class GitRepo(object):
         """
         try:
             self.repo.index.commit(message)
-        except git.exc.GitError as e:
+        except (git.exc.GitError, AttributeError) as e:
             raise MigratorError("commiting repo '{}' failed:\n{}".format(self.repo_name(), e))
 
     def get_dependents(self, commit_or_hash):

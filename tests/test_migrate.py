@@ -1927,13 +1927,17 @@ class TestGitRepo(AutoMigrationFixtures):
         super().setUp()
         self.repo_root = self.git_repo.repo_dir
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
-        config = core.get_config()['obj_model']
-        self.github_api_token = config['github_api_token']
-        self.test_github_repo_name = 'test_repo_1'
-        self.test_github_repo_url = self.make_test_repo(self.test_github_repo_name)
+        # test_github_repo is only needed by test_add_file_and_commit_changes
+        if self._testMethodName == 'test_add_file_and_commit_changes':
+            config = core.get_config()['obj_model']
+            self.github_api_token = config['github_api_token']
+            self.test_github_repo_name = 'test_repo_1'
+            self.test_github_repo_url = self.make_test_repo(self.test_github_repo_name)
+            self.test_github_repo = GitRepo(self.test_github_repo_url)
 
     def tearDown(self):
-        self.delete_test_repo(self.test_github_repo_name)
+        if self._testMethodName == 'test_add_file_and_commit_changes':
+            self.delete_test_repo(self.test_github_repo_name)
 
     def test_init(self):
         self.assertIsInstance(self.git_repo.repo, git.Repo)
@@ -2133,22 +2137,40 @@ class TestGitRepo(AutoMigrationFixtures):
             # checkout of commit from wrong repo will fail
             git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
 
-    def test_add_file(self):
-        new_file = os.path.join(self.git_repo.repo_dir, 'new_file')
-        open(new_file, "wb").close()
-        self.git_repo.add_file(new_file)
-        # todo: confirm that new_file has been added
+    def test_add_file_and_commit_changes(self):
+        empty_repo = self.test_github_repo.repo
+        origin = empty_repo.remotes.origin
+        ## instructions from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
+        # create local branch "master" from remote "master"
+        empty_repo.create_head('master', origin.refs.master)
+        # set local "master" to track remote "master
+        empty_repo.heads.master.set_tracking_branch(origin.refs.master)
+        # checkout local "master" to working tree
+        empty_repo.heads.master.checkout()
+        test_filename = 'new_file.txt'
+        new_file = os.path.join(self.test_github_repo.repo_dir, test_filename)
+        f = open(new_file, 'w')
+        text = '# new_file.txt'
+        f.write(text)
+        f.close()
+        self.test_github_repo.add_file(new_file)
+        self.test_github_repo.commit_changes('commit msg')
+        rv = origin.push()
+        if not rv:
+            self.fail('push() failed')
 
-        no_such_file = os.path.join(self.git_repo.repo_dir, 'no such file')
+        # confirm that new_file has been added
+        clone = GitRepo(self.test_github_repo_url)
+        cloned_file = os.path.join(clone.repo_dir, test_filename)
+        f = open(cloned_file, 'r')
+        self.assertEqual(text, f.read())
+
+        no_such_file = os.path.join(self.test_github_repo.repo_dir, 'no such file')
         with self.assertRaisesRegex(MigratorError, r"adding file '.+' to repo '\S+' failed:"):
-            self.git_repo.add_file(no_such_file)
+            self.test_github_repo.add_file(no_such_file)
 
-    def test_commit_changes(self):
-        new_file = os.path.join(self.git_repo.repo_dir, 'new_file')
-        open(new_file, "wb").close()
-        self.git_repo.add_file(new_file)
-        self.git_repo.commit_changes('new commit')
-        # todo: confirm that commit has been done
+        with self.assertRaisesRegex(MigratorError, r"commiting repo '\S+' failed:"):
+            self.test_github_repo.commit_changes(2)
 
     def check_dependency(self, sequence, DAG):
         # check that sequence satisfies "any nodes u, v with a path u -> ... -> v in the DAG appear in
