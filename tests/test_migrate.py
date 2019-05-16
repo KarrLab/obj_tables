@@ -2135,7 +2135,7 @@ class TestGitRepo(AutoMigrationFixtures):
             # checkout of commit from wrong repo will fail
             git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
 
-    # @unittest.skip("skip until obj_model.cfg is in karr_lab_build_config")
+    @unittest.skip("skip until obj_model.cfg is in karr_lab_build_config")
     def test_add_file_and_commit_changes(self):
         empty_repo = self.test_github_repo.repo
         origin = empty_repo.remotes.origin
@@ -2174,19 +2174,12 @@ class TestGitRepo(AutoMigrationFixtures):
     def test_push(self):
         # todo: NEW
         '''
-        check this by hand:
-            copy an existing GitHub repo to a new GitHub repo
-            clone the new repo
-            make & commit a change
-            push the change
-            test by cloning the new repo again and checking whether it contains the change
-            delete the new GitHub repo
-        or:
-            clone an existing GitHub repo
-            make & commit a change
-            push the change
-            test by cloning the repo again and checking whether it contains the change
-            rollback the commit
+        create and push new repo using technique in test_add_file_and_commit_changes
+        then clone it
+        make & commit a change
+        push the change
+        test the push by cloning the repo again and checking whether it contains the change
+        delete the new repo
         '''
         pass
 
