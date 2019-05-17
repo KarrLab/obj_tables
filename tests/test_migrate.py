@@ -11,8 +11,6 @@
 # todo: cleanup use of temp dirs & files
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
-SKIP_FOR_SPEED = True
-
 from argparse import Namespace
 from itertools import chain
 from networkx.algorithms.shortest_paths.generic import has_path
@@ -336,7 +334,6 @@ class MigrationFixtures(unittest.TestCase):
             remove_silently(file)
 
 
-@unittest.skipIf(SKIP_FOR_SPEED, "SKIP_FOR_SPEED")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -689,7 +686,6 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-@unittest.skipIf(SKIP_FOR_SPEED, "SKIP_FOR_SPEED")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1349,7 +1345,6 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-@unittest.skipIf(SKIP_FOR_SPEED, "SKIP_FOR_SPEED")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1537,7 +1532,6 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-@unittest.skipIf(SKIP_FOR_SPEED, "SKIP_FOR_SPEED")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -1919,7 +1913,7 @@ class TestGitRepo(AutoMigrationFixtures):
         # return its URL
         g = github.Github(self.github_api_token)
         org = g.get_organization('KarrLab')
-        org.create_repo(name=name, private=True, auto_init=True)
+        org.create_repo(name=name, private=False, auto_init=True)
         return 'https://github.com/KarrLab/{}.git'.format(name)
 
     def delete_test_repo(self, name):
@@ -1935,8 +1929,15 @@ class TestGitRepo(AutoMigrationFixtures):
         if self._testMethodName == 'test_add_file_and_commit_changes':
             config = core.get_config()['obj_model']
             self.github_api_token = config['github_api_token']
-            print('self.github_api_token', self.github_api_token)
             self.test_github_repo_name = 'test_repo_1'
+            try:
+                # delete test_github_repo_name so prior failures to delete it won't cause trouble
+                # trapping all exceptions, since the delete will likely fail
+                self.delete_test_repo(self.test_github_repo_name)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                pass
             self.test_github_repo_url = self.make_test_repo(self.test_github_repo_name)
             self.test_github_repo = GitRepo(self.test_github_repo_url)
 
@@ -2142,7 +2143,6 @@ class TestGitRepo(AutoMigrationFixtures):
             # checkout of commit from wrong repo will fail
             git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
 
-    @unittest.skip("skip until obj_model.cfg is in karr_lab_build_config")
     def test_add_file_and_commit_changes(self):
         empty_repo = self.test_github_repo.repo
         origin = empty_repo.remotes.origin
@@ -2262,7 +2262,6 @@ class TestGitRepo(AutoMigrationFixtures):
                 self.assertIn(a, v)
 
 
-@unittest.skipIf(SKIP_FOR_SPEED, "SKIP_FOR_SPEED")
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestAutomatedMigration(AutoMigrationFixtures):
 
@@ -2531,7 +2530,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.assertRegex(str_val, "{}: .+".format(attr))
 
 
-@unittest.skipIf(SKIP_FOR_SPEED, "SKIP_FOR_SPEED")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):

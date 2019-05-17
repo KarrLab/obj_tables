@@ -30,6 +30,5 @@ def get_config(extra=None):
             os.path.expanduser('~/.wc/obj_model.cfg'),
         ),
     )
-    print('paths', paths)
 
     return wc_utils.config.core.ConfigManager(paths).get_config(extra=extra)
