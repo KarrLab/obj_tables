@@ -11,7 +11,7 @@
 # todo: cleanup use of temp dirs & files
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
-SPEED_UP_TESTING = True
+SPEED_UP_TESTING = False
 
 
 from argparse import Namespace

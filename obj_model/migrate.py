@@ -3250,22 +3250,34 @@ class CementControllers(object):
             ]
         )
         def make_changes_template(self):
-            # todo: NEW: catch exceptions and report them on stderr
+            """ Make a template schema changes file in the schema repo, and git push it to remote
+
+            Output the URL of the created file to `stdout`, or errors to `stderr`
+            """
+            # output the URL for the template, and pointer to instructions to complete its contents
             args = self.app.pargs
             print('args.schema_url', args.schema_url)
             print('args.commit', args.commit)
-            # create template schema changes file
             schema_changes = SchemaChanges()
-            schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
-                commit_hash=args.commit)
-            # add the file to the repo
-            # todo: NEW: use or remove, depending on need:
-            # schema_changes.schema_repo.add_file(schema_changes_template_file)
-            # commit & push a change containing the new schema changes file template
-            schema_changes.schema_repo.commit_changes("Add a schema changes template file for commit {}".format(
-                schema_git_repo.latest_hash()))
-            schema_changes.schema_repo.push()
-            # output the URL for the template, and pointer to instructions to complete its contents
+            # todo: NEW: finish catch exceptions and report them on stderr
+            try:
+                # create template schema changes file
+                schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
+                    commit_hash=args.commit)
+                # add the file to the repo
+                # todo: NEW: use or remove, depending on need:
+                # schema_changes.schema_repo.add_file(schema_changes_template_file)
+                # commit & push a change containing the new schema changes file template
+                schema_changes.schema_repo.commit_changes("Add a schema changes template file for commit {}".format(
+                    schema_git_repo.latest_hash()))
+                schema_changes.schema_repo.push()
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except MigratorError as e:
+                # or         app.log.fatal('Caught Exception: %s' % e)
+                print("make_changes_template failed in migrator: '{}'".format(e), file=sys.stderr)
+            except Exception as e:
+                print("make_changes_template failed: '{}'".format(e), file=sys.stderr)
             print("template schema changes file created in '{}'".format())
 
 
