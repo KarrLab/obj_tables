@@ -1789,6 +1789,19 @@ class TestSchemaChanges(AutoMigrationFixtures):
                 self.assertIsInstance(data[attr], str)
             os.remove(pathname)
 
+        schema_changes = SchemaChanges()
+        path = schema_changes.make_template(schema_url=self.test_repo_url)
+        self.assertTrue(os.path.isfile(path))
+        schema_changes_files = SchemaChanges.all_schema_changes_files(
+            schema_changes.schema_repo.migrations_dir())
+        self.assertIn(path, schema_changes_files)
+
+        path = self.schema_changes.make_template(commit_hash=self.known_hash_ba1f9d3)
+        self.assertTrue(os.path.isfile(path))
+        schema_changes_files = SchemaChanges.all_schema_changes_files(
+            self.schema_changes.schema_repo.migrations_dir())
+        self.assertIn(path, schema_changes_files)
+
         # instantly create two, which will likely have the same timestamp
         pathname = self.empty_schema_changes.make_template(changes_file_dir=self.empty_migrations_dir)
         with self.assertRaisesRegex(MigratorError, "schema changes file '.+' already exists"):

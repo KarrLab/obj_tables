@@ -2055,7 +2055,6 @@ class SchemaChanges(object):
         Raises:
             :obj:`MigratorError`: if the schema changes file already exists
         """
-        # todo: NEW: fully cover these
         if schema_url:
             # clone the schema at schema_url
             self.schema_repo = GitRepo()
