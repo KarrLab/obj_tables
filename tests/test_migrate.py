@@ -2135,7 +2135,7 @@ class TestGitRepo(AutoMigrationFixtures):
             # checkout of commit from wrong repo will fail
             git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
 
-    # @unittest.skip("skip until obj_model.cfg is in karr_lab_build_config")
+    @unittest.skip("skip until obj_model.cfg is in karr_lab_build_config")
     def test_add_file_and_commit_changes(self):
         empty_repo = self.test_github_repo.repo
         origin = empty_repo.remotes.origin
