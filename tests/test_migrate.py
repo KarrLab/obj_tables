@@ -1934,10 +1934,14 @@ class TestGitRepo(AutoMigrationFixtures):
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
         # test_github_repo is only needed by test_add_file_and_commit_changes
         if self._testMethodName == 'test_add_file_and_commit_changes':
+            print()
             config = core.get_config()['obj_model']
             self.github_api_token = config['github_api_token']
             self.test_github_repo_name = 'test_repo_1'
             print('self.github_api_token', self.github_api_token)
+            # todo: NEW
+            # alternatively, each time could make & delete new repo; and clean up extras later
+            # would do this in a different organization
             try:
                 # delete test_github_repo_name so prior failures to delete it won't cause trouble
                 # trapping all exceptions, since the delete will likely fail
@@ -2155,8 +2159,10 @@ class TestGitRepo(AutoMigrationFixtures):
 
     # @unittest.skip("test not working on Circle yet")
     def test_add_file_and_commit_changes(self):
+        print()
         empty_repo = self.test_github_repo.repo
         origin = empty_repo.remotes.origin
+        print('type(origin)', type(origin))
         ## instructions from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
         # create local branch "master" from remote "master"
         empty_repo.create_head('master', origin.refs.master)
@@ -2172,8 +2178,9 @@ class TestGitRepo(AutoMigrationFixtures):
         f.close()
         self.test_github_repo.add_file(new_file)
         self.test_github_repo.commit_changes('commit msg')
-        print('', )
+        print('self.github_api_token', self.github_api_token)
         rv = origin.push()
+        print('rv[0].summary', rv[0].summary)
         if not rv:
             self.fail('push() failed')
 
