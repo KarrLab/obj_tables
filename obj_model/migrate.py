@@ -2053,7 +2053,9 @@ class SchemaChanges(object):
             :obj:`str`: pathname of the schema changes file that was written
 
         Raises:
-            :obj:`MigratorError`: if the schema changes file already exists
+            :obj:`MigratorError`: if a repo cannot be cloned from `schema_url`, or
+                checked out from `commit_hash`, or
+                the schema changes file already exists
         """
         if schema_url:
             # clone the schema at schema_url
