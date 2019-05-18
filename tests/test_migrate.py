@@ -2287,6 +2287,11 @@ class TestGitRepo(AutoMigrationFixtures):
             with open(another_copy_of_new_file, 'r') as f:
                 self.assertEqual(content, f.read())
 
+        # push of an uninitialized GitRepo fails
+        empty_repo = GitRepo()
+        with self.assertRaisesRegex(MigratorError, "push of repo '\S+' failed"):
+            empty_repo.push()
+
     def check_dependency(self, sequence, DAG):
         # check that sequence satisfies "any nodes u, v with a path u -> ... -> v in the DAG appear in
         # the same order in the sequence"
