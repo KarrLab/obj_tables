@@ -2267,6 +2267,7 @@ class GitRepo(object):
 
     _HASH_PREFIX_LEN = 7
 
+    # todo: support branch
     def __init__(self, repo_location=None, search_parent_directories=False, original_location=None):
         """ Initialize a `GitRepo` from an existing Git repo
 
@@ -2323,11 +2324,12 @@ class GitRepo(object):
         for temp_dir in self.temp_dirs:
             shutil.rmtree(temp_dir)
 
-    def clone_repo_from_url(self, url, directory=None):
+    def clone_repo_from_url(self, url, branch='master', directory=None):
         """ Clone a repo from an URL
 
         Args:
             url (:obj:`str`): URL for the repo
+            branch (:obj:`str`, optional): branch to clone; default is `master`
             directory (:obj:`str`, optional): directory to hold the repo; if not provided, the repo
                 is stored in a new temporary dir
 
@@ -2575,19 +2577,12 @@ class GitRepo(object):
         """
         try:
             origin = self.repo.remotes.origin
-            ## adapted from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
-            # todo: NEW: are these needed if the repo is a clone? probably not
-            # create local branch "master" from remote "master"
-            self.repo.create_head('master', origin.refs.master)
-            # set local "master" to track remote "master
-            self.repo.heads.master.set_tracking_branch(origin.refs.master)
-            # checkout local "master" to working tree
-            self.repo.heads.master.checkout()
             rv = origin.push()
             if not rv:
                 raise MigratorError("push of repo '{}' failed".format(self.repo_name()))
         except (git.exc.GitError, AttributeError) as e:
             raise MigratorError("push of repo '{}' failed:\n{}".format(self.repo_name(), e))
+        return rv
 
     def get_dependents(self, commit_or_hash):
         """ Get all commits that depend on a commit, including transitively

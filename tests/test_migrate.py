@@ -2044,6 +2044,7 @@ class TestGitRepo(AutoMigrationFixtures):
             self.assertFalse(os.path.isdir(d))
 
     def test_clone_repo_from_url(self):
+        # todo: test branch
         repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url)
         self.assertIsInstance(repo, git.Repo)
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
@@ -2253,16 +2254,38 @@ class TestGitRepo(AutoMigrationFixtures):
             self.test_github_repo.commit_changes(2)
 
     def test_push(self):
-        # todo: NEW
-        '''
-        create and push new repo using technique in test_add_file_and_commit_changes
-        then clone it
-        make & commit a change
-        push the change
-        test the push by cloning the repo again and checking whether it contains the change
-        delete the new repo
-        '''
-        pass
+        test_branch = 'test_branch_for_test_push'
+        # make new branch of existing repo
+        with RemoteBranch('test_repo', test_branch):
+
+            # clone the repo
+            local_repo = GitRepo()
+            local_repo.clone_repo_from_url(self.test_repo_url, branch=test_branch)
+
+            # create a new file & add it to the repo
+            test_filename = 'new_file.txt'
+            new_file = os.path.join(local_repo.repo_dir, test_filename)
+            with open(new_file, 'w') as f:
+                content = '# new_file.txt'
+                f.write(content)
+            self.assertTrue(os.path.isfile(new_file))
+            local_repo.repo.index.add([new_file])
+
+            # commit the repo
+            local_repo.commit_changes("test commit of 'test_repo':'{}'".format(test_branch))
+
+            # push the repo
+            push_result = local_repo.push()
+
+            # clone the new branch again
+            another_local_repo = GitRepo()
+            another_local_repo.clone_repo_from_url(self.test_repo_url, branch=test_branch)
+
+            # check whether it contains the new file
+            another_copy_of_new_file = os.path.join(another_local_repo.repo_dir, test_filename)
+            self.assertTrue(os.path.isfile(another_copy_of_new_file))
+            with open(another_copy_of_new_file, 'r') as f:
+                self.assertEqual(content, f.read())
 
     def check_dependency(self, sequence, DAG):
         # check that sequence satisfies "any nodes u, v with a path u -> ... -> v in the DAG appear in
@@ -2651,7 +2674,6 @@ class App(cement.App):
         label = 'obj-model'
         base_controller = 'base'
         handlers = [
-            CementControllers.BaseController,
             CementControllers.SchemaChangesTemplateController,
             CementControllers.AutomatedMigrationConfigController,
             CementControllers.TestMigrationController,
