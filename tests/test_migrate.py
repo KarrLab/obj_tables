@@ -15,6 +15,7 @@ SPEED_UP_TESTING = False
 
 
 from argparse import Namespace
+from github import Github
 from itertools import chain
 from networkx.algorithms.shortest_paths.generic import has_path
 from pathlib import Path
@@ -1917,6 +1918,32 @@ class TestSchemaChanges(AutoMigrationFixtures):
             self.assertIn(attr, str(self.schema_changes))
 
 
+def get_github_api_token():
+    config = core.get_config()['obj_model']
+    return config['github_api_token']
+
+class RemoteBranch(object):
+    """ Manage branches on GitHub """
+
+    def __init__(self, repo_name):
+        self.repo_name = repo_name
+        self.github = Github(get_github_api_token())
+        self.repo = self.github.get_repo("KarrLab/{}".format(repo_name))
+        master = self.repo.get_branch(branch="master")
+        self.head = master.commit
+
+    def make_branch(self, branch_name):
+        self.branch_name = branch_name
+        fully_qualified_ref = "refs/heads/{}".format(branch_name)
+        self.branch_ref = self.repo.create_git_ref(fully_qualified_ref, self.head.sha)
+        if not self.branch_ref:
+            raise ValueError("couldn't make branch '{}'".format(branch_name))
+        return self.branch_ref
+
+    def delete_branch(self):
+        return self.branch_ref.delete()
+
+
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(AutoMigrationFixtures):
 
@@ -1931,13 +1958,13 @@ class TestGitRepo(AutoMigrationFixtures):
     def make_test_repo(self, name):
         # create a test GitHub repository
         # return its URL
-        g = github.Github(self.github_api_token)
+        g = github.Github(get_github_api_token())
         org = g.get_organization('KarrLab')
         org.create_repo(name=name, private=False, auto_init=True)
         return 'https://github.com/KarrLab/{}.git'.format(name)
 
     def delete_test_repo(self, name):
-        g = github.Github(self.github_api_token)
+        g = github.Github(get_github_api_token())
         repo = g.get_repo("KarrLab/{}".format(name))
         repo.delete()
 
@@ -1948,13 +1975,9 @@ class TestGitRepo(AutoMigrationFixtures):
         # test_github_repo is only needed by test_add_file_and_commit_changes
         if self._testMethodName == 'test_add_file_and_commit_changes':
             print()
-            config = core.get_config()['obj_model']
-            self.github_api_token = config['github_api_token']
+            self.github_api_token = get_github_api_token()
             self.test_github_repo_name = 'test_repo_1'
             print('self.github_api_token', self.github_api_token)
-            # todo: NEW
-            # alternatively, each time could make & delete new repo; and clean up extras later
-            # would do this in a different organization
             try:
                 # delete test_github_repo_name so prior failures to delete it won't cause trouble
                 # trapping all exceptions, since the delete will likely fail
@@ -1971,6 +1994,15 @@ class TestGitRepo(AutoMigrationFixtures):
     def tearDown(self):
         if self._testMethodName == 'test_add_file_and_commit_changes':
             self.delete_test_repo(self.test_github_repo_name)
+
+    def test_remote_branch_utils(self):
+        repo_name = 'test_x'
+        self.make_test_repo(repo_name)
+        remote_branch = RemoteBranch(repo_name)
+        test_branch = 'test_branch_2'
+        self.assertTrue(remote_branch.make_branch(test_branch))
+        self.assertFalse(remote_branch.delete_branch())
+        self.delete_test_repo(repo_name)
 
     def test_init(self):
         self.assertIsInstance(self.git_repo.repo, git.Repo)
