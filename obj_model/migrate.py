@@ -3259,25 +3259,17 @@ class CementControllers(object):
             print('args.schema_url', args.schema_url)
             print('args.commit', args.commit)
             schema_changes = SchemaChanges()
-            # todo: NEW: finish catch exceptions and report them on stderr
-            try:
-                # create template schema changes file
-                schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
-                    commit_hash=args.commit)
-                # add the file to the repo
-                # todo: NEW: use or remove, depending on need:
-                # schema_changes.schema_repo.add_file(schema_changes_template_file)
-                # commit & push a change containing the new schema changes file template
-                schema_changes.schema_repo.commit_changes("Add a schema changes template file for commit {}".format(
-                    schema_git_repo.latest_hash()))
-                schema_changes.schema_repo.push()
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except MigratorError as e:
-                # or         app.log.fatal('Caught Exception: %s' % e)
-                print("make_changes_template failed in migrator: '{}'".format(e), file=sys.stderr)
-            except Exception as e:
-                print("make_changes_template failed: '{}'".format(e), file=sys.stderr)
+            # create template schema changes file
+            schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
+                commit_hash=args.commit)
+            # add the file to the repo
+            # todo: NEW: use or remove, depending on need:
+            # schema_changes.schema_repo.add_file(schema_changes_template_file)
+            # commit & push a change containing the new schema changes file template
+            schema_changes.schema_repo.commit_changes("Add a schema changes template file for commit {}".format(
+                schema_git_repo.latest_hash()))
+            schema_changes.schema_repo.push()
+            # or         app.log.fatal('Caught Exception: %s' % e)
             print("template schema changes file created in '{}'".format())
 
 
@@ -3366,17 +3358,6 @@ class CementControllers(object):
         )
         def migrate_data(self):
             args = self.app.pargs
-
-
-    class BaseController(Controller):
-        """ Base controller for command line application """
-
-        class Meta:
-            label = 'base'
-
-        @ex(hide=True)
-        def _default(self):
-            self._parser.print_help()
 
 
 class VirtualEnvUtil(object):   # pragma: no cover
