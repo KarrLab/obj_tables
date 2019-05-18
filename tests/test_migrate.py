@@ -1922,19 +1922,20 @@ def get_github_api_token():
     config = core.get_config()['obj_model']
     return config['github_api_token']
 
+
 class RemoteBranch(object):
     """ Manage branches on GitHub """
 
-    def __init__(self, repo_name):
+    def __init__(self, repo_name, branch_name):
         self.repo_name = repo_name
+        self.branch_name = branch_name
         self.github = Github(get_github_api_token())
         self.repo = self.github.get_repo("KarrLab/{}".format(repo_name))
         master = self.repo.get_branch(branch="master")
         self.head = master.commit
 
-    def make_branch(self, branch_name):
-        self.branch_name = branch_name
-        fully_qualified_ref = "refs/heads/{}".format(branch_name)
+    def make_branch(self):
+        fully_qualified_ref = "refs/heads/{}".format(self.branch_name)
         self.branch_ref = self.repo.create_git_ref(fully_qualified_ref, self.head.sha)
         if not self.branch_ref:
             raise ValueError("couldn't make branch '{}'".format(branch_name))
@@ -1942,6 +1943,12 @@ class RemoteBranch(object):
 
     def delete_branch(self):
         return self.branch_ref.delete()
+
+    def __enter__(self):
+        return self.make_branch()
+
+    def __exit__(self, type, value, traceback):
+        self.delete_branch()
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
@@ -1968,41 +1975,45 @@ class TestGitRepo(AutoMigrationFixtures):
         repo = g.get_repo("KarrLab/{}".format(name))
         repo.delete()
 
+    def delete_test_repos(self, test_repos):
+        for repo in test_repos:
+            try:
+                # trap all exceptions, since the delete might fail
+                self.delete_test_repo(repo)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                pass
+
     def setUp(self):
         super().setUp()
         self.repo_root = self.git_repo.repo_dir
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
+        self.branch_test_repo = 'branch_test_repo'
+        self.test_github_repo_name = 'test_repo_1'
         # test_github_repo is only needed by test_add_file_and_commit_changes
         if self._testMethodName == 'test_add_file_and_commit_changes':
             print()
-            self.github_api_token = get_github_api_token()
-            self.test_github_repo_name = 'test_repo_1'
-            print('self.github_api_token', self.github_api_token)
-            try:
-                # delete test_github_repo_name so prior failures to delete it won't cause trouble
-                # trapping all exceptions, since the delete will likely fail
-                self.delete_test_repo(self.test_github_repo_name)
-                print('deleted', self.test_github_repo_name)
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                print('did not delete', self.test_github_repo_name)
-                pass
+            print('github_api_token', get_github_api_token())
+            # delete test_github_repo_name so prior failures to delete it won't cause trouble
+            self.delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
             self.test_github_repo_url = self.make_test_repo(self.test_github_repo_name)
             self.test_github_repo = GitRepo(self.test_github_repo_url)
 
     def tearDown(self):
-        if self._testMethodName == 'test_add_file_and_commit_changes':
-            self.delete_test_repo(self.test_github_repo_name)
+        self.delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
 
     def test_remote_branch_utils(self):
-        repo_name = 'test_x'
-        self.make_test_repo(repo_name)
-        remote_branch = RemoteBranch(repo_name)
-        test_branch = 'test_branch_2'
-        self.assertTrue(remote_branch.make_branch(test_branch))
+        self.make_test_repo(self.branch_test_repo)
+        test_branch = 'test_branch_x'
+        remote_branch = RemoteBranch(self.branch_test_repo, test_branch)
+        self.assertTrue(remote_branch.make_branch())
         self.assertFalse(remote_branch.delete_branch())
-        self.delete_test_repo(repo_name)
+        with RemoteBranch(self.branch_test_repo, test_branch) as branch_ref:
+            self.assertTrue(branch_ref)
+        with RemoteBranch(self.branch_test_repo, test_branch):
+            pass
+        self.delete_test_repo(self.branch_test_repo)
 
     def test_init(self):
         self.assertIsInstance(self.git_repo.repo, git.Repo)
@@ -2223,7 +2234,6 @@ class TestGitRepo(AutoMigrationFixtures):
         f.close()
         self.test_github_repo.add_file(new_file)
         self.test_github_repo.commit_changes('commit msg')
-        print('self.github_api_token', self.github_api_token)
         rv = origin.push()
         print('rv[0].summary', rv[0].summary)
         if not rv:
