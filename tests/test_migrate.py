@@ -2689,7 +2689,7 @@ class App(cement.App):
 
 
 # todo: perhaps move GitRepo, RepoTestingContext and RemoteBranch to wc_utils
-# todo: delete the tmp dirs storing clones of a git repo made by RepoTestingContext.__exit__
+# todo: automatically delete the tmp dirs storing clones of a git repo made by RepoTestingContext.__exit__
 # could do this with a tempfile.TemporaryDirectory context and GitRepo as a context that takes a tmp dir
 class RepoTestingContext(object):
     """ A context for testing modifications to a repo hosted on a git server
@@ -2748,6 +2748,9 @@ class RepoTestingContext(object):
         # push the repo
         push_result = self.local_repo.push()
 
+        # delete the temp dir holding self.local_repo
+        self.local_repo.del_temp_dirs()
+
         # clone the new branch again
         another_local_repo = GitRepo()
         another_local_repo.clone_repo_from_url(self.repo_url, branch=self.branch_name)
@@ -2775,11 +2778,15 @@ class TestRepoTestingContext(AutoMigrationFixtures):
                 self.assertFalse(properties)
                 self.assertEqual(local_repo.repo_url, self.test_repo_url)
                 self.assertEqual(local_repo.branch, test_branch)
+                self.assertTrue(os.path.isdir(local_repo.repo_dir))
+
             self.assertTrue(clone_key in properties)
             self.assertTrue(isinstance(properties[clone_key], GitRepo))
             new_clone = properties[clone_key]
             self.assertEqual(new_clone.repo_url, self.test_repo_url)
             self.assertEqual(new_clone.branch, test_branch)
+            self.assertFalse(os.path.isdir(local_repo.repo_dir))
+        new_clone.del_temp_dirs()
 
         with self.assertRaisesRegex(MigratorError, "properties must be a dict, but it is a"):
             RepoTestingContext(self.test_repo_url, test_branch, 2, '')
