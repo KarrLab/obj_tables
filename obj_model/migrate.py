@@ -2035,6 +2035,7 @@ class SchemaChanges(object):
         return SchemaChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_date_timestamp(),
             GitRepo.hash_prefix(self.get_hash()))
 
+    # todo: New: support branches
     def make_template(self, schema_url=None, commit_hash=None, changes_file_dir=None):
         """ Make a template schema changes file
 
@@ -2346,7 +2347,8 @@ class GitRepo(object):
         elif not os.path.isdir(directory):
             raise MigratorError("'{}' is not a directory".format(directory))
         try:
-            repo = git.Repo.clone_from(url, directory)
+            kwargs = {'branch': branch}
+            repo = git.Repo.clone_from(url, directory, **kwargs)
         except Exception as e:
             raise MigratorError("repo cannot be cloned from '{}'\n{}".format(url, e))
         self.repo = repo
@@ -3253,8 +3255,7 @@ class CementControllers(object):
             Output the URL of the created file to `stdout`, or errors to `stderr`
             """
             args = self.app.pargs
-            print('args.schema_url', args.schema_url)
-            print('args.commit', args.commit)
+            print('args:', args)
             schema_changes = SchemaChanges()
             # create template schema changes file
             schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
@@ -3265,8 +3266,7 @@ class CementControllers(object):
             schema_changes.schema_repo.commit_changes(
                 "Add a schema changes template file for commit: {}".format(args.commit))
             schema_changes.schema_repo.push()
-            # or         app.log.fatal('Caught Exception: %s' % e)
-            print("template schema changes file created in '{}'".format())
+            print("template schema changes file created in '{}'".format(schema_changes_template_file))
 
 
     class AutomatedMigrationConfigController(Controller):

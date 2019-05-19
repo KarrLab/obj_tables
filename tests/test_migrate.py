@@ -1923,12 +1923,15 @@ def get_github_api_token():
     return config['github_api_token']
 
 
+# todo: New: more docstrings
 class RemoteBranch(object):
-    """ Manage branches on GitHub """
+    """ Make branches on GitHub """
 
-    def __init__(self, repo_name, branch_name):
+    def __init__(self, repo_name, branch_name, delete=True):
         self.repo_name = repo_name
         self.branch_name = branch_name
+        self.delete = delete
+
         self.github = Github(get_github_api_token())
         self.repo = self.github.get_repo("KarrLab/{}".format(repo_name))
         master = self.repo.get_branch(branch="master")
@@ -1948,7 +1951,8 @@ class RemoteBranch(object):
         return self.make_branch()
 
     def __exit__(self, type, value, traceback):
-        self.delete_branch()
+        if self.delete:
+            self.delete_branch()
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
@@ -2044,13 +2048,27 @@ class TestGitRepo(AutoMigrationFixtures):
             self.assertFalse(os.path.isdir(d))
 
     def test_clone_repo_from_url(self):
-        # todo: test branch
         repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url)
         self.assertIsInstance(repo, git.Repo)
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
         repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url,
             directory=self.make_tmp_dir())
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
+
+        # test branch
+        test_branch = 'branch_for_test_clone_repo_from_url'
+        # make new branch
+        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+
+            # clone the branch
+            git_repo = GitRepo()
+            repo, directory = git_repo.clone_repo_from_url(self.test_repo_url, branch=test_branch)
+            self.assertEqual(git_repo.branch, test_branch)
+            self.assertTrue(os.path.isdir(directory))
+
+        # cloning branch that no longer exists should raise exception
+        with self.assertRaisesRegex(MigratorError, "repo cannot be cloned from"):
+            git_repo.clone_repo_from_url(self.test_repo_url, branch=test_branch)
 
         bad_dir = '/asdfdsf/no such dir'
         with self.assertRaisesRegex(MigratorError, "'.+' is not a directory"):
@@ -2214,12 +2232,10 @@ class TestGitRepo(AutoMigrationFixtures):
             # checkout of commit from wrong repo will fail
             git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
 
-    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "run if debugging on Circle")
+    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_add_file_and_commit_changes(self):
-        print()
         empty_repo = self.test_github_repo.repo
         origin = empty_repo.remotes.origin
-        print('type(origin)', type(origin))
         ## instructions from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
         # create local branch "master" from remote "master"
         empty_repo.create_head('master', origin.refs.master)
@@ -2253,7 +2269,7 @@ class TestGitRepo(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, r"commiting repo '\S+' failed:"):
             self.test_github_repo.commit_changes(2)
 
-    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "run if debugging on Circle")
+    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_push(self):
         test_branch = 'test_branch_for_test_push'
         # make new branch of existing repo
@@ -2674,20 +2690,6 @@ class TestRunMigration(MigrationFixtures):
                     remove_silently(migrated_file)
 
 
-class App(cement.App):
-    """ Define App to facilitate testing. """
-    class Meta:
-        label = 'obj-model'
-        base_controller = 'base'
-        handlers = [
-            CementControllers.SchemaChangesTemplateController,
-            CementControllers.AutomatedMigrationConfigController,
-            CementControllers.TestMigrationController,
-            CementControllers.MigrateController,
-            CementControllers.MigrateFileController
-        ]
-
-
 # todo: perhaps move GitRepo, RepoTestingContext and RemoteBranch to wc_utils
 # todo: automatically delete the tmp dirs storing clones of a git repo made by RepoTestingContext.__exit__
 # could do this with a tempfile.TemporaryDirectory context and GitRepo as a context that takes a tmp dir
@@ -2709,9 +2711,12 @@ class RepoTestingContext(object):
         branch_name (:obj:`str`): the repo's branch being tested
         properties (:obj:`dict`): a `dict` used by the context to return results after `__exit__`;
             the repo's cloned branch is provided by `__exit__` as `properties[clone_of_push]`
-        clone_of_push (:obj:`str`): key for the repo's cloned branch is provided by `__exit__`
+        clone_of_push (:obj:`str`): key for the repo's cloned branch is provided by `__exit__`;
+            default is `clone_of_push`
     """
-    def __init__(self, repo_url, branch_name, properties, clone_of_push):
+    CLONE_OF_PUSH = 'clone_of_push'
+
+    def __init__(self, repo_url, branch_name, properties, clone_of_push=CLONE_OF_PUSH):
         """ Initialize a RepoTestingContext
 
         Raises:
@@ -2757,6 +2762,7 @@ class RepoTestingContext(object):
         self.properties[self.clone_of_push] = another_local_repo
 
 
+@unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestRepoTestingContext(AutoMigrationFixtures):
 
     @classmethod
@@ -2767,7 +2773,7 @@ class TestRepoTestingContext(AutoMigrationFixtures):
     def tearDownClass(cls):
         super().tearDownClass()
 
-    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "run if debugging on Circle")
+    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_repo_testing_context(self):
         test_branch = 'branch_for_testing_repo_testing_context'
         with RemoteBranch(self.git_repo.repo_name(), test_branch):
@@ -2791,14 +2797,36 @@ class TestRepoTestingContext(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "properties must be a dict, but it is a"):
             RepoTestingContext(self.test_repo_url, test_branch, 2, '')
 
-@unittest.skipUnless(internet_connected(), "Internet not connected")
-class TestCementControllers(unittest.TestCase):
 
+class App(cement.App):
+    """ Define App to facilitate testing. """
+    class Meta:
+        label = 'obj-model'
+        base_controller = 'base'
+        handlers = [
+            CementControllers.SchemaChangesTemplateController,
+            CementControllers.AutomatedMigrationConfigController,
+            CementControllers.TestMigrationController,
+            CementControllers.MigrateController,
+            CementControllers.MigrateFileController
+        ]
+
+
+@unittest.skipUnless(internet_connected(), "Internet not connected")
+@unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
+class TestCementControllers(AutoMigrationFixtures):
+
+    # todo: New: check that template schema changes file is made and pushed to the right repo
+    # todo: New: check that illegal arguments produce reasonable errors
     def test_make_changes_template(self):
-        '''
-        create new branch of test_repo
-        '''
-        pass
+        test_branch = 'branch_for_test_make_changes_template'
+        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+
+            argv = ['make-changes-template', self.test_repo_url, ]
+            with App(argv=argv) as app:
+                with capturer.CaptureOutput() as captured:
+                    app.run()
+                    # self.assertEqual(captured.get_text(), 'Arg = `{}`'.format(argv[0]))
 
     def test_make_migration_config_file(self):
         pass
