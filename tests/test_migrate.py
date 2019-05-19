@@ -12,7 +12,7 @@
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
 SPEED_UP_TESTING = False
-DONT_DEBUG_ON_CIRCLE = False
+DONT_DEBUG_ON_CIRCLE = True
 
 from argparse import Namespace
 from github import Github
