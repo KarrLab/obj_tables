@@ -11,8 +11,8 @@
 # todo: cleanup use of temp dirs & files
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
-SPEED_UP_TESTING = True
-DONT_DEBUG_ON_CIRCLE = True
+SPEED_UP_TESTING = False
+DONT_DEBUG_ON_CIRCLE = False
 
 from argparse import Namespace
 from github import Github
@@ -2688,20 +2688,60 @@ class App(cement.App):
         ]
 
 
+# todo: perhaps move GitRepo, RepoTestingContext and RemoteBranch to wc_utils
+# todo: delete the tmp dirs storing clones of a git repo made by RepoTestingContext.__exit__
+# could do this with a tempfile.TemporaryDirectory context and GitRepo as a context that takes a tmp dir
 class RepoTestingContext(object):
+    """ A context for testing modifications to a repo hosted on a git server
 
-    def __init__(self, repo_url, branch_name):
+    Entering a `RepoTestingContext` clones a branch of a repo, and returns a `GitRepo` of the clone.
+    Code in the `with` suite can then modify the repo.
+    Exiting the `RepoTestingContext` commits the changes, pushes them to the remote repo,
+    clones the repo's branch to a temporary location, and returns a handle to this new clone.
+    After exiting the context's `with` block, code can then test the changes that were made.
+
+    To test changes to a GitHub repo *without* permanently modifying the repo,
+    a `RepoTestingContext` can be enclosed in a RemoteBranch context. The RemoteBranch initially
+    create a new branch of the GitHub repo for the test, and deletes the new branch upon exit.
+
+    Attributes:
+        repo_url (:obj:`str`): URL of the repo being changed in the test
+        branch_name (:obj:`str`): the repo's branch being tested
+        properties (:obj:`dict`): a `dict` used by the context to return results after `__exit__`;
+            the repo's cloned branch is provided by `__exit__` as `properties[clone_of_push]`
+        clone_of_push (:obj:`str`): key for the repo's cloned branch is provided by `__exit__`
+    """
+    def __init__(self, repo_url, branch_name, properties, clone_of_push):
+        """ Initialize a RepoTestingContext
+
+        Raises:
+            :obj:`MigratorError`: if `properties` isn't a `dict`
+        """
+        if not isinstance(properties, dict):
+            raise MigratorError("properties must be a dict, but it is a(n) '{}'".format(
+                type(properties).__name__))
         self.repo_url = repo_url
         self.branch_name = branch_name
+        self.properties = properties
+        self.clone_of_push = clone_of_push
 
     def __enter__(self):
-        # clone the repo
+        """ Clone the repo
+
+        Returns:
+            :obj:`GitRepo`: local clone of the repo
+        """
         self.local_repo = GitRepo()
         self.local_repo.clone_repo_from_url(self.repo_url, branch=self.branch_name)
         return self.local_repo
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # commit the modified repo
+        """ Prepare for testing the modified repo
+
+        Commit the repo, push it to the git server, and create a new clone of it;
+        the repo's cloned branch is provided by as element `clone_of_push` of the dict
+        `properties` provided when `RepoTestingContext` was initialized
+        """
         self.local_repo.commit_changes("test commit of branch '{}' of '{}'".format(
             self.branch_name, self.repo_url))
 
@@ -2711,7 +2751,38 @@ class RepoTestingContext(object):
         # clone the new branch again
         another_local_repo = GitRepo()
         another_local_repo.clone_repo_from_url(self.repo_url, branch=self.branch_name)
+        self.properties[self.clone_of_push] = another_local_repo
 
+
+class TestRepoTestingContext(AutoMigrationFixtures):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+
+    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "run if debugging on Circle")
+    def test_repo_testing_context(self):
+        test_branch = 'branch_for_testing_repo_testing_context'
+        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+            properties = {}
+            clone_key = 'test_repo_clone'
+            with RepoTestingContext(self.test_repo_url, test_branch, properties, clone_key) as local_repo:
+                self.assertTrue(isinstance(local_repo, GitRepo))
+                self.assertFalse(properties)
+                self.assertEqual(local_repo.repo_url, self.test_repo_url)
+                self.assertEqual(local_repo.branch, test_branch)
+            self.assertTrue(clone_key in properties)
+            self.assertTrue(isinstance(properties[clone_key], GitRepo))
+            new_clone = properties[clone_key]
+            self.assertEqual(new_clone.repo_url, self.test_repo_url)
+            self.assertEqual(new_clone.branch, test_branch)
+
+        with self.assertRaisesRegex(MigratorError, "properties must be a dict, but it is a"):
+            RepoTestingContext(self.test_repo_url, test_branch, 2, '')
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestCementControllers(unittest.TestCase):
@@ -2719,30 +2790,6 @@ class TestCementControllers(unittest.TestCase):
     def test_make_changes_template(self):
         '''
         create new branch of test_repo
-
-        '''
-        '''
-    testing context:
-        ()
-        # ENTER
-            # clone the repo
-            local_repo = GitRepo()
-            local_repo.clone_repo_from_url(self.test_repo_url, branch=test_branch)
-
-            # modify the repo
-
-        # EXIT
-            # commit the modified repo
-            local_repo.commit_changes("test commit of 'test_repo':'{}'".format(test_branch))
-
-            # push the repo
-            push_result = local_repo.push()
-
-            # clone the new branch again
-            another_local_repo = GitRepo()
-            another_local_repo.clone_repo_from_url(self.test_repo_url, branch=test_branch)
-
-            # evaluate whether the cloned repo passes the test
         '''
         pass
 

@@ -2253,6 +2253,7 @@ class GitRepo(object):
     Attributes:
         repo_dir (:obj:`str`): the repo's root directory
         repo_url (:obj:`str`): the repo's URL, if known
+        branch (:obj:`str`): the repo's branch, if it was cloned
         original_location (:obj:`str`): the repo's original root directory or URL, used for debugging
         repo (:obj:`git.Repo`): the `GitPython` repo
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
@@ -2290,6 +2291,7 @@ class GitRepo(object):
         self.repo = None
         self.repo_dir = None
         self.repo_url = None
+        self.branch = None
         self.original_location = original_location
         if repo_location:
             if os.path.isdir(repo_location):
@@ -2350,6 +2352,7 @@ class GitRepo(object):
         self.repo = repo
         self.repo_dir = directory
         self.repo_url = url
+        self.branch = branch
         return repo, directory
 
     def copy(self, tmp_dir=None):
