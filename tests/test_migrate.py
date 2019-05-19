@@ -11,8 +11,8 @@
 # todo: cleanup use of temp dirs & files
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
-SPEED_UP_TESTING = False
-
+SPEED_UP_TESTING = True
+DONT_DEBUG_ON_CIRCLE = False
 
 from argparse import Namespace
 from github import Github
@@ -338,7 +338,7 @@ class MigrationFixtures(unittest.TestCase):
             remove_silently(file)
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "optional performance test")
+@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -691,7 +691,7 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "optional performance test")
+@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1351,7 +1351,7 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "optional performance test")
+@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1539,7 +1539,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "optional performance test")
+@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -2214,7 +2214,7 @@ class TestGitRepo(AutoMigrationFixtures):
             # checkout of commit from wrong repo will fail
             git_repo_copy.checkout_commit(self.git_migration_test_repo.head_commit())
 
-    @unittest.skip("test not working on Circle yet")
+    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "run if debugging on Circle")
     def test_add_file_and_commit_changes(self):
         print()
         empty_repo = self.test_github_repo.repo
@@ -2253,7 +2253,7 @@ class TestGitRepo(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, r"commiting repo '\S+' failed:"):
             self.test_github_repo.commit_changes(2)
 
-    @unittest.skip("test not working on Circle yet")
+    @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "run if debugging on Circle")
     def test_push(self):
         test_branch = 'test_branch_for_test_push'
         # make new branch of existing repo
@@ -2366,7 +2366,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
-@unittest.skipIf(SPEED_UP_TESTING, "optional performance test")
+@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestAutomatedMigration(AutoMigrationFixtures):
 
     @classmethod
@@ -2634,7 +2634,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.assertRegex(str_val, "{}: .+".format(attr))
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "optional performance test")
+@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestRunMigration(MigrationFixtures):
 
     def setUp(self):
@@ -2711,7 +2711,7 @@ class RepoTestingContext(object):
         # clone the new branch again
         another_local_repo = GitRepo()
         another_local_repo.clone_repo_from_url(self.repo_url, branch=self.branch_name)
-        
+
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestCementControllers(unittest.TestCase):
@@ -2719,7 +2719,7 @@ class TestCementControllers(unittest.TestCase):
     def test_make_changes_template(self):
         '''
         create new branch of test_repo
-        
+
         '''
         '''
     testing context:
