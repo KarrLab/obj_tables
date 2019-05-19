@@ -2035,8 +2035,7 @@ class SchemaChanges(object):
         return SchemaChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_date_timestamp(),
             GitRepo.hash_prefix(self.get_hash()))
 
-    # todo: New: support branches
-    def make_template(self, schema_url=None, commit_hash=None, changes_file_dir=None):
+    def make_template(self, schema_url=None, branch='master', commit_hash=None, changes_file_dir=None):
         """ Make a template schema changes file
 
         The template includes the current repo hash and empty values for `SchemaChanges`
@@ -2045,6 +2044,7 @@ class SchemaChanges(object):
         Args:
             schema_url (:obj:`str`, optional): URL of the schema repo; if not provided, `self.schema_repo`
                 must be already initialized
+            branch (:obj:`str`, optional): branch to clone; default is `master`
             commit_hash (:obj:`str`, optional): hash of the schema repo commit which the template
                 schema changes file describes; default is the most recent commit
             changes_file_dir (:obj:`str`, optional): directory for the schema changes file; default is
@@ -2061,7 +2061,7 @@ class SchemaChanges(object):
         if schema_url:
             # clone the schema at schema_url
             self.schema_repo = GitRepo()
-            self.schema_repo.clone_repo_from_url(schema_url)
+            self.schema_repo.clone_repo_from_url(schema_url, branch=branch)
         if commit_hash:
             self.schema_repo.checkout_commit(commit_hash)
 
@@ -2269,7 +2269,7 @@ class GitRepo(object):
 
     _HASH_PREFIX_LEN = 7
 
-    # todo: support branch
+    # todo: support branch, including original branch
     def __init__(self, repo_location=None, search_parent_directories=False, original_location=None):
         """ Initialize a `GitRepo` from an existing Git repo
 
@@ -3246,7 +3246,10 @@ class CementControllers(object):
             help='Create a template schema changes file',
             arguments = [
                 (['schema_url'], {'type': str, 'help': 'URL of the schema repo'}),
-                (['--commit'], {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'})
+                (['--commit'],
+                    {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
+                (['--branch'],
+                    {'type': str, 'default': 'master', 'help': "branch containing the changes; default is 'master'"})
             ]
         )
         def make_changes_template(self):
@@ -3255,13 +3258,10 @@ class CementControllers(object):
             Output the URL of the created file to `stdout`, or errors to `stderr`
             """
             args = self.app.pargs
-            print('args:', args)
             schema_changes = SchemaChanges()
             # create template schema changes file
             schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
-                commit_hash=args.commit)
-            # todo: NEW: use or remove, depending on need:
-            # schema_changes.schema_repo.add_file(schema_changes_template_file)
+                branch=args.branch, commit_hash=args.commit)
             # commit & push a change containing the new schema changes file template
             schema_changes.schema_repo.commit_changes(
                 "Add a schema changes template file for commit: {}".format(args.commit))

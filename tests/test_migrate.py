@@ -1997,8 +1997,6 @@ class TestGitRepo(AutoMigrationFixtures):
         self.test_github_repo_name = 'test_repo_1'
         # test_github_repo is only needed by test_add_file_and_commit_changes
         if self._testMethodName == 'test_add_file_and_commit_changes':
-            print()
-            print('github_api_token', get_github_api_token())
             # delete test_github_repo_name so prior failures to delete it won't cause trouble
             self.delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
             self.test_github_repo_url = self.make_test_repo(self.test_github_repo_name)
@@ -2252,7 +2250,6 @@ class TestGitRepo(AutoMigrationFixtures):
         self.test_github_repo.add_file(new_file)
         self.test_github_repo.commit_changes('commit msg')
         rv = origin.push()
-        print('rv[0].summary', rv[0].summary)
         if not rv:
             self.fail('push() failed')
 
@@ -2816,17 +2813,37 @@ class App(cement.App):
 @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
 class TestCementControllers(AutoMigrationFixtures):
 
-    # todo: New: check that template schema changes file is made and pushed to the right repo
-    # todo: New: check that illegal arguments produce reasonable errors
     def test_make_changes_template(self):
         test_branch = 'branch_for_test_make_changes_template'
-        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+        with RemoteBranch(self.git_repo.repo_name(), test_branch, delete=True):
 
-            argv = ['make-changes-template', self.test_repo_url, ]
+            argv = ['make-changes-template', self.test_repo_url, '--branch', test_branch]
+            with App(argv=argv) as app:
+                with capturer.CaptureOutput(relay=False) as captured:
+                    app.run()
+                    self.assertIn('template schema changes file created in', captured.get_text())
+                    match = re.search("/([^'/]+)'$", captured.get_text())
+                    if not match:
+                        self.fail("couldn't find schema changes filename in captured output")
+                    template_name = match.group(1)
+
+            # before the branch is deleted, check that template schema changes file was made and pushed
+            local_repo = GitRepo()
+            local_repo.clone_repo_from_url(self.test_repo_url, branch=test_branch)
+            # ensure that the template file exists
+            template_pathname = os.path.join(local_repo.migrations_dir(), template_name)
+            self.assertTrue(os.path.isfile(template_pathname))
+            # delete the temp dir holding self.local_repo
+            local_repo.del_temp_dirs()
+
+            # check that illegal arguments produce reasonable errors
+            NO_SUCH_REPO = 'NO_SUCH_REPO'
+            argv = ['make-changes-template', NO_SUCH_REPO]
             with App(argv=argv) as app:
                 with capturer.CaptureOutput() as captured:
-                    app.run()
-                    # self.assertEqual(captured.get_text(), 'Arg = `{}`'.format(argv[0]))
+                    with self.assertRaisesRegex(MigratorError,
+                        "repo cannot be cloned from '{}'".format(NO_SUCH_REPO)):
+                        app.run()
 
     def test_make_migration_config_file(self):
         pass
