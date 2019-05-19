@@ -3249,7 +3249,6 @@ class CementControllers(object):
 
             Output the URL of the created file to `stdout`, or errors to `stderr`
             """
-            # output the URL for the template, and pointer to instructions to complete its contents
             args = self.app.pargs
             print('args.schema_url', args.schema_url)
             print('args.commit', args.commit)
@@ -3257,12 +3256,11 @@ class CementControllers(object):
             # create template schema changes file
             schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
                 commit_hash=args.commit)
-            # add the file to the repo
             # todo: NEW: use or remove, depending on need:
             # schema_changes.schema_repo.add_file(schema_changes_template_file)
             # commit & push a change containing the new schema changes file template
-            schema_changes.schema_repo.commit_changes("Add a schema changes template file for commit {}".format(
-                schema_git_repo.latest_hash()))
+            schema_changes.schema_repo.commit_changes(
+                "Add a schema changes template file for commit: {}".format(args.commit))
             schema_changes.schema_repo.push()
             # or         app.log.fatal('Caught Exception: %s' % e)
             print("template schema changes file created in '{}'".format())
