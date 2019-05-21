@@ -3343,11 +3343,12 @@ class CementControllers(object):
             help='Create a template schema changes file',
             arguments = [
                 (['schema_url'], {'type': str, 'help': 'URL of the schema repo'}),
-                (['--commit'],
-                    {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
-                (['--branch'],
-                    {'type': str, 'default': 'master', 'help': "branch containing the changes; "
-                        "for use in testing; default is 'master'"})
+                # todo: New: fix
+                # (['--commit'],
+                #     {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
+                # (['--branch'],
+                #     {'type': str, 'default': 'master', 'help': "branch containing the changes; "
+                #         "for use in testing; default is 'master'"})
             ]
         )
         def make_changes_template(self):
@@ -3475,12 +3476,6 @@ class Migrate(cement.App):
     class Meta:
         label = 'migrate'
         base_controller = 'base'
-        '''
-        do we want version of data repo or obj_model
-        arguments = [
-            (['-v', '--version'], dict(action='version', version=test_repo.__version__))
-        ]
-        '''
         handlers = [
             CementControllers.SchemaChangesTemplateController,
             CementControllers.AutomatedMigrationConfigController,
@@ -3494,6 +3489,9 @@ class Migrate(cement.App):
 
 def main():
     with Migrate() as app:
+        app.args.add_argument('-v', '--version', action='version',
+            version=obj_model.__version__,
+            help='version of the migration software')
         try:
             app.run()
         except MigratorError as e:
