@@ -3329,11 +3329,14 @@ class CementControllers(object):
             help='Create a template schema changes file',
             arguments = [
                 (['schema_url'], {'type': str, 'help': 'URL of the schema repo'}),
+                '''
+                # todo: fix
                 (['--commit'],
                     {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
                 (['--branch'],
                     {'type': str, 'default': 'master', 'help': "branch containing the changes; "
                         "for use in testing; default is 'master'"})
+                '''
             ]
         )
         def make_changes_template(self):
@@ -3347,10 +3350,11 @@ class CementControllers(object):
             schema_changes_template_file = schema_changes.make_template(schema_url=args.schema_url,
                 branch=args.branch, commit_hash=args.commit)
             # commit & push a change containing the new schema changes file template
+            commit = args.commit if args.commit else schema_changes.schema_repo.latest_hash()
             schema_changes.schema_repo.commit_changes(
-                "Add a schema changes template file for commit: {}".format(args.commit))
+                "Add a schema changes template file for commit: {}".format(commit))
             schema_changes.schema_repo.push()
-            print("template schema changes file created in '{}'".format(schema_changes_template_file))
+            print("template schema changes file created '{}'".format(os.path.basename(schema_changes_template_file)))
 
 
     class AutomatedMigrationConfigController(Controller):
@@ -3446,12 +3450,11 @@ class CementControllers(object):
         )
         def migrate_data(self):
             args = self.app.pargs
-            '''
-            config_file_path, migrated_files = AutomatedMigration.migrate_files(schema_url, local_dir, data_files)
+            config_file_path, migrated_files = AutomatedMigration.migrate_files(args.schema_url,
+                os.getcwd(), args.data_files)
             print('migrated files:')
             for migrated_file in migrated_files:
                 print(migrated_file)
-            '''
 
 
 class VirtualEnvUtil(object):   # pragma: no cover
