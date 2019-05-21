@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 from warnings import warn
 import argparse
 import collections
+import cement
 import copy
 import datetime
 import git
@@ -3078,6 +3079,7 @@ class AutomatedMigration(object):
         for file_to_migrate in self.data_config['files_to_migrate']:
             schema_changes = self.schema_changes_for_data_file(file_to_migrate)
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
+            print('migration_spec', migration_spec)
             self.migration_specs.append(migration_spec)
 
     def automated_migrate(self, tmp_dir=None):
@@ -3309,6 +3311,18 @@ class RunMigration(object):
         return results
 
 
+class BaseController(cement.Controller):
+    """ Base controller for command line application """
+
+    class Meta:
+        label = 'base'
+        description = "Base controller for command line migration"
+
+    @cement.ex(hide=True)
+    def _default(self):
+        self._parser.print_help()
+
+
 class CementControllers(object):
     """ Cement Controllers for command line programs for migrating data files whose data models are defined using obj_model
 
@@ -3447,11 +3461,48 @@ class CementControllers(object):
         )
         def migrate_data(self):
             args = self.app.pargs
+            # args.file_to_migrate is a list of all files to migrate
             config_file_path, migrated_files = AutomatedMigration.migrate_files(args.schema_url,
-                os.getcwd(), args.data_files)
+                os.getcwd(), args.file_to_migrate)
             print('migrated files:')
             for migrated_file in migrated_files:
                 print(migrated_file)
+
+
+class Migrate(cement.App):
+    """ Command line application """
+
+    class Meta:
+        label = 'migrate'
+        base_controller = 'base'
+        '''
+        do we want version of data repo or obj_model
+        arguments = [
+            (['-v', '--version'], dict(action='version', version=test_repo.__version__))
+        ]
+        '''
+        handlers = [
+            CementControllers.SchemaChangesTemplateController,
+            CementControllers.AutomatedMigrationConfigController,
+            CementControllers.TestMigrationController,
+            CementControllers.MigrateController,
+            CementControllers.MigrateFileController
+        ]
+        # call sys.exit() on close
+        close_on_exit = True
+
+
+def main():
+    with Migrate() as app:
+        try:
+            app.run()
+        except MigratorError as e:
+            print("MigratorError > {}".format(e.args[0]))
+            app.exit_code = 1
+
+            if app.debug is True:
+                import traceback
+                traceback.print_exc()
 
 
 class VirtualEnvUtil(object):   # pragma: no cover
