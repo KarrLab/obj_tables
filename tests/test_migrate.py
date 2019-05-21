@@ -1923,21 +1923,46 @@ def get_github_api_token():
     return config['github_api_token']
 
 
-# todo: New: more docstrings
 class RemoteBranch(object):
-    """ Make branches on GitHub """
+    """ Make branches on GitHub
 
+    This context manager creates and deletes branches on GitHub, which is convenient for testing
+    changes to remote repos, without permanently modifying them. For example,
+
+    .. code-block:: python
+
+        with RemoteBranch(repo_name, test_branch):
+            # make some changes to branch `test_branch` of repo `repo_name`
+            # clone the branch
+            git_repo = GitRepo()
+            git_repo.clone_repo_from_url(repo_url, branch=test_branch)
+            # test properties of the repo
+
+        # test_branch has been deleted
+    """
+    ORGANIZATION = 'KarrLab'
     def __init__(self, repo_name, branch_name, delete=True):
+        """ Initialize
+
+        Args:
+            repo_name (:obj:`str`): name of the repo
+            branch_name (:obj:`str`): name of the new branch
+        """
         self.repo_name = repo_name
         self.branch_name = branch_name
         self.delete = delete
 
         self.github = Github(get_github_api_token())
-        self.repo = self.github.get_repo("KarrLab/{}".format(repo_name))
+        self.repo = self.github.get_repo("{}/{}".format(self.ORGANIZATION, repo_name))
         master = self.repo.get_branch(branch="master")
         self.head = master.commit
 
     def make_branch(self):
+        """ Make a new branch
+
+        Returns:
+            :obj:`github.GitRef.GitRef`: a ref to the new branch
+        """
         fully_qualified_ref = "refs/heads/{}".format(self.branch_name)
         self.branch_ref = self.repo.create_git_ref(fully_qualified_ref, self.head.sha)
         if not self.branch_ref:
@@ -1945,12 +1970,20 @@ class RemoteBranch(object):
         return self.branch_ref
 
     def delete_branch(self):
-        return self.branch_ref.delete()
+        """ Delete the branch """
+        self.branch_ref.delete()
 
     def __enter__(self):
+        """ Make a new branch as a context manager
+
+        Returns:
+            :obj:`Github.`: a ref to the new branch
+        """
         return self.make_branch()
 
     def __exit__(self, type, value, traceback):
+        """ Delete the new branch when exiting the context manager
+        """
         if self.delete:
             self.delete_branch()
 
@@ -2420,6 +2453,17 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             elif attr_type == 'str':
                 self.assertEqual(data[name], '')
 
+        kwargs = dict(files_to_migrate=['../tests/fixtures//file1.xlsx',
+                                        '../tests/fixtures//file2.xlsx'],
+            schema_repo_url='https://github.com//KarrLab/migration_test_repo',
+            schema_file='../migration_test_repo/core.py',
+            migrator='wc_lang'
+        )
+        path = AutomatedMigration.make_template_config_file(self.git_repo, 'example_test_repo_2',
+            **kwargs)
+        data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
+        self.assertEqual(kwargs, data)
+
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
             AutomatedMigration.make_template_config_file(self.git_repo, 'example_test_repo')
@@ -2641,6 +2685,39 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         migrated_files, _ = automated_migration_separate_data_n_schema_repos.automated_migrate()
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
 
+    def test_migrate_files(self):
+        test_repo_copy = self.git_repo.copy()
+        config_file_path, migrated_files = AutomatedMigration.migrate_files(
+            'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+            test_repo_copy.repo_dir,
+            ['tests/fixtures/data_file_1.xlsx',
+                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_1.xlsx')])
+        '''
+        # todo: fix
+        file_copy = os.path.join(os.path.dirname(migrated_files[0]), 'data_file_1_cp.xlsx')
+        for migrated_file in migrated_files:
+            assert_equal_workbooks(self, file_copy, migrated_file)
+        self.assertTrue(os.path.isfile(config_file_path))
+        remove_silently(config_file_path)
+        '''
+
+        with self.assertRaisesRegex(MigratorError, "schema_url must be URL for python schema"):
+            AutomatedMigration.migrate_files('github.com/KarrLab/core.py', '', [])
+
+        with self.assertRaisesRegex(MigratorError, "schema_url must be URL for python schema"):
+            AutomatedMigration.migrate_files('https://github.com/core.py', '', [])
+
+        with self.assertRaisesRegex(MigratorError, "schema_url must be URL for python schema"):
+            AutomatedMigration.migrate_files('https://github.com/a/b/c/d/e/core', '', [])
+
+        with self.assertRaisesRegex(MigratorError, "local_dir is not a directory"):
+            AutomatedMigration.migrate_files('https://github.com/a/b/blob/d/e/core.py', 'foo', [])
+
+        with self.assertRaisesRegex(MigratorError, "cannot find data file"):
+            AutomatedMigration.migrate_files('https://github.com/a/b/blob/d/e/core.py',
+                '/root/host/Documents/wc_dev_repos/test_repo',
+                ['tests/fixtures/not_a_data_file_1.xlsx'])
+
     def test_str(self):
         str_val = str(self.clean_automated_migration)
         for attr in AutomatedMigration._ATTRIBUTES:
@@ -2815,7 +2892,7 @@ class TestCementControllers(AutoMigrationFixtures):
 
     def test_make_changes_template(self):
         test_branch = 'branch_for_test_make_changes_template'
-        with RemoteBranch(self.git_repo.repo_name(), test_branch, delete=True):
+        with RemoteBranch(self.git_repo.repo_name(), test_branch):
 
             argv = ['make-changes-template', self.test_repo_url, '--branch', test_branch]
             with App(argv=argv) as app:
@@ -2845,8 +2922,16 @@ class TestCementControllers(AutoMigrationFixtures):
                         "repo cannot be cloned from '{}'".format(NO_SUCH_REPO)):
                         app.run()
 
+    @unittest.skip("not finished")
     def test_make_migration_config_file(self):
-        pass
+        test_branch = 'branch_for_test_make_migration_config_file'
+        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+
+            argv = ['make-migration-config-file', self.test_repo_url, '--branch', test_branch]
+            with App(argv=argv) as app:
+                with capturer.CaptureOutput(relay=False) as captured:
+                    app.run()
+
 
     def test_test_migrations(self):
         pass

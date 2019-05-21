@@ -9,9 +9,10 @@
 from cement import Controller, App, ex
 from enum import Enum
 from networkx.algorithms.dag import topological_sort, ancestors
-from pathlib import Path
+from pathlib import Path, PurePath
 from pprint import pprint, pformat
 from six import integer_types, string_types
+from urllib.parse import urlparse
 from warnings import warn
 import argparse
 import collections
@@ -2721,6 +2722,7 @@ class AutomatedMigration(object):
     # name of the migrations directory
     _MIGRATIONS_DIRECTORY = 'migrations'
 
+    # todo: use only 1 of these 2 templates:
     # template for the name of a config file
     # the format placeholder is replaced with the name of the schema repo to which it refers
     _CONFIG_FILE = 'automated_migration_config-{}.yaml'
@@ -2777,12 +2779,14 @@ class AutomatedMigration(object):
         self.record_git_repo(self.schema_git_repo)
 
     @staticmethod
-    def make_template_config_file(data_git_repo, schema_repo_name):
-        """ Create a template automated migration config file
+    def make_template_config_file(data_git_repo, schema_repo_name, name_suffix='', **kwargs):
+        """ Create a template automated migration config file, optionally populated with values in `kwargs`
 
         Args:
             data_git_repo (:obj:`GitRepo`): the data git repo that contains the data files to migrate
             schema_repo_name (:obj:`str`): name of the schema repo
+            name_suffix (:obj:`str`): suffix uniquifier for the config file name; default=''
+            kwargs (:obj:`dict`): kwargs to initialize other attributes in the config file
 
         Returns:
             :obj:`str`: the pathname to the template automated migration config file that was written
@@ -2790,8 +2794,9 @@ class AutomatedMigration(object):
         Raises:
             :obj:`MigratorError`: if the automated migration configuration file already exists
         """
+        schema_id = schema_repo_name + '-' + name_suffix if name_suffix else schema_repo_name
         pathname = os.path.join(data_git_repo.migrations_dir(),
-            AutomatedMigration._CONFIG_FILE.format(schema_repo_name))
+            AutomatedMigration._CONFIG_FILE.format(schema_id))
         if os.path.exists(pathname):
             raise MigratorError("automated migration configuration file '{}' already exists".format(pathname))
 
@@ -2801,15 +2806,9 @@ class AutomatedMigration(object):
         config_data = {}
         for name, config_attr in AutomatedMigration._CONFIG_ATTRIBUTES.items():
             attr_type, _, default = config_attr
-            if attr_type == 'list':
-                config_data[name] = []
-            elif attr_type == 'str':
-                if default:
-                    config_data[name] = default
-                else:
-                    config_data[name] = ''
-            else:
-                None    # pragma: no cover; coverage can't be told that non-existent 'else' never happens
+            default = default or eval(attr_type+'()')
+            val = kwargs[name] if name in kwargs else default
+            config_data[name] = val
 
         with open(pathname, 'w') as file:
             file.write(u'# automated migration configuration file\n\n')
@@ -3152,6 +3151,90 @@ class AutomatedMigration(object):
                     errors.append("cannot import: '{}'\n\t{}".format(schema_file, e))
         return errors
 
+    @staticmethod
+    def migrate_files(schema_url, local_dir, data_files):
+        """ Migrate some data files
+
+        Args:
+            schema_url (:obj:`str`): URL of schema's Python file
+            local_dir (:obj:`str`): dir in local data repo where migrate command is invoked
+            data_files (:obj:`list` of :obj:`str`): data files to migrate
+
+        Returns:
+            :obj:`list`: ...
+
+        Raises:
+            :obj:`MigratorError`: if schema_url isn't in the right form, or
+                local_dir isn't a directory, or
+                any of the data files cannot be found, or
+                the migration fails
+        """
+        ### convert schema_url into URL for schema repo & relative path to schema's Python file ###
+        migration_config_file_kwargs = {}
+        parsed_url = urlparse(schema_url)
+        # error checks
+        form = "scheme://git_website/organization/repo_name/'blob'/branch/relative_pathname"
+        error_msg = "schema_url must be URL for python schema file, of the form: {}".format(form)
+        if not parsed_url.scheme or not parsed_url.netloc:
+            raise MigratorError(error_msg)
+        elements = parsed_url.path.split('/')
+        if len(elements) < 6 or not schema_url.endswith('.py'):
+            raise MigratorError(error_msg)
+        schema_repo_url = parsed_url.scheme + '://' + parsed_url.netloc + '/' + '/'.join(elements[1:3])
+        migration_config_file_kwargs['schema_repo_url'] = schema_repo_url
+        schema_repo_name = elements[2]
+        # strip first two elements from schema_path: 'blob'/branch
+        schema_file = '/'.join(elements[5:])
+        migration_config_file_kwargs['schema_file'] = os.path.join('..', schema_file)
+
+        ### extract URL of data repo from local repo clone ###
+        if not os.path.isdir(local_dir):
+            raise MigratorError("local_dir is not a directory: '{}'".format(local_dir))
+        git_repo = GitRepo(local_dir)
+        data_repo_url = git_repo.repo.remotes.origin.url
+
+        ### convert each data_file into path relative to migrations dir of data repo ###
+        data_repo_root_dir = git_repo.repo_dir
+        converted_data_files = []
+        errors = []
+        for data_file in data_files:
+            # get full path
+            normalized_data_file = normalize_filename(data_file, dir=local_dir)
+            if not os.path.isfile(normalized_data_file):
+                errors.append("cannot find data file: '{}'".format(data_file))
+                continue
+            # get path relative to migrations dir
+            relative_path = str(PurePath(normalized_data_file).relative_to(data_repo_root_dir))
+            relative_path = os.path.join('..', relative_path)
+            converted_data_files.append(relative_path)
+        if errors:
+            raise MigratorError('\n'.join(errors))
+        migration_config_file_kwargs['files_to_migrate'] = converted_data_files
+
+        ### determine migrator from name of schema ###
+        # todo: store this mapping in a config file
+        migrator_map = dict(
+            wc_lang='wc_lang',
+            wc_kb='wc_lang',
+        )
+        if schema_repo_name in migrator_map:
+            migration_config_file_kwargs['migrator'] = migrator_map[schema_repo_name]
+
+        ### create automated migration config file ###
+        config_file_path = AutomatedMigration.make_template_config_file(
+            git_repo,
+            schema_repo_name,
+            # todo: refine this hack
+            name_suffix='one_use_migration_{}'.format(SchemaChanges.get_date_timestamp()),
+            **migration_config_file_kwargs)
+
+        ### create and run AutomatedMigration ###
+        automated_migration = AutomatedMigration(data_repo_location=local_dir,
+            data_config_file_basename=os.path.basename(config_file_path))
+        migrated_files, _ = automated_migration.automated_migrate()
+        # todo: rm config_file_path
+        return config_file_path, migrated_files
+
     def test_migration(self):
         """ Test a migration
 
@@ -3249,7 +3332,8 @@ class CementControllers(object):
                 (['--commit'],
                     {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
                 (['--branch'],
-                    {'type': str, 'default': 'master', 'help': "branch containing the changes; default is 'master'"})
+                    {'type': str, 'default': 'master', 'help': "branch containing the changes; "
+                        "for use in testing; default is 'master'"})
             ]
         )
         def make_changes_template(self):
@@ -3301,6 +3385,7 @@ class CementControllers(object):
             print('files to migrate:')
             for f in args.file_to_migrate:
                 print('\t', f)
+            pathname = AutomatedMigration.make_template_config_file(data_git_repo, schema_repo_name)
 
 
     class TestMigrationController(Controller):
@@ -3335,6 +3420,13 @@ class CementControllers(object):
             pass
 
 
+    '''
+    Migrate specified data file(s):
+        run on some model & wc_kb
+            create schema_changes for wc_kb
+            pick a model, & get some old data files
+            migrate them
+    '''
     class MigrateFileController(Controller):
         """ Migrate specified data file(s) """
 
@@ -3346,7 +3438,7 @@ class CementControllers(object):
         @ex(
             help='Migrate specified data file(s)',
             arguments = [
-                (['schema_url'], {'type': str, 'help': 'URL of the schema in its git repository'}),
+                (['schema_url'], {'type': str, 'help': 'URL of the schema in its GitHub repository'}),
                 (['file_to_migrate'],
                     dict(action='store', type=str, nargs='+',
                     help='a file to migrate')),
@@ -3354,6 +3446,12 @@ class CementControllers(object):
         )
         def migrate_data(self):
             args = self.app.pargs
+            '''
+            config_file_path, migrated_files = AutomatedMigration.migrate_files(schema_url, local_dir, data_files)
+            print('migrated files:')
+            for migrated_file in migrated_files:
+                print(migrated_file)
+            '''
 
 
 class VirtualEnvUtil(object):   # pragma: no cover
