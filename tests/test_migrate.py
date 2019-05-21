@@ -2336,7 +2336,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
         # push of an uninitialized GitRepo fails
         empty_repo = GitRepo()
-        with self.assertRaisesRegex(MigratorError, "push of repo '\S+' failed"):
+        with self.assertRaisesRegex(MigratorError, r"push of repo '\S+' failed"):
             empty_repo.push()
 
     def check_dependency(self, sequence, DAG):
@@ -2715,7 +2715,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         with self.assertRaisesRegex(MigratorError, "cannot find data file"):
             AutomatedMigration.migrate_files('https://github.com/a/b/blob/d/e/core.py',
-                '/root/host/Documents/wc_dev_repos/test_repo',
+                test_repo_copy.repo_dir,
                 ['tests/fixtures/not_a_data_file_1.xlsx'])
 
     def test_str(self):
