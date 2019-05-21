@@ -1941,6 +1941,7 @@ class RemoteBranch(object):
         # test_branch has been deleted
     """
     ORGANIZATION = 'KarrLab'
+
     def __init__(self, repo_name, branch_name, delete=True):
         """ Initialize
 
@@ -1986,6 +1987,18 @@ class RemoteBranch(object):
         """
         if self.delete:
             self.delete_branch()
+
+    @staticmethod
+    def unique_branch_name(branch_name):
+        """ Make a unique branch name -- avoids conflicts among concurrent test runs
+
+        Args:
+            branch_name (:obj:`str`): name of the new branch
+
+        Returns:
+            :obj:`str`: a branch name made unique by a timestamp suffix
+        """
+        return branch_name + '-' + SchemaChanges.get_date_timestamp()
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
@@ -2040,7 +2053,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
     def test_remote_branch_utils(self):
         self.make_test_repo(self.branch_test_repo)
-        test_branch = 'test_branch_x'
+        test_branch = RemoteBranch.unique_branch_name('test_branch_x')
         remote_branch = RemoteBranch(self.branch_test_repo, test_branch)
         self.assertTrue(remote_branch.make_branch())
         self.assertFalse(remote_branch.delete_branch())
@@ -2087,7 +2100,7 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
 
         # test branch
-        test_branch = 'branch_for_test_clone_repo_from_url'
+        test_branch = RemoteBranch.unique_branch_name('branch_for_test_clone_repo_from_url')
         # make new branch
         with RemoteBranch(self.git_repo.repo_name(), test_branch):
 
@@ -2301,7 +2314,8 @@ class TestGitRepo(AutoMigrationFixtures):
 
     @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_push(self):
-        test_branch = 'test_branch_for_test_push'
+        test_branch = RemoteBranch.unique_branch_name('test_branch_for_test_push')
+
         # make new branch of existing repo
         with RemoteBranch('test_repo', test_branch):
 
@@ -2846,7 +2860,7 @@ class TestRepoTestingContext(AutoMigrationFixtures):
 
     @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_repo_testing_context(self):
-        test_branch = 'branch_for_testing_repo_testing_context'
+        test_branch = RemoteBranch.unique_branch_name('branch_for_testing_repo_testing_context')
         with RemoteBranch(self.git_repo.repo_name(), test_branch):
             properties = {}
             clone_key = 'test_repo_clone'
@@ -2874,7 +2888,7 @@ class TestRepoTestingContext(AutoMigrationFixtures):
 class TestCementControllers(AutoMigrationFixtures):
 
     def test_make_changes_template(self):
-        test_branch = 'branch_for_test_make_changes_template'
+        test_branch = RemoteBranch.unique_branch_name('branch_for_test_make_changes_template')
         with RemoteBranch(self.git_repo.repo_name(), test_branch):
 
             argv = ['make-changes-template', self.test_repo_url, '--branch', test_branch]
@@ -2907,7 +2921,7 @@ class TestCementControllers(AutoMigrationFixtures):
 
     @unittest.skip("not finished")
     def test_make_migration_config_file(self):
-        test_branch = 'branch_for_test_make_migration_config_file'
+        test_branch = RemoteBranch.unique_branch_name('branch_for_test_make_migration_config_file')
         with RemoteBranch(self.git_repo.repo_name(), test_branch):
 
             argv = ['make-migration-config-file', self.test_repo_url, '--branch', test_branch]

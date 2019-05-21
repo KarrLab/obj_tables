@@ -1898,6 +1898,7 @@ class SchemaChanges(object):
         """
         return self.schema_repo.latest_hash()
 
+    # todo: put in a utilities class
     @staticmethod
     def get_date_timestamp():
         """ Get a current date timestamp, with second resolution
