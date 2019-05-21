@@ -114,9 +114,9 @@ class UnitAttribute(core.LiteralAttribute):
             try:
                 value = self.registry.parse_units(value)
             except pint.UndefinedUnitError:
-                error = 'Invalid unit {}'.format(value)
+                error = core.InvalidAttribute(self, ['Invalid unit {}'.format(value)])
         else:
-            error = 'Invalid unit {}'.format(value)
+            error = core.InvalidAttribute(self, ['Invalid unit {}'.format(value)])
         return (value, error)
 
     def copy_value(self, value, objects_and_copies):
