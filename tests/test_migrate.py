@@ -2692,14 +2692,11 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             test_repo_copy.repo_dir,
             ['tests/fixtures/data_file_1.xlsx',
                 os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_1.xlsx')])
-        '''
-        # todo: fix
-        file_copy = os.path.join(os.path.dirname(migrated_files[0]), 'data_file_1_cp.xlsx')
+        file_copy = os.path.join(os.path.dirname(migrated_files[0]), 'data_file_1_copy.xlsx')
         for migrated_file in migrated_files:
             assert_equal_workbooks(self, file_copy, migrated_file)
         self.assertTrue(os.path.isfile(config_file_path))
         remove_silently(config_file_path)
-        '''
 
         with self.assertRaisesRegex(MigratorError, "schema_url must be URL for python schema"):
             AutomatedMigration.migrate_files('github.com/KarrLab/core.py', '', [])
