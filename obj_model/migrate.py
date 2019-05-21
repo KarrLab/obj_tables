@@ -3324,11 +3324,11 @@ class BaseController(cement.Controller):
 
 
 class CementControllers(object):
-    """ Cement Controllers for command line programs for migrating data files whose data models are defined using obj_model
+    """ Cement Controllers for the CLI in repos migrating data files whose data models are defined using obj_model
 
     Because these controllers are used by multiple schema and data repos, they're defined here and
-    imported into `__main__.py` modules in schema and data repos that define data schemas and/or
-    contain data files to migrate.
+    imported into `__main__.py` modules in schema repos that define data schemas and/or data repos
+    that contain data files to migrate.
     """
 
     class SchemaChangesTemplateController(Controller):
@@ -3344,11 +3344,11 @@ class CementControllers(object):
             arguments = [
                 (['schema_url'], {'type': str, 'help': 'URL of the schema repo'}),
                 # todo: New: fix
-                # (['--commit'],
-                #     {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
-                # (['--branch'],
-                #     {'type': str, 'default': 'master', 'help': "branch containing the changes; "
-                #         "for use in testing; default is 'master'"})
+                (['--commit'],
+                    {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
+                (['--branch'],
+                    {'type': str, 'default': 'master', 'help': "branch containing the changes; "
+                        "for use in testing; default is 'master'"})
             ]
         )
         def make_changes_template(self):
@@ -3366,7 +3366,7 @@ class CementControllers(object):
             schema_changes.schema_repo.commit_changes(
                 "Add a schema changes template file for commit: {}".format(commit))
             schema_changes.schema_repo.push()
-            print("template schema changes file created '{}'".format(os.path.basename(schema_changes_template_file)))
+            print("template schema changes file created: '{}'".format(os.path.basename(schema_changes_template_file)))
 
 
     class AutomatedMigrationConfigController(Controller):
@@ -3436,13 +3436,6 @@ class CementControllers(object):
             pass
 
 
-    '''
-    Migrate specified data file(s):
-        run on some model & wc_kb
-            create schema_changes for wc_kb
-            pick a model, & get some old data files
-            migrate them
-    '''
     class MigrateFileController(Controller):
         """ Migrate specified data file(s) """
 
@@ -3471,24 +3464,45 @@ class CementControllers(object):
 
 
 class Migrate(cement.App):
-    """ Command line application """
+    """ Generic command line application """
 
     class Meta:
         label = 'migrate'
         base_controller = 'base'
+        # call sys.exit() on close
+        close_on_exit = True
+
+
+class DataRepoMigrate(Migrate):
+    """ Migrate command line application for data repositories """
+
+    class Meta(Migrate.Meta):
         handlers = [
-            CementControllers.SchemaChangesTemplateController,
             CementControllers.AutomatedMigrationConfigController,
             CementControllers.TestMigrationController,
             CementControllers.MigrateController,
             CementControllers.MigrateFileController
         ]
-        # call sys.exit() on close
-        close_on_exit = True
 
 
-def main():
-    with Migrate() as app:
+class SchemaRepoMigrate(Migrate):
+    """ Migrate command line application for schema repositories """
+
+    class Meta(Migrate.Meta):
+        handlers = [CementControllers.SchemaChangesTemplateController]
+
+
+def generic_main(app_type, test_argv):
+    """ Generic main
+
+    Args:
+        app_type (:obj:`type`): the type of `cement.App` to use
+        test_argv (:obj:`list`): command line arguments for testing
+    """
+    test_argv_kwargs = {}
+    if test_argv:
+        test_argv_kwargs = dict(argv=test_argv)
+    with app_type(**test_argv_kwargs) as app:
         app.args.add_argument('-v', '--version', action='version',
             version=obj_model.__version__,
             help='version of the migration software')
@@ -3501,6 +3515,16 @@ def main():
             if app.debug is True:
                 import traceback
                 traceback.print_exc()
+
+
+def data_repo_main(test_argv=None):
+    """ main for use by data repositories """
+    generic_main(DataRepoMigrate, test_argv=test_argv)
+
+
+def schema_repo_main(test_argv=None):
+    """ main for use by schama repositories """
+    generic_main(SchemaRepoMigrate, test_argv=test_argv)
 
 
 class VirtualEnvUtil(object):   # pragma: no cover
