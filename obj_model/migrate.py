@@ -3329,14 +3329,11 @@ class CementControllers(object):
             help='Create a template schema changes file',
             arguments = [
                 (['schema_url'], {'type': str, 'help': 'URL of the schema repo'}),
-                '''
-                # todo: fix
                 (['--commit'],
                     {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
                 (['--branch'],
                     {'type': str, 'default': 'master', 'help': "branch containing the changes; "
                         "for use in testing; default is 'master'"})
-                '''
             ]
         )
         def make_changes_template(self):
