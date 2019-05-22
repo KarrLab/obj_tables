@@ -1672,11 +1672,11 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.tmp_dir = mkdtemp()
         cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
         # get these repos once for the TestCase to speed up tests
-        cls.git_repo = GitRepo(cls.test_repo_url)
+        cls.test_repo = GitRepo(cls.test_repo_url)
         cls.known_hash = 'ab34419496756675b6e8499e0948e697256f2698'
         cls.known_hash_ba1f9d3 = 'ba1f9d33a3e18a74f79f41903e7e88e118134d5f'
         cls.hash_commit_tag_ROOT = 'd848093'
-        cls.schema_changes_file = SchemaChanges.find_file(cls.git_repo, cls.known_hash_ba1f9d3)
+        cls.schema_changes_file = SchemaChanges.find_file(cls.test_repo, cls.known_hash_ba1f9d3)
 
         cls.migration_test_repo_url = 'https://github.com/KarrLab/migration_test_repo'
         cls.migration_test_repo_known_hash = '820a5d1ac8b660b9bdf609b6b71be8b5fdbf8bd3'
@@ -1691,7 +1691,7 @@ class AutoMigrationFixtures(unittest.TestCase):
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_dir)
         # remove the GitRepo's temp_dirs
-        cls.git_repo.del_temp_dirs()
+        cls.test_repo.del_temp_dirs()
 
     def setUp(self):
         # create empty repo containing a commit and a migrations directory
@@ -1718,7 +1718,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
 
     def setUp(self):
         super().setUp()
-        self.schema_changes = SchemaChanges(self.git_repo)
+        self.schema_changes = SchemaChanges(self.test_repo)
         self.test_data = dict(
             commit_hash='a'*40,
             renamed_models=[('Foo', 'FooNew')],
@@ -1735,9 +1735,9 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.assertEqual(len(timestamp), 19)
 
     def test_all_schema_changes_files(self):
-        files = SchemaChanges.all_schema_changes_files(self.git_repo.migrations_dir())
+        files = SchemaChanges.all_schema_changes_files(self.test_repo.migrations_dir())
         self.assertEqual(len(files), 6)
-        an_expected_file = os.path.join(self.git_repo.migrations_dir(),
+        an_expected_file = os.path.join(self.test_repo.migrations_dir(),
             'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
         self.assertTrue(an_expected_file in files)
 
@@ -1746,34 +1746,34 @@ class TestSchemaChanges(AutoMigrationFixtures):
 
     def test_all_schema_changes_with_commits(self):
         all_schema_changes_with_commits = SchemaChanges.all_schema_changes_with_commits
-        errors, schema_changes = all_schema_changes_with_commits(self.git_repo)
+        errors, schema_changes = all_schema_changes_with_commits(self.test_repo)
         self.assertEqual(len(errors), 5)
         self.assertEqual(len(schema_changes), 1)
         self.assertEqual(schema_changes[0].schema_changes_file, self.schema_changes_file)
 
     def test_find_file(self):
-        schema_changes_file = SchemaChanges.find_file(self.git_repo, self.known_hash_ba1f9d3)
+        schema_changes_file = SchemaChanges.find_file(self.test_repo, self.known_hash_ba1f9d3)
         self.assertEqual(os.path.basename(schema_changes_file),
             'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
 
         with self.assertRaisesRegex(MigratorError, r"no schema changes file in '.+' for hash \S+"):
-            SchemaChanges.find_file(self.git_repo, 'not_a_hash_not_a_hash_not_a_hash_not_a_h')
+            SchemaChanges.find_file(self.test_repo, 'not_a_hash_not_a_hash_not_a_hash_not_a_h')
 
-        migrations_dir = self.git_repo.migrations_dir()
+        migrations_dir = self.test_repo.migrations_dir()
         self.schema_changes.make_template(changes_file_dir=migrations_dir)
         time.sleep(2)
         self.schema_changes.make_template(changes_file_dir=migrations_dir)
         with self.assertRaisesRegex(MigratorError,
             r"multiple schema changes files in '.+' for hash \S+"):
-            SchemaChanges.find_file(self.git_repo, self.schema_changes.get_hash())
+            SchemaChanges.find_file(self.test_repo, self.schema_changes.get_hash())
 
         with self.assertRaisesRegex(MigratorError,
             r"hash prefix in schema changes filename '.+' inconsistent with hash in file: '\S+'"):
-            SchemaChanges.find_file(self.git_repo, 'a'*40)
+            SchemaChanges.find_file(self.test_repo, 'a'*40)
 
         with self.assertRaisesRegex(MigratorError,
             "the hash in '.+', which is '.+', isn't the hash of a commit"):
-            SchemaChanges.find_file(self.git_repo, 'abcdefabcdefabcdefabcdefabcdefabcdefabcd')
+            SchemaChanges.find_file(self.test_repo, 'abcdefabcdefabcdefabcdefabcdefabcdefabcd')
 
     def test_generate_filename(self):
         filename = self.schema_changes.generate_filename()
@@ -1817,19 +1817,19 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.assertEqual(transformations['PREPARE_EXISTING_MODELS'],
             transformations['MODIFY_MIGRATED_MODELS'])
 
-        schema_changes_file = os.path.join(self.git_repo.migrations_dir(),
+        schema_changes_file = os.path.join(self.test_repo.migrations_dir(),
             'schema_changes_no-transformations-file_aaaaaaa.yaml')
         schema_changes = SchemaChanges.generate_instance(schema_changes_file)
         transformations = schema_changes.import_transformations()
         self.assertTrue(transformations is None)
 
-        schema_changes_file = os.path.join(self.git_repo.migrations_dir(),
+        schema_changes_file = os.path.join(self.test_repo.migrations_dir(),
             'schema_changes_bad-transformations_ccccccc.yaml')
         schema_changes = SchemaChanges.generate_instance(schema_changes_file)
         with self.assertRaisesRegex(MigratorError, "'.+' does not have a 'transformations' attribute"):
             schema_changes.import_transformations()
 
-        schema_changes_file = os.path.join(self.git_repo.migrations_dir(),
+        schema_changes_file = os.path.join(self.test_repo.migrations_dir(),
             'schema_changes_bad-transformations_bbbbbbb.yaml')
         schema_changes = SchemaChanges.generate_instance(schema_changes_file)
         with self.assertRaisesRegex(MigratorError, "transformations should be a dict, but it is a.+"):
@@ -2037,7 +2037,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
     def setUp(self):
         super().setUp()
-        self.repo_root = self.git_repo.repo_dir
+        self.repo_root = self.test_repo.repo_dir
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
         self.branch_test_repo = 'branch_test_repo'
         self.test_github_repo_name = 'test_repo_1'
@@ -2064,10 +2064,10 @@ class TestGitRepo(AutoMigrationFixtures):
         self.delete_test_repo(self.branch_test_repo)
 
     def test_init(self):
-        self.assertIsInstance(self.git_repo.repo, git.Repo)
-        self.assertEqual(self.repo_root, self.git_repo.repo_dir)
-        self.assertEqual(self.git_repo.original_location, self.test_repo_url)
-        git_repo = GitRepo(self.git_repo.repo_dir)
+        self.assertIsInstance(self.test_repo.repo, git.Repo)
+        self.assertEqual(self.repo_root, self.test_repo.repo_dir)
+        self.assertEqual(self.test_repo.original_location, self.test_repo_url)
+        git_repo = GitRepo(self.test_repo.repo_dir)
         self.assertIsInstance(git_repo.repo, git.Repo)
         with self.assertRaisesRegex(MigratorError, "instantiating a git.Repo from directory '.+' failed"):
             GitRepo(self.tmp_dir)
@@ -2102,7 +2102,7 @@ class TestGitRepo(AutoMigrationFixtures):
         # test branch
         test_branch = RemoteBranch.unique_branch_name('branch_for_test_clone_repo_from_url')
         # make new branch
-        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+        with RemoteBranch(self.test_repo.repo_name(), test_branch):
 
             # clone the branch
             git_repo = GitRepo()
@@ -2173,23 +2173,23 @@ class TestGitRepo(AutoMigrationFixtures):
             empty_git_repo.copy()
 
     def test_migrations_dir(self):
-        self.assertTrue(os.path.isdir(self.git_repo.migrations_dir()))
-        self.assertEqual(os.path.basename(self.git_repo.migrations_dir()),
+        self.assertTrue(os.path.isdir(self.test_repo.migrations_dir()))
+        self.assertEqual(os.path.basename(self.test_repo.migrations_dir()),
             AutomatedMigration._MIGRATIONS_DIRECTORY)
 
     def test_fixtures_dir(self):
-        self.assertTrue(os.path.isdir(self.git_repo.fixtures_dir()))
-        self.assertEqual(os.path.basename(self.git_repo.fixtures_dir()), 'fixtures')
+        self.assertTrue(os.path.isdir(self.test_repo.fixtures_dir()))
+        self.assertEqual(os.path.basename(self.test_repo.fixtures_dir()), 'fixtures')
 
     def test_repo_name(self):
-        self.assertEqual(self.git_repo.repo_name(), 'test_repo')
+        self.assertEqual(self.test_repo.repo_name(), 'test_repo')
         empty_git_repo = GitRepo()
         self.assertEqual(empty_git_repo.repo_name(), GitRepo._NAME_UNKNOWN)
-        tmp_git_repo = GitRepo(self.git_repo.repo_dir)
+        tmp_git_repo = GitRepo(self.test_repo.repo_dir)
         self.assertIsInstance(tmp_git_repo.repo_name(), str)
 
     def test_head_commit(self):
-        self.assertIsInstance(self.git_repo.head_commit(), git.objects.commit.Commit)
+        self.assertIsInstance(self.test_repo.head_commit(), git.objects.commit.Commit)
 
     def test_latest_hash(self):
         commit_hash = self.nearly_empty_git_repo.latest_hash()
@@ -2198,28 +2198,28 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertEqual(commit_hash, self.nearly_empty_git_repo.repo.head.commit.hexsha)
 
     def test_get_commit(self):
-        commit = self.git_repo.get_commit(self.known_hash)
+        commit = self.test_repo.get_commit(self.known_hash)
         self.assertIsInstance(commit, git.objects.commit.Commit)
-        self.assertEqual(commit, self.git_repo.get_commit(commit))
+        self.assertEqual(commit, self.test_repo.get_commit(commit))
 
         # errors
         with self.assertRaisesRegex(MigratorError, "commit_or_hash .* cannot be converted into a commit"):
-            self.git_repo.get_commit(self.no_such_hash)
+            self.test_repo.get_commit(self.no_such_hash)
         with self.assertRaisesRegex(MigratorError, "commit_or_hash .* cannot be converted into a commit"):
-            self.git_repo.get_commit(1)
+            self.test_repo.get_commit(1)
 
     def test_get_commits(self):
-        self.assertEqual(self.git_repo.get_commits([]), [])
-        commit = self.git_repo.get_commit(self.known_hash)
-        commits = self.git_repo.get_commits([self.known_hash, self.known_hash])
+        self.assertEqual(self.test_repo.get_commits([]), [])
+        commit = self.test_repo.get_commit(self.known_hash)
+        commits = self.test_repo.get_commits([self.known_hash, self.known_hash])
         self.assertEqual(commits, [commit, commit])
 
         # errors
         with self.assertRaisesRegex(MigratorError, "No commit found for .+"):
-            self.git_repo.get_commits([self.known_hash, self.no_such_hash, self.no_such_hash])
+            self.test_repo.get_commits([self.known_hash, self.no_such_hash, self.no_such_hash])
 
     def test_commits_as_graph(self):
-        commit_DAG = self.git_repo.commits_as_graph()
+        commit_DAG = self.test_repo.commits_as_graph()
         self.assertIsInstance(commit_DAG, nx.classes.digraph.DiGraph)
         expected_child_parent_edges = [
             # child -> parent commits in test_repo_url == 'https://github.com/KarrLab/test_repo'
@@ -2240,7 +2240,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
         # get tagged commits and the expected commit edges obtained by commits_as_graph()
         tags_to_commits = {}
-        for tag in git.refs.tag.TagReference.iter_items(self.git_repo.repo):
+        for tag in git.refs.tag.TagReference.iter_items(self.test_repo.repo):
             tags_to_commits[str(tag)] = tag.commit
         commits = tags_to_commits.values()
         expected_commit_edges = [(tags_to_commits[child].hexsha, tags_to_commits[parent].hexsha)
@@ -2255,7 +2255,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
     def test_get_hash(self):
         root_commit = None
-        for tag in git.refs.tag.TagReference.iter_items(self.git_repo.repo):
+        for tag in git.refs.tag.TagReference.iter_items(self.test_repo.repo):
             if str(tag) == 'ROOT':
                 root_commit = tag.commit
         if root_commit is None:
@@ -2266,7 +2266,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
     def test_checkout_commit(self):
         # copy repo because this checks out earlier commits
-        git_repo_copy = self.git_repo.copy()
+        git_repo_copy = self.test_repo.copy()
         git_repo_copy.checkout_commit(git_repo_copy.head_commit())
         self.assertEqual(str(git_repo_copy.repo.head.commit), git_repo_copy.head_commit().hexsha)
         git_repo_copy.checkout_commit(self.known_hash)
@@ -2367,12 +2367,12 @@ class TestGitRepo(AutoMigrationFixtures):
 
     # todo: method to convert hash prefix to full hash so we can use short hashes
     def test_get_dependents(self):
-        before_splitting = self.git_repo.get_commit('d848093018c0660ea3e4728d3c21f3751a53757f')
-        clone_1_commit = self.git_repo.get_commit('35f3eb4fe0ebf8f421958d9300c5de94a40fb70e')
-        clone_2_commit = self.git_repo.get_commit('45600a7041ccc45058c6f20e7549106503a5d89c')
-        clone_3_commit = self.git_repo.get_commit('2e22e3f14a986e46b98269911fab3ec23fd1b9e3')
-        clone_2_n_3_merge_commit = self.git_repo.get_commit('d8c707bbafac64478ff8f5afc3ec4f2eeac6acfa')
-        clone2_1_2_n_3_merge_commit = self.git_repo.get_commit('6e703e28bae5d1af7a8441a41c9fa078b272cbfd')
+        before_splitting = self.test_repo.get_commit('d848093018c0660ea3e4728d3c21f3751a53757f')
+        clone_1_commit = self.test_repo.get_commit('35f3eb4fe0ebf8f421958d9300c5de94a40fb70e')
+        clone_2_commit = self.test_repo.get_commit('45600a7041ccc45058c6f20e7549106503a5d89c')
+        clone_3_commit = self.test_repo.get_commit('2e22e3f14a986e46b98269911fab3ec23fd1b9e3')
+        clone_2_n_3_merge_commit = self.test_repo.get_commit('d8c707bbafac64478ff8f5afc3ec4f2eeac6acfa')
+        clone2_1_2_n_3_merge_commit = self.test_repo.get_commit('6e703e28bae5d1af7a8441a41c9fa078b272cbfd')
         # map from each commit to the commits above that depend on it
         dependency_map = {
             before_splitting: {clone_1_commit, clone_2_commit, clone_3_commit, clone_2_n_3_merge_commit,
@@ -2385,7 +2385,7 @@ class TestGitRepo(AutoMigrationFixtures):
         }
         all_above_commits = set(dependency_map.keys())
         for commit, some_dependents in dependency_map.items():
-            all_dependents = self.git_repo.get_dependents(commit)
+            all_dependents = self.test_repo.get_dependents(commit)
             self.assertTrue(some_dependents.issubset(all_dependents))
             # all_dependents should not contain any of the above commits not in some_dependents
             self.assertFalse((all_above_commits - some_dependents) & all_dependents)
@@ -2411,10 +2411,10 @@ class TestGitRepo(AutoMigrationFixtures):
             self.check_dependency(sequence, totally_empty_git_repo.commit_DAG)
 
         # create a topological sort of 5 test_repo commits
-        self.git_repo.commit_DAG = self.git_repo.commits_as_graph()
-        commits_to_migrate = random.sample(self.git_repo.commit_DAG.nodes, 5)
-        sequence = self.git_repo.commits_in_dependency_consistent_seq(commits_to_migrate)
-        self.check_dependency(sequence, self.git_repo.commit_DAG)
+        self.test_repo.commit_DAG = self.test_repo.commits_as_graph()
+        commits_to_migrate = random.sample(self.test_repo.commit_DAG.nodes, 5)
+        sequence = self.test_repo.commits_in_dependency_consistent_seq(commits_to_migrate)
+        self.check_dependency(sequence, self.test_repo.commit_DAG)
 
     def test_str(self):
         empty_git_repo = GitRepo()
@@ -2453,7 +2453,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
     def test_make_template_config_file(self):
-        path = AutomatedMigration.make_template_config_file(self.git_repo, 'example_test_repo')
+        path = AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
 
         # check the file at path
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
@@ -2473,14 +2473,14 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             schema_file='../migration_test_repo/core.py',
             migrator='wc_lang'
         )
-        path = AutomatedMigration.make_template_config_file(self.git_repo, 'example_test_repo_2',
+        path = AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo_2',
             **kwargs)
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
         self.assertEqual(kwargs, data)
 
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
-            AutomatedMigration.make_template_config_file(self.git_repo, 'example_test_repo')
+            AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
 
         remove_silently(path)
 
@@ -2512,7 +2512,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         # make a config file that's missing an attribute
         saved_config_attributes = AutomatedMigration._CONFIG_ATTRIBUTES.copy()
         del AutomatedMigration._CONFIG_ATTRIBUTES['files_to_migrate']
-        config_file = AutomatedMigration.make_template_config_file(self.git_repo, 'test_schema_repo')
+        config_file = AutomatedMigration.make_template_config_file(self.test_repo, 'test_schema_repo')
         # restore the attribute
         AutomatedMigration._CONFIG_ATTRIBUTES = saved_config_attributes
         with self.assertRaisesRegex(MigratorError, "automated migration config file must have a dict "
@@ -2520,7 +2520,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             AutomatedMigration.load_config_file(config_file)
         remove_silently(config_file)
 
-        config_file = AutomatedMigration.make_template_config_file(self.git_repo, 'test_schema_repo')
+        config_file = AutomatedMigration.make_template_config_file(self.test_repo, 'test_schema_repo')
         with self.assertRaisesRegex(MigratorError,
             "all attributes in an automated migration config file must be initialized, but they are:.+"):
             AutomatedMigration.load_config_file(config_file)
@@ -2687,7 +2687,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         # test distinct data and schema repos
         # data file in test_repo and schema in migration_test_repo
-        test_repo_copy = self.git_repo.copy()
+        test_repo_copy = self.test_repo.copy()
         automated_migration_separate_data_n_schema_repos = AutomatedMigration(
             **dict(data_repo_location=test_repo_copy.repo_dir,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
@@ -2700,7 +2700,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
 
     def test_migrate_files(self):
-        test_repo_copy = self.git_repo.copy()
+        test_repo_copy = self.test_repo.copy()
         config_file_path, migrated_files = AutomatedMigration.migrate_files(
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
             test_repo_copy.repo_dir,
@@ -2861,7 +2861,7 @@ class TestRepoTestingContext(AutoMigrationFixtures):
     @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_repo_testing_context(self):
         test_branch = RemoteBranch.unique_branch_name('branch_for_testing_repo_testing_context')
-        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+        with RemoteBranch(self.test_repo.repo_name(), test_branch):
             properties = {}
             clone_key = 'test_repo_clone'
             with RepoTestingContext(self.test_repo_url, test_branch, properties, clone_key) as local_repo:
@@ -2889,7 +2889,7 @@ class TestCementControllers(AutoMigrationFixtures):
 
     def test_make_changes_template(self):
         test_branch = RemoteBranch.unique_branch_name('branch_for_test_make_changes_template')
-        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+        with RemoteBranch(self.test_repo.repo_name(), test_branch):
             argv = ['make-changes-template', self.test_repo_url, '--branch', test_branch]
             with SchemaRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
@@ -2921,7 +2921,7 @@ class TestCementControllers(AutoMigrationFixtures):
     @unittest.skip("not finished")
     def test_make_migration_config_file(self):
         test_branch = RemoteBranch.unique_branch_name('branch_for_test_make_migration_config_file')
-        with RemoteBranch(self.git_repo.repo_name(), test_branch):
+        with RemoteBranch(self.test_repo.repo_name(), test_branch):
 
             argv = ['make-migration-config-file', self.test_repo_url, '--branch', test_branch]
             with DataRepoMigrate(argv=argv) as app:
@@ -2937,7 +2937,7 @@ class TestCementControllers(AutoMigrationFixtures):
     @unittest.skip("only works when coverage (pytest-cov) isn't used; '# pragma: no cover' doesn't help")
     def test_migrate_data(self):
         # do round-trip migration of file in test_repo, with schema from migration_test_repo
-        test_repo_copy = self.git_repo.copy()
+        test_repo_copy = self.test_repo.copy()
         # working directory must be in test_repo
         os.chdir(test_repo_copy.repo_dir)
         argv = ['migrate-data',
