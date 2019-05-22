@@ -3080,7 +3080,6 @@ class AutomatedMigration(object):
         for file_to_migrate in self.data_config['files_to_migrate']:
             schema_changes = self.schema_changes_for_data_file(file_to_migrate)
             migration_spec = self.generate_migration_spec(file_to_migrate, schema_changes)
-            print('migration_spec', migration_spec)
             self.migration_specs.append(migration_spec)
 
     def automated_migrate(self, tmp_dir=None):
@@ -3158,13 +3157,16 @@ class AutomatedMigration(object):
     def migrate_files(schema_url, local_dir, data_files):
         """ Migrate some data files
 
+        Migrate data files in place in a local repository.
+
         Args:
             schema_url (:obj:`str`): URL of schema's Python file
             local_dir (:obj:`str`): dir in local data repo where migrate command is invoked
             data_files (:obj:`list` of :obj:`str`): data files to migrate
 
         Returns:
-            :obj:`list`: ...
+            :obj:`tuple` of (:obj:`str`, :obj:`list`): path of the config file created, list of
+                pathnames of migrated files
 
         Raises:
             :obj:`MigratorError`: if schema_url isn't in the right form, or
@@ -3235,7 +3237,6 @@ class AutomatedMigration(object):
         automated_migration = AutomatedMigration(data_repo_location=local_dir,
             data_config_file_basename=os.path.basename(config_file_path))
         migrated_files, _ = automated_migration.automated_migrate()
-        # todo: rm config_file_path
         return config_file_path, migrated_files
 
     def test_migration(self):
@@ -3344,7 +3345,7 @@ class CementControllers(object):
             help='Create a template schema changes file',
             arguments = [
                 (['schema_url'], {'type': str, 'help': 'URL of the schema repo'}),
-                # todo: New: fix
+                # todo: New: fix at command line
                 (['--commit'],
                     {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
                 (['--branch'],

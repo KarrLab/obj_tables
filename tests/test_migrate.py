@@ -2705,7 +2705,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
             test_repo_copy.repo_dir,
             ['tests/fixtures/data_file_1.xlsx',
-                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_1.xlsx')])
+                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
         file_copy = os.path.join(os.path.dirname(migrated_files[0]), 'data_file_1_copy.xlsx')
         for migrated_file in migrated_files:
             assert_equal_workbooks(self, file_copy, migrated_file)
@@ -2890,7 +2890,6 @@ class TestCementControllers(AutoMigrationFixtures):
     def test_make_changes_template(self):
         test_branch = RemoteBranch.unique_branch_name('branch_for_test_make_changes_template')
         with RemoteBranch(self.git_repo.repo_name(), test_branch):
-
             argv = ['make-changes-template', self.test_repo_url, '--branch', test_branch]
             with SchemaRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
@@ -2935,8 +2934,24 @@ class TestCementControllers(AutoMigrationFixtures):
     def test_migrate_configured_data_files(self):
         pass
 
+    @unittest.skip("only works when coverage (pytest-cov) isn't used; '# pragma: no cover' doesn't help")
     def test_migrate_data(self):
-        pass
+        # do round-trip migration of file in test_repo, with schema from migration_test_repo
+        test_repo_copy = self.git_repo.copy()
+        # working directory must be in test_repo
+        os.chdir(test_repo_copy.repo_dir)
+        argv = ['migrate-data',
+            'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+            'tests/fixtures/data_file_1.xlsx']
+        with DataRepoMigrate(argv=argv) as app:
+            with capturer.CaptureOutput(relay=False) as captured:
+                app.run()
+                self.assertIn('migrated files:', captured.get_text())
+
+        # compare migrated and original data files
+        file_copy = os.path.join(test_repo_copy.fixtures_dir(), 'data_file_1_copy.xlsx')
+        migrated_file = os.path.join(test_repo_copy.fixtures_dir(), 'data_file_1.xlsx')
+        assert_equal_workbooks(self, file_copy, migrated_file)
 
     @unittest.skip("unclear why this test fails")
     def test_data_repo_main(self):
