@@ -3299,20 +3299,45 @@ class Utils(object):
             description="Find the modules used by a schema, and their commits")
         parser.add_argument('schema_path', help="path to a Python schema")
         parser.add_argument('repo', help="name of the repo")
+        parser.add_argument('-p', '--paths', help="generate list of paths", action="store_true")
         args = parser.parse_args()
         finder = ModuleFinder()
         finder.run_script(args.schema_path)
-        max_name = 0
-        max_path = 0
-        for name, module in finder.modules.items():
-            if module.__file__ and module.__file__.startswith(args.repo):
-                max_name = max(max_name, len(module.__name__))
-                max_path = max(max_path, len(module.__file__))
-        custom_format = "{{:<{}}}{{:<{}}}".format(max_name+4, max_path)
-        print(custom_format.format('module name', 'module filename'))
-        for name, module in finder.modules.items():
-            if module.__file__ and module.__file__.startswith(args.repo):
-                print(custom_format.format(module.__name__, module.__file__))
+        if not args.paths:
+            max_name = 0
+            max_path = 0
+            for name, module in finder.modules.items():
+                if module.__file__ and module.__file__.startswith(args.repo):
+                    max_name = max(max_name, len(module.__name__))
+                    max_path = max(max_path, len(module.__file__))
+            custom_format = "{{:<{}}}{{:<{}}}".format(max_name+4, max_path)
+            missing, maybe = finder.any_missing_maybe()
+            wc_missing = [missin for missin in missing if 'wc_' in missin]
+            if wc_missing:
+                print('wc_missing:')
+                for name in wc_missing:
+                    print(name)
+            else:
+                print('no wc_missing')
+            wc_maybe = [perhaps for perhaps in maybe if 'wc_' in perhaps]
+            if wc_maybe:
+                print('wc_maybe:')
+                for name in wc_maybe:
+                    print(name)
+            else:
+                print('no wc_maybe')
+
+            print(custom_format.format('module name', 'module filename'))
+            for name, module in finder.modules.items():
+                if module.__file__ and module.__file__.startswith(args.repo):
+                    print(custom_format.format(module.__name__, module.__file__))
+        else:
+            paths = []
+            for module in finder.modules.values():
+                if module.__file__ and module.__file__.startswith(args.repo):
+                    paths.append(module.__file__)
+            print(' '.join(paths))
+
 
 if __name__ == '__main__':
     Utils.find_schema_modules()
