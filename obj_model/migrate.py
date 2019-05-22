@@ -8,6 +8,7 @@
 
 from cement import Controller, App, ex
 from enum import Enum
+from modulefinder import ModuleFinder
 from networkx.algorithms.dag import topological_sort, ancestors
 from pathlib import Path, PurePath
 from pprint import pprint, pformat
@@ -3282,6 +3283,42 @@ class AutomatedMigration(object):
         return '\n'.join(rv)
 
 
+class Utils(object):
+    """ Utilities for migration """
+
+    @staticmethod
+    def find_schema_modules():
+        """ Find the modules used by a schema
+
+        Useful for creating schema changes files for a schema repo
+
+        Returns:
+            :obj:`argparse.Namespace`: ???
+        """
+        parser = argparse.ArgumentParser(
+            description="Find the modules used by a schema, and their commits")
+        parser.add_argument('schema_path', help="path to a Python schema")
+        parser.add_argument('repo', help="name of the repo")
+        args = parser.parse_args()
+        finder = ModuleFinder()
+        finder.run_script(args.schema_path)
+        max_name = 0
+        max_path = 0
+        for name, module in finder.modules.items():
+            if module.__file__ and module.__file__.startswith(args.repo):
+                max_name = max(max_name, len(module.__name__))
+                max_path = max(max_path, len(module.__file__))
+        custom_format = "{{:<{}}}{{:<{}}}".format(max_name+4, max_path)
+        print(custom_format.format('module name', 'module filename'))
+        for name, module in finder.modules.items():
+            if module.__file__ and module.__file__.startswith(args.repo):
+                print(custom_format.format(module.__name__, module.__file__))
+
+if __name__ == '__main__':
+    Utils.find_schema_modules()
+
+
+# todo: discard: replaced with cement CLI
 class RunMigration(object):
 
     @staticmethod
