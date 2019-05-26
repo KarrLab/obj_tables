@@ -47,7 +47,7 @@ import yaml
 
 from .config import core
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
-    RunMigration, MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo, VirtualEnvUtil,
+    MigrationSpec, SchemaChanges, AutomatedMigration, GitRepo, VirtualEnvUtil,
     CementControllers, DataRepoMigrate, SchemaRepoMigrate, data_repo_main, schema_repo_main)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
@@ -1726,7 +1726,6 @@ class TestSchemaChanges(AutoMigrationFixtures):
             transformations_file=''
         )
         self.empty_schema_changes = SchemaChanges(self.nearly_empty_git_repo)
-        self.empty_migrations_dir = self.empty_schema_changes.schema_repo.migrations_dir()
 
     def test_get_date_timestamp(self):
         timestamp = SchemaChanges.get_date_timestamp()
@@ -1759,10 +1758,9 @@ class TestSchemaChanges(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, r"no schema changes file in '.+' for hash \S+"):
             SchemaChanges.find_file(self.test_repo, 'not_a_hash_not_a_hash_not_a_hash_not_a_h')
 
-        migrations_dir = self.test_repo.migrations_dir()
-        self.schema_changes.make_template(changes_file_dir=migrations_dir)
+        self.schema_changes.make_template()
         time.sleep(2)
-        self.schema_changes.make_template(changes_file_dir=migrations_dir)
+        self.schema_changes.make_template()
         with self.assertRaisesRegex(MigratorError,
             r"multiple schema changes files in '.+' for hash \S+"):
             SchemaChanges.find_file(self.test_repo, self.schema_changes.get_hash())
@@ -1776,19 +1774,18 @@ class TestSchemaChanges(AutoMigrationFixtures):
             SchemaChanges.find_file(self.test_repo, 'abcdefabcdefabcdefabcdefabcdefabcdefabcd')
 
     def test_generate_filename(self):
-        filename = self.schema_changes.generate_filename()
+        filename = self.schema_changes.generate_filename('a'*40)
         self.assertTrue(filename.endswith('.yaml'))
         self.assertTrue(2 <= len(filename.split('_')))
 
     def test_make_template(self):
-        for changes_file_dir in [None, self.empty_migrations_dir]:
-            pathname = self.empty_schema_changes.make_template(changes_file_dir=changes_file_dir)
-            data = yaml.load(open(pathname, 'r'), Loader=yaml.FullLoader)
-            for attr in ['renamed_models', 'renamed_attributes']:
-                self.assertEqual(data[attr], [])
-            for attr in ['commit_hash', 'transformations_file']:
-                self.assertIsInstance(data[attr], str)
-            os.remove(pathname)
+        pathname = self.empty_schema_changes.make_template()
+        data = yaml.load(open(pathname, 'r'), Loader=yaml.FullLoader)
+        for attr in ['renamed_models', 'renamed_attributes']:
+            self.assertEqual(data[attr], [])
+        for attr in ['commit_hash', 'transformations_file']:
+            self.assertIsInstance(data[attr], str)
+        os.remove(pathname)
 
         schema_changes = SchemaChanges()
         path = schema_changes.make_template(schema_url=self.test_repo_url)
@@ -1804,10 +1801,28 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.assertIn(path, schema_changes_files)
 
         # instantly create two, which will likely have the same timestamp
-        pathname = self.empty_schema_changes.make_template(changes_file_dir=self.empty_migrations_dir)
+        pathname = self.empty_schema_changes.make_template()
         with self.assertRaisesRegex(MigratorError, "schema changes file '.+' already exists"):
-            self.empty_schema_changes.make_template(changes_file_dir=self.empty_migrations_dir)
+            self.empty_schema_changes.make_template()
         os.remove(pathname)
+
+        schema_changes = SchemaChanges()
+        with self.assertRaisesRegex(MigratorError, "schema_repo must be initialized"):
+            schema_changes.make_template()
+
+    def test_make_template_command(self):
+
+        with capturer.CaptureOutput(relay=False) as captured:
+            schema_changes_template_file = SchemaChanges.make_template_command(
+                self.git_migration_test_repo.repo_dir)
+            self.assertTrue(os.path.isfile(schema_changes_template_file))
+            self.assertIn('Created and committed schema changes template file', captured.get_text())
+
+        with self.assertRaisesRegex(MigratorError, "schema_dir is not a directory"):
+            SchemaChanges.make_template_command('no such dir')
+
+        with self.assertRaisesRegex(MigratorError, "commit '.+' not found"):
+            SchemaChanges.make_template_command(self.git_migration_test_repo.repo_dir, 'no such commit')
 
     def test_import_transformations(self):
         find_file = SchemaChanges.find_file
@@ -1865,7 +1880,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
             r"schema changes file '.+' must have a dict with these attributes:"):
             SchemaChanges.load(bad_yaml)
 
-        pathname = self.empty_schema_changes.make_template(changes_file_dir=self.empty_migrations_dir)
+        pathname = self.empty_schema_changes.make_template()
         with self.assertRaisesRegex(MigratorError,
             r"schema changes file '.+' is empty \(an unmodified template\)"):
             SchemaChanges.load(pathname)
@@ -2735,46 +2750,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             self.assertRegex(str_val, "{}: .+".format(attr))
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
-class TestRunMigration(MigrationFixtures):
-
-    def setUp(self):
-        super().setUp()
-
-    def tearDown(self):
-        super().tearDown()
-
-    def test_parse_args(self):
-        cl = "{}".format(self.config_file)
-        args = RunMigration.parse_args(cli_args=cl.split())
-        self.assertEqual(args.migrations_config_file, self.config_file)
-
-    def test_main(self):
-        for warnings in [True, False]:
-            # Prepare to remove the migrated_files if the test fails
-            for migration_spec in MigrationSpec.load(self.config_file).values():
-                for expected_migrated_file in migration_spec.expected_migrated_files():
-                    self.files_to_delete.add(expected_migrated_file)
-
-            args = Namespace(migrations_config_file=self.config_file, warnings=warnings)
-            with capturer.CaptureOutput(relay=False) as capture_output:
-                results = RunMigration.main(args)
-                for migration_disc, migrated_filenames in results:
-                    self.assertIn(migration_disc.name, capture_output.get_text())
-                    for migrated_file in migrated_filenames:
-                        self.assertIn(migrated_file, capture_output.get_text())
-
-            for migration_disc, migrated_filenames in results:
-                self.assertIsInstance(migration_disc, MigrationSpec)
-                for migrated_file in migrated_filenames:
-                    self.assertTrue(os.path.isfile(migrated_file))
-
-            # remove the migrated files so they do not contaminate tests/fixtures/migrate
-            for _, migrated_filenames in results:
-                for migrated_file in migrated_filenames:
-                    remove_silently(migrated_file)
-
-
 # todo: perhaps move GitRepo, RepoTestingContext and RemoteBranch to wc_utils
 # todo: automatically delete the tmp dirs storing clones of a git repo made by RepoTestingContext.__exit__
 # could do this with a tempfile.TemporaryDirectory context and GitRepo as a context that takes a tmp dir
@@ -2890,7 +2865,7 @@ class TestCementControllers(AutoMigrationFixtures):
     def test_make_changes_template(self):
         test_branch = RemoteBranch.unique_branch_name('branch_for_test_make_changes_template')
         with RemoteBranch(self.test_repo.repo_name(), test_branch):
-            argv = ['make-changes-template', self.test_repo_url, '--branch', test_branch]
+            argv = ['make-changes-template']
             with SchemaRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
@@ -2898,24 +2873,15 @@ class TestCementControllers(AutoMigrationFixtures):
                     match = re.search("'(.+)'$", captured.get_text())
                     if not match:
                         self.fail("couldn't find schema changes filename in captured output")
-                    template_name = match.group(1)
 
-            # before the branch is deleted, check that template schema changes file was made and pushed
-            local_repo = GitRepo()
-            local_repo.clone_repo_from_url(self.test_repo_url, branch=test_branch)
-            # ensure that the template file exists
-            template_pathname = os.path.join(local_repo.migrations_dir(), template_name)
-            self.assertTrue(os.path.isfile(template_pathname))
-            # delete the temp dir holding self.local_repo
-            local_repo.del_temp_dirs()
 
             # check that illegal arguments produce reasonable errors
-            NO_SUCH_REPO = 'NO_SUCH_REPO'
-            argv = ['make-changes-template', NO_SUCH_REPO]
+            NO_SUCH_COMMIT = 'NO_SUCH_COMMIT'
+            argv = ['make-changes-template', '--commit', NO_SUCH_COMMIT]
             with SchemaRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput() as captured:
                     with self.assertRaisesRegex(MigratorError,
-                        "repo cannot be cloned from '{}'".format(NO_SUCH_REPO)):
+                        "commit '{}' not found".format(NO_SUCH_COMMIT)):
                         app.run()
 
     @unittest.skip("not finished")
@@ -2961,12 +2927,12 @@ class TestCementControllers(AutoMigrationFixtures):
             # restore working directory
             os.chdir(cwd)
 
-    @unittest.skip("unclear why this test fails")
+    @unittest.skip("todo: fix: unclear why this test fails")
     def test_data_repo_main(self):
         with capturer.CaptureOutput(relay=False):
             data_repo_main(test_argv=['-h'])
 
-    @unittest.skip("unclear why this test fails")
+    @unittest.skip("todo: fix: unclear why this test fails")
     def test_schema_repo_main(self):
         with capturer.CaptureOutput(relay=False):
             schema_repo_main(test_argv=['-h'])
