@@ -1689,6 +1689,7 @@ class AutoMigrationFixtures(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        return
         shutil.rmtree(cls.tmp_dir)
         # remove the GitRepo's temp_dirs
         cls.test_repo.del_temp_dirs()
@@ -2488,8 +2489,10 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             schema_file='../migration_test_repo/core.py',
             migrator='wc_lang'
         )
+        TEST_SUFFIX = 'test_suffix'
         path = AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo_2',
-            **kwargs)
+            name_suffix=TEST_SUFFIX, **kwargs)
+        self.assertIn(TEST_SUFFIX, path)
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
         self.assertEqual(kwargs, data)
 
@@ -2498,6 +2501,40 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
 
         remove_silently(path)
+
+    def test_make_template_config_file_command(self):
+        test_repo_copy = self.test_repo.copy()
+        config_file_path = AutomatedMigration.make_template_config_file_command(
+            test_repo_copy.repo_dir,
+            'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+            ['tests/fixtures/data_file_1.xlsx',
+                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
+        self.assertTrue(os.path.isfile(config_file_path))
+        remove_silently(config_file_path)
+
+        config_file_path = AutomatedMigration.make_template_config_file_command(
+            test_repo_copy.repo_dir,
+            'https://github.com/KarrLab/wc_lang/blob/master/migration_test_repo/core.py',
+            ['tests/fixtures/data_file_1.xlsx'])
+        data = yaml.load(open(config_file_path, 'r'), Loader=yaml.FullLoader)
+        self.assertEqual(data['migrator'], 'wc_lang')
+
+        with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
+            AutomatedMigration.make_template_config_file_command('', 'github.com/KarrLab/core.py', [])
+
+        with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
+            AutomatedMigration.make_template_config_file_command('', 'https://github.com/core.py', [])
+
+        with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
+            AutomatedMigration.make_template_config_file_command('', 'https://github.com/a/b/c/d/e/core', [])
+
+        with self.assertRaisesRegex(MigratorError, "data_repo_dir is not a directory"):
+            AutomatedMigration.make_template_config_file_command('foo', 'https://github.com/a/b/blob/d/e/core.py', [])
+
+        with self.assertRaisesRegex(MigratorError, "cannot find data file"):
+            AutomatedMigration.make_template_config_file_command(test_repo_copy.repo_dir,
+                'https://github.com/a/b/blob/d/e/core.py',
+                ['tests/fixtures/not_a_data_file_1.xlsx'])
 
     def test_load_config_file(self):
         # read config file with initialized values
@@ -2726,23 +2763,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             assert_equal_workbooks(self, file_copy, migrated_file)
         self.assertTrue(os.path.isfile(config_file_path))
         remove_silently(config_file_path)
-
-        with self.assertRaisesRegex(MigratorError, "schema_url must be URL for python schema"):
-            AutomatedMigration.migrate_files('github.com/KarrLab/core.py', '', [])
-
-        with self.assertRaisesRegex(MigratorError, "schema_url must be URL for python schema"):
-            AutomatedMigration.migrate_files('https://github.com/core.py', '', [])
-
-        with self.assertRaisesRegex(MigratorError, "schema_url must be URL for python schema"):
-            AutomatedMigration.migrate_files('https://github.com/a/b/c/d/e/core', '', [])
-
-        with self.assertRaisesRegex(MigratorError, "local_dir is not a directory"):
-            AutomatedMigration.migrate_files('https://github.com/a/b/blob/d/e/core.py', 'foo', [])
-
-        with self.assertRaisesRegex(MigratorError, "cannot find data file"):
-            AutomatedMigration.migrate_files('https://github.com/a/b/blob/d/e/core.py',
-                test_repo_copy.repo_dir,
-                ['tests/fixtures/not_a_data_file_1.xlsx'])
 
     def test_str(self):
         str_val = str(self.clean_automated_migration)
