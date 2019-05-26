@@ -2123,10 +2123,6 @@ class SchemaChanges(object):
             schema_changes_template_file = schema_changes.make_template(commit_hash=commit_hash)
         except MigratorError:
             raise MigratorError("commit '{}' not found".format(commit_hash))
-        # commit a change containing the new schema changes file template
-        commit_hash = commit_hash if commit_hash else schema_changes.schema_repo.latest_hash()
-        schema_changes.schema_repo.commit_changes(
-            "Add a schema changes template file for commit: {}".format(commit_hash))
         # print directions to complete creating, commit & push the schema changes template file
         print("Created and committed schema changes template file '{}'.".format(schema_changes_template_file))
         print("Edit the file's attributes (renamed_attributes, renamed_models, and transformations_file) "

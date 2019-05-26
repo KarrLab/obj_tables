@@ -1,7 +1,0 @@
-# schema changes file
-# stored in 'schema_changes_2019-05-26-10-08-57_NO_SUCH.yaml'
-
-commit_hash: NO_SUCH_COMMIT
-renamed_attributes: []
-renamed_models: []
-transformations_file: ''
