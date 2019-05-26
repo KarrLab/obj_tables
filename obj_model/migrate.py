@@ -40,9 +40,8 @@ from obj_model.units import UnitAttribute
 from obj_model.io import WorkbookReader, IoWarning
 import wc_utils
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
-from wc_utils.util.files import normalize_filename
+from wc_utils.util.files import normalize_filename, remove_silently
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
-
 
 # TODOS
 # migration integrated into wc_lang & wc_kb
@@ -3267,7 +3266,7 @@ class AutomatedMigration(object):
 
     @staticmethod
     def migrate_files(schema_url, local_dir, data_files):
-        """ Migrate some data files
+        """ Migrate some data files specified by command line input
 
         Migrate data files in place in a local repository.
 
@@ -3277,8 +3276,7 @@ class AutomatedMigration(object):
             data_files (:obj:`list` of :obj:`str`): data files to migrate
 
         Returns:
-            :obj:`tuple` of (:obj:`str`, :obj:`list`): path of the config file created, list of
-                pathnames of migrated files
+            :obj:`list` of :obj:`str`: list of pathnames of migrated files
 
         Raises:
             :obj:`MigratorError`: if schema_url isn't in the right form, or
@@ -3293,8 +3291,9 @@ class AutomatedMigration(object):
         automated_migration = AutomatedMigration(data_repo_location=local_dir,
             data_config_file_basename=os.path.basename(config_file_path))
         migrated_files, _ = automated_migration.automated_migrate()
-        # todo: delete config_file_path, & don't return it
-        return config_file_path, migrated_files
+        # delete the temporary automated migration config file
+        remove_silently(config_file_path)
+        return migrated_files
 
     def test_migration(self):
         """ Test a migration
@@ -3450,7 +3449,7 @@ class CementControllers(object):
 
 
     class AutomatedMigrationConfigController(Controller):
-        """ Create a migration config file
+        """ Create a template automated migration config file
 
         This controller is used by data repos.
         """
@@ -3536,8 +3535,8 @@ class CementControllers(object):
         def migrate_data(self):
             args = self.app.pargs
             # args.file_to_migrate is a list of all files to migrate
-            config_file_path, migrated_files = AutomatedMigration.migrate_files(args.schema_url,
-                os.getcwd(), args.file_to_migrate)
+            migrated_files = AutomatedMigration.migrate_files(args.schema_url, os.getcwd(),
+                args.file_to_migrate)
             print('migrated files:')
             for migrated_file in migrated_files:
                 print(migrated_file)

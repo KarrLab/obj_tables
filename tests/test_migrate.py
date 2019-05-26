@@ -2753,7 +2753,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
     def test_migrate_files(self):
         test_repo_copy = self.test_repo.copy()
-        config_file_path, migrated_files = AutomatedMigration.migrate_files(
+        migrated_files = AutomatedMigration.migrate_files(
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
             test_repo_copy.repo_dir,
             ['tests/fixtures/data_file_1.xlsx',
@@ -2761,8 +2761,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         file_copy = os.path.join(os.path.dirname(migrated_files[0]), 'data_file_1_copy.xlsx')
         for migrated_file in migrated_files:
             assert_equal_workbooks(self, file_copy, migrated_file)
-        self.assertTrue(os.path.isfile(config_file_path))
-        remove_silently(config_file_path)
 
     def test_str(self):
         str_val = str(self.clean_automated_migration)
