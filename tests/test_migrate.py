@@ -12,7 +12,7 @@
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
 SPEED_UP_TESTING = False
-DONT_DEBUG_ON_CIRCLE = False
+DONT_DEBUG_ON_CIRCLE = True
 
 from argparse import Namespace
 from github import Github
@@ -1816,7 +1816,6 @@ class TestSchemaChanges(AutoMigrationFixtures):
             schema_changes_template_file = SchemaChanges.make_template_command(
                 self.git_migration_test_repo.repo_dir)
             self.assertTrue(os.path.isfile(schema_changes_template_file))
-            self.assertIn('Created and committed schema changes template file', captured.get_text())
 
         with self.assertRaisesRegex(MigratorError, "schema_dir is not a directory"):
             SchemaChanges.make_template_command('no such dir')
@@ -2882,14 +2881,18 @@ class TestRepoTestingContext(AutoMigrationFixtures):
 class TestCementControllers(AutoMigrationFixtures):
 
     def test_make_changes_template(self):
-        test_branch = RemoteBranch.unique_branch_name('branch_for_test_make_changes_template')
-        with RemoteBranch(self.test_repo.repo_name(), test_branch):
+        # create template schema changes file in test_repo
+        try:
+            # working directory must be in self.test_repo
+            # save cwd so it can be restored
+            cwd = os.getcwd()
+            os.chdir(self.test_repo.repo_dir)
             argv = ['make-changes-template']
             with SchemaRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
-                    self.assertIn('template schema changes file created: ', captured.get_text())
-                    match = re.search("'(.+)'$", captured.get_text())
+                    self.assertIn('Created and added template schema changes file: ', captured.get_text())
+                    match = re.search("'.+'\.", captured.get_text())
                     if not match:
                         self.fail("couldn't find schema changes filename in captured output")
 
@@ -2902,6 +2905,12 @@ class TestCementControllers(AutoMigrationFixtures):
                         "commit '{}' not found".format(NO_SUCH_COMMIT)):
                         app.run()
 
+        except Exception as e:
+            raise Exception(e)
+        finally:
+            # restore working directory
+            os.chdir(cwd)
+
     def test_make_migration_config_file(self):
         # create automated migration config file in test self.nearly_empty_git_repo
         try:
@@ -2912,6 +2921,7 @@ class TestCementControllers(AutoMigrationFixtures):
             os.makedirs(fixtures_dir, exist_ok=True)
             with open(data_file_path, 'w') as file:
                 file.write(u'fake data')
+
             # working directory must be in self.nearly_empty_git_repo
             # save cwd so it can be restored
             cwd = os.getcwd()
@@ -2920,9 +2930,9 @@ class TestCementControllers(AutoMigrationFixtures):
                 'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
                 str(PurePath(data_file_path).relative_to(self.nearly_empty_git_repo.repo_dir))]
             with DataRepoMigrate(argv=argv) as app:
-                with capturer.CaptureOutput(relay=True) as captured:
+                with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
-                    self.assertIn('template automated migration config file created:', captured.get_text())
+                    self.assertIn('Automated migration config file created: ', captured.get_text())
 
         except Exception as e:
             raise Exception(e)

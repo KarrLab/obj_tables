@@ -2122,10 +2122,6 @@ class SchemaChanges(object):
             schema_changes_template_file = schema_changes.make_template(commit_hash=commit_hash)
         except MigratorError:
             raise MigratorError("commit '{}' not found".format(commit_hash))
-        # print directions to complete creating, commit & push the schema changes template file
-        print("Created and committed schema changes template file '{}'.".format(schema_changes_template_file))
-        print("Edit the file's attributes (renamed_attributes, renamed_models, and transformations_file) "
-            "and git commit and push your changes.")
         return schema_changes_template_file
 
     def import_transformations(self):
@@ -3443,12 +3439,14 @@ class CementControllers(object):
             args = self.app.pargs
             schema_changes_template_file = SchemaChanges.make_template_command(os.getcwd(),
                 commit_hash=args.commit)
-            print("template schema changes file created: '{}'".format(os.path.basename(
-                schema_changes_template_file)))
+            # print directions to complete creating, commit & push the schema changes template file
+            print("Created and added template schema changes file: '{}'.".format(schema_changes_template_file))
+            print("Describe the schema changes in the file's attributes (renamed_attributes, "
+                "renamed_models, and transformations_file), and commit and push it with git.")
 
 
     class AutomatedMigrationConfigController(Controller):
-        """ Create a template automated migration config file
+        """ Create a migration config file
 
         This controller is used by data repos.
         """
@@ -3470,10 +3468,11 @@ class CementControllers(object):
         def make_migration_config_file(self):
             args = self.app.pargs
             # args.file_to_migrate is a list of all files to migrate
-            pathname = AutomatedMigration.make_template_config_file_command(os.getcwd(), args.schema_url,
+            migration_config_file = AutomatedMigration.make_template_config_file_command(os.getcwd(), args.schema_url,
                 args.file_to_migrate)
-            print("template automated migration config file created: '{}'".format(os.path.basename(
-                pathname)))
+            # print directions to commit & push the migration config file
+            print("Automated migration config file created: '{}'".format(migration_config_file))
+            print("Commit and push it with git.")
 
 
     class MigrateController(Controller):
@@ -3490,7 +3489,8 @@ class CementControllers(object):
         @ex(
             help='Migrate all data files configured in migration config files',
             arguments = [
-                (['schema'], {'type': str, 'help': 'URL of the schema in its git repository'}),
+                (['schema'], {'type': str, 'help': 'URL of the schema in its git repository'})
+            ]
         )
         def migrate_configured_data_files(self):
             pass
@@ -3542,7 +3542,6 @@ class DataRepoMigrate(Migrate):
     class Meta(Migrate.Meta):
         handlers = [
             CementControllers.AutomatedMigrationConfigController,
-            CementControllers.TestMigrationController,
             CementControllers.MigrateController,
             CementControllers.MigrateFileController
         ]
