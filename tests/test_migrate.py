@@ -12,7 +12,7 @@
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
 SPEED_UP_TESTING = False
-DONT_DEBUG_ON_CIRCLE = True
+DONT_DEBUG_ON_CIRCLE = False
 
 from argparse import Namespace
 from github import Github
@@ -2929,9 +2929,6 @@ class TestCementControllers(AutoMigrationFixtures):
         finally:
             # restore working directory
             os.chdir(cwd)
-
-    def test_test_migrations(self):
-        pass
 
     def test_migrate_configured_data_files(self):
         pass

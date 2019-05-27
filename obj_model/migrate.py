@@ -3395,10 +3395,6 @@ class Utils(object):
             print(' '.join(paths))
 
 
-if __name__ == '__main__':
-    Utils.find_schema_modules()
-
-
 class BaseController(cement.Controller):
     """ Base controller for command line application """
 
@@ -3411,6 +3407,7 @@ class BaseController(cement.Controller):
         self._parser.print_help()
 
 
+# todo: make a controller to test all migrations configured in migration config files
 class CementControllers(object):
     """ Cement Controllers for the CLI in repos migrating data files whose data models are defined using obj_model
 
@@ -3479,27 +3476,8 @@ class CementControllers(object):
                 pathname)))
 
 
-    class TestMigrationController(Controller):
-        """ Test all migrations configured in migration config files
-
-        This controller is used by data repos.
-        """
-
-        class Meta:
-            label = 'test_migrations'
-            stacked_on = 'base'
-            stacked_type = 'embedded'
-
-        @ex(
-            help='Test all migrations configured in migration config files',
-            arguments = []
-        )
-        def test_migrations(self):
-            pass
-
-
     class MigrateController(Controller):
-        """ Migrate all data files configured in migration config files
+        """ Migrate data files configured in migration config files
 
         This controller is used by data repos.
         """
@@ -3511,7 +3489,8 @@ class CementControllers(object):
 
         @ex(
             help='Migrate all data files configured in migration config files',
-            arguments = []
+            arguments = [
+                (['schema'], {'type': str, 'help': 'URL of the schema in its git repository'}),
         )
         def migrate_configured_data_files(self):
             pass
