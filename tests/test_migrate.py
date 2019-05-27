@@ -18,7 +18,7 @@ from argparse import Namespace
 from github import Github
 from itertools import chain
 from networkx.algorithms.shortest_paths.generic import has_path
-from pathlib import Path
+from pathlib import Path, PurePath
 from pprint import pprint, pformat
 from tempfile import mkdtemp
 import capturer
@@ -1689,7 +1689,6 @@ class AutoMigrationFixtures(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        return
         shutil.rmtree(cls.tmp_dir)
         # remove the GitRepo's temp_dirs
         cls.test_repo.del_temp_dirs()
@@ -2508,8 +2507,10 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             test_repo_copy.repo_dir,
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx',
-                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
+                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')],
+                name_suffix='one_use_migration')
         self.assertTrue(os.path.isfile(config_file_path))
+        self.assertIn('one_use_migration', config_file_path)
         remove_silently(config_file_path)
 
         config_file_path = AutomatedMigration.make_template_config_file_command(
@@ -2892,7 +2893,6 @@ class TestCementControllers(AutoMigrationFixtures):
                     if not match:
                         self.fail("couldn't find schema changes filename in captured output")
 
-
             # check that illegal arguments produce reasonable errors
             NO_SUCH_COMMIT = 'NO_SUCH_COMMIT'
             argv = ['make-changes-template', '--commit', NO_SUCH_COMMIT]
@@ -2902,15 +2902,33 @@ class TestCementControllers(AutoMigrationFixtures):
                         "commit '{}' not found".format(NO_SUCH_COMMIT)):
                         app.run()
 
-    @unittest.skip("not finished")
     def test_make_migration_config_file(self):
-        test_branch = RemoteBranch.unique_branch_name('branch_for_test_make_migration_config_file')
-        with RemoteBranch(self.test_repo.repo_name(), test_branch):
-
-            argv = ['make-migration-config-file', self.test_repo_url, '--branch', test_branch]
+        # create automated migration config file in test self.nearly_empty_git_repo
+        try:
+            # make data file that automated migration config file can reference
+            fixtures_dir = self.nearly_empty_git_repo.fixtures_dir()
+            data_file = 'data.xlsx'
+            data_file_path = os.path.join(fixtures_dir, data_file)
+            os.makedirs(fixtures_dir, exist_ok=True)
+            with open(data_file_path, 'w') as file:
+                file.write(u'fake data')
+            # working directory must be in self.nearly_empty_git_repo
+            # save cwd so it can be restored
+            cwd = os.getcwd()
+            os.chdir(self.nearly_empty_git_repo.repo_dir)
+            argv = ['make-migration-config-file',
+                'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+                str(PurePath(data_file_path).relative_to(self.nearly_empty_git_repo.repo_dir))]
             with DataRepoMigrate(argv=argv) as app:
-                with capturer.CaptureOutput(relay=False) as captured:
+                with capturer.CaptureOutput(relay=True) as captured:
                     app.run()
+                    self.assertIn('template automated migration config file created:', captured.get_text())
+
+        except Exception as e:
+            raise Exception(e)
+        finally:
+            # restore working directory
+            os.chdir(cwd)
 
     def test_test_migrations(self):
         pass
@@ -2939,8 +2957,8 @@ class TestCementControllers(AutoMigrationFixtures):
             migrated_file = os.path.join(test_repo_copy.fixtures_dir(), 'data_file_1.xlsx')
             assert_equal_workbooks(self, file_copy, migrated_file)
 
-        except:
-            pass
+        except Exception as e:
+            raise Exception(e)
         finally:
             # restore working directory
             os.chdir(cwd)

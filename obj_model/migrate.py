@@ -2864,13 +2864,14 @@ class AutomatedMigration(object):
         return pathname
 
     @staticmethod
-    def make_template_config_file_command(data_repo_dir, schema_file_url, files_to_migrate):
+    def make_template_config_file_command(data_repo_dir, schema_file_url, files_to_migrate, name_suffix=''):
         """ Make an automated migration configuration file from CLI input
 
         Args:
             data_repo_dir (:obj:`str`): directory of the data repo
             schema_file_url (:obj:`str`): URL for schema's Python file
             files_to_migrate (:obj:`list` of :obj:`str`): data files to migrate
+            name_suffix (:obj:`str`): suffix uniquifier for the config file name; default=''
 
         Returns:
             :obj:`str`: pathname of the schema changes file that was written
@@ -2934,7 +2935,7 @@ class AutomatedMigration(object):
         config_file_path = AutomatedMigration.make_template_config_file(
             git_repo,
             schema_repo_name,
-            name_suffix='one_use_migration_{}'.format(SchemaChanges.get_date_timestamp()),
+            name_suffix=name_suffix,
             **migration_config_file_kwargs)
         return config_file_path
 
@@ -3285,7 +3286,7 @@ class AutomatedMigration(object):
                 the migration fails
         """
         config_file_path = AutomatedMigration.make_template_config_file_command(local_dir, schema_url,
-            data_files)
+            data_files, name_suffix='one_use_migration_{}'.format(SchemaChanges.get_date_timestamp()))
 
         ### create and run AutomatedMigration ###
         automated_migration = AutomatedMigration(data_repo_location=local_dir,
@@ -3445,7 +3446,8 @@ class CementControllers(object):
             args = self.app.pargs
             schema_changes_template_file = SchemaChanges.make_template_command(os.getcwd(),
                 commit_hash=args.commit)
-            print("template schema changes file created: '{}'".format(os.path.basename(schema_changes_template_file)))
+            print("template schema changes file created: '{}'".format(os.path.basename(
+                schema_changes_template_file)))
 
 
     class AutomatedMigrationConfigController(Controller):
@@ -3470,8 +3472,11 @@ class CementControllers(object):
         )
         def make_migration_config_file(self):
             args = self.app.pargs
+            # args.file_to_migrate is a list of all files to migrate
             pathname = AutomatedMigration.make_template_config_file_command(os.getcwd(), args.schema_url,
                 args.file_to_migrate)
+            print("template automated migration config file created: '{}'".format(os.path.basename(
+                pathname)))
 
 
     class TestMigrationController(Controller):
