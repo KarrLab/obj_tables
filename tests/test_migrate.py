@@ -16,6 +16,7 @@ DONT_DEBUG_ON_CIRCLE = True
 
 from argparse import Namespace
 from github import Github
+from github.GithubException import UnknownObjectException
 from itertools import chain
 from networkx.algorithms.shortest_paths.generic import has_path
 from pathlib import Path, PurePath
@@ -1940,8 +1941,8 @@ def get_github_api_token():
 class RemoteBranch(object):
     """ Make branches on GitHub
 
-    This context manager creates and deletes branches on GitHub, which is convenient for testing
-    changes to remote repos, without permanently modifying them. For example,
+    This context manager creates and deletes branches on GitHub, which makes it easy to test
+    changes to remote repos without permanently modifying them. For example,
 
     .. code-block:: python
 
@@ -2015,6 +2016,58 @@ class RemoteBranch(object):
         return branch_name + '-' + SchemaChanges.get_date_timestamp()
 
 
+## several functions for managing test repos
+def make_test_repo(name):
+    # create a test GitHub repository
+    # return its URL
+    g = github.Github(get_github_api_token())
+    org = g.get_organization('KarrLab')
+    org.create_repo(name=name, private=False, auto_init=True)
+    return 'https://github.com/KarrLab/{}.git'.format(name)
+
+
+def delete_test_repo(name):
+    g = github.Github(get_github_api_token())
+    repo = g.get_repo("KarrLab/{}".format(name))
+    repo.delete()
+
+
+def delete_test_repos(test_repos):
+    for repo in test_repos:
+        try:
+            # trap all exceptions, since the delete might fail
+            delete_test_repo(repo)
+        except UnknownObjectException:
+            # ignore exception that occurs when the delete fails
+            pass
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception:
+            raise
+
+
+class TestRemoteBranch(unittest.TestCase):
+
+    def setUp(self):
+        self.branch_test_repo = 'branch_test_repo'
+        self.test_github_repo_name = 'test_repo_1'
+
+    def tearDown(self):
+        delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
+
+    def test_remote_branch_utils(self):
+        make_test_repo(self.branch_test_repo)
+        test_branch = RemoteBranch.unique_branch_name('test_branch_x')
+        remote_branch = RemoteBranch(self.branch_test_repo, test_branch)
+        self.assertTrue(remote_branch.make_branch())
+        self.assertFalse(remote_branch.delete_branch())
+        with RemoteBranch(self.branch_test_repo, test_branch) as branch_ref:
+            self.assertTrue(branch_ref)
+        with RemoteBranch(self.branch_test_repo, test_branch):
+            pass
+        delete_test_repo(self.branch_test_repo)
+
+
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(AutoMigrationFixtures):
 
@@ -2026,29 +2079,6 @@ class TestGitRepo(AutoMigrationFixtures):
     def tearDownClass(cls):
         super().tearDownClass()
 
-    def make_test_repo(self, name):
-        # create a test GitHub repository
-        # return its URL
-        g = github.Github(get_github_api_token())
-        org = g.get_organization('KarrLab')
-        org.create_repo(name=name, private=False, auto_init=True)
-        return 'https://github.com/KarrLab/{}.git'.format(name)
-
-    def delete_test_repo(self, name):
-        g = github.Github(get_github_api_token())
-        repo = g.get_repo("KarrLab/{}".format(name))
-        repo.delete()
-
-    def delete_test_repos(self, test_repos):
-        for repo in test_repos:
-            try:
-                # trap all exceptions, since the delete might fail
-                self.delete_test_repo(repo)
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                pass
-
     def setUp(self):
         super().setUp()
         self.repo_root = self.test_repo.repo_dir
@@ -2058,24 +2088,12 @@ class TestGitRepo(AutoMigrationFixtures):
         # test_github_repo is only needed by test_add_file_and_commit_changes
         if self._testMethodName == 'test_add_file_and_commit_changes':
             # delete test_github_repo_name so prior failures to delete it won't cause trouble
-            self.delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
-            self.test_github_repo_url = self.make_test_repo(self.test_github_repo_name)
+            delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
+            self.test_github_repo_url = make_test_repo(self.test_github_repo_name)
             self.test_github_repo = GitRepo(self.test_github_repo_url)
 
     def tearDown(self):
-        self.delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
-
-    def test_remote_branch_utils(self):
-        self.make_test_repo(self.branch_test_repo)
-        test_branch = RemoteBranch.unique_branch_name('test_branch_x')
-        remote_branch = RemoteBranch(self.branch_test_repo, test_branch)
-        self.assertTrue(remote_branch.make_branch())
-        self.assertFalse(remote_branch.delete_branch())
-        with RemoteBranch(self.branch_test_repo, test_branch) as branch_ref:
-            self.assertTrue(branch_ref)
-        with RemoteBranch(self.branch_test_repo, test_branch):
-            pass
-        self.delete_test_repo(self.branch_test_repo)
+        delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
 
     def test_init(self):
         self.assertIsInstance(self.test_repo.repo, git.Repo)

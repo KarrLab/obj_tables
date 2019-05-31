@@ -2306,14 +2306,17 @@ class GitRepo(object):
         original_location=None):
         """ Initialize a `GitRepo` from an existing Git repo
 
-        If `repo_location` is an URL, then clone the repo into a temporary directory.
+        If `repo_location` is a directory then use the Git repo in the directory. Otherwise it must
+        be an URL and the repo is cloned into a temporary directory.
 
         Args:
-            repo_location (:obj:`str`, optional): the location of the repo, either its directory or its URL
-            branch (:obj:`str`, optional): branch to clone; default is `master`
-            search_parent_directories (:obj:`bool`, optional): `search_parent_directories` option to `git.Repo()`;
-                if set and `repo_location` is a directory, then all of its parent directories will
-                    be searched for a valid repo; default=False
+            repo_location (:obj:`str`, optional): the location of the repo, either its directory or
+                its URL
+            branch (:obj:`str`, optional): branch to clone if `repo_location` is an URL; default is
+                `master`
+            search_parent_directories (:obj:`bool`, optional): `search_parent_directories` option to
+                `git.Repo()`; if set and `repo_location` is a directory, then all of its parent
+                directories will be searched for a valid repo; default=False
             original_location (:obj:`str`, optional): the original location of the repo, either its
                 root directory or its URL
 
