@@ -12,11 +12,11 @@
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
 SPEED_UP_TESTING = False
-DONT_DEBUG_ON_CIRCLE = True
+DONT_DEBUG_ON_CIRCLE = False
 
 from argparse import Namespace
-from github import Github
-from github.GithubException import UnknownObjectException
+from github import Github, Branch
+from github.GithubException import UnknownObjectException, GithubException
 from itertools import chain
 from networkx.algorithms.shortest_paths.generic import has_path
 from pathlib import Path, PurePath
@@ -1939,7 +1939,7 @@ def get_github_api_token():
 
 
 class RemoteBranch(object):
-    """ Make branches on GitHub
+    """ Make branches from master on `github.com/KarrLab`
 
     This context manager creates and deletes branches on GitHub, which makes it easy to test
     changes to remote repos without permanently modifying them. For example,
@@ -1961,15 +1961,17 @@ class RemoteBranch(object):
         """ Initialize
 
         Args:
-            repo_name (:obj:`str`): name of the repo
-            branch_name (:obj:`str`): name of the new branch
+            repo_name (:obj:`str`): the name of an existing repo
+            branch_name (:obj:`str`): the name of the new branch
+            delete (:obj:`bool`, optional): if set, the new branch will be deleted upon exiting a
+                `RemoteBranch` context manager; default=`True`
         """
         self.repo_name = repo_name
         self.branch_name = branch_name
         self.delete = delete
 
-        self.github = Github(get_github_api_token())
-        self.repo = self.github.get_repo("{}/{}".format(self.ORGANIZATION, repo_name))
+        github = Github(get_github_api_token())
+        self.repo = github.get_repo("{}/{}".format(self.ORGANIZATION, repo_name))
         master = self.repo.get_branch(branch="master")
         self.head = master.commit
 
@@ -1981,8 +1983,6 @@ class RemoteBranch(object):
         """
         fully_qualified_ref = "refs/heads/{}".format(self.branch_name)
         self.branch_ref = self.repo.create_git_ref(fully_qualified_ref, self.head.sha)
-        if not self.branch_ref:
-            raise ValueError("couldn't make branch '{}'".format(branch_name))
         return self.branch_ref
 
     def delete_branch(self):
@@ -2016,9 +2016,9 @@ class RemoteBranch(object):
         return branch_name + '-' + SchemaChanges.get_date_timestamp()
 
 
-## several functions for managing test repos
+## some functions for managing test repos
 def make_test_repo(name):
-    # create a test GitHub repository
+    # create a test GitHub repository in KarrLab
     # return its URL
     g = github.Github(get_github_api_token())
     org = g.get_organization('KarrLab')
@@ -2026,47 +2026,57 @@ def make_test_repo(name):
     return 'https://github.com/KarrLab/{}.git'.format(name)
 
 
-def delete_test_repo(name):
+def delete_test_repo(name, organization=RemoteBranch.ORGANIZATION):
     g = github.Github(get_github_api_token())
-    repo = g.get_repo("KarrLab/{}".format(name))
-    repo.delete()
+    try:
+        repo = g.get_repo("{}/{}".format(organization, name))
+        repo.delete()
+    except UnknownObjectException:
+        # ignore exception that occurs when delete does not find the repo
+        pass
+    except Exception:   # pragma: no cover; cannot deliberately raise an other exception
+        # re-raise all other exceptions
+        raise
 
 
 def delete_test_repos(test_repos):
     for repo in test_repos:
-        try:
-            # trap all exceptions, since the delete might fail
-            delete_test_repo(repo)
-        except UnknownObjectException:
-            # ignore exception that occurs when the delete fails
-            pass
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except Exception:
-            raise
+        delete_test_repo(repo)
 
 
+@unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestRemoteBranch(unittest.TestCase):
 
     def setUp(self):
         self.branch_test_repo = 'branch_test_repo'
-        self.test_github_repo_name = 'test_repo_1'
 
     def tearDown(self):
-        delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
+        delete_test_repos([self.branch_test_repo])
 
     def test_remote_branch_utils(self):
         make_test_repo(self.branch_test_repo)
         test_branch = RemoteBranch.unique_branch_name('test_branch_x')
         remote_branch = RemoteBranch(self.branch_test_repo, test_branch)
-        self.assertTrue(remote_branch.make_branch())
+        self.assertTrue(isinstance(remote_branch.make_branch(), github.GitRef.GitRef))
         self.assertFalse(remote_branch.delete_branch())
         with RemoteBranch(self.branch_test_repo, test_branch) as branch_ref:
             self.assertTrue(branch_ref)
+            self.assertTrue(isinstance(branch_ref, github.GitRef.GitRef))
+        # ensure that RemoteBranch context deletes branch on exit
+        with self.assertRaisesRegex(GithubException, "'Branch not found'"):
+            remote_branch.repo.get_branch(branch=test_branch)
         with RemoteBranch(self.branch_test_repo, test_branch):
             pass
-        delete_test_repo(self.branch_test_repo)
+        with self.assertRaisesRegex(GithubException, "'Branch not found'"):
+            remote_branch.repo.get_branch(branch=test_branch)
 
+        # with delete=False RemoteBranch context shouldn't delete branch on exit
+        with RemoteBranch(self.branch_test_repo, test_branch, delete=False) as branch_ref:
+            self.assertTrue(isinstance(branch_ref, github.GitRef.GitRef))
+        self.assertTrue(isinstance(remote_branch.repo.get_branch(branch=test_branch), Branch.Branch))
+
+    def test_functions_for_managing_test_repos(self):
+        delete_test_repo('no_such_repo_asjfh')
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(AutoMigrationFixtures):
