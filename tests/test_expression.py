@@ -440,7 +440,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
 
     def test_recreate_whitespace(self):
         # whitespace lengths = 0, 1, ...:
-        expr = 'param_id- Observable.obs_id  *   Function.fun_1()    +     1'
+        expr = 'param_id- Observable.obs_id  *   Function.fun_1()    +     1      -       1p'
         wc_lang_expr = self.make_parsed_expr(expr)
         expr_new = expr.replace('Observable', 'NewObservable').replace('Function', 'NoFun')
         expr_no_whitespace = expr_new.replace(' ', '')
@@ -886,6 +886,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
             Parameter: {
                 'p_1': Parameter(id='p_1', value=1.),
                 'p_2': Parameter(id='p_2', value=2.),
+                '1p': Parameter(id='1p', value=3.),
             },
             Species: {
                 's_1[c_1]': Species(id='s_1[c_1]'),
@@ -926,6 +927,9 @@ class ParsedExpressionTestCase(unittest.TestCase):
         self.do_test_eval('2 * s_1[c_1]', Function, FunctionExpression, 2., 4.)
         self.do_test_eval('func_1', Function, FunctionExpression, 1., 4.)
         self.do_test_eval('p_1 + func_1', Function, FunctionExpression, 1., 5.)
+        self.do_test_eval('1p', Function, FunctionExpression, 1., 3.)
+        self.do_test_eval('p_1 * 1p', Function, FunctionExpression, 1., 3.)
+        self.do_test_eval('p_1 * 1p + func_1', Function, FunctionExpression, 1., 7.)
 
         # test combination of ObjModelTokenCodes
         expected_val = 4 * 1. + pow(2, 2.) + 4.
