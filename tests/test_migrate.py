@@ -2063,6 +2063,7 @@ class TestRemoteBranch(unittest.TestCase):
             self.assertTrue(branch_ref)
             self.assertTrue(isinstance(branch_ref, github.GitRef.GitRef))
         # ensure that RemoteBranch context deletes branch on exit
+        time.sleep(1.)
         with self.assertRaisesRegex(GithubException, "'Branch not found'"):
             remote_branch.repo.get_branch(branch=test_branch)
         with RemoteBranch(self.branch_test_repo, test_branch):
