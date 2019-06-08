@@ -1437,9 +1437,10 @@ class Model(with_metaclass(ModelMeta, object)):
         return (attr_name, attr_get_one_filter)
 
     def normalize(self):
-        """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers into a canonical order because their
-        order has no semantic meaning. Importantly, this canonical form is reproducible. Thus, this canonical form facilitates reproducible
-        computations on top of :obj:`Model` objects.
+        """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers 
+        into a canonical order because their order has no semantic meaning. Importantly, this canonical form 
+        is reproducible. Thus, this canonical form facilitates reproducible computations on top of :obj:`Model`
+        objects.
         """
 
         self._generate_normalize_sort_keys()
@@ -4467,10 +4468,19 @@ class SlugAttribute(RegexAttribute):
             unique (:obj:`bool`, optional): indicate whether attribute must be unique
         """
         if help is None:
-            help = ("Enter a unique string identifier that (1) starts with a letter, (2) is composed "
-                    "of letters, numbers and underscores, and (3) is less than 64 characters long")
+            help = ("Enter a unique string identifier that "
+                    "(a) is composed of letters, numbers and underscores; "
+                    "(b) is 63 characters or less; and "
+                    "(c) is not a decimal, hexadecimal, or scientific number")
 
-        super(SlugAttribute, self).__init__(pattern=r'^[a-z_][a-z0-9_]*$', flags=re.I,
+        super(SlugAttribute, self).__init__(pattern=(r'^(?!(^|\b)'
+                                                     r'(\d+(\.\d*)?(\b|$))'
+                                                     r'|(\.\d+$)'
+                                                     r'|(0[x][0-9a-f]+(\b|$))'
+                                                     r'|([0-9]+e[0-9]+(\b|$))'
+                                                     r')'
+                                                     r'[a-z0-9_]+$'),
+                                            flags=re.I,
                                             min_length=1, max_length=63,
                                             verbose_name=verbose_name, help=help,
                                             primary=primary, unique=unique)

@@ -811,6 +811,19 @@ class TestCore(unittest.TestCase):
         root.label = 'root_0'
         self.assertEqual(root.validate(), None)
 
+        attr = core.SlugAttribute()
+        self.assertEqual(attr.validate(None, '0f'), None)
+        self.assertEqual(attr.validate(None, '1ea'), None)
+        self.assertEqual(attr.validate(None, '0x0g'), None)
+        self.assertNotEqual(attr.validate(None, '0'), None)
+        self.assertNotEqual(attr.validate(None, '0.'), None)
+        self.assertNotEqual(attr.validate(None, '.0'), None)
+        self.assertNotEqual(attr.validate(None, '0.0'), None)
+        self.assertNotEqual(attr.validate(None, '1e0'), None)
+        self.assertNotEqual(attr.validate(None, '1e+0'), None)
+        self.assertNotEqual(attr.validate(None, '1e-0'), None)
+        self.assertNotEqual(attr.validate(None, '0x0f'), None)
+
     def test_validate_url_attribute(self):
         root = UniqueRoot(url='root-0')
         self.assertIn(

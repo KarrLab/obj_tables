@@ -9,6 +9,7 @@
 import collections
 import math
 import pint
+import re
 import token
 import tokenize
 import types
@@ -685,8 +686,11 @@ class ParsedExpression(object):
         # strip leading and trailing whitespace from expression, which would create a bad token error
         self.expression = expression.strip()
 
+        # allow identifiers that start with a number
+        expr = self.__prep_expr_for_tokenization(self.expression)
+
         try:
-            g = tokenize.tokenize(BytesIO(self.expression.encode('utf-8')).readline)
+            g = tokenize.tokenize(BytesIO(expr.encode('utf-8')).readline)
             # strip the leading ENCODING token and trailing NEWLINE and ENDMARKER tokens
             self._py_tokens = list(g)[1:-1]
             if self._py_tokens and self._py_tokens[-1].type == token.NEWLINE:
@@ -696,6 +700,23 @@ class ParsedExpression(object):
                 self.expression, self.model_cls.__name__, self.attr, str(e)))
 
         self.__reset_tokenization()
+
+    def __prep_expr_for_tokenization(self, expr):
+        """ Prepare an expression for tokenization with the Python tokenizer
+
+        * Add suffix to names (identifiers of obj_model objects) that begin with a number
+
+        Args:
+            expr (:obj:`str`): expression
+
+        Returns:
+            :obj:`str`: prepared expression
+        """
+        return re.sub(r'(^|\b)'
+                      r'(?!((0[x][0-9a-f]+(\b|$))|([0-9]+e[\-\+]?[0-9]+(\b|$))))'
+                      r'([0-9]+[a-z_][0-9a-z_]*)'
+                      r'(\b|$)',
+                      r'__digit__\7', expr, flags=re.I)
 
     def __reset_tokenization(self):
         """ Reset tokenization
@@ -741,8 +762,9 @@ class ParsedExpression(object):
             :obj:`ParsedExpressionError`: if tokenizing `expr` raises an exception,
                 or if `expr` doesn't have the same number of Python tokens as `self.expression`
         """
+        prepped_expr = self.__prep_expr_for_tokenization(expr)
         try:
-            g = tokenize.tokenize(BytesIO(expr.encode('utf-8')).readline)
+            g = tokenize.tokenize(BytesIO(prepped_expr.encode('utf-8')).readline)
             # strip the leading ENCODING marker and trailing NEWLINE and ENDMARKER tokens
             tokens = list(g)[1:-1]
             if tokens and tokens[-1].type == token.NEWLINE:
@@ -756,7 +778,10 @@ class ParsedExpression(object):
 
         expanded_expr = []
         for i_tok, tok in enumerate(tokens):
-            expanded_expr.append(tok.string)
+            if tok.type == token.NAME and tok.string.startswith('__digit__'):
+                expanded_expr.append(tok.string[9:])
+            else:
+                expanded_expr.append(tok.string)
             ws = ' ' * self._get_trailing_whitespace(i_tok)
             expanded_expr.append(ws)
         return ''.join(expanded_expr)
@@ -799,7 +824,13 @@ class ParsedExpression(object):
             # that match token_pattern
             if 0 < tok_idx and self._py_tokens[idx + tok_idx - 1].end != self._py_tokens[idx + tok_idx].start:
                 return False
-        match_val = ''.join([self._py_tokens[idx + i].string for i in range(len(token_pattern))])
+
+        match_val = ''
+        for tok in self._py_tokens[idx:idx+len(token_pattern)]:
+            if tok.type == token.NAME and tok.string.startswith('__digit__'):
+                match_val += tok.string[9:]
+            else:
+                match_val += tok.string
         return match_val
 
     def _get_disambiguated_id(self, idx, case_fold_match=False):
