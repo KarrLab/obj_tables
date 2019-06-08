@@ -3040,7 +3040,7 @@ class AutomatedMigration(object):
         """ Get the `metadata_model` for the schema
 
         The schema in `self.schema_git_repo` must specify a Model name and metadata attributes
-        in a `_GIT_METADATA` attribute. E.g., `migration_test_repo` contains:
+        in a `_GIT_METADATA` attribute. E.g., `migration_test_repo/migration_test_repo/core.py` contains:
 
             `_GIT_METADATA = (GitMetadataModel, ('url', 'branch', 'revision'))`
 

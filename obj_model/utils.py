@@ -191,10 +191,10 @@ def set_git_repo_metadata_from_path(model, path='.', url_attr='url', branch_attr
 
     Args:
         model (:obj:`Model`): model whose Git attributes will be set
-        path (:obj:`str`, optional): path to the Git repository for the model
-        url_attr (:obj:`str`, optional): attribute in `model` for the git URL; default='url'
-        branch_attr (:obj:`str`, optional): attribute in `model` for the git branch; default='branch'
-        commit_hash_attr (:obj:`str`, optional): attribute in `model` for the git commit hash;
+        path (:obj:`str`, optional): path to a clone of a Git repository; default='.'
+        url_attr (:obj:`str`, optional): attribute in `model` for the Git URL; default='url'
+        branch_attr (:obj:`str`, optional): attribute in `model` for the Git branch; default='branch'
+        commit_hash_attr (:obj:`str`, optional): attribute in `model` for the Git commit hash;
             default='revision'
     """
     md = git.get_repo_metadata(dirname=path)
