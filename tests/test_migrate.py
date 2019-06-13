@@ -2079,6 +2079,7 @@ class TestRemoteBranch(unittest.TestCase):
     def test_functions_for_managing_test_repos(self):
         delete_test_repo('no_such_repo_asjfh')
 
+
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(AutoMigrationFixtures):
 

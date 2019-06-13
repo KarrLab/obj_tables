@@ -3077,7 +3077,7 @@ class AutomatedMigration(object):
         """ Get the git commit hash of the schema repo that describes a data file
 
         Args:
-            data_file (:obj:`str`): name of a data file
+            data_file (:obj:`str`): pathname of a data file
 
         Returns:
             :obj:`str`: the hash
