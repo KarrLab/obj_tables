@@ -43,6 +43,7 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from wc_utils.util.files import normalize_filename, remove_silently
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
+# todo: next: mark more pragma no cover
 # TODOS
 # migration integrated into wc_lang & wc_kb
 #
