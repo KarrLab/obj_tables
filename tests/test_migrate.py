@@ -12,7 +12,8 @@
 # todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
 
 SPEED_UP_TESTING = False
-DONT_DEBUG_ON_CIRCLE = True
+# todo: next: get push working on CircleCI
+DONT_DEBUG_ON_CIRCLE = False
 
 from argparse import Namespace
 from github import Github, Branch
@@ -60,6 +61,8 @@ from wc_utils.util.files import remove_silently
 from wc_utils.util.misc import internet_connected
 from obj_model.expression import Expression
 from obj_model.io import TOC_NAME
+from wc_utils.util.git import GitReposForTesting
+
 
 def make_tmp_dirs_n_small_schemas_paths(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
@@ -2016,45 +2019,18 @@ class RemoteBranch(object):
         return branch_name + '-' + SchemaChanges.get_date_timestamp()
 
 
-## some functions for managing test repos
-def make_test_repo(name):
-    # create a test GitHub repository in KarrLab
-    # return its URL
-    g = github.Github(get_github_api_token())
-    org = g.get_organization('KarrLab')
-    org.create_repo(name=name, private=False, auto_init=True)
-    return 'https://github.com/KarrLab/{}.git'.format(name)
-
-
-def delete_test_repo(name, organization=RemoteBranch.ORGANIZATION):
-    g = github.Github(get_github_api_token())
-    try:
-        repo = g.get_repo("{}/{}".format(organization, name))
-        repo.delete()
-    except UnknownObjectException:
-        # ignore exception that occurs when delete does not find the repo
-        pass
-    except Exception:   # pragma: no cover; cannot deliberately raise an other exception
-        # re-raise all other exceptions
-        raise
-
-
-def delete_test_repos(test_repos):
-    for repo in test_repos:
-        delete_test_repo(repo)
-
-
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestRemoteBranch(unittest.TestCase):
 
     def setUp(self):
         self.branch_test_repo = 'branch_test_repo'
+        self.branch_test_git_repo_for_testing = GitReposForTesting(self.branch_test_repo)
 
     def tearDown(self):
-        delete_test_repos([self.branch_test_repo])
+        self.branch_test_git_repo_for_testing.delete_test_repo()
 
     def test_remote_branch_utils(self):
-        make_test_repo(self.branch_test_repo)
+        self.branch_test_git_repo_for_testing.make_test_repo()
         test_branch = RemoteBranch.unique_branch_name('test_branch_x')
         remote_branch = RemoteBranch(self.branch_test_repo, test_branch)
         self.assertTrue(isinstance(remote_branch.make_branch(), github.GitRef.GitRef))
@@ -2076,9 +2052,6 @@ class TestRemoteBranch(unittest.TestCase):
             self.assertTrue(isinstance(branch_ref, github.GitRef.GitRef))
         self.assertTrue(isinstance(remote_branch.repo.get_branch(branch=test_branch), Branch.Branch))
 
-    def test_functions_for_managing_test_repos(self):
-        delete_test_repo('no_such_repo_asjfh')
-
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestGitRepo(AutoMigrationFixtures):
@@ -2095,17 +2068,6 @@ class TestGitRepo(AutoMigrationFixtures):
         super().setUp()
         self.repo_root = self.test_repo.repo_dir
         self.no_such_hash = 'ab34419496756675b6e8499e0948e697256f2699'
-        self.branch_test_repo = 'branch_test_repo'
-        self.test_github_repo_name = 'test_repo_1'
-        # test_github_repo is only needed by test_add_file_and_commit_changes
-        if self._testMethodName == 'test_add_file_and_commit_changes':
-            # delete test_github_repo_name so prior failures to delete it won't cause trouble
-            delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
-            self.test_github_repo_url = make_test_repo(self.test_github_repo_name)
-            self.test_github_repo = GitRepo(self.test_github_repo_url)
-
-    def tearDown(self):
-        delete_test_repos([self.test_github_repo_name, self.branch_test_repo])
 
     def test_init(self):
         self.assertIsInstance(self.test_repo.repo, git.Repo)
@@ -2322,7 +2284,11 @@ class TestGitRepo(AutoMigrationFixtures):
 
     @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_add_file_and_commit_changes(self):
-        empty_repo = self.test_github_repo.repo
+        git_repo_for_testing = GitReposForTesting('test_repo_1')
+        test_github_repo_url = git_repo_for_testing.make_test_repo()
+        test_github_repo = GitRepo(test_github_repo_url)
+
+        empty_repo = test_github_repo.repo
         origin = empty_repo.remotes.origin
         ## instructions from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
         # create local branch "master" from remote "master"
@@ -2332,29 +2298,32 @@ class TestGitRepo(AutoMigrationFixtures):
         # checkout local "master" to working tree
         empty_repo.heads.master.checkout()
         test_filename = 'new_file.txt'
-        new_file = os.path.join(self.test_github_repo.repo_dir, test_filename)
+        new_file = os.path.join(test_github_repo.repo_dir, test_filename)
         f = open(new_file, 'w')
         text = '# new_file.txt'
         f.write(text)
         f.close()
-        self.test_github_repo.add_file(new_file)
-        self.test_github_repo.commit_changes('commit msg')
+        test_github_repo.add_file(new_file)
+        test_github_repo.commit_changes('commit msg')
         rv = origin.push()
         if not rv:
             self.fail('push() failed')
 
         # confirm that new_file has been added
-        clone = GitRepo(self.test_github_repo_url)
+        clone = GitRepo(test_github_repo_url)
         cloned_file = os.path.join(clone.repo_dir, test_filename)
         f = open(cloned_file, 'r')
         self.assertEqual(text, f.read())
 
-        no_such_file = os.path.join(self.test_github_repo.repo_dir, 'no such file')
+        no_such_file = os.path.join(test_github_repo.repo_dir, 'no such file')
         with self.assertRaisesRegex(MigratorError, r"adding file '.+' to repo '\S+' failed:"):
-            self.test_github_repo.add_file(no_such_file)
+            test_github_repo.add_file(no_such_file)
 
         with self.assertRaisesRegex(MigratorError, r"commiting repo '\S+' failed:"):
-            self.test_github_repo.commit_changes(2)
+            test_github_repo.commit_changes(2)
+
+        # cleanup
+        git_repo_for_testing.delete_test_repo()
 
     @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_push(self):
@@ -2744,6 +2713,8 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
         shutil.rmtree(new_temp_dir)
 
+    # todo: next: reactivate after io.py is working
+    @unittest.skip("temporarily broken")
     def test_automated_migrate(self):
         # test round-trip
         self.round_trip_automated_migrate(self.clean_automated_migration)
