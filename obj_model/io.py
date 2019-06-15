@@ -17,8 +17,10 @@ from pprint import pprint
 import abc
 import collections
 import copy
+import importlib
 import inspect
 import json
+import os
 import six
 import wc_utils.workbook.io
 import yaml
@@ -35,6 +37,7 @@ from wc_utils.workbook.core import get_column_letter
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
+from wc_utils.util import git
 
 
 TOC_NAME = 'Table of contents'
@@ -77,6 +80,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
         pass  # pragma: no cover
 
 
+# todo: next: update JsonWriter
 class JsonWriter(WriterBase):
     """ Write model objects to a JSON or YAML file """
 
@@ -159,13 +163,13 @@ class WorkbookWriter(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, extra_entries=0):
-        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
-            a set of .csv or .tsv files, with one file for each model.
+            toc=True, extra_entries=0, metadata=False, schema_package=None):
+        """ Write a list of model instances to an Excel file, with one worksheet for each model class,
+            or to a set of .csv or .tsv files, with one file for each model class
 
         Args:
             path (:obj:`str`): path to write file(s)
-            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
+            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): `model` instance or list of `model` instances
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
@@ -181,6 +185,8 @@ class WorkbookWriter(WriterBase):
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
+            metadata (:obj:`bool`, optional): whether to write metadata information
+            schema_package (:obj:`str`, optional): name of the package that defines the obj_model schema used
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -200,6 +206,15 @@ class WorkbookWriter(WriterBase):
             if error:
                 warn('Some data will not be written because objects are not valid:\n  {}'.format(
                     str(error).replace('\n', '\n  ').rstrip()), IoWarning)
+
+        # create metadata objects
+        if metadata:
+            metadata_objects = self.make_metadata_objects(path, schema_package)
+            if metadata_objects:
+                all_objects.extend(metadata_objects)
+
+                # put metadata models at start of model list
+                models[0:0] = [obj.__class__ for obj in metadata_objects]
 
         # group objects by class
         grouped_objects = dict_by_class(all_objects)
@@ -312,6 +327,41 @@ class WorkbookWriter(WriterBase):
         )
 
         writer.write_worksheet(sheet_name, content, style=style)
+
+    def make_metadata_objects(self, path, schema_package):
+        """ Make models that store Git repository metadata
+
+        Args:
+            path (:obj:`str`): path of the file(s) that will be written
+            schema_package (:obj:`str`): name of the package that defines the obj_model schema used
+
+        Returns:
+            :obj:`list` of :obj:`Model`: metadata objects(s) created
+        """
+        metadata_objects = []
+        # create DataRepoMetadata instance
+        try:
+            data_repo_metadata = utils.DataRepoMetadata()
+            utils.set_git_repo_metadata_from_path(data_repo_metadata,
+                git.RepoMetadataCollectionType.DATA_REPO, path=path)
+            metadata_objects.append(data_repo_metadata)
+        except ValueError as e:
+            pass
+
+        # create SchemaRepoMetadata instance
+        if schema_package:
+            try:
+                schema_repo_metadata = utils.SchemaRepoMetadata()
+                spec = importlib.util.find_spec(schema_package)
+                if not spec:
+                    raise ValueError("package '{}' not found".format(schema_package))
+                utils.set_git_repo_metadata_from_path(schema_repo_metadata,
+                    git.RepoMetadataCollectionType.SCHEMA_REPO, path=spec.origin)
+                metadata_objects.append(schema_repo_metadata)
+            except ValueError as e:
+                pass
+
+        return metadata_objects
 
     def write_model(self, writer, model, objects, include_all_attributes=True, encoded=None, extra_entries=0):
         """ Write a list of model objects to a file
@@ -476,7 +526,7 @@ class Writer(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, extra_entries=0):
+            toc=True, extra_entries=0, metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -498,12 +548,15 @@ class Writer(WriterBase):
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
+            metadata (:obj:`bool`, optional): whether to write metadata information; default=:obj:`False`
+            schema_package (:obj:`str`, optional): name of the package that defines the obj_model schema used
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, models=models, get_related=get_related,
                      include_all_attributes=include_all_attributes, validate=validate,
                      title=title, description=description, keywords=keywords,
-                     language=language, creator=creator, toc=toc, extra_entries=extra_entries)
+                     language=language, creator=creator, toc=toc, extra_entries=extra_entries,
+                     metadata=metadata, schema_package=schema_package)
 
 
 class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):

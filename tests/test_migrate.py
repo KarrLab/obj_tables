@@ -61,7 +61,7 @@ from wc_utils.util.files import remove_silently
 from wc_utils.util.misc import internet_connected
 from obj_model.expression import Expression
 from obj_model.io import TOC_NAME
-from wc_utils.util.git import GitReposForTesting
+from wc_utils.util.git import GitHubRepoForTests
 
 
 def make_tmp_dirs_n_small_schemas_paths(test_case):
@@ -2024,7 +2024,7 @@ class TestRemoteBranch(unittest.TestCase):
 
     def setUp(self):
         self.branch_test_repo = 'branch_test_repo'
-        self.branch_test_git_repo_for_testing = GitReposForTesting(self.branch_test_repo)
+        self.branch_test_git_repo_for_testing = GitHubRepoForTests(self.branch_test_repo)
 
     def tearDown(self):
         self.branch_test_git_repo_for_testing.delete_test_repo()
@@ -2284,7 +2284,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
     @unittest.skipIf(DONT_DEBUG_ON_CIRCLE, "control whether runs on CircleCI")
     def test_add_file_and_commit_changes(self):
-        git_repo_for_testing = GitReposForTesting('test_repo_1')
+        git_repo_for_testing = GitHubRepoForTests('test_repo_1')
         test_github_repo_url = git_repo_for_testing.make_test_repo()
         test_github_repo = GitRepo(test_github_repo_url)
 
