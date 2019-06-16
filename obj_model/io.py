@@ -79,14 +79,56 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
         """
         pass  # pragma: no cover
 
+    def make_metadata_objects(self, data_repo_metadata, path, schema_package):
+        """ Make models that store Git repository metadata
 
-# todo: next: update JsonWriter
+        Metadata models can only be created from suitable Git repos
+
+        Args:
+            data_repo_metadata (:obj:`bool`): if :obj:`True`, try to obtain metadata information
+                about the Git repo containing `path`; the repo must be current with origin, except
+                for the file at `path`
+            path (:obj:`str`): path of the file(s) that will be written
+            schema_package (:obj:`str`): name of the package that defines the obj_model schema used
+
+        Returns:
+            :obj:`list` of :obj:`Model`: metadata objects(s) created
+        """
+        metadata_objects = []
+        if data_repo_metadata:
+            # create DataRepoMetadata instance
+            try:
+                data_repo_metadata_obj = utils.DataRepoMetadata()
+                utils.set_git_repo_metadata_from_path(data_repo_metadata_obj,
+                    git.RepoMetadataCollectionType.DATA_REPO, path=path)
+                metadata_objects.append(data_repo_metadata_obj)
+            except ValueError as e:
+                print('DataRepoMetadata ValueError', e)
+                pass
+
+        if schema_package:
+            # create SchemaRepoMetadata instance
+            try:
+                schema_repo_metadata = utils.SchemaRepoMetadata()
+                spec = importlib.util.find_spec(schema_package)
+                if not spec:
+                    raise ValueError("package '{}' not found".format(schema_package))
+                utils.set_git_repo_metadata_from_path(schema_repo_metadata,
+                    git.RepoMetadataCollectionType.SCHEMA_REPO, path=spec.origin)
+                metadata_objects.append(schema_repo_metadata)
+            except ValueError as e:
+                print('SchemaRepoMetadata ValueError', e)
+                pass
+
+        return metadata_objects
+
+
 class JsonWriter(WriterBase):
     """ Write model objects to a JSON or YAML file """
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=False, extra_entries=0):
+            toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -105,6 +147,11 @@ class JsonWriter(WriterBase):
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
+            data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
+                about the file's Git repo; the repo must be current with origin, except for the file
+            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+                used by the file; if not :obj:`None`, try to write metadata information about the
+                the schema's Git repository: the repo must be current with origin
 
         Raises:
             :obj:`ValueError`: if model names are not unique or output format is not supported
@@ -125,6 +172,14 @@ class JsonWriter(WriterBase):
             if error:
                 warn('Some data will not be written because objects are not valid:\n  {}'.format(
                     str(error).replace('\n', '\n  ').rstrip()), IoWarning)
+
+        # create metadata objects
+        metadata_objects = self.make_metadata_objects(data_repo_metadata, path, schema_package)
+        if metadata_objects:
+            objects.extend(metadata_objects)
+
+            # put metadata models at start of model list
+            models[0:0] = [obj.__class__ for obj in metadata_objects]
 
         # convert object(s) (and their relatives) to Python dicts and lists
         if objects is None:
@@ -157,13 +212,14 @@ class JsonWriter(WriterBase):
                 raise ValueError('Unsupported format {}'.format(ext))
 
 
+# todo: next: synchronize definitions of metadata and schema_package for all run methods
 class WorkbookWriter(WriterBase):
     """ Write model objects to an Excel file or CSV or TSV file(s)
     """
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, extra_entries=0, metadata=False, schema_package=None):
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
 
@@ -185,8 +241,11 @@ class WorkbookWriter(WriterBase):
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
-            metadata (:obj:`bool`, optional): whether to write metadata information
-            schema_package (:obj:`str`, optional): name of the package that defines the obj_model schema used
+            data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
+                about the file's Git repo; the repo must be current with origin, except for the file
+            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+                used by the file; if not :obj:`None`, try to write metadata information about the
+                the schema's Git repository: the repo must be current with origin
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -208,13 +267,12 @@ class WorkbookWriter(WriterBase):
                     str(error).replace('\n', '\n  ').rstrip()), IoWarning)
 
         # create metadata objects
-        if metadata:
-            metadata_objects = self.make_metadata_objects(path, schema_package)
-            if metadata_objects:
-                all_objects.extend(metadata_objects)
+        metadata_objects = self.make_metadata_objects(data_repo_metadata, path, schema_package)
+        if metadata_objects:
+            all_objects.extend(metadata_objects)
 
-                # put metadata models at start of model list
-                models[0:0] = [obj.__class__ for obj in metadata_objects]
+            # put metadata models at start of model list
+            models[0:0] = [obj.__class__ for obj in metadata_objects]
 
         # group objects by class
         grouped_objects = dict_by_class(all_objects)
@@ -327,43 +385,6 @@ class WorkbookWriter(WriterBase):
         )
 
         writer.write_worksheet(sheet_name, content, style=style)
-
-    def make_metadata_objects(self, path, schema_package):
-        """ Make models that store Git repository metadata
-
-        Args:
-            path (:obj:`str`): path of the file(s) that will be written
-            schema_package (:obj:`str`): name of the package that defines the obj_model schema used
-
-        Returns:
-            :obj:`list` of :obj:`Model`: metadata objects(s) created
-        """
-        metadata_objects = []
-        # create DataRepoMetadata instance
-        try:
-            data_repo_metadata = utils.DataRepoMetadata()
-            utils.set_git_repo_metadata_from_path(data_repo_metadata,
-                git.RepoMetadataCollectionType.DATA_REPO, path=path)
-            metadata_objects.append(data_repo_metadata)
-        except ValueError as e:
-            print('DataRepoMetadata ValueError', e)
-            pass
-
-        # create SchemaRepoMetadata instance
-        if schema_package:
-            try:
-                schema_repo_metadata = utils.SchemaRepoMetadata()
-                spec = importlib.util.find_spec(schema_package)
-                if not spec:
-                    raise ValueError("package '{}' not found".format(schema_package))
-                utils.set_git_repo_metadata_from_path(schema_repo_metadata,
-                    git.RepoMetadataCollectionType.SCHEMA_REPO, path=spec.origin)
-                metadata_objects.append(schema_repo_metadata)
-            except ValueError as e:
-                print('SchemaRepoMetadata ValueError', e)
-                pass
-
-        return metadata_objects
 
     def write_model(self, writer, model, objects, include_all_attributes=True, encoded=None, extra_entries=0):
         """ Write a list of model objects to a file
@@ -528,7 +549,7 @@ class Writer(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, extra_entries=0, metadata=False, schema_package=None):
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -550,7 +571,7 @@ class Writer(WriterBase):
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
-            metadata (:obj:`bool`, optional): whether to write metadata information; default=:obj:`False`
+            data_repo_metadata (:obj:`bool`, optional): whether to write metadata information; default=:obj:`False`
             schema_package (:obj:`str`, optional): name of the package that defines the obj_model schema used
         """
         Writer = self.get_writer(path)
@@ -558,7 +579,7 @@ class Writer(WriterBase):
                      include_all_attributes=include_all_attributes, validate=validate,
                      title=title, description=description, keywords=keywords,
                      language=language, creator=creator, toc=toc, extra_entries=extra_entries,
-                     metadata=metadata, schema_package=schema_package)
+                     data_repo_metadata=data_repo_metadata, schema_package=schema_package)
 
 
 class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):

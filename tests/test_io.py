@@ -892,8 +892,36 @@ class TestIo(unittest.TestCase):
         for obj, obj_2 in zip(objs, objs_2):
             self.assertTrue(obj_2.is_equal(obj))
 
-    def test_make_metadata_objects(self):
-        print()
+class TestMetadataModels(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp_dirname = tempfile.mkdtemp()
+
+        # prepare test data repo
+        self.github_test_data_repo = GitHubRepoForTests('test_data_repo')
+        self.test_data_repo_dir = os.path.join(self.tmp_dirname, 'test_data_repo')
+        os.mkdir(self.test_data_repo_dir)
+        test_data_repo = self.github_test_data_repo.make_test_repo(self.test_data_repo_dir)
+
+        # prepare test schema repo
+        test_schema_repo_url = 'https://github.com/KarrLab/test_repo'
+        self.test_schema_repo_dir = os.path.join(self.tmp_dirname, 'test_schema_repo')
+        test_schema_repo = git.Repo.clone_from(test_schema_repo_url, self.test_schema_repo_dir)
+
+        # put schema dir on sys.path
+        sys.path.append(self.test_schema_repo_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dirname)
+
+        # cleanup
+        self.github_test_data_repo.delete_test_repo()
+        # remove self.test_schema_repo_dir from sys.path
+        for idx in range(len(sys.path)-1, -1, -1):
+            if sys.path[idx] == self.test_schema_repo_dir:
+                del sys.path[idx]
+
+    def test_workbook_writer_make_metadata_objects(self):
         class Model1(core.Model):
             id = core.SlugAttribute()
 
@@ -902,22 +930,16 @@ class TestIo(unittest.TestCase):
             Model1(id='model1_1'),
         ]
 
-        # prepare test data repo
-        github_test_data_repo = GitHubRepoForTests('test_data_repo')
-        test_data_repo_dir = os.path.join(self.tmp_dirname, 'test_data_repo')
-        os.mkdir(test_data_repo_dir)
-        test_data_repo = github_test_data_repo.make_test_repo(test_data_repo_dir)
-
-        # test data repo not available
+        # data repo metadata not written: data file not in a repo
         path_1 = os.path.join(self.tmp_dirname, 'test.xlsx')
-        obj_model.io.Writer().run(path_1, objs, [Model1], metadata=True)
+        obj_model.io.Writer().run(path_1, objs, [Model1], data_repo_metadata=True)
         objs_read = obj_model.io.Reader().run(path_1, [Model1])
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.DataRepoMetadata not in obj_types)
 
         # write data repo metadata in obj_model file
-        path_2 = os.path.join(test_data_repo_dir, 'test.xlsx')
-        obj_model.io.Writer().run(path_2, objs, [Model1], metadata=True)
+        path_2 = os.path.join(self.test_data_repo_dir, 'test.xlsx')
+        obj_model.io.Writer().run(path_2, objs, [Model1], data_repo_metadata=True)
 
         # read metadata from 'test.xlsx'
         objs_read = obj_model.io.Reader().run(path_2, [utils.DataRepoMetadata, Model1])
@@ -930,7 +952,7 @@ class TestIo(unittest.TestCase):
             self.assertTrue(obj_read.is_equal(obj))
 
         # test schema package not found
-        obj_model.io.Writer().run(path_2, objs, [Model1], metadata=True,
+        obj_model.io.Writer().run(path_2, objs, [Model1], data_repo_metadata=True,
             schema_package='not a schema package')
         models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
         objs_read = obj_model.io.Reader().run(path_2, models_expected, ignore_extra_sheets=True,
@@ -938,16 +960,8 @@ class TestIo(unittest.TestCase):
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.SchemaRepoMetadata not in obj_types)
 
-        # prepare test schema repo
-        test_schema_repo_url = 'https://github.com/KarrLab/test_repo'
-        test_schema_repo_dir = os.path.join(self.tmp_dirname, 'test_schema_repo')
-        test_schema_repo = git.Repo.clone_from(test_schema_repo_url, test_schema_repo_dir)
-
-        # put schema dir on sys.path
-        sys.path.append(test_schema_repo_dir)
-
         # write data and schema repo metadata in obj_model file
-        obj_model.io.Writer().run(path_2, objs, [Model1], metadata=True, schema_package='test_repo')
+        obj_model.io.Writer().run(path_2, objs, [Model1], data_repo_metadata=True, schema_package='test_repo')
 
         # read metadata from 'test.xlsx'
         objs_read = obj_model.io.Reader().run(path_2, models_expected, ignore_extra_sheets=True)
@@ -962,19 +976,15 @@ class TestIo(unittest.TestCase):
         os.remove(path_2)
 
         # test csv files with metadata
-        path_3 = os.path.join(test_data_repo_dir, 'test*.csv')
-        obj_model.io.Writer().run(path_3, objs, [Model1], metadata=True, schema_package='test_repo')
+        path_3 = os.path.join(self.test_data_repo_dir, 'test*.csv')
+        obj_model.io.Writer().run(path_3, objs, [Model1], data_repo_metadata=True, schema_package='test_repo')
         objs_read = obj_model.io.Reader().run(path_3, models_expected, ignore_extra_sheets=True)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 
-        # cleanup
-        github_test_data_repo.delete_test_repo()
-        # remove test_schema_repo_dir from sys.path
-        for idx in range(len(sys.path)-1, -1, -1):
-            if sys.path[idx] == test_schema_repo_dir:
-                del sys.path[idx]
-
+    # todo: next: test metadata in Json files
+    def test_json_writer_make_metadata_objects(self):
+        pass
 
 
 class TestMisc(unittest.TestCase):
@@ -1999,8 +2009,6 @@ class JsonTestCase(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.dirname)
 
-    # todo: next: fix
-    @unittest.skip('skipping until JSON is fixed')
     def test_write_read(self):
         class AA(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
