@@ -234,11 +234,6 @@ class TestUtils(unittest.TestCase):
 
         self.assertGreater(n_random, 0.9 * n_trials)
 
-    class MetadataModel(core.Model):
-        url = core.StringAttribute()
-        branch = core.StringAttribute()
-        revision = core.StringAttribute()
-
     def test_set_git_repo_metadata_from_path(self):
 
         tmp_dirname = tempfile.mkdtemp()
@@ -266,14 +261,12 @@ class TestUtils(unittest.TestCase):
     def test_set_git_repo_metadata_from_path_error(self):
         tempdir = tempfile.mkdtemp()
 
-        metadata_model = self.MetadataModel()
-        self.assertEqual(metadata_model.url, '')
+        data_repo_metadata = utils.DataRepoMetadata()
+        self.assertEqual(data_repo_metadata.url, '')
 
         with self.assertRaisesRegex(ValueError, 'is not in a Git repository'):
-            utils.set_git_repo_metadata_from_path(metadata_model,
+            utils.set_git_repo_metadata_from_path(data_repo_metadata,
             git.RepoMetadataCollectionType.SCHEMA_REPO, path=tempdir)
-        self.assertEqual(metadata_model.url, '')
-
-        # todo: next: test "Cannot gather metadata from Git repo in" errors
+        self.assertEqual(data_repo_metadata.url, '')
 
         shutil.rmtree(tempdir)
