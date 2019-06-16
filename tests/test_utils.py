@@ -1,16 +1,19 @@
 """ Data model to represent models.
 
 :Author: Jonathan Karr <karr@mssm.edu>
+:Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
 :Date: 2016-11-23
 :Copyright: 2016, Karr Lab
 :License: MIT
 """
 from six import string_types
-import tempfile
-import sys
-import unittest
+import os
 import shutil
+import sys
+import tempfile
+import unittest
 from obj_model import core, utils
+from wc_utils.util import git
 
 
 class Root(core.Model):
@@ -238,24 +241,27 @@ class TestUtils(unittest.TestCase):
 
     def test_set_git_repo_metadata_from_path(self):
 
-        metadata_model = self.MetadataModel()
-        self.assertEqual(metadata_model.url, '')
+        tmp_dirname = tempfile.mkdtemp()
 
-        utils.set_git_repo_metadata_from_path(metadata_model, path='.')
-        self.assertIn(metadata_model.url, [
-            'https://github.com/KarrLab/obj_model.git',
-            'ssh://git@github.com/KarrLab/obj_model.git',
-            'git@github.com:KarrLab/obj_model.git',
-        ])
+        # prepare test data repo
+        github_test_data_repo = git.GitHubRepoForTests('test_data_repo')
+        test_data_repo_dir = os.path.join(tmp_dirname, 'test_data_repo')
+        os.mkdir(test_data_repo_dir)
+        test_data_repo = github_test_data_repo.make_test_repo(test_data_repo_dir)
+        path = os.path.join(test_data_repo_dir, 'test.xlsx')
 
-        class MetadataModel(core.Model):
-            url = core.StringAttribute()
-            branch = core.StringAttribute()
-            commit_hash = core.StringAttribute()
+        # get & test git metadata
+        data_repo_metadata = utils.DataRepoMetadata()
+        utils.set_git_repo_metadata_from_path(data_repo_metadata,
+            git.RepoMetadataCollectionType.DATA_REPO, path=path)
+        self.assertEqual(data_repo_metadata.url, 'https://github.com/KarrLab/test_data_repo.git')
+        self.assertEqual(data_repo_metadata.branch, 'master')
+        self.assertTrue(isinstance(data_repo_metadata.revision, str))
+        self.assertEqual(len(data_repo_metadata.revision), 40)
 
-        metadata_model = MetadataModel()
-        utils.set_git_repo_metadata_from_path(metadata_model, path='.', commit_hash_attr='commit_hash')
-        self.assertEqual(40, len(metadata_model.commit_hash))
+        # clean up
+        shutil.rmtree(tmp_dirname)
+        github_test_data_repo.delete_test_repo()
 
     def test_set_git_repo_metadata_from_path_error(self):
         tempdir = tempfile.mkdtemp()
@@ -264,7 +270,10 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(metadata_model.url, '')
 
         with self.assertRaisesRegex(ValueError, 'is not in a Git repository'):
-            utils.set_git_repo_metadata_from_path(metadata_model, path=tempdir)
+            utils.set_git_repo_metadata_from_path(metadata_model,
+            git.RepoMetadataCollectionType.SCHEMA_REPO, path=tempdir)
         self.assertEqual(metadata_model.url, '')
+
+        # todo: next: test "Cannot gather metadata from Git repo in" errors
 
         shutil.rmtree(tempdir)

@@ -9,7 +9,8 @@
 from __future__ import unicode_literals
 from itertools import chain
 from random import shuffle
-from obj_model.core import Model, Attribute, RelatedAttribute, InvalidObjectSet, InvalidObject, Validator, TabularOrientation
+from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
+    InvalidObject, Validator, TabularOrientation)
 from wc_utils.util import git
 
 
@@ -185,19 +186,41 @@ def source_report(obj, attr_name):
         return "{}:{}:{},{}".format(filename, worksheet, row, column)
 
 
-def set_git_repo_metadata_from_path(model, path='.', url_attr='url', branch_attr='branch',
+def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', branch_attr='branch',
                                     commit_hash_attr='revision', ):
     """ Use Git to set the Git repository URL, branch, and commit hash metadata attributes of a model
 
     Args:
         model (:obj:`Model`): model whose Git attributes will be set
-        path (:obj:`str`, optional): path to a clone of a Git repository; default='.'
+        repo_type (:obj:`git.RepoMetadataCollectionType`): repo type being set
+        path (:obj:`str`, optional): path to file or directory in a clone of a Git repository; default='.'
         url_attr (:obj:`str`, optional): attribute in `model` for the Git URL; default='url'
         branch_attr (:obj:`str`, optional): attribute in `model` for the Git branch; default='branch'
         commit_hash_attr (:obj:`str`, optional): attribute in `model` for the Git commit hash;
             default='revision'
     """
-    md = git.get_repo_metadata(dirname=path)
+    md = git.get_repo_metadata(dirname=path, repo_type=repo_type, data_file=path)
     setattr(model, url_attr, md.url)
     setattr(model, branch_attr, md.branch)
     setattr(model, commit_hash_attr, md.revision)
+
+# todo: next: create utility to read metadata from data files
+
+class DataRepoMetadata(Model):
+    """ Model to store Git version information about a data file's repo """
+    url = StringAttribute()
+    branch = StringAttribute()
+    revision = StringAttribute()
+
+    class Meta(Model.Meta):
+        tabular_orientation = TabularOrientation.column
+
+
+class SchemaRepoMetadata(Model):
+    """ Model to store Git version info for the repo that defines the obj_model schema used by a data file """
+    url = StringAttribute()
+    branch = StringAttribute()
+    revision = StringAttribute()
+
+    class Meta(Model.Meta):
+        tabular_orientation = TabularOrientation.column
