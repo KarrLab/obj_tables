@@ -103,7 +103,6 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                     git.RepoMetadataCollectionType.DATA_REPO, path=path)
                 metadata_objects.append(data_repo_metadata_obj)
             except ValueError as e:
-                print('DataRepoMetadata ValueError', e)
                 pass
 
         if schema_package:
@@ -117,7 +116,6 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                     git.RepoMetadataCollectionType.SCHEMA_REPO, path=spec.origin)
                 metadata_objects.append(schema_repo_metadata)
             except ValueError as e:
-                print('SchemaRepoMetadata ValueError', e)
                 pass
 
         return metadata_objects
@@ -176,10 +174,8 @@ class JsonWriter(WriterBase):
         # create metadata objects
         metadata_objects = self.make_metadata_objects(data_repo_metadata, path, schema_package)
         if metadata_objects:
-            objects.extend(metadata_objects)
-
-            # put metadata models at start of model list
-            models[0:0] = [obj.__class__ for obj in metadata_objects]
+            # put metadata instances at start of objects
+            objects = metadata_objects + objects
 
         # convert object(s) (and their relatives) to Python dicts and lists
         if objects is None:

@@ -892,9 +892,18 @@ class TestIo(unittest.TestCase):
         for obj, obj_2 in zip(objs, objs_2):
             self.assertTrue(obj_2.is_equal(obj))
 
+
 class TestMetadataModels(unittest.TestCase):
 
+    class Model1(core.Model):
+        id = core.SlugAttribute()
+
     def setUp(self):
+        self.objs = [
+            self.Model1(id='model1_0'),
+            self.Model1(id='model1_1'),
+        ]
+
         self.tmp_dirname = tempfile.mkdtemp()
 
         # prepare test data repo
@@ -914,45 +923,38 @@ class TestMetadataModels(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmp_dirname)
 
-        # cleanup
         self.github_test_data_repo.delete_test_repo()
+
         # remove self.test_schema_repo_dir from sys.path
         for idx in range(len(sys.path)-1, -1, -1):
             if sys.path[idx] == self.test_schema_repo_dir:
                 del sys.path[idx]
 
     def test_workbook_writer_make_metadata_objects(self):
-        class Model1(core.Model):
-            id = core.SlugAttribute()
-
-        objs = [
-            Model1(id='model1_0'),
-            Model1(id='model1_1'),
-        ]
 
         # data repo metadata not written: data file not in a repo
         path_1 = os.path.join(self.tmp_dirname, 'test.xlsx')
-        obj_model.io.Writer().run(path_1, objs, [Model1], data_repo_metadata=True)
-        objs_read = obj_model.io.Reader().run(path_1, [Model1])
+        obj_model.io.Writer().run(path_1, self.objs, [self.Model1], data_repo_metadata=True)
+        objs_read = obj_model.io.Reader().run(path_1, [self.Model1])
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.DataRepoMetadata not in obj_types)
 
         # write data repo metadata in obj_model file
         path_2 = os.path.join(self.test_data_repo_dir, 'test.xlsx')
-        obj_model.io.Writer().run(path_2, objs, [Model1], data_repo_metadata=True)
+        obj_model.io.Writer().run(path_2, self.objs, [self.Model1], data_repo_metadata=True)
 
         # read metadata from 'test.xlsx'
-        objs_read = obj_model.io.Reader().run(path_2, [utils.DataRepoMetadata, Model1])
+        objs_read = obj_model.io.Reader().run(path_2, [utils.DataRepoMetadata, self.Model1])
         data_repo_metadata = objs_read[0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
         self.assertEqual(data_repo_metadata.branch, 'master')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
         self.assertEqual(len(data_repo_metadata.revision), 40)
-        for obj, obj_read in zip(objs, objs_read[1:]):
+        for obj, obj_read in zip(self.objs, objs_read[1:]):
             self.assertTrue(obj_read.is_equal(obj))
 
         # test schema package not found
-        obj_model.io.Writer().run(path_2, objs, [Model1], data_repo_metadata=True,
+        obj_model.io.Writer().run(path_2, self.objs, [self.Model1], data_repo_metadata=True,
             schema_package='not a schema package')
         models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
         objs_read = obj_model.io.Reader().run(path_2, models_expected, ignore_extra_sheets=True,
@@ -961,7 +963,8 @@ class TestMetadataModels(unittest.TestCase):
         self.assertTrue(utils.SchemaRepoMetadata not in obj_types)
 
         # write data and schema repo metadata in obj_model file
-        obj_model.io.Writer().run(path_2, objs, [Model1], data_repo_metadata=True, schema_package='test_repo')
+        obj_model.io.Writer().run(path_2, self.objs, [self.Model1], data_repo_metadata=True,
+            schema_package='test_repo')
 
         # read metadata from 'test.xlsx'
         objs_read = obj_model.io.Reader().run(path_2, models_expected, ignore_extra_sheets=True)
@@ -977,15 +980,37 @@ class TestMetadataModels(unittest.TestCase):
 
         # test csv files with metadata
         path_3 = os.path.join(self.test_data_repo_dir, 'test*.csv')
-        obj_model.io.Writer().run(path_3, objs, [Model1], data_repo_metadata=True, schema_package='test_repo')
+        obj_model.io.Writer().run(path_3, self.objs, [self.Model1], data_repo_metadata=True,
+            schema_package='test_repo')
         objs_read = obj_model.io.Reader().run(path_3, models_expected, ignore_extra_sheets=True)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 
-    # todo: next: test metadata in Json files
     def test_json_writer_make_metadata_objects(self):
-        pass
 
+        # write data repo metadata in obj_model file
+        path_1 = os.path.join(self.test_data_repo_dir, 'out.json')
+        obj_model.io.JsonWriter().run(path_1, self.objs, [self.Model1], data_repo_metadata=True)
+        objs_read = obj_model.io.JsonReader().run(path_1, [utils.DataRepoMetadata, self.Model1])
+        data_repo_metadata = objs_read[0]
+        self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
+        self.assertEqual(data_repo_metadata.branch, 'master')
+        self.assertTrue(isinstance(data_repo_metadata.revision, str))
+        self.assertEqual(len(data_repo_metadata.revision), 40)
+        for obj, obj_read in zip(self.objs, objs_read[1:]):
+            self.assertTrue(obj_read.is_equal(obj))
+
+        # test data and schema repo metadata in obj_model file
+        obj_model.io.JsonWriter().run(path_1, self.objs, [self.Model1], data_repo_metadata=True,
+            schema_package='test_repo')
+        metadata_models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
+        objs_read = obj_model.io.JsonReader().run(path_1, metadata_models_expected + [self.Model1])
+        for obj, model in zip(objs_read, metadata_models_expected):
+            self.assertTrue(isinstance(obj, model))
+            self.assertTrue(obj.url.startswith('https://github.com/'))
+            self.assertEqual(obj.branch, 'master')
+            self.assertTrue(isinstance(obj.revision, str))
+            self.assertEqual(len(obj.revision), 40)
 
 class TestMisc(unittest.TestCase):
 
