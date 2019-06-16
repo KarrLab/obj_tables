@@ -56,7 +56,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, extra_entries=0):
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -76,6 +76,11 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
+            data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
+                about the file's Git repo; the repo must be current with origin, except for the file
+            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+                used by the file; if not :obj:`None`, try to write metadata information about the
+                the schema's Git repository: the repo must be current with origin
         """
         pass  # pragma: no cover
 
@@ -89,7 +94,9 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                 about the Git repo containing `path`; the repo must be current with origin, except
                 for the file at `path`
             path (:obj:`str`): path of the file(s) that will be written
-            schema_package (:obj:`str`): name of the package that defines the obj_model schema used
+            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+                used by the file; if not :obj:`None`, try to obtain metadata information about the
+                the schema's Git repository: the repo must be current with origin
 
         Returns:
             :obj:`list` of :obj:`Model`: metadata objects(s) created
@@ -208,7 +215,6 @@ class JsonWriter(WriterBase):
                 raise ValueError('Unsupported format {}'.format(ext))
 
 
-# todo: next: synchronize definitions of metadata and schema_package for all run methods
 class WorkbookWriter(WriterBase):
     """ Write model objects to an Excel file or CSV or TSV file(s)
     """
@@ -567,8 +573,11 @@ class Writer(WriterBase):
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
-            data_repo_metadata (:obj:`bool`, optional): whether to write metadata information; default=:obj:`False`
-            schema_package (:obj:`str`, optional): name of the package that defines the obj_model schema used
+            data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
+                about the file's Git repo; the repo must be current with origin, except for the file
+            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+                used by the file; if not :obj:`None`, try to write metadata information about the
+                the schema's Git repository: the repo must be current with origin
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, models=models, get_related=get_related,
