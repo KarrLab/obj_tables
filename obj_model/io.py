@@ -346,6 +346,7 @@ class WorkbookWriter(WriterBase):
                 git.RepoMetadataCollectionType.DATA_REPO, path=path)
             metadata_objects.append(data_repo_metadata)
         except ValueError as e:
+            print('DataRepoMetadata ValueError', e)
             pass
 
         # create SchemaRepoMetadata instance
@@ -359,6 +360,7 @@ class WorkbookWriter(WriterBase):
                     git.RepoMetadataCollectionType.SCHEMA_REPO, path=spec.origin)
                 metadata_objects.append(schema_repo_metadata)
             except ValueError as e:
+                print('SchemaRepoMetadata ValueError', e)
                 pass
 
         return metadata_objects

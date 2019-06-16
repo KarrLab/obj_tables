@@ -893,6 +893,7 @@ class TestIo(unittest.TestCase):
             self.assertTrue(obj_2.is_equal(obj))
 
     def test_make_metadata_objects(self):
+        print()
         class Model1(core.Model):
             id = core.SlugAttribute()
 
@@ -919,12 +920,14 @@ class TestIo(unittest.TestCase):
         obj_model.io.Writer().run(path_2, objs, [Model1], metadata=True)
 
         # read metadata from 'test.xlsx'
-        objs_read = obj_model.io.Reader().run(path_2, [utils.DataRepoMetadata], ignore_extra_sheets=True)
+        objs_read = obj_model.io.Reader().run(path_2, [utils.DataRepoMetadata, Model1])
         data_repo_metadata = objs_read[0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
         self.assertEqual(data_repo_metadata.branch, 'master')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
         self.assertEqual(len(data_repo_metadata.revision), 40)
+        for obj, obj_read in zip(objs, objs_read[1:]):
+            self.assertTrue(obj_read.is_equal(obj))
 
         # test schema package not found
         obj_model.io.Writer().run(path_2, objs, [Model1], metadata=True,
@@ -956,14 +959,22 @@ class TestIo(unittest.TestCase):
             self.assertEqual(len(obj.revision), 40)
 
         # cleanup
+        os.remove(path_2)
+
+        # test csv files with metadata
+        path_3 = os.path.join(test_data_repo_dir, 'test*.csv')
+        obj_model.io.Writer().run(path_3, objs, [Model1], metadata=True, schema_package='test_repo')
+        objs_read = obj_model.io.Reader().run(path_3, models_expected, ignore_extra_sheets=True)
+        for obj, model in zip(objs_read, models_expected):
+            self.assertTrue(isinstance(obj, model))
+
+        # cleanup
         github_test_data_repo.delete_test_repo()
         # remove test_schema_repo_dir from sys.path
         for idx in range(len(sys.path)-1, -1, -1):
             if sys.path[idx] == test_schema_repo_dir:
                 del sys.path[idx]
 
-        # todo: next: test csv files
-        # path = os.path.join(self.tmp_dirname, 'test*.csv')
 
 
 class TestMisc(unittest.TestCase):
