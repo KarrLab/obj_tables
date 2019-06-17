@@ -1336,7 +1336,7 @@ class WorkbookReader(ReaderBase):
 class Reader(ReaderBase):
     @staticmethod
     def get_reader(path):
-        """ Get reader
+        """ Get the IO class whose `run()` method can read the file(s) at `path`
 
         Args:
             path (:obj:`str`): path to write file(s)
@@ -1358,8 +1358,8 @@ class Reader(ReaderBase):
 
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
-            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
-            group_objects_by_model=False, validate=True):
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
+            ignore_attribute_order=False, group_objects_by_model=False, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:

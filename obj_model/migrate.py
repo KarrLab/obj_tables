@@ -3037,6 +3037,7 @@ class AutomatedMigration(object):
         return self._MIGRATION_CONF_NAME_TEMPLATE.format(self.data_git_repo.repo_name(),
             self.schema_git_repo.repo_name(), SchemaChanges.get_date_timestamp())
 
+    # todo: next: replace with obj_model.utils utility to read metadata from data files
     def get_metadata_model(self):
         """ Get the `metadata_model` for the schema
 
@@ -3074,6 +3075,7 @@ class AutomatedMigration(object):
         self.metadata_model = AutomatedMigration.MetadataModel(metadata_model_type, revision_attr)
         return self.metadata_model
 
+    # todo: next: replace with obj_model.utils utility to read metadata from data files
     def get_data_file_git_commit_hash(self, data_file):
         """ Get the git commit hash of the schema repo that describes a data file
 
