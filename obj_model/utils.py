@@ -1,6 +1,7 @@
 """ Utilities
 
 :Author: Jonathan Karr <karr@mssm.edu>
+:Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
 :Date: 2016-11-23
 :Copyright: 2016, Karr Lab
 :License: MIT
@@ -9,8 +10,10 @@
 from __future__ import unicode_literals
 from itertools import chain
 from random import shuffle
+import collections
 from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
     InvalidObject, Validator, TabularOrientation)
+import obj_model
 from wc_utils.util import git
 
 
@@ -204,7 +207,51 @@ def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', 
     setattr(model, branch_attr, md.branch)
     setattr(model, commit_hash_attr, md.revision)
 
-# todo: next: create utility to read metadata from data files
+
+# Git repository metadata from an `obj_model` data file
+DataFileMetadata = collections.namedtuple('DataFileMetadata', 'data_repo_metadata, schema_repo_metadata')
+DataFileMetadata.__doc__ += ': Git repository metadata from an obj_model data file'
+DataFileMetadata.data_repo_metadata.__doc__ = "Git metadata about the repository containing the file"
+DataFileMetadata.schema_repo_metadata.__doc__ = \
+    "Git metadata about the repository containing the obj_model schema used by the file"
+
+
+def read_metadata_from_file(pathname):
+    """ Read Git repository metadata from an `obj_model` data file
+
+    Args:
+        pathname (:obj:`str`): path to the data file
+
+    Returns:
+        :obj:`DataFileMetadata`: data and schema repo metadata from the file at `pathname`; missing
+        metadata is returned as :obj:`None`
+
+    Raises:
+        :obj:`ValueError`: if `pathname`'s extension is not supported,
+            or unexpected metadata instances are found
+    """
+    reader = obj_model.io.Reader.get_reader(pathname)
+    if reader is obj_model.io.JsonReader:
+        raise ValueError('Generic metadata reading not supported by JsonReader')
+
+    metadata_instances = reader().run(pathname, [DataRepoMetadata, SchemaRepoMetadata],
+        ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True)
+    metadata_class_to_attr = {
+        DataRepoMetadata: 'data_repo_metadata',
+        SchemaRepoMetadata: 'schema_repo_metadata'
+    }
+    data_file_metadata_dict = {
+        'data_repo_metadata': None,
+         'schema_repo_metadata': None
+    }
+    for model_class, instances in metadata_instances.items():
+        if len(instances) == 1:
+            data_file_metadata_dict[metadata_class_to_attr[model_class]] = instances[0]
+        elif 1 < len(instances):
+            raise ValueError("Multiple instances of {} found in '{}'".format(model_class.__name__,
+                pathname))
+    return DataFileMetadata(**data_file_metadata_dict)
+
 
 class DataRepoMetadata(Model):
     """ Model to store Git version information about a data file's repo """

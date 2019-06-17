@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from obj_model import core, utils
+from obj_model.utils import DataRepoMetadata, SchemaRepoMetadata
 from wc_utils.util import git
 
 
@@ -246,7 +247,7 @@ class TestUtils(unittest.TestCase):
         path = os.path.join(test_data_repo_dir, 'test.xlsx')
 
         # get & test git metadata
-        data_repo_metadata = utils.DataRepoMetadata()
+        data_repo_metadata = DataRepoMetadata()
         utils.set_git_repo_metadata_from_path(data_repo_metadata,
             git.RepoMetadataCollectionType.DATA_REPO, path=path)
         self.assertEqual(data_repo_metadata.url, 'https://github.com/KarrLab/test_data_repo.git')
@@ -261,7 +262,7 @@ class TestUtils(unittest.TestCase):
     def test_set_git_repo_metadata_from_path_error(self):
         tempdir = tempfile.mkdtemp()
 
-        data_repo_metadata = utils.DataRepoMetadata()
+        data_repo_metadata = DataRepoMetadata()
         self.assertEqual(data_repo_metadata.url, '')
 
         with self.assertRaisesRegex(ValueError, 'is not in a Git repository'):
@@ -270,3 +271,40 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(data_repo_metadata.url, '')
 
         shutil.rmtree(tempdir)
+
+    def test_read_metadata_from_file(self):
+        # use fixtures to keep this code simple
+        # test .xlsx files
+        metadata_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'metadata')
+        expected_xlsx_metadata = {
+            'both-metadata.xlsx': (DataRepoMetadata, SchemaRepoMetadata),
+            'data-repo-metadata.xlsx': (DataRepoMetadata, type(None)),
+            'no-metadata.xlsx': (type(None), type(None)),
+            'schema-repo-metadata.xlsx': (type(None), SchemaRepoMetadata)
+        }
+        for filename, expected_metadata_types in expected_xlsx_metadata.items():
+            pathname = os.path.join(metadata_dir, filename)
+            data_file_metadata = utils.read_metadata_from_file(pathname)
+            actual_data_file_metadata_types = \
+                (type(data_file_metadata.data_repo_metadata), type(data_file_metadata.schema_repo_metadata))
+            self.assertEqual(actual_data_file_metadata_types, expected_metadata_types)
+
+        # test .csv file
+        csv_pathname = os.path.join(metadata_dir, 'csv_metadata', 'test*.csv')
+        data_file_metadata = utils.read_metadata_from_file(csv_pathname)
+        self.assertTrue(isinstance(data_file_metadata.data_repo_metadata, DataRepoMetadata))
+        self.assertTrue(isinstance(data_file_metadata.schema_repo_metadata, SchemaRepoMetadata))
+        for metadata in data_file_metadata:
+            self.assertTrue(metadata.url.startswith('https://github.com/'))
+            self.assertEqual(metadata.branch, 'master')
+            self.assertTrue(isinstance(metadata.revision, str))
+            self.assertEqual(len(metadata.revision), 40)
+
+        # test exceptions
+        with self.assertRaisesRegex(ValueError, 'Generic metadata reading not supported by JsonReader'):
+            json_pathname = os.path.join(metadata_dir, 'foo.json')
+            utils.read_metadata_from_file(json_pathname)
+
+        with self.assertRaisesRegex(ValueError, "Multiple instances of .+ found in"):
+            pathname = os.path.join(metadata_dir, 'extra-schema-metadata.xlsx')
+            utils.read_metadata_from_file(pathname)
