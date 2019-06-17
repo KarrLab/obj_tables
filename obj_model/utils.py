@@ -9,12 +9,13 @@
 
 from __future__ import unicode_literals
 from itertools import chain
+from pathlib import Path
 from random import shuffle
 import collections
 from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
     InvalidObject, Validator, TabularOrientation)
-import obj_model
 from wc_utils.util import git
+import obj_model
 
 
 def get_related_models(root_model, include_root_model=False):
@@ -202,7 +203,7 @@ def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', 
         commit_hash_attr (:obj:`str`, optional): attribute in `model` for the Git commit hash;
             default='revision'
     """
-    md = git.get_repo_metadata(dirname=path, repo_type=repo_type, data_file=path)
+    md = git.get_repo_metadata(path=path, repo_type=repo_type, data_file=path)
     setattr(model, url_attr, md.url)
     setattr(model, branch_attr, md.branch)
     setattr(model, commit_hash_attr, md.revision)
@@ -252,6 +253,32 @@ def read_metadata_from_file(pathname):
                 pathname))
     return DataFileMetadata(**data_file_metadata_dict)
 
+
+def add_metadata_to_file(pathname, models, schema_package=None):
+    """ Add Git repository metadata to an existing `obj_model` data file
+
+    Overwrites the existing file
+
+    Args:
+        pathname (:obj:`str`): path to an `obj_model` data file in a Git repo
+        models (:obj:`list` of :obj:`types.TypeType`, optional): list of types of objects to read
+        schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+            used by the file; if not :obj:`None`, try to write metadata information about the
+            the schema's Git repository: the repo must be current with origin
+
+    Returns:
+        :obj:`str`: pathname of new data file
+
+    Raises:
+        :obj:`ValueError`: if `overwrite` is not set the new file would overwrite an existing file
+    """
+    # read file
+    path = Path(pathname).resolve()
+    objects = obj_model.io.Reader().run(str(path), models=models)
+    # write file with metadata
+    obj_model.io.Writer().run(str(path), objects, models=models, data_repo_metadata=True,
+        schema_package=schema_package)
+    return path
 
 class DataRepoMetadata(Model):
     """ Model to store Git version information about a data file's repo """

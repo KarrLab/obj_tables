@@ -7,6 +7,7 @@
 :License: MIT
 """
 from six import string_types
+import git
 import os
 import shutil
 import sys
@@ -14,7 +15,7 @@ import tempfile
 import unittest
 from obj_model import core, utils
 from obj_model.utils import DataRepoMetadata, SchemaRepoMetadata
-from wc_utils.util import git
+from wc_utils.util.git import GitHubRepoForTests, RepoMetadataCollectionType
 
 
 class Root(core.Model):
@@ -235,42 +236,58 @@ class TestUtils(unittest.TestCase):
 
         self.assertGreater(n_random, 0.9 * n_trials)
 
-    def test_set_git_repo_metadata_from_path(self):
 
-        tmp_dirname = tempfile.mkdtemp()
+class TestMetadata(unittest.TestCase):
+
+    def setUp(self):
+        self.tmp_dirname = tempfile.mkdtemp()
 
         # prepare test data repo
-        github_test_data_repo = git.GitHubRepoForTests('test_data_repo')
-        test_data_repo_dir = os.path.join(tmp_dirname, 'test_data_repo')
-        os.mkdir(test_data_repo_dir)
-        test_data_repo = github_test_data_repo.make_test_repo(test_data_repo_dir)
-        path = os.path.join(test_data_repo_dir, 'test.xlsx')
+        self.github_test_data_repo = GitHubRepoForTests('test_data_repo')
+        self.test_data_repo_dir = os.path.join(self.tmp_dirname, 'test_data_repo')
+        os.mkdir(self.test_data_repo_dir)
+        self.test_data_repo = self.github_test_data_repo.make_test_repo(self.test_data_repo_dir)
+
+        # prepare test schema repo
+        test_schema_repo_url = 'https://github.com/KarrLab/test_repo'
+        self.test_schema_repo_dir = os.path.join(self.tmp_dirname, 'test_schema_repo')
+        test_schema_repo = git.Repo.clone_from(test_schema_repo_url, self.test_schema_repo_dir)
+
+        # put schema dir on sys.path
+        sys.path.append(self.test_schema_repo_dir)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dirname)
+
+        # clean up
+        self.github_test_data_repo.delete_test_repo()
+
+        # remove self.test_schema_repo_dir from sys.path
+        for idx in range(len(sys.path)-1, -1, -1):
+            if sys.path[idx] == self.test_schema_repo_dir:
+                del sys.path[idx]
+
+    def test_set_git_repo_metadata_from_path(self):
 
         # get & test git metadata
+        path = os.path.join(self.test_data_repo_dir, 'test.xlsx')
         data_repo_metadata = DataRepoMetadata()
         utils.set_git_repo_metadata_from_path(data_repo_metadata,
-            git.RepoMetadataCollectionType.DATA_REPO, path=path)
+            RepoMetadataCollectionType.DATA_REPO, path=path)
         self.assertEqual(data_repo_metadata.url, 'https://github.com/KarrLab/test_data_repo.git')
         self.assertEqual(data_repo_metadata.branch, 'master')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
         self.assertEqual(len(data_repo_metadata.revision), 40)
 
-        # clean up
-        shutil.rmtree(tmp_dirname)
-        github_test_data_repo.delete_test_repo()
-
     def test_set_git_repo_metadata_from_path_error(self):
-        tempdir = tempfile.mkdtemp()
 
         data_repo_metadata = DataRepoMetadata()
         self.assertEqual(data_repo_metadata.url, '')
 
         with self.assertRaisesRegex(ValueError, 'is not in a Git repository'):
             utils.set_git_repo_metadata_from_path(data_repo_metadata,
-            git.RepoMetadataCollectionType.SCHEMA_REPO, path=tempdir)
+            RepoMetadataCollectionType.SCHEMA_REPO, path=self.tmp_dirname)
         self.assertEqual(data_repo_metadata.url, '')
-
-        shutil.rmtree(tempdir)
 
     def test_read_metadata_from_file(self):
         # use fixtures to keep this code simple
@@ -308,3 +325,22 @@ class TestUtils(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Multiple instances of .+ found in"):
             pathname = os.path.join(metadata_dir, 'extra-schema-metadata.xlsx')
             utils.read_metadata_from_file(pathname)
+
+    def test_add_metadata_to_file(self):
+        class Model1(core.Model):
+            id = core.SlugAttribute()
+
+        metadata_dir = os.path.join(os.path.dirname(__file__), 'fixtures', 'metadata')
+        shutil.copy(os.path.join(metadata_dir, 'no-metadata.xlsx'), self.test_data_repo_dir)
+        pathname = os.path.join(self.test_data_repo_dir, 'no-metadata.xlsx')
+        # self.test_data_repo.index.add([pathname])
+
+        metadata_path = utils.add_metadata_to_file(pathname, [Model1], schema_package='test_repo')
+        data_file_metadata = utils.read_metadata_from_file(metadata_path)
+        self.assertTrue(isinstance(data_file_metadata.data_repo_metadata, DataRepoMetadata))
+        self.assertTrue(isinstance(data_file_metadata.schema_repo_metadata, SchemaRepoMetadata))
+        for metadata in data_file_metadata:
+            self.assertTrue(metadata.url.startswith('https://github.com/'))
+            self.assertEqual(metadata.branch, 'master')
+            self.assertTrue(isinstance(metadata.revision, str))
+            self.assertEqual(len(metadata.revision), 40)
