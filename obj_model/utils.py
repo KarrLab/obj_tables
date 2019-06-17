@@ -197,7 +197,7 @@ def set_git_repo_metadata_from_path(model, path='.', url_attr='url', branch_attr
         commit_hash_attr (:obj:`str`, optional): attribute in `model` for the Git commit hash;
             default='revision'
     """
-    md = git.get_repo_metadata(dirname=path)
+    md = git.get_repo_metadata(path=path)
     setattr(model, url_attr, md.url)
     setattr(model, branch_attr, md.branch)
     setattr(model, commit_hash_attr, md.revision)
