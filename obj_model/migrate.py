@@ -34,6 +34,7 @@ import warnings
 import yaml
 
 import obj_model
+from obj_model import utils
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
     RegexAttribute, UrlAttribute, DateTimeAttribute)
 from obj_model.units import UnitAttribute
@@ -43,7 +44,7 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from wc_utils.util.files import normalize_filename, remove_silently
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-# todo: next: mark more pragma no cover
+# todo: next: clean up these todos!
 # TODOS
 # migration integrated into wc_lang & wc_kb
 #
@@ -475,6 +476,15 @@ class SchemaModule(object):
         # ensure that a schema contains some obj_model.Models
         if not models:
             raise MigratorError("No subclasses of obj_model.Model found in '{}'".format(self.abs_module_path))
+        ### temporary fix UNTIL test repo are fixed: remove GitMetadata models ###
+        # todo
+        to_delete = []
+        for model in models.keys():
+            if model.endswith('GitMetadata'):
+                to_delete.append(model)
+        for model in to_delete:
+            del models[model]
+        ### END temporary fix ###
         return models
 
     def _check_imported_models(self, module=None):
@@ -1089,6 +1099,7 @@ class Migrator(object):
 
         # write migrated models to disk
         obj_model_writer = obj_model.io.Writer.get_writer(existing_file)()
+        # todo: add data_repo_metadata=True
         obj_model_writer.run(migrated_file, migrated_models, models=model_order, validate=False)
         return migrated_file
 
@@ -1332,7 +1343,7 @@ class Migrator(object):
         for existing_model in existing_models:
             existing_class_name = existing_model.__class__.__name__
 
-            # do not migrate model instancess whose classes are not in the migrated schema
+            # do not migrate model instances whose classes are not in the migrated schema
             if existing_class_name in self.deleted_models:
                 continue
 
@@ -2751,9 +2762,6 @@ class AutomatedMigration(object):
         git_repos (:obj:`list` of :obj:`GitRepo`) all `GitRepo`s create by this `AutomatedMigration`
     """
 
-    # name of the git metadata configuration attribute in an obj_model schema
-    _GIT_METADATA = '_GIT_METADATA'
-
     MetadataModel = collections.namedtuple('MetadataModel', ['type', 'version_attr',])
 
     # name of the migrations directory
@@ -3037,45 +3045,6 @@ class AutomatedMigration(object):
         return self._MIGRATION_CONF_NAME_TEMPLATE.format(self.data_git_repo.repo_name(),
             self.schema_git_repo.repo_name(), SchemaChanges.get_date_timestamp())
 
-    # todo: next: replace with obj_model.utils utility to read metadata from data files
-    def get_metadata_model(self):
-        """ Get the `metadata_model` for the schema
-
-        The schema in `self.schema_git_repo` must specify a Model name and metadata attributes
-        in a `_GIT_METADATA` attribute. E.g., `migration_test_repo/migration_test_repo/core.py` contains:
-
-            `_GIT_METADATA = (GitMetadataModel, ('url', 'branch', 'revision'))`
-
-        Returns:
-            :obj:`str`: the `metadata_model` for the schema
-
-        Raises:
-            :obj:`MigratorError`: if the schema in `self.schema_git_repo` lacks a `_GIT_METADATA` attribute,
-                or the `GitMetadataModel` contains related attributes
-        """
-        if self.metadata_model:
-            return self.metadata_model
-
-        # get the schema in self.schema_git_repo and schema_file in the automated migration config file
-        schema_file = normalize_filename(self.data_config['schema_file'],
-            dir=self.schema_git_repo.migrations_dir())
-        schema_module = SchemaModule(schema_file, annotation=self.schema_git_repo.original_location)
-        module = schema_module.import_module_for_migration(required_attrs=[AutomatedMigration._GIT_METADATA])
-
-        # use the schema to find the obj_model.Model that stores git metadata
-        git_metadata = getattr(module, AutomatedMigration._GIT_METADATA)
-        metadata_model_type = git_metadata[0]
-        _, _, revision_attr = git_metadata[1]
-
-        # metadata_model_type cannot contain related attributes
-        if metadata_model_type.get_related_attrs():
-            raise MigratorError("GitMetadataModel '{}' contains related attributes".format(
-                metadata_model_type.__name__))
-
-        self.metadata_model = AutomatedMigration.MetadataModel(metadata_model_type, revision_attr)
-        return self.metadata_model
-
-    # todo: next: replace with obj_model.utils utility to read metadata from data files
     def get_data_file_git_commit_hash(self, data_file):
         """ Get the git commit hash of the schema repo that describes a data file
 
@@ -3086,23 +3055,13 @@ class AutomatedMigration(object):
             :obj:`str`: the hash
 
         Raises:
-            :obj:`MigratorError`: if `data_file` contains multiple `GitMetadataModel` instances
+            :obj:`MigratorError`: if `data_file` does not contain a schema repo metadata model
         """
-
-        metadata_model = self.get_metadata_model()
-
-        # use obj_model Reader to read the data file
-        models = obj_model.io.Reader().run(data_file, models=metadata_model.type,
-            ignore_missing_sheets=True, ignore_extra_sheets=True, ignore_sheet_order=True,
-            include_all_attributes=False, ignore_extra_attributes=True,
-            ignore_attribute_order=True, group_objects_by_model=True, validate=False)
-        # check that the file has exactly 1 instance of the metadata_model's type
-        if len(models[metadata_model.type]) != 1:
-            raise MigratorError("data file '{}' must contain exactly one instance of {}, the Model "
-                "containing the git metadata".format(data_file, metadata_model.type.__name__))
-        metadata_model_obj = models[metadata_model.type][0]
-        commit_hash = getattr(metadata_model_obj, metadata_model.version_attr)
-        return commit_hash
+        try:
+            metadata = utils.read_metadata_from_file(data_file)
+            return metadata.schema_repo_metadata.revision
+        except Exception as e:
+            raise MigratorError("Cannot get schema repo commit hash for '{}':\n{}".format(data_file, e))
 
     def generate_migration_spec(self, data_file, schema_changes):
         """ Generate a `MigrationSpec` from a sequence of schema changes
@@ -3242,11 +3201,6 @@ class AutomatedMigration(object):
         else:
             return all_migrated_files, tmp_dir
 
-    def check_schema_module(self, module):
-        if not hasattr(module, AutomatedMigration._GIT_METADATA):
-            raise MigratorError("schema '{}' does not have a {} attribute".format(schema_file,
-                AutomatedMigration._GIT_METADATA))
-
     def verify_schemas(self):
         """ Verify that each schema can be independently imported
 
@@ -3261,8 +3215,7 @@ class AutomatedMigration(object):
         for migration_spec in self.migration_specs:
             for schema_file in migration_spec.schema_files:
                 try:
-                    SchemaModule(schema_file).import_module_for_migration(
-                        required_attrs=[AutomatedMigration._GIT_METADATA])
+                    SchemaModule(schema_file).import_module_for_migration()
                 except MigratorError as e:
                     errors.append("cannot import: '{}'\n\t{}".format(schema_file, e))
         return errors
@@ -3319,7 +3272,6 @@ class AutomatedMigration(object):
         Args:
             data_repo_location (:obj:`str`): directory or URL of the *data* repo
         """
-        pass
         '''
         todo:
             ensure that all of these are OK:
@@ -3341,7 +3293,7 @@ class AutomatedMigration(object):
         return '\n'.join(rv)
 
 
-class Utils(object):
+class Utils(object):    # pragma: no cover
     """ Utilities for migration """
 
     @staticmethod
@@ -3560,7 +3512,7 @@ class SchemaRepoMigrate(Migrate):
         handlers = [CementControllers.SchemaChangesTemplateController]
 
 
-def generic_main(app_type, test_argv):
+def generic_main(app_type, test_argv):   # pragma: no cover
     """ Generic main
 
     Args:
@@ -3591,7 +3543,7 @@ def data_repo_main(test_argv=None):
 
 
 def schema_repo_main(test_argv=None):
-    """ main for use by schama repositories """
+    """ main for use by schema repositories """
     generic_main(SchemaRepoMigrate, test_argv=test_argv)
 
 
