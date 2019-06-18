@@ -16,8 +16,8 @@ from six import integer_types, string_types
 from urllib.parse import urlparse
 from warnings import warn
 import argparse
-import collections
 import cement
+import collections
 import copy
 import datetime
 import git
@@ -44,68 +44,28 @@ from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from wc_utils.util.files import normalize_filename, remove_silently
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 
-# todo: next: clean up these todos!
 # TODOS
-# migration integrated into wc_lang & wc_kb
+# migration integrated into wc_lang
 #
 # refactor generate_wc_lang_migrator into method in wc_lang called by obj_model
 #   define abstract migrator here, and let schema optionally subclass it
-# commit schema changes specs
-#   one for each commit that changes schema
-#   contains commit hash, renamed_models, renamed_attributes, transformations
-#   stored in repo 'migrations' directory
-#   commit migration spec YAML format, with commit hash in filename
-#   migration spec reader: read all migration specs in the 'migrations' directory
-#   use in MigrationSpecs
-#   automatically prefix sortable date timestamp of commit to migration file
 # wc_lang / wc_kb commands to migrate files
 #   CLI: migrate file / directory [more]
 #   local migration calls obj_model migration
 #   by default, migrate to current version, make backups of models & migrate in place
-# schema hash in each model file
-#   initially, as is in wc_lang models
-#   eventually, ideally in a metadata Model
-# testing
-#   add a few wc_lang versions
 # publicize work, in part to get feedback
 # check documentation
 
-# todo: move or copy schema_changes and automated_migration_config_file creation from migration_test_repo/__main__.py
-# to here so they can be used by programmers doing migration
-
+# todo: wc_lang migration without a config file
+# todo next: test OneToManyAttribute
+# todo: would be more intuitive to express renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
 # JK ideas:
 # todo: support a set of schema modifications as a single schema change (perhaps a range of commits)
 # todo: how original is obj_model.migration? literature search, ask David Nickerson, Pedro Mendez
 # check SBML, Kappa, PySB, BioNetGet, SBML, COPASI, JWS-online, Simmune at NIH
-'''
-documentation notes:
-a schema must be imported from a self-contained module or a
-complete package, as otherwise import statements within the package may use other, inconsistent
-versions of its submodules from other locations.
-
-Migration is not composable. It should be run independently of other obj_model code.
-'''
-# todo now
-'''
-migrate xlsx files in wc_sim to new wc_lang:
-1: identify all wc model files in wc_sim, the wc_lang commits that they use, & get those wc_lang versions
-2. get the present wc_lang version
-3. create a config file for the wc model files
-4: migrate them
-'''
-
-# todo: wc_lang migration without a config file
-# todo: retain or control column and row order
-# todo: deleted models: handle automatically (assume model that's not present in migrated schema or renamed is deleted), or add to config attributes
-# todo next: test OneToManyAttribute
-# todo next: documentation
-# todo: would be more intuitive to express renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
-# todo: add logging to AutomatedMigration
-# todo: in AutomatedMigration, migrate multiple files per migration spec
-# todo: in AutomatedMigration, implement test_migration
-# todo: finish building VirtualEnvUtil & supporting different dependencies for different schema versions
-# todo: automatically retry git requests, perhaps using the requests package as JK suggests
-# todo: extend git_hash_map to enable mapping from hash prefix to hash
+# documentation note:
+#   Migration is not composable. It should be run independently of other obj_model code.
+# todo: automatically retry git requests, perhaps using the requests package
 
 class MigratorError(Exception):
     """ Exception raised for errors in obj_model.migrate
