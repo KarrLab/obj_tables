@@ -84,6 +84,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
         """
         pass  # pragma: no cover
 
+
     def make_metadata_objects(self, data_repo_metadata, path, schema_package):
         """ Make models that store Git repository metadata
 
@@ -101,6 +102,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
         Returns:
             :obj:`list` of :obj:`Model`: metadata objects(s) created
         """
+        # todo: make the ValueErrors available for debugging
         metadata_objects = []
         if data_repo_metadata:
             # create DataRepoMetadata instance
@@ -600,8 +602,8 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
-            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
-            group_objects_by_model=False, validate=True):
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
+            ignore_attribute_order=False, group_objects_by_model=False, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:
@@ -803,6 +805,11 @@ class WorkbookReader(ReaderBase):
         sheet_names = reader.get_sheet_names()
         if TOC_NAME in sheet_names:
             sheet_names.remove(TOC_NAME)
+        # drop metadata models unless they're requested
+        for metadata_model in (utils.DataRepoMetadata, utils.SchemaRepoMetadata):
+            if metadata_model not in models:
+                if metadata_model.Meta.verbose_name in sheet_names:
+                    sheet_names.remove(metadata_model.Meta.verbose_name)
 
         ambiguous_sheet_names = self.get_ambiguous_sheet_names(sheet_names, models)
         if ambiguous_sheet_names:
@@ -1385,7 +1392,8 @@ class Reader(ReaderBase):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`dict`: model objects grouped by `Model` class
+            :obj:`obj`: if `group_objects_by_model` is set returns :obj:`dict`: model objects grouped
+                by `Model` class, otherwise returns :obj:`list`: of model objects
         """
         Reader = self.get_reader(path)
         return Reader().run(path, models=models,

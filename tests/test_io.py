@@ -986,6 +986,14 @@ class TestMetadataModels(unittest.TestCase):
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 
+    def test_drop_metadata_models(self):
+        file_with_metadata = os.path.join(os.path.dirname(__file__), 'fixtures', 'metadata',
+            'both-metadata.xlsx')
+        objs_read = obj_model.io.Reader().run(file_with_metadata, utils.DataRepoMetadata,
+            ignore_extra_sheets=True)
+        self.assertEqual(len(objs_read), 1)
+        self.assertTrue(isinstance(objs_read[0], utils.DataRepoMetadata))
+
     def test_json_writer_make_metadata_objects(self):
 
         # write data repo metadata in obj_model file
