@@ -3394,7 +3394,7 @@ class CementControllers(object):
 
 
     class MigrateController(Controller):
-        """ Migrate data files configured in migration config files
+        """ Perform a migration configured in a migration config file
 
         This controller is used by data repos.
         """
