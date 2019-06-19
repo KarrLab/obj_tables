@@ -1512,8 +1512,8 @@ class MigrationSpec(object):
             :obj:`dict` of :obj:`MigrationSpec`: migration specifications
 
         Raises:
-            :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration specifications in
-                `migrations_config_file` are not valid
+            :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration
+                specifications in `migrations_config_file` are not valid
         """
         migration_specs = cls.get_migrations_config(migrations_config_file)
 
@@ -1554,11 +1554,11 @@ class MigrationSpec(object):
 
         # parse the migrations config
         migration_specs = {}
-        for migration_name, migration_spec in migrations_config.items():
-            migration_spec_obj = MigrationSpec(migration_name, migrations_config_file=migrations_config_file)
-            for param, value in migration_spec.items():
-                setattr(migration_spec_obj, param, value)
-            migration_specs[migration_name] = migration_spec_obj
+        for migration_name, migration_desc in migrations_config.items():
+            migration_spec = MigrationSpec(migration_name, migrations_config_file=migrations_config_file)
+            for param, value in migration_desc.items():
+                setattr(migration_spec, param, value)
+            migration_specs[migration_name] = migration_spec
 
         return migration_specs
 
@@ -1812,7 +1812,7 @@ class MigrationController(object):
         """ Perform the migrations specified in a config file
 
         Args:
-            migrations_config_file (:obj:`str`): migrations specified in a YAML file
+            migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
 
         Returns:
             :obj:`list` of :obj:`tuple`: list of (`MigrationSpec`, migrated filenames) pairs
@@ -2964,12 +2964,6 @@ class AutomatedMigration(object):
     def validate(self):
         """ Validate files to migrate, and load all schema changes files
 
-        Args:
-            automated_migration_config_file (:obj:`str`): path to the automated migration config file
-
-        Returns:
-            :obj:`dict`: the data in the automated migration config file
-
         Raises:
             :obj:`MigratorError`: if any files to migrate do not exist,
                 or all schema changes files cannot be loaded
@@ -3321,13 +3315,15 @@ class BaseController(cement.Controller):
         self._parser.print_help()
 
 
-# todo: make a controller to test all migrations configured in migration config files
+# todo: add a controller that tests all migrations configured in migration config files
+# todo: cli later: support repos that are both schema repos and data repos
 class CementControllers(object):
-    """ Cement Controllers for the CLI in repos migrating data files whose data models are defined using obj_model
+    """ Cement Controllers for CLIs in repos involved with migrating files whose data models are defined using `obj_model`
 
     Because these controllers are used by multiple schema and data repos, they're defined here and
-    imported into `__main__.py` modules in schema repos that define data schemas and/or data repos
-    that contain data files to migrate.
+    imported into `__main__.py` modules in schema repos that define data schemas and/or into `__main__.py`
+    modules in data repos that contain data files to migrate. `wc_lang` is an example schema repo and
+    `wc_sim` is a data repo that contains data files whose data model is defined in `wc_lang`.
     """
 
     class SchemaChangesTemplateController(Controller):
@@ -3345,14 +3341,18 @@ class CementControllers(object):
             help='Create a template schema changes file',
             arguments = [
                 (['--commit'],
-                    {'type': str, 'help': 'hash of the last commit containing the changes; default is most recent commit'}),
+                    {'type': str, 'help':
+                        # todo: cli: needs more explanation; would be best in the documentation
+                        # todo: cli: nice to accept just commit prefix
+                        # todo: cli: would like to say "... a <schema repo> commit containing the changes ..."
+                        "hash of a commit containing the changes; default is most recent commit"}),
             ]
         )
         def make_changes_template(self):
-            """ Make a template schema changes file in the schema repo, and git push it to remote
+            """ Make a template schema changes file in the schema repo
 
             Must be run with the current directory in a schema repo.
-            Output the URL of the created file to `stdout`, or errors to `stderr`.
+            Outputs the URL of the created file or error(s) produced.
             """
             args = self.app.pargs
             schema_changes_template_file = SchemaChanges.make_template_command(os.getcwd(),
@@ -3360,11 +3360,11 @@ class CementControllers(object):
             # print directions to complete creating, commit & push the schema changes template file
             print("Created and added template schema changes file: '{}'.".format(schema_changes_template_file))
             print("Describe the schema changes in the file's attributes (renamed_attributes, "
-                "renamed_models, and transformations_file), and commit and push it with git.")
+                "renamed_models, and transformations_file). Then commit and push it with git.")
 
 
     class AutomatedMigrationConfigController(Controller):
-        """ Create a migration config file
+        """ Create a migration configuration file
 
         This controller is used by data repos.
         """
@@ -3375,7 +3375,7 @@ class CementControllers(object):
             stacked_type = 'embedded'
 
         @ex(
-            help='Create a migration config file',
+            help='Create a migration configuration file',
             arguments = [
                 (['schema_url'], {'type': str, 'help': 'URL of the schema in its git repository'}),
                 (['file_to_migrate'],
@@ -3400,18 +3400,26 @@ class CementControllers(object):
         """
 
         class Meta:
-            label = 'migrate_configured_data_files'
+            label = 'do_configured_migration'
             stacked_on = 'base'
             stacked_type = 'embedded'
 
         @ex(
-            help='Migrate all data files configured in migration config files',
+            help='Migrate data file(s) as configured in a migration configuration file',
             arguments = [
-                (['schema'], {'type': str, 'help': 'URL of the schema in its git repository'})
+                (['migration_config_file'],
+                    {'type': str, 'help': 'name of the migration configuration file to use'})
             ]
         )
-        def migrate_configured_data_files(self):
-            pass
+        def do_configured_migration(self):
+            args = self.app.pargs
+            migration_config_basename = Path(args.migration_config_file).name
+            automated_migration = AutomatedMigration(
+                **dict(data_repo_location='.', data_config_file_basename=migration_config_basename))
+            migrated_files, _ = automated_migration.automated_migrate()
+
+            for migrated_file in migrated_files:
+                print("'{}' migrated in place".format(migrated_file))
 
 
     class MigrateFileController(Controller):

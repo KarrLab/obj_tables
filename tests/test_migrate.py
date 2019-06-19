@@ -13,7 +13,7 @@
 
 SPEED_UP_TESTING = False
 # todo: next: get push working on CircleCI
-DONT_PUSH_ON_CIRCLE = True
+DONT_PUSH_ON_CIRCLE = False
 
 
 from argparse import Namespace
@@ -2885,6 +2885,7 @@ class TestCementControllers(AutoMigrationFixtures):
                 with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
                     self.assertIn('Created and added template schema changes file: ', captured.get_text())
+                    self.assertIn('Then commit and push it with git.', captured.get_text())
                     match = re.search("'.+'\.", captured.get_text())
                     if not match:
                         self.fail("couldn't find schema changes filename in captured output")
@@ -2893,10 +2894,9 @@ class TestCementControllers(AutoMigrationFixtures):
             NO_SUCH_COMMIT = 'NO_SUCH_COMMIT'
             argv = ['make-changes-template', '--commit', NO_SUCH_COMMIT]
             with SchemaRepoMigrate(argv=argv) as app:
-                with capturer.CaptureOutput() as captured:
-                    with self.assertRaisesRegex(MigratorError,
-                        "commit '{}' not found".format(NO_SUCH_COMMIT)):
-                        app.run()
+                with self.assertRaisesRegex(MigratorError,
+                    "commit '{}' not found".format(NO_SUCH_COMMIT)):
+                    app.run()
 
         except Exception as e:
             raise Exception(e)
@@ -2921,11 +2921,18 @@ class TestCementControllers(AutoMigrationFixtures):
             os.chdir(self.nearly_empty_git_repo.repo_dir)
             argv = ['make-migration-config-file',
                 'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
-                str(PurePath(data_file_path).relative_to(self.nearly_empty_git_repo.repo_dir))]
+                str(Path(data_file_path).relative_to(self.nearly_empty_git_repo.repo_dir))]
             with DataRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
                     self.assertIn('Automated migration config file created: ', captured.get_text())
+
+            argv = ['make-migration-config-file',
+                'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+                'no_such_file']
+            with DataRepoMigrate(argv=argv) as app:
+                with self.assertRaisesRegex(MigratorError, "cannot find data file: 'no_such_file'"):
+                    app.run()
 
         except Exception as e:
             raise Exception(e)
@@ -2933,8 +2940,32 @@ class TestCementControllers(AutoMigrationFixtures):
             # restore working directory
             os.chdir(cwd)
 
-    def test_migrate_configured_data_files(self):
-        pass
+    def test_do_configured_migration(self):
+        # use a clone of https://github.com/KarrLab/migration_test_repo and migrate
+        # automated_migration_config-migration_test_repo.yaml
+        try:
+            # working directory must be in self.nearly_empty_git_repo
+            # save cwd so it can be restored
+            cwd = os.getcwd()
+            os.chdir(self.git_migration_test_repo.repo_dir)
+            argv = ['do-configured-migration',
+                'migrations/automated_migration_config-migration_test_repo.yaml']
+            with DataRepoMigrate(argv=argv) as app:
+                with capturer.CaptureOutput(relay=True) as captured:
+                    app.run()
+                    self.assertIn('migrated in place', captured.get_text())
+
+            argv = ['do-configured-migration', 'no_such_file']
+            with DataRepoMigrate(argv=argv) as app:
+                with self.assertRaisesRegex(MigratorError,
+                    "could not read automated migration config file: '.+'"):
+                    app.run()
+
+        except Exception as e:
+            raise Exception(e)
+        finally:
+            # restore working directory
+            os.chdir(cwd)
 
     def test_migrate_data(self):
         try:
