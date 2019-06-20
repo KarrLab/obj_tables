@@ -2655,8 +2655,10 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             data_config_file_basename='automated_migration_config-test_repo_bad_git_metadata_model.yaml')
         test_repo_fixtures = automated_migration_w_bad_data_file_1.data_git_repo.fixtures_dir()
         test_file = os.path.join(test_repo_fixtures, 'bad_data_file.xlsx')
-        with self.assertRaisesRegex(MigratorError, "Cannot get schema repo commit hash for"):
+        with self.assertRaisesRegex(MigratorError, "No schema repo commit hash in"):
             automated_migration_w_bad_data_file_1.get_data_file_git_commit_hash(test_file)
+        with self.assertRaisesRegex(MigratorError, "Cannot get schema repo commit hash for"):
+            automated_migration_w_bad_data_file_1.get_data_file_git_commit_hash('no such file.xlsx')
 
     def test_generate_migration_spec(self):
         migration_spec = self.clean_automated_migration.generate_migration_spec(

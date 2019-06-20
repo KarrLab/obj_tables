@@ -3013,9 +3013,12 @@ class AutomatedMigration(object):
         """
         try:
             metadata = utils.read_metadata_from_file(data_file)
-            return metadata.schema_repo_metadata.revision
         except Exception as e:
-            raise MigratorError("Cannot get schema repo commit hash for '{}':\n{}".format(data_file, e))
+             raise MigratorError("Cannot get schema repo commit hash for '{}':\n{}".format(data_file, e))
+        if metadata.schema_repo_metadata:
+            return metadata.schema_repo_metadata.revision
+        else:
+            raise MigratorError("No schema repo commit hash in '{}'".format(data_file))
 
     def generate_migration_spec(self, data_file, schema_changes):
         """ Generate a `MigrationSpec` from a sequence of schema changes
