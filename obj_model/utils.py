@@ -254,6 +254,9 @@ def read_metadata_from_file(pathname):
     return DataFileMetadata(**data_file_metadata_dict)
 
 
+# todo: make this more convenient by eliminating models. either a) change schema_package to the path
+# to the schema and use the modules in it, or b) use wc_utils.workbook.io to copy all data in
+# the existing file and using WriterBase.make_metadata_objects() to obtain the metadata
 def add_metadata_to_file(pathname, models, schema_package=None):
     """ Add Git repository metadata to an existing `obj_model` data file
 
@@ -279,6 +282,7 @@ def add_metadata_to_file(pathname, models, schema_package=None):
     obj_model.io.Writer().run(str(path), objects, models=models, data_repo_metadata=True,
         schema_package=schema_package)
     return path
+
 
 class DataRepoMetadata(Model):
     """ Model to store Git version information about a data file's repo """
