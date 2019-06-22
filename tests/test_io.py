@@ -1679,15 +1679,18 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        result = WorkbookReader().run(filename, [Model])
+        self.assertEqual(result, {Model: []})
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
+        reader = get_reader('.xlsx')(filename)
+        reader.initialize_workbook()
         with self.assertRaisesRegex(ValueError, r'must have 1 header row\(s\)'):
-            WorkbookReader().run(filename, [Model])
+            WorkbookReader().read_sheet(reader, 'Models', num_column_heading_rows=1)
 
     def test_no_header_cols(self):
         class Model(core.Model):

@@ -1145,7 +1145,7 @@ class WorkbookReader(ReaderBase):
         return (sub_attrs, data, errors, objects)
 
     def read_sheet(self, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0):
-        """ Read file into a two-dimensional list
+        """ Read worksheet or file into a two-dimensional list
 
         Args:
             reader (:obj:`wc_utils.workbook.io.Reader`): reader
