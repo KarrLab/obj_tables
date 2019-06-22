@@ -13,7 +13,7 @@
 
 SPEED_UP_TESTING = False
 # todo: next: get push working on CircleCI
-DONT_PUSH_ON_CIRCLE = False
+DONT_PUSH_ON_CIRCLE = True
 
 
 from argparse import Namespace
@@ -2094,6 +2094,17 @@ class TestGitRepo(AutoMigrationFixtures):
         repo_child_dir = os.path.join(self.git_migration_test_repo.repo_dir, 'migration_test_repo')
         git_repo_from_child = GitRepo(repo_location=repo_child_dir, search_parent_directories=True)
         self.assertEqual(git_repo_from_root.repo_dir, git_repo_from_child.repo_dir)
+
+        # test branch
+        test_branch = RemoteBranch.unique_branch_name('branch_for_git_repo_init')
+        # make new branch
+        with RemoteBranch(self.test_repo.repo_name(), test_branch):
+
+            # clone the branch
+            git_repo = GitRepo(self.test_repo_url, branch=test_branch)
+            self.assertEqual(git_repo.branch, test_branch)
+            self.assertEqual(git_repo.repo.active_branch.name, test_branch)
+
         with self.assertRaisesRegex(MigratorError, "instantiating a git.Repo from directory '.+' failed"):
             GitRepo(repo_location=repo_child_dir, search_parent_directories=False)
 
@@ -2177,6 +2188,9 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertTrue(TestGitRepo.are_dir_trees_equal(self.git_migration_test_repo.repo_dir,
             repo_copy.repo_dir, ignore=[]))
 
+        repo_copy = self.git_migration_test_repo.copy(tmp_dir=self.make_tmp_dir())
+        self.assertEqual(repo_copy.latest_hash(), self.git_migration_test_repo.latest_hash())
+
         # checkout an earlier version of the repo
         repo_copy.checkout_commit(self.migration_test_repo_known_hash)
         self.assertNotEqual(repo_copy.latest_hash(), self.git_migration_test_repo.latest_hash())
@@ -2184,6 +2198,9 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertEqual(repo_copy.latest_hash(), repo_copy_copy.latest_hash())
         self.assertNotEqual(repo_copy.migrations_dir(), repo_copy_copy.migrations_dir())
         self.assertTrue(TestGitRepo.are_dir_trees_equal(repo_copy.repo_dir, repo_copy_copy.repo_dir, ignore=[]))
+
+        with self.assertRaisesRegex(MigratorError, "is not a directory"):
+            repo_copy.copy(tmp_dir='not a directory')
 
         empty_git_repo = GitRepo()
         with self.assertRaisesRegex(MigratorError, "cannot copy an empty GitRepo"):
@@ -2477,33 +2494,19 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
     def test_make_template_config_file(self):
-        path = AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
-
-        # check the file at path
-        data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
-        for name, config_attr in AutomatedMigration._CONFIG_ATTRIBUTES.items():
-            if name == 'migrator':
-                self.assertEqual(data[name], MigrationSpec.DEFAULT_MIGRATOR)
-                continue
-            attr_type, _, _ = config_attr
-            if attr_type == 'list':
-                self.assertEqual(data[name], [])
-            elif attr_type == 'str':
-                self.assertEqual(data[name], '')
-
         kwargs = dict(files_to_migrate=['../tests/fixtures//file1.xlsx',
                                         '../tests/fixtures//file2.xlsx'],
             schema_repo_url='https://github.com//KarrLab/migration_test_repo',
+            branch='master',
             schema_file='../migration_test_repo/core.py',
             migrator='wc_lang'
         )
-        TEST_SUFFIX = 'test_suffix'
         path = AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo_2',
-            name_suffix=TEST_SUFFIX, **kwargs)
-        self.assertIn(TEST_SUFFIX, path)
+            **kwargs)
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
         self.assertEqual(kwargs, data)
 
+        AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
             AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
@@ -2516,18 +2519,17 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             test_repo_copy.repo_dir,
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx',
-                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')],
-                name_suffix='one_use_migration')
+                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
         self.assertTrue(os.path.isfile(config_file_path))
-        self.assertIn('one_use_migration', config_file_path)
         remove_silently(config_file_path)
 
         config_file_path = AutomatedMigration.make_template_config_file_command(
             test_repo_copy.repo_dir,
-            'https://github.com/KarrLab/wc_lang/blob/master/migration_test_repo/core.py',
+            'https://github.com/KarrLab/wc_lang/blob/test_branch/migration_test_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx'])
         data = yaml.load(open(config_file_path, 'r'), Loader=yaml.FullLoader)
         self.assertEqual(data['migrator'], 'wc_lang')
+        self.assertEqual(data['branch'], 'test_branch')
 
         with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
             AutomatedMigration.make_template_config_file_command('', 'github.com/KarrLab/core.py', [])
@@ -2555,7 +2557,8 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             files_to_migrate=['../tests/fixtures/data_file_1.xlsx'],
             migrator='standard_migrator',
             schema_file='../migration_test_repo/core.py',
-            schema_repo_url='https://github.com/KarrLab/migration_test_repo'
+            schema_repo_url='https://github.com/KarrLab/migration_test_repo',
+            branch='master'
         )
         self.assertEqual(automated_migration_config, expected_automated_migration_config)
 
@@ -2571,20 +2574,29 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             r"could not parse YAML automated migration config file: '\S+'"):
             AutomatedMigration.load_config_file(bad_yaml)
 
+        f = open(bad_yaml, "w")
+        f.write("- one\n")
+        f.write("- two\n")
+        f.close()
+        with self.assertRaisesRegex(MigratorError, 'yaml does not contain a dictionary'):
+            AutomatedMigration.load_config_file(bad_yaml)
+
         # make a config file that's missing an attribute
         saved_config_attributes = AutomatedMigration._CONFIG_ATTRIBUTES.copy()
         del AutomatedMigration._CONFIG_ATTRIBUTES['files_to_migrate']
         config_file = AutomatedMigration.make_template_config_file(self.test_repo, 'test_schema_repo')
-        # restore the attribute
+        # restore the static attributes dict
         AutomatedMigration._CONFIG_ATTRIBUTES = saved_config_attributes
-        with self.assertRaisesRegex(MigratorError, "automated migration config file must have a dict "
-            "with the attributes in AutomatedMigration._CONFIG_ATTRIBUTES: .+"):
+        with self.assertRaisesRegex(MigratorError, "invalid automated migration config file:"):
+            AutomatedMigration.load_config_file(config_file)
+        with self.assertRaisesRegex(MigratorError,
+            "missing AutomatedMigration._CONFIG_ATTRIBUTES attribute: 'files_to_migrate'"):
             AutomatedMigration.load_config_file(config_file)
         remove_silently(config_file)
 
         config_file = AutomatedMigration.make_template_config_file(self.test_repo, 'test_schema_repo')
         with self.assertRaisesRegex(MigratorError,
-            "all attributes in an automated migration config file must be initialized, but they are:.+"):
+            "uninitialized AutomatedMigration._CONFIG_ATTRIBUTES attribute: "):
             AutomatedMigration.load_config_file(config_file)
         remove_silently(config_file)
 
@@ -2595,8 +2607,14 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertEqual(automated_migration.data_repo_location, self.migration_test_repo_url)
         self.assertEqual(automated_migration.data_config_file_basename, config_basename)
         self.assertEqual(automated_migration.data_git_repo.repo_name(), 'migration_test_repo')
-        self.assertIsInstance(automated_migration.data_config, dict)
+        self.assertIsInstance(automated_migration.migration_config_data, dict)
         self.assertEqual(automated_migration.schema_git_repo.repo_name(), 'migration_test_repo')
+
+        # test branch that isn't 'master'
+        automated_migration_2 = AutomatedMigration(
+            **dict(data_repo_location=self.test_repo_url,
+                data_config_file_basename='automated_migration_config-test_repo-test_branch.yaml'))
+        self.assertEqual(automated_migration_2.schema_git_repo.repo.active_branch.name, 'test_branch')
 
         with self.assertRaisesRegex(MigratorError, "initialization of AutomatedMigration must provide "
             r"AutomatedMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
@@ -2614,8 +2632,8 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
     def test_validate(self):
         expected_files_to_migrate = [self.migration_test_repo_data_file_1]
-        self.assertEqual(expected_files_to_migrate, self.clean_automated_migration.data_config['files_to_migrate'])
-        self.assertEqual(self.clean_automated_migration.data_config['schema_repo_url'],
+        self.assertEqual(expected_files_to_migrate, self.clean_automated_migration.migration_config_data['files_to_migrate'])
+        self.assertEqual(self.clean_automated_migration.migration_config_data['schema_repo_url'],
             'https://github.com/KarrLab/migration_test_repo')
         loaded_schema_changes = self.clean_automated_migration.loaded_schema_changes
         self.assertEqual(len(loaded_schema_changes), 2)
@@ -2694,7 +2712,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertEqual(None, self.clean_automated_migration.prepare())
         self.assertEqual(
             [ms.existing_files[0] for ms in self.clean_automated_migration.migration_specs],
-            self.clean_automated_migration.data_config['files_to_migrate'])
+            self.clean_automated_migration.migration_config_data['files_to_migrate'])
 
     def test_verify_schemas(self):
         errors = self.clean_automated_migration.verify_schemas()
@@ -2703,7 +2721,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
     def round_trip_automated_migrate(self, automated_migration):
         # test a round-trip migration
         # since migrates in-place, save existing file for comparison
-        existing_file = automated_migration.data_config['files_to_migrate'][0]
+        existing_file = automated_migration.migration_config_data['files_to_migrate'][0]
         existing_file_copy = copy_file_to_tmp(self, existing_file)
         migrated_files, new_temp_dir = automated_migration.automated_migrate()
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
@@ -2739,7 +2757,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             **dict(data_repo_location=test_repo_copy.repo_dir,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
         automated_migration_separate_data_n_schema_repos.prepare()
-        existing_file = automated_migration_separate_data_n_schema_repos.data_config['files_to_migrate'][0]
+        existing_file = automated_migration_separate_data_n_schema_repos.migration_config_data['files_to_migrate'][0]
         basename = os.path.basename(existing_file)
         existing_file_copy = os.path.join(mkdtemp(dir=self.tmp_dir), basename)
         shutil.copy(existing_file, existing_file_copy)
@@ -2953,7 +2971,7 @@ class TestCementControllers(AutoMigrationFixtures):
             argv = ['do-configured-migration',
                 'migrations/automated_migration_config-migration_test_repo.yaml']
             with DataRepoMigrate(argv=argv) as app:
-                with capturer.CaptureOutput(relay=True) as captured:
+                with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
                     self.assertIn('migrated in place', captured.get_text())
 
