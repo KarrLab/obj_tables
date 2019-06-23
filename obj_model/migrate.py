@@ -33,16 +33,18 @@ import tempfile
 import warnings
 import yaml
 
-import obj_model
-from obj_model import utils
 from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
     RegexAttribute, UrlAttribute, DateTimeAttribute)
-from obj_model.units import UnitAttribute
-from obj_model.io import WorkbookReader, IoWarning
-import wc_utils
-from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
-from wc_utils.util.files import normalize_filename, remove_silently
+from obj_model import utils
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
+from obj_model.io import TOC_NAME
+from obj_model.io import WorkbookReader, IoWarning
+from obj_model.units import UnitAttribute
+from wc_utils.util.files import normalize_filename, remove_silently
+from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
+from wc_utils.workbook.io import read
+import obj_model
+import wc_utils
 
 # TODOS
 # migration integrated into wc_lang
@@ -3360,7 +3362,6 @@ class CementControllers(object):
                     {'type': str, 'help':
                         # todo: cli: needs more explanation; would be best in the documentation
                         # todo: cli: nice to accept just commit prefix
-                        # todo: cli: would like to say "... a <schema repo> commit containing the changes ..."
                         "hash of a commit containing the changes; default is most recent commit"}),
             ]
         )
@@ -3411,7 +3412,7 @@ class CementControllers(object):
 
 
     class MigrateController(Controller):
-        """ Perform a migration configured in a migration config file
+        """ Perform a migration configured by a migration config file
 
         This controller is used by data repos.
         """
@@ -3469,6 +3470,61 @@ class CementControllers(object):
                 print(migrated_file)
 
 
+    class CompareFilesController(Controller):
+        """ Compare a pair of data files
+
+        This controller is used by data repos.
+        """
+
+        class Meta:
+            label = 'compare_data_files'
+            stacked_on = 'base'
+            stacked_type = 'embedded'
+
+        @ex(
+            help='Compare the data content of two data files',
+            arguments = [
+                (['data_file_1'], {'type': str, 'help': 'first data file'}),
+                (['data_file_2'], {'type': str, 'help': 'second data file'}),
+                (['--differences'],
+                    dict(
+                        dest='differences', action='store_true',
+                            help="output any differences between the files"))
+            ]
+        )
+        def compare_data_files(self):
+            args = self.app.pargs
+            files_to_compare = []
+            errors = []
+            for data_file in [args.data_file_1, args.data_file_2]:
+                # get full paths
+                normalized_data_file = normalize_filename(data_file, dir=os.getcwd())
+                if not os.path.isfile(normalized_data_file):
+                    errors.append("cannot find data file: '{}'".format(data_file))
+                    continue
+                files_to_compare.append(normalized_data_file)
+            if errors:
+                raise MigratorError(';'.join(errors))
+
+            workbook_1 = read(files_to_compare[0])
+            workbook_2 = read(files_to_compare[1])
+
+            for wb in [workbook_1, workbook_2]:
+                if TOC_NAME in wb:
+                    wb.pop(TOC_NAME)
+
+                for metadata_sheet_name in ['Data repo metadata', 'Schema repo metadata']:
+                    if metadata_sheet_name in wb:
+                        wb.pop(metadata_sheet_name)
+
+            if workbook_1 == workbook_2:
+                print("'{}' and '{}' are the same".format(args.data_file_1, args.data_file_2))
+            else:
+                print("'{}' and '{}' differ".format(args.data_file_1, args.data_file_2))
+                if args.differences:
+                    print(workbook_1.difference(workbook_2))
+
+
 class Migrate(cement.App):
     """ Generic command line application """
 
@@ -3486,7 +3542,8 @@ class DataRepoMigrate(Migrate):
         handlers = [
             CementControllers.AutomatedMigrationConfigController,
             CementControllers.MigrateController,
-            CementControllers.MigrateFileController
+            CementControllers.MigrateFileController,
+            CementControllers.CompareFilesController,
         ]
 
 
