@@ -66,7 +66,7 @@ from obj_model.io import TOC_NAME
 from wc_utils.util.git import GitHubRepoForTests
 
 
-# todo: next: create fixture files with schema metadata
+
 def make_tmp_dirs_n_small_schemas_paths(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
     test_case.tmp_dir = mkdtemp()
@@ -1499,6 +1499,13 @@ class TestMigrationSpec(MigrationFixtures):
         ms.migrator = 'foo'
         error = ms.validate()[0]
         self.assertRegex(error, r"'migrator' must be an element of \{.+\}")
+
+    def test_normalize_filenames(self):
+        self.assertEqual(MigrationSpec._normalize_filenames([]), [])
+        self.assertEqual(MigrationSpec._normalize_filenames([self.existing_defs_path]), [self.existing_defs_path])
+        self.assertEqual(
+            MigrationSpec._normalize_filenames([os.path.basename(self.existing_defs_path)],
+                absolute_file=self.existing_defs_path), [self.existing_defs_path])
 
     def test_standardize(self):
         ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'])

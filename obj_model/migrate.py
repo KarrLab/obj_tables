@@ -61,6 +61,7 @@ import wc_utils
 # todo: wc_lang migration without a config file
 # todo next: test OneToManyAttribute
 # todo: would be more intuitive to express renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
+# todo: remove SchemaModule.annotation, which isn't used
 # JK ideas:
 # todo: support a set of schema modifications as a single schema change (perhaps a range of commits)
 # todo: how original is obj_model.migration? literature search, ask David Nickerson, Pedro Mendez
@@ -1769,8 +1770,6 @@ class MigrationController(object):
             for i in range(num_migrations):
                 # create Migrator for each pair of schemas
                 migrator_creator = migration_spec.get_migrator()
-                # todo: pass commit hash of schema files to migrator_creator & then to SchemaModule annotation
-                # in ms.git_hashes[i], ms.git_hashes[i+1]
                 migrator = migrator_creator(existing_defs_file=ms.schema_files[i],
                     migrated_defs_file=ms.schema_files[i+1], renamed_models=ms.seq_of_renamed_models[i],
                     renamed_attributes=ms.seq_of_renamed_attributes[i])
@@ -3136,7 +3135,7 @@ class AutomatedMigration(object):
 
         Args:
             tmp_dir (:obj:`str`, optional): if the data repo passed to `AutomatedMigration` was an URL,
-                then the migrated files will be returned in directory controlled by `tmp_dir`.
+                then the migrated files will be returned in a directory controlled by `tmp_dir`.
                 If `tmp_dir` is provided then it will contain the migrated files; if not, then
                 a temporary directory is created to hold them, and the caller is responsible for
                 deleting it.
@@ -3394,8 +3393,8 @@ class CementControllers(object):
         @ex(
             help='Create a migration configuration file',
             arguments = [
-                (['schema_url'], {'type': str, 'help':
-                    'URL of the schema in its git repository, including the branch'}),
+                (['schema_url'], {'type': str,
+                    'help': 'URL of the schema in its git repository, including the branch'}),
                 (['file_to_migrate'],
                     dict(action='store', type=str, nargs='+',
                     help='a file to migrate')),
@@ -3432,12 +3431,14 @@ class CementControllers(object):
         def do_configured_migration(self):
             args = self.app.pargs
             migration_config_basename = Path(args.migration_config_file).name
-            automated_migration = AutomatedMigration(
-                **dict(data_repo_location='.', data_config_file_basename=migration_config_basename))
-            migrated_files, _ = automated_migration.automated_migrate()
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=MigrateWarning)
+                automated_migration = AutomatedMigration(
+                    **dict(data_repo_location='.', data_config_file_basename=migration_config_basename))
+                migrated_files, _ = automated_migration.automated_migrate()
 
-            for migrated_file in migrated_files:
-                print("'{}' migrated in place".format(migrated_file))
+                for migrated_file in migrated_files:
+                    print("'{}' migrated in place".format(migrated_file))
 
 
     class MigrateFileController(Controller):
@@ -3454,7 +3455,8 @@ class CementControllers(object):
         @ex(
             help='Migrate specified data file(s)',
             arguments = [
-                (['schema_url'], {'type': str, 'help': 'URL of the schema in its GitHub repository'}),
+                (['schema_url'], {'type': str,
+                    'help': 'URL of the schema in its git repository, including the branch'}),
                 (['file_to_migrate'],
                     dict(action='store', type=str, nargs='+',
                     help='a file to migrate')),
@@ -3470,6 +3472,8 @@ class CementControllers(object):
                 print(migrated_file)
 
 
+    # todo: cleanup: use a semantic comparison of model instances
+    # until then, not useful, as reports changes in order and the presence of blanks
     class CompareFilesController(Controller):
         """ Compare a pair of data files
 
@@ -3543,7 +3547,8 @@ class DataRepoMigrate(Migrate):
             CementControllers.AutomatedMigrationConfigController,
             CementControllers.MigrateController,
             CementControllers.MigrateFileController,
-            CementControllers.CompareFilesController,
+            # hide CompareFilesController until it's useful
+            # CementControllers.CompareFilesController
         ]
 
 
