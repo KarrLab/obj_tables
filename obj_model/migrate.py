@@ -2577,21 +2577,6 @@ class GitRepo(object):
         except (git.exc.GitError, AttributeError) as e:
             raise MigratorError("commiting repo '{}' failed:\n{}".format(self.repo_name(), e))
 
-    def push(self):
-        """ Push the changes in this repo to remote
-
-        Raises:
-            :obj:`MigratorError`: if the push fails
-        """
-        try:
-            origin = self.repo.remotes.origin
-            rv = origin.push()
-            if not rv:
-                raise MigratorError("push of repo '{}' failed".format(self.repo_name()))
-        except (git.exc.GitError, AttributeError) as e:
-            raise MigratorError("push of repo '{}' failed:\n{}".format(self.repo_name(), e))
-        return rv
-
     def get_dependents(self, commit_or_hash):
         """ Get all commits that depend on a commit, including transitively
 
@@ -3490,7 +3475,7 @@ class CementControllers(object):
                             help="output any differences between the files"))
             ]
         )
-        def compare_data_files(self):
+        def compare_data_files(self):   # pragma: no cover
             args = self.app.pargs
             files_to_compare = []
             errors = []
