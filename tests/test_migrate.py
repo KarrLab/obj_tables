@@ -7,13 +7,11 @@
 """
 
 # todo: speedup migration and unittests; make smaller test data files
-# todo: ensure that all tmp files are being deleted
-# todo: cleanup use of temp dirs & files
-# todo: in TestAutomatedMigration, test multiple files in the automated_migration_config
+# todo: cleanup use of temp dirs & files; ensure that all tmp files are being deleted
 
-SPEED_UP_TESTING = False
+SPEED_UP_TESTING = True
 # todo: next: get push working on CircleCI
-DONT_PUSH_ON_CIRCLE = True
+DONT_PUSH_ON_CIRCLE = False
 
 
 from argparse import Namespace
@@ -64,7 +62,6 @@ from wc_utils.util.misc import internet_connected
 from obj_model.expression import Expression
 from obj_model.io import TOC_NAME
 from wc_utils.util.git import GitHubRepoForTests
-
 
 
 def make_tmp_dirs_n_small_schemas_paths(test_case):
@@ -248,7 +245,7 @@ def assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, 
     if TOC_NAME in migrated_workbook:
         migrated_workbook.pop(TOC_NAME)
 
-    ### temporary fix UNTIL workbook.difference() is fixed, remove metadata_sheet ###
+    ### temporary fix: workbook.difference() should optionally ignore metadata_sheets
     # todo
     for workbook in [existing_workbook, migrated_workbook]:
         for metadata_sheet_name in ['Data repo metadata', 'Schema repo metadata']:

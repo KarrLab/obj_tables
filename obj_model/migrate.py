@@ -47,25 +47,19 @@ import obj_model
 import wc_utils
 
 # TODOS
-# migration integrated into wc_lang
 #
 # refactor generate_wc_lang_migrator into method in wc_lang called by obj_model
 #   define abstract migrator here, and let schema optionally subclass it
-# wc_lang / wc_kb commands to migrate files
-#   CLI: migrate file / directory [more]
-#   local migration calls obj_model migration
-#   by default, migrate to current version, make backups of models & migrate in place
-# publicize work, in part to get feedback
 # check documentation
 
-# todo: wc_lang migration without a config file
-# todo next: test OneToManyAttribute
+# todo: test OneToManyAttribute
 # todo: would be more intuitive to express renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
 # todo: remove SchemaModule.annotation, which isn't used
+# todo: remove or formalize debugging in import_module_for_migration()
 # JK ideas:
-# todo: support a set of schema modifications as a single schema change (perhaps a range of commits)
 # todo: how original is obj_model.migration? literature search, ask David Nickerson, Pedro Mendez
 # check SBML, Kappa, PySB, BioNetGet, SBML, COPASI, JWS-online, Simmune at NIH
+# publicize work, in part to get feedback
 # documentation note:
 #   Migration is not composable. It should be run independently of other obj_model code.
 # todo: automatically retry git requests, perhaps using the requests package
@@ -2726,7 +2720,7 @@ class AutomatedMigration(object):
     MetadataModel = collections.namedtuple('MetadataModel', ['type', 'version_attr',])
 
     # name of the migrations directory
-    # todo: after upgrading to BBedit, rename to .migrations 
+    # todo: after upgrading to BBedit, rename to .migrations and change the repos
     _MIGRATIONS_DIRECTORY = 'migrations'
 
     # template for the name of an automated migration; the format placeholders are replaced with
@@ -3539,24 +3533,33 @@ class Migrate(cement.App):
         close_on_exit = True
 
 
+data_repo_migration_controllers = (
+    CementControllers.AutomatedMigrationConfigController,
+    CementControllers.MigrateController,
+    CementControllers.MigrateFileController
+    # hide CompareFilesController until it's useful
+    # todo: cleanup: use wc_lang's DifferenceController instead
+    # CementControllers.CompareFilesController
+)
+
+
 class DataRepoMigrate(Migrate):
     """ Migrate command line application for data repositories """
 
     class Meta(Migrate.Meta):
-        handlers = [
-            CementControllers.AutomatedMigrationConfigController,
-            CementControllers.MigrateController,
-            CementControllers.MigrateFileController,
-            # hide CompareFilesController until it's useful
-            # CementControllers.CompareFilesController
-        ]
+        handlers = data_repo_migration_controllers
+
+
+schema_repo_migration_controllers = (
+    CementControllers.SchemaChangesTemplateController,
+)
 
 
 class SchemaRepoMigrate(Migrate):
     """ Migrate command line application for schema repositories """
 
     class Meta(Migrate.Meta):
-        handlers = [CementControllers.SchemaChangesTemplateController]
+        handlers = schema_repo_migration_controllers
 
 
 def generic_main(app_type, test_argv):   # pragma: no cover
