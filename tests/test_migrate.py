@@ -9,9 +9,9 @@
 # todo: speedup migration and unittests; make smaller test data files
 # todo: cleanup use of temp dirs & files; ensure that all tmp files are being deleted
 
-SPEED_UP_TESTING = True
+SPEED_UP_TESTING = False
 # todo: next: get push working on CircleCI
-DONT_PUSH_ON_CIRCLE = False
+DONT_PUSH_ON_CIRCLE = True
 
 
 from argparse import Namespace
