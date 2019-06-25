@@ -9,7 +9,6 @@
 # todo: speedup migration and unittests; make smaller test data files
 # todo: cleanup use of temp dirs & files; ensure that all tmp files are being deleted
 
-SPEED_UP_TESTING = False
 
 
 from argparse import Namespace
@@ -348,7 +347,6 @@ class MigrationFixtures(unittest.TestCase):
             remove_silently(file)
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestSchemaModule(unittest.TestCase):
 
     def setUp(self):
@@ -701,7 +699,6 @@ class TestSchemaModule(unittest.TestCase):
         self.assertEqual(set(models), {'Test', 'DeletedModel', 'Property', 'Subtest', 'Reference'})
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestMigrator(MigrationFixtures):
 
     def setUp(self):
@@ -1361,7 +1358,6 @@ class TestMigrator(MigrationFixtures):
             self.assertNotRegex(str_value, '^' + attr + '$')
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestMigrationSpec(MigrationFixtures):
 
     def setUp(self):
@@ -1556,7 +1552,6 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertIn(str(migration_spec.schema_files), migration_spec_str)
 
 
-@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestMigrationController(MigrationFixtures):
 
     def setUp(self):
@@ -2421,7 +2416,6 @@ class TestGitRepo(AutoMigrationFixtures):
 
 
 @unittest.skipUnless(internet_connected(), "Internet not connected")
-@unittest.skipIf(SPEED_UP_TESTING, "skip to speedup testing")
 class TestAutomatedMigration(AutoMigrationFixtures):
 
     @classmethod
