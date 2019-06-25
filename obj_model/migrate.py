@@ -6,7 +6,7 @@
 :License: MIT
 """
 
-from cement import Controller, App, ex
+from cement import Controller, App
 from enum import Enum
 from modulefinder import ModuleFinder
 from networkx.algorithms.dag import topological_sort, ancestors
@@ -3329,12 +3329,11 @@ class CementControllers(object):
         """
 
         class Meta:
-            label = 'make_changes_template'
+            label = 'make-changes-template'
+            description = 'Create a template schema changes file'
+            help = 'Create a template schema changes file'
             stacked_on = 'base'
-            stacked_type = 'embedded'
-
-        @ex(
-            help='Create a template schema changes file',
+            stacked_type = 'nested'
             arguments = [
                 (['--commit'],
                     {'type': str, 'help':
@@ -3342,8 +3341,10 @@ class CementControllers(object):
                         # todo: cli: nice to accept just commit prefix
                         "hash of a commit containing the changes; default is most recent commit"}),
             ]
-        )
-        def make_changes_template(self):
+
+        @cement.ex(hide=True)
+        def _default(self):
+        # def make_changes_template(self):
             """ Make a template schema changes file in the schema repo
 
             Must be run with the current directory in a schema repo.
@@ -3369,7 +3370,7 @@ class CementControllers(object):
             stacked_on = 'base'
             stacked_type = 'embedded'
 
-        @ex(
+        @cement.ex(
             help='Create a migration configuration file',
             arguments = [
                 (['schema_url'], {'type': str,
@@ -3400,7 +3401,7 @@ class CementControllers(object):
             stacked_on = 'base'
             stacked_type = 'embedded'
 
-        @ex(
+        @cement.ex(
             help='Migrate data file(s) as configured in a migration configuration file',
             arguments = [
                 (['migration_config_file'],
@@ -3431,7 +3432,7 @@ class CementControllers(object):
             stacked_on = 'base'
             stacked_type = 'embedded'
 
-        @ex(
+        @cement.ex(
             help='Migrate specified data file(s)',
             arguments = [
                 (['schema_url'], {'type': str,
@@ -3464,7 +3465,7 @@ class CementControllers(object):
             stacked_on = 'base'
             stacked_type = 'embedded'
 
-        @ex(
+        @cement.ex(
             help='Compare the data content of two data files',
             arguments = [
                 (['data_file_1'], {'type': str, 'help': 'first data file'}),
@@ -3522,9 +3523,7 @@ data_repo_migration_controllers = (
     CementControllers.AutomatedMigrationConfigController,
     CementControllers.MigrateController,
     CementControllers.MigrateFileController
-    # hide CompareFilesController until it's useful
-    # todo: cleanup: use wc_lang's DifferenceController instead
-    # CementControllers.CompareFilesController
+    # use wc_lang's DifferenceController instead of CompareFilesController
 )
 
 
