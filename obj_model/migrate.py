@@ -236,7 +236,7 @@ class SchemaModule(object):
         for model in get_models():
             model.__name__ = SchemaModule._unmunged_model_name(model)
 
-    def import_module_for_migration(self, validate=True, required_attrs=None, debug=True,
+    def import_module_for_migration(self, validate=True, required_attrs=None, debug=False,
         mod_patterns=None, print_code=False):
         """ Import a schema from a Python module in a file, which may be in a package
 
@@ -308,6 +308,7 @@ class SchemaModule(object):
                     break
             print()
 
+        '''
         print('path:', self.get_path())
         i = 1
         for line in open(self.get_path(), 'r').readlines():
@@ -317,6 +318,7 @@ class SchemaModule(object):
                 if 'class ' + target in line:
                     print('\t', i, ':', line, end='')
                     break
+        '''
 
         if debug:
             print("\n== importing {} from '{}' ==".format(self.module_name, self.directory))
@@ -362,7 +364,7 @@ class SchemaModule(object):
                     not cls in {obj_model.Model, obj_model.abstract.AbstractModel}:
                     models_found.add(name)
             # print('names', names)
-            print('models_found', models_found)
+            # print('models_found', models_found)
 
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
             raise MigratorError("'{}' cannot be imported and exec'ed: {}: {}".format(
@@ -593,13 +595,13 @@ class Migrator(object):
             :obj:`list` of :obj:`obj_model.Model`: the `Model`s in `self.module_path`
         """
         if self.existing_schema:
-            print('getting existing_schema')
+            # print('getting existing_schema')
             self.existing_defs = self.existing_schema.run()
-            print('existing_defs', list(self.existing_defs.keys()))
+            # print('existing_defs', list(self.existing_defs.keys()))
         if self.migrated_schema:
-            print('getting migrated_schema')
+            # print('getting migrated_schema')
             self.migrated_defs = self.migrated_schema.run()
-            print('migrated_defs', list(self.migrated_defs.keys()))
+            # print('migrated_defs', list(self.migrated_defs.keys()))
         return self
 
     def _get_migrated_copy_attr_name(self):
