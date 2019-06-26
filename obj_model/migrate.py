@@ -3195,7 +3195,7 @@ class AutomatedMigration(object):
 
         Args:
             schema_url (:obj:`str`): URL of the schema's Python file
-            local_dir (:obj:`str`): directory in local data repo where the migrate command is invoked
+            local_dir (:obj:`str`): directory in a local data repo that contains the data files
             data_files (:obj:`list` of :obj:`str`): data files to migrate
 
         Returns:
@@ -3207,6 +3207,7 @@ class AutomatedMigration(object):
                 any of the data files cannot be found, or
                 the migration fails
         """
+        local_dir = os.path.abspath(local_dir)
         config_file_path = AutomatedMigration.make_template_config_file_command(local_dir, schema_url,
             data_files)
 
@@ -3456,6 +3457,11 @@ class CementControllers(object):
             stacked_on = 'base'
             stacked_type = 'nested'
             arguments = [
+                (['--data_repo_dir'],
+                    {'type': str,
+                        'help': "path of the directory of the repository storing the data file(s) to migrate; "
+                            "defaults to the current directory",
+                        'default': '.'}),
                 (['schema_url'], {'type': str,
                     'help': 'URL of the schema in its git repository, including the branch'}),
                 (['file_to_migrate'],
@@ -3467,7 +3473,7 @@ class CementControllers(object):
         def _default(self):
             args = self.app.pargs
             # args.file_to_migrate is a list of all files to migrate
-            migrated_files = AutomatedMigration.migrate_files(args.schema_url, os.getcwd(),
+            migrated_files = AutomatedMigration.migrate_files(args.schema_url, args.data_repo_dir,
                 args.file_to_migrate)
             print('migrated files:')
             for migrated_file in migrated_files:

@@ -2741,6 +2741,22 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
 
     def test_migrate_files(self):
+
+        # test default: data_repo_dir='.'
+        # save cwd
+        cwd = os.getcwd()
+        test_repo_copy = self.test_repo.copy()
+        os.chdir(test_repo_copy.repo_dir)
+        migrated_files = AutomatedMigration.migrate_files(
+            'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+            '.',
+            [os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
+        file_copy = os.path.join(os.path.dirname(migrated_files[0]), 'data_file_1_copy.xlsx')
+        for migrated_file in migrated_files:
+            assert_equal_workbooks(self, file_copy, migrated_file)
+        # restore cwd
+        os.chdir(cwd)
+
         test_repo_copy = self.test_repo.copy()
         migrated_files = AutomatedMigration.migrate_files(
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
