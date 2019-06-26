@@ -84,7 +84,6 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
         """
         pass  # pragma: no cover
 
-
     def make_metadata_objects(self, data_repo_metadata, path, schema_package):
         """ Make models that store Git repository metadata
 
@@ -109,7 +108,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             try:
                 data_repo_metadata_obj = utils.DataRepoMetadata()
                 utils.set_git_repo_metadata_from_path(data_repo_metadata_obj,
-                    git.RepoMetadataCollectionType.DATA_REPO, path=path)
+                                                      git.RepoMetadataCollectionType.DATA_REPO, path=path)
                 metadata_objects.append(data_repo_metadata_obj)
             except ValueError as e:
                 pass
@@ -122,7 +121,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                 if not spec:
                     raise ValueError("package '{}' not found".format(schema_package))
                 utils.set_git_repo_metadata_from_path(schema_repo_metadata,
-                    git.RepoMetadataCollectionType.SCHEMA_REPO, path=spec.origin)
+                                                      git.RepoMetadataCollectionType.SCHEMA_REPO, path=spec.origin)
                 metadata_objects.append(schema_repo_metadata)
             except ValueError as e:
                 pass
@@ -704,13 +703,25 @@ class JsonReader(ReaderBase):
             objs = []
             decoded = {}
             for json_obj in json_objs:
-                model = models_by_name[json_obj['__type']]
+                obj_type = json_obj.get('__type', None)
+                model = models_by_name.get(obj_type, None)
+                if not model:
+                    if ignore_extra_sheets:
+                        continue
+                    else:
+                        raise ValueError('Unsupported type {}'.format(obj_type))
                 objs.append(model.from_dict(json_obj, decoded=decoded))
             objs = det_dedupe(objs)
 
         else:
-            model = models_by_name[json_objs['__type']]
-            objs = model.from_dict(json_objs)
+            obj_type = json_objs.get('__type', None)
+            model = models_by_name.get(obj_type, None)
+            if model:
+                objs = model.from_dict(json_objs)
+            elif ignore_extra_sheets:
+                objs = None
+            else:
+                raise ValueError('Unsupported type {}'.format(obj_type))
 
         # validate
         if objs and validate:

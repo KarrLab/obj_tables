@@ -273,7 +273,7 @@ class TestMetadata(unittest.TestCase):
         path = os.path.join(self.test_data_repo_dir, 'test.xlsx')
         data_repo_metadata = DataRepoMetadata()
         utils.set_git_repo_metadata_from_path(data_repo_metadata,
-            RepoMetadataCollectionType.DATA_REPO, path=path)
+                                              RepoMetadataCollectionType.DATA_REPO, path=path)
         self.assertEqual(data_repo_metadata.url, 'https://github.com/KarrLab/test_data_repo.git')
         self.assertEqual(data_repo_metadata.branch, 'master')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
@@ -286,7 +286,7 @@ class TestMetadata(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, 'is not in a Git repository'):
             utils.set_git_repo_metadata_from_path(data_repo_metadata,
-            RepoMetadataCollectionType.SCHEMA_REPO, path=self.tmp_dirname)
+                                                  RepoMetadataCollectionType.SCHEMA_REPO, path=self.tmp_dirname)
         self.assertEqual(data_repo_metadata.url, '')
 
     def test_read_metadata_from_file(self):
@@ -318,10 +318,6 @@ class TestMetadata(unittest.TestCase):
             self.assertEqual(len(metadata.revision), 40)
 
         # test exceptions
-        with self.assertRaisesRegex(ValueError, 'Generic metadata reading not supported by JsonReader'):
-            json_pathname = os.path.join(metadata_dir, 'foo.json')
-            utils.read_metadata_from_file(json_pathname)
-
         with self.assertRaisesRegex(ValueError, "Multiple instances of .+ found in"):
             pathname = os.path.join(metadata_dir, 'extra-schema-metadata.xlsx')
             utils.read_metadata_from_file(pathname)

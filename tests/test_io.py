@@ -955,16 +955,16 @@ class TestMetadataModels(unittest.TestCase):
 
         # test schema package not found
         obj_model.io.Writer().run(path_2, self.objs, [self.Model1], data_repo_metadata=True,
-            schema_package='not a schema package')
+                                  schema_package='not a schema package')
         models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
         objs_read = obj_model.io.Reader().run(path_2, models_expected, ignore_extra_sheets=True,
-            ignore_missing_sheets=True)
+                                              ignore_missing_sheets=True)
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.SchemaRepoMetadata not in obj_types)
 
         # write data and schema repo metadata in obj_model file
         obj_model.io.Writer().run(path_2, self.objs, [self.Model1], data_repo_metadata=True,
-            schema_package='test_repo')
+                                  schema_package='test_repo')
 
         # read metadata from 'test.xlsx'
         objs_read = obj_model.io.Reader().run(path_2, models_expected, ignore_extra_sheets=True)
@@ -981,16 +981,16 @@ class TestMetadataModels(unittest.TestCase):
         # test csv files with metadata
         path_3 = os.path.join(self.test_data_repo_dir, 'test*.csv')
         obj_model.io.Writer().run(path_3, self.objs, [self.Model1], data_repo_metadata=True,
-            schema_package='test_repo')
+                                  schema_package='test_repo')
         objs_read = obj_model.io.Reader().run(path_3, models_expected, ignore_extra_sheets=True)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 
     def test_drop_metadata_models(self):
         file_with_metadata = os.path.join(os.path.dirname(__file__), 'fixtures', 'metadata',
-            'both-metadata.xlsx')
+                                          'both-metadata.xlsx')
         objs_read = obj_model.io.Reader().run(file_with_metadata, utils.DataRepoMetadata,
-            ignore_extra_sheets=True)
+                                              ignore_extra_sheets=True)
         self.assertEqual(len(objs_read), 1)
         self.assertTrue(isinstance(objs_read[0], utils.DataRepoMetadata))
 
@@ -1010,7 +1010,7 @@ class TestMetadataModels(unittest.TestCase):
 
         # test data and schema repo metadata in obj_model file
         obj_model.io.JsonWriter().run(path_1, self.objs, [self.Model1], data_repo_metadata=True,
-            schema_package='test_repo')
+                                      schema_package='test_repo')
         metadata_models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
         objs_read = obj_model.io.JsonReader().run(path_1, metadata_models_expected + [self.Model1])
         for obj, model in zip(objs_read, metadata_models_expected):
@@ -1019,6 +1019,57 @@ class TestMetadataModels(unittest.TestCase):
             self.assertEqual(obj.branch, 'master')
             self.assertTrue(isinstance(obj.revision, str))
             self.assertEqual(len(obj.revision), 40)
+
+    def test_json_read_extra_worksheets(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            parent = core.ManyToOneAttribute(Parent, related_name='children')
+
+        p = Parent(id='p')
+        c_1 = p.children.create(id='c_1')
+        c_2 = p.children.create(id='c_2')
+        objs = [p, c_1, c_2]
+
+        # list of objects
+        path = os.path.join(self.tmp_dirname, 'out.json')
+        obj_model.io.JsonWriter().run(path, objs, [Parent, Child])
+
+        objs = obj_model.io.JsonReader().run(path, [Parent, Child])
+        p_b = next(obj for obj in objs if isinstance(obj, Parent))
+        self.assertTrue(p_b.is_equal(p))
+
+        with open(path, 'rb') as file:
+            objs = json.load(file)
+        objs.append({'__type': 'UnsupportedType', 'field': 'data'})
+        with open(path, 'w') as file:
+            json.dump(objs, file)
+
+        with self.assertRaisesRegex(ValueError, 'Unsupported type'):
+            obj_model.io.JsonReader().run(path, [Parent, Child])
+
+        objs = obj_model.io.JsonReader().run(path, [Parent, Child], ignore_extra_sheets=True)
+        p_b = next(obj for obj in objs if isinstance(obj, Parent))
+        self.assertTrue(p_b.is_equal(p))
+
+        # single object
+        path = os.path.join(self.tmp_dirname, 'out.json')
+        obj_model.io.JsonWriter().run(path, p, [Parent, Child])
+
+        p_b = obj_model.io.JsonReader().run(path, [Parent, Child])
+        self.assertTrue(p_b.is_equal(p))
+
+        obj = {'__type': 'UnsupportedType', 'field': 'data'}
+        with open(path, 'w') as file:
+            json.dump(obj, file)
+
+        with self.assertRaisesRegex(ValueError, 'Unsupported type'):
+            obj_model.io.JsonReader().run(path, [Parent, Child])
+
+        obj = obj_model.io.JsonReader().run(path, [Parent, Child], ignore_extra_sheets=True)
+        self.assertEqual(obj, None)
 
 class TestMisc(unittest.TestCase):
 
