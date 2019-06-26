@@ -633,10 +633,6 @@ class Migrator(object):
         self.models_map = {}
         errors = []
         # check renamed models
-        print('self.existing_schema', self.existing_schema)
-        print('self.existing_defs.keys', list(self.existing_defs.keys()))
-        print('self.migrated_schema', self.migrated_schema)
-        print('self.migrated_defs.keys', list(self.migrated_defs.keys()))
         for existing_model, migrated_model in self.renamed_models:
             if existing_model not in self.existing_defs:
                 errors.append("'{}' in renamed models not an existing model".format(existing_model))
@@ -1771,7 +1767,6 @@ class MigrationController(object):
                 migrator = migrator_creator(existing_defs_file=ms.schema_files[i],
                     migrated_defs_file=ms.schema_files[i+1], renamed_models=ms.seq_of_renamed_models[i],
                     renamed_attributes=ms.seq_of_renamed_attributes[i])
-                print('\nmigrator', migrator)
                 migrator.prepare()
                 # the 1st iteration inits `models` from the existing file; iteration n+1 uses `models` set in n
                 if i == 0:
@@ -3125,7 +3120,6 @@ class AutomatedMigration(object):
         # migrate
         all_migrated_files = []
         for migration_spec in self.migration_specs:
-            print('\nmigration_spec', migration_spec)
             migrated_filenames = MigrationController.migrate_from_spec(migration_spec)
             single_migrated_file = migrated_filenames[0]
             all_migrated_files.append(single_migrated_file)
