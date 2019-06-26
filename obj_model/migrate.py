@@ -236,7 +236,7 @@ class SchemaModule(object):
         for model in get_models():
             model.__name__ = SchemaModule._unmunged_model_name(model)
 
-    def import_module_for_migration(self, validate=True, required_attrs=None, debug=False,
+    def import_module_for_migration(self, validate=True, required_attrs=None, debug=True,
         mod_patterns=None, print_code=False):
         """ Import a schema from a Python module in a file, which may be in a package
 
@@ -308,6 +308,16 @@ class SchemaModule(object):
                     break
             print()
 
+        print('path:', self.get_path())
+        i = 1
+        for line in open(self.get_path(), 'r').readlines():
+            i += 1
+            targets = 'ChemicalStructure MolecularStructure Parameter DataValue'.split()
+            for target in targets:
+                if 'class ' + target in line:
+                    print('\t', i, ':', line, end='')
+                    break
+
         if debug:
             print("\n== importing {} from '{}' ==".format(self.module_name, self.directory))
             if print_code:
@@ -343,6 +353,16 @@ class SchemaModule(object):
 
         try:
             new_module = importlib.import_module(self.module_name)
+
+            models_found = set()
+            names = set()
+            for name, cls in inspect.getmembers(new_module, inspect.isclass):
+                names.add(name)
+                if issubclass(cls, obj_model.core.Model) and \
+                    not cls in {obj_model.Model, obj_model.abstract.AbstractModel}:
+                    models_found.add(name)
+            # print('names', names)
+            print('models_found', models_found)
 
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
             raise MigratorError("'{}' cannot be imported and exec'ed: {}: {}".format(
@@ -573,9 +593,13 @@ class Migrator(object):
             :obj:`list` of :obj:`obj_model.Model`: the `Model`s in `self.module_path`
         """
         if self.existing_schema:
+            print('getting existing_schema')
             self.existing_defs = self.existing_schema.run()
+            print('existing_defs', list(self.existing_defs.keys()))
         if self.migrated_schema:
+            print('getting migrated_schema')
             self.migrated_defs = self.migrated_schema.run()
+            print('migrated_defs', list(self.migrated_defs.keys()))
         return self
 
     def _get_migrated_copy_attr_name(self):
@@ -2079,16 +2103,14 @@ class SchemaChanges(object):
         """
 
         # extract URL of schema repo from local repo clone
+        schema_dir = os.path.abspath(schema_dir)
         if not os.path.isdir(schema_dir):
             raise MigratorError("schema_dir is not a directory: '{}'".format(schema_dir))
         git_repo = GitRepo(schema_dir)
 
         # create template schema changes file
         schema_changes = SchemaChanges(git_repo)
-        try:
-            schema_changes_template_file = schema_changes.make_template(commit_hash=commit_hash)
-        except MigratorError:
-            raise MigratorError("commit '{}' not found".format(commit_hash))
+        schema_changes_template_file = schema_changes.make_template(commit_hash=commit_hash)
         return schema_changes_template_file
 
     def import_transformations(self):
@@ -2451,7 +2473,7 @@ class GitRepo(object):
                 return self.git_hash_map[commit_or_hash]
         elif isinstance(commit_or_hash, git.objects.commit.Commit):
             return commit_or_hash
-        raise MigratorError("commit_or_hash {} cannot be converted into a commit".format(commit_or_hash))
+        raise MigratorError("commit_or_hash '{}' cannot be converted into a commit".format(commit_or_hash))
 
     def get_commits(self, commits_or_hashes):
         """ Get the commits with the given commits or hashes
@@ -2816,6 +2838,7 @@ class AutomatedMigration(object):
                 `schema_file_url` isn't the URL of a schema file, or
                 `files_to_migrate` aren't files
         """
+        data_repo_dir = os.path.abspath(data_repo_dir)
         ### convert schema_file_url into URL for schema repo & relative path to schema's Python file ###
         migration_config_file_kwargs = {}
         parsed_url = urlparse(schema_file_url)
@@ -3329,22 +3352,24 @@ class CementControllers(object):
             stacked_on = 'base'
             stacked_type = 'nested'
             arguments = [
+                (['--schema_repo_dir'],
+                    {'type': str,
+                        'help': "path of the directory of the schema's repository; defaults to the "
+                            "current directory",
+                        'default': '.'}),
                 (['--commit'],
-                    {'type': str, 'help':
-                        # todo: cli: needs more explanation; would be best in the documentation
-                        # todo: cli: nice to accept just commit prefix
-                        "hash of a commit containing the changes; default is most recent commit"}),
+                    {'type': str,
+                        'help': "hash of a commit containing the changes; default is most recent commit"}),
             ]
 
         @cement.ex(hide=True)
         def _default(self):
             """ Make a template schema changes file in the schema repo
 
-            Must be run with the current directory in a schema repo.
-            Outputs the URL of the created file or error(s) produced.
+            Outputs the path of the template schema changes file that's created, or error(s) produced.
             """
             args = self.app.pargs
-            schema_changes_template_file = SchemaChanges.make_template_command(os.getcwd(),
+            schema_changes_template_file = SchemaChanges.make_template_command(args.schema_repo_dir,
                 commit_hash=args.commit)
             # print directions to complete creating, commit & push the schema changes template file
             print("Created and added template schema changes file: '{}'.".format(schema_changes_template_file))
@@ -3365,18 +3390,22 @@ class CementControllers(object):
             stacked_on = 'base'
             stacked_type = 'nested'
             arguments = [
+                (['--data_repo_dir'],
+                    {'type': str,
+                        'help': "path of the directory of the repository storing the data file(s) to migrate; "
+                            "defaults to the current directory",
+                        'default': '.'}),
                 (['schema_url'], {'type': str,
                     'help': 'URL of the schema in its git repository, including the branch'}),
                 (['file_to_migrate'],
-                    dict(action='store', type=str, nargs='+',
-                    help='a file to migrate')),
+                    dict(action='store', type=str, nargs='+', help='a file to migrate')),
             ]
 
         @cement.ex(hide=True)
         def _default(self):
             args = self.app.pargs
             # args.file_to_migrate is a list of all files to migrate
-            migration_config_file = AutomatedMigration.make_template_config_file_command(os.getcwd(),
+            migration_config_file = AutomatedMigration.make_template_config_file_command(args.data_repo_dir,
                 args.schema_url, args.file_to_migrate)
             # print directions to commit & push the migration config file
             print("Automated migration config file created: '{}'".format(migration_config_file))

@@ -1824,6 +1824,18 @@ class TestSchemaChanges(AutoMigrationFixtures):
 
     def test_make_template_command(self):
 
+        # test default: schema_repo_dir='.'
+        # save cwd
+        cwd = os.getcwd()
+        os.chdir(self.git_migration_test_repo.repo_dir)
+        with capturer.CaptureOutput(relay=False) as captured:
+            schema_changes_template_file = SchemaChanges.make_template_command('.')
+            self.assertTrue(os.path.isfile(schema_changes_template_file))
+        # restore
+        os.chdir(cwd)
+
+        # prevent collision of filenames 1 sec apart
+        time.sleep(2)
         with capturer.CaptureOutput(relay=False) as captured:
             schema_changes_template_file = SchemaChanges.make_template_command(
                 self.git_migration_test_repo.repo_dir)
@@ -1832,7 +1844,8 @@ class TestSchemaChanges(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "schema_dir is not a directory"):
             SchemaChanges.make_template_command('no such dir')
 
-        with self.assertRaisesRegex(MigratorError, "commit '.+' not found"):
+        with self.assertRaisesRegex(MigratorError,
+            "commit_or_hash '.+' cannot be converted into a commit"):
             SchemaChanges.make_template_command(self.git_migration_test_repo.repo_dir, 'no such commit')
 
     def test_import_transformations(self):
@@ -2463,6 +2476,21 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
     def test_make_template_config_file_command(self):
         test_repo_copy = self.test_repo.copy()
+
+        # test default: data_repo_dir='.'
+        # save cwd
+        cwd = os.getcwd()
+        os.chdir(test_repo_copy.repo_dir)
+        config_file_path = AutomatedMigration.make_template_config_file_command(
+            '.',
+            'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+            ['tests/fixtures/data_file_1.xlsx',
+                os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
+        self.assertTrue(os.path.isfile(config_file_path))
+        remove_silently(config_file_path)
+        # restore cwd
+        os.chdir(cwd)
+
         config_file_path = AutomatedMigration.make_template_config_file_command(
             test_repo_copy.repo_dir,
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
@@ -2754,7 +2782,8 @@ class TestCementControllers(AutoMigrationFixtures):
             argv = ['make-changes-template', '--commit', NO_SUCH_COMMIT]
             with SchemaRepoMigrate(argv=argv) as app:
                 with self.assertRaisesRegex(MigratorError,
-                    "commit '{}' not found".format(NO_SUCH_COMMIT)):
+                    "commit_or_hash 'NO_SUCH_COMMIT' cannot be converted into a commit".format(
+                        NO_SUCH_COMMIT)):
                     app.run()
 
         except Exception as e:
