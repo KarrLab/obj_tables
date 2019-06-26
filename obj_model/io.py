@@ -334,17 +334,16 @@ class WorkbookWriter(WriterBase):
             self.write_toc(writer, all_models, grouped_objects)
 
         # add sheets to workbook
+        sheet_models = list(filter(lambda model: model.Meta.tabular_orientation not in [
+            TabularOrientation.cell, TabularOrientation.multiple_cells], all_models))
         encoded = {}
-        for model in all_models:
-            if model.Meta.tabular_orientation in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
-                continue
-
+        for model in sheet_models:
             if model in grouped_objects:
                 objects = grouped_objects[model]
             else:
                 objects = []
 
-            self.write_model(writer, model, objects, include_all_attributes=include_all_attributes, encoded=encoded,
+            self.write_model(writer, model, objects, sheet_models, include_all_attributes=include_all_attributes, encoded=encoded,
                              extra_entries=extra_entries)
 
         # finalize workbook
@@ -389,19 +388,22 @@ class WorkbookWriter(WriterBase):
 
         writer.write_worksheet(sheet_name, content, style=style)
 
-    def write_model(self, writer, model, objects, include_all_attributes=True, encoded=None, extra_entries=0):
+    def write_model(self, writer, model, objects, sheet_models, include_all_attributes=True, encoded=None, extra_entries=0):
         """ Write a list of model objects to a file
 
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             model (:obj:`type`): model
             objects (:obj:`list` of :obj:`Model`): list of instances of `model`
+            sheet_models (:obj:`list` of :obj:`Model`): models encoded as separate sheets
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
                 including those not explictly included in `Model.Meta.attribute_order`
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
             extra_entries (:obj:`int`, optional): additional entries to display
         """
-        attrs, _, headings, merge_ranges, field_validations = get_fields(model, include_all_attributes=include_all_attributes)
+        attrs, _, headings, merge_ranges, field_validations = get_fields(model,
+                                                                         include_all_attributes=include_all_attributes,
+                                                                         sheet_models=sheet_models)
 
         # objects
         model.sort(objects)
@@ -1485,13 +1487,15 @@ def create_template(path, models, title=None, description=None, keywords=None,
                                   toc=toc, extra_entries=extra_entries)
 
 
-def get_fields(cls, include_all_attributes=True):
+def get_fields(cls, include_all_attributes=True, sheet_models=None):
     """ Get the attributes, headings, and validation for a worksheet
 
     Args:
         cls (:obj:`type`): Model type (subclass of :obj:`Model`)
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
             not explictly included in `Model.Meta.attribute_order`
+        sheet_models (:obj:`list` of :obj:`Model`, optional): list of models encoded as separate worksheets; used
+            to setup Excel validation for related attributes
 
     Returns:
         :obj:`list` of :obj:`Attribute`: attributes in the order they should be printed
@@ -1521,13 +1525,13 @@ def get_fields(cls, include_all_attributes=True):
             attr_headings.extend([sub_attr.verbose_name for sub_attr in this_sub_attrs])
             merge_ranges.append((0, i_col, 0, i_col + len(this_sub_attrs) - 1))
             i_col += len(this_sub_attrs)
-            field_validations.extend([sub_attr.get_excel_validation() for sub_attr in this_sub_attrs])
+            field_validations.extend([sub_attr.get_excel_validation(sheet_models=sheet_models) for sub_attr in this_sub_attrs])
         else:
             sub_attrs.append((None, attr))
             group_headings.append(None)
             attr_headings.append(attr.verbose_name)
             i_col += 1
-            field_validations.append(attr.get_excel_validation())
+            field_validations.append(attr.get_excel_validation(sheet_models=sheet_models))
 
     header_map = collections.defaultdict(list)
     for group_heading, attr_heading in zip(group_headings, attr_headings):

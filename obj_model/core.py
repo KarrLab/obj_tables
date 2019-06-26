@@ -3184,8 +3184,11 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         """
         pass  # pragma: no cover
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
@@ -3497,13 +3500,16 @@ class EnumAttribute(LiteralAttribute):
         """
         return self.enum_class[json]
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(EnumAttribute, self).get_excel_validation()
+        validation = super(EnumAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         allowed_values = [val.name for val in self.enum_class]
         if len(','.join(allowed_values)) <= 255:
@@ -3618,13 +3624,16 @@ class BooleanAttribute(LiteralAttribute):
 
         return None
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(BooleanAttribute, self).get_excel_validation()
+        validation = super(BooleanAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         allowed_values = [True, False]
         validation.type = wc_utils.workbook.io.FieldValidationType.list
@@ -3791,13 +3800,16 @@ class FloatAttribute(NumericAttribute):
         if (not isnan(left_val) or not isnan(right_val)) and left_val != right_val:
             raise ValueError('{}.{} must be equal'.format(left.__class__.__name__, self.name))
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(FloatAttribute, self).get_excel_validation()
+        validation = super(FloatAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.decimal
         validation.ignore_blank = self.nan
@@ -3894,13 +3906,16 @@ class PositiveFloatAttribute(FloatAttribute):
             return InvalidAttribute(self, errors)
         return None
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(FloatAttribute, self).get_excel_validation()
+        validation = super(FloatAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.decimal
         validation.ignore_blank = self.nan
@@ -4075,13 +4090,16 @@ class IntegerAttribute(NumericAttribute):
         """
         return int(json)
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(IntegerAttribute, self).get_excel_validation()
+        validation = super(IntegerAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.integer
         input_message = ['Enter an integer.']
@@ -4174,13 +4192,16 @@ class PositiveIntegerAttribute(IntegerAttribute):
             return InvalidAttribute(self, errors)
         return None
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(IntegerAttribute, self).get_excel_validation()
+        validation = super(IntegerAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.integer
         input_message = ['Enter an integer.']
@@ -4320,13 +4341,16 @@ class StringAttribute(LiteralAttribute):
         """
         return value
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(StringAttribute, self).get_excel_validation()
+        validation = super(StringAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         input_message = ['Enter a string.']
         error_message = ['Value must be a string.']
@@ -4689,13 +4713,16 @@ class DateAttribute(LiteralAttribute):
         """
         return datetime.strptime(json, '%Y-%m-%d').date()
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(DateAttribute, self).get_excel_validation()
+        validation = super(DateAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.date
         validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
@@ -4857,13 +4884,16 @@ class TimeAttribute(LiteralAttribute):
         """
         return datetime.strptime(json, '%H:%M:%S').time()
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(TimeAttribute, self).get_excel_validation()
+        validation = super(TimeAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.time
         validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
@@ -5040,13 +5070,16 @@ class DateTimeAttribute(LiteralAttribute):
         """
         return datetime.strptime(json, '%Y-%m-%d %H:%M:%S')
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(DateTimeAttribute, self).get_excel_validation()
+        validation = super(DateTimeAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.date
         validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
@@ -6057,41 +6090,59 @@ class OneToOneAttribute(RelatedAttribute):
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(OneToOneAttribute, self).get_excel_validation()
+        sheet_models = sheet_models or []
+        validation = super(OneToOneAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
-        if self.related_class.Meta.primary_attribute:
-            validation.type = wc_utils.workbook.io.FieldValidationType.list
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
-            related_ws = self.related_class.Meta.verbose_name_plural
+        if self.related_class in sheet_models:
             if self.related_class.Meta.primary_attribute:
-                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                source = '{}:{}'.format(related_ws, related_col)
-                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
-            else:
-                source = related_ws
-        else:
-            related_ws = self.related_class.Meta.verbose_name
-            if self.related_class.Meta.primary_attribute:
-                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
-                source = '{}:{}'.format(related_ws, related_row)
-                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
-            else:
-                source = related_ws
+                validation.type = wc_utils.workbook.io.FieldValidationType.list
 
-        validation.ignore_blank = self.min_related == 0
-        if self.min_related == 0:
-            input_message = ['Select a value from "{}" or blank.'.format(source)]
-            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+            if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+                related_ws = self.related_class.Meta.verbose_name_plural
+                if self.related_class.Meta.primary_attribute:
+                    related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                    source = '{}:{}'.format(related_ws, related_col)
+                    validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+                else:
+                    source = related_ws
+            else:
+                related_ws = self.related_class.Meta.verbose_name
+                if self.related_class.Meta.primary_attribute:
+                    related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1
+                    source = '{}:{}'.format(related_ws, related_row)
+                    validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+                else:
+                    source = related_ws
+
+            validation.ignore_blank = self.min_related == 0
+            if self.min_related == 0:
+                input_message = ['Select a value from "{}" or blank.'.format(source)]
+                error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+            else:
+                input_message = ['Select a value from "{}".'.format(source)]
+                error_message = ['Value must be a value from "{}".'.format(source)]
         else:
-            input_message = ['Select a value from "{}".'.format(source)]
-            error_message = ['Value must be a value from "{}".'.format(source)]
+            if self.min_related == 0:
+                validation.type = wc_utils.workbook.io.FieldValidationType.any
+                validation.ignore_blank = True
+                input_message = ['Enter a string or blank.']
+                error_message = ['Value must be a string or blank.']
+            else:
+                validation.type = wc_utils.workbook.io.FieldValidationType.length
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = 1
+                validation.ignore_blank = False
+                input_message = ['Enter a string.']
+                error_message = ['Value must be a string.']
 
         default = self.get_default_cleaned_value()
         if default is not None:
@@ -6382,41 +6433,59 @@ class ManyToOneAttribute(RelatedAttribute):
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ManyToOneAttribute, self).get_excel_validation()
+        sheet_models = sheet_models or []
+        validation = super(ManyToOneAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
-        if self.related_class.Meta.primary_attribute:
-            validation.type = wc_utils.workbook.io.FieldValidationType.list
-
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
-            related_ws = self.related_class.Meta.verbose_name_plural
+        if self.related_class in sheet_models:
             if self.related_class.Meta.primary_attribute:
-                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                source = '{}:{}'.format(related_ws, related_col)
-                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
-            else:
-                source = related_ws
-        else:
-            related_ws = self.related_class.Meta.verbose_name
-            if self.related_class.Meta.primary_attribute:
-                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
-                source = '{}:{}'.format(related_ws, related_row)
-                validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
-            else:
-                source = related_ws
+                validation.type = wc_utils.workbook.io.FieldValidationType.list
 
-        validation.ignore_blank = self.min_related == 0
-        if self.min_related == 0:
-            input_message = ['Select a value from "{}" or blank.'.format(source)]
-            error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+            if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+                related_ws = self.related_class.Meta.verbose_name_plural
+                if self.related_class.Meta.primary_attribute:
+                    related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                    source = '{}:{}'.format(related_ws, related_col)
+                    validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+                else:
+                    source = related_ws
+            else:
+                related_ws = self.related_class.Meta.verbose_name
+                if self.related_class.Meta.primary_attribute:
+                    related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1
+                    source = '{}:{}'.format(related_ws, related_row)
+                    validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+                else:
+                    source = related_ws
+
+            validation.ignore_blank = self.min_related == 0
+            if self.min_related == 0:
+                input_message = ['Select a value from "{}" or blank.'.format(source)]
+                error_message = ['Value must be a value from "{}" or blank.'.format(source)]
+            else:
+                input_message = ['Select a value from "{}".'.format(source)]
+                error_message = ['Value must be a value from "{}".'.format(source)]
         else:
-            input_message = ['Select a value from "{}".'.format(source)]
-            error_message = ['Value must be a value from "{}".'.format(source)]
+            if self.min_related == 0:
+                validation.type = wc_utils.workbook.io.FieldValidationType.any
+                validation.ignore_blank = True
+                input_message = ['Enter a string or blank.']
+                error_message = ['Value must be a string or blank.']
+            else:
+                validation.type = wc_utils.workbook.io.FieldValidationType.length
+                validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+                validation.allowed_scalar_value = 1
+                validation.ignore_blank = False
+                input_message = ['Enter a string.']
+                error_message = ['Value must be a string.']
 
         default = self.get_default_cleaned_value()
         if default is not None:
@@ -6714,36 +6783,43 @@ class OneToManyAttribute(RelatedAttribute):
             right_children.remove(right_child)
             left_children.append(left_child)
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(OneToManyAttribute, self).get_excel_validation()
+        sheet_models = sheet_models or []
+        validation = super(OneToManyAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
-            related_ws = self.related_class.Meta.verbose_name_plural
-            if self.related_class.Meta.primary_attribute:
-                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                source = '{}:{}'.format(related_ws, related_col)
+        if self.related_class in sheet_models:
+            if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+                related_ws = self.related_class.Meta.verbose_name_plural
+                if self.related_class.Meta.primary_attribute:
+                    related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                    source = ' from "{}:{}"'.format(related_ws, related_col)
+                else:
+                    source = ' from "{}"'.format(related_ws)
             else:
-                source = related_ws
+                related_ws = self.related_class.Meta.verbose_name
+                if self.related_class.Meta.primary_attribute:
+                    related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1
+                    source = ' from "{}:{}"'.format(related_ws, related_row)
+                else:
+                    source = ' from "{}"'.format(related_ws)
         else:
-            related_ws = self.related_class.Meta.verbose_name
-            if self.related_class.Meta.primary_attribute:
-                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
-                source = '{}:{}'.format(related_ws, related_row)
-            else:
-                source = related_ws
+            source = ''
 
         validation.ignore_blank = self.min_related == 0
         if self.min_related == 0:
-            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
-            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
+            input_message = ['Enter a comma-separated list of values{} or blank.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values{} or blank.'.format(source)]
         else:
-            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
-            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
+            input_message = ['Enter a comma-separated list of values{}.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values{}.'.format(source)]
 
         default = self.get_default_cleaned_value()
         if default:
@@ -7052,36 +7128,43 @@ class ManyToManyAttribute(RelatedAttribute):
             right_children.remove(right_child)
             left_children.append(left_child)
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ManyToManyAttribute, self).get_excel_validation()
+        sheet_models = sheet_models or []
+        validation = super(ManyToManyAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
-        if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
-            related_ws = self.related_class.Meta.verbose_name_plural
-            if self.related_class.Meta.primary_attribute:
-                related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                source = '{}:{}'.format(related_ws, related_col)
+        if self.related_class in sheet_models:
+            if self.related_class.Meta.tabular_orientation == TabularOrientation.row:
+                related_ws = self.related_class.Meta.verbose_name_plural
+                if self.related_class.Meta.primary_attribute:
+                    related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
+                    source = ' from "{}:{}"'.format(related_ws, related_col)
+                else:
+                    source = ' from "{}"'.format(related_ws)
             else:
-                source = related_ws
+                related_ws = self.related_class.Meta.verbose_name
+                if self.related_class.Meta.primary_attribute:
+                    related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1
+                    source = ' from "{}:{}"'.format(related_ws, related_row)
+                else:
+                    source = ' from "{}"'.format(related_ws)
         else:
-            related_ws = self.related_class.Meta.verbose_name
-            if self.related_class.Meta.primary_attribute:
-                related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute)
-                source = '{}:{}'.format(related_ws, related_row)
-            else:
-                source = related_ws
+            source = ''
 
         validation.ignore_blank = self.min_related == 0
         if self.min_related == 0:
-            input_message = ['Enter a comma-separated list of values from "{}" or blank.'.format(source)]
-            error_message = ['Value must be a comma-separated list of values from "{}" or blank.'.format(source)]
+            input_message = ['Enter a comma-separated list of values{} or blank.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values{} or blank.'.format(source)]
         else:
-            input_message = ['Enter a comma-separated list of values from "{}".'.format(source)]
-            error_message = ['Value must be a comma-separated list of values from "{}".'.format(source)]
+            input_message = ['Enter a comma-separated list of values{}.'.format(source)]
+            error_message = ['Value must be a comma-separated list of values{}.'.format(source)]
 
         default = self.get_default_cleaned_value()
         if default:

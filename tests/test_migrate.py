@@ -2952,8 +2952,6 @@ class TestVirtualEnvUtil(unittest.TestCase):
         # test PyPI package with version
         self.run_and_check_install('django==1.4', 'django')
         # test WC egg
-        self.run_and_check_install('git+https://github.com/KarrLab/log.git#egg=log', 'log')
-        # test WC URL commit specified by hash
         self.run_and_check_install(
             'git+git://github.com/KarrLab/wc_onto.git@ced0ba452bbdf332c9f687b78c2fedc68c666ff2', 'wc-onto')
         # test wc_lang commit
