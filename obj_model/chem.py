@@ -128,13 +128,16 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
             return chem.EmpiricalFormula(json)
         return None
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+        
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(EmpiricalFormulaAttribute, self).get_excel_validation()
+        validation = super(EmpiricalFormulaAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 
@@ -279,13 +282,16 @@ class ChemicalStructureAttribute(core.LongStringAttribute):
             return json
         return None
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ChemicalStructureAttribute, self).get_excel_validation()
+        validation = super(ChemicalStructureAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 

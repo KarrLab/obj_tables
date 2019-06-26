@@ -227,7 +227,7 @@ class OntologyAttribute(core.LiteralAttribute):
         else:
             return None
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
 
         Returns:

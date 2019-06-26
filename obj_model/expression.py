@@ -89,13 +89,16 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
             return self.related_class.deserialize(value, objects)
         return (None, None)
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(OneToOneAttribute, self).get_excel_validation()
+        validation = super(OneToOneAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         if self.related_class.Meta.expression_is_linear:
             type = 'linear '
@@ -163,13 +166,16 @@ class ExpressionManyToOneAttribute(ManyToOneAttribute):
             return self.related_class.deserialize(value, objects)
         return (None, None)
 
-    def get_excel_validation(self):
+    def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ManyToOneAttribute, self).get_excel_validation()
+        validation = super(ManyToOneAttribute, self).get_excel_validation(sheet_models=sheet_models)
 
         if self.related_class.Meta.expression_is_linear:
             type = 'linear '
