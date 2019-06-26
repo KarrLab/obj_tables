@@ -232,8 +232,6 @@ def read_metadata_from_file(pathname):
             or unexpected metadata instances are found
     """
     reader = obj_model.io.Reader.get_reader(pathname)
-    if reader is obj_model.io.JsonReader:
-        raise ValueError('Generic metadata reading not supported by JsonReader')
 
     metadata_instances = reader().run(pathname, [DataRepoMetadata, SchemaRepoMetadata],
         ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True)
