@@ -2454,7 +2454,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
 
         self.wc_lang_model = os.path.join(self.fixtures_path, 'example-wc_lang-model.xlsx')
 
-    def test_make_template_config_file(self):
+    def test_make_migration_config_file(self):
         kwargs = dict(files_to_migrate=['../tests/fixtures//file1.xlsx',
                                         '../tests/fixtures//file2.xlsx'],
             schema_repo_url='https://github.com//KarrLab/migration_test_repo',
@@ -2462,29 +2462,29 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             schema_file='../migration_test_repo/core.py',
             migrator='wc_lang'
         )
-        path = AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo_2',
+        path = AutomatedMigration.make_migration_config_file(self.test_repo, 'example_test_repo_2',
             **kwargs)
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
         self.assertEqual(kwargs, data)
 
         remove_silently(path)
-        path = AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo_2',
+        path = AutomatedMigration.make_migration_config_file(self.test_repo, 'example_test_repo_2',
             add_to_repo=False, **kwargs)
         self.assertFalse(self.test_repo.repo.untracked_files)
 
-        AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
+        AutomatedMigration.make_migration_config_file(self.test_repo, 'example_test_repo')
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
-            AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
+            AutomatedMigration.make_migration_config_file(self.test_repo, 'example_test_repo')
 
-    def test_make_template_config_file_command(self):
+    def test_make_migration_config_file_command(self):
         test_repo_copy = self.test_repo.copy()
 
         # test default: data_repo_dir='.'
         # save cwd
         cwd = os.getcwd()
         os.chdir(test_repo_copy.repo_dir)
-        config_file_path = AutomatedMigration.make_template_config_file_command(
+        config_file_path = AutomatedMigration.make_migration_config_file_command(
             '.',
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx',
@@ -2494,7 +2494,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         # restore cwd
         os.chdir(cwd)
 
-        config_file_path = AutomatedMigration.make_template_config_file_command(
+        config_file_path = AutomatedMigration.make_migration_config_file_command(
             test_repo_copy.repo_dir,
             'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx',
@@ -2502,7 +2502,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertTrue(os.path.isfile(config_file_path))
         remove_silently(config_file_path)
 
-        config_file_path = AutomatedMigration.make_template_config_file_command(
+        config_file_path = AutomatedMigration.make_migration_config_file_command(
             test_repo_copy.repo_dir,
             'https://github.com/KarrLab/wc_lang/blob/test_branch/migration_test_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx'])
@@ -2511,19 +2511,19 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.assertEqual(data['branch'], 'test_branch')
 
         with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
-            AutomatedMigration.make_template_config_file_command('', 'github.com/KarrLab/core.py', [])
+            AutomatedMigration.make_migration_config_file_command('', 'github.com/KarrLab/core.py', [])
 
         with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
-            AutomatedMigration.make_template_config_file_command('', 'https://github.com/core.py', [])
+            AutomatedMigration.make_migration_config_file_command('', 'https://github.com/core.py', [])
 
         with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
-            AutomatedMigration.make_template_config_file_command('', 'https://github.com/a/b/c/d/e/core', [])
+            AutomatedMigration.make_migration_config_file_command('', 'https://github.com/a/b/c/d/e/core', [])
 
         with self.assertRaisesRegex(MigratorError, "data_repo_dir is not a directory"):
-            AutomatedMigration.make_template_config_file_command('foo', 'https://github.com/a/b/blob/d/e/core.py', [])
+            AutomatedMigration.make_migration_config_file_command('foo', 'https://github.com/a/b/blob/d/e/core.py', [])
 
         with self.assertRaisesRegex(MigratorError, "cannot find data file"):
-            AutomatedMigration.make_template_config_file_command(test_repo_copy.repo_dir,
+            AutomatedMigration.make_migration_config_file_command(test_repo_copy.repo_dir,
                 'https://github.com/a/b/blob/d/e/core.py',
                 ['tests/fixtures/not_a_data_file_1.xlsx'])
 
@@ -2563,7 +2563,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         # make a config file that's missing an attribute
         saved_config_attributes = AutomatedMigration._CONFIG_ATTRIBUTES.copy()
         del AutomatedMigration._CONFIG_ATTRIBUTES['files_to_migrate']
-        config_file = AutomatedMigration.make_template_config_file(self.test_repo, 'test_schema_repo')
+        config_file = AutomatedMigration.make_migration_config_file(self.test_repo, 'test_schema_repo')
         # restore the static attributes dict
         AutomatedMigration._CONFIG_ATTRIBUTES = saved_config_attributes
         with self.assertRaisesRegex(MigratorError, "invalid automated migration config file:"):
@@ -2573,7 +2573,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
             AutomatedMigration.load_config_file(config_file)
         remove_silently(config_file)
 
-        config_file = AutomatedMigration.make_template_config_file(self.test_repo, 'test_schema_repo')
+        config_file = AutomatedMigration.make_migration_config_file(self.test_repo, 'test_schema_repo')
         with self.assertRaisesRegex(MigratorError,
             "uninitialized AutomatedMigration._CONFIG_ATTRIBUTES attribute: "):
             AutomatedMigration.load_config_file(config_file)

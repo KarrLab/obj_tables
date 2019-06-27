@@ -2788,8 +2788,8 @@ class AutomatedMigration(object):
         self.record_git_repo(self.schema_git_repo)
 
     @staticmethod
-    def make_template_config_file(data_git_repo, schema_repo_name, add_to_repo=True, **kwargs):
-        """ Create a template automated migration config file
+    def make_migration_config_file(data_git_repo, schema_repo_name, add_to_repo=True, **kwargs):
+        """ Create an automated migration config file
 
         Args:
             data_git_repo (:obj:`GitRepo`): the data git repo that contains the data files to migrate
@@ -2799,7 +2799,7 @@ class AutomatedMigration(object):
             kwargs (:obj:`dict`): optional initial values for automated migration config file
 
         Returns:
-            :obj:`str`: the pathname to the template automated migration config file that was written
+            :obj:`str`: the pathname to the automated migration config file that was written
 
         Raises:
             :obj:`MigratorError`: if the automated migration configuration file already exists
@@ -2836,7 +2836,7 @@ class AutomatedMigration(object):
         return pathname
 
     @staticmethod
-    def make_template_config_file_command(data_repo_dir, schema_file_url, files_to_migrate, add_to_repo=True):
+    def make_migration_config_file_command(data_repo_dir, schema_file_url, files_to_migrate, add_to_repo=True):
         """ Make an automated migration configuration file from CLI input
 
         Args:
@@ -2908,7 +2908,7 @@ class AutomatedMigration(object):
             migration_config_file_kwargs['migrator'] = migrator_map[schema_repo_name]
 
         ### create automated migration config file ###
-        config_file_path = AutomatedMigration.make_template_config_file(
+        config_file_path = AutomatedMigration.make_migration_config_file(
             git_repo,
             schema_repo_name,
             add_to_repo=add_to_repo,
@@ -3225,7 +3225,7 @@ class AutomatedMigration(object):
                 the migration fails
         """
         local_dir = os.path.abspath(local_dir)
-        config_file_path = AutomatedMigration.make_template_config_file_command(local_dir, schema_url,
+        config_file_path = AutomatedMigration.make_migration_config_file_command(local_dir, schema_url,
             data_files, add_to_repo=False)
 
         ### create and run AutomatedMigration ###
@@ -3347,7 +3347,6 @@ class BaseController(cement.Controller):
 
 
 # todo: add a controller that tests all migrations configured in migration config files
-# todo: cli later: support repos that are both schema repos and data repos
 class CementControllers(object):
     """ Cement Controllers for CLIs in repos involved with migrating files whose data models are defined using `obj_model`
 
@@ -3423,7 +3422,7 @@ class CementControllers(object):
         def _default(self):
             args = self.app.pargs
             # args.file_to_migrate is a list of all files to migrate
-            migration_config_file = AutomatedMigration.make_template_config_file_command(args.data_repo_dir,
+            migration_config_file = AutomatedMigration.make_migration_config_file_command(args.data_repo_dir,
                 args.schema_url, args.file_to_migrate)
             # print directions to commit & push the migration config file
             print("Automated migration config file created: '{}'".format(migration_config_file))
