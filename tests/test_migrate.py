@@ -242,13 +242,11 @@ def assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, 
     if TOC_NAME in migrated_workbook:
         migrated_workbook.pop(TOC_NAME)
 
-    ### temporary fix: workbook.difference() should optionally ignore metadata_sheets
-    # todo
+    # ignore metadata worksheets, as they're not part of model semantics
     for workbook in [existing_workbook, migrated_workbook]:
         for metadata_sheet_name in ['Data repo metadata', 'Schema repo metadata']:
             if metadata_sheet_name in workbook:
                 workbook.pop(metadata_sheet_name)
-    ### END temporary fix ###
 
     if equal:
         if not existing_workbook == migrated_workbook:

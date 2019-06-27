@@ -464,15 +464,6 @@ class SchemaModule(object):
         # ensure that a schema contains some obj_model.Models
         if not models:
             raise MigratorError("No subclasses of obj_model.Model found in '{}'".format(self.abs_module_path))
-        ### temporary fix UNTIL test repo are fixed: remove GitMetadata models ###
-        # todo
-        to_delete = []
-        for model in models.keys():
-            if model.endswith('GitMetadata'):
-                to_delete.append(model)
-        for model in to_delete:
-            del models[model]
-        ### END temporary fix ###
         return models
 
     def _check_imported_models(self, module=None):
