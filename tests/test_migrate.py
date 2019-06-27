@@ -2467,12 +2467,15 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
         self.assertEqual(kwargs, data)
 
+        remove_silently(path)
+        path = AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo_2',
+            add_to_repo=False, **kwargs)
+        self.assertFalse(self.test_repo.repo.untracked_files)
+
         AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
         with self.assertRaisesRegex(MigratorError,
             "automated migration configuration file '.+' already exists"):
             AutomatedMigration.make_template_config_file(self.test_repo, 'example_test_repo')
-
-        remove_silently(path)
 
     def test_make_template_config_file_command(self):
         test_repo_copy = self.test_repo.copy()

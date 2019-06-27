@@ -265,6 +265,13 @@ class SchemaModule(object):
             if SchemaModule.MODULES:
                 print('SchemaModule.MODULES:')
                 for path, module in SchemaModule.MODULES.items():
+                    name = module.__name__
+                    package = module.__package__
+                    if package:
+                        name = package + '.' + name
+                    print('\t', path, name)
+                '''
+                for path, module in SchemaModule.MODULES.items():
                     # todo: put this code for printing a module in a function & reuse below
                     name = getattr(module, '__name__')
                     package = getattr(module, '__package__')
@@ -274,6 +281,7 @@ class SchemaModule(object):
                     print('\t', name, file)
                     if path in SchemaModule.MODULE_ANNOTATIONS:
                         print('\t', 'annotation:', SchemaModule.MODULE_ANNOTATIONS[path])
+                '''
             else:
                 print('no SchemaModule.MODULES')
 
@@ -308,17 +316,16 @@ class SchemaModule(object):
                     break
             print()
 
-        '''
-        print('path:', self.get_path())
-        i = 1
-        for line in open(self.get_path(), 'r').readlines():
-            i += 1
-            targets = 'ChemicalStructure MolecularStructure Parameter DataValue'.split()
-            for target in targets:
-                if 'class ' + target in line:
-                    print('\t', i, ':', line, end='')
-                    break
-        '''
+        if debug:
+            print('path:', self.get_path())
+            i = 1
+            targets = set('ChemicalStructure MolecularStructure Parameter DataValue'.split())
+            for line in open(self.get_path(), 'r').readlines():
+                i += 1
+                for target in targets:
+                    if 'class ' + target in line:
+                        print('\t', i, ':', line, end='')
+                        break
 
         if debug:
             print("\n== importing {} from '{}' ==".format(self.module_name, self.directory))
@@ -348,23 +355,25 @@ class SchemaModule(object):
                                 print('\t', name)
                             break
 
-            print('sys.path:')
-            for p in sys.path:
-                print('\t', p)
-            print('import_module', self.module_name, self.annotation)
+            if debug:
+                print('sys.path:')
+                for p in sys.path:
+                    print('\t', p)
+                print('import_module', self.module_name, self.annotation)
 
         try:
             new_module = importlib.import_module(self.module_name)
 
-            models_found = set()
-            names = set()
-            for name, cls in inspect.getmembers(new_module, inspect.isclass):
-                names.add(name)
-                if issubclass(cls, obj_model.core.Model) and \
-                    not cls in {obj_model.Model, obj_model.abstract.AbstractModel}:
-                    models_found.add(name)
-            # print('names', names)
-            # print('models_found', models_found)
+            if debug:
+                models_found = set()
+                names = set()
+                for name, cls in inspect.getmembers(new_module, inspect.isclass):
+                    names.add(name)
+                    if issubclass(cls, obj_model.core.Model) and \
+                        not cls in {obj_model.Model, obj_model.abstract.AbstractModel}:
+                        models_found.add(name)
+                print('targets in names', names.intersection(targets))
+                print('targets in models_found', models_found.intersection(targets))
 
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
             raise MigratorError("'{}' cannot be imported and exec'ed: {}: {}".format(
@@ -2779,12 +2788,14 @@ class AutomatedMigration(object):
         self.record_git_repo(self.schema_git_repo)
 
     @staticmethod
-    def make_template_config_file(data_git_repo, schema_repo_name, **kwargs):
+    def make_template_config_file(data_git_repo, schema_repo_name, add_to_repo=True, **kwargs):
         """ Create a template automated migration config file
 
         Args:
             data_git_repo (:obj:`GitRepo`): the data git repo that contains the data files to migrate
             schema_repo_name (:obj:`str`): name of the schema repo
+            add_to_repo (:obj:`bool`, optional): if set, add the migration config file to the data repo;
+                default = :obj:`True`:
             kwargs (:obj:`dict`): optional initial values for automated migration config file
 
         Returns:
@@ -2819,18 +2830,21 @@ class AutomatedMigration(object):
             # generate YAML content
             file.write(yaml.dump(config_data))
 
-        # add the automated migration configuration file to the data git repo
-        data_git_repo.repo.index.add([pathname])
+        if add_to_repo:
+            # add the automated migration configuration file to the data git repo
+            data_git_repo.repo.index.add([pathname])
         return pathname
 
     @staticmethod
-    def make_template_config_file_command(data_repo_dir, schema_file_url, files_to_migrate):
+    def make_template_config_file_command(data_repo_dir, schema_file_url, files_to_migrate, add_to_repo=True):
         """ Make an automated migration configuration file from CLI input
 
         Args:
             data_repo_dir (:obj:`str`): directory of the data repo
             schema_file_url (:obj:`str`): URL for schema's Python file
             files_to_migrate (:obj:`list` of :obj:`str`): data files to migrate
+            add_to_repo (:obj:`bool`, optional): if set, add the migration config file to the data repo;
+                default = :obj:`True`:
 
         Returns:
             :obj:`str`: pathname of the schema changes file that was written
@@ -2897,6 +2911,7 @@ class AutomatedMigration(object):
         config_file_path = AutomatedMigration.make_template_config_file(
             git_repo,
             schema_repo_name,
+            add_to_repo=add_to_repo,
             **migration_config_file_kwargs)
         return config_file_path
 
@@ -3211,7 +3226,7 @@ class AutomatedMigration(object):
         """
         local_dir = os.path.abspath(local_dir)
         config_file_path = AutomatedMigration.make_template_config_file_command(local_dir, schema_url,
-            data_files)
+            data_files, add_to_repo=False)
 
         ### create and run AutomatedMigration ###
         automated_migration = AutomatedMigration(data_repo_location=local_dir,
