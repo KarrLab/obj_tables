@@ -1093,8 +1093,8 @@ class Migrator(object):
 
         # write migrated models to disk
         obj_model_writer = obj_model.io.Writer.get_writer(existing_file)()
-        # todo: now: add data_repo_metadata=True
-        obj_model_writer.run(migrated_file, migrated_models, models=model_order, validate=False)
+        obj_model_writer.run(migrated_file, migrated_models, models=model_order, validate=False,
+            data_repo_metadata=True)
         return migrated_file
 
     def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
