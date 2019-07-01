@@ -4699,6 +4699,8 @@ class DateAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation of a value of the attribute
         """
+        if value is None:
+            return None
         return value.strftime('%Y-%m-%d')
 
     def from_builtin(self, json):
@@ -4711,6 +4713,8 @@ class DateAttribute(LiteralAttribute):
         Returns:
             :obj:`date`: decoded value of the attribute
         """
+        if json is None:
+            return None
         return datetime.strptime(json, '%Y-%m-%d').date()
 
     def get_excel_validation(self, sheet_models=None):
@@ -4870,6 +4874,8 @@ class TimeAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation of a value of the attribute
         """
+        if value is None:
+            return None
         return value.strftime('%H:%M:%S')
 
     def from_builtin(self, json):
@@ -4882,6 +4888,8 @@ class TimeAttribute(LiteralAttribute):
         Returns:
             :obj:`time`: decoded value of the attribute
         """
+        if json is None:
+            return None
         return datetime.strptime(json, '%H:%M:%S').time()
 
     def get_excel_validation(self, sheet_models=None):
@@ -5056,6 +5064,8 @@ class DateTimeAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation of a value of the attribute
         """
+        if value is None:
+            return None
         return value.strftime('%Y-%m-%d %H:%M:%S')
 
     def from_builtin(self, json):
@@ -5068,6 +5078,8 @@ class DateTimeAttribute(LiteralAttribute):
         Returns:
             :obj:`datetime`: decoded value of the attribute
         """
+        if json is None:
+            return None
         return datetime.strptime(json, '%Y-%m-%d %H:%M:%S')
 
     def get_excel_validation(self, sheet_models=None):
