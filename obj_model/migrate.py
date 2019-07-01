@@ -260,6 +260,7 @@ class SchemaModule(object):
                     not in the module
                 or if the module is missing a required attribute
         """
+        # todo: now: remove debug prints
         if debug:
             print('\nimport_module_for_migration', self.module_name, self.annotation)
             if SchemaModule.MODULES:
@@ -1092,7 +1093,7 @@ class Migrator(object):
 
         # write migrated models to disk
         obj_model_writer = obj_model.io.Writer.get_writer(existing_file)()
-        # todo: add data_repo_metadata=True
+        # todo: now: add data_repo_metadata=True
         obj_model_writer.run(migrated_file, migrated_models, models=model_order, validate=False)
         return migrated_file
 

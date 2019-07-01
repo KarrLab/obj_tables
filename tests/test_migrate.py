@@ -2,13 +2,10 @@
 
 :Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
 :Date: 2018-11-18
-:Copyright: 2018, Karr Lab
+:Copyright: 2018-2019, Karr Lab
 :License: MIT
 """
-
 # todo: speedup migration and unittests; make smaller test data files
-# todo: cleanup use of temp dirs & files; ensure that all tmp files are being deleted
-
 
 
 from argparse import Namespace
@@ -18,7 +15,7 @@ from itertools import chain
 from networkx.algorithms.shortest_paths.generic import has_path
 from pathlib import Path, PurePath
 from pprint import pprint, pformat
-from tempfile import mkdtemp
+from tempfile import mkdtemp, TemporaryDirectory
 import capturer
 import cement
 import copy
@@ -37,7 +34,6 @@ import re
 import shutil
 import socket
 import sys
-import tempfile
 import time
 import unittest
 import warnings
@@ -64,8 +60,6 @@ from wc_utils.util.git import GitHubRepoForTests
 def make_tmp_dirs_n_small_schemas_paths(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
     test_case.tmp_dir = mkdtemp()
-    # create tmp dir in 'fixtures/migrate/tmp' so it can be accessed from Docker container's host
-    test_case.tmp_model_dir = mkdtemp(dir=os.path.join(test_case.fixtures_path, 'tmp'))
     test_case.existing_defs_path = os.path.join(test_case.fixtures_path, 'small_existing.py')
     test_case.migrated_defs_path = os.path.join(test_case.fixtures_path, 'small_migrated.py')
     test_case.small_bad_related_path = os.path.join(test_case.fixtures_path, 'small_bad_related.py')
@@ -85,7 +79,7 @@ def copy_file_to_tmp(test_case, name):
     basename = name
     if os.path.isabs(name):
         basename = os.path.basename(name)
-    tmp_filename = os.path.join(mkdtemp(dir=test_case.tmp_model_dir), basename)
+    tmp_filename = os.path.join(mkdtemp(dir=test_case.tmp_dir), basename)
     if os.path.isabs(name):
         shutil.copy(name, tmp_filename)
     else:
@@ -94,7 +88,7 @@ def copy_file_to_tmp(test_case, name):
 
 def temp_pathname(testcase, name):
     # create a pathname for a file called name in new temp dir, which will be discarded by tearDown()
-    return os.path.join(mkdtemp(dir=testcase.tmp_model_dir), name)
+    return os.path.join(mkdtemp(dir=testcase.tmp_dir), name)
 
 def make_migrators_in_memory(test_case):
 
@@ -217,9 +211,8 @@ def make_migrators_in_memory(test_case):
     good_migrator._validate_renamed_attrs()
 
 def rm_tmp_dirs(test_case):
-    # remove a test_case's temp dirs
+    # remove a test_case's temp dir
     shutil.rmtree(test_case.tmp_dir)
-    shutil.rmtree(test_case.tmp_model_dir)
 
 def invert_renaming(renaming):
     # invert a list of renamed_models or renamed_attributes
@@ -274,15 +267,15 @@ class MigrationFixtures(unittest.TestCase):
         # copy test models to tmp dir
         self.example_existing_model_copy = copy_file_to_tmp(self, 'example_existing_model.xlsx')
         self.example_existing_rt_model_copy = copy_file_to_tmp(self, 'example_existing_model_rt.xlsx')
-        self.example_migrated_model = os.path.join(self.tmp_model_dir, 'example_migrated_model.xlsx')
+        self.example_migrated_model = os.path.join(self.tmp_dir, 'example_migrated_model.xlsx')
 
-        dst = os.path.join(self.tmp_model_dir, 'tsv_example')
+        dst = os.path.join(self.tmp_dir, 'tsv_example')
         self.tsv_dir = shutil.copytree(os.path.join(self.fixtures_path, 'tsv_example'), dst)
         self.tsv_test_model = 'test-*.tsv'
         self.example_existing_model_tsv = os.path.join(self.tsv_dir, self.tsv_test_model)
         # put each tsv in a separate dir so globs don't match erroneously
-        self.existing_2_migrated_migrated_tsv_file = os.path.join(mkdtemp(dir=self.tmp_model_dir), self.tsv_test_model)
-        self.round_trip_migrated_tsv_file = os.path.join(mkdtemp(dir=self.tmp_model_dir), self.tsv_test_model)
+        self.existing_2_migrated_migrated_tsv_file = os.path.join(mkdtemp(dir=self.tmp_dir), self.tsv_test_model)
+        self.round_trip_migrated_tsv_file = os.path.join(mkdtemp(dir=self.tmp_dir), self.tsv_test_model)
 
         self.config_file = os.path.join(self.fixtures_path, 'config_rt_migrations.yaml')
         self.bad_migrations_config = os.path.join(self.fixtures_path, 'config_example_bad_migrations.yaml')
@@ -345,23 +338,17 @@ class MigrationFixtures(unittest.TestCase):
             remove_silently(file)
 
 
-class TestSchemaModule(unittest.TestCase):
+class TestSchemaModule(MigrationFixtures):
 
     def setUp(self):
-        make_tmp_dirs_n_small_schemas_paths(self)
-        make_wc_lang_migration_fixtures(self)
+        super().setUp()
 
         self.test_package = os.path.join(self.fixtures_path, 'test_package')
         self.module_for_testing = os.path.join(self.test_package, 'module_for_testing.py')
         self.code = os.path.join(self.test_package, 'pkg_dir', 'code.py')
 
-        # files to delete that are not in a temp directory
-        self.files_to_delete = set()
-
     def tearDown(self):
-        rm_tmp_dirs(self)
-        for file in self.files_to_delete:
-            remove_silently(file)
+        super().tearDown()
 
     def test_parse_module_path(self):
         parse_module_path = SchemaModule.parse_module_path
@@ -1241,7 +1228,7 @@ class TestMigrator(MigrationFixtures):
         assert_equal_workbooks(self, self.example_existing_model_tsv, self.round_trip_migrated_tsv_file)
 
         # round trip test of model in xlsx file
-        tmp_existing_2_migrated_xlsx_file = os.path.join(self.tmp_model_dir,
+        tmp_existing_2_migrated_xlsx_file = os.path.join(self.tmp_dir,
             'existing_2_migrated_xlsx_file.xlsx')
         existing_2_migrated_migrator.full_migrate(self.example_existing_rt_model_copy,
             migrated_file=tmp_existing_2_migrated_xlsx_file)
@@ -1700,8 +1687,10 @@ class AutoMigrationFixtures(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.tmp_dir)
-        # remove the GitRepo's temp_dirs
+        # remove the GitRepos' temp_dirs
         cls.test_repo.del_temp_dirs()
+        cls.git_migration_test_repo.del_temp_dirs()
+        cls.totally_empty_git_repo.del_temp_dirs()
 
     def setUp(self):
         # create empty repo containing a commit and a migrations directory
@@ -1888,19 +1877,19 @@ class TestSchemaChanges(AutoMigrationFixtures):
             SchemaChanges.load(no_such_file)
 
         # detect bad yaml
-        temp_dir = tempfile.TemporaryDirectory()
-        bad_yaml = os.path.join(temp_dir.name, 'bad_yaml.yaml')
-        with open(bad_yaml, "w") as f:
-            f.write("unbalanced brackets: ][")
-        with self.assertRaisesRegex(MigratorError,
-            r"could not parse YAML schema changes file: '\S+':"):
-            SchemaChanges.load(bad_yaml)
+        with TemporaryDirectory() as temp_dir:
+            bad_yaml = os.path.join(temp_dir, 'bad_yaml.yaml')
+            with open(bad_yaml, "w") as f:
+                f.write("unbalanced brackets: ][")
+            with self.assertRaisesRegex(MigratorError,
+                r"could not parse YAML schema changes file: '\S+':"):
+                SchemaChanges.load(bad_yaml)
 
-        with open(bad_yaml, "w") as f:
-            f.write("wrong_attr: []")
-        with self.assertRaisesRegex(MigratorError,
-            r"schema changes file '.+' must have a dict with these attributes:"):
-            SchemaChanges.load(bad_yaml)
+            with open(bad_yaml, "w") as f:
+                f.write("wrong_attr: []")
+            with self.assertRaisesRegex(MigratorError,
+                r"schema changes file '.+' must have a dict with these attributes:"):
+                SchemaChanges.load(bad_yaml)
 
         pathname = self.empty_schema_changes.make_template()
         with self.assertRaisesRegex(MigratorError,
@@ -1937,13 +1926,13 @@ class TestSchemaChanges(AutoMigrationFixtures):
         self.assertRegex(errors[0], "commit_hash is '.*', which isn't the right length for a git hash")
 
     def test_generate_instance(self):
-        temp_dir = tempfile.TemporaryDirectory()
-        good_yaml = os.path.join(temp_dir.name, 'good_yaml.yaml')
-        with open(good_yaml, "w") as f:
-            f.write(yaml.dump(self.test_data))
-        schema_changes = SchemaChanges.generate_instance(good_yaml)
-        for attr in SchemaChanges._CHANGES_FILE_ATTRS:
-            self.assertEqual(getattr(schema_changes, attr), self.test_data[attr])
+        with TemporaryDirectory() as temp_dir:
+            good_yaml = os.path.join(temp_dir, 'good_yaml.yaml')
+            with open(good_yaml, "w") as f:
+                f.write(yaml.dump(self.test_data))
+            schema_changes = SchemaChanges.generate_instance(good_yaml)
+            for attr in SchemaChanges._CHANGES_FILE_ATTRS:
+                self.assertEqual(getattr(schema_changes, attr), self.test_data[attr])
 
         schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
             'bad_types_schema_changes_2019-03.yaml')
@@ -2438,7 +2427,6 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         super().tearDownClass()
 
     def setUp(self):
-        self.tmp_model_dir = self.make_tmp_dir()
         self.clean_automated_migration = AutomatedMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
                 data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
@@ -2709,7 +2697,7 @@ class TestAutomatedMigration(AutoMigrationFixtures):
         self.round_trip_automated_migrate(self.clean_automated_migration)
 
         # provide dir for automated_migrate()
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
+        with TemporaryDirectory() as tmp_dir_name:
             automated_migration_from_url = AutomatedMigration(
                 **dict(data_repo_location=self.migration_test_repo_url,
                     data_config_file_basename='automated_migration_config-migration_test_repo.yaml'))
