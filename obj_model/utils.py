@@ -290,6 +290,7 @@ class DataRepoMetadata(Model):
 
     class Meta(Model.Meta):
         tabular_orientation = TabularOrientation.column
+        attribute_order = ('url', 'branch', 'revision')
 
 
 class SchemaRepoMetadata(Model):
@@ -300,3 +301,4 @@ class SchemaRepoMetadata(Model):
 
     class Meta(Model.Meta):
         tabular_orientation = TabularOrientation.column
+        attribute_order = ('url', 'branch', 'revision')
