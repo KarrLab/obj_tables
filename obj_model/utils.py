@@ -234,7 +234,8 @@ def read_metadata_from_file(pathname):
     reader = obj_model.io.Reader.get_reader(pathname)
 
     metadata_instances = reader().run(pathname, [DataRepoMetadata, SchemaRepoMetadata],
-        ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True)
+        ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True,
+        ignore_attribute_order=True)
     metadata_class_to_attr = {
         DataRepoMetadata: 'data_repo_metadata',
         SchemaRepoMetadata: 'schema_repo_metadata'

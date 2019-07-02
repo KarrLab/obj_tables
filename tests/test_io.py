@@ -986,7 +986,7 @@ class TestMetadataModels(unittest.TestCase):
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 
-    def test_drop_metadata_models(self):
+    def test_drop_metadata_model(self):
         file_with_metadata = os.path.join(os.path.dirname(__file__), 'fixtures', 'metadata',
                                           'both-metadata.xlsx')
         objs_read = obj_model.io.Reader().run(file_with_metadata, utils.DataRepoMetadata,
