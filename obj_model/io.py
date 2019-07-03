@@ -275,7 +275,7 @@ class WorkbookWriter(WriterBase):
             all_objects.extend(metadata_objects)
 
             # put metadata models at start of model list
-            models[0:0] = [obj.__class__ for obj in metadata_objects]
+            models = [obj.__class__ for obj in metadata_objects] + list(models)
 
         # group objects by class
         grouped_objects = dict_by_class(all_objects)
@@ -752,8 +752,8 @@ class WorkbookReader(ReaderBase):
 
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
-            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
-            group_objects_by_model=True, validate=True):
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
+            ignore_attribute_order=False, group_objects_by_model=True, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
