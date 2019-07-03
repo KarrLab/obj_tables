@@ -283,23 +283,22 @@ def add_metadata_to_file(pathname, models, schema_package=None):
     return path
 
 
-class DataRepoMetadata(Model):
+class RepoMetadata(Model):
+    """ Generic Model to store Git version information about a repo """
+    url = StringAttribute()
+    branch = StringAttribute()
+    revision = StringAttribute()
+
+    class Meta(Model.Meta):
+        tabular_orientation = TabularOrientation.column
+        attribute_order = ('url', 'branch', 'revision')
+
+
+class DataRepoMetadata(RepoMetadata):
     """ Model to store Git version information about a data file's repo """
-    url = StringAttribute()
-    branch = StringAttribute()
-    revision = StringAttribute()
-
-    class Meta(Model.Meta):
-        tabular_orientation = TabularOrientation.column
-        attribute_order = ('url', 'branch', 'revision')
+    pass
 
 
-class SchemaRepoMetadata(Model):
+class SchemaRepoMetadata(RepoMetadata):
     """ Model to store Git version info for the repo that defines the obj_model schema used by a data file """
-    url = StringAttribute()
-    branch = StringAttribute()
-    revision = StringAttribute()
-
-    class Meta(Model.Meta):
-        tabular_orientation = TabularOrientation.column
-        attribute_order = ('url', 'branch', 'revision')
+    pass
