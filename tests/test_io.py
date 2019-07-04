@@ -972,7 +972,6 @@ class TestMetadataModels(unittest.TestCase):
         ## data repo ##
         # data repo metadata not written: data file not in a repo
         with pytest.warns(obj_model.io.IoWarning) as w:
-        # with warnings.catch_warnings(record=True) as w:
             file_not_in_repo = os.path.join(self.tmp_dirname, 'test.xlsx')
             writer.run(file_not_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
             self.assertEqual(len(w), 1)
@@ -985,7 +984,7 @@ class TestMetadataModels(unittest.TestCase):
         other_file = os.path.join(self.test_data_repo_dir, 'foo.txt')
         with open(other_file, 'w') as f:
             f.write('hello world!')
-        with warnings.catch_warnings(record=True) as w:
+        with pytest.warns(obj_model.io.IoWarning) as w:
             # write data file in test data repo
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
             self.assertEqual(len(w), 1)
@@ -994,7 +993,7 @@ class TestMetadataModels(unittest.TestCase):
             self.assertIn("Ensure that the data file", warning_msg)
 
         ## schema repo ##
-        with warnings.catch_warnings(record=True) as w:
+        with pytest.warns(obj_model.io.IoWarning) as w:
             # test schema package not found
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
                                       schema_package='not a schema package')
@@ -1003,7 +1002,7 @@ class TestMetadataModels(unittest.TestCase):
             self.assertRegex(warning_msg, "package '.+' not found")
             self.assertIn("Cannot obtain git repo metadata for schema repo", warning_msg)
 
-        with warnings.catch_warnings(record=True) as w:
+        with pytest.warns(obj_model.io.IoWarning) as w:
             # test schema repo modified by other_file
             package_name = 'package_a'
             package_dir = os.path.join(self.test_schema_repo_dir, package_name)

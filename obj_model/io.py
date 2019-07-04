@@ -115,7 +115,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                 if unsuitable_changes:
                     warn("Git repo metadata for data repo was obtained; "
                         "Ensure that the data file '{}' doesn't depend on these changes in the git "
-                        "repo containing it:\n{}".format(path, '\n'.join(unsuitable_changes)))
+                        "repo containing it:\n{}".format(path, '\n'.join(unsuitable_changes)), IoWarning)
 
             except ValueError as e:
                 warn("Cannot obtain git repo metadata for data repo containing: '{}':\n{}".format(
