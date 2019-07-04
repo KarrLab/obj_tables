@@ -10,6 +10,7 @@
 from os.path import splitext
 from obj_model import core, utils, chem, ontology, units
 from obj_model.io import WorkbookReader, WorkbookWriter, convert, create_template, IoWarning
+from pathlib import Path
 from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorkbookStyle, WorksheetStyle,
                                   read as read_workbook, write as write_workbook, get_reader, get_writer)
 import datetime
@@ -30,6 +31,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import warnings
 import wc_utils.util.chem
 from wc_utils.util.git import GitHubRepoForTests
 
@@ -931,20 +933,14 @@ class TestMetadataModels(unittest.TestCase):
                 del sys.path[idx]
 
     def test_workbook_writer_make_metadata_objects(self):
+        writer = obj_model.io.Writer()
+        reader = obj_model.io.Reader()
 
-        # data repo metadata not written: data file not in a repo
-        path_1 = os.path.join(self.tmp_dirname, 'test.xlsx')
-        obj_model.io.Writer().run(path_1, self.objs, [self.Model1], data_repo_metadata=True)
-        objs_read = obj_model.io.Reader().run(path_1, [self.Model1])
-        obj_types = [o.__class__ for o in objs_read]
-        self.assertTrue(utils.DataRepoMetadata not in obj_types)
-
-        # write data repo metadata in obj_model file
-        path_2 = os.path.join(self.test_data_repo_dir, 'test.xlsx')
-        obj_model.io.Writer().run(path_2, self.objs, [self.Model1], data_repo_metadata=True)
-
-        # read metadata from 'test.xlsx'
-        objs_read = obj_model.io.Reader().run(path_2, [utils.DataRepoMetadata, self.Model1])
+        ### test metadata return ###
+        # read data repo metadata
+        file_in_repo = os.path.join(self.test_data_repo_dir, 'test.xlsx')
+        writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
+        objs_read = reader.run(file_in_repo, [utils.DataRepoMetadata, self.Model1])
         data_repo_metadata = objs_read[0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
         self.assertEqual(data_repo_metadata.branch, 'master')
@@ -953,21 +949,18 @@ class TestMetadataModels(unittest.TestCase):
         for obj, obj_read in zip(self.objs, objs_read[1:]):
             self.assertTrue(obj_read.is_equal(obj))
 
-        # test schema package not found
-        obj_model.io.Writer().run(path_2, self.objs, [self.Model1], data_repo_metadata=True,
-                                  schema_package='not a schema package')
         models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
-        objs_read = obj_model.io.Reader().run(path_2, models_expected, ignore_extra_sheets=True,
-                                              ignore_missing_sheets=True)
+        objs_read = reader.run(file_in_repo, models_expected, ignore_extra_sheets=True,
+            ignore_missing_sheets=True)
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.SchemaRepoMetadata not in obj_types)
 
-        # write data and schema repo metadata in obj_model file
-        obj_model.io.Writer().run(path_2, self.objs, [self.Model1], data_repo_metadata=True,
-                                  schema_package='test_repo')
+        # write data and schema repo metadata to data file
+        writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True,
+            schema_package='test_repo')
 
-        # read metadata from 'test.xlsx'
-        objs_read = obj_model.io.Reader().run(path_2, models_expected, ignore_extra_sheets=True)
+        # read data and schema metadata
+        objs_read = reader.run(file_in_repo, models_expected, ignore_extra_sheets=True)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
@@ -975,14 +968,63 @@ class TestMetadataModels(unittest.TestCase):
             self.assertTrue(isinstance(obj.revision, str))
             self.assertEqual(len(obj.revision), 40)
 
-        # cleanup
-        os.remove(path_2)
+        ### test warnings & errors ###
+        ## data repo ##
+        # data repo metadata not written: data file not in a repo
+        with warnings.catch_warnings(record=True) as w:
+            file_not_in_repo = os.path.join(self.tmp_dirname, 'test.xlsx')
+            writer.run(file_not_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
+            self.assertEqual(len(w), 1)
+            warning_msg = str(w[0].message)
+            self.assertIn('Cannot obtain git repo metadata for data repo', warning_msg)
+            self.assertIn('is not in a Git repository', warning_msg)
+
+        # data repo contains changes
+        # write other file in data repo
+        other_file = os.path.join(self.test_data_repo_dir, 'foo.txt')
+        with open(other_file, 'w') as f:
+            f.write('hello world!')
+        with warnings.catch_warnings(record=True) as w:
+            # write data file in test data repo
+            writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
+            self.assertEqual(len(w), 1)
+            warning_msg = str(w[0].message)
+            self.assertIn("Git repo metadata for data repo was obtained", warning_msg)
+            self.assertIn("Ensure that the data file", warning_msg)
+
+        ## schema repo ##
+        with warnings.catch_warnings(record=True) as w:
+            # test schema package not found
+            writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
+                                      schema_package='not a schema package')
+            self.assertEqual(len(w), 1)
+            warning_msg = str(w[0].message)
+            self.assertRegex(warning_msg, "package '.+' not found")
+            self.assertIn("Cannot obtain git repo metadata for schema repo", warning_msg)
+
+        with warnings.catch_warnings(record=True) as w:
+            # test schema repo modified by other_file
+            package_name = 'package_a'
+            package_dir = os.path.join(self.test_schema_repo_dir, package_name)
+            Path(package_dir).mkdir()
+            writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
+                                      schema_package=package_name)
+            self.assertEqual(len(w), 1)
+            warning_msg = str(w[0].message)
+            self.assertRegex(warning_msg,
+                "Cannot obtain git repo metadata for schema repo '.+' used by data file:")
+            self.assertIn("Cannot gather metadata for schema repo from Git repo containing",
+                warning_msg)
+
+        # clean up
+        os.remove(file_in_repo)
+        os.remove(other_file)
 
         # test csv files with metadata
-        path_3 = os.path.join(self.test_data_repo_dir, 'test*.csv')
-        obj_model.io.Writer().run(path_3, self.objs, [self.Model1], data_repo_metadata=True,
+        csv_path = os.path.join(self.test_data_repo_dir, 'test*.csv')
+        writer.run(csv_path, self.objs, [self.Model1], data_repo_metadata=True,
                                   schema_package='test_repo')
-        objs_read = obj_model.io.Reader().run(path_3, models_expected, ignore_extra_sheets=True)
+        objs_read = reader.run(csv_path, models_expected, ignore_extra_sheets=True)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 

@@ -191,7 +191,7 @@ def source_report(obj, attr_name):
 
 
 def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', branch_attr='branch',
-                                    commit_hash_attr='revision', ):
+                                    commit_hash_attr='revision'):
     """ Use Git to set the Git repository URL, branch, and commit hash metadata attributes of a model
 
     Args:
@@ -202,11 +202,16 @@ def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', 
         branch_attr (:obj:`str`, optional): attribute in `model` for the Git branch; default='branch'
         commit_hash_attr (:obj:`str`, optional): attribute in `model` for the Git commit hash;
             default='revision'
+
+    Returns:
+        :obj:`list` of :obj:`str`: list of reasons, if any, that the repo might not be
+            suitable for collecting metadata
     """
-    md = git.get_repo_metadata(path=path, repo_type=repo_type, data_file=path)
+    md, unsuitable_changes = git.get_repo_metadata(path=path, repo_type=repo_type, data_file=path)
     setattr(model, url_attr, md.url)
     setattr(model, branch_attr, md.branch)
     setattr(model, commit_hash_attr, md.revision)
+    return unsuitable_changes
 
 
 # Git repository metadata from an `obj_model` data file

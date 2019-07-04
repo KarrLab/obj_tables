@@ -124,10 +124,12 @@ class TestUtils(unittest.TestCase):
     def test_group_objects_by_model(self):
         (root, nodes, leaves) = (self.root, self.nodes, self.leaves)
         objects = [root] + nodes + leaves
-        grouped_objects = utils.group_objects_by_model(objects)
-        self.assertEqual(grouped_objects[Root], [root])
-        self.assertEqual(set(grouped_objects[Node]), set(nodes))
-        self.assertEqual(set(grouped_objects[Leaf]), set(leaves))
+        for grouped_objects in [
+            utils.group_objects_by_model(objects),
+            utils.group_objects_by_model(objects + nodes)]:
+            self.assertEqual(grouped_objects[Root], [root])
+            self.assertEqual(set(grouped_objects[Node]), set(nodes))
+            self.assertEqual(set(grouped_objects[Leaf]), set(leaves))
 
     def test_get_related_errors(self):
         (root, nodes, leaves) = (self.root, self.nodes, self.leaves)
@@ -272,8 +274,10 @@ class TestMetadata(unittest.TestCase):
         # get & test git metadata
         path = os.path.join(self.test_data_repo_dir, 'test.xlsx')
         data_repo_metadata = DataRepoMetadata()
-        utils.set_git_repo_metadata_from_path(data_repo_metadata,
-                                              RepoMetadataCollectionType.DATA_REPO, path=path)
+        unsuitable_changes = utils.set_git_repo_metadata_from_path(data_repo_metadata,
+                                                                   RepoMetadataCollectionType.DATA_REPO,
+                                                                   path=path)
+        self.assertEqual(unsuitable_changes, [])
         self.assertEqual(data_repo_metadata.url, 'https://github.com/KarrLab/test_data_repo.git')
         self.assertEqual(data_repo_metadata.branch, 'master')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
@@ -286,7 +290,8 @@ class TestMetadata(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, 'is not in a Git repository'):
             utils.set_git_repo_metadata_from_path(data_repo_metadata,
-                                                  RepoMetadataCollectionType.SCHEMA_REPO, path=self.tmp_dirname)
+                                                  RepoMetadataCollectionType.SCHEMA_REPO,
+                                                  path=self.tmp_dirname)
         self.assertEqual(data_repo_metadata.url, '')
 
     def test_read_metadata_from_file(self):

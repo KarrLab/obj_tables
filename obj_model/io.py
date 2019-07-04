@@ -87,7 +87,9 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     def make_metadata_objects(self, data_repo_metadata, path, schema_package):
         """ Make models that store Git repository metadata
 
-        Metadata models can only be created from suitable Git repos
+        Metadata models can only be created from suitable Git repos.
+        Failures to obtain metadata are reported as warnings that do not interfeer with writing
+        data files.
 
         Args:
             data_repo_metadata (:obj:`bool`): if :obj:`True`, try to obtain metadata information
@@ -96,22 +98,28 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             path (:obj:`str`): path of the file(s) that will be written
             schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
                 used by the file; if not :obj:`None`, try to obtain metadata information about the
-                the schema's Git repository: the repo must be current with origin
+                the schema's Git repository from a package on `sys.path`: the repo must be current
+                with its origin
 
         Returns:
             :obj:`list` of :obj:`Model`: metadata objects(s) created
         """
-        # todo: make the ValueErrors available for debugging
         metadata_objects = []
         if data_repo_metadata:
             # create DataRepoMetadata instance
             try:
                 data_repo_metadata_obj = utils.DataRepoMetadata()
-                utils.set_git_repo_metadata_from_path(data_repo_metadata_obj,
-                                                      git.RepoMetadataCollectionType.DATA_REPO, path=path)
+                unsuitable_changes = utils.set_git_repo_metadata_from_path(data_repo_metadata_obj,
+                    git.RepoMetadataCollectionType.DATA_REPO, path=path)
                 metadata_objects.append(data_repo_metadata_obj)
+                if unsuitable_changes:
+                    warn("Git repo metadata for data repo was obtained; "
+                        "Ensure that the data file '{}' doesn't depend on these changes in the git "
+                        "repo containing it:\n{}".format(path, '\n'.join(unsuitable_changes)))
+
             except ValueError as e:
-                pass
+                warn("Cannot obtain git repo metadata for data repo containing: '{}':\n{}".format(
+                    path, str(e)), IoWarning)
 
         if schema_package:
             # create SchemaRepoMetadata instance
@@ -120,11 +128,16 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                 spec = importlib.util.find_spec(schema_package)
                 if not spec:
                     raise ValueError("package '{}' not found".format(schema_package))
-                utils.set_git_repo_metadata_from_path(schema_repo_metadata,
-                                                      git.RepoMetadataCollectionType.SCHEMA_REPO, path=spec.origin)
+                unsuitable_changes = utils.set_git_repo_metadata_from_path(schema_repo_metadata,
+                                                      git.RepoMetadataCollectionType.SCHEMA_REPO,
+                                                      path=spec.origin)
+                if unsuitable_changes:
+                    raise ValueError("Cannot gather metadata for schema repo from Git repo "
+                        "containing '{}':\n{}".format(path, '\n'.join(unsuitable_changes)))
                 metadata_objects.append(schema_repo_metadata)
             except ValueError as e:
-                pass
+                warn("Cannot obtain git repo metadata for schema repo '{}' used by data file: '{}':\n{}".format(
+                    schema_package, path, str(e)), IoWarning)
 
         return metadata_objects
 
