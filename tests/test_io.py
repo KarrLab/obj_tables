@@ -971,7 +971,8 @@ class TestMetadataModels(unittest.TestCase):
         ### test warnings & errors ###
         ## data repo ##
         # data repo metadata not written: data file not in a repo
-        with warnings.catch_warnings(record=True) as w:
+        with pytest.warns(obj_model.io.IoWarning) as w:
+        # with warnings.catch_warnings(record=True) as w:
             file_not_in_repo = os.path.join(self.tmp_dirname, 'test.xlsx')
             writer.run(file_not_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
             self.assertEqual(len(w), 1)
