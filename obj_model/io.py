@@ -1511,11 +1511,37 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None):
             to setup Excel validation for related attributes
 
     Returns:
-        :obj:`list` of :obj:`Attribute`: attributes in the order they should be printed
-        :obj:`list` of tuple of :obj:`Attribute`: attributes in the order they should be printed
-        :obj:`list`: field headings
-        :obj:`list`: list of field headings to merge
-        :obj:`list`: list of field validations
+        :obj:`tuple`:
+
+            * :obj:`list` of :obj:`Attribute`: Attributes of :obj:`cls` in the order they should be encoded as one or 
+              more columns in a worksheet. Attributes which define *-to-one relationships to other classes which 
+              are encoded as multiple cells (:obj:`TabularOrientation.multiple_cells`) will be encoded as multiple 
+              columns. All other attributes will be encoded as a single column. 
+
+              This represents a nested tree of attributes. 
+              For classes which have *-to-one relationships to other classes which are encoded as multiple cells, the tree 
+              has two levels. For all other classes, the tree only has a single level.
+            * :obj:`list` of tuple of :obj:`Attribute`: 
+              Flattened representation of the first return value. This is a list of attributes of 
+              :obj:`cls` and attributes of classes related to :obj:`cls` by *-to-one relationships that are encoded as multiple cells 
+              (:obj:`TabularOrientation.multiple_cells`), in the order they are encoded as columns in a worksheet.
+
+              Each element of the list is a tuple.
+
+                1. For attributes of :obj:`cls` that represent *-to-one relationships to classes encoded 
+                   as multiple cells, the first element will be the attribute. This will be used to populate a merged cell in Row 1 of the worksheet 
+                   which represents the heading for the multiple columns that encode the attributes of the related class. For all other attributes, 
+                   the first element will be :obj:`None`, and no value will be printed in Row 1.
+
+                2. The second element will be the attribute that should be encoded in the column. For attributes that represent
+                   *-to-one relationships to related classes encoded as multiple cells, this will be an attribute of the related class. For all
+                   other attributes, this will be an attribute of :obj:`cls`. This will be used to populate the columns headings for the worksheet.
+                   For classes that have *-to-one relationships with classes encoded as multiple columns, the column headings will appear in Row 2
+                   (and the group headings specified by the first element of the tuple will be in Row 1). For all other classes, the column headings
+                   will appear in Row 1.
+            * :obj:`list`: field headings
+            * :obj:`list`: list of field headings to merge
+            * :obj:`list`: list of field validations
     """
     # attribute order
     attrs = get_ordered_attributes(cls, include_all_attributes=include_all_attributes)
