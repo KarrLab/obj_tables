@@ -2704,9 +2704,10 @@ class AutomatedMigration(object):
 
     The `data` repo must contain a `migrations` directory that has:
 
-    * Automated migration configuration files, written in YAML
+    * Data-schema migration configuration files, written in YAML
 
-    An automated migration configuration file contains the attributes described in `AutomatedMigration._CONFIG_ATTRIBUTES`:
+    A data-schema migration configuration file contains the attributes described in
+    `AutomatedMigration._CONFIG_ATTRIBUTES`:
 
     * `files_to_migrate`: a list of files to be migrated
     * `schema_repo_url`: the URL of the `schema` repo
@@ -2726,7 +2727,7 @@ class AutomatedMigration(object):
         schema_git_repo (:obj:`GitRepo`): a :obj:`GitRepo` for a clone of the *schema* repo
         data_config_file_basename (:obj:`str`): the basename of the YAML configuration file for the
             migration, which is stored in the *data* repo's migrations directory
-        migration_config_data (:obj:`dict`): the data in the automated migration config file
+        migration_config_data (:obj:`dict`): the data in the data-schema migration config file
         loaded_schema_changes (:obj:`list`): all validated schema change files
         migration_specs (:obj:`MigrationSpec`): the migration's specification
         git_repos (:obj:`list` of :obj:`GitRepo`): all `GitRepo`s create by this `AutomatedMigration`
@@ -2736,12 +2737,12 @@ class AutomatedMigration(object):
     # todo: after upgrading to BBedit, rename to .migrations and change the repos
     _MIGRATIONS_DIRECTORY = 'migrations'
 
-    # template for the name of an automated migration; the format placeholders are replaced with
+    # template for the name of a data-schema migration config file; the format placeholders are replaced with
     # 1) the name of the data repo, 2) the name of the schema repo, and 3) a datetime value
-    # assumes that the filled values do not contain ':'
-    _MIGRATION_CONF_NAME_TEMPLATE = 'automated-migration:{}:{}:{}.yaml'
+    # assumes that the filled values do not contain '--'
+    _MIGRATION_CONF_NAME_TEMPLATE = 'data_schema_migration_conf--{}--{}--{}.yaml'
 
-    # attributes in the automated migration configuration file
+    # attributes in the data-schema migration configuration file
     _CONFIG_ATTRIBUTES = {
         # 'name': (type, description, default)
         'files_to_migrate': ('list', 'paths to files in the data repo to migrate', None),
@@ -2791,25 +2792,25 @@ class AutomatedMigration(object):
 
     @staticmethod
     def make_migration_config_file(data_git_repo, schema_repo_name, add_to_repo=True, **kwargs):
-        """ Create an automated migration config file
+        """ Create a data-schema migration config file
 
         Args:
             data_git_repo (:obj:`GitRepo`): the data git repo that contains the data files to migrate
             schema_repo_name (:obj:`str`): name of the schema repo
             add_to_repo (:obj:`bool`, optional): if set, add the migration config file to the data repo;
                 default = :obj:`True`:
-            kwargs (:obj:`dict`): optional initial values for automated migration config file
+            kwargs (:obj:`dict`): optional initial values for data-schema migration config file
 
         Returns:
-            :obj:`str`: the pathname to the automated migration config file that was written
+            :obj:`str`: the pathname to the data-schema migration config file that was written
 
         Raises:
-            :obj:`MigratorError`: if the automated migration configuration file already exists
+            :obj:`MigratorError`: if the data-schema migration configuration file already exists
         """
         pathname = os.path.join(data_git_repo.migrations_dir(),
             AutomatedMigration.get_name_static(data_git_repo.repo_name(), schema_repo_name))
         if os.path.exists(pathname):
-            raise MigratorError("automated migration configuration file '{}' already exists".format(pathname))
+            raise MigratorError("data-schema migration configuration file '{}' already exists".format(pathname))
 
         # create the migrations directory if it doesn't exist
         os.makedirs(data_git_repo.migrations_dir(), exist_ok=True)
@@ -2822,7 +2823,7 @@ class AutomatedMigration(object):
             config_data[name] = val
 
         with open(pathname, 'w') as file:
-            file.write(u'# automated migration configuration file\n\n')
+            file.write(u'# data-schema migration configuration file\n\n')
             # add documentation about the config file attributes
             file.write(u'# description of the attributes:\n')
             for name, config_attr in AutomatedMigration._CONFIG_ATTRIBUTES.items():
@@ -2833,13 +2834,13 @@ class AutomatedMigration(object):
             file.write(yaml.dump(config_data))
 
         if add_to_repo:
-            # add the automated migration configuration file to the data git repo
+            # add the data-schema migration configuration file to the data git repo
             data_git_repo.repo.index.add([pathname])
         return pathname
 
     @staticmethod
     def make_migration_config_file_command(data_repo_dir, schema_file_url, files_to_migrate, add_to_repo=True):
-        """ Make an automated migration configuration file from CLI input
+        """ Make a data-schema migration configuration file from CLI input
 
         Args:
             data_repo_dir (:obj:`str`): directory of the data repo
@@ -2909,7 +2910,7 @@ class AutomatedMigration(object):
         if schema_repo_name in migrator_map:
             migration_config_file_kwargs['migrator'] = migrator_map[schema_repo_name]
 
-        ### create automated migration config file ###
+        ### create data-schema migration config file ###
         config_file_path = AutomatedMigration.make_migration_config_file(
             git_repo,
             schema_repo_name,
@@ -2918,49 +2919,49 @@ class AutomatedMigration(object):
         return config_file_path
 
     @staticmethod
-    def load_config_file(automated_migration_config_file):
-        """ Load an automated migration config file
+    def load_config_file(data_schema_migration_conf_file):
+        """ Load a data-schema migration config file
 
         Args:
-            automated_migration_config_file (:obj:`str`): path to the automated migration config file
+            data_schema_migration_conf_file (:obj:`str`): path to the data-schema migration config file
 
         Returns:
-            :obj:`dict`: the data in the automated migration config file
+            :obj:`dict`: the data in the data-schema migration config file
 
         Raises:
-            :obj:`MigratorError`: if the automated migration config file cannot be found,
+            :obj:`MigratorError`: if the data-schema migration config file cannot be found,
                 or is not proper YAML,
                 or does not have the right format,
                 or does not contain any data
         """
         try:
-            fd = open(automated_migration_config_file, 'r')
+            fd = open(data_schema_migration_conf_file, 'r')
         except FileNotFoundError as e:
-            raise MigratorError("could not read automated migration config file: '{}'".format(
-                automated_migration_config_file))
+            raise MigratorError("could not read data-schema migration config file: '{}'".format(
+                data_schema_migration_conf_file))
         try:
-            automated_migration_config = yaml.load(fd, Loader=yaml.FullLoader)
+            data_schema_migration_conf = yaml.load(fd, Loader=yaml.FullLoader)
         except yaml.YAMLError as e:
-            raise MigratorError("could not parse YAML automated migration config file: '{}':\n{}".format(
-                automated_migration_config_file, e))
+            raise MigratorError("could not parse YAML data-schema migration config file: '{}':\n{}".format(
+                data_schema_migration_conf_file, e))
 
         errors = []
-        if not isinstance(automated_migration_config, dict):
+        if not isinstance(data_schema_migration_conf, dict):
             errors.append('yaml does not contain a dictionary')
         else:
             for attr_name in AutomatedMigration._CONFIG_ATTRIBUTES:
-                if attr_name not in automated_migration_config:
+                if attr_name not in data_schema_migration_conf:
                     errors.append("missing AutomatedMigration._CONFIG_ATTRIBUTES attribute: '{}'".format(
                         attr_name))
-                elif not automated_migration_config[attr_name]:
+                elif not data_schema_migration_conf[attr_name]:
                     # all attributes must be initialized
                     errors.append("uninitialized AutomatedMigration._CONFIG_ATTRIBUTES attribute: '{}'".format(
                         attr_name))
         if errors:
-            raise MigratorError("invalid automated migration config file: '{}'\n{}".format(
-                automated_migration_config_file, '\n'.join(errors)))
+            raise MigratorError("invalid data-schema migration config file: '{}'\n{}".format(
+                data_schema_migration_conf_file, '\n'.join(errors)))
 
-        return automated_migration_config
+        return data_schema_migration_conf
 
     def record_git_repo(self, git_repo):
         """ Record a new :obj:`GitRepo`: so that its temp dir can be deleted later
@@ -3001,7 +3002,7 @@ class AutomatedMigration(object):
             raise MigratorError('\n'.join(errors))
 
     def get_name(self):
-        """ Make a timestamped name for an automated migration
+        """ Make a timestamped name for a data-schema migration config file
 
         Returns:
             :obj:`str`: the name
@@ -3015,7 +3016,7 @@ class AutomatedMigration(object):
 
     @staticmethod
     def get_name_static(data_repo_name, schema_repo_name):
-        """ Make a timestamped name for an automated migration
+        """ Make a timestamped name for a data-schema migration config file
 
         Args:
             data_repo_name (:obj:`str`): name of the data repo
@@ -3234,7 +3235,7 @@ class AutomatedMigration(object):
         automated_migration = AutomatedMigration(data_repo_location=local_dir,
             data_config_file_basename=os.path.basename(config_file_path))
         migrated_files, _ = automated_migration.automated_migrate()
-        # delete the temporary automated migration config file
+        # delete the temporary data-schema migration config file
         remove_silently(config_file_path)
         return migrated_files
 
