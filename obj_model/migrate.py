@@ -3492,6 +3492,7 @@ class CementControllers(object):
     # todo: now: cleanup: use a semantic comparison of model instances
 
 
+# controllers that can be added to the __main__.App.Meta.handlers in a data repo; e.g., see wc_sim
 data_repo_migration_controllers = [
     CementControllers.DataSchemaMigrationConfigController,
     CementControllers.MigrateController,
@@ -3499,6 +3500,7 @@ data_repo_migration_controllers = [
 ]
 
 
+# controllers that can be added to the __main__.App.Meta.handlers in a schema repo
 schema_repo_migration_controllers = [
     CementControllers.SchemaChangesTemplateController
 ]
