@@ -252,6 +252,7 @@ def assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, 
         test_case.assertNotEqual(existing_workbook, migrated_workbook)
 
 
+# todo: migrator: make migration_wrapper.py in fixtures
 class MigrationFixtures(unittest.TestCase):
     """ Reused fixture set up and tear down
     """
@@ -1199,6 +1200,11 @@ class TestMigrator(MigrationFixtures):
         # test that inverted transformations make no changes
         assert_equal_workbooks(self, self.example_existing_model_copy, migrated_file)
 
+    # todo: migrator: consider using approach in test_generate_wc_lang_migrator
+    # todo: migrator: test migration_wrapper & transformations together
+    def test_migration_wrapper_in_full_migrate(self):
+        pass
+
     def test_full_migrate(self):
 
         # test round-trip existing -> migrated -> existing
@@ -1291,6 +1297,7 @@ class TestMigrator(MigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "cannot be imported and exec'ed"):
             migrator._load_defs_from_files()
 
+    # todo: migrator: rm
     def test_generate_wc_lang_migrator(self):
         migrator = Migrator.generate_wc_lang_migrator()
         self.assertIsInstance(migrator, Migrator)
@@ -1629,6 +1636,7 @@ class TestMigrationController(MigrationFixtures):
         print("Profile for 'MigrationController.migrate_from_config(self.config_file)'")
         profile.strip_dirs().sort_stats('cumulative').print_stats(20)
 
+    # todo: migrator: change: use migration_wrapper in wc_lang fixtures
     def test_wc_lang_migration(self):
         # round-trip migrate through changed schema
 
@@ -1658,6 +1666,8 @@ class TestMigrationController(MigrationFixtures):
         assert_equal_workbooks(self, fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
 
 
+# todo: migrator: make test repo with migration_wrapper, probably dynamically
+# approach: clone migration_test_repo & write migration_wrapper.py in its migrations/
 class AutoMigrationFixtures(unittest.TestCase):
 
     @classmethod
@@ -2447,6 +2457,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             schema_repo_url='https://github.com//KarrLab/migration_test_repo',
             branch='master',
             schema_file='../migration_test_repo/core.py',
+            # todo: migrator: rm
             migrator='wc_lang'
         )
         path = DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo_2',
@@ -2494,6 +2505,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             'https://github.com/KarrLab/wc_lang/blob/test_branch/migration_test_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx'])
         data = yaml.load(open(config_file_path, 'r'), Loader=yaml.FullLoader)
+        # todo: migrator: rm
         self.assertEqual(data['migrator'], 'wc_lang')
         self.assertEqual(data['branch'], 'test_branch')
 
@@ -2523,6 +2535,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         data_schema_migration_conf = DataSchemaMigration.load_config_file(pathname)
         expected_data_schema_migration_conf = dict(
             files_to_migrate=['../tests/fixtures/data_file_1.xlsx'],
+            # todo: migrator: rm
             migrator='standard_migrator',
             schema_file='../migration_test_repo/core.py',
             schema_repo_url='https://github.com/KarrLab/migration_test_repo',
@@ -2651,6 +2664,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         migration_spec = self.clean_data_schema_migration.generate_migration_spec(
             self.migration_test_repo_data_file_1,
             [SchemaChanges.generate_instance(self.clean_schema_changes_file)])
+        # todo: migrator: rm
         self.assertEqual(migration_spec.migrator, 'standard_migrator')
         self.assertEqual(migration_spec.existing_files[0], self.migration_test_repo_data_file_1)
         self.assertEqual(len(migration_spec.schema_files), 2)

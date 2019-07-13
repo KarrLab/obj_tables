@@ -571,6 +571,7 @@ class Migrator(object):
         MODIFY_MIGRATED_MODELS
     ]
 
+    # todo: migrator: optional migration wrapper
     def __init__(self, existing_defs_file=None, migrated_defs_file=None, renamed_models=None,
         renamed_attributes=None, transformations=None):
         """ Construct a Migrator
@@ -628,6 +629,7 @@ class Migrator(object):
         return "{}{}".format(Migrator.MIGRATED_COPY_ATTR_PREFIX,
             '_' * (max_len + 1 - len(Migrator.MIGRATED_COPY_ATTR_PREFIX)))
 
+    # todo: migrator: also use to validate migration wrapper
     @staticmethod
     def _validate_transformations(transformations):
         """ Validate transformations
@@ -1117,6 +1119,7 @@ class Migrator(object):
                 overwrite an existing file
         """
         existing_models = self.read_existing_model(existing_file)
+        # todo: migrator: if a migration wrapper is present, then run it before and after transformations
         # execute PREPARE_EXISTING_MODELS transformations
         if self.transformations and self.PREPARE_EXISTING_MODELS in self.transformations:
             self.transformations[self.PREPARE_EXISTING_MODELS](self, existing_models)
@@ -1405,6 +1408,7 @@ class Migrator(object):
         Raises:
             :obj:`MigratorError`: if `kwargs` contains `transformations`
         """
+        # todo: migrator: mv this code to a migration_wrapper.py file in wc_kb & wc_lang/migrations (also in obj_model) fixtures
         if 'transformations' in kwargs:
             raise MigratorError("'transformations' entry not allowed in kwargs:\n{}".format(pformat(kwargs)))
         def prepare_existing_wc_lang_models(migrator, existing_models):
@@ -1463,6 +1467,7 @@ class MigrationSpec(object):
         _CHANGES_LISTS (:obj:`list` of :obj:`str`): lists of changes in a migration
         _ALLOWED_ATTRS (:obj:`list` of :obj:`str`): attributes allowed in a `MigrationSpec`
         name (:obj:`str`): name for this `MigrationSpec`
+        # todo: migrator: rm:
         migrator (:obj:`str`): the name of a Migrator to use for migrations, which must be a key in
             `self.MIGRATOR_CREATOR_MAP`; default = `standard_migrator`, which maps to `Migrator`
         existing_files (:obj:`list`: of :obj:`str`, optional): existing files to migrate
@@ -1488,18 +1493,24 @@ class MigrationSpec(object):
 
     # map migrator names to callables that create `Migrator`s
     DEFAULT_MIGRATOR = 'standard_migrator'
+    # todo: migrator: rm
     MIGRATOR_CREATOR_MAP = {DEFAULT_MIGRATOR: Migrator, 'wc_lang': Migrator.generate_wc_lang_migrator}
 
+    # todo: migrator: rm 'migrator'
     _REQUIRED_ATTRS = ['name', 'migrator', 'existing_files', 'schema_files']
     _CHANGES_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes', 'seq_of_transformations']
+    # todo: migrator: rm 'MIGRATOR_CREATOR_MAP'
     _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['migrated_files', 'migrate_suffix',
         'migrate_in_place', 'migrations_config_file', '_prepared', 'DEFAULT_MIGRATOR',
         'MIGRATOR_CREATOR_MAP', 'git_hashes']
 
+    # todo: migrator: rm 'migrator=DEFAULT_MIGRATOR, '
+    # todo: migrator: add migration wrapper
     def __init__(self, name, migrator=DEFAULT_MIGRATOR, existing_files=None, schema_files=None,
         git_hashes=None, seq_of_renamed_models=None, seq_of_renamed_attributes=None, seq_of_transformations=None,
         migrated_files=None, migrate_suffix=None, migrate_in_place=False, migrations_config_file=None):
         self.name = name
+        # todo: migrator: rm
         self.migrator = migrator
         self.existing_files = existing_files
         self.schema_files = schema_files
@@ -1668,6 +1679,7 @@ class MigrationSpec(object):
                 "but they have {} and {} entries, respectively".format(len(self.existing_files),
                 len(self.migrated_files)))
 
+        # todo: migrator: rm
         # ensure a valid value of 'migrator'
         if not hasattr(self, 'migrator') or self.migrator not in self.MIGRATOR_CREATOR_MAP:
             errors.append("'migrator' must be an element of {}".format(
@@ -1725,6 +1737,7 @@ class MigrationSpec(object):
                 self.migrated_files = self._normalize_filenames(self.migrated_files,
                     absolute_file=self.migrations_config_file)
 
+    # todo: migrator: rm
     def get_migrator(self):
         """ Obtain callable that creates `Migrator`s for this `MigrationSpec`
 
@@ -1800,6 +1813,8 @@ class MigrationController(object):
             # the 'for' line doesn't jump to return; this cannot be annotated with 'pragma: no cover'
             for i in range(num_migrations):
                 # create Migrator for each pair of schemas
+                # todo: migrator: rm, replace notion of custom migrator with schema repo migration wrapper
+                # todo: migrator: use Migrator() constructor
                 migrator_creator = migration_spec.get_migrator()
                 migrator = migrator_creator(existing_defs_file=ms.schema_files[i],
                     migrated_defs_file=ms.schema_files[i+1], renamed_models=ms.seq_of_renamed_models[i],
@@ -2713,6 +2728,7 @@ class DataSchemaMigration(object):
     * `schema_repo_url`: the URL of the `schema` repo
     * `branch`: the branch of the `schema` repo
     * `schema_file`: the relative path of the schema file in the `schema` repo
+    # todo: migrator: rm
     * `migrator`: the type of migrator to use
 
     The `schema` repo contains a `migrations` directory that contains schema changes files, which
@@ -2743,12 +2759,14 @@ class DataSchemaMigration(object):
     _MIGRATION_CONF_NAME_TEMPLATE = 'data_schema_migration_conf--{}--{}--{}.yaml'
 
     # attributes in the data-schema migration configuration file
+    # todo: migrator: rm 'migrator' from data-schema migration configuration files
     _CONFIG_ATTRIBUTES = {
         # 'name': (type, description, default)
         'files_to_migrate': ('list', 'paths to files in the data repo to migrate', None),
         'schema_repo_url': ('str', 'the URL of the schema repo', None),
         'branch': ('str', "the schema's branch", 'master'),
         'schema_file': ('str', 'the relative path to the schema file in the schema repo', None),
+        # todo: migrator: rm 'migrator'
         'migrator': ('str',
             'the keyword for the type of migrator to use, a key in `MigrationSpec.MIGRATOR_CREATOR_MAP`',
             MigrationSpec.DEFAULT_MIGRATOR),
@@ -2902,6 +2920,7 @@ class DataSchemaMigration(object):
             raise MigratorError('\n'.join(errors))
         migration_config_file_kwargs['files_to_migrate'] = converted_data_files
 
+        # todo: migrator: rm
         ### determine migrator from name of schema ###
         # todo: store this mapping in a config file
         migrator_map = dict(
@@ -2978,6 +2997,10 @@ class DataSchemaMigration(object):
         for git_repo in self.git_repos:
             git_repo.del_temp_dirs()
 
+    # todo: migrator: method to load migration wrapper, if any
+    def load_migration_wrapper(self):
+        pass
+
     def validate(self):
         """ Validate files to migrate, and load all schema changes files
 
@@ -3001,6 +3024,7 @@ class DataSchemaMigration(object):
         errors, self.loaded_schema_changes = SchemaChanges.all_schema_changes_with_commits(self.schema_git_repo)
         if errors:
             raise MigratorError('\n'.join(errors))
+    # todo: migrator: use load_migration_wrapper
 
     def get_name(self):
         """ Make a timestamped name for a data-schema migration config file
@@ -3094,7 +3118,9 @@ class DataSchemaMigration(object):
             spec_args['seq_of_renamed_attributes'].append(schema_change.renamed_attributes)
             spec_args['seq_of_transformations'].append(schema_change.transformations_file)
 
+        # todo: migrator: rm
         spec_args['migrator'] = self.migration_config_data['migrator']
+        # todo: migrator: pass migration wrapper
         spec_args['migrate_in_place'] = True
         migration_spec = MigrationSpec(**spec_args)
         migration_spec.prepare()
