@@ -6,6 +6,7 @@
 :License: MIT
 """
 
+from abc import ABC, abstractmethod
 from cement import Controller, App
 from enum import Enum
 from modulefinder import ModuleFinder
@@ -48,8 +49,6 @@ import wc_utils
 
 # TODOS
 #
-# refactor generate_wc_lang_migrator into method in wc_lang called by obj_model
-#   define abstract migrator here, and let schema optionally subclass it
 # check documentation
 
 # todo: test OneToManyAttribute
@@ -537,7 +536,11 @@ class Migrator(object):
         renamed_attributes_map (:obj:`dict`): map of attribute names renamed from the existing to the migrated schema
         _migrated_copy_attr_name (:obj:`str`): attribute name used to point existing models to corresponding
             migrated models; not used in any existing schema
-        transformations (:obj:`dict`): map of transformation types in `SUPPORTED_TRANSFORMATIONS` to callables
+        # todo: migrator: revise docstring
+        io_wrapper (:obj:`MigrationWrapper`): map of transformation types in `METHODS_IN_TRANSFORMATIONS` to callables,
+            optionally used to modify models after input or before output
+        transformations (:obj:`MigrationWrapper`): map of transformation types in `METHODS_IN_TRANSFORMATIONS` to callables,
+            optionally used to modify models before or after migration
     """
 
     SCALAR_ATTRS = ['deleted_models', '_migrated_copy_attr_name']
@@ -557,24 +560,38 @@ class Migrator(object):
     # the name of the attribute used in expression Models to hold their ParsedExpressions
     PARSED_EXPR = '_parsed_expression'
 
-    # supported transformations
+    # todo: migrator: revise docstring
     PREPARE_EXISTING_MODELS = 'PREPARE_EXISTING_MODELS'
     MODIFY_MIGRATED_MODELS = 'MODIFY_MIGRATED_MODELS'
-    SUPPORTED_TRANSFORMATIONS = [
+    # todo: migrator: try to define transform types here & check them fully in _type_check_transformations()
+    METHODS_IN_TRANSFORMATIONS = [
         # A callable w the signature f(migrator, existing_models), where `migrator` is a Migrator doing
-        # a migration, and `existing_models` is a list of all existing models. It is executed immediately
-        # after the existing models have been read. The callable may alter any of the existing models.
+        # a migration, and `existing_models` is a list of all existing models. The callable may alter
+        # any of the existing models.
         PREPARE_EXISTING_MODELS,
         # A callable w the signature f(migrator, migrated_models), where `migrator` is a Migrator doing
-        # a migration, and `migrated_models` is a list of all migrated models. It is executed immediately
-        # after all models have been migrated. The callable may alter any of the migrated models.
+        # a migration, and `migrated_models` is a list of all migrated models. The callable may alter
+        # any of the migrated models.
         MODIFY_MIGRATED_MODELS
     ]
 
-    # todo: migrator: optional migration wrapper
     def __init__(self, existing_defs_file=None, migrated_defs_file=None, renamed_models=None,
-        renamed_attributes=None, transformations=None):
+        renamed_attributes=None, io_wrapper=None, transformations=None):
         """ Construct a Migrator
+
+        # todo: migrator: revise docstring
+        The pairs of functions that modify models in `io_wrapper` and `transformations`
+        have a similar structure, but different purposes. If it's defined, `io_wrapper` modifies existing
+        models just after they are read from a file and modifies migrated models
+        just before they are written to a file. If it's defined, `transformations`
+        uses its `PREPARE_EXISTING_MODELS` code to modify existing
+        models just before they are migrated and uses its `MODIFY_MIGRATED_MODELS` code to modify
+        migrated models just after they are migrated.
+        `io_wrapper` is a wrapper on migration which will be used for all migrations of models defined
+        by a particular data model (schema).
+        On the other hand, a different `transformations` is associated with each granular step in a sequence
+        of migrations (see `SchemaChanges` below) so that different changes can wrap migration
+        in each step.
 
         Args:
             existing_defs_file (:obj:`str`, optional): path of a file containing existing Model definitions
@@ -588,14 +605,18 @@ class Migrator(object):
                 to the migrated schema; a list of tuples of the form
                 `(('Existing_Model_i', 'Existing_Attr_x'), ('Migrated_Model_j', 'Migrated_Attr_y'))`,
                 which indicates that `Existing_Model_i.Existing_Attr_x` will migrate to
-                `Migrated_Model_j.Migrated_Attr_y`.
-            transformations (:obj:`dict`, optional): map of transformation types in `SUPPORTED_TRANSFORMATIONS`
-                to callables
+                `Migrated_Model_j.Migrated_Attr_y`
+            # todo: migrator: revise docstrings
+            io_wrapper (:obj:`MigrationWrapper`, optional): map containing one or both of the pair of functions
+                named and described in `METHODS_IN_TRANSFORMATIONS`
+            transformations (:obj:`MigrationWrapper`, optional): map containing one or both of the pair of functions
+                named and described in `METHODS_IN_TRANSFORMATIONS`
         """
         self.existing_schema = SchemaModule(existing_defs_file) if existing_defs_file else None
         self.migrated_schema = SchemaModule(migrated_defs_file) if migrated_defs_file else None
         self.renamed_models = renamed_models if renamed_models else []
         self.renamed_attributes = renamed_attributes if renamed_attributes else []
+        self.io_wrapper = io_wrapper
         self.transformations = transformations
 
     def _load_defs_from_files(self):
@@ -607,13 +628,9 @@ class Migrator(object):
             :obj:`list` of :obj:`obj_model.Model`: the `Model`s in `self.module_path`
         """
         if self.existing_schema:
-            # print('getting existing_schema')
             self.existing_defs = self.existing_schema.run()
-            # print('existing_defs', list(self.existing_defs.keys()))
         if self.migrated_schema:
-            # print('getting migrated_schema')
             self.migrated_defs = self.migrated_schema.run()
-            # print('migrated_defs', list(self.migrated_defs.keys()))
         return self
 
     def _get_migrated_copy_attr_name(self):
@@ -628,33 +645,6 @@ class Migrator(object):
                 max_len = max(max_len, len(attr.name))
         return "{}{}".format(Migrator.MIGRATED_COPY_ATTR_PREFIX,
             '_' * (max_len + 1 - len(Migrator.MIGRATED_COPY_ATTR_PREFIX)))
-
-    # todo: migrator: also use to validate migration wrapper
-    @staticmethod
-    def _validate_transformations(transformations):
-        """ Validate transformations
-
-        Ensure that transformations is a dict of callables
-
-        Args:
-            transformations (:obj:`object`): a transformations
-
-        Returns:
-            :obj:`list` of `str`: errors in `transformations`, if any
-        """
-        errors = []
-        if transformations:
-            if not isinstance(transformations, dict):
-                return ["transformations should be a dict, but it is a(n) '{}'".format(type(
-                    transformations).__name__)]
-            if not set(transformations).issubset(Migrator.SUPPORTED_TRANSFORMATIONS):
-                errors.append("names of transformations {} aren't a subset of the supported "
-                    "transformations {}".format(set(transformations), set(Migrator.SUPPORTED_TRANSFORMATIONS)))
-            for transform_name, transformation in transformations.items():
-                if not callable(transformation):
-                    errors.append("value for transformation '{}' is a(n) '{}', which isn't callable".format(
-                        transform_name, type(transformation).__name__))
-        return errors
 
     def _validate_renamed_models(self):
         """ Validate renamed models
@@ -786,8 +776,13 @@ class Migrator(object):
         # load schemas from files
         self._load_defs_from_files()
 
-        # validate transformations
-        self._validate_transformations(self.transformations)
+        # todo: migrator: rm, as MigrationWrapper does
+        # type check io_wrapper and transformations
+        errors = []
+        errors.extend(self._type_check_transformations(self.io_wrapper))
+        errors.extend(self._type_check_transformations(self.transformations))
+        if errors:
+            raise MigratorError('\n'.join(errors))
 
         # validate model and attribute rename specifications
         errors = self._validate_renamed_models()
@@ -1001,9 +996,10 @@ class Migrator(object):
         Returns:
             :obj:`str`: name of migrated file
         """
-        return [model for model in models.values() if model.Meta.tabular_orientation not in [TabularOrientation.cell, TabularOrientation.multiple_cells]]
+        return [model for model in models.values()
+            if model.Meta.tabular_orientation not in [TabularOrientation.cell, TabularOrientation.multiple_cells]]
 
-    def read_existing_model(self, existing_file):
+    def read_existing_file(self, existing_file):
         """ Read models from existing file
 
         Does not perform validation -- data in existing model file must be already validated with the existing schema.
@@ -1099,6 +1095,91 @@ class Migrator(object):
             data_repo_metadata=True)
         return migrated_file
 
+    def _read(self, existing_file):
+        """ Read an existing file containing models
+
+        Also transform the models with `io_wrapper.PREPARE_EXISTING_MODELS`, if it's defined
+
+        Args:
+            existing_file (:obj:`str`): pathname of file to migrate
+
+        Returns:
+            :obj:`list` of `obj_model.Model`: the existing models, after any transformation by `io_wrapper`
+        """
+        existing_models = self.read_existing_file(existing_file)
+        # todo: migrator: MigrationWrapper calls differently; probably
+        # if self.io_wrapper:
+        #   self.io_wrapper.prepare_existing_models(existing_models)
+        # if it exists, execute PREPARE_EXISTING_MODELS in io_wrapper
+        if self.io_wrapper and self.PREPARE_EXISTING_MODELS in self.io_wrapper:
+            self.io_wrapper[self.PREPARE_EXISTING_MODELS](self, existing_models)
+        return existing_models
+
+    def _migrate_with_transformations(self, existing_models):
+        """ Migrate existing models, and transform them with methods in `transformations`, if they're defined
+
+        Args:
+            existing_models (:obj:`list` of `obj_model.Model`:) the existing models
+
+        Returns:
+            :obj:`list` of `obj_model.Model`: the migrated models, including any transformations
+                by `transformations`
+        """
+        # if it exists, execute PREPARE_EXISTING_MODELS in `transformations`
+        # todo: migrator: MigrationWrapper calls differently; probably
+        # if self.io_wrapper:
+        #   self.io_wrapper.prepare_existing_models(existing_models)
+        if self.transformations and self.PREPARE_EXISTING_MODELS in self.transformations:
+            self.transformations[self.PREPARE_EXISTING_MODELS](self, existing_models)
+        for count_uninitialized_attrs in self._check_models(existing_models):
+            warn(count_uninitialized_attrs, MigrateWarning)
+        migrated_models = self.migrate(existing_models)
+        # if it exists, execute MODIFY_MIGRATED_MODELS in `transformations`
+        # todo: migrator: MigrationWrapper calls differently; probably
+        # if self.io_wrapper:
+        #   self.io_wrapper.prepare_existing_models(existing_models)
+        if self.transformations and self.MODIFY_MIGRATED_MODELS in self.transformations:
+            self.transformations[self.MODIFY_MIGRATED_MODELS](self, migrated_models)
+        return migrated_models
+
+    def _write(self, existing_file, migrated_models, migrated_file=None, migrate_suffix=None,
+        migrate_in_place=False):
+        """ Write migrated models to a migrated file
+
+        Also, before writing the models transform them with `io_wrapper.MODIFY_MIGRATED_MODELS`,
+        if it's defined
+
+        Args:
+            existing_file (:obj:`str`): pathname of file being migrated
+            migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
+            migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
+                overwrite `existing_file` or save migrated file with migrated suffix in same directory
+                as existing file
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
+                default is `Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
+                migrated file and ignore `migrated_file` and `migrate_suffix`
+
+        Returns:
+            :obj:`str`: name of the migrated file
+
+        Raises:
+            :obj:`MigratorError`: if migrate_in_place is False and writing the migrated file would
+                overwrite an existing file
+        """
+        # if it exists, execute MODIFY_MIGRATED_MODELS in io_wrapper
+        # todo: migrator: MigrationWrapper calls differently; probably
+        # if self.io_wrapper:
+        #   self.io_wrapper.prepare_existing_models(existing_models)
+        if self.io_wrapper and self.MODIFY_MIGRATED_MODELS in self.io_wrapper:
+            self.io_wrapper[self.MODIFY_MIGRATED_MODELS](self, migrated_models)
+
+        # get sequence of migrated models in workbook of existing file
+        existing_model_order = self._get_existing_model_order(existing_file)
+        migrated_model_order = self._migrate_model_order(existing_model_order)
+        return self.write_migrated_file(migrated_models, migrated_model_order, existing_file,
+            migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
+
     def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
         """ Migrate data from an existing file to a migrated file
 
@@ -1118,23 +1199,10 @@ class Migrator(object):
             :obj:`MigratorError`: if migrate_in_place is False and writing the migrated file would
                 overwrite an existing file
         """
-        existing_models = self.read_existing_model(existing_file)
-        # todo: migrator: if a migration wrapper is present, then run it before and after transformations
-        # execute PREPARE_EXISTING_MODELS transformations
-        if self.transformations and self.PREPARE_EXISTING_MODELS in self.transformations:
-            self.transformations[self.PREPARE_EXISTING_MODELS](self, existing_models)
-        for count_uninitialized_attrs in self._check_models(existing_models):
-            warn(count_uninitialized_attrs, MigrateWarning)
-        migrated_models = self.migrate(existing_models)
-        # execute MODIFY_MIGRATED_MODELS transformations
-        if self.transformations and self.MODIFY_MIGRATED_MODELS in self.transformations:
-            self.transformations[self.MODIFY_MIGRATED_MODELS](self, migrated_models)
-        # get sequence of migrated models in workbook of existing file
-        existing_model_order = self._get_existing_model_order(existing_file)
-        migrated_model_order = self._migrate_model_order(existing_model_order)
-        migrated_file = self.write_migrated_file(migrated_models, migrated_model_order, existing_file,
-            migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
-        return migrated_file
+        existing_models = self._read(existing_file)
+        migrated_models = self._migrate_with_transformations(existing_models)
+        return self._write(existing_file, migrated_models, migrated_file=migrated_file,
+            migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
 
     def _check_model(self, existing_model, existing_model_def):
         """ Check a model instance against its definition
@@ -1388,6 +1456,8 @@ class Migrator(object):
             # delete the reference to migrated_model in existing_model
             delattr(existing_model, self._migrated_copy_attr_name)
 
+    # todo: migrator: mv this code to a io_wrapper.py file in wc_kb & wc_lang/migrations (also in obj_model) fixtures
+    '''
     @staticmethod
     def generate_wc_lang_migrator(**kwargs):
         """ Generate a `Migrator` for a WC-Lang (`wc_lang`) model
@@ -1408,7 +1478,6 @@ class Migrator(object):
         Raises:
             :obj:`MigratorError`: if `kwargs` contains `transformations`
         """
-        # todo: migrator: mv this code to a migration_wrapper.py file in wc_kb & wc_lang/migrations (also in obj_model) fixtures
         if 'transformations' in kwargs:
             raise MigratorError("'transformations' entry not allowed in kwargs:\n{}".format(pformat(kwargs)))
         def prepare_existing_wc_lang_models(migrator, existing_models):
@@ -1430,6 +1499,7 @@ class Migrator(object):
 
         transformations = {Migrator.PREPARE_EXISTING_MODELS: prepare_existing_wc_lang_models}
         return Migrator(**kwargs, transformations=transformations)
+    '''
 
     def run(self, files):
         """ Migrate some files
@@ -1443,7 +1513,7 @@ class Migrator(object):
         return migrated_files
 
     def __str__(self):
-        """ Get str representation
+        """ Get string representation
 
         Returns:
             :obj:`str`: string representation of a `Migrator`; collections attributes are rendered
@@ -1459,6 +1529,35 @@ class Migrator(object):
         return '\n'.join(rv)
 
 
+# todo: migrator:
+class MigrationWrapper(ABC):    # pragma: no cover
+    """ Interface for classes that define a pair of methods that may modify `obj_model.Model`s being migrated
+    """
+    '''
+    PREPARE_EXISTING_MODELS = 'PREPARE_EXISTING_MODELS'
+    MODIFY_MIGRATED_MODELS = 'MODIFY_MIGRATED_MODELS'
+    # todo: migrator: try to define transform types here & check them fully in _type_check_transformations()
+    METHODS_IN_TRANSFORMATIONS = [
+        # A callable w the signature f(migrator, existing_models), where `migrator` is a Migrator doing
+        # a migration, and `existing_models` is a list of all existing models. The callable may alter
+        # any of the existing models.
+        PREPARE_EXISTING_MODELS,
+        # A callable w the signature f(migrator, migrated_models), where `migrator` is a Migrator doing
+        # a migration, and `migrated_models` is a list of all migrated models. The callable may alter
+        # any of the migrated models.
+        MODIFY_MIGRATED_MODELS
+    ]
+    '''
+
+    @abstractmethod
+    def prepare_existing_models(self, migrator, existing_models):
+        pass
+
+    @abstractmethod
+    def modify_migrated_models(self, migrator, migrated_models):
+        pass
+
+
 class MigrationSpec(object):
     """ Specification of a sequence of migrations for a list of existing files
 
@@ -1467,9 +1566,6 @@ class MigrationSpec(object):
         _CHANGES_LISTS (:obj:`list` of :obj:`str`): lists of changes in a migration
         _ALLOWED_ATTRS (:obj:`list` of :obj:`str`): attributes allowed in a `MigrationSpec`
         name (:obj:`str`): name for this `MigrationSpec`
-        # todo: migrator: rm:
-        migrator (:obj:`str`): the name of a Migrator to use for migrations, which must be a key in
-            `self.MIGRATOR_CREATOR_MAP`; default = `standard_migrator`, which maps to `Migrator`
         existing_files (:obj:`list`: of :obj:`str`, optional): existing files to migrate
         schema_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
             definitions for each state in a sequence of migrations
@@ -1481,6 +1577,8 @@ class MigrationSpec(object):
             for use by a `Migrator` for each migration in a sequence of migrations
         seq_of_transformations (:obj:`list` of :obj:`dict`, optional): list of transformations
             for use by a `Migrator` for each migration in a sequence of migrations
+        io_wrapper (:obj:`dict`, optional): a pair of transformations used by a `Migrator` to modify
+            models just after input and/or just before output; see details in the documentation for `Migrator`
         migrated_files (:obj:`list`: of :obj:`str`, optional): migration destination files in 1-to-1
             correspondence with `existing_files`; if not provided, migrated files use a suffix or
             are migrated in place
@@ -1491,33 +1589,23 @@ class MigrationSpec(object):
         _prepared (:obj:`bool`, optional): whether this `MigrationSpec` has been prepared
     """
 
-    # map migrator names to callables that create `Migrator`s
-    DEFAULT_MIGRATOR = 'standard_migrator'
-    # todo: migrator: rm
-    MIGRATOR_CREATOR_MAP = {DEFAULT_MIGRATOR: Migrator, 'wc_lang': Migrator.generate_wc_lang_migrator}
-
-    # todo: migrator: rm 'migrator'
-    _REQUIRED_ATTRS = ['name', 'migrator', 'existing_files', 'schema_files']
+    _REQUIRED_ATTRS = ['name', 'existing_files', 'schema_files']
     _CHANGES_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes', 'seq_of_transformations']
-    # todo: migrator: rm 'MIGRATOR_CREATOR_MAP'
-    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['migrated_files', 'migrate_suffix',
-        'migrate_in_place', 'migrations_config_file', '_prepared', 'DEFAULT_MIGRATOR',
-        'MIGRATOR_CREATOR_MAP', 'git_hashes']
+    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['io_wrapper', 'migrated_files', 'migrate_suffix',
+        'migrate_in_place', 'migrations_config_file', '_prepared', 'git_hashes']
 
-    # todo: migrator: rm 'migrator=DEFAULT_MIGRATOR, '
-    # todo: migrator: add migration wrapper
-    def __init__(self, name, migrator=DEFAULT_MIGRATOR, existing_files=None, schema_files=None,
-        git_hashes=None, seq_of_renamed_models=None, seq_of_renamed_attributes=None, seq_of_transformations=None,
-        migrated_files=None, migrate_suffix=None, migrate_in_place=False, migrations_config_file=None):
+    def __init__(self, name, existing_files=None, schema_files=None,
+        git_hashes=None, seq_of_renamed_models=None, seq_of_renamed_attributes=None,
+        seq_of_transformations=None, io_wrapper=None, migrated_files=None, migrate_suffix=None,
+        migrate_in_place=False, migrations_config_file=None):
         self.name = name
-        # todo: migrator: rm
-        self.migrator = migrator
         self.existing_files = existing_files
         self.schema_files = schema_files
         self.git_hashes = git_hashes
         self.seq_of_renamed_models = seq_of_renamed_models
         self.seq_of_renamed_attributes = seq_of_renamed_attributes
         self.seq_of_transformations = seq_of_transformations
+        self.io_wrapper = io_wrapper
         self.migrated_files = migrated_files
         self.migrate_suffix = migrate_suffix
         self.migrate_in_place = migrate_in_place
@@ -1679,12 +1767,6 @@ class MigrationSpec(object):
                 "but they have {} and {} entries, respectively".format(len(self.existing_files),
                 len(self.migrated_files)))
 
-        # todo: migrator: rm
-        # ensure a valid value of 'migrator'
-        if not hasattr(self, 'migrator') or self.migrator not in self.MIGRATOR_CREATOR_MAP:
-            errors.append("'migrator' must be an element of {}".format(
-                set(self.MIGRATOR_CREATOR_MAP.keys())))
-
         return errors
 
     @staticmethod
@@ -1736,15 +1818,6 @@ class MigrationSpec(object):
             if self.migrated_files:
                 self.migrated_files = self._normalize_filenames(self.migrated_files,
                     absolute_file=self.migrations_config_file)
-
-    # todo: migrator: rm
-    def get_migrator(self):
-        """ Obtain callable that creates `Migrator`s for this `MigrationSpec`
-
-        Returns:
-            :obj:`callable`: a callable that creates `Migrator`s for this `MigrationSpec`
-        """
-        return self.MIGRATOR_CREATOR_MAP[self.migrator]
 
     def expected_migrated_files(self):
         """ Provide names of migrated files that migration of this `MigrationSpec` would produce
@@ -1806,6 +1879,7 @@ class MigrationController(object):
 
         # iterate over existing_files & migrated_files
         migrated_files = ms.migrated_files if ms.migrated_files else [None] * len(ms.existing_files)
+        # todo: migrator: rm all_models if they're not used
         all_models, all_migrated_files = [], []
         for existing_file, migrated_file in zip(ms.existing_files, migrated_files):
             num_migrations = len(ms.schema_files) - 1
@@ -1813,29 +1887,27 @@ class MigrationController(object):
             # the 'for' line doesn't jump to return; this cannot be annotated with 'pragma: no cover'
             for i in range(num_migrations):
                 # create Migrator for each pair of schemas
-                # todo: migrator: rm, replace notion of custom migrator with schema repo migration wrapper
-                # todo: migrator: use Migrator() constructor
-                migrator_creator = migration_spec.get_migrator()
-                migrator = migrator_creator(existing_defs_file=ms.schema_files[i],
+
+                # todo: migrator: add and test transformations and io_wrapper
+                migrator = Migrator(existing_defs_file=ms.schema_files[i],
                     migrated_defs_file=ms.schema_files[i+1], renamed_models=ms.seq_of_renamed_models[i],
                     renamed_attributes=ms.seq_of_renamed_attributes[i])
                 migrator.prepare()
-                # the 1st iteration inits `models` from the existing file; iteration n+1 uses `models` set in n
+                # the 1st iteration reads models from the existing file; iteration n+1 uses the models set in iteration n
                 if i == 0:
-                    models = migrator.read_existing_model(existing_file)
+                    models = migrator._read(existing_file)
                     all_models.append(models)
-                    model_order = migrator._get_existing_model_order(existing_file)
-                for count_uninitialized_attrs in migrator._check_models(models):
-                    warn(count_uninitialized_attrs, MigrateWarning)
+                    # todo: migrator: read(self, existing_file): returns models and model_order?
                 # migrate in memory until the last migration
-                models = migrator.migrate(models)
+                # todo: migrator: test migrate_over_schema_sequence(migration_spec) with at least 3 elements in migration_spec
+                # todo: migrator: wrapped_migrate(self): returns models
+                models = migrator._migrate_with_transformations(models)
                 all_models.append(models)
-                model_order = migrator._migrate_model_order(model_order)
                 if i == num_migrations - 1:
                     # done migrating, write to file
-                    actual_migrated_file = migrator.write_migrated_file(models, model_order, existing_file,
-                        migrated_file=migrated_file, migrate_suffix=ms.migrate_suffix,
-                        migrate_in_place=ms.migrate_in_place)
+                    # todo: migrator: write(self, migrated_file=None, migrate_suffix=None, migrate_in_place=False): returns migrated filename
+                    actual_migrated_file = migrator._write(existing_file, models, migrated_file=migrated_file,
+                        migrate_suffix=ms.migrate_suffix, migrate_in_place=ms.migrate_in_place)
                     all_migrated_files.append(actual_migrated_file)
 
         return all_models, all_migrated_files
@@ -2141,6 +2213,8 @@ class SchemaChanges(object):
         schema_changes_template_file = schema_changes.make_template(commit_hash=commit_hash)
         return schema_changes_template_file
 
+    # todo: migrator: mv to MigrationWrapper
+    # todo: migrator: have SchemaChanges use MigrationWrapper
     def import_transformations(self):
         """ Import the transformation functions referenced in a schema changes file
 
@@ -2150,7 +2224,7 @@ class SchemaChanges(object):
         Raises:
             :obj:`MigratorError`: if the transformations file cannot be imported,
                 or it does not have a 'transformations' attribute,
-                or 'transformations' isn't a dict of callables as specified by Migrator.SUPPORTED_TRANSFORMATIONS
+                or 'transformations' isn't a dict of callables as specified by Migrator.METHODS_IN_TRANSFORMATIONS
         """
         if self.transformations_file:
 
@@ -2166,7 +2240,7 @@ class SchemaChanges(object):
             transformations = transformations_module.transformations
 
             # validate transformations
-            errors = Migrator._validate_transformations(transformations)
+            errors = Migrator._type_check_transformations(transformations)
             if errors:
                 raise MigratorError('\n'.join(errors))
             return transformations
@@ -2728,8 +2802,6 @@ class DataSchemaMigration(object):
     * `schema_repo_url`: the URL of the `schema` repo
     * `branch`: the branch of the `schema` repo
     * `schema_file`: the relative path of the schema file in the `schema` repo
-    # todo: migrator: rm
-    * `migrator`: the type of migrator to use
 
     The `schema` repo contains a `migrations` directory that contains schema changes files, which
     may refer to associated transformations files. Hashes
@@ -2759,17 +2831,12 @@ class DataSchemaMigration(object):
     _MIGRATION_CONF_NAME_TEMPLATE = 'data_schema_migration_conf--{}--{}--{}.yaml'
 
     # attributes in the data-schema migration configuration file
-    # todo: migrator: rm 'migrator' from data-schema migration configuration files
     _CONFIG_ATTRIBUTES = {
         # 'name': (type, description, default)
         'files_to_migrate': ('list', 'paths to files in the data repo to migrate', None),
         'schema_repo_url': ('str', 'the URL of the schema repo', None),
         'branch': ('str', "the schema's branch", 'master'),
-        'schema_file': ('str', 'the relative path to the schema file in the schema repo', None),
-        # todo: migrator: rm 'migrator'
-        'migrator': ('str',
-            'the keyword for the type of migrator to use, a key in `MigrationSpec.MIGRATOR_CREATOR_MAP`',
-            MigrationSpec.DEFAULT_MIGRATOR),
+        'schema_file': ('str', 'the relative path to the schema file in the schema repo', None)
     }
 
     # attributes in a `DataSchemaMigration`
@@ -2920,16 +2987,6 @@ class DataSchemaMigration(object):
             raise MigratorError('\n'.join(errors))
         migration_config_file_kwargs['files_to_migrate'] = converted_data_files
 
-        # todo: migrator: rm
-        ### determine migrator from name of schema ###
-        # todo: store this mapping in a config file
-        migrator_map = dict(
-            wc_lang='wc_lang',
-            wc_kb='wc_lang',
-        )
-        if schema_repo_name in migrator_map:
-            migration_config_file_kwargs['migrator'] = migrator_map[schema_repo_name]
-
         ### create data-schema migration config file ###
         config_file_path = DataSchemaMigration.make_migration_config_file(
             git_repo,
@@ -2997,8 +3054,8 @@ class DataSchemaMigration(object):
         for git_repo in self.git_repos:
             git_repo.del_temp_dirs()
 
-    # todo: migrator: method to load migration wrapper, if any
-    def load_migration_wrapper(self):
+    # todo: migrator: use MigrationWrapper
+    def load_io_wrapper(self):
         pass
 
     def validate(self):
@@ -3024,7 +3081,7 @@ class DataSchemaMigration(object):
         errors, self.loaded_schema_changes = SchemaChanges.all_schema_changes_with_commits(self.schema_git_repo)
         if errors:
             raise MigratorError('\n'.join(errors))
-    # todo: migrator: use load_migration_wrapper
+    # todo: migrator: use load_io_wrapper
 
     def get_name(self):
         """ Make a timestamped name for a data-schema migration config file
@@ -3118,9 +3175,7 @@ class DataSchemaMigration(object):
             spec_args['seq_of_renamed_attributes'].append(schema_change.renamed_attributes)
             spec_args['seq_of_transformations'].append(schema_change.transformations_file)
 
-        # todo: migrator: rm
-        spec_args['migrator'] = self.migration_config_data['migrator']
-        # todo: migrator: pass migration wrapper
+        # todo: migrator: pass io wrapper
         spec_args['migrate_in_place'] = True
         migration_spec = MigrationSpec(**spec_args)
         migration_spec.prepare()

@@ -31,4 +31,4 @@ wc_lang_migration:
         # for 2nd migration:
         [[ParameterRenamed, Parameter]]
     ]
-    migrator: wc_lang
+    
