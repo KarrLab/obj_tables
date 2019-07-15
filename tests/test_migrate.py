@@ -42,7 +42,7 @@ import yaml
 from .config import core
 from obj_model.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
     MigrationSpec, SchemaChanges, DataSchemaMigration, GitRepo, VirtualEnvUtil,
-    CementControllers, data_repo_migration_controllers, schema_repo_migration_controllers)
+    CementControllers, data_repo_migration_controllers, schema_repo_migration_controllers, MigrationWrapper)
 import obj_model
 from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -713,30 +713,6 @@ class TestMigrator(MigrationFixtures):
     def tearDown(self):
         super().tearDown()
 
-    def test_type_check_transformations(self):
-        migrator = Migrator()
-        self.assertEqual(Migrator._type_check_transformations(migrator.io_wrapper), [])
-        self.assertEqual(Migrator._type_check_transformations(migrator.transformations), [])
-
-        def a_callable(): pass
-        migrator = Migrator(io_wrapper=dict.fromkeys(Migrator.METHODS_IN_TRANSFORMATIONS, a_callable))
-        self.assertEqual(Migrator._type_check_transformations(migrator.io_wrapper), [])
-        migrator = Migrator(transformations=dict.fromkeys(Migrator.METHODS_IN_TRANSFORMATIONS, a_callable))
-        self.assertEqual(Migrator._type_check_transformations(migrator.transformations), [])
-
-        migrator = Migrator(transformations=3)
-        self.assertIn("transformations should be a dict",
-            Migrator._type_check_transformations(migrator.transformations)[0])
-
-        migrator = Migrator(transformations={'FOO':3, Migrator.PREPARE_EXISTING_MODELS:2})
-        self.assertRegex(Migrator._type_check_transformations(migrator.transformations)[0],
-            "names of transformations .+ aren't a subset of the supported transformations")
-
-        migrator = Migrator(transformations=dict.fromkeys(Migrator.METHODS_IN_TRANSFORMATIONS, 3))
-        errors = Migrator._type_check_transformations(migrator.transformations)
-        for error in errors:
-            self.assertRegex(error, r"value for transformation '.+' is a\(n\) '.+', which isn't callable")
-
     def test_validate_renamed_models(self):
         migrator_for_error_tests = self.migrator_for_error_tests
         self.assertEqual(migrator_for_error_tests._validate_renamed_models(), [])
@@ -1347,41 +1323,6 @@ class TestMigrator(MigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "cannot be imported and exec'ed"):
             migrator._load_defs_from_files()
 
-    # todo: migrator: rm
-    '''
-    def test_generate_wc_lang_migrator(self):
-        migrator = Migrator.generate_wc_lang_migrator()
-        self.assertIsInstance(migrator, Migrator)
-        self.assertTrue(callable(migrator.transformations[Migrator.PREPARE_EXISTING_MODELS]))
-
-        same_defs_migrator = Migrator.generate_wc_lang_migrator(existing_defs_file=self.wc_lang_schema_existing,
-            migrated_defs_file=self.wc_lang_schema_existing)
-        same_defs_migrator.prepare()
-        # migrate self.wc_lang_no_model_attrs twice with the generate_wc_lang_migrator
-        # the 1st migration adds model attributes, & the 2nd tests that they exist
-        wc_lang_model_with_model_attrs = same_defs_migrator.full_migrate(self.wc_lang_no_model_attrs)
-        assert_differing_workbooks(self, self.wc_lang_no_model_attrs, wc_lang_model_with_model_attrs)
-        migrated_file = same_defs_migrator.full_migrate(wc_lang_model_with_model_attrs)
-        assert_equal_workbooks(self, wc_lang_model_with_model_attrs, migrated_file)
-
-        bad_kwargs = dict(existing_defs_file='existing_defs.py', migrated_defs_file='migrated_defs.py',
-            transformations='foo')
-        with self.assertRaisesRegex(MigratorError, "'transformations' entry not allowed in kwargs:\\n.+"):
-            Migrator.generate_wc_lang_migrator(**bad_kwargs)
-
-        # raise exception for num models != 1 by creating PREPARE_EXISTING_MODELS that deletes the model
-        current_prepare_existing_models_fun = same_defs_migrator.transformations[
-            Migrator.PREPARE_EXISTING_MODELS]
-        def delete_model_and_call_current(migrator, existing_models):
-            model_cls = migrator.existing_defs['Model']
-            existing_models = [model for model in existing_models if model.__class__ != model_cls]
-            current_prepare_existing_models_fun(migrator, existing_models)
-        same_defs_migrator.transformations[Migrator.PREPARE_EXISTING_MODELS] = delete_model_and_call_current
-        with self.assertRaisesRegex(MigratorError,
-            "existing models must have 1 Model instance, but \\d are present"):
-            same_defs_migrator.full_migrate(self.wc_lang_no_model_attrs)
-    '''
-
     def test_run(self):
         migrated_files = self.no_change_migrator.run([self.example_existing_model_copy])
         assert_equal_workbooks(self, self.example_existing_model_copy, migrated_files[0])
@@ -1400,6 +1341,34 @@ class TestMigrator(MigrationFixtures):
         str_value = str(empty_migrator)
         for attr in Migrator.SCALAR_ATTRS:
             self.assertNotRegex(str_value, '^' + attr + '$')
+
+
+class TestMigrationWrapper(MigrationFixtures):
+
+    def test(self):
+
+        class SimpleWrapper(MigrationWrapper):
+
+            def prepare_existing_models(self, a, b):
+                return a+b
+
+            def modify_migrated_models(self, a, b):
+                return a-b
+
+        simple_wrapper = SimpleWrapper()
+        self.assertEqual(simple_wrapper.prepare_existing_models(1, 2), 3)
+        self.assertEqual(simple_wrapper.modify_migrated_models(3, 2), 1)
+
+        example_wrappers_file = os.path.join(self.fixtures_path, 'wrappers', 'example_wrappers.py')
+        example_wrappers = MigrationWrapper.import_migration_wrapper(example_wrappers_file)
+        self.assertEqual(set(example_wrappers), set(['inverting_property_wrapper', 'simple_wrapper']))
+        simple_wrapper = example_wrappers['simple_wrapper']
+        self.assertEqual(simple_wrapper.prepare_existing_models(1, 2), 3)
+        self.assertEqual(simple_wrapper.modify_migrated_models(3, 2), 1)
+
+        no_wrappers_file = os.path.join(self.fixtures_path, 'wrappers', 'no_wrappers.py')
+        with self.assertRaisesRegex(MigratorError, 'does not define any MigrationWrapper instances'):
+            MigrationWrapper.import_migration_wrapper(no_wrappers_file)
 
 
 class TestMigrationSpec(MigrationFixtures):
@@ -1894,31 +1863,18 @@ class TestSchemaChanges(AutoMigrationFixtures):
             "commit_or_hash '.+' cannot be converted into a commit"):
             SchemaChanges.make_template_command(self.git_migration_test_repo.repo_dir, 'no such commit')
 
-    def test_import_transformations(self):
-        find_file = SchemaChanges.find_file
-        schema_changes = SchemaChanges.generate_instance(self.schema_changes_file)
-        transformations = schema_changes.import_transformations()
-        self.assertIsInstance(transformations, dict)
-        self.assertEqual(transformations['PREPARE_EXISTING_MODELS'],
-            transformations['MODIFY_MIGRATED_MODELS'])
+    def test_load_transformations(self):
+        schema_changes_kwargs = SchemaChanges.load(self.schema_changes_file)
+        schema_changes = SchemaChanges()
+        schema_changes.schema_changes_file = schema_changes_kwargs['schema_changes_file']
+        schema_changes.transformations_file = schema_changes_kwargs['transformations_file']
+        transformations = schema_changes.load_transformations()
+        self.assertTrue(isinstance(transformations, MigrationWrapper))
 
-        schema_changes_file = os.path.join(self.test_repo.migrations_dir(),
-            'schema_changes_no-transformations-file_aaaaaaa.yaml')
-        schema_changes = SchemaChanges.generate_instance(schema_changes_file)
-        transformations = schema_changes.import_transformations()
-        self.assertTrue(transformations is None)
-
-        schema_changes_file = os.path.join(self.test_repo.migrations_dir(),
-            'schema_changes_bad-transformations_ccccccc.yaml')
-        schema_changes = SchemaChanges.generate_instance(schema_changes_file)
-        with self.assertRaisesRegex(MigratorError, "'.+' does not have a 'transformations' attribute"):
-            schema_changes.import_transformations()
-
-        schema_changes_file = os.path.join(self.test_repo.migrations_dir(),
-            'schema_changes_bad-transformations_bbbbbbb.yaml')
-        schema_changes = SchemaChanges.generate_instance(schema_changes_file)
-        with self.assertRaisesRegex(MigratorError, "transformations should be a dict, but it is a.+"):
-            schema_changes.import_transformations()
+        schema_changes.transformations_file = 'no_transformations_wrapper.py'
+        with self.assertRaisesRegex(MigratorError,
+            r"schema changes file '.+' must define a MigrationWrapper instance called 'transformations'"):
+            schema_changes.load_transformations()
 
     def test_load(self):
         schema_changes = SchemaChanges.load(self.schema_changes_file)
