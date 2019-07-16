@@ -1,4 +1,4 @@
-# a migrations configuration
+# a migration spec configuration file
 
 migration_with_empty_renaming_n_migrated_files:
     schema_files: [no_such_file_existing.py, no_such_file_migrated_rt.py,

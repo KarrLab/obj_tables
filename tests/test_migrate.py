@@ -53,7 +53,7 @@ from wc_utils.workbook.io import read as read_workbook
 from wc_utils.util.files import remove_silently
 from wc_utils.util.misc import internet_connected
 from obj_model.expression import Expression
-from obj_model.io import TOC_NAME
+from obj_model.io import TOC_NAME, Reader, Writer
 from wc_utils.util.git import GitHubRepoForTests
 
 
@@ -277,8 +277,9 @@ class MigrationFixtures(unittest.TestCase):
         self.existing_2_migrated_migrated_tsv_file = os.path.join(mkdtemp(dir=self.tmp_dir), self.tsv_test_model)
         self.round_trip_migrated_tsv_file = os.path.join(mkdtemp(dir=self.tmp_dir), self.tsv_test_model)
 
-        self.config_file = os.path.join(self.fixtures_path, 'config_rt_migrations.yaml')
-        self.bad_migrations_config = os.path.join(self.fixtures_path, 'config_example_bad_migrations.yaml')
+        self.migration_spec_cfg_file = os.path.join(self.fixtures_path, 'config_rt_migrations.yaml')
+        self.bad_migration_spec_conf_file = os.path.join(self.fixtures_path,
+            'config_example_bad_migrations.yaml')
 
         make_migrators_in_memory(self)
 
@@ -688,26 +689,25 @@ class TestMigrator(MigrationFixtures):
 
     def setUp(self):
         super().setUp()
-        # make a transformations with PREPARE_EXISTING_MODELS & MODIFY_MIGRATED_MODELS that invert each other
-        def increment_property_values(migrator, existing_models):
-            # increment the value of Property models
-            for existing_model in existing_models:
-                if isinstance(existing_model, migrator.existing_defs['Property']):
-                    existing_model.value += +1
+        # make a MigrationWrapper transformations with prepare_existing_models and modify_migrated_models that invert each other
+        class InvertingPropertyWrapper(MigrationWrapper):
 
-        def decrement_property_values(migrator, migrated_models):
-            # decrement the value of Property models
-            for migrated_model in migrated_models:
-                if isinstance(migrated_model, migrator.existing_defs['Property']):
-                    migrated_model.value += -1
+            def prepare_existing_models(self, migrator, existing_models):
+                # increment the value of Property models
+                for existing_model in existing_models:
+                    if isinstance(existing_model, migrator.existing_defs['Property']):
+                        existing_model.value += +1
 
-        inverting_property_transforms = {
-            Migrator.PREPARE_EXISTING_MODELS: increment_property_values,
-            Migrator.MODIFY_MIGRATED_MODELS: decrement_property_values
-        }
+            def modify_migrated_models(self, migrator, migrated_models):
+                # decrement the value of Property models
+                for migrated_model in migrated_models:
+                    if isinstance(migrated_model, migrator.existing_defs['Property']):
+                        migrated_model.value += -1
+
+        inverting_property_wrapper = InvertingPropertyWrapper()
         self.inverting_transforms_migrator = Migrator(self.existing_defs_path, self.existing_defs_path,
-            io_wrapper=inverting_property_transforms,
-            transformations=inverting_property_transforms)
+            # io_wrapper=inverting_property_transforms,
+            transformations=inverting_property_wrapper)
         self.inverting_transforms_migrator.prepare()
 
     def tearDown(self):
@@ -913,11 +913,6 @@ class TestMigrator(MigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "'.*' in renamed models not a migrated model"):
             migrator.prepare()
         migrator.renamed_models = []
-
-        migrator = Migrator(io_wrapper={Migrator.MODIFY_MIGRATED_MODELS:[4]},
-            transformations={'FOO':3, Migrator.PREPARE_EXISTING_MODELS:2})
-        with self.assertRaises(MigratorError):
-            migrator.prepare()
 
         migrator = self.migrator
         migrator.renamed_attributes = [(('Test', 'name'), ('Test', 'no_such_name'))]
@@ -1131,7 +1126,7 @@ class TestMigrator(MigrationFixtures):
 
     @staticmethod
     def read_model_file(model_file, models):
-        reader = obj_model.io.Reader.get_reader(model_file)()
+        reader = Reader.get_reader(model_file)()
         return reader.run(model_file, models=models, ignore_sheet_order=True)
 
     def compare_model(self, model_cls, models, existing_file, migrated_file):
@@ -1189,21 +1184,13 @@ class TestMigrator(MigrationFixtures):
         # test that inverted transformations make no changes
         assert_equal_workbooks(self, self.example_existing_model_copy, migrated_file)
 
-    def test_read(self):
-        raw_existing_models = self.inverting_transforms_migrator.read_existing_file(
-            self.example_existing_model_copy)
-        existing_models_io_wrapped = self.inverting_transforms_migrator._read(self.example_existing_model_copy)
-        for model, model_io_wrapped in zip(raw_existing_models, existing_models_io_wrapped):
-            if 'Property' in model.__class__.__name__:
-                self.assertEqual(model.value + 1, model_io_wrapped.value)
-
     def test_migrate_with_transformations(self):
         # test io_wrapper & transformations together
         raw_existing_models = self.inverting_transforms_migrator.read_existing_file(
             self.example_existing_model_copy)
         transformed_migrated_models = self.inverting_transforms_migrator._migrate_with_transformations(
             raw_existing_models)
-        # re-read raw_existing_models because _migrate_with_transformations changes them 
+        # re-read raw_existing_models because _migrate_with_transformations changes them
         raw_existing_models = self.inverting_transforms_migrator.read_existing_file(
             self.example_existing_model_copy)
         for raw_existing_model, transformed_migrated_model in zip(raw_existing_models,
@@ -1217,12 +1204,12 @@ class TestMigrator(MigrationFixtures):
         self.inverting_transforms_migrator._write(self.example_existing_model_copy,
             raw_existing_models, migrated_file=migrated_file)
         io_wrapped_models = self.inverting_transforms_migrator.read_existing_file(migrated_file)
-        # re-read raw_existing_models from self.example_existing_model_copy because _write changes them
+        # re-read raw_existing_models because _write changes them
         raw_existing_models = self.inverting_transforms_migrator.read_existing_file(
             self.example_existing_model_copy)
         for raw_existing_model, io_wrapped_model in zip(raw_existing_models, io_wrapped_models):
             if 'Property' in raw_existing_model.__class__.__name__:
-                self.assertEqual(raw_existing_model.value - 1, io_wrapped_model.value)
+                self.assertEqual(raw_existing_model.value, io_wrapped_model.value)
 
     def test_full_migrate_with_both_transforms(self):
         # inverting transforms and no migration changes should not change models
@@ -1390,6 +1377,9 @@ class TestMigrationSpec(MigrationFixtures):
             self.migration_spec.prepare()
 
     def test_load(self):
+        migration_specs = MigrationSpec.load(self.migration_spec_cfg_file)
+        self.assertIn('migration_with_renaming', migration_specs)
+
         temp_bad_config_example = os.path.join(self.tmp_dir, 'bad_config_example.yaml')
         with open(temp_bad_config_example, 'w') as file:
             file.write(u'migration:\n')
@@ -1398,11 +1388,8 @@ class TestMigrationSpec(MigrationFixtures):
             re.escape("disallowed attribute(s) found: {'obj_defs'}")):
             MigrationSpec.load(temp_bad_config_example)
 
-        migration_specs = MigrationSpec.load(self.config_file)
-        self.assertIn('migration_with_renaming', migration_specs)
-
     def test_get_migrations_config(self):
-        migration_specs = MigrationSpec.get_migrations_config(self.config_file)
+        migration_specs = MigrationSpec.get_migrations_config(self.migration_spec_cfg_file)
         self.assertIn('migration_with_renaming', migration_specs)
 
         with self.assertRaisesRegex(MigratorError, "could not read migration config file: "):
@@ -1499,12 +1486,48 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertRegex(error,
             r"existing_files and migrated_files must .+ but they have \d and \d entries, .+")
 
+        ms = copy.deepcopy(self.migration_spec)
+        migration_spec_tests = os.path.join(self.fixtures_path, 'migration_spec_tests')
+        ms.io_classes_file = os.path.join(migration_spec_tests, 'test_io_classes_file.py')
+        self.assertEqual(ms.validate(), [])
+
+        ms = copy.deepcopy(self.migration_spec)
+        ms.io_classes_file = 'NO SUCH io_classes_file.py'
+        error = ms.validate()[0]
+        self.assertRegex(error, r"the io_classes_file '.+' cannot be found")
+        ms.migrations_config_file = __file__
+        error = ms.validate()[0]
+        self.assertRegex(error, r"the io_classes_file '.+' cannot be found")
+
     def test_normalize_filenames(self):
         self.assertEqual(MigrationSpec._normalize_filenames([]), [])
         self.assertEqual(MigrationSpec._normalize_filenames([self.existing_defs_path]), [self.existing_defs_path])
         self.assertEqual(
             MigrationSpec._normalize_filenames([os.path.basename(self.existing_defs_path)],
                 absolute_file=self.existing_defs_path), [self.existing_defs_path])
+
+    def test_load_io_classes(self):
+        ms = MigrationSpec('name')
+        self.assertEqual(ms.load_io_classes(), None)
+
+        migration_spec_tests = os.path.join(self.fixtures_path, 'migration_spec_tests')
+        test_io_classes_file = os.path.join(migration_spec_tests, 'test_io_classes_file.py')
+        ms = MigrationSpec('name', io_classes_file=test_io_classes_file)
+        ms.load_io_classes()
+        expected_io_classes = dict(reader=Reader, writer=Writer)
+        self.assertEqual(ms.io_classes, expected_io_classes)
+
+        migration_spec_conf_file = os.path.join(migration_spec_tests, 'migration_spec_conf_file.yaml')
+        ms = MigrationSpec('name', io_classes_file='test_io_classes_file.py',
+            migrations_config_file=migration_spec_conf_file)
+        ms.load_io_classes()
+        self.assertEqual(ms.io_classes, expected_io_classes)
+
+        ms = MigrationSpec('name', io_classes_file='bad_io_classes_file.py',
+            migrations_config_file=migration_spec_conf_file)
+        with self.assertRaisesRegex(MigratorError,
+            r"IO classes file '\S+' does not define a dict called 'io_classes'"):
+            ms.load_io_classes()
 
     def test_standardize(self):
         ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'])
@@ -1514,7 +1537,7 @@ class TestMigrationSpec(MigrationFixtures):
         for attr in ['existing_files', 'migrated_files']:
             self.assertEqual(getattr(ms, attr), None)
 
-        migration_specs = MigrationSpec.get_migrations_config(self.config_file)
+        migration_specs = MigrationSpec.get_migrations_config(self.migration_spec_cfg_file)
 
         ms = migration_specs['simple_migration']
         migrations_config_file_dir = os.path.dirname(ms.migrations_config_file)
@@ -1537,7 +1560,7 @@ class TestMigrationSpec(MigrationFixtures):
         ]
         self.assertEqual(ms.seq_of_renamed_attributes[0], expected_1st_renamed_attributes)
 
-        migration_specs = MigrationSpec.get_migrations_config(self.bad_migrations_config)
+        migration_specs = MigrationSpec.get_migrations_config(self.bad_migration_spec_conf_file)
         ms = migration_specs['migration_with_empty_renaming_n_migrated_files']
         ms.standardize()
         self.assertEqual(ms.seq_of_renamed_attributes[1], None)
@@ -1552,7 +1575,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertEqual(ms.expected_migrated_files(), [tmp_file])
 
     def test_str(self):
-        migration_specs = MigrationSpec.get_migrations_config(self.config_file)
+        migration_specs = MigrationSpec.get_migrations_config(self.migration_spec_cfg_file)
         name = 'migration_with_renaming'
         migration_spec = migration_specs[name]
         migration_spec_str = str(migration_spec)
@@ -1605,7 +1628,7 @@ class TestMigrationController(MigrationFixtures):
         return migrated_filename
 
     def test_migrate_from_spec(self):
-        migration_specs = MigrationSpec.load(self.config_file)
+        migration_specs = MigrationSpec.load(self.migration_spec_cfg_file)
 
         migration_spec = migration_specs['simple_migration']
         tmp_migrated_filename = self.put_tmp_migrated_file_in_migration_spec(migration_spec, 'migration.xlsx')
@@ -1618,10 +1641,17 @@ class TestMigrationController(MigrationFixtures):
         round_trip_migrated_xlsx_files = MigrationController.migrate_from_spec(migration_spec)
         assert_equal_workbooks(self, migration_spec.existing_files[0], round_trip_migrated_xlsx_files[0])
 
+    def test_wc_lang_migrate_from_spec(self):
+        config_file = os.path.join(self.wc_lang_fixtures_path, 'migrations', 'config_rt_lang_migration.yaml')
+        migration_specs = MigrationSpec.load(config_file)
+
+        # todo: migrator: IOPlugin
+        '''
         migration_spec = migration_specs['wc_lang_migration']
         self.put_tmp_migrated_file_in_migration_spec(migration_spec, 'example-wc_lang-model_migrated.xlsx')
         round_trip_migrated_wc_lang_files = MigrationController.migrate_from_spec(migration_spec)
         assert_equal_workbooks(self, migration_spec.existing_files[0], round_trip_migrated_wc_lang_files[0])
+        '''
 
     def test_migrate_from_config(self):
         # these are round-trip migrations
@@ -1629,27 +1659,27 @@ class TestMigrationController(MigrationFixtures):
         # Prepare to remove the migrated_files so they do not contaminate tests/fixtures/migrate.
         # An alternative but more complex approach would be to copy the YAML config file into
         # a temp dir along with the files and directories (packages) it references.
-        for migration_spec in MigrationSpec.load(self.config_file).values():
+        for migration_spec in MigrationSpec.load(self.migration_spec_cfg_file).values():
             for expected_migrated_file in migration_spec.expected_migrated_files():
                 self.files_to_delete.add(expected_migrated_file)
 
-        results = MigrationController.migrate_from_config(self.config_file)
+        results = MigrationController.migrate_from_config(self.migration_spec_cfg_file)
         for migration_spec, migrated_files in results:
             assert_equal_workbooks(self, migration_spec.existing_files[0], migrated_files[0])
 
     @unittest.skip("optional performance test")
     def test_migrate_from_config_performance(self):
         # test performance
-        for migration_spec in MigrationSpec.load(self.config_file).values():
+        for migration_spec in MigrationSpec.load(self.migration_spec_cfg_file).values():
             for expected_migrated_file in migration_spec.expected_migrated_files():
                 self.files_to_delete.add(expected_migrated_file)
 
         out_file = temp_pathname(self, "profile_out.out")
         locals = {'self':self, 'MigrationController':MigrationController}
-        cProfile.runctx('results = MigrationController.migrate_from_config(self.config_file)', {},
+        cProfile.runctx('results = MigrationController.migrate_from_config(self.migration_spec_cfg_file)', {},
             locals, filename=out_file)
         profile = pstats.Stats(out_file)
-        print("Profile for 'MigrationController.migrate_from_config(self.config_file)'")
+        print("Profile for 'MigrationController.migrate_from_config(self.migration_spec_cfg_file)'")
         profile.strip_dirs().sort_stats('cumulative').print_stats(20)
 
     # todo: migrator: change: use io_wrapper in wc_lang fixtures
@@ -2517,7 +2547,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             DataSchemaMigration.make_data_schema_migration_conf_file_cmd('', 'https://github.com/core.py', [])
 
         with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
-            DataSchemaMigration.make_data_schema_migration_conf_file_cmd('', 
+            DataSchemaMigration.make_data_schema_migration_conf_file_cmd('',
                 'https://github.com/a/b/c/d/e/core', [])
 
         with self.assertRaisesRegex(MigratorError, "data_repo_dir is not a directory"):
