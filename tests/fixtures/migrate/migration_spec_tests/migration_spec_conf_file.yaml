@@ -1,4 +1,0 @@
-# a migration spec configuration file for testing load_io_classes
-
-migration_for_testing_load_io_classes:
-    io_classes_file: 'test_io_classes_file.py'

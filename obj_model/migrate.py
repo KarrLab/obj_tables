@@ -363,7 +363,6 @@ class SchemaModule(object):
                 print('targets in names', names.intersection(targets))
                 print('targets in models_found', models_found.intersection(targets))
 
-        # todo: migrator: probably changes these to Exception
         except (SyntaxError, ImportError, AttributeError, ValueError, NameError) as e:
             raise MigratorError("'{}' cannot be imported and exec'ed: {}: {}".format(
                 self.get_path(), e.__class__.__name__, e))
@@ -1048,6 +1047,7 @@ class Migrator(object):
             raise MigratorError("migrated file '{}' already exists".format(migrated_file))
 
         # write migrated models to disk
+        # todo: migrator: IOPlugin: TEST CUSTOM WRITER
         Writer = self.io_classes['writer']
         Writer().run(migrated_file, migrated_models, models=model_order, validate=False,
             data_repo_metadata=True)
@@ -1489,8 +1489,6 @@ class MigrationSpec(object):
             for use by a `Migrator` for each migration in a sequence
         seq_of_transformations (:obj:`list` of :obj:`MigrationWrapper`, optional): list of transformations
             for use by a `Migrator` for each migration in a sequence
-        # todo: migrator: IOPlugin: rm probably
-        io_classes_file (:obj:`str`, optional): filename of Python file that defines io_classes
         io_classes (:obj:`dict` of :obj:`type`, optional): reader and/or writer for I/O of existing and
             migrated files, respectively
         migrated_files (:obj:`list`: of :obj:`str`, optional): migration destination files in 1-to-1
@@ -1505,12 +1503,12 @@ class MigrationSpec(object):
 
     _REQUIRED_ATTRS = ['name', 'existing_files', 'schema_files']
     _CHANGES_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes', 'seq_of_transformations']
-    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['io_classes_file', 'io_classes', 'migrated_files',
+    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['io_classes', 'migrated_files',
         'migrate_suffix', 'migrate_in_place', 'migrations_config_file', '_prepared', 'git_hashes']
 
     def __init__(self, name, existing_files=None, schema_files=None, git_hashes=None,
         seq_of_renamed_models=None, seq_of_renamed_attributes=None, seq_of_transformations=None,
-        io_classes_file=None, io_classes=None, migrated_files=None, migrate_suffix=None,
+        io_classes=None, migrated_files=None, migrate_suffix=None,
         migrate_in_place=False, migrations_config_file=None):
         self.name = name
         self.existing_files = existing_files
@@ -1519,7 +1517,6 @@ class MigrationSpec(object):
         self.seq_of_renamed_models = seq_of_renamed_models
         self.seq_of_renamed_attributes = seq_of_renamed_attributes
         self.seq_of_transformations = seq_of_transformations
-        self.io_classes_file = io_classes_file
         self.io_classes = io_classes
         self.migrated_files = migrated_files
         self.migrate_suffix = migrate_suffix
@@ -1682,17 +1679,6 @@ class MigrationSpec(object):
                 "but they have {} and {} entries, respectively".format(len(self.existing_files),
                 len(self.migrated_files)))
 
-        # todo: migrator: IOPlugin: rm probably
-        # ensure that 'io_classes_file' exists if specified
-        if self.io_classes_file:
-            # normalize the filename
-            dirname = None
-            if self.migrations_config_file:
-                dirname = os.path.dirname(self.migrations_config_file)
-            io_classes_file = normalize_filename(self.io_classes_file, dir=dirname)
-            if not os.path.isfile(io_classes_file):
-                errors.append("the io_classes_file '{}' cannot be found".format(self.io_classes_file))
-
         return errors
 
     @staticmethod
@@ -1710,40 +1696,6 @@ class MigrationSpec(object):
         if absolute_file:
             dir = os.path.dirname(absolute_file)
         return [normalize_filename(filename, dir=dir) for filename in filenames]
-
-    # todo: migrator: IOPlugin: rm probably
-    def load_io_classes(self):
-        """ Load a Python file that defines references to IO classes that read and write data files
-
-        If a Python file containing IO classes is specified for this `MigrationSpec`
-        in `self.io_classes_file`, load the IO classes into `self.io_classes`. The file must define
-        a dictionary like this that maps `reader` and `writer` to the IO classes that read and write
-        data files:
-
-            `io_classes = dict(reader=Reader, writer=Writer)`
-
-        Raises:
-            :obj:`MigratorError`: if a file containing IO classes exists and it cannot be imported,
-            or it does not define a dict called 'io_classes'
-        """
-        if self.io_classes_file:
-            # normalize the filename
-            dirname = None
-            if self.migrations_config_file:
-                dirname = os.path.dirname(self.migrations_config_file)
-            io_classes_file = normalize_filename(self.io_classes_file, dir=dirname)
-
-            # import the Python file
-            schema_module = SchemaModule(io_classes_file, dir=os.path.dirname(io_classes_file))
-            imported_module = schema_module.import_module_for_migration(validate=False)
-
-            # confirm that the Python file defines io_classes
-            if not hasattr(imported_module, 'io_classes') or \
-                not isinstance(imported_module.io_classes, dict):
-                raise MigratorError("IO classes file '{}' does not define a dict called 'io_classes'".format(
-                    io_classes_file))
-
-            self.io_classes = imported_module.io_classes
 
     def standardize(self):
         """ Standardize the attributes of a `MigrationSpec`
@@ -1778,9 +1730,6 @@ class MigrationSpec(object):
             if self.migrated_files:
                 self.migrated_files = self._normalize_filenames(self.migrated_files,
                     absolute_file=self.migrations_config_file)
-
-        # if specified, import IO classes for accessing data files from a Python file
-        self.load_io_classes()
 
     def expected_migrated_files(self):
         """ Provide names of migrated files that migration of this `MigrationSpec` would produce

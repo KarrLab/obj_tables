@@ -68,11 +68,7 @@ def make_wc_lang_migration_fixtures(test_case):
     test_case.wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang_fixture', 'wc_lang')
     test_case.wc_lang_schema_existing = os.path.join(test_case.wc_lang_fixtures_path, 'core.py')
     test_case.wc_lang_schema_modified = os.path.join(test_case.wc_lang_fixtures_path, 'core_modified.py')
-    test_case.wc_lang_migrations_path = os.path.join(test_case.wc_lang_fixtures_path, 'migrations')
-    test_case.wc_lang_model_copy = copy_file_to_tmp(test_case,
-        os.path.join(test_case.wc_lang_migrations_path,'example-wc_lang-model.xlsx'))
-    test_case.lang_migration_cfg_file = os.path.join(test_case.wc_lang_migrations_path,
-        'config_rt_lang_migration.yaml')
+    test_case.wc_lang_model_copy = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
 
 def copy_file_to_tmp(test_case, name):
     """ Copy file `name` to a new dir in the tmp dir and return its pathname
@@ -320,11 +316,6 @@ class MigrationFixtures(unittest.TestCase):
             schema_files=[self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path],
             seq_of_renamed_models=[self.existing_2_migrated_renamed_models],
             seq_of_renamed_attributes=[self.existing_2_migrated_renamed_attributes])
-
-        # io_classes fixtures
-        self.migration_spec_tests = os.path.join(self.fixtures_path, 'migration_spec_tests')
-        self.io_classes_file = os.path.join(self.migration_spec_tests, 'test_io_classes_file.py')
-        self.migration_spec_conf_file = os.path.join(self.migration_spec_tests, 'migration_spec_conf_file.yaml')
 
         # files to delete that are not in a temp directory
         self.files_to_delete = set()
@@ -713,7 +704,6 @@ class TestMigrator(MigrationFixtures):
 
         inverting_property_wrapper = InvertingPropertyWrapper()
         self.inverting_transforms_migrator = Migrator(self.existing_defs_path, self.existing_defs_path,
-            # io_wrapper=inverting_property_transforms,
             transformations=inverting_property_wrapper)
         self.inverting_transforms_migrator.prepare()
 
@@ -1192,7 +1182,7 @@ class TestMigrator(MigrationFixtures):
         assert_equal_workbooks(self, self.example_existing_model_copy, migrated_file)
 
     def test_migrate_with_transformations(self):
-        # test io_wrapper & transformations together
+        # test transformations
         raw_existing_models = self.inverting_transforms_migrator.read_existing_file(
             self.example_existing_model_copy)
         transformed_migrated_models = self.inverting_transforms_migrator._migrate_with_transformations(
@@ -1493,53 +1483,12 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertRegex(error,
             r"existing_files and migrated_files must .+ but they have \d and \d entries, .+")
 
-        ms = copy.deepcopy(self.migration_spec)
-        ms.io_classes_file = self.io_classes_file
-        self.assertEqual(ms.validate(), [])
-
-        ms = copy.deepcopy(self.migration_spec)
-        ms.io_classes_file = 'NO SUCH io_classes_file.py'
-        error = ms.validate()[0]
-        self.assertRegex(error, r"the io_classes_file '.+' cannot be found")
-        ms.migrations_config_file = __file__
-        error = ms.validate()[0]
-        self.assertRegex(error, r"the io_classes_file '.+' cannot be found")
-
     def test_normalize_filenames(self):
         self.assertEqual(MigrationSpec._normalize_filenames([]), [])
         self.assertEqual(MigrationSpec._normalize_filenames([self.existing_defs_path]), [self.existing_defs_path])
         self.assertEqual(
             MigrationSpec._normalize_filenames([os.path.basename(self.existing_defs_path)],
                 absolute_file=self.existing_defs_path), [self.existing_defs_path])
-
-    def test_load_io_classes(self):
-        ms = MigrationSpec('name')
-        self.assertEqual(ms.load_io_classes(), None)
-
-        ms = MigrationSpec('name', io_classes_file=self.io_classes_file)
-        ms.load_io_classes()
-        expected_io_classes = dict(reader=Reader, writer=Writer)
-        self.assertEqual(ms.io_classes, expected_io_classes)
-
-        ms = MigrationSpec('name', io_classes_file='test_io_classes_file.py',
-            migrations_config_file=self.migration_spec_conf_file)
-        ms.load_io_classes()
-        self.assertEqual(ms.io_classes, expected_io_classes)
-
-        # test loading wc_lang io classes
-        ms = MigrationSpec('name', io_classes_file='io_classes.py',
-            migrations_config_file=self.lang_migration_cfg_file)
-        expected_reader_name = 'wc_lang.io.Reader'
-        ms.load_io_classes()
-        reader = ms.io_classes['reader']
-        reader_name = reader.__module__ + '.' + reader.__qualname__
-        self.assertEqual(reader_name, expected_reader_name)
-
-        ms = MigrationSpec('name', io_classes_file='bad_io_classes_file.py',
-            migrations_config_file=self.migration_spec_conf_file)
-        with self.assertRaisesRegex(MigratorError,
-            r"IO classes file '\S+' does not define a dict called 'io_classes'"):
-            ms.load_io_classes()
 
     def test_standardize(self):
         ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'])
@@ -1649,13 +1598,6 @@ class TestMigrationController(MigrationFixtures):
         assert_equal_workbooks(self, migration_spec.existing_files[0], migrated_filenames[0])
 
         migration_spec = migration_specs['migration_with_renaming']
-        self.put_tmp_migrated_file_in_migration_spec(migration_spec, 'round_trip_migrated_xlsx_file.xlsx')
-        round_trip_migrated_xlsx_files = MigrationController.migrate_from_spec(migration_spec)
-        assert_equal_workbooks(self, migration_spec.existing_files[0], round_trip_migrated_xlsx_files[0])
-
-        # migrate from migration spec that uses obj_model.io classes in io_classes
-        migration_spec.io_classes_file = self.io_classes_file
-        migration_spec.load_io_classes()
         self.put_tmp_migrated_file_in_migration_spec(migration_spec, 'round_trip_migrated_xlsx_file.xlsx')
         round_trip_migrated_xlsx_files = MigrationController.migrate_from_spec(migration_spec)
         assert_equal_workbooks(self, migration_spec.existing_files[0], round_trip_migrated_xlsx_files[0])
@@ -2755,7 +2697,11 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             self.clean_data_schema_migration.import_custom_IO_classes(
                 io_classes_file_basename='no_reader_or_writer.py')
 
+        # todo: migrator: IMPT DO NEXT
         # todo: migrator: IOPlugin: test wc_lang repo too
+        '''
+        
+        '''
 
     def test_prepare(self):
         self.assertEqual(None, self.clean_data_schema_migration.prepare())
