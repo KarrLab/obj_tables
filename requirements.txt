@@ -15,5 +15,4 @@ six
 stringcase
 sympy
 validate_email
-wc_utils
 weakreflist
