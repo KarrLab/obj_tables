@@ -927,9 +927,20 @@ class TestMigrator(MigrationFixtures):
             r"existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+"):
             inconsistent_migrator.prepare()
 
-    # todo: migrator: do
     def test_read_existing_file(self):
-        pass
+        # test with DEFAULT_IO_CLASSES
+        existing_models = self.migrator.read_existing_file(self.example_existing_model_copy)
+        model_types = set([m.__class__.__name__ for m in existing_models])
+        expected_model_types = {'DeletedModel', 'Property', 'Reference', 'Subtest', 'Test'}
+        self.assertEqual(model_types, expected_model_types)
+
+        # test with custom IO classes
+        # use obj_model
+        io_classes = dict(reader=obj_model.io.Reader)
+        migrator = Migrator(self.existing_defs_path, self.migrated_defs_path, io_classes=io_classes)
+        existing_models = self.migrator.read_existing_file(self.example_existing_model_copy)
+        model_types = set([m.__class__.__name__ for m in existing_models])
+        self.assertEqual(model_types, expected_model_types)
 
     def test_migrate_model(self):
         good_migrator = self.good_migrator
@@ -1603,12 +1614,11 @@ class TestMigrationController(MigrationFixtures):
         assert_equal_workbooks(self, migration_spec.existing_files[0], round_trip_migrated_xlsx_files[0])
 
     def test_migrate_from_config(self):
-        # these are round-trip migrations
+        # this is a round-trip migrations
 
         # Prepare to remove the migrated_files so they do not contaminate tests/fixtures/migrate.
         # An alternative but more complex approach would be to copy the YAML config file into
         # a temp dir along with the files and directories (packages) it references.
-        # todo: migrator: make a function
         for migration_spec in MigrationSpec.load(self.migration_spec_cfg_file).values():
             for expected_migrated_file in migration_spec.expected_migrated_files():
                 self.files_to_delete.add(expected_migrated_file)
@@ -1616,15 +1626,6 @@ class TestMigrationController(MigrationFixtures):
         results = MigrationController.migrate_from_config(self.migration_spec_cfg_file)
         for migration_spec, migrated_files in results:
             assert_equal_workbooks(self, migration_spec.existing_files[0], migrated_files[0])
-
-        # todo: migrator: IOPlugin
-        # migration wc_lang model file using config that uses wc_lang io classes
-        '''
-        for migration_spec in MigrationSpec.load(self.lang_migration_cfg_file).values():
-            for expected_migrated_file in migration_spec.expected_migrated_files():
-                self.files_to_delete.add(expected_migrated_file)
-        results = MigrationController.migrate_from_config(self.lang_migration_cfg_file)
-        '''
 
     @unittest.skip("optional performance test")
     def test_migrate_from_config_performance(self):
@@ -1640,37 +1641,6 @@ class TestMigrationController(MigrationFixtures):
         profile = pstats.Stats(out_file)
         print("Profile for 'MigrationController.migrate_from_config(self.migration_spec_cfg_file)'")
         profile.strip_dirs().sort_stats('cumulative').print_stats(20)
-
-    # todo: migrator: change: use io_wrapper in wc_lang fixtures
-    '''
-    def test_wc_lang_migration(self):
-        # round-trip migrate through changed schema
-
-        # Process for testing a round-trip migration of a wc_lang model that lacks 'model' attributes
-        # 1: create model file with 'model' attributes by migrating to tmp file w generate_wc_lang_migrator
-        # 2: use the tmp migrated file in a round-trip migration with migrations that invert each other
-        fully_instantiated_wc_lang_model = temp_pathname(self, 'fully_instantiated_wc_lang_model.xlsx')
-        fully_instantiate_migration = MigrationSpec(
-            "1: create fully instantiated model with 'model' attributes: migrate model from existing wc_lang core to itself",
-            migrator='wc_lang',
-            existing_files=[self.wc_lang_model_copy],
-            schema_files=[self.wc_lang_schema_existing, self.wc_lang_schema_existing],
-            migrated_files=[fully_instantiated_wc_lang_model])
-        fully_instantiate_migration.prepare()
-        MigrationController.migrate_over_schema_sequence(fully_instantiate_migration)
-
-        rt_through_changes_migration = MigrationSpec(
-            "2: round trip migration with migrations that invert each other",
-            existing_files=[fully_instantiated_wc_lang_model],
-            schema_files=[self.wc_lang_schema_existing, self.wc_lang_schema_modified,
-                self.wc_lang_schema_existing],
-            seq_of_renamed_models=[[('Parameter', 'ParameterRenamed')], [('ParameterRenamed', 'Parameter')]])
-        rt_through_changes_migration.prepare()
-        rt_through_changes_wc_lang_models = \
-            MigrationController.migrate_over_schema_sequence(rt_through_changes_migration)
-        # validate round trip
-        assert_equal_workbooks(self, fully_instantiated_wc_lang_model, rt_through_changes_wc_lang_models[0])
-    '''
 
 
 class AutoMigrationFixtures(unittest.TestCase):
@@ -2440,6 +2410,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         self.buggy_data_schema_migration = DataSchemaMigration(
             **dict(data_repo_location=self.test_repo_url,
                 data_config_file_basename='data_schema_migration_conf-test_repo.yaml'))
+        make_wc_lang_migration_fixtures(self)
 
     def test_make_migration_config_file(self):
         kwargs = dict(files_to_migrate=['../tests/fixtures//file1.xlsx',
@@ -2677,6 +2648,13 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         io_classes = self.clean_data_schema_migration.import_custom_IO_classes()
         expected_io_classes = dict(reader=obj_model.io.Reader)
         self.assertEqual(io_classes, expected_io_classes)
+        # use io_classes['reader'] to read file
+        Reader = io_classes['reader']
+        objects = Reader().run(self.migration_test_repo_data_file_1, ignore_attribute_order=True,
+            ignore_sheet_order=True, ignore_extra_sheets=True, include_all_attributes=False, validate=False)
+        # returns None because no models are provided to Reader
+        self.assertEqual(objects, None)
+
         io_classes = self.clean_data_schema_migration.import_custom_IO_classes(
                 io_classes_file_basename='just_writer.py')
         expected_io_classes = dict(writer=obj_model.io.Writer)
@@ -2697,11 +2675,19 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             self.clean_data_schema_migration.import_custom_IO_classes(
                 io_classes_file_basename='no_reader_or_writer.py')
 
-        # todo: migrator: IMPT DO NEXT
-        # todo: migrator: IOPlugin: test wc_lang repo too
-        '''
-        
-        '''
+        # test importing wc_lang's IO
+        wc_lang_data_schema_migration = DataSchemaMigration(
+            **dict(data_repo_location=self.test_repo_url,
+            data_config_file_basename='data_schema_migration_conf--test_repo--wc_lang--2019-07-19-16-00-00.yaml'))
+        wc_lang_io_classes = wc_lang_data_schema_migration.import_custom_IO_classes()
+        Reader = wc_lang_io_classes['reader']
+        reader_name = Reader.__module__ + '.' + Reader.__qualname__
+        expected_reader_name = 'wc_lang.io.Reader'
+        self.assertEqual(reader_name, expected_reader_name)
+        objects = Reader().run(self.wc_lang_model_copy, ignore_attribute_order=True,
+            ignore_sheet_order=True, ignore_extra_sheets=True, include_all_attributes=False, validate=False)
+        # return dict mapping model classes to instances
+        self.assertTrue(isinstance(objects, dict))
 
     def test_prepare(self):
         self.assertEqual(None, self.clean_data_schema_migration.prepare())

@@ -962,7 +962,8 @@ class Migrator(object):
     def read_existing_file(self, existing_file):
         """ Read models from existing file
 
-        Does not perform validation -- data in existing model file must be already validated with the existing schema.
+        Does not perform validation -- data in existing model file must be already validated with
+        the existing schema
 
         Args:
             existing_file (:obj:`str`): pathname of file to migrate
@@ -1406,7 +1407,6 @@ class Migrator(object):
         return '\n'.join(rv)
 
 
-# todo: migrator: perhaps statically type with typing and verify subclasses with mypy.api
 class MigrationWrapper(ABC):
     """ Interface for classes that define a pair of methods that can modify `obj_model.Model`s being migrated
 
@@ -1490,7 +1490,8 @@ class MigrationSpec(object):
         seq_of_transformations (:obj:`list` of :obj:`MigrationWrapper`, optional): list of transformations
             for use by a `Migrator` for each migration in a sequence
         io_classes (:obj:`dict` of :obj:`type`, optional): reader and/or writer for I/O of existing and
-            migrated files, respectively
+            migrated files, respectively; IMPORTANT NOTE: `io_classes` are imported and loaded from
+            full schema repositories by `DataSchemaMigration`
         migrated_files (:obj:`list`: of :obj:`str`, optional): migration destination files in 1-to-1
             correspondence with `existing_files`; if not provided, migrated files use a suffix or
             are migrated in place
