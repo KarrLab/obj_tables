@@ -261,6 +261,7 @@ def read_metadata_from_file(pathname):
 # todo: make this more convenient by eliminating models. either a) change schema_package to the path
 # to the schema and use the modules in it, or b) use wc_utils.workbook.io to copy all data in
 # the existing file and using WriterBase.make_metadata_objects() to obtain the metadata
+# todo: make a CLI command for add_metadata_to_file -- it will need to use IO classes like migrate.py
 def add_metadata_to_file(pathname, models, schema_package=None):
     """ Add Git repository metadata to an existing `obj_model` data file
 

@@ -2706,7 +2706,8 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         existing_file_copy = copy_file_to_tmp(self, existing_file)
         migrated_files, new_temp_dir = data_schema_migration.automated_migrate()
         assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
-        shutil.rmtree(new_temp_dir)
+        if new_temp_dir:
+            shutil.rmtree(new_temp_dir)
 
     def test_automated_migrate(self):
         # test round-trip
@@ -2722,7 +2723,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
                 self.assertTrue(os.path.isfile(migrated_file))
             self.assertEqual(temp_dir, tmp_dir_name)
 
-        # test with pre-existing repo
+        # test with previously cloned data and schema repos
         migration_test_repo = self.git_migration_test_repo.copy()
         data_schema_migration_existing_repo = DataSchemaMigration(
             **dict(data_repo_location=migration_test_repo.repo_dir,
@@ -2731,20 +2732,28 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
 
-        # test distinct data and schema repos
-        # data file in test_repo and schema in migration_test_repo
+        # test different data and schema repos: data repo = test_repo, schema repo = migration_test_repo
         test_repo_copy = self.test_repo.copy()
         data_schema_migration_separate_data_n_schema_repos = DataSchemaMigration(
             **dict(data_repo_location=test_repo_copy.repo_dir,
                 data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
         data_schema_migration_separate_data_n_schema_repos.prepare()
-        existing_file = \
-            data_schema_migration_separate_data_n_schema_repos.migration_config_data['files_to_migrate'][0]
-        basename = os.path.basename(existing_file)
-        existing_file_copy = os.path.join(mkdtemp(dir=self.tmp_dir), basename)
-        shutil.copy(existing_file, existing_file_copy)
-        migrated_files, _ = data_schema_migration_separate_data_n_schema_repos.automated_migrate()
-        assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
+        self.round_trip_automated_migrate(data_schema_migration_separate_data_n_schema_repos)
+
+    def test_wc_lang_automated_migrate(self):
+        # test round-trip migrate of wc_lang file through changed schema
+        # 1 wc_lang config, test_repo -- wc_lang: 'data_schema_migration_conf--test_repo--wc_lang--2019-07-19-16...'
+        # 2 use normal wc_lang model file
+        # 3 use inverting schema changes
+        test_repo_copy = self.test_repo.copy()
+        data_schema_migration_lang_round_trip = DataSchemaMigration(
+            **dict(data_repo_location=test_repo_copy.repo_dir,
+                data_config_file_basename=\
+                    'data_schema_migration_conf--test_repo--wc_lang--2019-07-19-temp.yaml'))
+        migrated_files, new_temp_dir = data_schema_migration_lang_round_trip.automated_migrate()
+        self.assertTrue(os.path.isfile(migrated_files[0]))
+        # assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
+        shutil.rmtree(new_temp_dir)
 
     def test_migrate_files(self):
 

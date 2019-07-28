@@ -2047,7 +2047,7 @@ class Model(with_metaclass(ModelMeta, object)):
         In addition, this method is deterministic because ordered dictionaries preserve insertion order.
 
         Args:
-            objs (:obj:`iterator` of :obj:`Model`, optional): some objects
+            objs (:obj:`iterator` of :obj:`Model`): some objects
             forward (:obj:`bool`, optional): if :obj:`True`, get all forward related objects
             reverse (:obj:`bool`, optional): if :obj:`True`, get all reverse related objects
 

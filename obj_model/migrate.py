@@ -593,7 +593,7 @@ class Migrator(object):
         Distinct from `prepare` so most of `Migrator` can be tested with models defined in code
 
         Returns:
-            :obj:`list` of :obj:`obj_model.Model`: the `Model`s in `self.module_path`
+            :obj:`Migrator`: `self`, to enable chaining
         """
         if self.existing_schema:
             self.existing_defs = self.existing_schema.run()
@@ -976,6 +976,7 @@ class Migrator(object):
         # data in model files must be already validated with the existing schema
         existing_models = Reader().run(existing_file, models=self._get_models_with_worksheets(self.existing_defs),
             ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False, validate=False)
+        existing_models = obj_model.core.Model.get_all_related(existing_models)
         return existing_models
 
     def migrate(self, existing_models):
@@ -1171,7 +1172,7 @@ class Migrator(object):
         """ Migrate a model instance's non-related attributes
 
         Args:
-            existing_model (:obj:`obj_model.Model`): the existing model
+            existing_model (:obj:`obj_model.Model`): an existing model instance
             existing_model_def (:obj:`obj_model.core.ModelMeta`): type of the existing model
             migrated_model_def (:obj:`obj_model.core.ModelMeta`): type of the migrated model
 
@@ -1327,7 +1328,7 @@ class Migrator(object):
         existing_schema = self.existing_defs
         migrated_schema = self.migrated_defs
 
-        all_models = []
+        existing_migrated_pairs = []
         for existing_model in existing_models:
             existing_class_name = existing_model.__class__.__name__
 
@@ -1338,19 +1339,20 @@ class Migrator(object):
             migrated_class_name = self.models_map[existing_class_name]
             migrated_model = self._migrate_model(existing_model, existing_schema[existing_class_name],
                 migrated_schema[migrated_class_name])
-            all_models.append((existing_model, migrated_model))
-        self._migrate_all_analyzed_exprs(all_models)
-        return all_models
+            existing_migrated_pairs.append((existing_model, migrated_model))
+        self._migrate_all_analyzed_exprs(existing_migrated_pairs)
+        return existing_migrated_pairs
 
-    def _connect_models(self, all_models):
+    def _connect_models(self, existing_migrated_pairs):
         """ Connect migrated model instances
 
         Migrate `obj_model.RelatedAttribute` connections among existing models to migrated models
 
         Args:
-            all_models (:obj:`list` of `tuple`): pairs of corresponding existing and migrated model instances
+            existing_migrated_pairs (:obj:`list` of `tuple`): pairs of corresponding existing and
+                migrated model instances
         """
-        for existing_model, migrated_model in all_models:
+        for existing_model, migrated_model in existing_migrated_pairs:
             existing_model_cls = existing_model.__class__
             for attr_name, attr in existing_model_cls.Meta.attributes.items():
 
@@ -1375,7 +1377,7 @@ class Migrator(object):
 
                     setattr(migrated_model, migrated_attr, migrated_val)
 
-        for existing_model, migrated_model in all_models:
+        for existing_model, migrated_model in existing_migrated_pairs:
             # delete the reference to migrated_model in existing_model
             delattr(existing_model, self._migrated_copy_attr_name)
 
@@ -3071,7 +3073,7 @@ class DataSchemaMigration(object):
             spec_args['git_hashes'].append(schema_change.commit_hash)
             spec_args['seq_of_renamed_models'].append(schema_change.renamed_models)
             spec_args['seq_of_renamed_attributes'].append(schema_change.renamed_attributes)
-            spec_args['seq_of_transformations'].append(schema_change.transformations_file)
+            spec_args['seq_of_transformations'].append(schema_change.transformations)
 
         spec_args['io_classes'] = self.io_classes
         spec_args['migrate_in_place'] = True
