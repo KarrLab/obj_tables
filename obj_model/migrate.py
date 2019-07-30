@@ -130,7 +130,7 @@ class SchemaModule(object):
         if not path.is_file():
             raise MigratorError("'{}' is not a file".format(module_path))
 
-        # todo: use call to wc_utils.config.core.AltResourceName.get_package_root()
+        # todo: use call to wc_utils.config.core.AltResourceName.get_package_root(), and simplify tests
         # go up directory hierarchy from path and get first directory that does not contain '__init__.py'
         dir = path.parent
         found_package = False
