@@ -976,6 +976,11 @@ class Migrator(object):
         # data in model files must be already validated with the existing schema
         existing_models = Reader().run(existing_file, models=self._get_models_with_worksheets(self.existing_defs),
             ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False, validate=False)
+        if isinstance(existing_models, dict):
+            models = []
+            for obj_list in existing_models.values():
+                models.extend(obj_list)
+            existing_models = models
         existing_models = obj_model.core.Model.get_all_related(existing_models)
         return existing_models
 
@@ -2944,6 +2949,18 @@ class DataSchemaMigration(object):
 
         return data_schema_migration_conf
 
+    # todo: migrator: unittest
+    def get_schema_package(self):
+        """ Obtain the name of the schema package from the schema file
+
+        Returns:
+            :obj:`str`: the package name
+        """
+        normalized_schema_file = normalize_filename(self.migration_config_data['schema_file'],
+            dir=self.schema_git_repo.migrations_dir())
+        rel_path = Path(normalized_schema_file).relative_to(self.schema_git_repo.repo_dir)
+        return rel_path.parent
+
     def record_git_repo(self, git_repo):
         """ Record a new :obj:`GitRepo`: so that its temp dir can be deleted later
 
@@ -3055,9 +3072,9 @@ class DataSchemaMigration(object):
         git_repo = self.schema_git_repo.copy()
         self.record_git_repo(git_repo)
         git_repo.checkout_commit(commit_hash)
-        data_file_schema_file = normalize_filename(self.migration_config_data['schema_file'],
+        normalized_schema_file = normalize_filename(self.migration_config_data['schema_file'],
             dir=git_repo.migrations_dir())
-        spec_args['schema_files'] = [data_file_schema_file]
+        spec_args['schema_files'] = [normalized_schema_file]
         spec_args['git_hashes'] = [commit_hash]
 
         spec_args['seq_of_renamed_models'] = []
@@ -3129,9 +3146,8 @@ class DataSchemaMigration(object):
             raise MigratorError("custom IO classes file '{}' not a Python file".format(
                 io_classes_file_basename))
         schema_repo_dir = self.schema_git_repo.repo_dir
-        schema_repo_name = self.schema_git_repo.repo_name()
-        schema_repo_custom_io_classes_file = os.path.join(schema_repo_dir, schema_repo_name, 'migrations',
-            io_classes_file_basename)
+        schema_repo_custom_io_classes_file = os.path.join(schema_repo_dir, self.get_schema_package(),
+            'migrations', io_classes_file_basename)
         if os.path.isfile(schema_repo_custom_io_classes_file):
 
             schema_module = SchemaModule(schema_repo_custom_io_classes_file)
@@ -3262,7 +3278,7 @@ class DataSchemaMigration(object):
         remove_silently(config_file_path)
         return migrated_files
 
-    def test_migration(self):
+    def test_migration(self): # pragma: no cover
         """ Test a migration
 
         Check ...
@@ -3284,7 +3300,7 @@ class DataSchemaMigration(object):
             data_repo_location (:obj:`str`): directory or URL of the *data* repo
         """
         '''
-        todo:
+        # todo:
             ensure that all of these are OK:
                 automatic config files
                 schema changes files

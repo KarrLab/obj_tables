@@ -230,21 +230,20 @@ def invert_renaming(renaming):
 def assert_differing_workbooks(test_case, existing_model_file, migrated_model_file):
     assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, equal=False)
 
+def remove_workbook_metadata(workbook):
+    if TOC_NAME in workbook:
+        workbook.pop(TOC_NAME)
+    for metadata_sheet_name in ['Data repo metadata', 'Schema repo metadata']:
+        if metadata_sheet_name in workbook:
+            workbook.pop(metadata_sheet_name)
+
 def assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, equal=True):
     # test whether a pair of model files are identical, or not identical if equal=False
     existing_workbook = read_workbook(existing_model_file)
     migrated_workbook = read_workbook(migrated_model_file)
 
-    if TOC_NAME in existing_workbook:
-        existing_workbook.pop(TOC_NAME)
-    if TOC_NAME in migrated_workbook:
-        migrated_workbook.pop(TOC_NAME)
-
-    # ignore metadata worksheets, as they're not part of model semantics
     for workbook in [existing_workbook, migrated_workbook]:
-        for metadata_sheet_name in ['Data repo metadata', 'Schema repo metadata']:
-            if metadata_sheet_name in workbook:
-                workbook.pop(metadata_sheet_name)
+        remove_workbook_metadata(workbook)
 
     if equal:
         if not existing_workbook == migrated_workbook:
@@ -2742,7 +2741,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
 
     def test_wc_lang_automated_migrate(self):
         # test round-trip migrate of wc_lang file through changed schema
-        # 1 wc_lang config, test_repo -- wc_lang: 'data_schema_migration_conf--test_repo--wc_lang--2019-07-19-16...'
+        # 1 use wc_lang config, test_repo -- wc_lang data schema file
         # 2 use normal wc_lang model file
         # 3 use inverting schema changes
         test_repo_copy = self.test_repo.copy()
@@ -2750,10 +2749,36 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             **dict(data_repo_location=test_repo_copy.repo_dir,
                 data_config_file_basename=\
                     'data_schema_migration_conf--test_repo--wc_lang--2019-07-19-temp.yaml'))
-        migrated_files, new_temp_dir = data_schema_migration_lang_round_trip.automated_migrate()
-        self.assertTrue(os.path.isfile(migrated_files[0]))
-        # assert_equal_workbooks(self, existing_file_copy, migrated_files[0])
-        shutil.rmtree(new_temp_dir)
+        data_schema_migration_lang_round_trip.prepare()
+
+        # todo: fix
+        # HACK until wc_lang io Writer() has run() method w the same signature as obj_model.io.Writer().run()
+        # ensure that the only difference is missing rows and cells, which happens because
+        # the existing file does not have Model fields, but the migrated one does because obj_model writes it
+        # this should all be: self.round_trip_automated_migrate(data_schema_migration_lang_round_trip)
+        existing_file = data_schema_migration_lang_round_trip.migration_config_data['files_to_migrate'][0]
+        existing_file_copy = copy_file_to_tmp(self, existing_file)
+        migrated_files, _ = data_schema_migration_lang_round_trip.automated_migrate()
+
+        existing_workbook = read_workbook(existing_file_copy)
+        migrated_workbook = read_workbook(migrated_files[0])
+        for workbook in [existing_workbook, migrated_workbook]:
+            remove_workbook_metadata(workbook)
+        errors = set()
+        # get differences between workbooks
+        for worksheet_name, sheet_diff in existing_workbook.difference(migrated_workbook).items():
+            if isinstance(sheet_diff, str):
+                errors.add(sheet_diff)
+                continue
+            for row_num, row_diff in sheet_diff.items():
+                if isinstance(row_diff, str):
+                    errors.add(row_diff)
+                    continue
+                for col_num, cell_diff in row_diff.items():
+                    if isinstance(cell_diff, str):
+                        errors.add(cell_diff)
+        expected_errors = set(('Cell not in self', 'Row not in self'))
+        self.assertTrue(errors <= expected_errors)
 
     def test_migrate_files(self):
 
