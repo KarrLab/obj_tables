@@ -1920,7 +1920,7 @@ def get_github_api_token():
     return config['github_api_token']
 
 
-# todo: perhaps move GitRepo and RemoteBranch to wc_utils
+# todo: move RemoteBranch to wc_utils.util.testing
 class RemoteBranch(object):
     """ Make branches from master on `github.com/KarrLab`
 
@@ -2429,6 +2429,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         self.assertFalse(self.test_repo.repo.untracked_files)
 
         DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo')
+        # test will fail if it takes more than 1 s to run make_migration_config_file
         with self.assertRaisesRegex(MigratorError,
             "data-schema migration configuration file '.+' already exists"):
             DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo')

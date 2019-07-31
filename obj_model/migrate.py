@@ -49,7 +49,6 @@ import wc_utils
 #
 # check documentation
 
-# todo: test OneToManyAttribute
 # todo: would be more intuitive to express renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
 # todo: remove or formalize debugging in import_module_for_migration()
 # JK ideas:
@@ -251,7 +250,6 @@ class SchemaModule(object):
                     not in the module
                 or if the module is missing a required attribute
         """
-        # todo: now: remove debug prints
         if debug:
             print('\nimport_module_for_migration', self.module_name)
             if SchemaModule.MODULES:
@@ -262,16 +260,6 @@ class SchemaModule(object):
                     if package:
                         name = package + '.' + name
                     print('\t', path, name)
-                '''
-                for path, module in SchemaModule.MODULES.items():
-                    # todo: put this code for printing a module in a function & reuse below
-                    name = getattr(module, '__name__')
-                    package = getattr(module, '__package__')
-                    if package:
-                        name = package + '.' + name
-                    file = module.__file__ if hasattr(module, '__file__') else ''
-                    print('\t', name, file)
-                '''
             else:
                 print('no SchemaModule.MODULES')
 
@@ -1055,7 +1043,6 @@ class Migrator(object):
             raise MigratorError("migrated file '{}' already exists".format(migrated_file))
 
         # write migrated models to disk
-        # todo: migrator: IOPlugin: TEST CUSTOM WRITER
         Writer = self.io_classes['writer']
         Writer().run(migrated_file, migrated_models, models=model_order, validate=False,
             data_repo_metadata=True)
@@ -1819,7 +1806,6 @@ class MigrationController(object):
                 if i == 0:
                     models = migrator.read_existing_file(existing_file)
                 # migrate in memory until the last migration
-                # todo: migrator: test migrate_over_schema_sequence(migration_spec) with at least 3 elements in migration_spec
                 models = migrator._migrate_with_transformations(models)
                 if i == num_migrations - 1:
                     # done migrating, write to file
@@ -2729,7 +2715,7 @@ class DataSchemaMigration(object):
     """
 
     # name of the migrations directory
-    # todo: after upgrading to BBedit, rename to .migrations and change the repos
+    # todo: rename to .migrations and change the repos
     _MIGRATIONS_DIRECTORY = 'migrations'
 
     # template for the name of a data-schema migration config file; the format placeholders are replaced with
@@ -2775,7 +2761,6 @@ class DataSchemaMigration(object):
         self.data_git_repo = GitRepo(self.data_repo_location)
         self.record_git_repo(self.data_git_repo)
 
-        # todo: determine data_config_file_basename automatically if there's only one in the data repo
         # load data config file
         self.migration_config_data = self.load_config_file(
             os.path.join(self.data_git_repo.migrations_dir(), self.data_config_file_basename))
@@ -3526,9 +3511,6 @@ class CementControllers(object):
             print('migrated files:')
             for migrated_file in migrated_files:
                 print(migrated_file)
-
-
-    # todo: now: cleanup: use a semantic comparison of model instances
 
 
 # controllers that can be added to the __main__.App.Meta.handlers in a data repo; e.g., see wc_sim
