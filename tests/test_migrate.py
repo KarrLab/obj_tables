@@ -2677,7 +2677,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         # test importing wc_lang's IO
         wc_lang_data_schema_migration = DataSchemaMigration(
             **dict(data_repo_location=self.test_repo_url,
-            data_config_file_basename='data_schema_migration_conf--test_repo--wc_lang--2019-07-19-16-00-00.yaml'))
+            data_config_file_basename='data_schema_migration_conf--test_repo--wc_lang--2019-07-31-12-00-00.yaml'))
         wc_lang_io_classes = wc_lang_data_schema_migration.import_custom_IO_classes()
         Reader = wc_lang_io_classes['reader']
         reader_name = Reader.__module__ + '.' + Reader.__qualname__
@@ -2748,10 +2748,10 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         data_schema_migration_lang_round_trip = DataSchemaMigration(
             **dict(data_repo_location=test_repo_copy.repo_dir,
                 data_config_file_basename=\
-                    'data_schema_migration_conf--test_repo--wc_lang--2019-07-19-temp.yaml'))
+                    'data_schema_migration_conf--test_repo--wc_lang--2019-07-31-10-00-00.yaml'))
         data_schema_migration_lang_round_trip.prepare()
 
-        # todo: fix
+        # todo: fix when issue #122 in wc_lang is resolved
         # HACK until wc_lang io Writer() has run() method w the same signature as obj_model.io.Writer().run()
         # ensure that the only difference is missing rows and cells, which happens because
         # the existing file does not have Model fields, but the migrated one does because obj_model writes it
