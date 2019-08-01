@@ -46,19 +46,9 @@ from wc_utils.workbook.io import read
 import obj_model
 import wc_utils
 
-# TODOS
-#
-# check documentation
-
-# todo: would be more intuitive to express renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
-# todo: remove or formalize debugging in import_module_for_migration()
-# JK ideas:
-# todo: how original is obj_model.migration? literature search, ask David Nickerson, Pedro Mendez
-# check SBML, Kappa, PySB, BioNetGet, SBML, COPASI, JWS-online, Simmune at NIH
-# publicize work, in part to get feedback
-# documentation note:
-#   Migration is not composable. It should be run independently of other obj_model code.
+# todo: more intuitive expression of renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
 # todo: automatically retry git requests, perhaps using the requests package
+
 
 class MigratorError(Exception):
     """ Exception raised for errors in obj_model.migrate
@@ -270,7 +260,7 @@ class SchemaModule(object):
         # temporarily put the directory holding the module being imported on sys.path
         sys.path.insert(0, self.directory)
 
-        # todo: evaluate whether this suspension of check that related attribute names don't clash is still needed
+        # todo: is this suspension of check that related attribute names don't clash really needed?
         obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
         def print_file(fn, max=100):
@@ -2925,7 +2915,7 @@ class DataSchemaMigration(object):
 
         return data_schema_migration_conf
 
-    # todo: migrator: unittest
+    # todo: migrator: direct unittest
     def get_schema_package(self):
         """ Obtain the name of the schema package from the schema file
 

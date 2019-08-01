@@ -2837,7 +2837,7 @@ class TestCementControllers(AutoMigrationFixtures):
                         NO_SUCH_COMMIT)):
                     app.run()
 
-            # todo: now: also test --schema_repo_dir option
+            # todo: also test --schema_repo_dir option
 
         except Exception as e:
             raise Exception(e)

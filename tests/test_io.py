@@ -1008,7 +1008,7 @@ class TestMetadataModels(unittest.TestCase):
             package_dir = os.path.join(self.test_schema_repo_dir, package_name)
             Path(package_dir).mkdir()
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
-                                      schema_package=package_name)
+                schema_package=package_name)
             self.assertEqual(len(w), 1)
             warning_msg = str(w[0].message)
             self.assertRegex(warning_msg,
