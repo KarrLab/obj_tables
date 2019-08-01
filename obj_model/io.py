@@ -131,6 +131,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                 unsuitable_changes = utils.set_git_repo_metadata_from_path(schema_repo_metadata,
                                                       git.RepoMetadataCollectionType.SCHEMA_REPO,
                                                       path=spec.origin)
+                print("in 'if schema_package'; unsuitable_changes: '{}'".format(unsuitable_changes))
                 if unsuitable_changes:
                     raise ValueError("Cannot gather metadata for schema repo from Git repo "
                         "containing '{}':\n{}".format(path, '\n'.join(unsuitable_changes)))
