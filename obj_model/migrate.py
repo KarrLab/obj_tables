@@ -39,6 +39,7 @@ from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAtt
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 from obj_model.io import TOC_NAME, WorkbookReader, IoWarning, Reader, Writer
 from obj_model.units import UnitAttribute
+from wc_utils.config.core import AltResourceName
 from wc_utils.util.files import normalize_filename, remove_silently
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
 from wc_utils.workbook.io import read
@@ -129,26 +130,15 @@ class SchemaModule(object):
         if not path.is_file():
             raise MigratorError("'{}' is not a file".format(module_path))
 
-        # todo: use call to wc_utils.config.core.AltResourceName.get_package_root(), and simplify tests
         # go up directory hierarchy from path and get first directory that does not contain '__init__.py'
-        dir = path.parent
-        found_package = False
-        while True:
-            if not dir.joinpath('__init__.py').is_file():
-                break
-            # exit at / root
-            if dir == dir.parent:
-                break
-            found_package = True
-            dir = dir.parent
-        if found_package:
-            # obtain package name between directory and module
+        try:
+            package_root = AltResourceName.get_package_root(module_path)
+            dir = os.path.dirname(package_root)
             package_name = str(path.relative_to(dir).parent).replace('/', '.')
             module_name = package_name + '.' + path.stem
-            return str(dir), package_name, module_name
+            return dir, package_name, module_name
 
-        else:
-            # obtain directory and module name
+        except ValueError:
             module_directory = path.parent
             module_name = path.stem
             return str(module_directory), None, module_name

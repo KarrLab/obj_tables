@@ -383,38 +383,6 @@ class TestSchemaModule(MigrationFixtures):
         self.assertEqual(parse_module_path(self.module_for_testing),
             (expected_dir, expected_package, expected_module))
 
-        try:
-            # test at /
-            # if files cannot be written to / these tests fail silently
-            module_in_root = os.path.join('/', os.path.basename(self.existing_defs_path))
-            # ensure that module_in_root is removed
-            self.files_to_delete.add(module_in_root)
-            shutil.copy(self.existing_defs_path, module_in_root)
-            expected_dir = '/'
-            expected_package = None
-            expected_module = 'small_existing'
-            self.assertEqual(parse_module_path(module_in_root),
-                (expected_dir, expected_package, expected_module))
-
-            # package in /
-            self.files_to_delete.add('/__init__.py')
-            src_dst_copy_pairs = [
-                (os.path.join(self.test_package, '__init__.py'), '/'),
-                (os.path.join(self.test_package, '__init__.py'), '/tmp/'),
-                (self.existing_defs_path, '/tmp')
-            ]
-            for src, dst in src_dst_copy_pairs:
-                shutil.copy(src, dst)
-            module_in_pkg_in_root = os.path.join('/', 'tmp', os.path.basename(self.existing_defs_path))
-            expected_dir = '/'
-            expected_package = 'tmp'
-            expected_module = 'tmp.small_existing'
-            self.assertEqual(parse_module_path(module_in_pkg_in_root),
-                (expected_dir, expected_package, expected_module))
-
-        except PermissionError:
-            pass
-
     def check_imported_module(self, schema_module, module_name, module):
         """ Check that an imported module has the right models and relationships between them
         """
