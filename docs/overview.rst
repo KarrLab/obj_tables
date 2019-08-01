@@ -6,7 +6,7 @@ The `obj_model.io` module provides methods to write and read sets of schema obje
 -------------------------------------
 Defining schemas
 -------------------------------------
-A schema is a Python module that contains some models (subclasses of :obj:`obj_model.core.Model`) each of which has one or more attributes
+A schema is a Python module that contains some models (subclasses of :obj:`obj_model.core.Model`), each of which has one or more attributes
 (instances of :obj:`Attribute` and its subclasses). The following shows an example of a schema for a lab member::
 
     import obj_model
@@ -15,7 +15,7 @@ A schema is a Python module that contains some models (subclasses of :obj:`obj_m
         first_name = StringAttribute()
         last_name = StringAttribute()
 
-Multiple attributes types are provided:
+Multiple attributes types are available:
 
 * :obj:`BooleanAttribute`
 * :obj:`EnumAttribute`
@@ -25,8 +25,8 @@ Multiple attributes types are provided:
 * :obj:`DateAttribute`, :obj:`TimeAttribute`, :obj:`DateTimeAttribute`
 
 The related attribute types (:obj:`OneToOneAttribute`, :obj:`OneToManyAttribute`, :obj:`ManyToOneAttribute`, and
-:obj:`ManyToManyAttribute`) enable all possible M-to-N relationships between objects.
-To create a relationship between a pair of models, define a related attribute in a
+:obj:`ManyToManyAttribute`) enable all possible M-to-N relationships between pairs of models.
+To create a relationship between models, define a related attribute in a
 model that specifies the name of the other model as its first argument::
 
     class Lab(Model):
@@ -40,9 +40,9 @@ model that specifies the name of the other model as its first argument::
 
 The name of the other model can be specified as either a reference to the other model, like
 :obj:`Lab` above, or a string containing the name of the other model. The latter method must be
-used to refer to models defined later in the schema.)
+used to refer to models defined later in the schema.
 The constructor for each of these related attribute types includes an
-optional argument `related_name` which automatically constructs a reverse attribute between the instances. For example, the code above creates a :obj:`members` attribute for :obj:`Lab` objects.
+optional argument `related_name` which automatically constructs a reverse attribute between the instances. For example, the code above creates a :obj:`members` attribute for each :obj:`Lab` object.
 
 Do not choose attribute names that would clash with with built-in attributes or methods of
 classes, such as `validate`, `serialize`, and `deserialize`.
