@@ -1008,11 +1008,13 @@ class TestMetadataModels(unittest.TestCase):
 
         with pytest.warns(obj_model.io.IoWarning) as w:
             print('# test schema repo modified by other_file')
-            # test schema repo modified by other_file
-            package_name = 'package_a'
-            package_dir = os.path.join(self.test_schema_repo_dir, package_name)
-            print('package_dir', package_dir)
-            Path(package_dir).mkdir()
+            # test schema repo modified by file_in_schema_repo
+            file_in_schema_repo = os.path.join(self.test_schema_repo_dir, 'file_in_schema_repo.txt')
+            print('file_in_schema_repo', file_in_schema_repo)
+            with open(file_in_schema_repo, 'w') as f:
+                f.write('hello world!')
+            package_name = 'test_repo'
+            print('file_in_repo', file_in_repo)
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
                 schema_package=package_name)
             self.assertEqual(len(w), 1)
