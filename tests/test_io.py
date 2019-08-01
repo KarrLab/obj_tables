@@ -923,7 +923,6 @@ class TestMetadataModels(unittest.TestCase):
         sys.path.append(self.test_schema_repo_dir)
 
     def tearDown(self):
-        return
         shutil.rmtree(self.tmp_dirname)
 
         self.github_test_data_repo.delete_test_repo()
@@ -934,7 +933,6 @@ class TestMetadataModels(unittest.TestCase):
                 del sys.path[idx]
 
     def test_workbook_writer_make_metadata_objects(self):
-        print()
         writer = obj_model.io.Writer()
         reader = obj_model.io.Reader()
 
@@ -970,6 +968,14 @@ class TestMetadataModels(unittest.TestCase):
             self.assertTrue(isinstance(obj.revision, str))
             self.assertEqual(len(obj.revision), 40)
 
+        # test csv files with metadata
+        csv_path = os.path.join(self.test_data_repo_dir, 'test*.csv')
+        writer.run(csv_path, self.objs, [self.Model1], data_repo_metadata=True,
+                                  schema_package='test_repo')
+        objs_read = reader.run(csv_path, models_expected, ignore_extra_sheets=True)
+        for obj, model in zip(objs_read, models_expected):
+            self.assertTrue(isinstance(obj, model))
+
         ### test warnings & errors ###
         ## data repo ##
         # data repo metadata not written: data file not in a repo
@@ -987,7 +993,6 @@ class TestMetadataModels(unittest.TestCase):
         with open(other_file, 'w') as f:
             f.write('hello world!')
         with pytest.warns(obj_model.io.IoWarning) as w:
-            print('# write data file in test data repo')
             # write data file in test data repo
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
             self.assertEqual(len(w), 1)
@@ -997,7 +1002,6 @@ class TestMetadataModels(unittest.TestCase):
 
         ## schema repo ##
         with pytest.warns(obj_model.io.IoWarning) as w:
-            print('# test schema package not found')
             # test schema package not found
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
                                       schema_package='not a schema package')
@@ -1007,18 +1011,14 @@ class TestMetadataModels(unittest.TestCase):
             self.assertIn("Cannot obtain git repo metadata for schema repo", warning_msg)
 
         with pytest.warns(obj_model.io.IoWarning) as w:
-            print('# test schema repo modified by other_file')
             # test schema repo modified by file_in_schema_repo
             file_in_schema_repo = os.path.join(self.test_schema_repo_dir, 'file_in_schema_repo.txt')
-            print('file_in_schema_repo', file_in_schema_repo)
             with open(file_in_schema_repo, 'w') as f:
                 f.write('hello world!')
             package_name = 'test_repo'
-            print('file_in_repo', file_in_repo)
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
                 schema_package=package_name)
             self.assertEqual(len(w), 1)
-            return
             warning_msg = str(w[0].message)
             self.assertRegex(warning_msg,
                 "Cannot obtain git repo metadata for schema repo '.+' used by data file:")
@@ -1028,14 +1028,6 @@ class TestMetadataModels(unittest.TestCase):
         # clean up
         os.remove(file_in_repo)
         os.remove(other_file)
-
-        # test csv files with metadata
-        csv_path = os.path.join(self.test_data_repo_dir, 'test*.csv')
-        writer.run(csv_path, self.objs, [self.Model1], data_repo_metadata=True,
-                                  schema_package='test_repo')
-        objs_read = reader.run(csv_path, models_expected, ignore_extra_sheets=True)
-        for obj, model in zip(objs_read, models_expected):
-            self.assertTrue(isinstance(obj, model))
 
     def test_drop_metadata_model(self):
         file_with_metadata = os.path.join(os.path.dirname(__file__), 'fixtures', 'metadata',

@@ -125,18 +125,12 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             # create SchemaRepoMetadata instance
             try:
                 schema_repo_metadata = utils.SchemaRepoMetadata()
-                import sys
-                print('sys.path', '\n'.join(sys.path))
                 spec = importlib.util.find_spec(schema_package)
-                print('spec',spec)
-                if spec:
-                    print('spec.origin',spec.origin)
                 if not spec:
                     raise ValueError("package '{}' not found".format(schema_package))
                 unsuitable_changes = utils.set_git_repo_metadata_from_path(schema_repo_metadata,
                                                       git.RepoMetadataCollectionType.SCHEMA_REPO,
                                                       path=spec.origin)
-                print("in 'if schema_package'; unsuitable_changes: '{}'".format(unsuitable_changes))
                 if unsuitable_changes:
                     raise ValueError("Cannot gather metadata for schema repo from Git repo "
                         "containing '{}':\n{}".format(path, '\n'.join(unsuitable_changes)))
