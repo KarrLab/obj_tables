@@ -1,13 +1,15 @@
 Overview
 ========
 `obj_model` allows developers to define standalone (i.e. separate from databases) schemas using a syntax similar to Django.
-The `obj_model.io` module provides methods to serialize and deserialize schema objects to/from Excel, csv, and tsv file(s).
+The `obj_model.io` module provides methods to write and read sets of schema objects to and from Excel, csv, and tsv file(s).
 
 -------------------------------------
 Defining schemas
 -------------------------------------
-Each schema is composed of one or models (subclasses of :obj:`Model`) each of which has one or more attributes
+A schema is a Python module that contains some models (subclasses of :obj:`obj_model.core.Model`) each of which has one or more attributes
 (instances of :obj:`Attribute` and its subclasses). The following shows an example of a schema for a lab member::
+
+    import obj_model
 
     class Member(Model):
         first_name = StringAttribute()
@@ -22,10 +24,10 @@ Multiple attributes types are provided:
 * :obj:`StringAttribute`, :obj:`LongStringAttribute`, :obj:`RegexAttribute`, :obj:`UrlAttribute`, :obj:`SlugAttribute`
 * :obj:`DateAttribute`, :obj:`TimeAttribute`, :obj:`DateTimeAttribute`
 
-Four related attribute types (:obj:`OneToOneAttribute`, :obj:`OneToManyAttribute`, :obj:`ManyToOneAttribute`, and
-:obj:`ManyToManyAttribute`) are provided to enable relationships among objects. Each constructor includes an
-optional argument `related_name` which when provided automatically constructs a reverse attribute between the
-instances::
+The related attribute types (:obj:`OneToOneAttribute`, :obj:`OneToManyAttribute`, :obj:`ManyToOneAttribute`, and
+:obj:`ManyToManyAttribute`) enable all possible M-to-N relationships between objects.
+To create a relationship between a pair of models, define a related attribute in a
+model that specifies the name of the other model as its first argument::
 
     class Lab(Model):
         name = StringAttribute()
@@ -35,6 +37,12 @@ instances::
         first_name = StringAttribute()
         last_name = StringAttribute()
         lab = ManyToOneAttribute(Lab, related_name='members')
+
+The name of the other model can be specified as either a reference to the other model, like
+:obj:`Lab` above, or a string containing the name of the other model. The latter method must be
+used to refer to models defined later in the schema.)
+The constructor for each of these related attribute types includes an
+optional argument `related_name` which automatically constructs a reverse attribute between the instances. For example, the code above creates a :obj:`members` attribute for :obj:`Lab` objects.
 
 Do not choose attribute names that would clash with with built-in attributes or methods of
 classes, such as `validate`, `serialize`, and `deserialize`.
@@ -97,7 +105,7 @@ To facilitate data validation, the module allows developers to specify how objec
   of the model's `Meta` class.
 * Dataset: :obj:`Validator` can be subclasses provide additional custom validation of entire datasets
 
-Validation does not occur automatically, rather users must call validate() when it is needed.
+Validation does not occur automatically, rather users must call `validate()` when it is needed.
 
 -------------------------------------
 Equality, differencing
