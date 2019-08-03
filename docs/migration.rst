@@ -9,7 +9,7 @@ the structure of an SQL database is defined by a schema written in the SQL
 Data Definition Language. When the schema is changed then existing data must be changed so that its structure still complies with the schema. This is called data *migration*. 
 Many systems, including databases, web software frameworks and others provide tools that support automated data migration.
 
-With respect to Object Model (:obj:`obj_model`), consider a file (Excel, csv or tsv) that stores data whose structure is defined by an (:obj:`obj_model`) schemas. The `migration` module enables semi-automated migration of these types of files.
+With respect to Object Model (:obj:`obj_model`), consider a file (Excel, csv or tsv) that stores data whose structure is defined by an (:obj:`obj_model`) schemas. The `migration` module enables semi-automated migration of these types of data files.
 
 This page provides an overview of the concepts of Object Model migration and detailed instructions on how to configure and use it.
 
@@ -22,7 +22,7 @@ The basic idea behind Object Model migration is that the structure of one or mor
 
 Migration also assumes that a schema specified in a *schema repo* is stored in a single Python file whose name does not change over the time span of a migration. We call this file the *schema* file. Because it's stored in a Git repository, its versions are
 recorded in a directed acyclic graph of commits in the repository. These commits are
-used by migration to determine changes in the *schema* and migrate files in the
+used by migration to determine changes in the *schema* and migrate data files in the
 *data repo*. These concepts are illustrated in Figure 1 below.
 
 Changes to the schema repo can take many forms:
@@ -43,6 +43,12 @@ which are also described below.
 
 Schema git metadata in data file
 
+Each data file in the *data repo* must contain a `Model` that the version of the *schema repo*
+upon which the file depends. This git metadata is stored in a `Model` called `SchemaRepoMetadata`
+(or `Schema repo metadata` as a worksheet in a spreadsheet). The metadata specifies the schema's
+version with its URL, branch, and commit hash. 
+The data file's migration will start at the specified commit in the *schema repo*.
+
 Must be able to clone data repo and schema repo
 
 
@@ -52,30 +58,19 @@ Configuring migration
 Both *schema repos* and *data repos* contain user-created configuration files and
 small programs that simplify migration, as listed in Tables 1 and 2 below.
 
-.. list-table:: Title 1: Migration configuration files in *schema repos*s
-   :widths: 60 60
+.. csv-table:: Configuration files in *schema repo*s
+   :file: './migrations_rst_tables_schema_repo_config.csv'
+   :widths: 30, 30, 30, 30
    :header-rows: 1
 
-   * - File type
-     - File use
-     - File location
-     - Filename format
-   * - Schema changes
-     - Associated with a specific commit in the *schema repo*; documents the changes in the *schema* since the previous *Schema changes* file
-     - Stored in the :obj:`migrations` directory in the *schema repo*, which will be automatically created if necessary
-     - :obj:`schema_changes_{}_{}.yaml`, where the {} placeholders are replaced with the file's creation timestamp and the prefix of the commit's git hash, respectively
-
-   * - Row x, column 1: type
-     - Row x, column 2: use
-     - Row x, column 3: location
-     - Row x, column 4: format
 
 With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a directed acyclic graph because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
 then migrates data files from the first *schema changes* file to the last one.
 Therefore, *schema changes* files must be located in the dependency graph so that any valid topological sort creates a valid migration sequence. [See the examples in Figure x.]
 
 
-
+Migration migrates a data file from the schema commit identified in the file's schema's git metadata to
+the last *schema changes* configuration file in the *schema repo*.
 
 
 Configuring the *schema repo*
