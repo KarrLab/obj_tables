@@ -17,6 +17,8 @@ Migration concepts
 ----------------------------------------------
 Migration assumes that files to migrate and (:obj:`obj_model`) schemas that describe them
 are stored in Git repositories. These repositories are known as the *data repo* and *schema repo*, respectively.
+Migration supports a configuration in which a single repository serves as both the *data repo* and the *schema repo*,
+although this would be atypical.
 
 The basic idea behind Object Model migration is that the structure of one or more files in a data repo is defined by a schema in a schema repo, and that changes to the schema repo require corresponding changes to the files.
 
@@ -58,10 +60,19 @@ Configuring migration
 Both *schema repos* and *data repos* contain user-created configuration files and
 small programs that simplify migration, as listed in Tables 1 and 2 below.
 
-.. csv-table:: Configuration files in *schema repo*s
+.. csv-table:: Table 1. Configuration files in *schema repo*s
    :file: './migrations_rst_tables_schema_repo_config.csv'
-   :widths: 30, 30, 30, 30
+   :widths: 20, 30, 30, 30, 10
    :header-rows: 1
+
+.. csv-table:: Table 2. Configuration files in *data repo*s
+   :file: './migrations_rst_tables_data_repo_config.csv'
+   :widths: 20, 30, 30, 30, 10
+   :header-rows: 1
+
+Example configuration files
+
+Fields in configuration files
 
 
 With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a directed acyclic graph because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
