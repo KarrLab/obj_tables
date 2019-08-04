@@ -13,7 +13,6 @@
 :License: MIT
 """
 
-from pprint import pprint
 import abc
 import collections
 import copy
@@ -77,7 +76,8 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
-                about the file's Git repo; the repo must be current with origin, except for the file
+                about the file's Git repo; a warning will be generated if the repo repo is not
+                current with origin, except for the file
             schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin

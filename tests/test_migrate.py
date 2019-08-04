@@ -54,6 +54,7 @@ from wc_utils.util.files import remove_silently
 from wc_utils.util.misc import internet_connected
 from obj_model.expression import Expression
 from obj_model.io import TOC_NAME, Reader, Writer
+from obj_model.utils import SchemaRepoMetadata
 from wc_utils.util.git import GitHubRepoForTests
 
 def make_tmp_dirs_n_small_schemas_paths(test_case):
@@ -1186,6 +1187,17 @@ class TestMigrator(MigrationFixtures):
             if 'Property' in raw_existing_model.__class__.__name__:
                 self.assertEqual(raw_existing_model.value, io_wrapped_model.value)
 
+        # test schema_metadata_model
+        schema_metadata_model = SchemaRepoMetadata(
+            url='example_url',
+            branch='example_branch',
+            revision='example_hash')
+        migrated_file = temp_pathname(self, 'migrated_example_existing_model.xlsx')
+        self.no_change_migrator._write(self.example_existing_model_copy,
+            raw_existing_models, migrated_file=migrated_file, schema_metadata_model=schema_metadata_model)
+        metadata = utils.read_metadata_from_file(migrated_file)
+        self.assertTrue(metadata.schema_repo_metadata.is_equal(schema_metadata_model))
+
     def test_full_migrate_with_both_transforms(self):
         # inverting transforms and no migration changes should not change models
         migrated_file = temp_pathname(self, 'migrated_example_existing_model.xlsx')
@@ -1341,6 +1353,16 @@ class TestMigrationSpec(MigrationFixtures):
     def tearDown(self):
         super().tearDown()
 
+    def test_init(self):
+        migration_specs = MigrationSpec('ex_name', **dict(migrate_suffix='_migrated'))
+        self.assertEqual(migration_specs.existing_files, None)
+        self.assertEqual(migration_specs.name, 'ex_name')
+        self.assertEqual(migration_specs.migrate_suffix, '_migrated')
+        self.assertFalse(migration_specs._prepared)
+
+        with self.assertRaisesRegex(MigratorError, "initialization of MigrationSpec supports"):
+            MigrationSpec('ex_name', **dict(unknown_attr='x'))
+
     def test_prepare(self):
         try:
             self.migration_spec.prepare()
@@ -1395,15 +1417,6 @@ class TestMigrationSpec(MigrationFixtures):
         ms.schema_files = []
         self.assertEqual(ms.validate(),
             ["a migration spec must contain at least 2 schemas, but it has only 0"])
-
-        ms = copy.deepcopy(self.migration_spec)
-        ms.git_hashes = ['a'*40]
-        error = ms.validate()[0]
-        self.assertRegex(error,
-            ("a migration spec containing git hashes must have 1 hash for each schema "
-                r"file, but this spec has \d git hash\(es\) and \d schemas"))
-        ms.git_hashes = ['a'*40, 'a'*40]
-        self.assertEqual(ms.validate(), [])
 
         for renaming_list in MigrationSpec._CHANGES_LISTS:
             ms = copy.deepcopy(self.migration_spec)
@@ -1505,6 +1518,24 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertEqual(ms.seq_of_renamed_attributes[1], None)
         self.assertEqual(os.path.dirname(ms.migrated_files[0]), migrations_config_file_dir)
 
+        ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'],
+            final_schema_branch='ex_branch', final_schema_url='ex_url', final_schema_hash='ex_hash')
+        ms.standardize()
+        self.assertEqual(ms.final_schema_git_metadata.branch, 'ex_branch')
+
+        ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'])
+        ms.standardize()
+        self.assertEqual(ms.final_schema_git_metadata, None)
+
+        schema_metadata_model = SchemaRepoMetadata(
+            url='example_url',
+            branch='example_branch',
+            revision='example_hash')
+        ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'],
+            final_schema_git_metadata=schema_metadata_model)
+        ms.standardize()
+        self.assertEqual(ms.final_schema_git_metadata.url, 'example_url')
+
     def test_expected_migrated_files(self):
         self.assertEqual(self.migration_spec.expected_migrated_files(),
             [Migrator.path_of_migrated_file(self.migration_spec.existing_files[0])])
@@ -1550,6 +1581,25 @@ class TestMigrationController(MigrationFixtures):
         migration_spec.prepare()
         migrated_filenames = MigrationController.migrate_over_schema_sequence(migration_spec)
         assert_equal_workbooks(self, self.example_existing_rt_model_copy, migrated_filenames[0])
+
+        # test final_schema_git_metadata
+        migrated_filename = temp_pathname(self, 'example_existing_model_rt_migrated.xlsx')
+        schema_metadata_model = SchemaRepoMetadata(
+            url='https://github.com/KarrLab/repo_x',
+            branch='example_branch',
+            revision='0123456789012345678901234567890123456789')
+        migration_spec = MigrationSpec('name',
+            existing_files=[self.example_existing_rt_model_copy],
+            schema_files=schema_files,
+            seq_of_renamed_models=seq_of_renamed_models,
+            seq_of_renamed_attributes=seq_of_renamed_attributes,
+            migrated_files=[migrated_filename],
+            final_schema_git_metadata=schema_metadata_model)
+        migration_spec.prepare()
+        migrated_filenames = MigrationController.migrate_over_schema_sequence(migration_spec)
+        assert_equal_workbooks(self, self.example_existing_rt_model_copy, migrated_filenames[0])
+        metadata = utils.read_metadata_from_file(migrated_filenames[0])
+        self.assertTrue(metadata.schema_repo_metadata.is_equal(schema_metadata_model))
 
         bad_migration_spec = copy.deepcopy(self.migration_spec)
         del bad_migration_spec.existing_files
@@ -1622,6 +1672,7 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.test_repo_url = 'https://github.com/KarrLab/test_repo'
         # get these repos once for the TestCase to speed up tests
         cls.test_repo = GitRepo(cls.test_repo_url)
+        # todo: metadata: replace hashes with tags & lookups in repo, as with 'COMMIT_OF_LAST_SCHEMA_CHANGES' below
         cls.known_hash = 'ab34419496756675b6e8499e0948e697256f2698'
         cls.known_hash_ba1f9d3 = 'ba1f9d33a3e18a74f79f41903e7e88e118134d5f'
         cls.hash_commit_tag_ROOT = 'd848093'
@@ -1632,6 +1683,10 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.git_migration_test_repo = GitRepo(cls.migration_test_repo_url)
         cls.clean_schema_changes_file = SchemaChanges.find_file(cls.git_migration_test_repo,
             cls.migration_test_repo_known_hash)
+        git_migration_test_repo_copy = cls.git_migration_test_repo.copy()
+        tag_for_commit_of_last_schema_changes = 'COMMIT_OF_LAST_SCHEMA_CHANGES'
+        git_migration_test_repo_copy.repo.git.checkout(tag_for_commit_of_last_schema_changes, detach=True)
+        cls.hash_of_commit_of_last_schema_changes = git_migration_test_repo_copy.latest_hash()
 
         cls.totally_empty_git_repo = GitRepo()
         cls.fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
@@ -2020,7 +2075,7 @@ class TestGitRepo(AutoMigrationFixtures):
     def test_init(self):
         self.assertIsInstance(self.test_repo.repo, git.Repo)
         self.assertEqual(self.repo_root, self.test_repo.repo_dir)
-        self.assertEqual(self.test_repo.original_location, self.test_repo_url)
+        self.assertEqual(self.test_repo.repo_url, self.test_repo_url)
         git_repo = GitRepo(self.test_repo.repo_dir)
         self.assertIsInstance(git_repo.repo, git.Repo)
         with self.assertRaisesRegex(MigratorError, "instantiating a git.Repo from directory '.+' failed"):
@@ -2120,7 +2175,7 @@ class TestGitRepo(AutoMigrationFixtures):
     def test_copy(self):
         repo_copy = self.git_migration_test_repo.copy()
         self.assertEqual(repo_copy.latest_hash(), self.git_migration_test_repo.latest_hash())
-        self.assertEqual(repo_copy.original_location, self.git_migration_test_repo.original_location)
+        self.assertEqual(repo_copy.repo_url, self.git_migration_test_repo.repo_url)
         self.assertNotEqual(repo_copy.migrations_dir(), self.git_migration_test_repo.migrations_dir())
         self.assertTrue(TestGitRepo.are_dir_trees_equal(self.git_migration_test_repo.repo_dir,
             repo_copy.repo_dir, ignore=[]))
@@ -2235,6 +2290,26 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertIsInstance(commit_hash, str)
         self.assertEqual(GitRepo.hash_prefix(commit_hash), self.hash_commit_tag_ROOT)
 
+    def test_get_metadata(self):
+        # use an old branch of test_repo, so the metadata does not change as test_repo changes
+        # todo: metadata: replace hashes with tags, and lookup hash in repo
+        expected_hash = 'dd9251ced1ef75aab158d2529317d57078241cfd'
+        branch = 'test_metadata'
+        git_repo = GitRepo(repo_location=self.test_repo_url, branch=branch)
+        metadata = git_repo.get_metadata(SchemaRepoMetadata)
+        self.assertEqual(metadata.url, self.test_repo_url)
+        self.assertEqual(metadata.branch, branch)
+        self.assertEqual(metadata.revision, expected_hash)
+        repo_copy = git_repo.copy()
+        metadata_copy = repo_copy.get_metadata(SchemaRepoMetadata)
+        self.assertTrue(metadata.is_equal(metadata_copy))
+
+        # test exception
+        git_repo = GitRepo()
+        with self.assertRaisesRegex(MigratorError,
+            r"can't get metadata for '\S+' repo; uninitialized attributes:"):
+            git_repo.get_metadata(SchemaRepoMetadata)
+
     def test_checkout_commit(self):
         # copy repo because this checks out earlier commits
         git_repo_copy = self.test_repo.copy()
@@ -2295,6 +2370,7 @@ class TestGitRepo(AutoMigrationFixtures):
                         "has a path {} -> {}".format(u, i, v, j, v, u))
 
     # todo: method to convert hash prefix to full hash so we can use short hashes
+    # todo: metadata: replace hashes with tags, and lookup hash in repo
     def test_get_dependents(self):
         before_splitting = self.test_repo.get_commit('d848093018c0660ea3e4728d3c21f3751a53757f')
         clone_1_commit = self.test_repo.get_commit('35f3eb4fe0ebf8f421958d9300c5de94a40fb70e')
@@ -2589,9 +2665,9 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             [SchemaChanges.generate_instance(self.clean_schema_changes_file)])
         self.assertEqual(migration_spec.existing_files[0], self.migration_test_repo_data_file_1)
         self.assertEqual(len(migration_spec.schema_files), 2)
-        self.assertEqual(len(migration_spec.git_hashes), 2)
-        self.assertTrue(migration_spec.git_hashes[0].startswith(
-            self.migration_test_repo_data_file_1_hash_prefix))
+        self.assertEqual(migration_spec.final_schema_git_metadata.url, self.migration_test_repo_url)
+        self.assertEqual(migration_spec.final_schema_git_metadata.branch, 'master')
+        self.assertEqual(len(migration_spec.final_schema_git_metadata.revision), 40)
         self.assertEqual(migration_spec.migrate_in_place, True)
         self.assertEqual(migration_spec._prepared, True)
 
@@ -2699,6 +2775,11 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         migrated_files, _ = data_schema_migration_existing_repo.automated_migrate()
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
+            metadata = utils.read_metadata_from_file(migrated_file)
+            self.assertEqual(metadata.schema_repo_metadata.url, self.migration_test_repo_url)
+            self.assertEqual(metadata.schema_repo_metadata.branch, 'master')
+            self.assertEqual(metadata.schema_repo_metadata.revision,
+                self.hash_of_commit_of_last_schema_changes)
 
         # test different data and schema repos: data repo = test_repo, schema repo = migration_test_repo
         test_repo_copy = self.test_repo.copy()
@@ -2763,6 +2844,12 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         file_copy = os.path.join(os.path.dirname(migrated_files[0]), 'data_file_1_copy.xlsx')
         for migrated_file in migrated_files:
             assert_equal_workbooks(self, file_copy, migrated_file)
+            metadata = utils.read_metadata_from_file(migrated_file)
+            self.assertEqual(metadata.schema_repo_metadata.url,
+                'https://github.com/KarrLab/migration_test_repo')
+            self.assertEqual(metadata.schema_repo_metadata.branch, 'master')
+            self.assertEqual(metadata.schema_repo_metadata.revision,
+                self.hash_of_commit_of_last_schema_changes)
         # restore cwd
         os.chdir(cwd)
 

@@ -39,6 +39,7 @@ from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAtt
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
 from obj_model.io import TOC_NAME, WorkbookReader, IoWarning, Reader, Writer
 from obj_model.units import UnitAttribute
+from obj_model.utils import SchemaRepoMetadata
 from wc_utils.config.core import AltResourceName
 from wc_utils.util.files import normalize_filename, remove_silently
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
@@ -418,7 +419,7 @@ class SchemaModule(object):
         # ensure that a schema contains some obj_model.Models
         if not models:
             raise MigratorError("No subclasses of obj_model.Model found in '{}'".format(self.abs_module_path))
-        
+
         ### temporary hack until all references to GitMetadata are removed from test repos ###
         # todo: rebuild test_repo & migration_test_repo without references to GitMetadata
         to_delete = []
@@ -990,6 +991,7 @@ class Migrator(object):
             os.path.basename(root) + migrate_suffix + ext)
         return migrated_file
 
+    # todo: metadata: unittest
     def write_migrated_file(self, migrated_models, model_order, existing_file, migrated_file=None,
         migrate_suffix=None, migrate_in_place=False):
         """ Write migrated models to an external representation
@@ -1049,13 +1051,18 @@ class Migrator(object):
             self.transformations.modify_migrated_models(self, migrated_models)
         return migrated_models
 
-    def _write(self, existing_file, migrated_models, migrated_file=None, migrate_suffix=None,
-        migrate_in_place=False):
+    def _write(self, existing_file, migrated_models, schema_metadata_model=None, migrated_file=None,
+        migrate_suffix=None, migrate_in_place=False):
         """ Write migrated models to a migrated file
+
+        `Migrator` doesn't use the `schema_package` argument to `Writer.run()` because the directory
+        containing the migrated schema repo is not on `sys.path`.
 
         Args:
             existing_file (:obj:`str`): pathname of file being migrated
             migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
+            schema_metadata_model (:obj:`SchemaRepoMetadata`): a git metadata model for the
+                migrated models schema
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
                 overwrite `existing_file` or save migrated file with migrated suffix in same directory
                 as existing file
@@ -1074,6 +1081,11 @@ class Migrator(object):
         # get sequence of migrated models in workbook of existing file
         existing_model_order = self._get_existing_model_order(existing_file)
         migrated_model_order = self._migrate_model_order(existing_model_order)
+        # write schema git metadata, so the file can be migrated again
+        if schema_metadata_model:
+            # put SchemaRepoMetadata at front of migrated_model_order
+            migrated_model_order.insert(0, SchemaRepoMetadata)
+            migrated_models.append(schema_metadata_model)
         return self.write_migrated_file(migrated_models, migrated_model_order, existing_file,
             migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
 
@@ -1456,48 +1468,53 @@ class MigrationSpec(object):
         existing_files (:obj:`list`: of :obj:`str`, optional): existing files to migrate
         schema_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
             definitions for each state in a sequence of migrations
-        git_hashes (:obj:`list` of :obj:`str`, optional): list of the git hashes of the git versions
-            that contain the schemas
         seq_of_renamed_models (:obj:`list` of :obj:`list`, optional): list of renamed models for use
             by a `Migrator` for each migration in a sequence of migrations
         seq_of_renamed_attributes (:obj:`list` of :obj:`list`, optional): list of renamed attributes
             for use by a `Migrator` for each migration in a sequence
         seq_of_transformations (:obj:`list` of :obj:`MigrationWrapper`, optional): list of transformations
             for use by a `Migrator` for each migration in a sequence
-        io_classes (:obj:`dict` of :obj:`type`, optional): reader and/or writer for I/O of existing and
-            migrated files, respectively; IMPORTANT NOTE: `io_classes` are imported and loaded from
-            full schema repositories by `DataSchemaMigration`
         migrated_files (:obj:`list`: of :obj:`str`, optional): migration destination files in 1-to-1
             correspondence with `existing_files`; if not provided, migrated files use a suffix or
             are migrated in place
+        io_classes (:obj:`dict` of :obj:`type`, optional): reader and/or writer for I/O of existing and
+            migrated files, respectively; IMPORTANT NOTE: `io_classes` are imported and loaded from
+            current schema repositories by `DataSchemaMigration`
         migrate_suffix (:obj:`str`, optional): suffix added to destination file name, before the file type suffix
         migrate_in_place (:obj:`bool`, optional): whether to migrate in place
         migrations_config_file (:obj:`str`, optional): if created from a configuration file, the file's
             path
+        final_schema_branch (:obj:`str`, optional): branch of the final schema repo
+        final_schema_url (:obj:`str`, optional): base url of the final schema repo
+        final_schema_hash (:obj:`str`, optional): hash of the head commit of the final schema repo
+        final_schema_git_metadata (:obj:`SchemaRepoMetadata`, optional): a git metadata model for the repo
+            containing the last schema in the migration; may initialized directly, or constructed
+            from the other `final_schema_*` attributes
         _prepared (:obj:`bool`, optional): whether this `MigrationSpec` has been prepared
     """
 
     _REQUIRED_ATTRS = ['name', 'existing_files', 'schema_files']
     _CHANGES_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes', 'seq_of_transformations']
-    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['io_classes', 'migrated_files',
-        'migrate_suffix', 'migrate_in_place', 'migrations_config_file', '_prepared', 'git_hashes']
+    _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['migrated_files', 'io_classes',
+        'migrate_suffix', 'migrate_in_place', 'migrations_config_file',
+        'final_schema_branch', 'final_schema_url', 'final_schema_hash', 'final_schema_git_metadata',
+        '_prepared']
 
-    def __init__(self, name, existing_files=None, schema_files=None, git_hashes=None,
-        seq_of_renamed_models=None, seq_of_renamed_attributes=None, seq_of_transformations=None,
-        io_classes=None, migrated_files=None, migrate_suffix=None,
-        migrate_in_place=False, migrations_config_file=None):
+    def __init__(self, name, **kwargs):
+        for attr in self._ALLOWED_ATTRS:
+            setattr(self, attr, None)
+
+        # check for extra attributes
+        extra_attrs = set(kwargs) - set(self._ALLOWED_ATTRS)
+        if extra_attrs:
+            raise MigratorError("initialization of MigrationSpec supports ({}) but extra attribute(s) "
+                "were provided: {}".format(set(self._ALLOWED_ATTRS), extra_attrs))
+
+        # initialize attributes provided
+        for attr, value in kwargs.items():
+            setattr(self, attr, value)
+
         self.name = name
-        self.existing_files = existing_files
-        self.schema_files = schema_files
-        self.git_hashes = git_hashes
-        self.seq_of_renamed_models = seq_of_renamed_models
-        self.seq_of_renamed_attributes = seq_of_renamed_attributes
-        self.seq_of_transformations = seq_of_transformations
-        self.io_classes = io_classes
-        self.migrated_files = migrated_files
-        self.migrate_suffix = migrate_suffix
-        self.migrate_in_place = migrate_in_place
-        self.migrations_config_file = migrations_config_file
         self._prepared = False
 
     def prepare(self):
@@ -1609,11 +1626,6 @@ class MigrationSpec(object):
             return ["a migration spec must contain at least 2 schemas, but it has only {}".format(
                 len(self.schema_files))]
 
-        if self.git_hashes and len(self.git_hashes) != len(self.schema_files):
-            return ["a migration spec containing git hashes must have 1 hash for each schema "
-                "file, but this spec has {} git hash(es) and {} schemas".format(
-                    len(self.git_hashes), len(self.schema_files))]
-
         for changes_list in self._CHANGES_LISTS:
             if getattr(self, changes_list) is not None:
                 if len(getattr(self, changes_list)) != len(self.schema_files) - 1:
@@ -1707,6 +1719,15 @@ class MigrationSpec(object):
                 self.migrated_files = self._normalize_filenames(self.migrated_files,
                     absolute_file=self.migrations_config_file)
 
+        # convert schema metadata into a SchemaRepoMetadata object
+        if not self.final_schema_git_metadata:
+            if self.final_schema_url and self.final_schema_branch and self.final_schema_hash:
+                self.final_schema_git_metadata = SchemaRepoMetadata(
+                    url=self.final_schema_url,
+                    branch=self.final_schema_branch,
+                    revision=self.final_schema_hash
+                )
+
     def expected_migrated_files(self):
         """ Provide names of migrated files that migration of this `MigrationSpec` would produce
 
@@ -1789,7 +1810,8 @@ class MigrationController(object):
                 models = migrator._migrate_with_transformations(models)
                 if i == num_migrations - 1:
                     # done migrating, write to file
-                    actual_migrated_file = migrator._write(existing_file, models, migrated_file=migrated_file,
+                    actual_migrated_file = migrator._write(existing_file, models,
+                        schema_metadata_model=ms.final_schema_git_metadata, migrated_file=migrated_file,
                         migrate_suffix=ms.migrate_suffix, migrate_in_place=ms.migrate_in_place)
                     all_migrated_files.append(actual_migrated_file)
 
@@ -1815,7 +1837,7 @@ class MigrationController(object):
 
         Args:
             migrations_spec_config_file (:obj:`str`): a migrations spec configuration file, written
-                in YAML 
+                in YAML
 
         Returns:
             :obj:`list` of :obj:`tuple`: list of (`MigrationSpec`, migrated filenames) pairs
@@ -2247,9 +2269,8 @@ class GitRepo(object):
 
     Attributes:
         repo_dir (:obj:`str`): the repo's root directory
-        repo_url (:obj:`str`): the repo's URL, if known
+        repo_url (:obj:`str`): the repo's URL, if provided
         branch (:obj:`str`): the repo's branch, if it was cloned
-        original_location (:obj:`str`): the repo's original root directory or URL, used for debugging
         repo (:obj:`git.Repo`): the `GitPython` repo
         commit_DAG (:obj:`nx.classes.digraph.DiGraph`): `NetworkX` DAG of the repo's commit history
         git_hash_map (:obj:`dict`): map from each git hash in the repo to its commit
@@ -2263,8 +2284,7 @@ class GitRepo(object):
 
     _HASH_PREFIX_LEN = 7
 
-    def __init__(self, repo_location=None, branch='master', search_parent_directories=False,
-        original_location=None):
+    def __init__(self, repo_location=None, repo_url=None, branch='master', search_parent_directories=False):
         """ Initialize a `GitRepo` from an existing Git repo
 
         If `repo_location` is a directory then use the Git repo in the directory. Otherwise it must
@@ -2273,13 +2293,13 @@ class GitRepo(object):
         Args:
             repo_location (:obj:`str`, optional): the location of the repo, either its directory or
                 its URL
+            repo_url (:obj:`str`, optional): the repo's original URL, which will be set in all
+                copies of a repo that was initially cloned by `clone_repo_from_url`
             branch (:obj:`str`, optional): branch to clone if `repo_location` is an URL; default is
                 `master`
             search_parent_directories (:obj:`bool`, optional): `search_parent_directories` option to
                 `git.Repo()`; if set and `repo_location` is a directory, then all of its parent
                 directories will be searched for a valid repo; default=False
-            original_location (:obj:`str`, optional): the original location of the repo, either its
-                root directory or its URL
 
         Returns:
             :obj:`str`: root directory for the repo (which contains the .git directory)
@@ -2289,9 +2309,9 @@ class GitRepo(object):
         self.temp_dirs = []
         self.repo = None
         self.repo_dir = None
-        self.repo_url = None
+        # todo: metadata: check the format of repo_url?
+        self.repo_url = repo_url
         self.branch = branch
-        self.original_location = original_location
         if repo_location:
             if os.path.isdir(repo_location):
                 try:
@@ -2303,8 +2323,6 @@ class GitRepo(object):
             else:
                 self.clone_repo_from_url(repo_location, branch=branch)
             self.commit_DAG = self.commits_as_graph()
-            if self.original_location is None:
-                self.original_location = repo_location
 
     def get_temp_dir(self):
         """ Get a temporary directory, which must eventually be deleted by calling `del_temp_dirs`
@@ -2351,6 +2369,7 @@ class GitRepo(object):
             raise MigratorError("repo cannot be cloned from '{}'\n{}".format(url, e))
         self.repo = repo
         self.repo_dir = directory
+        # todo: metadata: check the format of repo_url?
         self.repo_url = url
         self.branch = branch
         return repo, directory
@@ -2364,8 +2383,8 @@ class GitRepo(object):
         To avoid `bytecode is stale` errors, doesn't copy `__pycache__` directories.
 
         Args:
-            tmp_dir (:obj:`str`, optional): directory to hold the repo; if not provided, the repo
-                will be stored in a new temporary dir
+            tmp_dir (:obj:`str`, optional): directory to hold the repo; if not provided, a new temporary
+                directory is created to store the repo
 
         Returns:
             :obj:`GitRepo`: a new `GitRepo` that's a copy of `self` in a new temporary directory
@@ -2378,7 +2397,7 @@ class GitRepo(object):
         if not self.repo_dir:
             raise MigratorError("cannot copy an empty GitRepo")
         shutil.copytree(self.repo_dir, dst, ignore=shutil.ignore_patterns('*__pycache__*'))
-        return GitRepo(dst, original_location=self.original_location)
+        return GitRepo(dst, repo_url=self.repo_url, branch=self.branch)
 
     def migrations_dir(self):
         """ Get the repo's migrations directory
@@ -2419,10 +2438,10 @@ class GitRepo(object):
         return self.repo.head.commit
 
     def latest_hash(self):
-        """ Get the hash of the repo's latest commit
+        """ Get the hash of the repo's head commit
 
         Returns:
-            :obj:`str`: the latest commit's SHA1 hash
+            :obj:`str`: the head commit's SHA1 hash
         """
         return self.get_hash(self.head_commit())
 
@@ -2459,7 +2478,8 @@ class GitRepo(object):
                 commits or hashes in `commits_or_hashes`
 
         Raises:
-            :obj:`MigratorError`: if any of the commits or hashes don't identify a commit in the repo
+            :obj:`MigratorError`: if any commit or hash in `commits_or_hashes` doesn't identify a
+                commit in this repo
         """
         if not commits_or_hashes:
             return []
@@ -2524,6 +2544,31 @@ class GitRepo(object):
         """
         return commit.hexsha
 
+    def get_metadata(self, metadata_type):
+        """ Create a metadata model that describes the current state of this repo
+
+        Args:
+            metadata_type (:obj:`class`): a subclass of `RepoMetadata`, either
+                `DataRepoMetadata` or `SchemaRepoMetadata`
+
+        Returns:
+            :obj:`RepoMetadata`: a `RepoMetadata` object
+
+        Raises:
+            :obj:`MigratorError`: if the metadata isn't available in this repo
+        """
+        attrs = ['repo_url', 'branch', 'repo']
+        missing = [a for a in attrs if not getattr(self, a)]
+        if missing:
+            raise MigratorError("can't get metadata for '{}' repo; uninitialized attributes: '{}'".format(
+                self.repo_name(), ', '.join(missing)))
+        repo_metadata_obj = metadata_type(
+            url=self.repo_url,
+            branch=self.branch,
+            revision=self.latest_hash()
+        )
+        return repo_metadata_obj
+
     def checkout_commit(self, commit_identifier):
         """ Checkout a commit for this repo
 
@@ -2541,7 +2586,8 @@ class GitRepo(object):
             # use git directly, as per https://gitpython.readthedocs.io/en/stable/tutorial.html#using-git-directly
             self.repo.git.checkout(commit_hash, detach=True)
         except git.exc.GitError as e:
-            raise MigratorError("checkout of '{}' to commit '{}' failed:\n{}".format(self.repo_name(), commit_hash, e))
+            raise MigratorError("checkout of '{}' to commit '{}' failed:\n{}".format(self.repo_name(),
+                commit_hash, e))
 
     def add_file(self, filename):
         """ Add a file to the index
@@ -2590,7 +2636,7 @@ class GitRepo(object):
 
         Note that the sequence found is not deterministic, because nodes without dependency relationships
         can appear in any order. E.g., in a commit DAG with the paths a -> b -> c and a -> d -> c, nodes
-        b and d can appear in either order in the sequece.
+        b and d can appear in either order in the sequence.
 
         Args:
             commits (:obj:`list` of :obj:`git.objects.commit.Commit`): commits to include in the
@@ -2695,7 +2741,6 @@ class DataSchemaMigration(object):
     """
 
     # name of the migrations directory
-    # todo: rename to .migrations and change the repos
     _MIGRATIONS_DIRECTORY = 'migrations'
 
     # template for the name of a data-schema migration config file; the format placeholders are replaced with
@@ -3041,7 +3086,6 @@ class DataSchemaMigration(object):
         normalized_schema_file = normalize_filename(self.migration_config_data['schema_file'],
             dir=git_repo.migrations_dir())
         spec_args['schema_files'] = [normalized_schema_file]
-        spec_args['git_hashes'] = [commit_hash]
 
         spec_args['seq_of_renamed_models'] = []
         spec_args['seq_of_renamed_attributes'] = []
@@ -3053,12 +3097,12 @@ class DataSchemaMigration(object):
             git_repo.checkout_commit(schema_change.commit_hash)
             schema_file = normalize_filename(self.migration_config_data['schema_file'], dir=git_repo.migrations_dir())
             spec_args['schema_files'].append(schema_file)
-            spec_args['git_hashes'].append(schema_change.commit_hash)
             spec_args['seq_of_renamed_models'].append(schema_change.renamed_models)
             spec_args['seq_of_renamed_attributes'].append(schema_change.renamed_attributes)
             spec_args['seq_of_transformations'].append(schema_change.transformations)
 
         spec_args['io_classes'] = self.io_classes
+        spec_args['final_schema_git_metadata'] = git_repo.get_metadata(SchemaRepoMetadata)
         spec_args['migrate_in_place'] = True
         migration_spec = MigrationSpec(**spec_args)
         migration_spec.prepare()
@@ -3236,7 +3280,7 @@ class DataSchemaMigration(object):
         config_file_path = DataSchemaMigration.make_data_schema_migration_conf_file_cmd(local_dir,
             schema_url, data_files, add_to_repo=False)
 
-        ### create and run DataSchemaMigration ###
+        # create and run DataSchemaMigration
         data_schema_migration = DataSchemaMigration(data_repo_location=local_dir,
             data_config_file_basename=os.path.basename(config_file_path))
         migrated_files, _ = data_schema_migration.automated_migrate()
