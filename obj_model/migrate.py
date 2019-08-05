@@ -7,7 +7,7 @@
 """
 
 from abc import ABC, abstractmethod
-from cement import Controller, App
+from cement import Controller
 from enum import Enum
 from modulefinder import ModuleFinder
 from networkx.algorithms.dag import topological_sort, ancestors
@@ -34,16 +34,13 @@ import tempfile
 import warnings
 import yaml
 
-from obj_model import (TabularOrientation, RelatedAttribute, get_models, SlugAttribute, StringAttribute,
-    RegexAttribute, UrlAttribute, DateTimeAttribute, utils)
+from obj_model import TabularOrientation, RelatedAttribute, get_models, utils
 from obj_model.expression import ParsedExpression, ObjModelTokenCodes
-from obj_model.io import TOC_NAME, WorkbookReader, IoWarning, Reader, Writer
-from obj_model.units import UnitAttribute
+from obj_model.io import WorkbookReader, Reader, Writer
 from obj_model.utils import SchemaRepoMetadata
 from wc_utils.config.core import AltResourceName
 from wc_utils.util.files import normalize_filename, remove_silently
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
-from wc_utils.workbook.io import read
 import obj_model
 import wc_utils
 
