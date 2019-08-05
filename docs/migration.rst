@@ -8,7 +8,7 @@ the structure of an SQL database is defined by a schema written in the SQL
 Data Definition Language. When the schema is changed then existing data must be changed so that its structure still complies with the schema. This is called data *migration*. 
 Many systems, including databases, and web software frameworks provide tools that support automated data migration.
 
-Packages that use Object Model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of data in a file is defined by a schema that uses (:obj:`obj_model`. The Object Model *migration* module enables semi-automated migration of these data files.
+Packages that use Object Model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of data in a file is defined by a schema that uses :obj:`obj_model`. The Object Model *migration* module enables semi-automated migration of these data files.
 
 This page provides an overview of the concepts of Object Model migration and detailed instructions on how to configure and use it.
 
@@ -72,20 +72,15 @@ small programs that simplify migration, as listed in Tables 1 and 2 below.
    :widths: 17, 25, 25, 25, 8
    :header-rows: 1
 
-.. csv-table:: Configuration files in *schema repo*s, no widths
-   :file: ./migration/migrations_rst_tables_schema_repo_config.csv
+.. list-table:: Wrap experiment
    :header-rows: 1
+   :widths: 20 80
 
-===========  ================
-1. Hallo     | blah blah blah
-               blah blah blah
-               blah
-             | blah blah
-2. Here      We can wrap the
-             text in source
-32. There    **aha**
-===========  ================
+* - 1st column
+  - 2nd column please wrap please wrap please wrap please wrap please wrap please wrap please wrap
 
+* - 1st column
+  - 2nd column *test* please :obj:`obj_model` wrap please wrap please wrap please wrap please wrap please wrap please wrap
 
 
 Example configuration files
