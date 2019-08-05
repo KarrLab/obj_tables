@@ -14,10 +14,10 @@ This page provides an overview of the concepts of Object Model migration and det
 
 Migration concepts 
 ----------------------------------------------
-Object Model migration avoids the large and tedious manual effort that's needed when a schema is changed
-and multiple data files use the schema to define their structure. 
+Object Model migration avoids the potentially large, tedious and error-prone manual effort that's needed when a schema is changed
+and multiple data files use the schema to define their structure.
 
-Migration assumes that data files that are migrated and the schemas that define their structure
+Migration assumes that data files whare are migrated and the schemas that define their structure
 are stored in Git repositories. The repository storing the data files is called the *data repo*
 while the repository containing the schema is the *schema repo*.
 While these are typically distinct repositories, migration also supports the situation in which
@@ -59,7 +59,7 @@ And this example shows a *changed* version of the schema above, with comments th
 .. literalinclude:: ./migration/changed_schema.py
   :language: Python
 
-
+The instructions below will use these examples.
 
 Configuring migration
 ----------------------------------------------
@@ -93,16 +93,30 @@ schema versions. That is, the commit identified in the *Schema changes* file mus
 commits that changed the schema since the commit identified by the previous *Schema changes* file.
 The hash's prefix also appears in the file's name.
 
-Example ``transformations.py`` file
+Templates for *Schema changes* files are created by the XXX command, described below.
 
-Example ``custom_io_classes.py`` file
+This example *transformations* file converts the floats in attribute :obj:`Test.size` into ints:
+
+.. literalinclude:: migration/example_transformation.py
+  :language: Python
+
+Transformations are subclasses of :obj:`obj_model.migrate.MigrationWrapper`. `Model` instances can
+be converted before or after migration, or both. 
+The :obj:`prepare_existing_models` method converts models before migration, while 
+the :obj:`modify_migrated_models` method converts them after migration. Each of these
+methods has the same signature.
+
+A :obj:`custom_io_classes.py` file in a *schema repo* gives Object Model handles to the schema's
+:obj:`Reader` and/or :obj:`Writer` classes so they can be used to read and/or write data files
+that use the schema.
+
+This example ``custom_io_classes.py`` file configures Object Model that use :obj:`wc_lang` to use
+its :obj:`Reader`:
+
+.. literalinclude:: migration/example_transformation.py
+  :language: Python
 
 This example *Data-schema migration configuration* file xxxx
-the changes between the *existing* and *changed*
-schema versions above:
-
-.. literalinclude:: migration/schema_changes_2019-03-26-20-16-45_820a5d1.yaml
-  :language: YAML
 
 
 

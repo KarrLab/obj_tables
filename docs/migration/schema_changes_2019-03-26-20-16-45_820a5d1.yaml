@@ -4,4 +4,4 @@
 commit_hash: 820a5d1ac8b660b9bdf609b6b71be8b5fdbf8bd3
 renamed_attributes: [[[Test, existing_attr], [ChangedTest, migrated_attr]]]
 renamed_models: [[Test, ChangedTest]]
-transformations_file: ''
+transformations_file: 'example_transformation.py'
