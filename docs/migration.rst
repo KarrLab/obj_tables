@@ -8,7 +8,7 @@ the structure of an SQL database is defined by a schema written in the SQL
 Data Definition Language. When the schema is changed then existing data must be changed so that its structure still complies with the schema. This is called data *migration*. 
 Many systems, including databases, and web software frameworks provide tools that support automated data migration.
 
-Packages that use Object Model (:obj:`obj_model`) store data in files (Excel, csv or tsv). The structure of data in a file is defined by a schema that uses (:obj:`obj_model`). The Object Model *migration* module enables semi-automated migration of these data files.
+Packages that use Object Model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of data in a file is defined by a schema that uses (:obj:`obj_model`. The Object Model *migration* module enables semi-automated migration of these data files.
 
 This page provides an overview of the concepts of Object Model migration and detailed instructions on how to configure and use it.
 
@@ -31,7 +31,7 @@ used by migration to determine changes in the *schema*. Figure 1 below illustrat
 
 Figure here
 
-Many types of changes can be applied to the schema:
+Many types of changes can be applied to a schema:
 
 * Add a :obj:`obj_model.core.Model` (henceforth, *Model*) definition
 * Remove a *Model* definition
@@ -39,26 +39,26 @@ Many types of changes can be applied to the schema:
 * Add an attribute to a *Model*
 * Remove an attribute from a *Model*
 * Rename an attribute of a *Model*
-* Otherwise modify a *Model*
+* Apply another type of changes to a *Model*
 
-Migration automatically handles all types of changes, except the last one. Adding and removing *Model* definitions and adding and removing attributes from *Model*s are
-migrated completely automatically. Renaming *Model* definitions and attributes of *Model*s requires configuration information from a user, as described below.
+Migration automatically handles all types of changes except the last one.
+Adding and removing *Model* definitions and adding and removing attributes from *Model*s are
+migrated completely automatically. Renaming *Model* definitions and attributes of *Model*s requires
+configuration information from a user, as described below.
 
 Other types of modifications can be automated by custom Python transformation programs,
 which are also described below.
 
-This code contains an example schema:
+This code contains an example *existing* schema:
 
-.. literalinclude:: ./migration_examples/existing_schema.py
+.. literalinclude:: ./migration/existing_schema.py
   :language: Python
 
-And this example shows a changed version of the schema above, with comments documenting the changes:
+And this example shows a *changed* version of the schema above, with comments that document the changes:
 
-.. literalinclude:: ./migration_examples/modified_schema.py
+.. literalinclude:: ./migration/changed_schema.py
   :language: Python
 
-
-Must be able to clone data repo and schema repo
 
 
 Configuring migration
@@ -68,14 +68,15 @@ Both *schema repos* and *data repos* contain user-created configuration files an
 small programs that simplify migration, as listed in Tables 1 and 2 below.
 
 .. csv-table:: Table 1. Configuration files in *schema repo*s
-   :file: ./migrations_rst_tables_schema_repo_config.csv
-   :widths: 20, 30, 30, 30, 10
+   :file: ./migration/migrations_rst_tables_schema_repo_config.csv
+   :widths: 17, 25, 25, 25, 8
    :header-rows: 1
 
-.. csv-table:: Table 2. Configuration files in *data repo*s
-   :file: ./migrations_rst_tables_data_repo_config.csv
-   :widths: 20, 30, 30, 30, 10
-   :header-rows: 1
+=========   =======     =============   ==============  ==========
+File type	File use	File location	Filename format	File format
+=========   =======     =============   ==============  ==========
+Data-schema migration configuration file	Configure the migration of a set of files in a *data repo* whose data models are defined by the same schema in a *schema repo*	"Stored in the :obj:`migrations` directory in the *schema repo*, which is automatically created if necessary    data_schema_migration_conf--{}--{}--{}.yaml, where format placeholders are replaced with 1) the name of the *data repo*, 2) the name of the *schema repo*, and 3) a datetime value	yaml
+=========   =======     =============   ==============  ==========
 
 Example configuration files
 
@@ -107,6 +108,8 @@ Configuring the *data repo*
 Using migration
 ----------------------------------------------
 Migration commands are run via the *wc-cli* program on a Unix command line.
+
+Must be able to clone data repo and schema repo
 
 
 

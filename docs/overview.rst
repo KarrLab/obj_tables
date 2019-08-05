@@ -9,7 +9,7 @@ Defining schemas
 A schema is a Python module that contains some models (subclasses of :obj:`obj_model.core.Model`), each of which has one or more attributes
 (instances of :obj:`Attribute` and its subclasses). The following shows an example of a schema for a lab member::
 
-    import obj_model
+    from obj_model import Model, StringAttribute
 
     class Member(Model):
         first_name = StringAttribute()
@@ -28,6 +28,8 @@ The related attribute types (:obj:`OneToOneAttribute`, :obj:`OneToManyAttribute`
 :obj:`ManyToManyAttribute`) enable all possible M-to-N relationships between pairs of models.
 To create a relationship between models, define a related attribute in a
 model that specifies the name of the other model as its first argument::
+
+    from obj_model import Model, StringAttribute, UrlAttribute, ManyToOneAttribute
 
     class Lab(Model):
         name = StringAttribute()
