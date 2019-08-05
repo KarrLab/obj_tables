@@ -1,9 +1,3 @@
-downstream_dependencies:
-  - datanator
-  - wc_kb
-  - wc_lang
-  - wc_rules
-  - wc_sim
 email_notifications:
   - jonrkarr@gmail.com
   - arthur.p.goldberg@mssm.edu

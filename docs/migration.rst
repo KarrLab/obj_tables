@@ -76,11 +76,11 @@ small programs that simplify migration, as listed in Tables 1 and 2 below.
    :header-rows: 1
    :widths: 20 80
 
-* - 1st column
-  - 2nd column please wrap please wrap please wrap please wrap please wrap please wrap please wrap
+    * - 1st column
+      - 2nd column please wrap please wrap please wrap please wrap please wrap please wrap please wrap
 
-* - 1st column
-  - 2nd column *test* please :obj:`obj_model` wrap please wrap please wrap please wrap please wrap please wrap please wrap
+    * - 1st column
+      - 2nd column *test* please :obj:`obj_model` wrap please wrap please wrap please wrap please wrap please wrap please wrap
 
 
 Example configuration files
