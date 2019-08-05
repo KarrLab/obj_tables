@@ -79,16 +79,28 @@ Data-schema migration configuration file	Configure the migration of a set of fil
 =========   =======     =============   ==============  ==========
 
 Example configuration files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Fields in configuration files
+Example *Schema changes* file
 
-Schema git metadata in data file
+Example *custom_io_classes.py* file
 
-Each data file in the *data repo* must contain a *Model* that the version of the *schema repo*
-upon which the file depends. This git metadata is stored in a *Model* called *SchemaRepoMetadata`
+Example *Data-schema migration configuration* file
+
+
+Schema git metadata in data files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Each data file in the *data repo* must contain a *Model* that documents the version of the *schema repo*
+upon which the file depends. This git metadata is stored in a *Model* called *SchemaRepoMetadata*
 (or *Schema repo metadata* as a worksheet in a spreadsheet). The metadata specifies the schema's
 version with its URL, branch, and commit hash. 
-The data file's migration will start at the specified commit in the *schema repo*.
+The data file's migration will start at the specified commit in the *schema repo*. An example
+Schema repo metadata worksheet in an Excel data file is illustrated below:
+
+.. image:: migration/schema_git_metadata.png
+  :width: 400
+  :alt: example Schema repo metadata worksheet in an Excel data file
 
 With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a directed acyclic graph because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
 then migrates data files from the first *schema changes* file to the last one.
