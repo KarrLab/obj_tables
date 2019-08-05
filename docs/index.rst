@@ -12,6 +12,7 @@ Contents
    :numbered:
    
    installation.rst
-   overview.rst   
+   overview.rst
+   migration.rst
    API documentation <source/modules.rst>
    about.rst
