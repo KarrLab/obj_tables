@@ -422,3 +422,13 @@ googleanalytics_id = 'UA-86340737-1'
 
 addmetahtml_content = '<meta http-equiv="refresh" content="0; url=https://docs.karrlab.org/obj_model" />'
 addmetahtml_enabled = os.getenv('READTHEDOCS', '') == 'True'
+
+# Table width fix for Read the Docs Sphinx theme (https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html) ------------------------
+
+html_static_path = ['_static']
+
+html_context = {
+    'css_files': [
+        '_static/theme_overrides.css',  # override wide tables in RTD theme
+        ],
+     }
