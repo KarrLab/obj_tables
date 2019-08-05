@@ -67,9 +67,13 @@ Configuring migration
 Both *schema repos* and *data repos* contain user-created configuration files and
 small programs that simplify migration, as listed in Tables 1 and 2 below.
 
-.. csv-table:: Table 1. Configuration files in *schema repo*s
+.. csv-table:: Configuration files in *schema repo*s
    :file: ./migration/migrations_rst_tables_schema_repo_config.csv
    :widths: 17, 25, 25, 25, 8
+   :header-rows: 1
+
+.. csv-table:: Configuration files in *schema repo*s, no widths
+   :file: ./migration/migrations_rst_tables_schema_repo_config.csv
    :header-rows: 1
 
 ===========  ================
@@ -82,12 +86,6 @@ small programs that simplify migration, as listed in Tables 1 and 2 below.
 32. There    **aha**
 ===========  ================
 
-
-=========   =======     =============   ==============  ==========
-File type   File use    File location   Filename format File format
-=========   =======     =============   ==============  ==========
-Data-schema migration configuration file    Configure the migration of a set of files in a *data repo* whose data models are defined by the same schema in a *schema repo*   "Stored in the :obj:`migrations` directory in the *schema repo*, which is automatically created if necessary    data_schema_migration_conf--{}--{}--{}.yaml, where format placeholders are replaced with 1) the name of the *data repo*, 2) the name of the *schema repo*, and 3) a datetime value  yaml
-=========   =======     =============   ==============  ==========
 
 
 Example configuration files
@@ -111,7 +109,7 @@ The data file's migration will start at the specified commit in the *schema repo
 Schema repo metadata worksheet in an Excel data file is illustrated below:
 
 .. image:: migration/schema_git_metadata.png
-  :width: 400
+  :width: 600
   :alt: example Schema repo metadata worksheet in an Excel data file
 
 With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a directed acyclic graph because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
