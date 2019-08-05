@@ -67,30 +67,42 @@ Configuring migration
 Both *schema repos* and *data repos* contain user-created configuration files and
 small programs that simplify migration, as listed in Tables 1 and 2 below.
 
-.. csv-table:: Configuration files in *schema repo*s
+.. csv-table:: Configuration files in schema repos
    :file: ./migration/migrations_rst_tables_schema_repo_config.csv
+   :widths: 12, 25, 25, 25, 8
+   :header-rows: 1
+
+.. csv-table:: Configuration file in data repos
+   :file: migration/migrations_rst_tables_data_repo_config.csv
    :widths: 17, 25, 25, 25, 8
    :header-rows: 1
-
-.. list-table:: Wrap experiment
-   :header-rows: 1
-   :widths: 20 80
-
-    * - 1st column
-      - 2nd column please wrap please wrap please wrap please wrap please wrap please wrap please wrap
-
-    * - 1st column
-      - 2nd column *test* please :obj:`obj_model` wrap please wrap please wrap please wrap please wrap please wrap please wrap
 
 
 Example configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Example *Schema changes* file
+This example *Schema changes* file documents the changes between the *existing* and *changed*
+schema versions above:
 
-Example *custom_io_classes.py* file
+.. literalinclude:: migration/schema_changes_2019-03-26-20-16-45_820a5d1.yaml
+  :language: YAML
 
-Example *Data-schema migration configuration* file
+It contains the hash of a git commit, which must be the last commit that changed the schema
+between the *existing* and *changed*
+schema versions. That is, the commit identified in the *Schema changes* file must depend on all
+commits that changed the schema since the commit identified by the previous *Schema changes* file.
+The hash's prefix also appears in the file's name.
+
+Example ``transformations.py`` file
+
+Example ``custom_io_classes.py`` file
+
+This example *Data-schema migration configuration* file the changes between the *existing* and *changed*
+schema versions above:
+
+.. literalinclude:: migration/schema_changes_2019-03-26-20-16-45_820a5d1.yaml
+  :language: YAML
+
 
 
 Schema git metadata in data files

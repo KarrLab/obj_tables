@@ -1,0 +1,7 @@
+# schema changes file
+# stored in 'schema_changes_2019-03-26-20-16-45_820a5d1.yaml'
+
+commit_hash: 820a5d1ac8b660b9bdf609b6b71be8b5fdbf8bd3
+renamed_attributes: [[[Test, existing_attr], [ChangedTest, migrated_attr]]]
+renamed_models: [[Test, ChangedTest]]
+transformations_file: ''

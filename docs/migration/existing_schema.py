@@ -1,11 +1,11 @@
 from obj_model import (Model, SlugAttribute, StringAttribute,
-    IntegerAttribute, PositiveIntegerAttribute)
+    FloatAttribute, PositiveIntegerAttribute)
 
 class Test(Model):
     id = SlugAttribute()
     name = StringAttribute(default='test')
     existing_attr = StringAttribute()
-    size = IntegerAttribute()
+    size = FloatAttribute()
     color = StringAttribute()
 
 class Property(Model):

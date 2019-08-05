@@ -1,4 +1,4 @@
-from obj_model import Model, SlugAttribute, StringAttribute, FloatAttribute
+from obj_model import Model, SlugAttribute, StringAttribute, IntegerAttribute
 
 class ChangedTest(Model):  # Model Test renamed to ChangedTest
     id = SlugAttribute()
@@ -7,8 +7,8 @@ class ChangedTest(Model):  # Model Test renamed to ChangedTest
     migrated_attr = StringAttribute()
     # Attribute ChangedTest.revision added
     revision = StringAttribute(default='0.0')
-    # Type of attribute Test.size changed to a float
-    size = FloatAttribute()
+    # Type of attribute Test.size changed to an integer
+    size = IntegerAttribute()
     # Attribute Test.color removed    
 
 # Model Property removed
