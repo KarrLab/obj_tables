@@ -72,11 +72,23 @@ small programs that simplify migration, as listed in Tables 1 and 2 below.
    :widths: 17, 25, 25, 25, 8
    :header-rows: 1
 
+===========  ================
+1. Hallo     | blah blah blah
+               blah blah blah
+               blah
+             | blah blah
+2. Here      We can wrap the
+             text in source
+32. There    **aha**
+===========  ================
+
+
 =========   =======     =============   ==============  ==========
-File type	File use	File location	Filename format	File format
+File type   File use    File location   Filename format File format
 =========   =======     =============   ==============  ==========
-Data-schema migration configuration file	Configure the migration of a set of files in a *data repo* whose data models are defined by the same schema in a *schema repo*	"Stored in the :obj:`migrations` directory in the *schema repo*, which is automatically created if necessary    data_schema_migration_conf--{}--{}--{}.yaml, where format placeholders are replaced with 1) the name of the *data repo*, 2) the name of the *schema repo*, and 3) a datetime value	yaml
+Data-schema migration configuration file    Configure the migration of a set of files in a *data repo* whose data models are defined by the same schema in a *schema repo*   "Stored in the :obj:`migrations` directory in the *schema repo*, which is automatically created if necessary    data_schema_migration_conf--{}--{}--{}.yaml, where format placeholders are replaced with 1) the name of the *data repo*, 2) the name of the *schema repo*, and 3) a datetime value  yaml
 =========   =======     =============   ==============  ==========
+
 
 Example configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
