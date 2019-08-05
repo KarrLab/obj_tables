@@ -74,7 +74,7 @@ small programs that simplify migration, as listed in Tables 1 and 2 below.
 
 .. csv-table:: Configuration file in data repos
    :file: migration/migrations_rst_tables_data_repo_config.csv
-   :widths: 17, 25, 25, 25, 8
+   :widths: 12, 30, 25, 25, 8
    :header-rows: 1
 
 
@@ -97,7 +97,8 @@ Example ``transformations.py`` file
 
 Example ``custom_io_classes.py`` file
 
-This example *Data-schema migration configuration* file the changes between the *existing* and *changed*
+This example *Data-schema migration configuration* file xxxx
+the changes between the *existing* and *changed*
 schema versions above:
 
 .. literalinclude:: migration/schema_changes_2019-03-26-20-16-45_820a5d1.yaml
