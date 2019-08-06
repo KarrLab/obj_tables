@@ -29,7 +29,7 @@ Because it's stored in a Git repository, its versions are
 recorded in a directed acyclic graph of commits in the repository. These commits are
 used by migration to determine changes in the *schema*. Figure 1 below illustrates these concepts.
 
-.. image:: migration/figures/migration_example_figure.svg
+.. image:: migration/figures/migration_example_figure.png
   :width: 600
   :alt: Example data file migration
 
