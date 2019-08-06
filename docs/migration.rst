@@ -17,11 +17,19 @@ Migration concepts
 Object Model migration avoids the potentially large, tedious and error-prone manual effort that's needed when a schema is changed
 and multiple data files use the schema to define their structure.
 
-Migration assumes that data files whare are migrated and the schemas that define their structure
+Migration assumes that data files which are are migrated and the schemas that define their structure
 are stored in Git repositories. The repository storing the data files is called the *data repo*
 while the repository containing the schema is the *schema repo*.
 While these are typically distinct repositories, migration also supports the situation in which
 one repository serves as both the *data repo* and the *schema repo*.
+
+.. image:: migration/figures/schema_and_data_repos.png
+  :width: 600
+  :alt: Schema and data repos
+
+Figure x. Dependencies among Git repositories.
+The *schema repo* uses :obj:`obj_model` to define a schema. The *data repo* stores data files
+that use schema.
 
 Migration further assumes that a schema is stored in a single Python file called
 the *schema* file, and its name doesn't change over the time span of a migration.
@@ -33,7 +41,7 @@ used by migration to determine changes in the *schema*. Figure 1 below illustrat
   :width: 600
   :alt: Example data file migration
 
-Figure 1. Example Object Model data migration. We illustrate the migration of file
+Figure x. Example Object Model data migration. We illustrate the migration of file
 :obj:`biomodel_x.xlsx`. Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`bio_modelx`.
 As time increases up, within a repository later commits depend on earlier commits.
 (Only selected dependencies are illustrated.)
@@ -144,7 +152,7 @@ version with its URL, branch, and commit hash.
 The data file's migration will start at the specified commit in the *schema repo*. An example
 Schema repo metadata worksheet in an Excel data file is illustrated below:
 
-.. image:: migration/schema_git_metadata.png
+.. image:: migration/figures/schema_git_metadata.png
   :width: 600
   :alt: Example Schema repo metadata worksheet in an Excel data file
 
