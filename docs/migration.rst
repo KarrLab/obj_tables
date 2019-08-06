@@ -29,7 +29,21 @@ Because it's stored in a Git repository, its versions are
 recorded in a directed acyclic graph of commits in the repository. These commits are
 used by migration to determine changes in the *schema*. Figure 1 below illustrates these concepts.
 
-Figure here
+.. image:: migration/figures/migration_example_figure.svg
+  :width: 600
+  :alt: Example data file migration
+
+Figure 1. Example Object Model data migration. We illustrate the migration of file
+:obj:`biomodel_x.xlsx`. Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`bio_modelx`.
+As time increases up, within a repository later commits depend on earlier commits.
+(Only selected dependencies are illustrated.)
+:obj:`wc_lang` is a schema repo, and :obj:`bio_modelx` is a data repo that uses :obj:`wc_lang`.
+The earliest illustrated commit of :obj:`bio_modelx` contains a version of :obj:`biomodel_x.xlsx` that depends on
+the earliest commit of :obj:`wc_lang`, which depends on the earliest commit of :obj:`obj_model` (dashed arrows).
+:obj:`wc_lang` is updated twice, to produce its latest commit. A configured migration automatically
+updates :obj:`biomodel_x.xlsx` so that it's consistent with the latest commit of :obj:`wc_lang` (solid purple arrow).
+
+(todo: distinguish schema & data repos by color)
 
 Many types of changes can be applied to a schema:
 
@@ -132,7 +146,7 @@ Schema repo metadata worksheet in an Excel data file is illustrated below:
 
 .. image:: migration/schema_git_metadata.png
   :width: 600
-  :alt: example Schema repo metadata worksheet in an Excel data file
+  :alt: Example Schema repo metadata worksheet in an Excel data file
 
 With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a directed acyclic graph because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
 then migrates data files from the first *schema changes* file to the last one.
