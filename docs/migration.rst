@@ -91,12 +91,12 @@ small programs that simplify migration, as listed in Tables 1 and 2 below.
 
 .. csv-table:: Configuration files in schema repos
    :file: ./migration/migrations_rst_tables_schema_repo_config.csv
-   :widths: 12, 25, 25, 25, 8
+   :widths: 12, 25, 25, 25, 4
    :header-rows: 1
 
 .. csv-table:: Configuration file in data repos
    :file: migration/migrations_rst_tables_data_repo_config.csv
-   :widths: 12, 30, 25, 25, 8
+   :widths: 12, 30, 25, 25, 4
    :header-rows: 1
 
 
