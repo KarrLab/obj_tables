@@ -10,7 +10,8 @@ class TransformationExample(MigrationWrapper):
         
         Args:
             migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            existing_models (:obj:`list` of `obj_model.Model`:) the models that will be migrated
+            existing_models (:obj:`list` of `obj_model.Model`:) the models
+                that will be migrated
         """
         for existing_model in existing_models:
             if isinstance(existing_model, migrator.existing_defs['Test']):
@@ -21,7 +22,8 @@ class TransformationExample(MigrationWrapper):
 
         Args:
             migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            migrated_models (:obj:`list` of `obj_model.Model`:) all models that have been migrated
+            migrated_models (:obj:`list` of `obj_model.Model`:) all models
+                that have been migrated
         """
         pass
 
