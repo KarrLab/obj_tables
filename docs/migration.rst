@@ -64,8 +64,8 @@ Many types of changes can be applied to a schema:
 * Apply another type of changes to a *Model*
 
 Migration automatically handles all types of changes except the last one, as illustrated in Figure X below.
-Adding and removing *Model* definitions and adding and removing attributes from *Model*s are
-migrated completely automatically. Renaming *Model* definitions and attributes of *Model*s requires
+Adding and removing *Model* definitions and adding and removing attributes from *Model*\ s are
+migrated completely automatically. Renaming *Model* definitions and attributes of *Model*\ s requires
 configuration information from a user, as described below.
 
 Other types of modifications can be automated by custom Python transformation programs,
@@ -77,7 +77,7 @@ which are also described below.
 
 Figure X. Types of schema changes.
 Additions and deletions to a schema are handled automatically by migration.
-Renaming *Model*s or attributes must be annotated in a Schema changes file.
+Renaming *Model*\ s or attributes must be annotated in a Schema changes file.
 Modifications must be handled in a Python transformations module.
 
 This code contains an example *existing* schema:
@@ -98,21 +98,20 @@ Configuring migration
 We begin with an overview of migration configuration.
 Both *schema repos* and *data repos* contain durable state used by migration.
 To make migration easier and more reliable this durable state is recorded in configuration files.
-*Schema repo*s contain three types of configuration files (Table 1):
+*Schema repo*\ s contain three types of configuration files (Table 1):
 
-* *Schema changes* files document some changes to a schema that cannot be determined automatically, in particular renaming of *Model*s and renaming of attributes of *Model*s.
-* A *transformations* file defines a Python class that performs user-customized transformations on *Model*s during migration.
+* *Schema changes* files document some changes to a schema that cannot be determined automatically, in particular renaming of *Model*\ s and renaming of attributes of *Model*\ s.
+* A *transformations* file defines a Python class that performs user-customized transformations on *Model*\ s during migration.
 * A :obj:`custom_io_classes.py` file in a *schema repo* gives Object Model handles to the schema's :obj:`Reader` and/or :obj:`Writer` classes so they can be used to read and/or write data files that use the schema.
 
 Since committed changes in a repository are permanent, the schema changes and transformations
 files provide permanent documentation of these changes for all migrations that might need them.
 
-*Data repo*s contain just one type of configuration file (Table 2):
+*Data repo*\ s contain just one type of configuration file (Table 2):
 
 .. todo: auto table & section references
 
-* A *data-schema migration configuration* file details the migration of a set of data files
-in the data repo.
+* A *data-schema migration configuration* file details the migration of a set of data files in the data repo.
 
 Tables 1 and 2 below describe these user-customized configuration files and
 code fragments in greater detail.
@@ -127,7 +126,7 @@ CLI commands create templates of some of these files.
 
 .. csv-table:: Configuration file in data repos
    :file: migration/migrations_rst_tables_data_repo_config.csv
-   :widths: 12, 30, 25, 25, 4
+   :widths: 20, 80
    :header-rows: 1
 
 
@@ -260,12 +259,6 @@ Therefore, *schema changes* files must be located in the dependency graph so tha
 
 Migration migrates a data file from the schema commit identified in the file's schema's git metadata to
 the last *schema changes* configuration file in the *schema repo*.
-
-
-Configuring the *schema repo*
-
-
-Configuring the *data repo*
 
 
 Using migration
