@@ -91,13 +91,9 @@ Both *schema repos* and *data repos* contain durable state used by migration.
 To make migration easier and more reliable this durable state is recorded in configuration files.
 *Schema repo*s contain three types of configuration files (Table 1):
 
-* *Schema changes* files document some changes to a schema that cannot be determined
-automatically, in particular renaming of *Model*s and renaming of attributes of *Model*s.
-* A *transformations* file defines a Python class that performs user-customized transformations
-on *Model*s during migration.
-* A :obj:`custom_io_classes.py` file in a *schema repo* gives Object Model handles to the schema's
-:obj:`Reader` and/or :obj:`Writer` classes so they can be used to read and/or write data files
-that use the schema.
+* *Schema changes* files document some changes to a schema that cannot be determined automatically, in particular renaming of *Model*s and renaming of attributes of *Model*s.
+* A *transformations* file defines a Python class that performs user-customized transformations on *Model*s during migration.
+* A :obj:`custom_io_classes.py` file in a *schema repo* gives Object Model handles to the schema's :obj:`Reader` and/or :obj:`Writer` classes so they can be used to read and/or write data files that use the schema.
 
 Since committed changes in a repository are permanent, the schema changes and transformations
 files provide permanent documentation of these changes for all migrations that might need them.
