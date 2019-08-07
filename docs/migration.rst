@@ -39,18 +39,19 @@ recorded in a directed acyclic graph of commits in the repository. These commits
 used by migration to determine changes in the *schema*. Figure 1 below illustrates these concepts.
 
 .. figure:: migration/figures/migration_example_figure.png
-  :width: 600
-  :alt: Example data file migration
+    :width: 600
+    :align: center
+    :alt: Example data file migration
 
-Figure x. Example Object model data migration. We illustrate the migration of file
-:obj:`biomodel_x.xlsx`. Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`bio_modelx`.
-As time increases up, within a repository later commits depend on earlier commits.
-(Only selected dependencies are illustrated.)
-:obj:`wc_lang` is a schema repo, and :obj:`bio_modelx` is a data repo that uses :obj:`wc_lang`.
-The earliest illustrated commit of :obj:`bio_modelx` contains a version of :obj:`biomodel_x.xlsx` that depends on
-the earliest commit of :obj:`wc_lang`, which depends on the earliest commit of :obj:`obj_model` (dashed arrows).
-:obj:`wc_lang` is updated twice, to produce its latest commit. A configured migration automatically
-updates :obj:`biomodel_x.xlsx` so that it's consistent with the latest commit of :obj:`wc_lang` (solid purple arrow).
+    Figure x. Example Object model data migration. We illustrate the migration of file
+    :obj:`biomodel_x.xlsx`. Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`bio_modelx`.
+    As time increases up, within a repository later commits depend on earlier commits.
+    (Only selected dependencies are illustrated.)
+    :obj:`wc_lang` is a schema repo, and :obj:`bio_modelx` is a data repo that uses :obj:`wc_lang`.
+    The earliest illustrated commit of :obj:`bio_modelx` contains a version of :obj:`biomodel_x.xlsx` that depends on
+    the earliest commit of :obj:`wc_lang`, which depends on the earliest commit of :obj:`obj_model` (dashed arrows).
+    :obj:`wc_lang` is updated twice, to produce its latest commit. A configured migration automatically
+    updates :obj:`biomodel_x.xlsx` so that it's consistent with the latest commit of :obj:`wc_lang` (solid purple arrow).
 
 .. todo: distinguish schema & data repos by color
 
@@ -73,13 +74,14 @@ Other types of modifications can be automated by custom Python transformation pr
 which are also described below.
 
 .. figure:: migration/figures/types_of_schema_changes.png
-  :width: 600
-  :alt: Types of schema changes
+    :width: 600
+    :align: center
+    :alt: Types of schema changes
 
-Figure X. Types of schema changes.
-Additions and deletions to a schema are handled automatically by migration.
-Renaming *Model*\ s or attributes must be annotated in a Schema changes file.
-Modifications must be handled in a Python transformations module.
+    Figure X. Types of schema changes.
+    Additions and deletions to a schema are handled automatically by migration.
+    Renaming *Model*\ s or attributes must be annotated in a Schema changes file.
+    Modifications must be handled in a Python transformations module.
 
 This code contains an example *existing* schema:
 
@@ -151,27 +153,28 @@ That is, the commit identified in the *Schema changes* file must depend on all
 commits that changed the schema since the commit identified by the previous *Schema changes* file.
 
 .. figure:: migration/figures/commit_dependencies.png
-  :width: 600
-  :alt: Dependency graph of git commits and schema changes files that describe them
+    :width: 600
+    :align: center
+    :alt: Dependency graph of git commits and schema changes files that describe them
 
-Figure x. Dependency graph of Git commits and schema changes files that describe them.
-These graphs illustrate networks of Git commits. Each node is a commit, and each directed edge points
-from a parent commit to a child commit that depends on it.
-The legend shows 3 commits that contain the changes from the
-*existing* to *changed* versions of the schema above, colored orange, blue, and green.
-The blue commit must be downstream from the orange commit because
-the orange commit accesses *Model* :obj:`Test` but
-the blue commit renames *Model* :obj:`Test` to *Model* :obj:`ChangedTest`.
-The two commit histories in the "Correct use of *Schema changes* files" section
-show proper use of Schema changes files.
-The :obj:`commit_hash` in each Schema changes file is the Git hash of its parent commit.
-In the "Sequential" history the last commit containing a Schema changes file is properly downstream from
-all commits changing the schema.
-In the "Branches or concurrent clones" history, the final
-commit containing a Schema changes file is also properly downstream from the commits changing the schema.
-However, in the "Incorrect use of Schema changes file" section, the final
-commit containing a Schema changes file is incorrectly placed because it is not downstream from
-the green commit. Migration of a data file with this history would fail.
+    Figure x. Dependency graph of Git commits and schema changes files that describe them.
+    These graphs illustrate networks of Git commits. Each node is a commit, and each directed edge points
+    from a parent commit to a child commit that depends on it.
+    The legend shows 3 commits that contain the changes from the
+    *existing* to *changed* versions of the schema above, colored orange, blue, and green.
+    The blue commit must be downstream from the orange commit because
+    the orange commit accesses *Model* :obj:`Test` but
+    the blue commit renames *Model* :obj:`Test` to *Model* :obj:`ChangedTest`.
+    The two commit histories in the "Correct use of *Schema changes* files" section
+    show proper use of Schema changes files.
+    The :obj:`commit_hash` in each Schema changes file is the Git hash of its parent commit.
+    In the "Sequential" history the last commit containing a Schema changes file is properly downstream from
+    all commits changing the schema.
+    In the "Branches or concurrent clones" history, the final
+    commit containing a Schema changes file is also properly downstream from the commits changing the schema.
+    However, in the "Incorrect use of Schema changes file" section, the final
+    commit containing a Schema changes file is incorrectly placed because it is not downstream from
+    the green commit. Migration of a data file with this history would fail.
 
 .. todo: perhaps use a different icon for the second (last) commit in each commit history
 
@@ -249,8 +252,13 @@ The data file's migration will start at the specified commit in the *schema repo
 Schema repo metadata worksheet in an Excel data file is illustrated below:
 
 .. figure:: migration/figures/schema_git_metadata.png
-  :width: 600
-  :alt: Example Schema repo metadata worksheet in an Excel data file
+    :width: 600
+    :align: center
+    :alt: Example Schema repo metadata worksheet in an Excel data file
+
+    Figure X. Example Schema repo metadata worksheet in an Excel data file.
+    This schema repo metadata provides the point in the schema's commit history 
+    at which migration of the data file would start.
 
 With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a directed acyclic graph because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
 then migrates data files from the first *schema changes* file to the last one.
