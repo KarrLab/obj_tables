@@ -76,6 +76,9 @@ which are also described below.
   :alt: Types of schema changes
 
 Figure X. Types of schema changes.
+Additions and deletions to a schema are handled automatically by migration.
+Renaming *Model*s or attributes must be annotated in a Schema changes file.
+Modifications must be handled in a Python transformations module.
 
 This code contains an example *existing* schema:
 
