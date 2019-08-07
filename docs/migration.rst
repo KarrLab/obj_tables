@@ -1,5 +1,5 @@
-Data migration over schema versions
-=============================================
+Data migration
+==============
 
 Migration overview
 ---------------------
@@ -8,28 +8,29 @@ the structure of an SQL database is defined by a schema written in the SQL
 Data Definition Language. When the schema is changed then existing data must be changed so that its structure still complies with the schema. This is called data *migration*. 
 Many systems, including databases, and web software frameworks provide tools that support automated data migration.
 
-Packages that use Object Model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of data in a file is defined by a schema that uses :obj:`obj_model`. The Object Model *migration* module enables semi-automated migration of these data files.
+Packages that use Object model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of data in a file is defined by a schema that uses :obj:`obj_model`. The Object model *migration* module enables semi-automated migration of these data files.
 
-This page provides an overview of the concepts of Object Model migration and detailed instructions on how to configure and use it.
+This page provides an overview of the concepts of Object model migration and detailed instructions on how to configure and use it.
 
-Migration concepts 
+Migration concepts
 ----------------------------------------------
-Object Model migration avoids the potentially large, tedious and error-prone manual effort that's needed when a schema is changed
-and multiple data files use the schema to define their structure.
+Object model migration avoids the tedious and error-prone manual effort that's required when a schema is changed
+and multiple, large data files which use the schema to define their data models must be migrated.
 
-Migration assumes that data files which are are migrated and the schemas that define their structure
+Migration assumes that data files which are migrated and the schemas that define their structure
 are stored in Git repositories. The repository storing the data files is called the *data repo*
 while the repository containing the schema is the *schema repo*.
 While these are typically distinct repositories, migration also supports the situation in which
 one repository serves as both the *data repo* and the *schema repo*.
 
 .. image:: migration/figures/schema_and_data_repos.png
-  :width: 600
-  :alt: Schema and data repos
+    :width: 600
+    :align: center
+    :alt: Schema and data repos
 
-Figure x. Dependencies among Git repositories.
-The *schema repo* uses :obj:`obj_model` to define a schema. The *data repo* stores data files
-that use schema.
+    Figure x. Dependencies among Git repositories.
+    The *schema repo* uses :obj:`obj_model` to define a schema. The *data repo* stores data files
+    that use schema.
 
 Migration further assumes that a schema is stored in a single Python file called
 the *schema* file, and its name doesn't change over the time span of a migration.
@@ -41,7 +42,7 @@ used by migration to determine changes in the *schema*. Figure 1 below illustrat
   :width: 600
   :alt: Example data file migration
 
-Figure x. Example Object Model data migration. We illustrate the migration of file
+Figure x. Example Object model data migration. We illustrate the migration of file
 :obj:`biomodel_x.xlsx`. Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`bio_modelx`.
 As time increases up, within a repository later commits depend on earlier commits.
 (Only selected dependencies are illustrated.)
@@ -95,17 +96,17 @@ The instructions below use these examples.
 Configuring migration
 ----------------------------------------------
 
-We begin with an overview of migration configuration.
-Both *schema repos* and *data repos* contain durable state used by migration.
-To make migration easier and more reliable this durable state is recorded in configuration files.
+To make migration easier and more reliable the durable state used by migration
+in *schema repo*\ s and *data repo*\ s is recorded in configuration files.
 *Schema repo*\ s contain three types of configuration files (Table 1):
 
-* *Schema changes* files document some changes to a schema that cannot be determined automatically, in particular renaming of *Model*\ s and renaming of attributes of *Model*\ s.
+* *Schema changes* files document some changes to a schema that cannot be determined automatically, in particular renaming of *Model*\ s and of *Model* attributes.
 * A *transformations* file defines a Python class that performs user-customized transformations on *Model*\ s during migration.
-* A :obj:`custom_io_classes.py` file in a *schema repo* gives Object Model handles to the schema's :obj:`Reader` and/or :obj:`Writer` classes so they can be used to read and/or write data files that use the schema.
+* A :obj:`custom_io_classes.py` file in a *schema repo* gives migration handles to the schema's :obj:`Reader` and/or :obj:`Writer` classes so they can be used to read and/or write data files that use the schema.
 
 Since committed changes in a repository are permanent, the schema changes and transformations
-files provide permanent documentation of these changes for all migrations that might need them.
+files provide permanent documentation of these changes for all migrations over
+the changes they document.
 
 *Data repo*\ s contain just one type of configuration file (Table 2):
 
@@ -275,5 +276,11 @@ Debugging migration
 
 Limitations
 ----------------------------------------------
+
+Limitations:
+
+* Only Git
+* Migrates big data files slowly
+
 
 
