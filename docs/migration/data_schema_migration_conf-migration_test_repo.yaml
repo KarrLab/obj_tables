@@ -1,0 +1,11 @@
+# data-schema migration configuration file
+
+# description of the attributes:
+# 'files_to_migrate' contains paths to files in the data repo to migrate
+# 'schema_repo_url' contains the URL of the schema repo
+# 'branch' contains the schema's branch
+# 'schema_file' contains the relative path to the schema file in the schema repo
+files_to_migrate: [../data/data_file_1.xlsx]
+schema_file: '../migration_test_repo/core.py'
+schema_repo_url: 'https://github.com/KarrLab/migration_test_repo'
+branch: 'master'
