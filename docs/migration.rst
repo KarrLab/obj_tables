@@ -127,7 +127,6 @@ CLI commands create templates of some of these files.
 .. csv-table:: Configuration file in data repos
    :file: migration/migrations_rst_tables_data_repo_config.csv
    :widths: 20, 80
-   :header-rows: 1
 
 
 Example configuration files
