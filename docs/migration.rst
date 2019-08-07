@@ -28,7 +28,7 @@ one repository serves as both the *data repo* and the *schema repo*.
     :align: center
     :alt: Schema and data repos
 
-    Figure x. Dependencies among Git repositories.
+    Dependencies among Git repositories involved in data migration.
     The *schema repo* uses :obj:`obj_model` to define a schema. The *data repo* stores data files
     that use schema.
 
@@ -36,14 +36,14 @@ Migration further assumes that a schema is stored in a single Python file called
 the *schema* file, and its name doesn't change over the time span of a migration.
 Because it's stored in a Git repository, its versions are
 recorded in a directed acyclic graph of commits in the repository. These commits are
-used by migration to determine changes in the *schema*. Figure 1 below illustrates these concepts.
+used by migration to determine changes in the *schema*. Figure 2 below illustrates these concepts.
 
 .. figure:: migration/figures/migration_example_figure.png
     :width: 600
     :align: center
     :alt: Example data file migration
 
-    Figure x. Example Object model data migration. We illustrate the migration of file
+    Example Object model data migration. We illustrate the migration of file
     :obj:`biomodel_x.xlsx`. Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`bio_modelx`.
     As time increases up, within a repository later commits depend on earlier commits.
     (Only selected dependencies are illustrated.)
@@ -65,7 +65,7 @@ Many types of changes can be applied to a schema:
 * Rename an attribute of a *Model*
 * Apply another type of changes to a *Model*
 
-Migration automatically handles all types of changes except the last one, as illustrated in Figure X below.
+Migration automatically handles all types of changes except the last one, as illustrated in Figure 3 below.
 Adding and removing *Model* definitions and adding and removing attributes from *Model*\ s are
 migrated completely automatically. Renaming *Model* definitions and attributes of *Model*\ s requires
 configuration information from a user, as described below.
@@ -78,7 +78,7 @@ which are also described below.
     :align: center
     :alt: Types of schema changes
 
-    Figure X. Types of schema changes.
+    Types of schema changes.
     Additions and deletions to a schema are handled automatically by migration.
     Renaming *Model*\ s or attributes must be annotated in a Schema changes file.
     Modifications must be handled in a Python transformations module.
@@ -157,7 +157,7 @@ commits that changed the schema since the commit identified by the previous *Sch
     :align: center
     :alt: Dependency graph of git commits and schema changes files that describe them
 
-    Figure x. Dependency graph of Git commits and schema changes files that describe them.
+    Dependency graph of Git commits and schema changes files that describe them.
     These graphs illustrate networks of Git commits. Each node is a commit, and each directed edge points
     from a parent commit to a child commit that depends on it.
     The legend shows 3 commits that contain the changes from the
@@ -256,14 +256,16 @@ Schema repo metadata worksheet in an Excel data file is illustrated below:
     :align: center
     :alt: Example Schema repo metadata worksheet in an Excel data file
 
-    Figure X. Example Schema repo metadata worksheet in an Excel data file.
+    Example Schema repo metadata worksheet in an Excel data file.
     This schema repo metadata provides the point in the schema's commit history 
     at which migration of the data file would start.
 
 With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a directed acyclic graph because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
-then migrates data files from the first *schema changes* file to the last one.
-Therefore, *schema changes* files must be located in the dependency graph so that any valid topological sort creates a valid migration sequence. [See the examples in Figure x.]
+then migrates data files from the Schema version pointed to by the schema repo metadata
+to the last *schema changes* file in the schema repo.
+Therefore, *schema changes* files must be located in the dependency graph so that any valid topological sort creates a valid migration sequence.
 
+.. todo: See the examples in Figure x.
 
 Migration migrates a data file from the schema commit identified in the file's schema's git metadata to
 the last *schema changes* configuration file in the *schema repo*.
