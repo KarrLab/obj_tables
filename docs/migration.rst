@@ -23,9 +23,9 @@ while the repository containing the schema is the *schema repo*.
 While these are typically distinct repositories, migration also supports the situation in which
 one repository serves as both the *data repo* and the *schema repo*.
 
+.. _figure_repos:
 .. figure:: migration/figures/schema_and_data_repos.png
     :width: 600
-    :align: center
     :alt: Schema and data repos
 
     Dependencies among Git repositories involved in data migration.
@@ -36,11 +36,12 @@ Migration further assumes that a schema is stored in a single Python file called
 the *schema* file, and its name doesn't change over the time span of a migration.
 Because it's stored in a Git repository, its versions are
 recorded in a directed acyclic graph of commits in the repository. These commits are
-used by migration to determine changes in the *schema*. Figure 2 below illustrates these concepts.
+used by migration to determine changes in the *schema*.
+Figure :numref:`figure_example_data_file_migration` below illustrates these concepts.
 
+.. _figure_example_data_file_migration:
 .. figure:: migration/figures/migration_example_figure.png
     :width: 600
-    :align: center
     :alt: Example data file migration
 
     Example Object model data migration. We illustrate the migration of file
@@ -75,7 +76,6 @@ which are also described below.
 
 .. figure:: migration/figures/types_of_schema_changes.png
     :width: 600
-    :align: center
     :alt: Types of schema changes
 
     Types of schema changes.
@@ -154,7 +154,6 @@ commits that changed the schema since the commit identified by the previous *Sch
 
 .. figure:: migration/figures/commit_dependencies.png
     :width: 600
-    :align: center
     :alt: Dependency graph of git commits and schema changes files that describe them
 
     Dependency graph of Git commits and schema changes files that describe them.
@@ -253,7 +252,6 @@ Schema repo metadata worksheet in an Excel data file is illustrated below:
 
 .. figure:: migration/figures/schema_git_metadata.png
     :width: 600
-    :align: center
     :alt: Example Schema repo metadata worksheet in an Excel data file
 
     Example Schema repo metadata worksheet in an Excel data file.
