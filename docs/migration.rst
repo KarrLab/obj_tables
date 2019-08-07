@@ -23,7 +23,7 @@ while the repository containing the schema is the *schema repo*.
 While these are typically distinct repositories, migration also supports the situation in which
 one repository serves as both the *data repo* and the *schema repo*.
 
-.. image:: migration/figures/schema_and_data_repos.png
+.. figure:: migration/figures/schema_and_data_repos.png
     :width: 600
     :align: center
     :alt: Schema and data repos
@@ -38,7 +38,7 @@ Because it's stored in a Git repository, its versions are
 recorded in a directed acyclic graph of commits in the repository. These commits are
 used by migration to determine changes in the *schema*. Figure 1 below illustrates these concepts.
 
-.. image:: migration/figures/migration_example_figure.png
+.. figure:: migration/figures/migration_example_figure.png
   :width: 600
   :alt: Example data file migration
 
@@ -72,7 +72,7 @@ configuration information from a user, as described below.
 Other types of modifications can be automated by custom Python transformation programs,
 which are also described below.
 
-.. image:: migration/figures/types_of_schema_changes.png
+.. figure:: migration/figures/types_of_schema_changes.png
   :width: 600
   :alt: Types of schema changes
 
@@ -150,7 +150,7 @@ last commit in the set of commits containing the changes that the Schema changes
 That is, the commit identified in the *Schema changes* file must depend on all
 commits that changed the schema since the commit identified by the previous *Schema changes* file.
 
-.. image:: migration/figures/commit_dependencies.png
+.. figure:: migration/figures/commit_dependencies.png
   :width: 600
   :alt: Dependency graph of git commits and schema changes files that describe them
 
@@ -248,7 +248,7 @@ version with its URL, branch, and commit hash.
 The data file's migration will start at the specified commit in the *schema repo*. An example
 Schema repo metadata worksheet in an Excel data file is illustrated below:
 
-.. image:: migration/figures/schema_git_metadata.png
+.. figure:: migration/figures/schema_git_metadata.png
   :width: 600
   :alt: Example Schema repo metadata worksheet in an Excel data file
 
