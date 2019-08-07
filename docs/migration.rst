@@ -63,13 +63,19 @@ Many types of changes can be applied to a schema:
 * Rename an attribute of a *Model*
 * Apply another type of changes to a *Model*
 
-Migration automatically handles all types of changes except the last one.
+Migration automatically handles all types of changes except the last one, as illustrated in Figure X below.
 Adding and removing *Model* definitions and adding and removing attributes from *Model*s are
 migrated completely automatically. Renaming *Model* definitions and attributes of *Model*s requires
 configuration information from a user, as described below.
 
 Other types of modifications can be automated by custom Python transformation programs,
 which are also described below.
+
+.. image:: migration/figures/types_of_schema_changes.png
+  :width: 600
+  :alt: Types of schema changes
+
+Figure X. Types of schema changes.
 
 This code contains an example *existing* schema:
 
