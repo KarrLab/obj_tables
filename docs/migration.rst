@@ -26,6 +26,7 @@ one repository serves as both the *data repo* and the *schema repo*.
 .. _figure_repos:
 .. figure:: migration/figures/schema_and_data_repos.png
     :width: 600
+    :align: left
     :alt: Schema and data repos
 
     Dependencies among Git repositories involved in data migration.
