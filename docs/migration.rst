@@ -138,6 +138,10 @@ last commit in the set of commits containing the changes that the Schema changes
 That is, the commit identified in the *Schema changes* file must depend on all
 commits that changed the schema since the commit identified by the previous *Schema changes* file.
 
+.. image:: migration/figures/commit_dependencies.png
+  :width: 600
+  :alt: Dependency graph of git commits and schema changes files annotating them
+
 (todo: figure of dependency graph of git commits and schema changes files annotating them)
 
 :obj:`renamed_models` is a YAML list that
