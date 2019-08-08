@@ -2631,8 +2631,11 @@ class GitRepo(object):
     def commits_in_dependency_consistent_seq(self, commits):
         """ Order some git commits into a sequence that's consistent with the repo's dependencies
 
-        Note that the sequence found is not deterministic, because nodes without dependency relationships
-        can appear in any order. E.g., in a commit DAG with the paths a -> b -> c and a -> d -> c, nodes
+        Generate a topological sort of the commits.
+        If the dependency relationship contains branching, then
+        the sequence found is not deterministic, because concurrent nodes
+        can appear in any relative order in the sort.
+        E.g., in a commit DAG with the paths a -> b -> c and a -> d -> c, nodes
         b and d can appear in either order in the sequence.
 
         Args:
