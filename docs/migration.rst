@@ -322,24 +322,24 @@ We illustrate incorrect and correct placement of Schema changes files in Figure 
 
 Using migration
 ----------------------------------------------
-Migration commands are run via the wholecell command line interface program *wc-cli* program on a Unix command line.
-Different commands are available for *data repo*\ s and *schema repo*\ s.
+Migration commands are run via the wholecell command line interface program :obj:`wc-cli` program on the command line.
+Different commands are available for *schema repo*\ s and *data repo*\ s.
 
-Schema repo commands
-^^^^^^^^^^^^^^^^^^^^
+Schema repo migration commands
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :obj:`wc_lang` (abbreviated `lang`) is a schema repo. 
 
 The :obj:`wc_lang` :obj:`make-changes-template` command creates a template *Schema changes* file.
-By default, it creates a *Schema changes* template in the schema repo given by the current directory.
-This default can be overridden by another directory with the :obj:`--schema_repo_dir` option.
-
+By default, it creates a *Schema changes* template in the schema repo that contains the current directory.
+To use another schema repo, specify a directory in it with the :obj:`--schema_repo_dir` option.
 By default, the *Schema changes* template created references the most recent commit in the schema repo.
-This default can be overridden by another commit with the :obj:`--commit` option.
+To have the *Schema changes* file reference another commit, provide its
+hash with the :obj:`--commit` option.
 
 .. code-block:: none
 
-    usage: wc-cli tool lang lang-make-changes-template [-h]
+    usage: wc-cli tool lang make-changes-template [-h]
                                        [--schema_repo_dir SCHEMA_REPO_DIR]
                                        [--commit COMMIT]
 
@@ -353,13 +353,23 @@ This default can be overridden by another commit with the :obj:`--commit` option
                         most recent commit
 
 
-Data repo commands
-^^^^^^^^^^^^^^^^^^^^
+Data repo migration commands
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :obj:`wc_sim` (abbreviated `sim`) is a data repo.
 
-The :obj:`wc_sim` :obj:`make-data-schema-migration-config-file` command ...
-By default, ...
+The :obj:`wc_sim` :obj:`make-data-schema-migration-config-file` command
+creates a data-schema migration configuration file. It must be given the full URL of the
+Python schema file in its Git repository, including its branch. For example
+:obj:`https://github.com/KarrLab/wc_lang/blob/master/wc_lang/core.py` is the URL of the
+schema in :obj:`wc_lang`.
+It must also be given the absolute or relative path to at least one data file that
+will be migrated by when the data-schema migration config file is used. The config file
+can always be edited to add, remove or changes data files.
+
+By default, :obj:`make-data-schema-migration-config-file` assumes that the current directory
+is contained in the data repo that will be configured in the new migration config file.
+A different data repo can be specified by using the :obj:`--data_repo_dir` option.
 
 .. code-block:: none
 
@@ -380,8 +390,10 @@ By default, ...
                         data file(s) to migrate; defaults to the current
                         directory
 
-The :obj:`wc_sim` :obj:`do-configured-migration` command ...
-By default, ...
+The :obj:`wc_sim` :obj:`do-configured-migration` command migrates the data files specified in
+a data-schema migration config file. 
+
+.. todo: clarify where the migrated files go
 
 .. code-block:: none
 

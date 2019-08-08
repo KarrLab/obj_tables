@@ -3194,7 +3194,8 @@ class DataSchemaMigration(object):
     def automated_migrate(self, tmp_dir=None):
         """ Migrate the *data* repo's data files
 
-        Migrate to the current version of the *schema* repo, and migrate data files in place.
+        Migrate to the latest commit referenced by a schema changes file in the *schema* repo, and
+        migrate data files in place.
         If the *data* repo passed to `DataSchemaMigration` was a directory, then the migrated
         data files will be stored in that directory.
 
