@@ -6,9 +6,10 @@ Migration overview
 Consider some data whose structure (data model) is defined by a schema. For example,
 the structure of an SQL database is defined by a schema written in the SQL
 Data Definition Language. When the schema is changed then existing data must be changed so that its structure still complies with the schema. This is called data *migration*. 
-Many systems, including databases, and web software frameworks provide tools that support automated data migration.
+Many systems, including databases and web software frameworks provide tools that automate data migration.
 
-Packages that use Object model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of data in a file is defined by a schema that uses :obj:`obj_model`. The Object model *migration* module enables semi-automated migration of these data files.
+Packages that use Object model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of
+the data in a file is defined by a schema that uses :obj:`obj_model`. The Object model *migration* module enables semi-automated migration of these data files.
 
 This page provides an overview of the concepts of Object model migration and detailed instructions on how to configure and use it.
 
@@ -17,7 +18,7 @@ Migration concepts
 Object model migration avoids the tedious and error-prone manual effort that's required when a schema is changed
 and multiple, large data files which use the schema to define their data models must be migrated.
 
-Migration assumes that data files which are migrated and the schemas that define their structure
+Migration assumes that data files which are migrated and the schemas that define their data models
 are stored in Git repositories. The repository storing the data files is called the *data repo*
 while the repository containing the schema is the *schema repo*.
 While these are typically distinct repositories, migration also supports the situation in which
@@ -31,12 +32,12 @@ one repository serves as both the *data repo* and the *schema repo*.
 
     Dependencies among Git repositories involved in data migration.
     The *schema repo* uses :obj:`obj_model` to define a schema. The *data repo* stores data files
-    that use schema.
+    that use the schema repo to define their data model.
 
 Migration further assumes that a schema is stored in a single Python file called
 the *schema* file, and its name doesn't change over the time span of a migration.
 Because it's stored in a Git repository, its versions are
-recorded in a directed acyclic graph of commits in the repository. These commits are
+recorded in a directed acyclic graph (DAG) of commits in the repository. These commits are
 used by migration to determine changes in the *schema*.
 Figure :numref:`figure_example_data_file_migration` below illustrates these concepts.
 
@@ -45,17 +46,18 @@ Figure :numref:`figure_example_data_file_migration` below illustrates these conc
     :width: 600
     :alt: Example data file migration
 
-    Example Object model data migration. We illustrate the migration of file
-    :obj:`biomodel_x.xlsx`. Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`bio_modelx`.
-    As time increases up, within a repository later commits depend on earlier commits.
-    (Only selected dependencies are illustrated.)
-    :obj:`wc_lang` is a schema repo, and :obj:`bio_modelx` is a data repo that uses :obj:`wc_lang`.
-    The earliest illustrated commit of :obj:`bio_modelx` contains a version of :obj:`biomodel_x.xlsx` that depends on
-    the earliest commit of :obj:`wc_lang`, which depends on the earliest commit of :obj:`obj_model` (dashed arrows).
-    :obj:`wc_lang` is updated twice, to produce its latest commit. A configured migration automatically
-    updates :obj:`biomodel_x.xlsx` so that it's consistent with the latest commit of :obj:`wc_lang` (solid purple arrow).
+    Example migration of file :obj:`biomodel_x.xlsx`.
+    Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`biomodel_x`.
+    Time increases up the page, and within any repository later commits depend on earlier ones.
+    :obj:`wc_lang` is a schema repo that is used by the data repo :obj:`biomodel_x`.
+    The earliest illustrated commit of :obj:`biomodel_x` contains a version of :obj:`biomodel_x.xlsx` that depends on
+    the earliest commit of :obj:`wc_lang`, as indicated by the dashed arrows.
+    Two commits update :obj:`wc_lang`. Assuming that these commits modify :obj:`wc_lang`\ 's data model,
+    :obj:`biomodel_x.xlsx` must be migrated. The migration automatically
+    makes :obj:`biomodel_x.xlsx` consistent with the latest commit of :obj:`wc_lang` (solid purple arrow).
 
-.. todo: distinguish schema & data repos by color
+.. todo: perhaps distinguish schema & data repos by color
+.. todo: use a better term than 'Object model'
 
 Many types of changes can be applied to a schema:
 
@@ -67,7 +69,8 @@ Many types of changes can be applied to a schema:
 * Rename an attribute of a *Model*
 * Apply another type of changes to a *Model*
 
-Migration automatically handles all types of changes except the last one, as illustrated in Figure 3 below.
+Migration automatically handles all types of changes except the last one, as illustrated in Figure
+:numref:`figure_types_of_schema_changes`.
 Adding and removing *Model* definitions and adding and removing attributes from *Model*\ s are
 migrated completely automatically. Renaming *Model* definitions and attributes of *Model*\ s requires
 configuration information from a user, as described below.
@@ -75,6 +78,7 @@ configuration information from a user, as described below.
 Other types of modifications can be automated by custom Python transformation programs,
 which are also described below.
 
+.. _figure_types_of_schema_changes:
 .. figure:: migration/figures/types_of_schema_changes.png
     :width: 600
     :alt: Types of schema changes
@@ -84,7 +88,7 @@ which are also described below.
     Renaming *Model*\ s or attributes must be annotated in a Schema changes file.
     Modifications must be handled in a Python transformations module.
 
-This code contains an example *existing* schema:
+This code contains an example schema before migration, which we call the *existing* schema:
 
 .. literalinclude:: ./migration/existing_schema.py
   :language: Python
@@ -94,7 +98,7 @@ And this example shows a *changed* version of the schema above, with comments th
 .. literalinclude:: ./migration/changed_schema.py
   :language: Python
 
-The instructions below use these examples.
+The discussion below uses these examples.
 
 Configuring migration
 ----------------------------------------------
@@ -146,60 +150,59 @@ schema versions above:
 .. literalinclude:: migration/schema_changes_2019-03-26-20-16-45_820a5d1.yaml
   :language: YAML
 
-All schema changes files contain the same fields:
-:obj:`commit_hash`, :obj:`renamed_models`, :obj:`renamed_attributes`, and:obj:`transformations_file`.
+All schema changes files contain these fields:
+:obj:`commit_hash`, :obj:`renamed_models`, :obj:`renamed_attributes`, and :obj:`transformations_file`.
 :obj:`commit_hash` is the hash of the git commit which the Schema changes file annotates -- it is the
-last commit in the set of commits containing the changes that the Schema changes file documents.
-That is, the commit identified in the *Schema changes* file must depend on all
-commits that changed the schema since the commit identified by the previous *Schema changes* file.
-
-.. figure:: migration/figures/commit_dependencies.png
-    :width: 600
-    :alt: Dependency graph of git commits and schema changes files that describe them
-
-    Dependency graph of Git commits and schema changes files that describe them.
-    These graphs illustrate networks of Git commits. Each node is a commit, and each directed edge points
-    from a parent commit to a child commit that depends on it.
-    The legend shows 3 commits that contain the changes from the
-    *existing* to *changed* versions of the schema above, colored orange, blue, and green.
-    The blue commit must be downstream from the orange commit because
-    the orange commit accesses *Model* :obj:`Test` but
-    the blue commit renames *Model* :obj:`Test` to *Model* :obj:`ChangedTest`.
-    The two commit histories in the "Correct use of *Schema changes* files" section
-    show proper use of Schema changes files.
-    The :obj:`commit_hash` in each Schema changes file is the Git hash of its parent commit.
-    In the "Sequential" history the last commit containing a Schema changes file is properly downstream from
-    all commits changing the schema.
-    In the "Branches or concurrent clones" history, the final
-    commit containing a Schema changes file is also properly downstream from the commits changing the schema.
-    However, in the "Incorrect use of Schema changes file" section, the final
-    commit containing a Schema changes file is incorrectly placed because it is not downstream from
-    the green commit. Migration of a data file with this history would fail.
-
-.. todo: perhaps use a different icon for the second (last) commit in each commit history
-
+last commit in the DAG of commits containing the changes that the Schema changes file documents.
+That is, as illustrated in Figure :numref:`figure_commit_dependencies`,
+the commit identified in the *Schema changes* file must depend on all
+commits that modified the schema since the commit identified by the previous *Schema changes* file.
 
 :obj:`renamed_models` is a YAML list that
 documents all *Model*\ s in the schema that were renamed. Each renaming is given as a pair
 of the form :obj:`[ExistingName, ChangedName]`. 
+
 :obj:`renamed_attributes` is a YAML list that
 documents all attributes in the schema that were renamed. Each renaming is given as a pair
-in the form :obj:`[[ExistingModelName, ExistingAttributeName], [ChangedModelName, ChangedAttributeName]]`. 
+in the form :obj:`[[ExistingModelName, ExistingAttrName], [ChangedModelName, ChangedAttrName]]`. 
 If the *Model* name hasn't changed, then
 :obj:`ExistingModelName` and :obj:`ChangedModelName` will be the same.
 :obj:`transformations_file` optionally documents the name of a Python file that contains a
-class which transforms all *Model* instances as they are migrated.
+class which performs custom transformations on all *Model* instances as they are migrated.
+
+.. _figure_commit_dependencies:
+.. figure:: migration/figures/commit_dependencies.png
+    :width: 600
+    :alt: Dependency graph of git commits and schema changes files that describe them
+
+    Dependency graph of Git commits that change a schema and the schema changes files that describe them.
+    These graphs illustrate networks in which nodes are commits, and directed edges point
+    from a parent commit to a child commit that depends on it.
+    The :obj:`commit_hash` in each Schema changes file is the Git hash of its parent commit
+    (although a Schema changes file may describe a DAG of commits further back in the dependency graph).
+    The legend shows 3 colored commits that contain the changes made between the
+    *existing* to *changed* versions of the schema above.
+    The orange commit must be upstream from the blue commit because
+    the orange commit accesses *Model* :obj:`Test` and
+    the blue commit renames *Model* :obj:`Test` to *Model* :obj:`ChangedTest`.
+    The two commit histories in the **Correct use of *Schema changes* files** section
+    show proper use of Schema changes files.
+    In the **Sequential** history the last commit containing a Schema changes file is properly downstream from
+    all commits changing the schema.
+    In the **Branches or concurrent clones** history, the final
+    commit containing a Schema changes file is also properly downstream from the commits changing the schema.
+    However, in the **Incorrect use of Schema changes file** section, the final
+    commit containing a Schema changes file is incorrectly placed because it is not downstream from
+    the green commit. Migration of a data file with this history would fail.
+
+.. todo: perhaps use a different icon for the second (last) schema changes commit in each commit history
 
 Template schema changes files are generated by the CLI command :obj:`xyz`, as described below.
-.. todo: complete the reference
-It populates the value of the :obj:`commit_hash` field.
-The hash's prefix also appears in the file's name.
-Data in the fields
-:obj:`renamed_models`,
-:obj:`renamed_attributes`, and
-:obj:`transformations_file` must be entered by hand.
 
-This example *transformations* file converts the floats in attribute :obj:`Test.size` into ints:
+.. todo: complete the reference
+
+This example *transformations* file contains a class that
+converts the floats in attribute :obj:`Test.size` into ints:
 
 .. literalinclude:: migration/example_transformation.py
   :language: Python
@@ -207,13 +210,11 @@ This example *transformations* file converts the floats in attribute :obj:`Test.
 Transformations are subclasses of :obj:`obj_model.migrate.MigrationWrapper`. `Model` instances can
 be converted before or after migration, or both. 
 The :obj:`prepare_existing_models` method converts models before migration, while 
-:obj:`modify_migrated_models` converts them after migration. Both of these
-methods have the same signature.
+:obj:`modify_migrated_models` converts them after migration. Both methods have the same signature.
 The :obj:`migrator` argument provides an instance of :obj:`obj_model.migrate.Migrator`, the class
 that performs migration. Its attributes provide information about the migration. E.g., this
-code uses :obj:`migrator.existing_defs` which is a dictionary that maps from each *Model*'s name
+code uses :obj:`migrator.existing_defs` which is a dictionary that maps each *Model*'s name
 to its class definition to obtain the definition of the :obj:`Test` class.
-
 
 This example :obj:`custom_io_classes.py` file configures a migration of files that
 use the :obj:`wc_lang` schema to use the :obj:`wc_lang.io.Reader`:
@@ -225,7 +226,8 @@ In general, a :obj:`custom_io_classes.py` file will be needed if the *schema rep
 own :obj:`Reader` or  :obj:`Writer` classes for data file IO.
 
 
-This example *data-schema migration configuration* file configures the migration of one file.
+This example *data-schema migration configuration* file configures the migration of one file,
+:obj:`data_file_1.xlsx`.
 
 .. literalinclude:: migration/data_schema_migration_conf-migration_test_repo.yaml
   :language: YAML
@@ -245,11 +247,11 @@ Schema git metadata in data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each data file in the *data repo* must contain a *Model* that documents the version of the *schema repo*
-upon which the file depends. This git metadata is stored in a *Model* called *SchemaRepoMetadata*
-(or *Schema repo metadata* as a worksheet in a spreadsheet). The metadata specifies the schema's
+upon which the file depends. This git metadata is stored in a *SchemaRepoMetadata* *Model*
+(which will be in a *Schema repo metadata* worksheet in an Excel file). The metadata specifies the schema's
 version with its URL, branch, and commit hash. 
-The data file's migration will start at the specified commit in the *schema repo*. An example
-Schema repo metadata worksheet in an Excel data file is illustrated below:
+A migration of the data file will start at the specified commit in the *schema repo*. An example
+Schema repo metadata worksheet in an Excel file is illustrated below:
 
 .. figure:: migration/figures/schema_git_metadata.png
     :width: 600
@@ -259,16 +261,15 @@ Schema repo metadata worksheet in an Excel data file is illustrated below:
     This schema repo metadata provides the point in the schema's commit history 
     at which migration of the data file would start.
 
-With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a directed acyclic graph because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
-then migrates data files from the Schema version pointed to by the schema repo metadata
-to the last *schema changes* file in the schema repo.
-Therefore, *schema changes* files must be located in the dependency graph so that any valid topological sort creates a valid migration sequence.
-
-.. todo: See the examples in Figure x.
-
 Migration migrates a data file from the schema commit identified in the file's schema's git metadata to
 the last *schema changes* configuration file in the *schema repo*.
 
+.. todo: revise or remove this 'graph
+
+With regard to the *previous* relation between schema changes files, recall that dependencies among commits in a repository are structured as a DAG because each commit (except the first) has one or more previously created parents upon which it depends. Migration topologically sorts the commits in a *schema repo* and
+then migrates data files from the Schema version pointed to by the schema repo metadata
+to the last *schema changes* file in the schema repo.
+Therefore, *schema changes* files must be located in the dependency graph such that any valid topological sort creates a valid migration sequence.
 
 Using migration
 ----------------------------------------------
@@ -276,6 +277,16 @@ Migration commands are run via the *wc-cli* program on a Unix command line.
 
 Must be able to clone data repo and schema repo
 
+Template schema changes files are generated by the CLI command :obj:`xyz`, as described below.
+
+.. todo: complete the reference
+
+It populates the value of the :obj:`commit_hash` field.
+The hash's prefix also appears in the file's name.
+Data in the fields
+:obj:`renamed_models`,
+:obj:`renamed_attributes`, and
+:obj:`transformations_file` must be entered by hand.
 
 
 Debugging migration
@@ -286,10 +297,8 @@ Debugging migration
 Limitations
 ----------------------------------------------
 
-Limitations:
-
-* Only Git
-* Migrates big data files slowly
+* Migration requires that schemas and data files be stored in Git repositories -- no other version control systems are supported.
+* Migration of large data files runs slowly.
 
 
 
