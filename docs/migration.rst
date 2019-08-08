@@ -152,23 +152,12 @@ schema versions above:
 
 All schema changes files contain these fields:
 :obj:`commit_hash`, :obj:`renamed_models`, :obj:`renamed_attributes`, and :obj:`transformations_file`.
-:obj:`commit_hash` is the hash of the git commit which the Schema changes file annotates -- it is the
-last commit in the DAG of commits containing the changes that the Schema changes file documents.
-That is, as illustrated in Figure :numref:`figure_commit_dependencies`,
-the commit identified in the *Schema changes* file must depend on all
-commits that modified the schema since the commit identified by the previous *Schema changes* file.
 
-:obj:`renamed_models` is a YAML list that
-documents all *Model*\ s in the schema that were renamed. Each renaming is given as a pair
-of the form :obj:`[ExistingName, ChangedName]`. 
+* :obj:`commit_hash` is the hash of the git commit which the Schema changes file annotates -- it is the last commit in the DAG of commits containing the changes that the Schema changes file documents. That is, as illustrated in Figure :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the commit identified by the previous *Schema changes* file.
 
-:obj:`renamed_attributes` is a YAML list that
-documents all attributes in the schema that were renamed. Each renaming is given as a pair
-in the form :obj:`[[ExistingModelName, ExistingAttrName], [ChangedModelName, ChangedAttrName]]`. 
-If the *Model* name hasn't changed, then
-:obj:`ExistingModelName` and :obj:`ChangedModelName` will be the same.
-:obj:`transformations_file` optionally documents the name of a Python file that contains a
-class which performs custom transformations on all *Model* instances as they are migrated.
+* :obj:`renamed_models` is a YAML list that documents all *Model*\ s in the schema that were renamed. Each renaming is given as a pair of the form :obj:`[ExistingName, ChangedName]`.
+
+* :obj:`renamed_attributes` is a YAML list that documents all attributes in the schema that were renamed. Each renaming is given as a pair in the form :obj:`[[ExistingModelName, ExistingAttrName], [ChangedModelName, ChangedAttrName]]`.  If the *Model* name hasn't changed, then :obj:`ExistingModelName` and :obj:`ChangedModelName` will be the same. :obj:`transformations_file` optionally documents the name of a Python file that contains a class which performs custom transformations on all *Model* instances as they are migrated.
 
 .. _figure_commit_dependencies:
 .. figure:: migration/figures/commit_dependencies.png
