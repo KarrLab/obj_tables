@@ -259,9 +259,9 @@ Topological sort of schema changes
 ------------------------------------
 Migration of a data file executes this algorithm:
 
-.. code-block:: none
+.. code-block:: python
 
-    migrate_file(existing_filename, migrated_filename, schema_repo):
+    def migrate_file(existing_filename, migrated_filename, schema_repo):
         # get_schema_commit() reads the Schema repo metadata in the data file
         starting_commit = get_schema_commit(existing_filename)
         schema_changes = schema_repo.get_dependent_schema_changes(starting_commit)
@@ -282,20 +282,20 @@ A `topological sort <https://en.wikipedia.org/wiki/Topological_sorting>`_ of a D
 sequence of nodes in the DAG such that if node X transitively depends on node Y in the DAG then X appears after Y in the sequence.
 Topological sorts are non-deterministic because node pairs that have no transitive
 dependency relationship in the DAG can appear in any order in the sequence.
-For example, a DAG with these edges: A |rarr| B |rarr| D, A |rarr| C |rarr| D, can be topologically sorted to
+For example, a DAG with the edges A |rarr| B |rarr| D, A |rarr| C |rarr| D, can be topologically sorted to
 either A |rarr| B |rarr| C |rarr| D or  A |rarr| C |rarr| B |rarr| D.
 
-Therefore, Schema changes files must be placed in the schema repo's commit dependency graph such that
+Schema changes files must therefore annotate commits in the schema repo's commit dependency graph such that
 *any* topological sort of them produces a legal migration.
 We illustrate incorrect and correct placement of Schema changes files in Figure :numref:`figure_schema_changes_topological_sort`.
 
 .. _figure_schema_changes_topological_sort:
 .. figure:: migration/figures/schema_changes_topological_sort.png
     :width: 600
-    :alt: Topological sort of schema changes commits
+    :alt: Placement of schema changes commits in 
 
-    Placement of schema changes commits.
-    This figure uses the same legend as Figure :numref:`figure_commit_dependencies`.
+    Placement of schema changes commits (this figure reuses the legend in
+    Figure :numref:`figure_commit_dependencies`).
     Migration topologically sorts the commits annotated by the schema changes files (indicated by thick outlines).
     In **A**, because the blue diamond commit and green pentagon commit have no dependency relationship in the
     Git commit DAG they can be sorted in either order.
@@ -333,6 +333,8 @@ Debugging migration
 ----------------------------------------------
 
 
+Creating schema changes files later
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Limitations
 ----------------------------------------------
