@@ -259,7 +259,7 @@ Topological sort of schema changes
 ------------------------------------
 Migration of a data file executes this algorithm:
 
-.. codeblock:: python
+.. codeblock::
 
     migrate_file(existing_filename, migrated_filename, schema_repo):
         # get_schema_commit() reads the Schema repo metadata in the data file
