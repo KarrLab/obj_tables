@@ -264,13 +264,19 @@ Migration of a data file executes this algorithm:
 .. code-block:: python
 
     def migrate_file(existing_filename, migrated_filename, schema_repo):
+        """ Migrate the models in `existing_filename` according to the
+            schema changes in `schema_repo`, and write the results in `migrated_filename`.
+        """
+
         # get_schema_commit() reads the Schema repo metadata in the data file
         starting_commit = get_schema_commit(existing_filename)
         schema_changes = schema_repo.get_dependent_schema_changes(starting_commit)
+
         # topological_sort() returns a topological sort based on the schema repo's commit DAG
         ordered_schema_changes = schema_repo.topological_sort(schema_changes)
         existing_models = read_file(filename)
         existing_schema = get_schema(starting_commit)
+
         for schema_change in ordered_schema_changes:
             end_commit = schema_change.get_commit()
             migrated_schema = get_schema(end_commit)
@@ -278,6 +284,7 @@ Migration of a data file executes this algorithm:
             migrated_models = migrate(existing_models, existing_schema, migrated_schema)
             existing_models = migrated_models
             existing_schema = migrated_schema
+
         write_file(migrated_filename, migrated_models)
 
 A `topological sort <https://en.wikipedia.org/wiki/Topological_sorting>`_ of a DAG finds a
@@ -315,7 +322,49 @@ We illustrate incorrect and correct placement of Schema changes files in Figure 
 
 Using migration
 ----------------------------------------------
-Migration commands are run via the *wc-cli* program on a Unix command line.
+Migration commands are run via the wholecell command line interface program *wc-cli* program on a Unix command line.
+Different commands are available for *data repo*\ s and *schema repo*\ s.
+
+Schema repo commands
+^^^^^^^^^^^^^^^^^^^^
+
+:obj:`wc_lang` (abbreviated `lang`) is a schema repo. 
+
+The :obj:`wc_lang` :obj:`make-changes-template` command creates a template *Schema changes* file.
+By default, it creates a *Schema changes* template in the schema repo given by the current directory.
+This default can be overridden by another directory with the :obj:`--schema_repo_dir` option.
+
+By default, the *Schema changes* template created references the most recent commit in the schema repo.
+This default can be overridden by another commit with the :obj:`--commit` option.
+
+.. code-block:: none
+
+    usage: wc-cli tool lang lang-make-changes-template [-h]
+                                       [--schema_repo_dir SCHEMA_REPO_DIR]
+                                       [--commit COMMIT]
+
+    Create a template schema changes file
+
+    optional arguments:
+      --schema_repo_dir SCHEMA_REPO_DIR
+                        path of the directory of the schema's repository;
+                        defaults to the current directory
+      --commit COMMIT   hash of a commit containing the changes; default is
+                        most recent commit
+
+
+Data repo commands
+^^^^^^^^^^^^^^^^^^^^
+make-data-schema-migration-config-file
+Create a data-schema migration configuration file
+do-configured-migration
+Migrate data file(s) as configured in a data-schema migration configuration file
+migrate-data
+Migrate specified data file(s)
+
+
+
+
 
 Must be able to clone data repo and schema repo
 
@@ -330,19 +379,17 @@ Data in the fields
 :obj:`renamed_attributes`, and
 :obj:`transformations_file` must be entered by hand.
 
+Creating schema changes files later
+
 
 Debugging migration
 ----------------------------------------------
 
 
-Creating schema changes files later
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 Limitations
 ----------------------------------------------
 
+As of August 2019 the implementation of migration has these limitation:
+
 * Migration requires that schemas and data files be stored in Git repositories -- no other version control systems are supported.
 * Migration of large data files runs slowly.
-
-
-
