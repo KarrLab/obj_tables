@@ -1,3 +1,5 @@
+.. include:: <isonum.txt>
+
 Data migration
 ==============
 
@@ -280,8 +282,8 @@ A `topological sort <https://en.wikipedia.org/wiki/Topological_sorting>`_ of a D
 sequence of nodes in the DAG such that if node X depends on node Y in the DAG then X appears after Y in the sequence.
 Topological sorts are non-deterministic because nodes that have no transitive
 dependency relationships in the DAG can appear in any relative order in the sort.
-For example, a DAG with these edges: A -> B -> D, A -> C -> D, can be topologically sorted to
-either A -> B -> C -> D or  A -> C -> B -> D.
+For example, a DAG with these edges: A |rarr| B |rarr| D, A |rarr| C |rarr| D, can be topologically sorted to
+either A |rarr| B |rarr| C |rarr| D or  A |rarr| C |rarr| B |rarr| D.
 
 .. todo: illustrate with figure
 
