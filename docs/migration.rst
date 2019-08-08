@@ -207,6 +207,8 @@ that performs migration. Its attributes provide information about the migration.
 code uses :obj:`migrator.existing_defs` which is a dictionary that maps each *Model*'s name
 to its class definition to obtain the definition of the :obj:`Test` class.
 
+.. todo: carefully distinguish between a Schema changes file, commits that create or modify it, and commits that it describes
+
 This example :obj:`custom_io_classes.py` file configures a migration of files that
 use the :obj:`wc_lang` schema to use the :obj:`wc_lang.io.Reader`:
 
@@ -265,14 +267,14 @@ Migration of a data file executes this algorithm:
         # get_schema_commit() reads the Schema repo metadata in the data file
         starting_commit = get_schema_commit(existing_filename)
         schema_changes = schema_repo.get_dependent_schema_changes(starting_commit)
-        # get_topological_sort() returns a topological sort with respect to the schema repo's commit DAG
-        ordered_schema_changes = schema_repo.get_topological_sort(schema_changes)
+        # topological_sort() returns a topological sort based on the schema repo's commit DAG
+        ordered_schema_changes = schema_repo.topological_sort(schema_changes)
         existing_models = read_file(filename)
         existing_schema = get_schema(starting_commit)
         for schema_change in ordered_schema_changes:
             end_commit = schema_change.get_commit()
             migrated_schema = get_schema(end_commit)
-            # migrate() migrates all existing_models from the existing_schema to the migrated_schema
+            # migrate() migrates existing_models from the existing_schema to the migrated_schema
             migrated_models = migrate(existing_models, existing_schema, migrated_schema)
             existing_models = migrated_models
             existing_schema = migrated_schema
@@ -292,22 +294,22 @@ We illustrate incorrect and correct placement of Schema changes files in Figure 
 .. _figure_schema_changes_topological_sort:
 .. figure:: migration/figures/schema_changes_topological_sort.png
     :width: 600
-    :alt: Placement of schema changes commits in 
+    :alt: Placement of schema changes commits in a Git history
 
-    Placement of schema changes commits (this figure reuses the legend in
+    Placement of schema changes commits in a Git history (this figure reuses the legend in
     Figure :numref:`figure_commit_dependencies`).
     Migration topologically sorts the commits annotated by the schema changes files (indicated by thick outlines).
-    In **A**, because the blue diamond commit and green pentagon commit have no dependency relationship in the
-    Git commit DAG they can be sorted in either order.
-    This non-determinism creates a problem for a migration that uses the commit history in **A**.
-    If the data is migrated to the diamond commit before the pentagon commit
+    In **A**, since the blue diamond commit and green pentagon commit have no dependency relationship in the
+    Git commit DAG, they can be sorted in either order.
+    This non-determinism is problematic for a migration that uses the commit history in **A**.
+    If the diamond commit is sorted before the pentagon commit,
     then migration to the pentagon commit will fail because it accesses *Model* :obj:`Test` which
     will no longer exist because migration to the diamond commit renames :obj:`Test` to :obj:`ChangedTest`.
     No non-determinism exists in **B** because the commits annotated by the schema changes files
-    must be ordered top to bottom.
+    all have dependency relationships in the Git commit DAG. A migration of **B** will work because
     The transformation applied to *Model* :obj:`Test` will succeed because it uses the schema
     defined by the top commit.
-    
+
 .. todo: perhaps label nodes in figure
 
 
