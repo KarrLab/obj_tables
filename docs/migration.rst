@@ -301,17 +301,17 @@ We illustrate incorrect and correct placement of Schema changes files in Figure 
     Migration topologically sorts the commits annotated by the schema changes files (indicated by thick outlines).
     In **A**, since the blue diamond commit and green pentagon commit have no dependency relationship in the
     Git commit DAG, they can be sorted in either order.
-    This non-determinism is problematic for a migration that uses the commit history in **A**.
-    If the diamond commit is sorted before the pentagon commit,
+    This non-determinism is problematic for a migration that uses the commit history in **A**:
+    if the diamond commit is sorted before the pentagon commit,
     then migration to the pentagon commit will fail because it accesses *Model* :obj:`Test` which
     will no longer exist because migration to the diamond commit renames :obj:`Test` to :obj:`ChangedTest`.
-    No non-determinism exists in **B** because the commits annotated by the schema changes files
-    all have dependency relationships in the Git commit DAG. A migration of **B** will work because
-    The transformation applied to *Model* :obj:`Test` will succeed because it uses the schema
+    No non-determinism exists in **B** because the commits annotated by the schema changes files -- x and y --
+    are related by x |rarr| y in the Git commit DAG. A migration of **B** will not have the problem in
+    **A** because the existing *Models*\ s that get accessed by the transformation
+    above will succeed because it uses the schema
     defined by the top commit.
 
-.. todo: perhaps label nodes in figure
-
+.. todo: use labeled nodes in figure schema_changes_topological_sort
 
 Using migration
 ----------------------------------------------
