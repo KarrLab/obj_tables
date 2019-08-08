@@ -287,12 +287,8 @@ Migration of a data file executes this algorithm:
             existing_schema = migrated_schema
         write_file(migrated_filename, migrated_models)
 
-A topological sort of a DAG finds an ordered list of nodes in the DAG such that if node X depends
-on node Y in the DAG then X appears after Y in the list.
-https://en.wikipedia.org/wiki/Topological_sorting
-
-.. todo: proper link
-
+A `topological sort <https://en.wikipedia.org/wiki/Topological_sorting>`_ of a DAG finds an ordered
+sequence of nodes in the DAG such that if node X depends on node Y in the DAG then X appears after Y in the sequence.
 Topological sorts are non-deterministic because nodes that have no transitive
 dependency relationships in the DAG can appear in any relative order in the sort.
 For example, a DAG with these edges: A -> B -> D, A -> C -> D, can be topologically sorted to
@@ -302,13 +298,28 @@ either A -> B -> C -> D or  A -> C -> B -> D.
 
 Therefore, Schema changes files must be placed in the schema repo's commit dependency graph such that
 *any* topological sort of them produces a legal migration.
-We illustrate good and bad placement of Schema changes files in Figure :numref:`figure_schema_changes_topological_sort`.
+We illustrate incorrect and correct placement of Schema changes files in Figure :numref:`figure_schema_changes_topological_sort`.
 
 .. _figure_schema_changes_topological_sort:
 .. figure:: migration/figures/schema_changes_topological_sort.png
     :width: 600
     :alt: Topological sort of schema changes commits
 
+    Placement of schema changes commits.
+    This figure uses the same legend as Figure :numref:`figure_commit_dependencies`.
+    Migration topologically sorts the commits annotated by the schema changes files (indicated by thick outlines).
+    In **A**, because the blue diamond commit and green pentagon commit have no dependency relationship in the
+    Git commit DAG they can be sorted in either order.
+    This non-determinism creates a problem for a migration that uses the commit history in **A**.
+    If the data is migrated to the diamond commit before the pentagon commit
+    then migration to the pentagon commit will fail because it accesses *Model* :obj:`Test` which
+    will no longer exist because migration to the diamond commit renames :obj:`Test` to :obj:`ChangedTest`.
+    No non-determinism exists in **B** because the commits annotated by the schema changes files
+    must be ordered top to bottom.
+    The transformation applied to *Model* :obj:`Test` will succeed because it uses the schema
+    defined by the top commit.
+    
+.. todo: perhaps label nodes in figure
 
 
 Using migration
