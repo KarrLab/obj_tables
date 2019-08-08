@@ -259,7 +259,7 @@ Topological sort of schema changes
 ------------------------------------
 Migration of a data file executes this algorithm:
 
-.. codeblock:: none
+.. code-block:: none
 
     migrate_file(existing_filename, migrated_filename, schema_repo):
         # get_schema_commit() reads the Schema repo metadata in the data file
@@ -278,14 +278,12 @@ Migration of a data file executes this algorithm:
             existing_schema = migrated_schema
         write_file(migrated_filename, migrated_models)
 
-A `topological sort <https://en.wikipedia.org/wiki/Topological_sorting>`_ of a DAG finds an ordered
-sequence of nodes in the DAG such that if node X depends on node Y in the DAG then X appears after Y in the sequence.
-Topological sorts are non-deterministic because nodes that have no transitive
-dependency relationships in the DAG can appear in any relative order in the sort.
+A `topological sort <https://en.wikipedia.org/wiki/Topological_sorting>`_ of a DAG finds a
+sequence of nodes in the DAG such that if node X transitively depends on node Y in the DAG then X appears after Y in the sequence.
+Topological sorts are non-deterministic because node pairs that have no transitive
+dependency relationship in the DAG can appear in any order in the sequence.
 For example, a DAG with these edges: A |rarr| B |rarr| D, A |rarr| C |rarr| D, can be topologically sorted to
 either A |rarr| B |rarr| C |rarr| D or  A |rarr| C |rarr| B |rarr| D.
-
-.. todo: illustrate with figure
 
 Therefore, Schema changes files must be placed in the schema repo's commit dependency graph such that
 *any* topological sort of them produces a legal migration.
