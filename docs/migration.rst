@@ -355,16 +355,68 @@ This default can be overridden by another commit with the :obj:`--commit` option
 
 Data repo commands
 ^^^^^^^^^^^^^^^^^^^^
-make-data-schema-migration-config-file
-Create a data-schema migration configuration file
-do-configured-migration
-Migrate data file(s) as configured in a data-schema migration configuration file
-migrate-data
-Migrate specified data file(s)
+
+:obj:`wc_sim` (abbreviated `sim`) is a data repo.
+
+The :obj:`wc_sim` :obj:`make-data-schema-migration-config-file` command ...
+By default, ...
+
+.. code-block:: none
+
+    usage: wc-cli tool sim make-data-schema-migration-config-file
+           [-h] [--data_repo_dir DATA_REPO_DIR]
+           schema_url file_to_migrate [file_to_migrate ...]
+
+    Create a data-schema migration configuration file
+
+    positional arguments:
+      schema_url        URL of the schema in its git repository, including the
+                        branch
+      file_to_migrate   a file to migrate
+
+    optional arguments:
+      --data_repo_dir DATA_REPO_DIR
+                        path of the directory of the repository storing the
+                        data file(s) to migrate; defaults to the current
+                        directory
+
+The :obj:`wc_sim` :obj:`do-configured-migration` command ...
+By default, ...
+
+.. code-block:: none
+
+    usage: wc-cli tool sim do-configured-migration [-h] migration_config_file
+
+    Migrate data file(s) as configured in a data-schema migration configuration file
+
+    positional arguments:
+      migration_config_file
+                        name of the data-schema migration configuration file to use
+
+The :obj:`wc_sim` :obj:`migrate-data` command ...
+By default, ...
+
+.. code-block:: none
+
+    usage: wc-cli tool sim migrate-data [-h] [--data_repo_dir DATA_REPO_DIR]
+                                    schema_url file_to_migrate
+                                    [file_to_migrate ...]
+
+    Migrate specified data file(s)
+
+    positional arguments:
+      schema_url        URL of the schema in its git repository, including the
+                        branch
+      file_to_migrate   a file to migrate
+
+    optional arguments:
+      --data_repo_dir DATA_REPO_DIR
+                        path of the directory of the repository storing the
+                        data file(s) to migrate; defaults to the current directory
 
 
-
-
+Practical considerations
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Must be able to clone data repo and schema repo
 
