@@ -107,7 +107,7 @@ Configuring migration
 
 To make migration easier and more reliable the durable state used by migration
 in *schema repo*\ s and *data repo*\ s is recorded in configuration files.
-*Schema repo*\ s contain three types of configuration files (Table 1):
+*Schema repo*\ s contain three types of configuration files (Table :numref:`table_migrations_rst_tables_schema_repo_config`):
 
 * *Schema changes* files document some changes to a schema that cannot be determined automatically, in particular renaming of *Model*\ s and of *Model* attributes.
 * A *transformations* file defines a Python class that performs user-customized transformations on *Model*\ s during migration.
@@ -117,24 +117,23 @@ Since committed changes in a repository are permanent, the schema changes and tr
 files provide permanent documentation of these changes for all migrations over
 the changes they document.
 
-*Data repo*\ s contain just one type of configuration file (Table 2):
-
-.. todo: use table auto references for the tables
+*Data repo*\ s contain just one type of configuration file (Table :numref:`table_migrations_rst_tables_data_repo_config`):
 
 * A *data-schema migration configuration* file details the migration of a set of data files in the data repo.
 
-Tables 1 and 2 below describe these user-customized configuration files and
-code fragments in greater detail.
-CLI commands create templates of some of these files.
+Tables :numref:`table_migrations_rst_tables_schema_repo_config` and :numref:`table_migrations_rst_tables_data_repo_config`
+describe these user-customized configuration files and code fragments in greater detail.
 
 .. todo: which commands & files? make a table of that, perhaps
 
+.. _table_migrations_rst_tables_schema_repo_config:
 .. csv-table:: Configuration files in schema repos
    :file: ./migration/migrations_rst_tables_schema_repo_config.csv
    :widths: 12, 25, 25, 25, 4
    :header-rows: 1
 
-.. csv-table:: Configuration file in data repos
+.. _table_migrations_rst_tables_data_repo_config:
+.. csv-table:: The configuration file in data repos
    :file: migration/migrations_rst_tables_data_repo_config.csv
    :widths: 20, 80
 
