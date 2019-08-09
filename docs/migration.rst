@@ -107,7 +107,7 @@ Configuring migration
 
 To make migration easier and more reliable the durable state used by migration
 in *schema repo*\ s and *data repo*\ s is recorded in configuration files.
-*Schema repo*\ s contain three types of configuration files (Table :numref:`table_migrations_rst_tables_schema_repo_config`):
+*Schema repo*\ s contain three types of configuration files (:numref:`table_migrations_rst_tables_schema_repo_config`):
 
 * *Schema changes* files document some changes to a schema that cannot be determined automatically, in particular renaming of *Model*\ s and of *Model* attributes.
 * A *transformations* file defines a Python class that performs user-customized transformations on *Model*\ s during migration.
@@ -117,11 +117,11 @@ Since committed changes in a repository are permanent, the schema changes and tr
 files provide permanent documentation of these changes for all migrations over
 the changes they document.
 
-*Data repo*\ s contain just one type of configuration file (Table :numref:`table_migrations_rst_tables_data_repo_config`):
+*Data repo*\ s contain just one type of configuration file (:numref:`table_migrations_rst_tables_data_repo_config`):
 
 * A *data-schema migration configuration* file details the migration of a set of data files in the data repo.
 
-Tables :numref:`table_migrations_rst_tables_schema_repo_config` and :numref:`table_migrations_rst_tables_data_repo_config`
+:numref:`table_migrations_rst_tables_schema_repo_config` and :numref:`table_migrations_rst_tables_data_repo_config`
 describe these user-customized configuration files and code fragments in greater detail.
 
 .. _table_migrations_rst_tables_schema_repo_config:
@@ -231,7 +231,7 @@ All data-schema migration config files contain four fields:
 .. todo: which commands & files? make a table of that, perhaps
 
 Migration commands create data-schema migration configuration and schema changes files, as listed
-in Table :numref:`table_migrations_rst_tables_migration_commands` below.
+in :numref:`table_migrations_rst_tables_migration_commands` below.
 
 Schema git metadata in data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
