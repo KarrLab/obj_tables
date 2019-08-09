@@ -119,7 +119,7 @@ the changes they document.
 
 *Data repo*\ s contain just one type of configuration file (Table 2):
 
-.. todo: auto table & section references
+.. todo: use table auto references for the tables
 
 * A *data-schema migration configuration* file details the migration of a set of data files in the data repo.
 
@@ -127,7 +127,7 @@ Tables 1 and 2 below describe these user-customized configuration files and
 code fragments in greater detail.
 CLI commands create templates of some of these files.
 
-.. todo: which commands & files?
+.. todo: which commands & files? make a table of that, perhaps
 
 .. csv-table:: Configuration files in schema repos
    :file: ./migration/migrations_rst_tables_schema_repo_config.csv
@@ -230,9 +230,8 @@ All data-schema migration config files contain four fields:
 * :obj:`branch` contains the schema repo's branch
 * :obj:`schema_file` contains the path to the schema file in the schema repo relative to its URL
 
-A data-schema migration configuration can be fully initialized by a CLI command.
-
-.. todo: which one?
+A data-schema migration configuration can be fully initialized by
+the :obj:`make-data-schema-migration-config-file` CLI command.
 
 Schema git metadata in data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -331,9 +330,17 @@ Schema repo migration commands
 The :obj:`make-changes-template` command creates a template *Schema changes* file.
 By default, it creates a *Schema changes* template in the schema repo that contains the current directory.
 To use another schema repo, specify a directory in it with the :obj:`--schema_repo_dir` option.
+
 By default, the *Schema changes* template created references the most recent commit in the schema repo.
 To have the *Schema changes* file reference another commit, provide its
 hash with the :obj:`--commit` option.
+This makes it easy to add a schema changes file that references a commit after 
+making other commits downstream from the referenced commit.
+
+:obj:`make-changes-template` populates the value of the :obj:`commit_hash` field in the template
+created. The hash's prefix also appears in the file's name.
+The format of the fields :obj:`renamed_models`, :obj:`renamed_attributes`, and
+:obj:`transformations_file` is written, but their data must be entered by hand.
 
 .. code-block:: none
 
@@ -349,7 +356,6 @@ hash with the :obj:`--commit` option.
                         defaults to the current directory
       --commit COMMIT   hash of a commit containing the changes; default is
                         most recent commit
-
 
 Data repo migration commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -378,8 +384,8 @@ A different data repo can be specified by using the :obj:`--data_repo_dir` optio
     Create a data-schema migration configuration file
 
     positional arguments:
-      schema_url        URL of the schema in its git repository, including the
-                        branch
+      schema_url        URL of the schema in its git repository,
+                        including the branch
       file_to_migrate   a file to migrate
 
     optional arguments:
@@ -397,11 +403,12 @@ a data-schema migration config file.
 
     usage: wc-cli tool sim do-configured-migration [-h] migration_config_file
 
-    Migrate data file(s) as configured in a data-schema migration configuration file
+    Migrate data file(s) as configured in a data-schema migration
+    configuration file
 
     positional arguments:
       migration_config_file
-                        name of the data-schema migration configuration file to use
+                    name of the data-schema migration configuration file to use
 
 The :obj:`migrate-data` command migrates specified data file(s).
 Like :obj:`make-data-schema-migration-config-file`, it must be given the full URL of the
@@ -422,31 +429,20 @@ A different data repo can be specified by using the :obj:`--data_repo_dir` optio
     Migrate specified data file(s)
 
     positional arguments:
-      schema_url        URL of the schema in its git repository, including the
-                        branch
+      schema_url        URL of the schema in its git repository,
+                        including the branch
       file_to_migrate   a file to migrate
 
     optional arguments:
       --data_repo_dir DATA_REPO_DIR
                         path of the directory of the repository storing the
-                        data file(s) to migrate; defaults to the current directory
-
+                        data file(s) to migrate; defaults to the current
+                        directory
 
 Practical considerations
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Must be able to clone data repo and schema repo
-
-.. todo: what about this text
-
-It populates the value of the :obj:`commit_hash` field.
-The hash's prefix also appears in the file's name.
-Data in the fields
-:obj:`renamed_models`,
-:obj:`renamed_attributes`, and
-:obj:`transformations_file` must be entered by hand.
-
-Creating schema changes files later
+The user must be able to clone the data repo and schema repo.
 
 
 Limitations
@@ -455,6 +451,7 @@ Limitations
 As of August 2019 the implementation of migration has these limitation:
 
 * Migration requires that schemas and data files be stored in Git repositories -- no other version control systems are supported.
+* The schema must be stored in a repository. This will may not be convenient for modelers who use a schema written by other people and simply install it as a Python package.
 * Migration of large data files runs slowly.
 
 .. todo: quantify this
