@@ -1,0 +1,5 @@
+Repository,Command,Purpose
+schema,:obj:`make-changes-template`,Create a template *schema changes* file
+data,:obj:`migrate-data`,Migrate specified data files (without using a *data-schema migration configuration* file)
+data,:obj:`do-configured-migration`,Migrate the data files specified in a data-schema migration config file
+data,:obj:`make-data-schema-migration-config-file`,Create a *data-schema migration configuration* file

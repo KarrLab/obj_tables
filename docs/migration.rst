@@ -11,7 +11,8 @@ Data Definition Language. When the schema is changed then existing data must be 
 Many systems, including databases and web software frameworks provide tools that automate data migration.
 
 Packages that use Object model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of
-the data in a file is defined by a schema that uses :obj:`obj_model`. The Object model *migration* module enables semi-automated migration of these data files.
+the data in a file is defined by a schema that uses :obj:`obj_model`. Object model *migration* enables automated
+migration of these data files.
 
 This page provides an overview of the concepts of Object model migration and detailed instructions on how to configure and use it.
 
@@ -59,9 +60,8 @@ Figure :numref:`figure_example_data_file_migration` below illustrates these conc
     makes :obj:`biomodel_x.xlsx` consistent with the latest commit of :obj:`wc_lang` (solid purple arrow).
 
 .. todo: perhaps distinguish schema & data repos by color
-.. todo: use a better term than 'Object model'
 
-Many types of changes can be applied to a schema:
+We classify the ways in which a schema can be changed into these categories:
 
 * Add a :obj:`obj_model.core.Model` (henceforth, *Model*) definition
 * Remove a *Model* definition
@@ -123,8 +123,6 @@ the changes they document.
 
 Tables :numref:`table_migrations_rst_tables_schema_repo_config` and :numref:`table_migrations_rst_tables_data_repo_config`
 describe these user-customized configuration files and code fragments in greater detail.
-
-.. todo: which commands & files? make a table of that, perhaps
 
 .. _table_migrations_rst_tables_schema_repo_config:
 .. csv-table:: Configuration files in schema repos
@@ -215,6 +213,7 @@ use the :obj:`wc_lang` schema to use the :obj:`wc_lang.io.Reader`:
 In general, a :obj:`custom_io_classes.py` file will be needed if the *schema repo* defines its
 own :obj:`Reader` or  :obj:`Writer` classes for data file IO.
 
+.. todo: then why doesn't the example define Writer?
 
 This example *data-schema migration configuration* file configures the migration of one file,
 :obj:`data_file_1.xlsx`.
@@ -229,8 +228,10 @@ All data-schema migration config files contain four fields:
 * :obj:`branch` contains the schema repo's branch
 * :obj:`schema_file` contains the path to the schema file in the schema repo relative to its URL
 
-A data-schema migration configuration can be fully initialized by
-the :obj:`make-data-schema-migration-config-file` CLI command.
+.. todo: which commands & files? make a table of that, perhaps
+
+Migration commands create data-schema migration configuration and schema changes files, as listed
+in Table :numref:`table_migrations_rst_tables_migration_commands` below.
 
 Schema git metadata in data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -319,7 +320,13 @@ We illustrate incorrect and correct placement of Schema changes files in Figure 
 Using migration
 ----------------------------------------------
 Migration commands are run via the wholecell command line interface program :obj:`wc-cli` program on the command line.
-Different commands are available for *schema repo*\ s and *data repo*\ s.
+Different commands are available for *schema repo*\ s and *data repo*\ s, as listed in this Table.
+
+.. _table_migrations_rst_tables_migration_commands:
+.. csv-table:: Migration commands
+   :file: migration/table_migrations_rst_tables_migration_commands.csv
+   :widths: 10, 20, 70
+
 
 Schema repo migration commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -441,7 +448,7 @@ A different data repo can be specified by using the :obj:`--data_repo_dir` optio
 Practical considerations
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The user must be able to clone the data repo and schema repo.
+The user must have access rights that allow them to clone the data repo and schema repo.
 
 
 Limitations
@@ -450,7 +457,7 @@ Limitations
 As of August 2019 the implementation of migration has these limitation:
 
 * Migration requires that schemas and data files be stored in Git repositories -- no other version control systems are supported.
-* The schema must be stored in a repository. This will may not be convenient for modelers who use a schema written by other people and simply install it as a Python package.
+* The schema must be stored in a repository. This will not be convenient for modelers who use a schema written by other people and install it as a Python package.
 * Migration of large data files runs slowly.
 
 .. todo: quantify this
