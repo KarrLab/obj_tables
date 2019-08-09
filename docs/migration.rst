@@ -42,7 +42,7 @@ the *schema* file, and its name doesn't change over the time span of a migration
 Because it's stored in a Git repository, its versions are
 recorded in a directed acyclic graph (DAG) of commits in the repository. These commits are
 used by migration to determine changes in the *schema*.
-Figure :numref:`figure_example_data_file_migration` below illustrates these concepts.
+:numref:`figure_example_data_file_migration` below illustrates these concepts.
 
 .. _figure_example_data_file_migration:
 .. figure:: migration/figures/migration_example_figure.png
@@ -71,7 +71,7 @@ We classify the ways in which a schema can be changed into these categories:
 * Rename an attribute of a *Model*
 * Apply another type of changes to a *Model*
 
-Migration automatically handles all types of changes except the last one, as illustrated in Figure
+Migration automatically handles all types of changes except the last one, as illustrated in
 :numref:`figure_types_of_schema_changes`.
 Adding and removing *Model* definitions and adding and removing attributes from *Model*\ s are
 migrated completely automatically. Renaming *Model* definitions and attributes of *Model*\ s requires
@@ -152,7 +152,7 @@ schema versions above:
 All schema changes files contain these fields:
 :obj:`commit_hash`, :obj:`renamed_models`, :obj:`renamed_attributes`, and :obj:`transformations_file`.
 
-* :obj:`commit_hash` is the hash of the git commit which the Schema changes file annotates -- it is the last commit in the DAG of commits containing the changes that the Schema changes file documents. That is, as illustrated in Figure :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the commit identified by the previous *Schema changes* file.
+* :obj:`commit_hash` is the hash of the git commit which the Schema changes file annotates -- it is the last commit in the DAG of commits containing the changes that the Schema changes file documents. That is, as illustrated in :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the commit identified by the previous *Schema changes* file.
 
 * :obj:`renamed_models` is a YAML list that documents all *Model*\ s in the schema that were renamed. Each renaming is given as a pair of the form :obj:`[ExistingName, ChangedName]`.
 
@@ -293,7 +293,7 @@ either A |rarr| B |rarr| C |rarr| D or  A |rarr| C |rarr| B |rarr| D.
 
 Schema changes files must therefore annotate commits in the schema repo's commit dependency graph such that
 *any* topological sort of them produces a legal migration.
-We illustrate incorrect and correct placement of Schema changes files in Figure :numref:`figure_schema_changes_topological_sort`.
+We illustrate incorrect and correct placement of Schema changes files in :numref:`figure_schema_changes_topological_sort`.
 
 .. _figure_schema_changes_topological_sort:
 .. figure:: migration/figures/schema_changes_topological_sort.png
@@ -301,7 +301,7 @@ We illustrate incorrect and correct placement of Schema changes files in Figure 
     :alt: Placement of schema changes commits in a Git history
 
     Placement of schema changes commits in a Git history (this figure reuses the legend in
-    Figure :numref:`figure_commit_dependencies`).
+    :numref:`figure_commit_dependencies`).
     Migration topologically sorts the commits annotated by the schema changes files (indicated by thick outlines).
     In **A**, since the blue diamond commit and green pentagon commit have no dependency relationship in the
     Git commit DAG, they can be sorted in either order.
