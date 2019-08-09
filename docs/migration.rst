@@ -82,7 +82,7 @@ which are also described below.
 
 .. _figure_types_of_schema_changes:
 .. figure:: migration/figures/types_of_schema_changes.png
-    :width: 600
+    :width: 500
     :alt: Types of schema changes
 
     Types of schema changes.
@@ -163,7 +163,7 @@ All schema changes files contain these fields:
 
 .. _figure_commit_dependencies:
 .. figure:: migration/figures/commit_dependencies.png
-    :width: 600
+    :width: 800
     :alt: Dependency graph of git commits and schema changes files that describe them
 
     Dependency graph of Git commits that change a schema and the schema changes files that describe them.
@@ -244,7 +244,7 @@ A migration of the data file will start at the specified commit in the *schema r
 Schema repo metadata worksheet in an Excel file is illustrated below:
 
 .. figure:: migration/figures/schema_git_metadata.png
-    :width: 600
+    :width: 400
     :alt: Example Schema repo metadata worksheet in an Excel data file
 
     Example Schema repo metadata worksheet in an Excel data file.
@@ -297,7 +297,7 @@ We illustrate incorrect and correct placement of Schema changes files in Figure 
 
 .. _figure_schema_changes_topological_sort:
 .. figure:: migration/figures/schema_changes_topological_sort.png
-    :width: 600
+    :width: 400
     :alt: Placement of schema changes commits in a Git history
 
     Placement of schema changes commits in a Git history (this figure reuses the legend in
