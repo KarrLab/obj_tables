@@ -27,6 +27,8 @@ while the repository containing the schema is the *schema repo*.
 While these are typically distinct repositories, migration also supports the situation in which
 one repository serves as both the *data repo* and the *schema repo*.
 
+.. todo: smaller text in figure
+
 .. _figure_repos:
 .. figure:: migration/figures/schema_and_data_repos.png
     :width: 600
@@ -43,6 +45,8 @@ Because it's stored in a Git repository, its versions are
 recorded in a directed acyclic graph (DAG) of commits in the repository. These commits are
 used by migration to determine changes in the *schema*.
 :numref:`figure_example_data_file_migration` below illustrates these concepts.
+
+.. todo: bigger text in figure
 
 .. _figure_example_data_file_migration:
 .. figure:: migration/figures/migration_example_figure.png
@@ -173,7 +177,7 @@ All schema changes files contain these fields:
     The orange commit must be upstream from the blue commit because
     the orange commit accesses *Model* :obj:`Test` and
     the blue commit renames *Model* :obj:`Test` to *Model* :obj:`ChangedTest`.
-    The two commit histories in the **Correct use of *Schema changes* files** section
+    The two commit histories in the **Correct use of Schema changes files** section
     show proper use of Schema changes files.
     In the **Sequential** history the last commit containing a Schema changes file is properly downstream from
     all commits changing the schema.
@@ -202,7 +206,7 @@ that performs migration. Its attributes provide information about the migration.
 code uses :obj:`migrator.existing_defs` which is a dictionary that maps each *Model*'s name
 to its class definition to obtain the definition of the :obj:`Test` class.
 
-.. todo: carefully distinguish between a Schema changes file, commits that create or modify it, and commits that it describes
+.. todo: impt: carefully distinguish between a Schema changes file, commits that create or modify it, and commits that it describes
 
 This example :obj:`custom_io_classes.py` file configures a migration of files that
 use the :obj:`wc_lang` schema to use the :obj:`wc_lang.io.Reader`:
@@ -227,8 +231,6 @@ All data-schema migration config files contain four fields:
 * :obj:`schema_repo_url` contains the URL of the schema repo
 * :obj:`branch` contains the schema repo's branch
 * :obj:`schema_file` contains the path to the schema file in the schema repo relative to its URL
-
-.. todo: which commands & files? make a table of that, perhaps
 
 Migration commands create data-schema migration configuration and schema changes files, as listed
 in :numref:`table_migrations_rst_tables_migration_commands` below.
@@ -295,6 +297,8 @@ Schema changes files must therefore annotate commits in the schema repo's commit
 *any* topological sort of them produces a legal migration.
 We illustrate incorrect and correct placement of Schema changes files in :numref:`figure_schema_changes_topological_sort`.
 
+.. todo: impt: use labeled nodes in figure schema_changes_topological_sort, and update figure with w label
+
 .. _figure_schema_changes_topological_sort:
 .. figure:: migration/figures/schema_changes_topological_sort.png
     :width: 400
@@ -314,8 +318,6 @@ We illustrate incorrect and correct placement of Schema changes files in :numref
     **A** because the existing *Models*\ s that get accessed by the transformation
     above will succeed because it uses the schema
     defined by the top commit.
-
-.. todo: use labeled nodes in figure schema_changes_topological_sort
 
 Using migration
 ----------------------------------------------
@@ -403,7 +405,7 @@ A different data repo can be specified by using the :obj:`--data_repo_dir` optio
 The :obj:`do-configured-migration` command migrates the data files specified in
 a data-schema migration config file. 
 
-.. todo: clarify where the migrated files go
+.. todo: impt: clarify where the migrated files go
 
 .. code-block:: none
 
@@ -458,6 +460,7 @@ As of August 2019 the implementation of migration has these limitation:
 
 * Migration requires that schemas and data files be stored in Git repositories -- no other version control systems are supported.
 * The schema must be stored in a repository. This will not be convenient for modelers who use a schema written by other people and install it as a Python package.
+* Supports only one schema file per schema repo.
 * Migration of large data files runs slowly.
 
 .. todo: quantify this
