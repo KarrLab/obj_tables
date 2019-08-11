@@ -37,7 +37,7 @@ one repository serves as both the *data repo* and the *schema repo*.
 
     Dependencies among Git repositories involved in data migration.
     The *schema repo* uses :obj:`obj_model` to define a schema. The *data repo* stores data files
-    that use the schema repo to define their data model.
+    that use the data model defined in the schema repo.
 
 Migration further assumes that a schema is stored in a single Python file called
 the *schema* file, and its name doesn't change over the time span of a migration.
@@ -140,6 +140,38 @@ describe these user-customized configuration files and code fragments in greater
    :widths: 20, 80
 
 
+Schema changes files and sentinel commits
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+A schema changes file *identifies* a commit in the schema repo (called a *sentinel* 
+commit) which marks the boundaries of sets of commits that change the schema.
+Precisely, each commit that changes the schema must be connected to exactly one
+upstream sentinel commit, and to exactly one downstream
+sentinel commit (or have no downstream sentinel commit) (see :numref:`figure_schema_changes_and_sentinel_commits`).
+
+.. todo: modify later to say "each commit that changes the schema must be connected to exactly one upstream sentinel commit (or the schema commit in a data file's metadata)"
+
+.. _figure_schema_changes_and_sentinel_commits:
+.. figure:: migration/figures/schema_changes_and_sentinel_commits.png
+    :width: 800
+    :alt: Schema repo git histories correctly annotated by schema changes files
+
+    Schema repository git histories correctly annotated by schema changes files.
+    Each schema changes file identifies a sentinel commit that marks the downstream edge of a
+    set of commits annotated by the schema changes file.
+    In A, schema changes file sc\ :sub:`2` identifies s\ :sub:`2` as a sentinel.
+    The changes in commits **a** and **b** will be applied to data being migrated from 
+    sentinel s\ :sub:`1` to sentinel s\ :sub:`2`.
+    B illustrates a git history created by
+    branching or concurrent clones, but the commits **a**, **b**, and **d**
+    are still connected to exactly one upstream and one downstream sentinel commit,
+    s\ :sub:`1` and s\ :sub:`2`, respectively.
+    By default, the creation of a schema changes file template
+    selects the most recent (that is, `head`) commit as the sentinel commit. An option enables selection
+    of an earlier commit instead.
+
+The *schema changes* file that identifies a sentinel commit contains annotations that summarize
+all the schema changes in commits directly upstream from the sentinel commit.
+
 Example configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -156,7 +188,7 @@ schema versions above:
 All schema changes files contain these fields:
 :obj:`commit_hash`, :obj:`renamed_models`, :obj:`renamed_attributes`, and :obj:`transformations_file`.
 
-* :obj:`commit_hash` is the hash of the git commit which the Schema changes file annotates -- it is the last commit in the DAG of commits containing the changes that the Schema changes file documents. That is, as illustrated in :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the commit identified by the previous *Schema changes* file.
+* :obj:`commit_hash` is the hash of the sentinel git commit that the Schema changes file annotates. That is, as illustrated in :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the commit identified by the previous *Schema changes* file.
 
 * :obj:`renamed_models` is a YAML list that documents all *Model*\ s in the schema that were renamed. Each renaming is given as a pair of the form :obj:`[ExistingName, ChangedName]`.
 
@@ -170,8 +202,11 @@ All schema changes files contain these fields:
     Dependency graph of Git commits that change a schema and the schema changes files that describe them.
     These graphs illustrate networks in which nodes are commits, and directed edges point
     from a parent commit to a child commit that depends on it.
-    The :obj:`commit_hash` in each Schema changes file is the Git hash of its parent commit
-    (although a Schema changes file may describe a DAG of commits further back in the dependency graph).
+    By default, a schema changes file identifies its parent commit as the sentinel commit that it
+    annotates. 
+    However, a schema changes file may identify a sentinel commit further back in the dependency graph.
+    The identification is implemented by storing the sentinel commit's hash in the schema changes file's
+    :obj:`commit_hash`.
     The legend shows 3 colored commits that contain the changes made between the
     *existing* to *changed* versions of the schema above.
     The orange commit must be upstream from the blue commit because
@@ -345,8 +380,9 @@ hash with the :obj:`--commit` option.
 This makes it easy to add a schema changes file that references a commit after 
 making other commits downstream from the referenced commit.
 
-:obj:`make-changes-template` populates the value of the :obj:`commit_hash` field in the template
-created. The hash's prefix also appears in the file's name.
+:obj:`make-changes-template` initializes :obj:`commit_hash` in the template as the 
+sentinel commit's hash.
+The hash's prefix also appears in the file's name.
 The format of the fields :obj:`renamed_models`, :obj:`renamed_attributes`, and
 :obj:`transformations_file` is written, but their data must be entered by hand.
 
