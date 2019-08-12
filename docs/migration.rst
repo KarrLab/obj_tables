@@ -278,6 +278,7 @@ version with its URL, branch, and commit hash.
 A migration of the data file will start at the specified commit in the *schema repo*. An example
 Schema repo metadata worksheet in an Excel file is illustrated below:
 
+.. _figure_schema_git_metadata:
 .. figure:: migration/figures/schema_git_metadata.png
     :width: 400
     :alt: Example Schema repo metadata worksheet in an Excel data file
@@ -359,19 +360,56 @@ We illustrate incorrect and correct placement of Schema changes files in :numref
 
 .. todo: clarify that "each commit that changes the schema must be connected to exactly one upstream sentinel commit (or the schema commit in a data file's metadata)"
 
-.. todo: add standard protocols 
-.. todo: in schema repo: 1: change schema, which may involve multiple commits; 2: confirm that schema changes work and are temporarily complete; 3: create template schema changes file; 4: determine the Model and attribute renamings, done in step 2 and insert them in the template schema changes file; 5: identify any other model changes that require a transformation, create and test a transformations module, and insert its name in the template schema changes; 6: test migrate data using a data file that depended on the schema before the changes in step 2
-.. todo: in data repo: 1: decide to migrate some data files; 2: if the schema has schema changes files that cover the versions across which the files are to be migrated then continue to step 4; 3: create schema changes files that are needed in the schema repo: 4: if it doesn't exist, create a data-schema migration config file for the data files; 5: push the current version of the data repo so the files are backed up on the git server; 6: migrate the files with `do-configured-migration`
+Migration protocol
+----------------------------------------------
 
-Using migration
+As discussed above, using migration involves creating configuration files at various times in two repositories
+and then migrating data files. This section summarizes the overall protocol users need to follow to migrate data.
+
+Configuring migration in a schema repository
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Schema builders are responsible for these steps.
+
+#. Make changes to the schema, which may involve multiple commits and multiple branches or concurrent repository clones
+#. Confirm that schema changes work and are temporarily complete
+#. Git commit and push all schema changes
+#. Use the :obj:`make-changes-template` command to create a template schema changes file
+#. Determine the ways in which *Model*\ s and attributes were renamed in step 1 and document them in the template schema changes file
+#. Identify any other model changes that require a transformation (as shown in :numref:`figure_types_of_schema_changes`), create and test a transformations module, and provide its filename as the :obj:`transformations_file` in the schema changes file
+#. Git commit and push all the schema changes file
+#. Test migrate data using a data file that depends (using its schema git metadata as in :numref:`figure_schema_git_metadata`) on the schema before the changes in step 1
+
+
+Migration of data files in a data repository
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+People who use object model schemas, such as whole-cell modelers, follow one of these sequences of steps.
+
+*Migrate arbitrary data files*
+
+#. Decide to migrate some data files
+#. Git push the data repo to backup all data files on the git server
+#. Use the :obj:`migrate-data` command to migrate the files
+
+*Use a data-schema migration configuration file to migrate data files*
+
+#. Decide to migrate some data files
+#. If a *data-schema migration configuration* file for the files does not exist, use the :obj:`make-data-schema-migration-config-file` command to make one
+#. Git push the data repo to backup all data files on the git server
+#. Use the :obj:`do-configured-migration` command to migrate the files
+
+Using migration commands
 ----------------------------------------------
 Migration commands are run via the wholecell command line interface program :obj:`wc-cli` program on the command line.
-Different commands are available for *schema repo*\ s and *data repo*\ s, as listed in this Table.
+Different commands are available for *schema repo*\ s and *data repo*\ s, as listed in
+:numref:`table_migrations_rst_tables_migration_commands`.
 
 .. _table_migrations_rst_tables_migration_commands:
 .. csv-table:: Migration commands
    :file: migration/table_migrations_rst_tables_migration_commands.csv
    :widths: 10, 20, 70
+   :header-rows: 1
 
 
 Schema repo migration commands
