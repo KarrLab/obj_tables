@@ -7,7 +7,7 @@ Migration overview
 ---------------------
 Consider some data whose structure (also known as its *data model*) is defined by a schema written in a data definition language.
 For example, the structure of an SQL database is defined by a schema written in
-`<SQL's Structured query language https://en.wikipedia.org/wiki/Data_definition_language#Structured_Query_Language_(SQL)>`_.
+`SQL's Structured query language <https://en.wikipedia.org/wiki/Data_definition_language#Structured_Query_Language_(SQL)>`_.
 
 When a schema is updated then existing data must be changed so that its structure complies with the updated schema. This is called *data migration*. 
 Many systems, including database systems and web software frameworks, provide tools that automate data migration
@@ -109,13 +109,51 @@ This example shows a changed version of the *existing* schema above, and we refe
   :language: Python
 
 Configuring migration
-----------------------------------------------
+---------------------
 
 To make migration easier and more reliable the durable state used by migration
 in *schema repo*\ s and *data repo*\ s is recorded in configuration files.
+
+Sentinel commits
+^^^^^^^^^^^^^^^^
+To organize the changes in a schema repo into manageable groups,
+migration identifies *sentinel* commits that delimit adjacent
+sets of commits in the repo's commit dependency graph.
+Precisely, each commit that changes the schema must depend on exactly one
+upstream sentinel commit, and be an ancestor of exactly one downstream
+sentinel commit (see :numref:`figure_schema_changes_and_sentinel_commits`).
+All the commits that are ancestors of a sentinel commit are members of the sentinel commit's *domain*.
+In addition, the updates in a sentinel commit may change the schema, and they
+are members of its *domain* as well.
+
+Migration migrates a data file across a sequence of sentinel commits.
+
+.. _figure_schema_changes_and_sentinel_commits:
+.. figure:: migration/figures/schema_changes_and_sentinel_commits.png
+    :width: 800
+    :alt: Sentinel commits in schema repo commit histories
+
+    Sentinel commits in schema repo commit histories.
+    Commits that do not change the schema may be present, but are not involved in migration.
+    Each sentinel commit delimits the downstream boundary of a set of commits.
+    In A, the changes in commits **a** and **b** will be applied to data being migrated from 
+    sentinel s\ :sub:`1` to sentinel s\ :sub:`2`.
+    B illustrates a Git history created by
+    branching or concurrent clones, but the commits **a**, **b**, and **d**
+    still depend on exactly one upstream sentinel commit, s\ :sub:`1`, and
+    are ancestors of exactly one downstream sentinel commit, s\ :sub:`2`.
+
+.. todo: important: modify the figure to illustrate a sentinel commit's domain and that it can contain schema changes
+.. todo: important: remove schema changes files from the figure
+
+Configuration files
+^^^^^^^^^^^^^^^^^^^
+
 *Schema repo*\ s contain three types of configuration files (:numref:`table_migrations_rst_tables_schema_repo_config`):
 
-* *Schema changes* files document some changes to a schema that cannot be determined automatically, in particular renaming of *Model*\ s and of *Model* attributes.
+* Each *schema changes* file identifies a sentinel commit, and annotates the changes to the schema
+in the sentinel commit's domain. Symmetrically, each sentinel commit must be identified by one
+schema changes file.
 * A *transformations* file defines a Python class that performs user-customized transformations on *Model*\ s during migration.
 * A :obj:`custom_io_classes.py` file in a *schema repo* gives migration handles to the schema's :obj:`Reader` and/or :obj:`Writer` classes so they can be used to read and/or write data files that use the schema.
 
@@ -140,39 +178,6 @@ describe these user-customized configuration files and code fragments in greater
 .. csv-table:: The configuration file in data repos
    :file: migration/migrations_rst_tables_data_repo_config.csv
    :widths: 20, 80
-
-
-Schema changes files and sentinel commits
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-A schema changes file *identifies* a commit in the schema repo (called a *sentinel* 
-commit) which marks the boundary between sets of commits that change the schema.
-Precisely, each commit that changes the schema must depend on exactly one
-upstream sentinel commit, and be an ancestor of exactly one downstream
-sentinel commit (see :numref:`figure_schema_changes_and_sentinel_commits`).
-In addition, the updates in a sentinel commit may contain schema changes, and they
-are members in the set of changes in the sentinel commit's ancestors.
-
-.. _figure_schema_changes_and_sentinel_commits:
-.. figure:: migration/figures/schema_changes_and_sentinel_commits.png
-    :width: 800
-    :alt: Schema repo Git histories correctly annotated by schema changes files
-
-    Schema repository Git histories correctly annotated by schema changes files.
-    Commits that do not change the schema may be present, but are not involved in migration.
-    Each schema changes file identifies a sentinel commit that marks the downstream boundary of a
-    set of commits annotated by the schema changes file.
-    In A, schema changes file sc\ :sub:`2` identifies s\ :sub:`2` as a sentinel.
-    The changes in commits **a** and **b** will be applied to data being migrated from 
-    sentinel s\ :sub:`1` to sentinel s\ :sub:`2`.
-    B illustrates a Git history created by
-    branching or concurrent clones, but the commits **a**, **b**, and **d**
-    are still connected to exactly one upstream and one downstream sentinel commit,
-    s\ :sub:`1` and s\ :sub:`2`, respectively.
-
-The *schema changes* file that identifies a sentinel commit contains annotations that summarize
-all the schema changes in commits between the sentinel commit and the previous, upstream sentinel commit.
-
-.. todo: important: modify the figure to illustrate that a sentinel commit can contain schema changes
 
 Example configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
