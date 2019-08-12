@@ -120,9 +120,11 @@ To organize the changes in a schema repo into manageable groups,
 migration identifies *sentinel* commits that delimit
 sets of commits in the repo's commit dependency graph.
 Precisely, sentinel commits must be located in the graph so that
-each commit that changes the schema depends on exactly one
+each commit which changes the schema depends on exactly one
 upstream sentinel commit, and is an ancestor of exactly one downstream
 sentinel commit (see :numref:`figure_schema_changes_and_sentinel_commits`).
+In addition, a sentinel commit can have at most one ancestor sentinel commit that's reachable
+without traversing another sentinel commit.
 All the commits that are ancestors of a sentinel commit and depend upon the sentinel commit's
 closest ancestor sentinel commit are members of the sentinel commit's *domain*.
 In addition, a sentinel commit is a member of its own *domain*.
@@ -146,6 +148,7 @@ Migration migrates a data file across a sequence of sentinel commits.
     are ancestors of exactly one downstream sentinel commit, s\ :sub:`2`.
 
 .. todo: important: modify the figure to illustrate a sentinel commit's domain and that it can contain schema changes
+.. todo: important: illustrate illegal sentinel commit configurations
 .. todo: important: remove schema changes files from the figure
 
 Configuration files
