@@ -42,7 +42,7 @@ one repository serves as both the *data repo* and the *schema repo*.
 Migration further assumes that a schema is stored in a single Python file called
 the *schema* file, and its name doesn't change over the time span of a migration.
 Because it's stored in a Git repository, its versions are
-recorded in a directed acyclic graph (DAG) of commits in the repository. These commits are
+recorded in a graph of commits in the repository. These commits are
 used by migration to determine changes in the *schema*.
 :numref:`figure_example_data_file_migration` below illustrates these concepts.
 
@@ -148,15 +148,14 @@ Precisely, each commit that changes the schema must be connected to exactly one
 upstream sentinel commit, and to exactly one downstream
 sentinel commit (or have no downstream sentinel commit) (see :numref:`figure_schema_changes_and_sentinel_commits`).
 
-.. todo: modify later to say "each commit that changes the schema must be connected to exactly one upstream sentinel commit (or the schema commit in a data file's metadata)"
-
 .. _figure_schema_changes_and_sentinel_commits:
 .. figure:: migration/figures/schema_changes_and_sentinel_commits.png
     :width: 800
     :alt: Schema repo git histories correctly annotated by schema changes files
 
     Schema repository git histories correctly annotated by schema changes files.
-    Each schema changes file identifies a sentinel commit that marks the downstream edge of a
+    Commits that do not change the schema may be present, but are not involved in migration.
+    Each schema changes file identifies a sentinel commit that marks the downstream boundary of a
     set of commits annotated by the schema changes file.
     In A, schema changes file sc\ :sub:`2` identifies s\ :sub:`2` as a sentinel.
     The changes in commits **a** and **b** will be applied to data being migrated from 
@@ -165,12 +164,11 @@ sentinel commit (or have no downstream sentinel commit) (see :numref:`figure_sch
     branching or concurrent clones, but the commits **a**, **b**, and **d**
     are still connected to exactly one upstream and one downstream sentinel commit,
     s\ :sub:`1` and s\ :sub:`2`, respectively.
-    By default, the creation of a schema changes file template
-    selects the most recent (that is, `head`) commit as the sentinel commit. An option enables selection
-    of an earlier commit instead.
 
 The *schema changes* file that identifies a sentinel commit contains annotations that summarize
-all the schema changes in commits directly upstream from the sentinel commit.
+all the schema changes in commits between the sentinel commit and the previous, upstream sentinel commit.
+
+.. todo: clarify or have no downstream sentinel commit
 
 Example configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -293,7 +291,12 @@ the last *schema changes* configuration file in the *schema repo*.
 
 Topological sort of schema changes
 ------------------------------------
-Migration of a data file executes this algorithm:
+The migration of a data file 
+bases it mofifications of the data on the schema changes saved in git commits in the schema repo
+and schema changes files that annotate these changes.
+Because the dependencies among commits cannot be circular, the dependency graph of commits is a
+directed acyclic graph (DAG).
+Migration executes this algorithm:
 
 .. code-block:: python
 
@@ -353,6 +356,12 @@ We illustrate incorrect and correct placement of Schema changes files in :numref
     **A** because the existing *Models*\ s that get accessed by the transformation
     above will succeed because it uses the schema
     defined by the top commit.
+
+.. todo: clarify that "each commit that changes the schema must be connected to exactly one upstream sentinel commit (or the schema commit in a data file's metadata)"
+
+.. todo: add standard protocols 
+.. todo: in schema repo: 1: change schema, which may involve multiple commits; 2: confirm that schema changes work and are temporarily complete; 3: create template schema changes file; 4: determine the Model and attribute renamings, done in step 2 and insert them in the template schema changes file; 5: identify any other model changes that require a transformation, create and test a transformations module, and insert its name in the template schema changes; 6: test migrate data using a data file that depended on the schema before the changes in step 2
+.. todo: in data repo: 1: decide to migrate some data files; 2: if the schema has schema changes files that cover the versions across which the files are to be migrated then continue to step 4; 3: create schema changes files that are needed in the schema repo: 4: if it doesn't exist, create a data-schema migration config file for the data files; 5: push the current version of the data repo so the files are backed up on the git server; 6: migrate the files with `do-configured-migration`
 
 Using migration
 ----------------------------------------------
