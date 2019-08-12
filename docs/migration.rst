@@ -117,14 +117,16 @@ in *schema repo*\ s and *data repo*\ s is recorded in configuration files.
 Sentinel commits
 ^^^^^^^^^^^^^^^^
 To organize the changes in a schema repo into manageable groups,
-migration identifies *sentinel* commits that delimit adjacent
+migration identifies *sentinel* commits that delimit
 sets of commits in the repo's commit dependency graph.
-Precisely, each commit that changes the schema must depend on exactly one
-upstream sentinel commit, and be an ancestor of exactly one downstream
+Precisely, sentinel commits must be located in the graph so that
+each commit that changes the schema depends on exactly one
+upstream sentinel commit, and is an ancestor of exactly one downstream
 sentinel commit (see :numref:`figure_schema_changes_and_sentinel_commits`).
-All the commits that are ancestors of a sentinel commit are members of the sentinel commit's *domain*.
-In addition, the updates in a sentinel commit may change the schema, and they
-are members of its *domain* as well.
+All the commits that are ancestors of a sentinel commit and depend upon the sentinel commit's
+closest ancestor sentinel commit are members of the sentinel commit's *domain*.
+In addition, a sentinel commit is a member of its own *domain*.
+We use the term *domain* to refer commits and to the changes to the schema made by the commits.
 
 Migration migrates a data file across a sequence of sentinel commits.
 
@@ -179,6 +181,8 @@ describe these user-customized configuration files and code fragments in greater
    :file: migration/migrations_rst_tables_data_repo_config.csv
    :widths: 20, 80
 
+.. todo: important: add figure showing relationship between schema changes files and Sentinel commits
+
 Example configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -195,7 +199,7 @@ schema versions above:
 All schema changes files contain these fields:
 :obj:`commit_hash`, :obj:`renamed_models`, :obj:`renamed_attributes`, and :obj:`transformations_file`.
 
-* :obj:`commit_hash` is the hash of the sentinel Git commit that the Schema changes file annotates. That is, as illustrated in :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the commit identified by the previous *Schema changes* file.
+* :obj:`commit_hash` is the hash of the sentinel Git commit that the Schema changes file annotates. That is, as illustrated in :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the closest upstream sentinel commit.
 
 * :obj:`renamed_models` is a YAML list that documents all *Model*\ s in the schema that were renamed. Each renaming is given as a pair of the form :obj:`[ExistingName, ChangedName]`.
 
@@ -204,10 +208,10 @@ All schema changes files contain these fields:
 .. _figure_commit_dependencies:
 .. figure:: migration/figures/commit_dependencies.png
     :width: 800
-    :alt: Dependency graph of Git commits and schema changes files that describe them
+    :alt: Dependency graph of Git commits and schema changes files that annotate them
 
-    Dependency graph of Git commits that change a schema and the schema changes files that describe them.
-    These graphs illustrate networks in which nodes are commits, and directed edges point
+    Dependency graph of Git commits that change a schema and the schema changes files that annotate them.
+    These graphs illustrate Git commit dependency graphs. Directed edges point
     from a parent commit to a child commit that depends on it.
     By default, a schema changes file identifies its parent commit as the sentinel commit that it
     annotates. 
@@ -240,6 +244,8 @@ converts the floats in attribute :obj:`Test.size` into ints:
 .. literalinclude:: migration/example_transformation.py
   :language: Python
 
+.. todo: in catch KeyError in existing_defs['Test'] and reraise it as MigratorError for model not found
+
 Transformations are subclasses of :obj:`obj_model.migrate.MigrationWrapper`. `Model` instances can
 be converted before or after migration, or both. 
 The :obj:`prepare_existing_models` method converts models before migration, while 
@@ -249,7 +255,6 @@ that performs migration. Its attributes provide information about the migration.
 code uses :obj:`migrator.existing_defs` which is a dictionary that maps each *Model*'s name
 to its class definition to obtain the definition of the :obj:`Test` class.
 
-.. todo: important: spread concept of sentinel commits to rest of document
 .. todo: important: ask Yin Hoon to review
 
 This example :obj:`custom_io_classes.py` file configures a migration of files that
@@ -283,7 +288,9 @@ Schema Git metadata in data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each data file in the *data repo* must contain a *Model* that documents the version of the *schema repo*
-upon which the file depends. This Git metadata is stored in a *SchemaRepoMetadata* *Model*
+upon which the file depends. 
+For migration to work properly this version must be a sentinel commit in the schema repo.
+This Git metadata is stored in a *SchemaRepoMetadata* *Model*
 (which will be in a *Schema repo metadata* worksheet in an Excel file). The metadata specifies the schema's
 version with its URL, branch, and commit hash. 
 A migration of the data file will start at the specified commit in the *schema repo*. An example
@@ -299,12 +306,12 @@ Schema repo metadata worksheet in an Excel file is illustrated below:
     at which migration of the data file would start.
 
 Migration migrates a data file from the schema commit identified in the file's schema's Git metadata to
-the last *schema changes* configuration file in the *schema repo*.
+the last sentinel commit in the *schema repo*.
 
 Topological sort of schema changes
 ------------------------------------
 The migration of a data file 
-bases it mofifications of the data on the schema changes saved in Git commits in the schema repo
+modifies data to conform to the schema changes saved in Git commits in the schema repo
 and schema changes files that annotate these changes.
 Because the dependencies among commits cannot be circular, the dependency graph of commits is a
 directed acyclic graph (DAG).
@@ -343,9 +350,9 @@ dependency relationship in the DAG can appear in any order in the sequence.
 For example, a DAG with the edges A |rarr| B |rarr| D, A |rarr| C |rarr| D, can be topologically sorted to
 either A |rarr| B |rarr| C |rarr| D or  A |rarr| C |rarr| B |rarr| D.
 
-Schema changes files must therefore annotate commits in the schema repo's commit dependency graph such that
+Sentinel commits must must therefore be selected such that
 *any* topological sort of them produces a legal migration.
-We illustrate incorrect and correct placement of Schema changes files in :numref:`figure_schema_changes_topological_sort`.
+We illustrate incorrect and correct placement of sentinel commits in :numref:`figure_schema_changes_topological_sort`.
 
 .. _figure_schema_changes_topological_sort:
 .. figure:: migration/figures/schema_changes_topological_sort.png
@@ -367,6 +374,7 @@ We illustrate incorrect and correct placement of Schema changes files in :numref
     above will succeed because it uses the schema
     defined by the top commit.
 
+.. todo: important: ensure that this properly distinguishes between schema change files and sentinel commits
 .. todo: important: use labeled nodes in figure schema_changes_topological_sort, and add a legend
 
 Migration protocol
@@ -381,13 +389,16 @@ Configuring migration in a schema repository
 Schema builders are responsible for these steps.
 
 #. Make changes to the schema, which may involve multiple commits and multiple branches or concurrent repository clones
-#. Confirm that schema changes work and are temporarily complete
-#. Git commit and push all schema changes
+#. Confirm that the schema changes work and are temporarily complete
+#. Git commit and push all schema changes; the last commit will be a *sentinel commit*
 #. Use the :obj:`make-changes-template` command to create a template schema changes file
 #. Determine the ways in which *Model*\ s and attributes were renamed in step 1 and document them in the template schema changes file
-#. Identify any other model changes that require a transformation (as shown in :numref:`figure_types_of_schema_changes`), create and test a transformations module, and provide its filename as the :obj:`transformations_file` in the schema changes file
-#. Git commit and push all the schema changes file
-#. Test migrate data using a data file that depends (using its schema Git metadata as in :numref:`figure_schema_git_metadata`) on the schema before the changes in step 1
+#. Identify any other model changes that require a transformation (as shown in :numref:`figure_types_of_schema_changes`), and if they exist create and test a transformations module, and provide its filename as the :obj:`transformations_file` in the schema changes file
+#. Git commit and push the schema changes file
+#. Test the new schema changes file by migrating a data file that depends (using its schema Git metadata as in :numref:`figure_schema_git_metadata`) on the schema before the changes in step 1
+
+While this approach identifies sentinel commits and creates template schema changes files immediately
+after the schema has been changed, that process can be performed later.
 
 Migration of data files in a data repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -429,11 +440,11 @@ The :obj:`make-changes-template` command creates a template *Schema changes* fil
 By default, it creates a *Schema changes* template in the schema repo that contains the current directory.
 To use another schema repo, specify a directory in it with the :obj:`--schema_repo_dir` option.
 
-By default, the *Schema changes* template created references the most recent commit in the schema repo.
-To have the *Schema changes* file reference another commit, provide its
+By default, the *Schema changes* template created identifies the most recent commit in the schema repo as a sentinel commit.
+To have the *Schema changes* file identify another commit as the sentinel, provide its
 hash with the :obj:`--commit` option.
-This makes it easy to add a schema changes file that references a commit after 
-making other commits downstream from the referenced commit.
+This makes it easy to add a schema changes file that identifies an older commit as a sentinel commit,
+after making other commits downstream from the sentinel.
 
 :obj:`make-changes-template` initializes :obj:`commit_hash` in the template as the 
 sentinel commit's hash.
