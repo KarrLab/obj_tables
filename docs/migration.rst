@@ -118,8 +118,9 @@ Sentinel commits
 ^^^^^^^^^^^^^^^^
 To organize the changes in a schema repo into manageable groups,
 migration identifies *sentinel* commits that delimit
-sets of commits in the repo's commit dependency graph.
-Precisely, sentinel commits must be located in the graph so that
+sets of commits that change the schema.
+Considering the repo's commit dependency graph,
+sentinel commits must be located in the graph so that
 each commit which changes the schema depends on exactly one
 upstream sentinel commit, and is an ancestor of exactly one downstream
 sentinel commit (see :numref:`figure_schema_changes_and_sentinel_commits`).
@@ -128,7 +129,7 @@ without traversing another sentinel commit.
 All the commits that are ancestors of a sentinel commit and depend upon the sentinel commit's
 closest ancestor sentinel commit are members of the sentinel commit's *domain*.
 In addition, a sentinel commit is a member of its own *domain*.
-We use the term *domain* to refer commits and to the changes to the schema made by the commits.
+We use the term *domain* to describe both commits and the changes to the schema made by the commits.
 
 Migration migrates a data file across a sequence of sentinel commits.
 
@@ -156,9 +157,7 @@ Configuration files
 
 *Schema repo*\ s contain three types of configuration files (:numref:`table_migrations_rst_tables_schema_repo_config`):
 
-* Each *schema changes* file identifies a sentinel commit, and annotates the changes to the schema
-in the sentinel commit's domain. Symmetrically, each sentinel commit must be identified by one
-schema changes file.
+* A *schema changes* file identifies a sentinel commit, and annotates the changes to the schema in the sentinel commit's domain. Symmetrically, each sentinel commit must be identified by one schema changes file.
 * A *transformations* file defines a Python class that performs user-customized transformations on *Model*\ s during migration.
 * A :obj:`custom_io_classes.py` file in a *schema repo* gives migration handles to the schema's :obj:`Reader` and/or :obj:`Writer` classes so they can be used to read and/or write data files that use the schema.
 
@@ -383,7 +382,7 @@ We illustrate incorrect and correct placement of sentinel commits in :numref:`fi
 Migration protocol
 ----------------------------------------------
 
-As discussed above, using migration involves creating configuration files at various times in two repositories
+As discussed above, using migration involves creating configuration files at various times in the schema and data repos,
 and then migrating data files. This section summarizes the overall protocol users need to follow to migrate data.
 
 Configuring migration in a schema repository
