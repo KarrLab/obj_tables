@@ -27,9 +27,7 @@ while the repository containing the schema is the *schema repo*.
 While these are typically distinct repositories, migration also supports the situation in which
 one repository serves as both the *data repo* and the *schema repo*.
 
-.. todo: smaller text in figure
-
-.. _figure_repos:
+.. _figure_schema_and_data_repos:
 .. figure:: migration/figures/schema_and_data_repos.png
     :width: 600
     :align: left
@@ -47,6 +45,7 @@ used by migration to determine changes in the *schema*.
 :numref:`figure_example_data_file_migration` below illustrates these concepts.
 
 .. todo: bigger text in figure
+.. todo: distinguish schema & data repos by color, using the same colors as in schema_and_data_repos.png
 
 .. _figure_example_data_file_migration:
 .. figure:: migration/figures/migration_example_figure.png
@@ -62,8 +61,6 @@ used by migration to determine changes in the *schema*.
     Two commits update :obj:`wc_lang`. Assuming that these commits modify :obj:`wc_lang`\ 's data model,
     :obj:`biomodel_x.xlsx` must be migrated. The migration automatically
     makes :obj:`biomodel_x.xlsx` consistent with the latest commit of :obj:`wc_lang` (solid purple arrow).
-
-.. todo: perhaps distinguish schema & data repos by color
 
 We classify the ways in which a schema can be changed into these categories:
 
