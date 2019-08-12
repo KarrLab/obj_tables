@@ -281,7 +281,7 @@ All data-schema migration config files contain four fields:
 * :obj:`files_to_migrate` contains a list of paths to files in the data repo that will be migrated
 * :obj:`schema_repo_url` contains the URL of the schema repo
 * :obj:`branch` contains the schema repo's branch
-* :obj:`schema_file` contains the path to the schema file in the schema repo relative to its URL
+* :obj:`schema_file` contains the path of the schema file in the schema repo relative to its URL
 
 Migration commands create data-schema migration configuration and schema changes files, as listed
 in :numref:`table_migrations_rst_tables_migration_commands` below.
@@ -313,10 +313,10 @@ the last sentinel commit in the *schema repo*.
 Topological sort of schema changes
 ------------------------------------
 The migration of a data file 
-modifies data to conform to the schema changes saved in Git commits in the schema repo
-and schema changes files that annotate these changes.
-Because the dependencies among commits cannot be circular, the dependency graph of commits is a
+modifies data so that its structure is consistent with the schema changes saved in Git commits in the schema repo.
+Because the dependencies between commits cannot be circular, the dependency graph of commits is a
 directed acyclic graph (DAG).
+
 Migration executes this algorithm:
 
 .. code-block:: python
@@ -326,8 +326,10 @@ Migration executes this algorithm:
             schema changes in `schema_repo`, and write the results in `migrated_filename`.
         """
 
-        # get_schema_commit() reads the Schema repo metadata in the data file
+        # get_schema_commit() reads the Schema repo metadata in the file,
+        # and obtains the corresponding commit
         starting_commit = get_schema_commit(existing_filename)
+        # obtain the schema changes that depend on `starting_commit`
         schema_changes = schema_repo.get_dependent_schema_changes(starting_commit)
 
         # topological_sort() returns a topological sort based on the schema repo's commit DAG
@@ -383,7 +385,7 @@ Migration protocol
 ----------------------------------------------
 
 As discussed above, using migration involves creating configuration files at various times in the schema and data repos,
-and then migrating data files. This section summarizes the overall protocol users need to follow to migrate data.
+and then migrating data files. This section summarizes the overall protocol users should follow to migrate data.
 
 Configuring migration in a schema repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -391,40 +393,41 @@ Configuring migration in a schema repository
 Schema builders are responsible for these steps.
 
 #. Make changes to the schema, which may involve multiple commits and multiple branches or concurrent repository clones
-#. Confirm that the schema changes work and are temporarily complete
-#. Git commit and push all schema changes; the last commit will be a *sentinel commit*
+#. Confirm that the schema changes work and form a set of related changes
+#. Git commit and push the schema changes; the last commit will be a *sentinel commit*
 #. Use the :obj:`make-changes-template` command to create a template schema changes file
 #. Determine the ways in which *Model*\ s and attributes were renamed in step 1 and document them in the template schema changes file
-#. Identify any other model changes that require a transformation (as shown in :numref:`figure_types_of_schema_changes`), and if they exist create and test a transformations module, and provide its filename as the :obj:`transformations_file` in the schema changes file
-#. Git commit and push the schema changes file
-#. Test the new schema changes file by migrating a data file that depends (using its schema Git metadata as in :numref:`figure_schema_git_metadata`) on the schema before the changes in step 1
+#. Identify any other model changes that require a transformation (as shown in :numref:`figure_types_of_schema_changes`); if they exist, create and test a transformations module, and provide its filename as the :obj:`transformations_file` in the schema changes file
+#. Git commit and push the schema changes file, and transformations module, if one was created
+#. Test the new schema changes file by migrating a data file that depends (using its schema Git metadata as in :numref:`figure_schema_git_metadata`) on the version of the schema that existed before the changes in step 1
 
 While this approach identifies sentinel commits and creates template schema changes files immediately
-after the schema has been changed, that process can be performed later.
+after the schema has been changed, that process can be performed later, as 
 
 Migration of data files in a data repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-People who use Object model schemas, such as whole-cell modelers, follow one of these sequences of steps.
+People who use Object model schemas, such as whole-cell modelers, should follow one of these sequences of steps
+to migrated files.
 
 *Migrate arbitrary data files*
 
 #. Decide to migrate some data files
-#. Git push the data repo to backup all data files on the Git server
-#. Use the :obj:`migrate-data` command to migrate the files
+#. Git commit and push the data repo to backup all data files on the Git server
+#. Use the :obj:`migrate-data` command to migrate the files; the migrated files will overwrite the initial existing files
 
 *Use a data-schema migration configuration file to migrate data files*
 
 #. Decide to migrate some data files
 #. If a *data-schema migration configuration* file for the files does not exist, use the :obj:`make-data-schema-migration-config-file` command to make one
-#. Git push the data repo to backup all data files on the Git server
-#. Use the :obj:`do-configured-migration` command to migrate the files
+#. Git commit and push the data repo to backup all data files on the Git server
+#. Use the :obj:`do-configured-migration` command to migrate the files; the migrated files will overwrite the initial existing files
 
 Using migration commands
 ----------------------------------------------
-Migration commands are run via the wholecell command line interface program :obj:`wc-cli` program on the command line.
-Different commands are available for *schema repo*\ s and *data repo*\ s, as listed in
-:numref:`table_migrations_rst_tables_migration_commands`.
+Migration commands are run via the wholecell command line interface program :obj:`wc-cli` on the command line.
+As listed in :numref:`table_migrations_rst_tables_migration_commands`,
+different commands are available for *schema repo*\ s and *data repo*\ s.
 
 .. _table_migrations_rst_tables_migration_commands:
 .. csv-table:: Migration commands
@@ -432,7 +435,7 @@ Different commands are available for *schema repo*\ s and *data repo*\ s, as lis
    :widths: 10, 20, 70
    :header-rows: 1
 
-
+.. _section_schema_repo_migration_commands
 Schema repo migration commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -452,7 +455,7 @@ after making other commits downstream from the sentinel.
 sentinel commit's hash.
 The hash's prefix also appears in the file's name.
 The format of the fields :obj:`renamed_models`, :obj:`renamed_attributes`, and
-:obj:`transformations_file` is written, but their data must be entered by hand.
+:obj:`transformations_file` is written, but their data must be entered manually.
 
 .. code-block:: none
 
@@ -479,12 +482,12 @@ creates a data-schema migration configuration file. It must be given the full UR
 Python schema file in its Git repository, including its branch. For example
 :obj:`https://github.com/KarrLab/wc_lang/blob/master/wc_lang/core.py` is the URL of the
 schema in :obj:`wc_lang`.
-It must also be given the absolute or relative path to at least one data file that
-will be migrated by when the data-schema migration config file is used. The config file
+It must also be given the absolute or relative path of at least one data file that
+will be migrated when the data-schema migration config file is used. The config file
 can always be edited to add, remove or changes data files.
 
 By default, :obj:`make-data-schema-migration-config-file` assumes that the current directory
-is contained in the data repo that will be configured in the new migration config file.
+is contained in a clone of the data repo that will be configured in the new migration config file.
 A different data repo can be specified by using the :obj:`--data_repo_dir` option.
 
 .. code-block:: none
@@ -507,7 +510,7 @@ A different data repo can be specified by using the :obj:`--data_repo_dir` optio
                         directory
 
 The :obj:`do-configured-migration` command migrates the data files specified in
-a data-schema migration config file. Each data file that is migrated is replaced by its migrated file.
+a data-schema migration config file. Each data file that's migrated is replaced by its migrated file.
 
 .. code-block:: none
 
@@ -523,11 +526,11 @@ a data-schema migration config file. Each data file that is migrated is replaced
 The :obj:`migrate-data` command migrates specified data file(s).
 Like :obj:`make-data-schema-migration-config-file`, it must be given the full URL of the
 Python schema file in its Git repository, including its branch, and
-the absolute or relative path to at least one data file to migrate.
+the absolute or relative path of at least one data file to migrate.
 By default, :obj:`migrate-data` assumes that the current directory
-is contained in the data repo that contains the data files to migrate.
+is contained in a clone of the data repo that contains the data files to migrate.
 A different data repo can be specified by using the :obj:`--data_repo_dir` option.
-Each data file that is migrated is replaced by its migrated file.
+Each data file that's migrated is replaced by its migrated file.
 
 .. code-block:: none
 
@@ -553,14 +556,12 @@ Practical considerations
 
 The user must have access rights that allow them to clone the data repo and schema repo.
 
-
 Limitations
 ----------------------------------------------
 
 As of August 2019 the implementation of migration has these limitation:
 
 * Migration requires that schemas and data files be stored in Git repositories -- no other version control systems are supported.
-* The schema must be stored in a repository.
 * Only one schema file per schema repo is supported.
 * Migration of large data files runs slowly.
-* Options that store a migrate file in a different location than its data file are not exposed at the command line.
+* Options that store a migrated file in a different location than its data file are not exposed at the command line.
