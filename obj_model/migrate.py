@@ -1858,7 +1858,7 @@ class SchemaChanges(object):
         schema_repo (:obj:`GitRepo`): a Git repo that defines the data model (schema) of the data being
             migrated
         schema_changes_file (:obj:`str`): the schema changes file
-        commit_hash (:obj:`str`): hash from a schema changes file
+        commit_hash (:obj:`str`): hash of a sentinel commit from a schema changes file
         renamed_models (:obj:`list`, optional): list of renamed models in the commit
         renamed_attributes (:obj:`list`, optional): list of renamed attributes in the commit
         transformations_file (:obj:`str`, optional): the name of a Python file containing transformations
@@ -1983,7 +1983,7 @@ class SchemaChanges(object):
 
         Args:
             schema_repo (:obj:`GitRepo`): an initialized repo for the schema
-            commit_hash (:obj:`str`): a git commit hash
+            commit_hash (:obj:`str`): hash of a sentinel commit
 
         Returns:
             :obj:`str`: the pathname of the file found
@@ -2039,8 +2039,8 @@ class SchemaChanges(object):
         Args:
             schema_url (:obj:`str`, optional): URL of the schema repo; if not provided, `self.schema_repo`
                 must be already initialized
-            commit_hash (:obj:`str`, optional): hash of the schema repo commit which the template
-                schema changes file describes; default is the most recent commit
+            commit_hash (:obj:`str`, optional): hash of the sentinel commit in the schema repo which
+                the template schema changes file identifies; default is the most recent commit
 
         Returns:
             :obj:`str`: pathname of the schema changes file that was written
@@ -2093,8 +2093,8 @@ class SchemaChanges(object):
 
         Args:
             schema_dir (:obj:`str`): directory of the schema repo
-            commit_hash (:obj:`str`, optional): hash of the schema repo commit which the template
-                schema changes file describes; default is the most recent commit
+            commit_hash (:obj:`str`, optional): hash of the sentinel commit in the schema repo which
+                the template schema changes file identifies; default is the most recent commit
 
         Returns:
             :obj:`str`: pathname of the schema changes file that was written
