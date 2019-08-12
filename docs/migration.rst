@@ -5,27 +5,30 @@ Data migration
 
 Migration overview
 ---------------------
-Consider some data whose structure (data model) is defined by a schema. For example,
-the structure of an SQL database is defined by a schema written in the SQL
-Data Definition Language. When the schema is changed then existing data must be changed so that its structure still complies with the schema. This is called data *migration*. 
-Many systems, including databases and web software frameworks provide tools that automate data migration.
+Consider some data whose structure (also known as its *data model*) is defined by a schema written in a data definition language.
+For example, the structure of an SQL database is defined by a schema written in
+`<SQL's Structured query language https://en.wikipedia.org/wiki/Data_definition_language#Structured_Query_Language_(SQL)>`_.
+
+When a schema is updated then existing data must be changed so that its structure complies with the updated schema. This is called *data migration*. 
+Many systems, including database systems and web software frameworks, provide tools that automate data migration
+so that users can avoid the tedious and error-prone manual effort that's usually required when a schema is changed
+and large amounts of data must be migrated.
 
 Packages that use Object model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of
 the data in a file is defined by a schema that uses :obj:`obj_model`. Object model *migration* enables automated
 migration of these data files.
 
-This page provides an overview of the concepts of Object model migration and detailed instructions on how to configure and use it.
+This page explains the concepts of Object model migration and provides detailed instructions on how to configure and use it.
 
 Migration concepts
 ----------------------------------------------
-Object model migration avoids the tedious and error-prone manual effort that's required when a schema is changed
-and multiple, large data files which use the schema to define their data models must be migrated.
+Object model migration automates the process of migrating data files that use a schema which has been updated.
 
 Migration assumes that data files which are migrated and the schemas that define their data models
 are stored in Git repositories. The repository storing the data files is called the *data repo*
 while the repository containing the schema is the *schema repo*.
-While these are typically distinct repositories, migration also supports the situation in which
-one repository serves as both the *data repo* and the *schema repo*.
+While these are typically two distinct repositories, migration also supports the situation in which
+one repository is both the *data repo* and the *schema repo*.
 
 .. _figure_schema_and_data_repos:
 .. figure:: migration/figures/schema_and_data_repos.png
@@ -37,11 +40,10 @@ one repository serves as both the *data repo* and the *schema repo*.
     The *schema repo* uses :obj:`obj_model` to define a schema. The *data repo* stores data files
     that use the data model defined in the schema repo.
 
-Migration further assumes that a schema is stored in a single Python file called
-the *schema* file, and its name doesn't change over the time span of a migration.
-Because it's stored in a Git repository, its versions are
-recorded in a graph of commits in the repository. These commits are
-used by migration to determine changes in the *schema*.
+Migration further assumes that the schema defined in a schema repo is stored in a single Python file,
+which is called the *schema* file.
+Because it's stored in a Git repository, the schema file's version history is
+recorded in the schema repo's commits, which are used by migration.
 :numref:`figure_example_data_file_migration` below illustrates these concepts.
 
 .. todo: bigger text in figure
@@ -54,15 +56,15 @@ used by migration to determine changes in the *schema*.
 
     Example migration of file :obj:`biomodel_x.xlsx`.
     Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`biomodel_x`.
-    Time increases up the page, and within any repository later commits depend on earlier ones.
-    :obj:`wc_lang` is a schema repo that is used by the data repo :obj:`biomodel_x`.
+    Time increases upward, and within any repository later commits depend on earlier ones.
+    :obj:`wc_lang` is a schema repo that defines the data model for files stored in the data repo :obj:`biomodel_x`.
     The earliest illustrated commit of :obj:`biomodel_x` contains a version of :obj:`biomodel_x.xlsx` that depends on
-    the earliest commit of :obj:`wc_lang`, as indicated by the dashed arrows.
-    Two commits update :obj:`wc_lang`. Assuming that these commits modify :obj:`wc_lang`\ 's data model,
-    :obj:`biomodel_x.xlsx` must be migrated. The migration automatically
-    makes :obj:`biomodel_x.xlsx` consistent with the latest commit of :obj:`wc_lang` (solid purple arrow).
+    the earliest commit of :obj:`wc_lang`, as indicated by the dashed arrow.
+    Two commits update :obj:`wc_lang`. If these commits modify :obj:`wc_lang`\ 's schema,
+    then :obj:`biomodel_x.xlsx` must be migrated. The migration (solid purple arrow) automatically
+    makes the data in :obj:`biomodel_x.xlsx` consistent with the latest commit of :obj:`wc_lang`.
 
-We classify the ways in which a schema can be changed into these categories:
+We decompose the ways in which a schema can be changed into these categories:
 
 * Add a :obj:`obj_model.core.Model` (henceforth, *Model*) definition
 * Remove a *Model* definition
@@ -72,14 +74,14 @@ We classify the ways in which a schema can be changed into these categories:
 * Rename an attribute of a *Model*
 * Apply another type of changes to a *Model*
 
-Migration automatically handles all types of changes except the last one, as illustrated in
+Migration automatically handles all of these change categories except the last one, as illustrated in
 :numref:`figure_types_of_schema_changes`.
 Adding and removing *Model* definitions and adding and removing attributes from *Model*\ s are
-migrated completely automatically. Renaming *Model* definitions and attributes of *Model*\ s requires
-configuration information from a user, as described below.
-
+migrated completely automatically. If the names of *Model*\ s or the names of *Model* attributes
+are changed, then configuration information must be manually supplied because the relationship
+between the initial and final names cannot be determined automatically when multiple names are changed.
 Other types of modifications can be automated by custom Python transformation programs,
-which are also described below.
+which are described below.
 
 .. _figure_types_of_schema_changes:
 .. figure:: migration/figures/types_of_schema_changes.png
@@ -87,21 +89,24 @@ which are also described below.
     :alt: Types of schema changes
 
     Types of schema changes.
-    Additions and deletions to a schema are handled automatically by migration.
-    Renaming *Model*\ s or attributes must be annotated in a Schema changes file.
-    Modifications must be handled in a Python transformations module.
+    Changes that add or delete *Model*\ s or *Model* attributes are handled automatically by migration.
+    Changing the name of a *Model*\ s or attributes must be annotated in a manually edited configuration file.
+    Changes that do not fall into these categories must be handled by a custom Python transformations module
+    that processes each *Model* as it is migrated.
 
-This code contains an example schema before migration, which we call the *existing* schema:
+The code below contains a schema that's defined using Object model.
+This documentation employs it as the schema for an example data file before migration, and
+refers to it as the *existing* schema:
 
 .. literalinclude:: ./migration/existing_schema.py
   :language: Python
 
-And this example shows a *changed* version of the schema above, with comments that document the changes:
+This example shows a changed version of the *existing* schema above, and we refer to it as the *changed* schema:
+
+.. todo: change 'changed' to 'migrated' above, and throughout this page
 
 .. literalinclude:: ./migration/changed_schema.py
   :language: Python
-
-The discussion below uses these examples.
 
 Configuring migration
 ----------------------------------------------
@@ -150,16 +155,16 @@ are members in the set of changes in the sentinel commit's ancestors.
 .. _figure_schema_changes_and_sentinel_commits:
 .. figure:: migration/figures/schema_changes_and_sentinel_commits.png
     :width: 800
-    :alt: Schema repo git histories correctly annotated by schema changes files
+    :alt: Schema repo Git histories correctly annotated by schema changes files
 
-    Schema repository git histories correctly annotated by schema changes files.
+    Schema repository Git histories correctly annotated by schema changes files.
     Commits that do not change the schema may be present, but are not involved in migration.
     Each schema changes file identifies a sentinel commit that marks the downstream boundary of a
     set of commits annotated by the schema changes file.
     In A, schema changes file sc\ :sub:`2` identifies s\ :sub:`2` as a sentinel.
     The changes in commits **a** and **b** will be applied to data being migrated from 
     sentinel s\ :sub:`1` to sentinel s\ :sub:`2`.
-    B illustrates a git history created by
+    B illustrates a Git history created by
     branching or concurrent clones, but the commits **a**, **b**, and **d**
     are still connected to exactly one upstream and one downstream sentinel commit,
     s\ :sub:`1` and s\ :sub:`2`, respectively.
@@ -185,7 +190,7 @@ schema versions above:
 All schema changes files contain these fields:
 :obj:`commit_hash`, :obj:`renamed_models`, :obj:`renamed_attributes`, and :obj:`transformations_file`.
 
-* :obj:`commit_hash` is the hash of the sentinel git commit that the Schema changes file annotates. That is, as illustrated in :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the commit identified by the previous *Schema changes* file.
+* :obj:`commit_hash` is the hash of the sentinel Git commit that the Schema changes file annotates. That is, as illustrated in :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the commit identified by the previous *Schema changes* file.
 
 * :obj:`renamed_models` is a YAML list that documents all *Model*\ s in the schema that were renamed. Each renaming is given as a pair of the form :obj:`[ExistingName, ChangedName]`.
 
@@ -194,7 +199,7 @@ All schema changes files contain these fields:
 .. _figure_commit_dependencies:
 .. figure:: migration/figures/commit_dependencies.png
     :width: 800
-    :alt: Dependency graph of git commits and schema changes files that describe them
+    :alt: Dependency graph of Git commits and schema changes files that describe them
 
     Dependency graph of Git commits that change a schema and the schema changes files that describe them.
     These graphs illustrate networks in which nodes are commits, and directed edges point
@@ -269,11 +274,11 @@ All data-schema migration config files contain four fields:
 Migration commands create data-schema migration configuration and schema changes files, as listed
 in :numref:`table_migrations_rst_tables_migration_commands` below.
 
-Schema git metadata in data files
+Schema Git metadata in data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each data file in the *data repo* must contain a *Model* that documents the version of the *schema repo*
-upon which the file depends. This git metadata is stored in a *SchemaRepoMetadata* *Model*
+upon which the file depends. This Git metadata is stored in a *SchemaRepoMetadata* *Model*
 (which will be in a *Schema repo metadata* worksheet in an Excel file). The metadata specifies the schema's
 version with its URL, branch, and commit hash. 
 A migration of the data file will start at the specified commit in the *schema repo*. An example
@@ -288,13 +293,13 @@ Schema repo metadata worksheet in an Excel file is illustrated below:
     This schema repo metadata provides the point in the schema's commit history 
     at which migration of the data file would start.
 
-Migration migrates a data file from the schema commit identified in the file's schema's git metadata to
+Migration migrates a data file from the schema commit identified in the file's schema's Git metadata to
 the last *schema changes* configuration file in the *schema repo*.
 
 Topological sort of schema changes
 ------------------------------------
 The migration of a data file 
-bases it mofifications of the data on the schema changes saved in git commits in the schema repo
+bases it mofifications of the data on the schema changes saved in Git commits in the schema repo
 and schema changes files that annotate these changes.
 Because the dependencies among commits cannot be circular, the dependency graph of commits is a
 directed acyclic graph (DAG).
@@ -357,7 +362,7 @@ We illustrate incorrect and correct placement of Schema changes files in :numref
     above will succeed because it uses the schema
     defined by the top commit.
 
-.. todo: impt: use labeled nodes in figure schema_changes_topological_sort, and add a legend
+.. todo: important: use labeled nodes in figure schema_changes_topological_sort, and add a legend
 
 Migration protocol
 ----------------------------------------------
@@ -377,24 +382,24 @@ Schema builders are responsible for these steps.
 #. Determine the ways in which *Model*\ s and attributes were renamed in step 1 and document them in the template schema changes file
 #. Identify any other model changes that require a transformation (as shown in :numref:`figure_types_of_schema_changes`), create and test a transformations module, and provide its filename as the :obj:`transformations_file` in the schema changes file
 #. Git commit and push all the schema changes file
-#. Test migrate data using a data file that depends (using its schema git metadata as in :numref:`figure_schema_git_metadata`) on the schema before the changes in step 1
+#. Test migrate data using a data file that depends (using its schema Git metadata as in :numref:`figure_schema_git_metadata`) on the schema before the changes in step 1
 
 Migration of data files in a data repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-People who use object model schemas, such as whole-cell modelers, follow one of these sequences of steps.
+People who use Object model schemas, such as whole-cell modelers, follow one of these sequences of steps.
 
 *Migrate arbitrary data files*
 
 #. Decide to migrate some data files
-#. Git push the data repo to backup all data files on the git server
+#. Git push the data repo to backup all data files on the Git server
 #. Use the :obj:`migrate-data` command to migrate the files
 
 *Use a data-schema migration configuration file to migrate data files*
 
 #. Decide to migrate some data files
 #. If a *data-schema migration configuration* file for the files does not exist, use the :obj:`make-data-schema-migration-config-file` command to make one
-#. Git push the data repo to backup all data files on the git server
+#. Git push the data repo to backup all data files on the Git server
 #. Use the :obj:`do-configured-migration` command to migrate the files
 
 Using migration commands
@@ -473,7 +478,7 @@ A different data repo can be specified by using the :obj:`--data_repo_dir` optio
     Create a data-schema migration configuration file
 
     positional arguments:
-      schema_url        URL of the schema in its git repository,
+      schema_url        URL of the schema in its Git repository,
                         including the branch
       file_to_migrate   a file to migrate
 
@@ -515,7 +520,7 @@ Each data file that is migrated is replaced by its migrated file.
     Migrate specified data file(s)
 
     positional arguments:
-      schema_url        URL of the schema in its git repository,
+      schema_url        URL of the schema in its Git repository,
                         including the branch
       file_to_migrate   a file to migrate
 
