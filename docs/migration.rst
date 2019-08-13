@@ -246,8 +246,6 @@ converts the floats in attribute :obj:`Test.size` into ints:
 .. literalinclude:: migration/example_transformation.py
   :language: Python
 
-.. todo: in catch KeyError in existing_defs['Test'] and reraise it as MigratorError for model not found
-
 Transformations are subclasses of :obj:`obj_model.migrate.MigrationWrapper`. `Model` instances can
 be converted before or after migration, or both. 
 The :obj:`prepare_existing_models` method converts models before migration, while 
@@ -256,8 +254,6 @@ The :obj:`migrator` argument provides an instance of :obj:`obj_model.migrate.Mig
 that performs migration. Its attributes provide information about the migration. E.g., this
 code uses :obj:`migrator.existing_defs` which is a dictionary that maps each *Model*'s name
 to its class definition to obtain the definition of the :obj:`Test` class.
-
-.. todo: important: ask Yin Hoon to review
 
 This example :obj:`custom_io_classes.py` file configures a migration of files that
 use the :obj:`wc_lang` schema to use the :obj:`wc_lang.io.Reader`:
