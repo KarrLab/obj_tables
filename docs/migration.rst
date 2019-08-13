@@ -148,9 +148,7 @@ Migration migrates a data file across a sequence of sentinel commits.
     still depend on exactly one upstream sentinel commit, s\ :sub:`1`, and
     are ancestors of exactly one downstream sentinel commit, s\ :sub:`2`.
 
-.. todo: important: modify the figure to illustrate a sentinel commit's domain and that it can contain schema changes
-.. todo: important: illustrate illegal sentinel commit configurations
-.. todo: important: remove schema changes files from the figure
+.. todo: important: illustrate illegal sentinel commit configurations in which schema change commits INCORRECTLY depend on multiple sentinels
 
 Configuration files
 ^^^^^^^^^^^^^^^^^^^
@@ -183,8 +181,6 @@ describe these user-customized configuration files and code fragments in greater
    :file: migration/migrations_rst_tables_data_repo_config.csv
    :widths: 20, 80
 
-.. todo: important: add figure showing relationship between schema changes files and Sentinel commits
-
 Example configuration files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -201,42 +197,32 @@ schema versions above:
 All schema changes files contain these fields:
 :obj:`commit_hash`, :obj:`renamed_models`, :obj:`renamed_attributes`, and :obj:`transformations_file`.
 
-* :obj:`commit_hash` is the hash of the sentinel Git commit that the Schema changes file annotates. That is, as illustrated in :numref:`figure_commit_dependencies`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the closest upstream sentinel commit.
+* :obj:`commit_hash` is the hash of the sentinel Git commit that the Schema changes file annotates. That is, as illustrated in :numref:`figure_annotated_history_of_updates_in_schema_example`, the commit identified in the *Schema changes* file must depend on all commits that modified the schema since the closest upstream sentinel commit.
 
 * :obj:`renamed_models` is a YAML list that documents all *Model*\ s in the schema that were renamed. Each renaming is given as a pair of the form :obj:`[ExistingName, ChangedName]`.
 
 * :obj:`renamed_attributes` is a YAML list that documents all attributes in the schema that were renamed. Each renaming is given as a pair in the form :obj:`[[ExistingModelName, ExistingAttrName], [ChangedModelName, ChangedAttrName]]`.  If the *Model* name hasn't changed, then :obj:`ExistingModelName` and :obj:`ChangedModelName` will be the same. :obj:`transformations_file` optionally documents the name of a Python file that contains a class which performs custom transformations on all *Model* instances as they are migrated.
 
-.. _figure_commit_dependencies:
-.. figure:: migration/figures/commit_dependencies.png
+.. _figure_annotated_history_of_updates_in_schema_example:
+.. figure:: migration/figures/annotated_history_of_updates_in_schema_example.png
     :width: 800
-    :alt: Dependency graph of Git commits and schema changes files that annotate them
+    :alt: Example schema changes for the updates from the *existing* to the *changed* schema above
 
-    Dependency graph of Git commits that change a schema and the schema changes files that annotate them.
-    These graphs illustrate Git commit dependency graphs. Directed edges point
-    from a parent commit to a child commit that depends on it.
+    Example schema changes for the updates from the *existing* to the *changed* schema above.
+    This figure illustrates
+    alternative Git histories of the schema changes and migration annotations that would occur
+    when updating the schema repo to reflect the changes between the *existing* and the *changed* schemas above.
     By default, a schema changes file identifies its parent commit as the sentinel commit that it
     annotates. 
     However, a schema changes file may identify a sentinel commit further back in the dependency graph.
     The identification is implemented by storing the sentinel commit's hash in the schema changes file's
     :obj:`commit_hash`.
-    The legend shows 3 colored commits that contain the changes made between the
-    *existing* to *changed* versions of the schema above.
-    The orange commit must be upstream from the blue commit because
-    the orange commit accesses *Model* :obj:`Test` and
-    the blue commit renames *Model* :obj:`Test` to *Model* :obj:`ChangedTest`.
-    The two commit histories in the **Correct use of Schema changes files** section
-    show proper use of Schema changes files.
-    In the **Sequential** history the last commit containing a Schema changes file is properly downstream from
-    all commits changing the schema.
-    In the **Branches or concurrent clones** history, the final
-    commit containing a Schema changes file is also properly downstream from the commits changing the schema.
-    However, in the **Incorrect use of Schema changes file** section, the final
-    commit containing a Schema changes file is incorrectly placed because it is not downstream from
-    the green commit. Migration of a data file with this history would fail.
-
-.. todo: important: synchronize this figure with schema_changes_and_sentinel_commits.png, adding sentinel commits
-.. todo: replace "Incorrect use of Schema changes file" with more sophisticated example in which changes commit depends on multiple sentinels
+    The changes between the *existing* and the *changed* schemas are separated into three
+    commits, **a**, **b**, and **c**.
+    **a** and **b** must both occur before **c**, 
+    because **a** and **b** both access *Model* :obj:`Test` whereas
+    **c** renames *Model* :obj:`Test` to *Model* :obj:`ChangedTest`.
+    The two alternative commit histories both satisfy these constraints.
 
 Template schema changes files are generated by the CLI command :obj:`make-changes-template`, as described below.
 
@@ -360,7 +346,7 @@ We illustrate incorrect and correct placement of sentinel commits in :numref:`fi
     :alt: Placement of schema changes commits in a Git history
 
     Placement of schema changes commits in a Git history (this figure reuses the legend in
-    :numref:`figure_commit_dependencies`).
+    :numref:`figure_annotated_history_of_updates_in_schema_example`).
     Migration topologically sorts the commits annotated by the schema changes files (indicated by thick outlines).
     In **A**, since the blue diamond commit and green pentagon commit have no dependency relationship in the
     Git commit DAG, they can be sorted in either order.
