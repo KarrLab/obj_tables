@@ -1,10 +1,11 @@
-'''
+"""
 :Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
 :Author: Jonathan Karr  <karr@mssm.edu>
 :Date: 2018-12-19
-:Copyright: 2016-2018, Karr Lab
+:Copyright: 2016-2019, Karr Lab
 :License: MIT
-'''
+"""
+
 from obj_model.core import (Model, SlugAttribute, FloatAttribute, StringAttribute,
                             ManyToOneAttribute, ManyToManyAttribute,
                             InvalidObject, InvalidAttribute)
@@ -383,6 +384,7 @@ class ExpressionTestCase(unittest.TestCase):
 
 
 class ParsedExpressionTestCase(unittest.TestCase):
+
     @staticmethod
     def esc_re_center(re_list):
         return '.*' + '.*'.join([re.escape(an_re) for an_re in re_list]) + '.*'
@@ -1115,7 +1117,7 @@ class ParsedExpressionValidatorTestCase(unittest.TestCase):
         self.assertTrue(error is None)
 
         invalid_wc_tokens = [
-            [ObjModelToken(ObjModelTokenCodes.math_func_id, 'log')],     # math functions not allowed
+            [ObjModelToken(ObjModelTokenCodes.math_func_id, 'log')],    # math functions not allowed
             [ObjModelToken(ObjModelTokenCodes.number, '3j')],           # numbers must be floats
         ]
         for invalid_wc_token in invalid_wc_tokens:
