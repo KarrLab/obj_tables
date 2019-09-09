@@ -283,7 +283,7 @@ Migration commands create data-schema migration configuration and schema changes
 in :numref:`table_migrations_rst_tables_migration_commands` below.
 
 Schema Git metadata in data files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each data file in the *data repo* must contain a *Model* that documents the version of the *schema repo*
 upon which the file depends. 
@@ -328,11 +328,12 @@ Migration executes this algorithm:
         # obtain the schema changes that depend on `starting_commit`
         schema_changes = schema_repo.get_dependent_schema_changes(starting_commit)
 
-        # topological_sort() returns a topological sort based on the schema repo's commit DAG
+        # topologically sort schema_changes using dependencies in the schema repo's commit DAG
         ordered_schema_changes = schema_repo.topological_sort(schema_changes)
         existing_models = read_file(filename)
         existing_schema = get_schema(starting_commit)
 
+        # iterate over the topologically sorted schema changes
         for schema_change in ordered_schema_changes:
             end_commit = schema_change.get_commit()
             migrated_schema = get_schema(end_commit)
@@ -431,7 +432,7 @@ different commands are available for *schema repo*\ s and *data repo*\ s.
    :widths: 10, 20, 70
    :header-rows: 1
 
-.. _section_schema_repo_migration_commands
+.. _section_schema_repo_migration_commands:
 Schema repo migration commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

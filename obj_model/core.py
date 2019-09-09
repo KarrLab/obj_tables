@@ -493,7 +493,7 @@ class ModelMeta(type):
 
         The `Manager` is accessed via a `Model`'s `objects` attribute
 
-        Attributes:
+        Args:
             cls (:obj:`type`): the :obj:`Model` class which is being managed
         """
         setattr(cls, 'objects', Manager(cls))
@@ -5646,7 +5646,7 @@ class ManyToManyRelatedManager(RelatedManager):
 
 
 class RelatedAttribute(Attribute):
-    """ Attribute which represents a relationship with other `Model`(s)
+    """ Attribute which represents a relationship with other `Model`\(s)
 
     Attributes:
         primary_class (:obj:`class`): the type of the class that this related attribute references
