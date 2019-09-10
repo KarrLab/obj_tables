@@ -1336,7 +1336,7 @@ class ParsedExpressionValidator(object):
         self.empty_is_valid = empty_is_valid
 
     def _validate_tokens(self, tokens):
-        """ Check whether the content of a sequence of `ObjModelToken`s is valid
+        """ Check whether the content of a sequence of :obj:`ObjModelToken`\ s is valid
 
         Args:
             tokens (:obj:`iterator` of `ObjModelToken`): sequence of `ObjModelToken`s
@@ -1347,7 +1347,7 @@ class ParsedExpressionValidator(object):
         return (True, True)
 
     def _make_dfsa_messages(self, tokens):
-        """ Convert a sequence of `ObjModelToken`s into a list of messages for transitions
+        """ Convert a sequence of :obj:`ObjModelToken`\ s into a list of messages for transitions
 
         Args:
             tokens (:obj:`iterator` of `ObjModelToken`): sequence of `ObjModelToken`s
@@ -1406,7 +1406,7 @@ class LinearParsedExpressionValidator(ParsedExpressionValidator):
                          transitions=self.TRANSITIONS, empty_is_valid=True)
 
     def _validate_tokens(self, tokens):
-        """ Check whether the content of a sequence of `ObjModelToken`s is valid
+        """ Check whether the content of a sequence of :obj:`ObjModelToken`\ s is valid
 
         In particular, all numbers in `tokens` must be floats, and all token codes must not
         be `math_func_id` or `other`.
@@ -1430,7 +1430,7 @@ class LinearParsedExpressionValidator(ParsedExpressionValidator):
         return (True, True)
 
     def _make_dfsa_messages(self, tokens):
-        """ Convert a sequence of `ObjModelToken`s into a list of messages for transitions in
+        """ Convert a sequence of :obj:`ObjModelToken`\ s into a list of messages for transitions in
         :obj:`LinearParsedExpressionValidator.TRANSITIONS`
 
         Args:

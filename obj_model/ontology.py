@@ -16,7 +16,7 @@ class OntologyAttribute(core.LiteralAttribute):
     """ Ontology attribute
 
     Attributes:
-        ontology (obj:`pronto.Ontology`): ontology
+        ontology (:obj:`pronto.Ontology`): ontology
         namespace (:obj:`str`): prefix in term ids
         terms (:obj:`list` of :obj:`pronto.term.Term`): list of allowed terms. If :obj:`None`, all terms are allowed.
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`

@@ -1521,6 +1521,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None):
               This represents a nested tree of attributes. 
               For classes which have \*-to-one relationships to other classes which are encoded as multiple cells, the tree 
               has two levels. For all other classes, the tree only has a single level.
+
             * :obj:`list` of tuple of :obj:`Attribute`: 
               Flattened representation of the first return value. This is a list of attributes of 
               :obj:`cls` and attributes of classes related to :obj:`cls` by \*-to-one relationships that are encoded as multiple cells 
@@ -1539,6 +1540,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None):
                    For classes that have \*-to-one relationships with classes encoded as multiple columns, the column headings will appear in Row 2
                    (and the group headings specified by the first element of the tuple will be in Row 1). For all other classes, the column headings
                    will appear in Row 1.
+
             * :obj:`list`: field headings
             * :obj:`list`: list of field headings to merge
             * :obj:`list`: list of field validations

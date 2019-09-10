@@ -376,7 +376,7 @@ class TestIo(unittest.TestCase):
             fixture_file (:obj:`str`): name of the file to be read
             expected_messages (:obj:`list` of :obj:`str`): list of expected strings or patterns in the
                 exception
-            models (:obj:`list` of :obj:`Model`): `Model`s for the schema of the data being read
+            models (:obj:`list` of :obj:`Model`): :obj:`Model`\ s for the schema of the data being read
             use_re (:obj:`boolean`, optional): if set, `expected_messages` contains RE patterns
             do_not_catch (:obj:`boolean`, optional): if set, run WorkbookReader() outside try ... catch;
                 produces full exception message for debugging

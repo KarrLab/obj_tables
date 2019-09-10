@@ -1,4 +1,4 @@
-.. include:: <isonum.txt>
+.. |rarr|   unicode:: U+02192 .. RIGHTWARDS ARROW
 
 Data migration
 ==============
@@ -433,6 +433,7 @@ different commands are available for *schema repo*\ s and *data repo*\ s.
    :header-rows: 1
 
 .. _section_schema_repo_migration_commands:
+
 Schema repo migration commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
