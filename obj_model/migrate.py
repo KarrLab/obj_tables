@@ -209,24 +209,26 @@ class SchemaModule(object):
         """ Import a schema from a Python module in a file, which may be in a package
 
         Args:
-            validate (:obj:`bool`, optional): whether to validate the module; default is `True`
+            validate (:obj:`bool`, optional): whether to validate the module; default is :obj:`True`
             required_attrs (:obj:`list` of :obj:`str`, optional): list of attributes that must be
                 present in the imported module
-            debug (:obj:`bool`, optional): if true, print debugging output; default is `False`
+            debug (:obj:`bool`, optional): if :obj:`True`, print debugging output; default is :obj:`False`
             mod_patterns (:obj:`list` of :obj:`str`, optional): RE patterns used to search for
                 modules in `sys.modules`; modules whose names match a pattern
-                are output when `debug` is true
-            print_code (:obj:`bool`, optional): if true, while debugging print code being imported;
-                default is `False`
+                are output when `debug` is :obj:`True`
+            print_code (:obj:`bool`, optional): if :obj:`True`, while debugging print code being imported;
+                default is :obj:`False`
 
         Returns:
             :obj:`Module`: the `Module` loaded from `self.module_path`
 
         Raises:
-            :obj:`MigratorError`: if the schema at `self.module_path` cannot be imported,
-                or if validate is True and any related attribute in any model references a model
-                    not in the module
-                or if the module is missing a required attribute
+            :obj:`MigratorError`: if one of the following conditions is met:
+
+                * The schema at `self.module_path` cannot be imported
+                * Validate is :obj:`True` and any related attribute in any model references a model
+                  not in the module
+                * The module is missing a required attribute
         """
         if debug:
             print('\nimport_module_for_migration', self.module_name)
@@ -397,7 +399,7 @@ class SchemaModule(object):
         return new_module
 
     def _get_model_defs(self, module):
-        """ Obtain the `obj_model.Model`s in a module
+        """ Obtain the :obj:`obj_model.Model`\ s in a module
 
         Args:
             module (:obj:`Module`): a `Module` containing subclasses of `obj_model.Model`
@@ -454,7 +456,7 @@ class SchemaModule(object):
         return errors
 
     def run(self):
-        """ Import a schema and provide its `obj_model.Model`s
+        """ Import a schema and provide its :obj:`obj_model.Model`\ s
 
         Returns:
             :obj:`dict`: the imported Models
@@ -524,7 +526,7 @@ class Migrator(object):
         models just before they are migrated and uses its `modify_migrated_models` method to modify
         migrated models just after they are migrated.
         A different `transformations` is associated with each granular step in a sequence
-        of migrations (see `SchemaChanges` below) so that different transformations can wrap migration
+        of migrations (see :obj:`SchemaChanges` below) so that different transformations can wrap migration
         in each step.
 
         Args:
@@ -555,7 +557,7 @@ class Migrator(object):
         self.transformations = transformations
 
     def _load_defs_from_files(self):
-        """ Initialize a `Migrator`s schemas from files
+        """ Initialize a :obj:`Migrator`\ s schemas from files
 
         Distinct from `prepare` so most of `Migrator` can be tested with models defined in code
 
@@ -592,7 +594,7 @@ class Migrator(object):
         If the renamed models validate, then create a map from existing to migrated models.
 
         Returns:
-            :obj:`list` of `str`: errors in the renamed models
+            :obj:`list` of :obj:`str`: errors in the renamed models
         """
         self.models_map = {}
         errors = []
@@ -632,7 +634,7 @@ class Migrator(object):
         If the renamed attributes validate, create a map from existing to migrated attributes.
 
         Returns:
-            :obj:`list` of `str`: errors in the renamed attributes
+            :obj:`list` of :obj:`str`: errors in the renamed attributes
         """
         self.renamed_attributes_map = {}
         errors = []
@@ -679,7 +681,7 @@ class Migrator(object):
                 `existing_class`
 
         Returns:
-            :obj:`tuple` of `str`: the pair (migrated model name, migrated attr name); return (None, None)
+            :obj:`tuple` of :obj:`str`: the pair (migrated model name, migrated attr name); return (None, None)
                 if the existing class and attribute do not map to a migrated class and attribute
         """
 
@@ -996,8 +998,8 @@ class Migrator(object):
         Does not perform validation -- validation must be performed independently.
 
         Args:
-            migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
-            model_order (:obj:`list` of `obj_model.core.ModelMeta`:) migrated models in the order
+            migrated_models (:obj:`list` of :obj:`obj_model.Model`) the migrated models
+            model_order (:obj:`list` of :obj:`obj_model.core.ModelMeta`) migrated models in the order
                 they should appear in a workbook
             existing_file (:obj:`str`): pathname of file that is being migrated
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
@@ -1261,7 +1263,7 @@ class Migrator(object):
             setattr(migrated_model, self.PARSED_EXPR, parsed_expr)
 
     def _migrate_all_analyzed_exprs(self, all_models):
-        """ Migrate all model instances' `ParsedExpression`s
+        """ Migrate all model instances' :obj:`ParsedExpression`\ s
 
         This must be done after all migrated models have been created.
 
@@ -1378,7 +1380,7 @@ class Migrator(object):
         """ Get string representation
 
         Returns:
-            :obj:`str`: string representation of a `Migrator`; collections attributes are rendered
+            :obj:`str`: string representation of a :obj:`Migrator`; collections attributes are rendered
                 by `pformat`
         """
         rv = []
@@ -1392,13 +1394,13 @@ class Migrator(object):
 
 
 class MigrationWrapper(ABC):
-    """ Interface for classes that define a pair of methods that can modify `obj_model.Model`s being migrated
+    """ Interface for classes that define a pair of methods that can modify :obj:`obj_model.Model`\ s being migrated
 
-    `MigrationWrapper` defines the interface used by `transformations`. If it's defined, `transformations`
+    :obj:`MigrationWrapper` defines the interface used by `transformations`. If it's defined, `transformations`
     uses `prepare_existing_models()` to modify existing models just before they are migrated and uses
     `modify_migrated_models()` to modify migrated models just after they are migrated.
 
-    A `transformations` is associated with each `SchemaChanges`, and obtained from the
+    A `transformations` is associated with each :obj:`SchemaChanges`, and obtained from the
     transformations file configured in a schema changes file.
     """
 
@@ -1458,10 +1460,10 @@ class MigrationSpec(object):
     """ Specification of a sequence of migrations for a list of existing files
 
     Attributes:
-        _REQUIRED_ATTRS (:obj:`list` of :obj:`str`): required attributes in a `MigrationSpec`
+        _REQUIRED_ATTRS (:obj:`list` of :obj:`str`): required attributes in a :obj:`MigrationSpec`
         _CHANGES_LISTS (:obj:`list` of :obj:`str`): lists of changes in a migration
-        _ALLOWED_ATTRS (:obj:`list` of :obj:`str`): attributes allowed in a `MigrationSpec`
-        name (:obj:`str`): name for this `MigrationSpec`
+        _ALLOWED_ATTRS (:obj:`list` of :obj:`str`): attributes allowed in a :obj:`MigrationSpec`
+        name (:obj:`str`): name for this :obj:`MigrationSpec`
         existing_files (:obj:`list`: of :obj:`str`, optional): existing files to migrate
         schema_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
             definitions for each state in a sequence of migrations
@@ -1538,7 +1540,7 @@ class MigrationSpec(object):
 
     @classmethod
     def load(cls, migrations_config_file):
-        """ Create a list of validated and standardized `MigrationSpec`s from a migrations configuration file
+        """ Create a list of validated and standardized :obj:`MigrationSpec`\ s from a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
@@ -1547,8 +1549,8 @@ class MigrationSpec(object):
             :obj:`dict` of :obj:`MigrationSpec`: migration specifications
 
         Raises:
-            :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration
-                specifications in `migrations_config_file` are not valid
+            :obj:`MigratorError`: if :obj:`migrations_config_file` cannot be read, or the migration
+                specifications in :obj:`migrations_config_file` are not valid
         """
         migration_specs = cls.get_migrations_config(migrations_config_file)
 
@@ -1565,7 +1567,7 @@ class MigrationSpec(object):
 
     @staticmethod
     def get_migrations_config(migrations_config_file):
-        """ Create a list of `MigrationSpec`s from a migrations configuration file
+        """ Create a list of :obj:`MigrationSpec`\ s from a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
@@ -1574,7 +1576,7 @@ class MigrationSpec(object):
             :obj:`dict` of :obj:`MigrationSpec`: migration specifications
 
         Raises:
-            :obj:`MigratorError`: if `migrations_config_file` cannot be read
+            :obj:`MigratorError`: if :obj:`migrations_config_file` cannot be read
         """
         try:
             fd = open(migrations_config_file, 'r')
@@ -2737,7 +2739,7 @@ class DataSchemaMigration(object):
         migration_specs (:obj:`MigrationSpec`): the migration's specification
         io_classes (:obj:`dict` of :obj:`type`, optional): custom schema repo specific reader and/or
             writer for I/O of existing and migrated files, respectively
-        git_repos (:obj:`list` of :obj:`GitRepo`): all `GitRepo`s create by this `DataSchemaMigration`
+        git_repos (:obj:`list` of :obj:`GitRepo`): all :obj:`GitRepo`\ s create by this `DataSchemaMigration`
     """
 
     # name of the migrations directory

@@ -506,7 +506,7 @@ class Manager(object):
     each :obj:`Model` and accessed as the class attribute `objects` (as in Django).
     The tuples of attributes to index are specified by the `indexed_attrs_tuples` attribute of
     `core.Model.Meta`, which contains a tuple of tuples of attributes to index.
-    `Model`s with empty `indexed_attrs_tuples` attributes incur no overhead from `Manager`.
+    :obj:`Model`\ s with empty `indexed_attrs_tuples` attributes incur no overhead from `Manager`.
 
     :obj:`Manager` maintains a dictionary for each indexed attribute tuple, and a reverse index from each
     :obj:`Model` instance to its indexed attribute tuple keys.
@@ -887,7 +887,7 @@ class Manager(object):
         order elements in lists returned by this method.
 
         Args:
-            kwargs (:obj:`dict`): keyword args mapping from attribute name(s) to value(s)
+            **kwargs: keyword args mapping from attribute name(s) to value(s)
 
         Returns:
             :obj:`list` of :obj:`Model`: a list of `Model` instances whose indexed attribute tuples have the
@@ -927,7 +927,7 @@ class Manager(object):
         Uses `get`.
 
         Args:
-            kwargs (:obj:`dict`): keyword args mapping from attribute name(s) to value(s)
+            **kwargs: keyword args mapping from attribute name(s) to value(s)
 
         Returns:
             `Model`: a `Model` instance whose indexed attribute tuples have the values in `kwargs`,
@@ -1014,7 +1014,7 @@ class Model(with_metaclass(ModelMeta, object)):
     def __init__(self, **kwargs):
         """
         Args:
-            **kwargs (:obj:`dict`, optional): dictionary of keyword arguments with keys equal to the names of the model attributes
+            **kwargs: dictionary of keyword arguments with keys equal to the names of the model attributes
 
         Raises:
             :obj:`TypeError`: if keyword argument is not a defined attribute
@@ -2033,11 +2033,11 @@ class Model(with_metaclass(ModelMeta, object)):
     def get_all_related(objs, forward=True, reverse=True):
         """ Optimally obtain all objects related to objects in `objs`
 
-        The set of all :obj:`Model`s can be viewed as a graph whose nodes are :obj:`Model` instances
+        The set of all :obj:`Model`\ s can be viewed as a graph whose nodes are :obj:`Model` instances
         and whose edges are related connections. Because related edges are bi-directional, this graph
         is a set of strongly connected components and no edges connect the components.
 
-        The algorithm here finds all :obj:`Model`s that are reachable from a set of instances
+        The algorithm here finds all :obj:`Model`\ s that are reachable from a set of instances
         in `O(n)`, where `n` is the size of the reachable set. This algorithm is optimal.
         It achieves this performance because `obj.get_related()` takes `O(n(c))` where `n(c)` is the
         number of nodes in the component containing `obj`, and each component is only explored
@@ -2650,7 +2650,7 @@ class Model(with_metaclass(ModelMeta, object)):
 
         Args:
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+            **kwargs: dictionary of attribute name/value pairs to find matching
                 object or create new object
 
         Returns:
@@ -2679,7 +2679,7 @@ class Model(with_metaclass(ModelMeta, object)):
             kind (:obj:`str`, optional): kind of children to get
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
             recursive (:obj:`bool`, optional): if :obj:`True`, get children recursively
-            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
+            **kwargs: dictionary of attribute name/value pairs
 
         Returns:
             :obj:`list` of :obj:`Model`: children
@@ -2720,7 +2720,7 @@ class Model(with_metaclass(ModelMeta, object)):
         Args:
             kind (:obj:`str`, optional): kind of children to get
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
+            **kwargs: dictionary of attribute name/value pairs
 
         Returns:
             :obj:`list` of :obj:`Model`: immediate children
@@ -3213,15 +3213,15 @@ class LocalAttribute(object):
         primary_name (:obj:`str`): name of this attribute in :obj:`primary_cls`
         secondary_class (:obj:`type`): related class to :obj:`primary_cls`
         secondary_name (:obj:`str`): name of this attribute in :obj:`secondary_cls`
-        is_primary (:obj:`bool`): :obj:`True` if this :obj:`attr` was defined in :obj:`cls` (:obj:`cls`=:obj:`primary_cls`)
+        is_primary (:obj:`bool`): :obj:`True` if this :obj:`attr` was defined in :obj:`cls` (:obj:`cls`\ =\ :obj:`primary_cls`)
         is_related (:obj:`bool`): :obj:`True` if this attribute is an instance of :obj:`RelatedAttribute`
-        is_related_to_many (obj:`bool`): :obj:`True` if the value of this attribute is a list (*-to-many relationship)
+        is_related_to_many (:obj:`bool`): :obj:`True` if the value of this attribute is a list (\*-to-many relationship)
     """
 
     def __init__(self, attr, primary_class, is_primary=True):
         """
         Args:
-            attr (obj:`Attribute`): attribute
+            attr (:obj:`Attribute`): attribute
             primary_class (:obj:`type`): class in which :obj:`attr` was defined
             is_primary (:obj:`bool`, optional): :obj:`True` indicates that a local attribute should be created
                 for the related class of :obj:`attr`
@@ -3259,18 +3259,20 @@ class LocalAttribute(object):
 
 
 class LiteralAttribute(Attribute):
-    """ Base class for literal attributes (Boolean, enumeration, float, integer, string, etc.) """
+    """ Base class for literal attributes (Boolean, enumeration, float, 
+    integer, string, etc.)
+    """
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a
-                list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or :obj:`None`: None if attribute is valid, otherwise return a
+                list of errors as an instance of :obj:`InvalidAttribute`
         """
         return None
 
@@ -3298,7 +3300,8 @@ class LiteralAttribute(Attribute):
             value (:obj:`object`): Python representation
 
         Returns:
-            :obj:`bool`, `float`, `str`, or `None`: simple Python representation
+            :obj:`bool`, :obj:`float`, :obj:`str`, or :obj:`None`: simple Python 
+                representation
         """
         return value
 
@@ -3309,12 +3312,14 @@ class LiteralAttribute(Attribute):
             value (:obj:`object`): semantically equivalent representation
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple 
+                of cleaned value and cleaning error
         """
         return self.clean(value)
 
     def to_builtin(self, value):
-        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        """ Encode a value of the attribute using a simple Python representation
+        (:obj:`dict`, :obj:`list`, :obj:`str`, :obj:`float`, :obj:`bool`, :obj:`None`)
         that is compatible with JSON and YAML
 
         Args:
@@ -3326,7 +3331,8 @@ class LiteralAttribute(Attribute):
         return value
 
     def from_builtin(self, json):
-        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        """ Decode a simple Python representation (:obj:`dict`, :obj:`list`, :obj:`str`, 
+        :obj:`float`, :obj:`bool`, :obj:`None`) of a value of the attribute
         that is compatible with JSON and YAML
 
         Args:
@@ -5145,7 +5151,7 @@ class RelatedManager(list):
 
         Args:
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            kwargs (:obj:`dict` of `str`: `object`): dictionary of attribute name/value pairs
+            **kwargs: dictionary of attribute name/value pairs
 
         Returns:
             :obj:`Model`: created object
@@ -5322,7 +5328,7 @@ class RelatedManager(list):
 
         Args:
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+            **kwargs: dictionary of attribute name/value pairs to find matching
                 object or create new object
 
         Returns:
@@ -5343,7 +5349,7 @@ class RelatedManager(list):
 
         Args:
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+            **kwargs: dictionary of attribute name/value pairs to find matching
                 objects
 
         Returns:
@@ -5373,7 +5379,7 @@ class RelatedManager(list):
 
         Args:
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
-            **kwargs (:obj:`dict` of `str`:`object`): dictionary of attribute name/value pairs to find matching
+            **kwargs: dictionary of attribute name/value pairs to find matching
                 objects
 
         Returns:
@@ -5392,8 +5398,8 @@ class RelatedManager(list):
         """ Get related object index by attribute/value pairs
 
         Args:
-            *args (:obj:`list` of :obj:`Model`): object to find
-            **kwargs (:obj:`dict` of :obj:`str`, :obj:`object`): dictionary of attribute name/value pairs to find matching objects
+            *args (:obj:`Model`): object to find
+            **kwargs: dictionary of attribute name/value pairs to find matching objects
 
         Returns:
             :obj:`int`: index of matching object

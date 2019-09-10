@@ -72,7 +72,7 @@ Related attributes can also be edited as shown below::
     new_member = Member(first_name='new', last_name='guy')
     lab.members = [new_member]
 
-*-to-many and many-to-* attribute and related attribute values are instances of :obj:`RelatedManager` which is a subclass
+\*-to-many and many-to-\* attribute and related attribute values are instances of :obj:`RelatedManager` which is a subclass
 of :obj:`set`. Thus, their values can also be edited with set methods such as `add`, `clear`, `remove`, and `update`.
 :obj:`RelatedManager` provides three additional methods:
 
