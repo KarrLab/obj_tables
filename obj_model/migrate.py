@@ -397,7 +397,7 @@ class SchemaModule(object):
         return new_module
 
     def _get_model_defs(self, module):
-        """ Obtain the `obj_model.Model`s in a module
+        """ Obtain the `obj_model.Model`\ s in a module
 
         Args:
             module (:obj:`Module`): a `Module` containing subclasses of `obj_model.Model`
@@ -454,7 +454,7 @@ class SchemaModule(object):
         return errors
 
     def run(self):
-        """ Import a schema and provide its `obj_model.Model`s
+        """ Import a schema and provide its `obj_model.Model`\ s
 
         Returns:
             :obj:`dict`: the imported Models
@@ -555,7 +555,7 @@ class Migrator(object):
         self.transformations = transformations
 
     def _load_defs_from_files(self):
-        """ Initialize a `Migrator`s schemas from files
+        """ Initialize a `Migrator`\ s schemas from files
 
         Distinct from `prepare` so most of `Migrator` can be tested with models defined in code
 
@@ -988,7 +988,7 @@ class Migrator(object):
             os.path.basename(root) + migrate_suffix + ext)
         return migrated_file
 
-    # todo: metadata: unittest
+    # todo: unittest
     def write_migrated_file(self, migrated_models, model_order, existing_file, migrated_file=None,
         migrate_suffix=None, migrate_in_place=False):
         """ Write migrated models to an external representation
@@ -997,15 +997,11 @@ class Migrator(object):
 
         Args:
             migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
-            model_order (:obj:`list` of `obj_model.core.ModelMeta`:) migrated models in the order
-                they should appear in a workbook
+            model_order (:obj:`list` of `obj_model.core.ModelMeta`:) migrated models in the order they should appear in a workbook
             existing_file (:obj:`str`): pathname of file that is being migrated
-            migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
-                save migrated file with migrated suffix in same directory as source file
-            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
-                default is `Migrator.MIGRATE_SUFFIX`
-            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
-                migrated file and ignore `migrated_file` and `migrate_suffix`
+            migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided, save migrated file with migrated suffix in same directory as source file
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename; default is `Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the migrated file and ignore `migrated_file` and `migrate_suffix`
 
         Returns:
             :obj:`str`: name of migrated file
@@ -1392,7 +1388,7 @@ class Migrator(object):
 
 
 class MigrationWrapper(ABC):
-    """ Interface for classes that define a pair of methods that can modify `obj_model.Model`s being migrated
+    """ Interface for classes that define a pair of methods that can modify `obj_model.Model`\ s being migrated
 
     `MigrationWrapper` defines the interface used by `transformations`. If it's defined, `transformations`
     uses `prepare_existing_models()` to modify existing models just before they are migrated and uses
@@ -1538,7 +1534,7 @@ class MigrationSpec(object):
 
     @classmethod
     def load(cls, migrations_config_file):
-        """ Create a list of validated and standardized `MigrationSpec`s from a migrations configuration file
+        """ Create a list of validated and standardized `MigrationSpec`\ s from a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
@@ -1565,7 +1561,7 @@ class MigrationSpec(object):
 
     @staticmethod
     def get_migrations_config(migrations_config_file):
-        """ Create a list of `MigrationSpec`s from a migrations configuration file
+        """ Create a list of `MigrationSpec`\ s from a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
@@ -2737,7 +2733,7 @@ class DataSchemaMigration(object):
         migration_specs (:obj:`MigrationSpec`): the migration's specification
         io_classes (:obj:`dict` of :obj:`type`, optional): custom schema repo specific reader and/or
             writer for I/O of existing and migrated files, respectively
-        git_repos (:obj:`list` of :obj:`GitRepo`): all `GitRepo`s create by this `DataSchemaMigration`
+        git_repos (:obj:`list` of :obj:`GitRepo`): all `GitRepo`\ s create by this `DataSchemaMigration`
     """
 
     # name of the migrations directory
@@ -3437,7 +3433,7 @@ class CementControllers(object):
 
 
     class DataSchemaMigrationConfigController(Controller):
-        """ Create a data-schema migration configuration file
+        """ Create a data-schema migration configuration file.
 
         This controller is used by data repos.
         """
