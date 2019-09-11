@@ -53,7 +53,8 @@ class ConvertController(cement.Controller):
     def _default(self):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file)
-        objs = io.WorkbookReader().run(args.in_wb_file, models=models, group_objects_by_model=False)
+        objs = io.WorkbookReader().run(args.in_wb_file, models=models, group_objects_by_model=False,
+                                       ignore_sheet_order=True)
         io.WorkbookWriter().run(args.out_wb_file, objs, models=models)
         print('Workbook saved to {}'.format(args.out_wb_file))
 
@@ -81,8 +82,8 @@ class DiffController(cement.Controller):
     def _default(self):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file)
-        objs1 = io.WorkbookReader().run(args.wb_file_1, models=models)
-        objs2 = io.WorkbookReader().run(args.wb_file_2, models=models)
+        objs1 = io.WorkbookReader().run(args.wb_file_1, models=models, ignore_sheet_order=True)
+        objs2 = io.WorkbookReader().run(args.wb_file_2, models=models, ignore_sheet_order=True)
 
         for model in models:
             if model.__name__ == args.model:
@@ -162,7 +163,7 @@ class GenTemplateController(cement.Controller):
     def _default(self):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file)
-        io.WorkbookWriter().run(args.template_file, [], models=models)
+        io.WorkbookWriter().run(args.template_file, [], models=models, extra_entries=10)
         print('Template saved to {}'.format(args.template_file))
 
 
@@ -195,7 +196,8 @@ class NormalizeController(cement.Controller):
         if model.__name__ != args.model:
             raise SystemExit('Workbook does not have model "{}"'.format(args.model))
 
-        objs = io.WorkbookReader().run(args.in_wb_file, models=models, group_objects_by_model=False)
+        objs = io.WorkbookReader().run(args.in_wb_file, models=models, group_objects_by_model=False,
+                                       ignore_sheet_order=True)
         for obj in objs:
             if isinstance(obj, model):
                 obj.normalize()
@@ -223,7 +225,8 @@ class ValidateController(cement.Controller):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file)
         try:
-            io.WorkbookReader().run(args.wb_file, models=models, group_objects_by_model=False)
+            io.WorkbookReader().run(args.wb_file, models=models, group_objects_by_model=False,
+                                    ignore_sheet_order=True)
         except ValueError as err:
             raise SystemExit(str(err))
         print('Workbook {} is valid'.format(args.wb_file))
