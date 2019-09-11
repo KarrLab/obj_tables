@@ -25,8 +25,8 @@ setuptools.setup(
     url='https://github.com/KarrLab/' + name,
     download_url='https://github.com/KarrLab/' + name,
 
-    author='Jonathan Karr',
-    author_email='karr@mssm.edu',
+    author='Karr Lab',
+    author_email='info@karrlab.org',
 
     license='MIT',
 
@@ -41,19 +41,22 @@ setuptools.setup(
 
         'License :: OSI Approved :: MIT License',
 
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
 
     keywords='object model, schema',
 
-    # packages not prepared yet
     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
     package_data={
         name: [
             'VERSION',
+        ],
+    },
+
+    entry_points={
+        'console_scripts': [
+            'obj-model = obj_model.__main__:main',
         ],
     },
 

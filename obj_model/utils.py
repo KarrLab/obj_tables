@@ -16,10 +16,58 @@ import collections
 from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
                             InvalidObject, Validator, TabularOrientation)
 from wc_utils.util import git
+import importlib
 import obj_model.io
 import os.path
+import random
+import string
 import types
 import wc_utils.workbook.io
+
+
+def get_schema(path, name=None):
+    """ Get a Python schema
+
+    Args:        
+        path (:obj:`str`): path to Python schema
+        name (:obj:`str`, optional): Python name for schema module
+
+    Returns:
+        :obj:`types.ModuleType`: schema
+    """
+    name = name or rand_schema_name()
+    loader = importlib.machinery.SourceFileLoader(name, path)
+    schema = loader.load_module()
+    return schema
+
+
+def rand_schema_name(len=8):
+    """ Generate a random Python module name of a schema
+
+    Args:
+        len (:obj:`int`, optional): length of random name
+
+    Returns:
+        :obj:`str`: random name for schema
+    """
+    return 'schema_' + ''.join(random.choice(string.ascii_lowercase) for i in range(len))
+
+
+def get_models(module):
+    """ Get the models in a module
+
+    Args:
+        module (:obj:`types.ModuleType`): module
+
+    Returns:
+        :obj:`dict` of :obj:`str`\ : :obj:`Model`: dictionary that maps the names of models to models
+    """
+    models = {}
+    for attr_name in dir(module):
+        attr = getattr(module, attr_name)
+        if isinstance(attr, type) and issubclass(attr, Model):
+            models[attr_name] = attr
+    return models
 
 
 def get_related_models(root_model, include_root_model=False):
@@ -345,7 +393,7 @@ def get_attrs():
     return attr_names
 
 
-def gen_schema(filename, out_filename=None):
+def gen_schema(filename, name=None, out_filename=None):
     """ Generate an `obj_model` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
 
@@ -362,11 +410,26 @@ def gen_schema(filename, out_filename=None):
         out_filename (:obj:`str`, optional): path to save schema
 
     Returns:
-        :obj:`dict`: dictionary of classes
+        :obj:`types.ModuleType`: module with classes
+
+    Raises:
+        :obj:`ValueError`: if schema specification is not in a supported format or 
+            the schema specification is invalid
     """
     base, ext = os.path.splitext(filename)
-    wb = wc_utils.workbook.io.read(filename.replace(ext, '*' + ext))
-    ws = wb['']
+    if ext in ['.xlsx']:
+        schema_sheet_name = 'Schema'
+    elif ext in ['.csv', '.tsv']:
+        if '*' in filename:
+            schema_sheet_name = 'Schema'
+        else:
+            schema_sheet_name = ''
+            filename = filename.replace(ext, '*' + ext)
+    else:
+        raise ValueError('{} format is not supported'.format(ext))
+
+    wb = wc_utils.workbook.io.read(filename)
+    ws = wb[schema_sheet_name]
 
     cls_specs = {}
     for row in ws[1:]:
@@ -405,10 +468,12 @@ def gen_schema(filename, out_filename=None):
         }
         cls['attr_order'].append(attr_name)
 
-    clses = {}
+    module_name = name or rand_schema_name()
+    module = type(module_name, (types.ModuleType, ), {})
     all_attrs = get_attrs()
     for cls_spec in cls_specs.values():
         attrs = {
+            '__module__': module_name,
             '__doc__': cls_spec['desc'],
             'Meta': type('Meta', (Model.Meta, ), {
                 'attribute_order': tuple(cls_spec['attr_order']),
@@ -426,7 +491,8 @@ def gen_schema(filename, out_filename=None):
             attr.help = attr_spec['desc']
             attrs[attr_spec['name']] = attr
 
-        clses[cls_spec['name']] = type(cls_spec['name'], (Model, ), attrs)
+        cls = type(cls_spec['name'], (Model, ), attrs)
+        setattr(module, cls_spec['name'], cls)
 
     if out_filename:
         with open(out_filename, 'w') as file:
@@ -434,38 +500,36 @@ def gen_schema(filename, out_filename=None):
                 datetime.now()))
 
             file.write('import obj_model\n')
-            modules = set()
+            obj_model_modules = set()
             for cls_spec in cls_specs.values():
                 for attr_spec in cls_spec['attrs'].values():
-                    modules.add(attr_spec['type'].rpartition('.')[0])
-            if '' in modules:
-                modules.remove('')
-            for module in modules:
-                file.write('import obj_model.{}\n'.format(module))
+                    obj_model_modules.add(attr_spec['type'].rpartition('.')[0])
+            if '' in obj_model_modules:
+                obj_model_modules.remove('')
+            for obj_model_module in obj_model_modules:
+                file.write('import obj_model.{}\n'.format(obj_model_module))
 
-            for cls in clses.values():
+            for cls_spec in cls_specs.values():
                 file.write('\n')
                 file.write('\n')
-                file.write('class {}(obj_model.Model):\n'.format(cls.__name__))
-                if cls.__doc__:
-                    file.write('    """ {} """\n\n'.format(cls.__doc__))
-                for attr_name in cls.Meta.attribute_order:
-                    attr = cls.Meta.attributes[attr_name]
-                    _, _, args = cls_specs[cls.__name__]['attrs'][attr_name]['type'].partition('(')
-                    if args:
-                        args, _, _ = args.rpartition(')')
-                    attr_module = attr.__module__
-                    if attr_module == 'obj_model.core':
-                        attr_module = 'obj_model'
-                    file.write('    {} = {}.{}({})\n'.format(attr.name,
-                                                             attr_module, attr.__class__.__name__, args))
+                file.write('class {}(obj_model.Model):\n'.format(cls_spec['name']))
+                if cls_spec['desc']:
+                    file.write('    """ {} """\n\n'.format(cls_spec['desc']))
+                for attr_name in cls_spec['attr_order']:
+                    attr_spec = cls_spec['attrs'][attr_name]
+                    attr_type = attr_spec['type']
+                    if '(' in attr_type:
+                        attr_type = attr_type.replace('(', 'Attribute(', 1)
+                    else:
+                        attr_type += 'Attribute()'
+                    file.write('    {} = obj_model.{}\n'.format(attr_spec['name'], attr_type))
 
                 file.write('\n')
                 file.write('    class Meta(obj_model.Model.Meta):\n')
                 file.write("        attribute_order = ('{}',)\n".format(
-                    "', '".join(cls.Meta.attribute_order)
+                    "', '".join(cls_spec['attr_order'])
                 ))
-                if cls.Meta.help:
-                    file.write("        help = '{}'\n".format(cls.Meta.help.replace("'", "\'")))
+                if cls_spec['desc']:
+                    file.write("        help = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
 
-    return clses
+    return module

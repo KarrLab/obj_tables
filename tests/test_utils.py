@@ -8,13 +8,13 @@
 """
 from six import string_types
 import git
-import importlib
 import obj_model.io
 import os
 import shutil
 import sys
 import tempfile
 import unittest
+import wc_utils.workbook.io
 from obj_model import core, utils
 from obj_model.utils import DataRepoMetadata, SchemaRepoMetadata
 from wc_utils.util.git import GitHubRepoForTests, RepoMetadataCollectionType
@@ -360,33 +360,28 @@ class TestMetadata(unittest.TestCase):
 class GenSchemaTestCase(unittest.TestCase):
     def setUp(self):
         self.tmp_dirname = tempfile.mkdtemp()
-        sys.path.insert(0, self.tmp_dirname)
 
     def tearDown(self):
-        sys.path.remove(self.tmp_dirname)
         shutil.rmtree(self.tmp_dirname)
 
-    def test(self):
+    def test_get_models(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        clses = utils.gen_schema('tests/fixtures/schema.csv',
-                                 out_filename=out_filename)
+        schema = utils.gen_schema('tests/fixtures/schema.csv',
+                                  out_filename=out_filename)
+        self.assertEqual(sorted(utils.get_models(schema).keys()), ['Child', 'Parent'])
 
-        p_0 = clses['Parent'](id='p_0')
-        p_0.children.create(id='c_0')
-        p_0.children.create(id='c_1')
+        schema = utils.get_schema(out_filename)
+        self.assertEqual(sorted(utils.get_models(schema).keys()), ['Child', 'Parent'])
 
-        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
-            filename, [p_0],
-            models=[clses['Parent'], clses['Child']])
-        p_0_b = obj_model.io.WorkbookReader().run(
-            filename,
-            models=[clses['Parent'], clses['Child']])[clses['Parent']][0]
+    def test_rand_schema_name(self):
+        name = utils.rand_schema_name(len=8)
+        self.assertTrue(name.startswith('schema_'))
+        self.assertEqual(len(name), len('schema_') + 8)
 
-        self.assertTrue(p_0_b.is_equal(p_0))
-
-        # import module and test
-        schema = importlib.import_module('schema')
+    def test_gen_schema(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.gen_schema('tests/fixtures/schema.csv',
+                                  out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
@@ -402,7 +397,115 @@ class GenSchemaTestCase(unittest.TestCase):
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
-    def test_errors(self):
+        # import module and test
+        schema = utils.get_schema(out_filename)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child])
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+    def test_gen_schema_from_excel(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema_csv = 'tests/fixtures/schema*.csv'
+        schema_xl = 'tests/fixtures/schema.xlsx'
+
+        wb = wc_utils.workbook.io.read(schema_csv)
+        wb['Schema'] = wb.pop('')
+        wc_utils.workbook.io.write(schema_xl, wb)
+
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.gen_schema(schema_xl,
+                                  out_filename=out_filename)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child])
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+        # import module and test
+        schema = utils.get_schema(out_filename)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child])
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+    def test_gen_schema_from_csv_workbook(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema_csv = 'tests/fixtures/schema*.csv'
+        schema_csv_wb = 'tests/fixtures/schema-*.csv'
+
+        wb = wc_utils.workbook.io.read(schema_csv)
+        wb['Schema'] = wb.pop('')
+        wc_utils.workbook.io.write(schema_csv_wb, wb)
+
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.gen_schema(schema_csv_wb,
+                                  out_filename=out_filename)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child])
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+        # import module and test
+        schema = utils.get_schema(out_filename)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child])
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+    def test_gen_schema_errors(self):
+        with self.assertRaisesRegex(ValueError, 'format is not supported'):
+            utils.gen_schema(os.path.join(self.tmp_dirname, 'schema.txt'))
+
         filename = os.path.join(self.tmp_dirname, 'schema.csv')
         col_headings = [
             '!Class name',
