@@ -294,8 +294,8 @@ class ModelMeta(type):
                 if isinstance(attr.related_class, string_types):
                     related_class_name = attr.related_class
                     if '.' not in related_class_name:
-                        related_class_name = namespace[
-                            '__module__'] + '.' + related_class_name
+                        related_class_name = namespace.get(
+                            '__module__', '') + '.' + related_class_name
 
                     related_class = get_model(related_class_name)
                 else:

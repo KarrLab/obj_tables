@@ -8,14 +8,18 @@
 """
 
 from __future__ import unicode_literals
+from datetime import datetime
 from itertools import chain
 from pathlib import Path
 from random import shuffle
 import collections
 from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
-    InvalidObject, Validator, TabularOrientation)
+                            InvalidObject, Validator, TabularOrientation)
 from wc_utils.util import git
-import obj_model
+import obj_model.io
+import os.path
+import types
+import wc_utils.workbook.io
 
 
 def get_related_models(root_model, include_root_model=False):
@@ -239,22 +243,22 @@ def read_metadata_from_file(pathname):
     reader = obj_model.io.Reader.get_reader(pathname)
 
     metadata_instances = reader().run(pathname, [DataRepoMetadata, SchemaRepoMetadata],
-        ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True,
-        ignore_attribute_order=True)
+                                      ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True,
+                                      ignore_attribute_order=True)
     metadata_class_to_attr = {
         DataRepoMetadata: 'data_repo_metadata',
         SchemaRepoMetadata: 'schema_repo_metadata'
     }
     data_file_metadata_dict = {
         'data_repo_metadata': None,
-         'schema_repo_metadata': None
+        'schema_repo_metadata': None
     }
     for model_class, instances in metadata_instances.items():
         if len(instances) == 1:
             data_file_metadata_dict[metadata_class_to_attr[model_class]] = instances[0]
         elif 1 < len(instances):
             raise ValueError("Multiple instances of {} found in '{}'".format(model_class.__name__,
-                pathname))
+                                                                             pathname))
     return DataFileMetadata(**data_file_metadata_dict)
 
 
@@ -285,7 +289,7 @@ def add_metadata_to_file(pathname, models, schema_package=None):
     objects = obj_model.io.Reader().run(str(path), models=models)
     # write file with metadata
     obj_model.io.Writer().run(str(path), objects, models=models, data_repo_metadata=True,
-        schema_package=schema_package)
+                              schema_package=schema_package)
     return path
 
 
@@ -308,3 +312,160 @@ class DataRepoMetadata(RepoMetadata):
 class SchemaRepoMetadata(RepoMetadata):
     """ Model to store Git version info for the repo that defines the obj_model schema used by a data file """
     pass
+
+
+def get_attrs():
+    """ Get a dictionary of the defined types of attributes for use with `gen_schema`.
+
+    Returns:
+        :obj:`dict`: dictionary which maps the name of each attribute to its instance
+    """
+    attr_names = {}
+    attrs = set()
+    seen = set()
+    to_see = [(obj_model, [])]
+    while to_see:
+        module, module_path = to_see.pop()
+        seen.add(module)
+        for attr_name in dir(module):
+            attr = getattr(module, attr_name)
+            if isinstance(attr, type) and issubclass(attr, Attribute) and \
+                    attr != Attribute and \
+                    attr not in attrs:
+                assert attr_name.endswith('Attribute')
+                attrs.add(attr)
+                short_attr_name, _, _ = attr_name.rpartition('Attribute')
+                attr_names['.'.join(module_path + [short_attr_name])] = attr
+            elif not isinstance(attr, dict) and \
+                    isinstance(attr, types.ModuleType) and \
+                    attr.__package__ == 'obj_model' and \
+                    attr not in seen:
+                to_see.append((attr, module_path + [attr_name]))
+
+    return attr_names
+
+
+def gen_schema(filename, out_filename=None):
+    """ Generate an `obj_model` schema from a tabular declarative specification in
+    :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
+
+    The tabular specification should contain the following columns:
+
+    * !Class name
+    * (Optional) !Class description
+    * !Attribute name
+    * !Attribute type
+    * (Optional) !Attribute description
+
+    Args:
+        filename (:obj:`str`): path to 
+        out_filename (:obj:`str`, optional): path to save schema
+
+    Returns:
+        :obj:`dict`: dictionary of classes
+    """
+    base, ext = os.path.splitext(filename)
+    wb = wc_utils.workbook.io.read(filename.replace(ext, '*' + ext))
+    ws = wb['']
+
+    cls_specs = {}
+    for row in ws[1:]:
+        attr = {}
+        for header, cell in zip(ws[0], row):
+            attr[header] = cell
+
+        cls_name = attr['!Class name']
+        if cls_name in cls_specs:
+            cls = cls_specs[cls_name]
+        else:
+            cls = cls_specs[cls_name] = {
+                'name': cls_name,
+                'desc': None,
+                'attrs': {},
+                'attr_order': []}
+
+        cls_desc = attr.get('!Class description', None) or None
+        if cls['desc'] and cls_desc and cls['desc'] != cls_desc:
+            raise ValueError('Attribute "{}" of "{}" must have consistent class description'.format(
+                attr['!Attribute name'], cls_name))
+        elif cls_desc:
+            cls['desc'] = cls_desc
+
+        attr_name = attr['!Attribute name']
+        if attr_name == 'Meta':
+            raise ValueError('"{}" cannot have attribute with name "Meta"'.format(
+                cls_name))
+        if attr_name in cls['attrs']:
+            raise ValueError('Attribute "{}" of "{}" can only be defined once'.format(
+                attr_name, cls_name))
+        cls['attrs'][attr_name] = {
+            'name': attr_name,
+            'type': attr['!Attribute type'],
+            'desc': attr.get('!Attribute description', None),
+        }
+        cls['attr_order'].append(attr_name)
+
+    clses = {}
+    all_attrs = get_attrs()
+    for cls_spec in cls_specs.values():
+        attrs = {
+            '__doc__': cls_spec['desc'],
+            'Meta': type('Meta', (Model.Meta, ), {
+                'attribute_order': tuple(cls_spec['attr_order']),
+                'help': cls_spec['desc'],
+            }),
+        }
+        for attr_spec in cls_spec['attrs'].values():
+            attr_type_spec, _, args = attr_spec['type'].partition('(')
+            attr_type = all_attrs[attr_type_spec]
+
+            if args:
+                attr = eval('func(' + args, {}, {'func': attr_type})
+            else:
+                attr = attr_type()
+            attr.help = attr_spec['desc']
+            attrs[attr_spec['name']] = attr
+
+        clses[cls_spec['name']] = type(cls_spec['name'], (Model, ), attrs)
+
+    if out_filename:
+        with open(out_filename, 'w') as file:
+            file.write('# Schema automatically generated at {:%Y-%m-%d %H:%M:%S}\n\n'.format(
+                datetime.now()))
+
+            file.write('import obj_model\n')
+            modules = set()
+            for cls_spec in cls_specs.values():
+                for attr_spec in cls_spec['attrs'].values():
+                    modules.add(attr_spec['type'].rpartition('.')[0])
+            if '' in modules:
+                modules.remove('')
+            for module in modules:
+                file.write('import obj_model.{}\n'.format(module))
+
+            for cls in clses.values():
+                file.write('\n')
+                file.write('\n')
+                file.write('class {}(obj_model.Model):\n'.format(cls.__name__))
+                if cls.__doc__:
+                    file.write('    """ {} """\n\n'.format(cls.__doc__))
+                for attr_name in cls.Meta.attribute_order:
+                    attr = cls.Meta.attributes[attr_name]
+                    _, _, args = cls_specs[cls.__name__]['attrs'][attr_name]['type'].partition('(')
+                    if args:
+                        args, _, _ = args.rpartition(')')
+                    attr_module = attr.__module__
+                    if attr_module == 'obj_model.core':
+                        attr_module = 'obj_model'
+                    file.write('    {} = {}.{}({})\n'.format(attr.name,
+                                                             attr_module, attr.__class__.__name__, args))
+
+                file.write('\n')
+                file.write('    class Meta(obj_model.Model.Meta):\n')
+                file.write("        attribute_order = ('{}',)\n".format(
+                    "', '".join(cls.Meta.attribute_order)
+                ))
+                if cls.Meta.help:
+                    file.write("        help = '{}'\n".format(cls.Meta.help.replace("'", "\'")))
+
+    return clses

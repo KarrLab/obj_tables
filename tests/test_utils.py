@@ -8,6 +8,8 @@
 """
 from six import string_types
 import git
+import importlib
+import obj_model.io
 import os
 import shutil
 import sys
@@ -125,8 +127,8 @@ class TestUtils(unittest.TestCase):
         (root, nodes, leaves) = (self.root, self.nodes, self.leaves)
         objects = [root] + nodes + leaves
         for grouped_objects in [
-            utils.group_objects_by_model(objects),
-            utils.group_objects_by_model(objects + nodes)]:
+                utils.group_objects_by_model(objects),
+                utils.group_objects_by_model(objects + nodes)]:
             self.assertEqual(grouped_objects[Root], [root])
             self.assertEqual(set(grouped_objects[Node]), set(nodes))
             self.assertEqual(set(grouped_objects[Leaf]), set(leaves))
@@ -345,3 +347,57 @@ class TestMetadata(unittest.TestCase):
             self.assertEqual(metadata.branch, 'master')
             self.assertTrue(isinstance(metadata.revision, str))
             self.assertEqual(len(metadata.revision), 40)
+
+    def test_get_attrs(self):
+        attrs = utils.get_attrs()
+        self.assertIn('String', attrs)
+        self.assertNotIn('core.String', attrs)
+        self.assertNotIn('core.StringAttribute', attrs)
+        self.assertNotIn('StringAttribute', attrs)
+        self.assertIn('chem.EmpiricalFormula', attrs)
+
+
+class GenSchemaTestCase(unittest.TestCase):
+    def setUp(self):
+        self.tmp_dirname = tempfile.mkdtemp()
+        sys.path.insert(0, self.tmp_dirname)
+
+    def tearDown(self):
+        sys.path.remove(self.tmp_dirname)
+        shutil.rmtree(self.tmp_dirname)
+
+    def test(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        clses = utils.gen_schema('tests/fixtures/schema.csv',
+                                 out_filename=out_filename)
+
+        p_0 = clses['Parent'](id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[clses['Parent'], clses['Child']])
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[clses['Parent'], clses['Child']])[clses['Parent']][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+        # import module and test
+        schema = importlib.import_module('schema')
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child])
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
