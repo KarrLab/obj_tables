@@ -401,3 +401,33 @@ class GenSchemaTestCase(unittest.TestCase):
             models=[schema.Parent, schema.Child])[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
+
+    def test_errors(self):
+        filename = os.path.join(self.tmp_dirname, 'schema.csv')
+        col_headings = [
+            '!Class name',
+            '!Class description',
+            '!Attribute name',
+            '!Attribute type',
+            '!Attribute description',
+        ]
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1-1', 'attr1', 'String', 'attr1'])))
+            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1-2', 'attr2', 'String', 'attr2'])))
+        with self.assertRaisesRegex(ValueError, 'must have consistent class description'):
+            utils.gen_schema(filename)
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1-1', 'Meta', 'String', 'Meta'])))
+        with self.assertRaisesRegex(ValueError, 'cannot have attribute with name "Meta"'):
+            utils.gen_schema(filename)
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1', 'attr1', 'String', 'attr1'])))
+            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1', 'attr1', 'String', 'attr2'])))
+        with self.assertRaisesRegex(ValueError, 'can only be defined once'):
+            utils.gen_schema(filename)
