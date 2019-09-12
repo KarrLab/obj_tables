@@ -65,12 +65,12 @@ class TestCli(unittest.TestCase):
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
         p_0.children.create(id='c_1')
-        io.WorkbookWriter().run(xl_file_1, [p_0], models=models)
+        io.WorkbookWriter().run(xl_file_1, [p_0], models=models, sbtab=True)
         csv_file_2 = os.path.join(self.tempdir, 'file2-*.csv')
         with __main__.App(argv=['convert', csv_file, xl_file_1, csv_file_2, '--sbtab']) as app:
             app.run()
 
-        p_0_b = io.WorkbookReader().run(csv_file_2, models=models)[schema.Parent][0]
+        p_0_b = io.WorkbookReader().run(csv_file_2, models=models, sbtab=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
     def test_diff(self):
@@ -85,20 +85,20 @@ class TestCli(unittest.TestCase):
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0', name='c_0')
         p_0.children.create(id='c_1', name='c_1')
-        io.WorkbookWriter().run(xl_file_1, [p_0], models=models)
+        io.WorkbookWriter().run(xl_file_1, [p_0], models=models, sbtab=True)
 
         xl_file_2 = os.path.join(self.tempdir, 'file2.xlsx')
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0', name='c_0')
         p_0.children.create(id='c_1', name='c_0')
-        io.WorkbookWriter().run(xl_file_2, [p_0], models=models)
+        io.WorkbookWriter().run(xl_file_2, [p_0], models=models, sbtab=True)
 
         xl_file_3 = os.path.join(self.tempdir, 'file3.xlsx')
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0', name='c_0')
         p_0.children.create(id='c_1', name='c_1')
         p_0.children.create(id='c_2', name='c_2')
-        io.WorkbookWriter().run(xl_file_3, [p_0], models=models)
+        io.WorkbookWriter().run(xl_file_3, [p_0], models=models, sbtab=True)
 
         with __main__.App(argv=['diff', csv_file, 'Parent', xl_file_1, xl_file_1, '--sbtab']) as app:
             app.run()
@@ -139,7 +139,9 @@ class TestCli(unittest.TestCase):
             app.run()
         schema = utils.get_schema(py_file)
 
-        objs = obj_model.io.WorkbookReader().run(xl_file, models=list(utils.get_models(schema).values()))
+        objs = io.WorkbookReader().run(xl_file,
+                                       models=list(utils.get_models(schema).values()),
+                                       sbtab=True)
         self.assertEqual(objs, {
             schema.Parent: [],
             schema.Child: [],
@@ -148,8 +150,9 @@ class TestCli(unittest.TestCase):
         csv_file = os.path.join(self.tempdir, 'file-*.xlsx')
         with __main__.App(argv=['gen-template', py_file, csv_file, '--sbtab']) as app:
             app.run()
-        objs = obj_model.io.WorkbookReader().run(csv_file, models=list(utils.get_models(schema).values()),
-                                                 group_objects_by_model=False)
+        objs = io.WorkbookReader().run(csv_file, models=list(utils.get_models(schema).values()),
+                                       group_objects_by_model=False,
+                                       sbtab=True)
         self.assertEqual(objs, None)
 
     def test_normalize(self):
@@ -164,13 +167,15 @@ class TestCli(unittest.TestCase):
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
         p_0.children.create(id='c_1')
-        io.WorkbookWriter().run(xl_file_1, [p_0], models=models)
+        io.WorkbookWriter().run(xl_file_1, [p_0], models=models, sbtab=True)
 
         xl_file_2 = os.path.join(self.tempdir, 'file2.xlsx')
         with __main__.App(argv=['normalize', csv_file, 'Parent', xl_file_1, xl_file_2, '--sbtab']) as app:
             app.run()
 
-        p_0_b = obj_model.io.WorkbookReader().run(xl_file_2, models=models)[schema.Parent][0]
+        p_0_b = io.WorkbookReader().run(xl_file_2,
+                                        models=models,
+                                        sbtab=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         with self.assertRaises(SystemExit):
@@ -189,7 +194,7 @@ class TestCli(unittest.TestCase):
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
         p_0.children.create(id='c_1')
-        io.WorkbookWriter().run(xl_file_1, [p_0], models=models)
+        io.WorkbookWriter().run(xl_file_1, [p_0], models=models, sbtab=True)
         with __main__.App(argv=['validate', csv_file, xl_file_1, '--sbtab']) as app:
             app.run()
 

@@ -424,9 +424,11 @@ class WorkbookWriter(WriterBase):
             extra_entries (:obj:`int`, optional): additional entries to display
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
-        attrs, _, headings, merge_ranges, field_validations = get_fields(model,
-                                                                         include_all_attributes=include_all_attributes,
-                                                                         sheet_models=sheet_models)
+        attrs, _, headings, merge_ranges, field_validations, ws_metadata = get_fields(
+            model,
+            include_all_attributes=include_all_attributes,
+            sheet_models=sheet_models,
+            sbtab=sbtab)
 
         # objects
         model.sort(objects)
@@ -458,9 +460,9 @@ class WorkbookWriter(WriterBase):
         validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.tabular_orientation.name],
                                          fields=field_validations)
 
-        self.write_sheet(writer, model, data, headings, validation, extra_entries=extra_entries, merge_ranges=merge_ranges)
+        self.write_sheet(writer, model, data, headings, ws_metadata, validation, extra_entries=extra_entries, merge_ranges=merge_ranges)
 
-    def write_sheet(self, writer, model, data, headings, validation, extra_entries=0, merge_ranges=None):
+    def write_sheet(self, writer, model, data, headings, ws_metadata, validation, extra_entries=0, merge_ranges=None):
         """ Write data to sheet
 
         Args:
@@ -468,6 +470,8 @@ class WorkbookWriter(WriterBase):
             model (:obj:`type`): model
             data (:obj:`list` of :obj:`list` of :obj:`object`): list of list of cell values
             headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headingsvalidations
+            ws_metadata (:obj:`list` of :obj:`list` of :obj:`str`): worksheet metadata (name, description)
+                to print at the top of the worksheet
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
             merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
@@ -478,22 +482,24 @@ class WorkbookWriter(WriterBase):
             row_headings = []
             column_headings = headings
             style.auto_filter = True
+            style.head_rows = len(ws_metadata) + len(column_headings)
             if merge_ranges:
-                style.merge_ranges = merge_ranges
-                style.head_rows = 2
+                style.merge_ranges = merge_ranges                
             else:
                 style.merge_ranges = []
         else:
             sheet_name = model.Meta.verbose_name
-            row_headings = headings
-            column_headings = []
             data = transpose(data)
             style.auto_filter = False
+            row_headings = headings
+            column_headings = []
+            style.head_rows = len(ws_metadata)
+            style.head_columns = len(row_headings)            
             if merge_ranges:
-                style.merge_ranges = [(start_col, start_row, end_col, end_row)
+                n = len(ws_metadata)
+                style.merge_ranges = [(start_col + n, start_row - n, end_col + n, end_row - n)
                                       for start_row, start_col, end_row, end_col in merge_ranges]
-                style.head_columns = 2
-            else:
+            else:                
                 style.merge_ranges = []
 
         # merge data, headings
@@ -512,7 +518,7 @@ class WorkbookWriter(WriterBase):
                 column_heading.insert(
                     0, None)  # pragma: no cover # unreachable because row_headings and column_headings cannot both be non-empty
 
-        content = column_headings + data
+        content = ws_metadata + column_headings + data
 
         # write content to worksheet
         writer.write_worksheet(sheet_name, content, style=style, validation=validation)
@@ -1043,13 +1049,14 @@ class WorkbookReader(ReaderBase):
             return ([], [], None, [])
 
         # get worksheet
-        exp_attrs, exp_sub_attrs, exp_headings, _, _ = get_fields(model, include_all_attributes=include_all_attributes)
+        exp_attrs, exp_sub_attrs, exp_headings, _, _, _ = get_fields(
+            model, include_all_attributes=include_all_attributes, sbtab=sbtab)
         if model.Meta.tabular_orientation == TabularOrientation.row:
             data, _, headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=len(
-                exp_headings), ignore_empty_rows=ignore_empty_rows)
+                exp_headings), ignore_empty_rows=ignore_empty_rows, sbtab=sbtab)
         else:
             data, headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=len(
-                exp_headings), ignore_empty_cols=ignore_empty_rows)
+                exp_headings), ignore_empty_cols=ignore_empty_rows, sbtab=sbtab)
             data = transpose(data)
         if len(exp_headings) == 1:
             group_headings = [None] * len(headings[-1])
@@ -1208,7 +1215,7 @@ class WorkbookReader(ReaderBase):
         return (sub_attrs, data, errors, objects)
 
     def read_sheet(self, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0,
-                   ignore_empty_rows=False, ignore_empty_cols=False):
+                   ignore_empty_rows=False, ignore_empty_cols=False, sbtab=False):
         """ Read worksheet or file into a two-dimensional list
 
         Args:
@@ -1218,6 +1225,7 @@ class WorkbookReader(ReaderBase):
             num_column_heading_rows (:obj:`int`, optional): number of rows of column headings
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             ignore_empty_cols (:obj:`bool`, optional): if :obj:`True`, ignore empty columns
+            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`tuple`:
@@ -1230,23 +1238,12 @@ class WorkbookReader(ReaderBase):
         """
         data = reader.read_worksheet(sheet_name)
 
-        def remove_empty_rows(data):
-            for row in list(data):
-                empty = True
-                for cell in row:
-                    if cell not in ['', None]:
-                        empty = False
-                        break
-                if empty:
-                    data.remove(row)
-
-        if ignore_empty_rows:
-            remove_empty_rows(data)
-
-        if ignore_empty_cols:
-            data = transpose(data)
-            remove_empty_rows(data)
-            data = transpose(data)
+        # strip out rows with table name and description
+        for row in list(data):
+            if row and ((isinstance(row[0], str) and row[0].startswith('!!')) or all(cell in ['', None] for cell in row)):
+                data.remove(row)
+            else:
+                break
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1271,6 +1268,25 @@ class WorkbookReader(ReaderBase):
 
             for column_heading in column_headings:
                 column_heading.pop(0)  # pragma: no cover # unreachable because row_headings and column_headings cannot both be non-empty
+
+        # remove empty rows and columns
+        def remove_empty_rows(data):
+            for row in list(data):
+                empty = True
+                for cell in row:
+                    if cell not in ['', None]:
+                        empty = False
+                        break
+                if empty:
+                    data.remove(row)
+
+        if ignore_empty_rows:
+            remove_empty_rows(data)
+
+        if ignore_empty_cols:
+            data = transpose(data)
+            remove_empty_rows(data)
+            data = transpose(data)
 
         return (data, row_headings, column_headings)
 
@@ -1540,8 +1556,8 @@ def convert(source, destination, models,
         kwargs['ignore_extra_attributes'] = ignore_extra_attributes
         kwargs['ignore_attribute_order'] = ignore_attribute_order
         kwargs['ignore_empty_rows'] = ignore_empty_rows
-        kwargs['sbtab'] = sbtab
-    objects = reader.run(source, models=models, group_objects_by_model=False, **kwargs)
+    objects = reader.run(source, models=models, group_objects_by_model=False, 
+        sbtab=sbtab, **kwargs)
 
     writer.run(destination, objects, models=models, get_related=False, sbtab=sbtab)
 
@@ -1573,7 +1589,8 @@ def create_template(path, models, title=None, description=None, keywords=None,
                                   sbtab=sbtab)
 
 
-def get_fields(cls, include_all_attributes=True, sheet_models=None):
+def get_fields(cls, include_all_attributes=True, sheet_models=None,
+               sbtab=False):
     """ Get the attributes, headings, and validation for a worksheet
 
     Args:
@@ -1582,6 +1599,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None):
             not explictly included in `Model.Meta.attribute_order`
         sheet_models (:obj:`list` of :obj:`Model`, optional): list of models encoded as separate worksheets; used
             to setup Excel validation for related attributes
+        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab formatting
 
     Returns:
         :obj:`tuple`:
@@ -1617,9 +1635,17 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None):
             * :obj:`list`: field headings
             * :obj:`list`: list of field headings to merge
             * :obj:`list`: list of field validations
+            * :obj:`list` of :obj:`list` :obj:`str`: worksheet metadata (name and description) 
+                to print at the top of the worksheet
     """
     # attribute order
     attrs = get_ordered_attributes(cls, include_all_attributes=include_all_attributes)
+
+    # worksheet metadata
+    ws_metadata = [['!! ' + cls.Meta.verbose_name_plural]]
+    if cls.Meta.help:
+        ws_metadata.append(['!! ' + cls.Meta.help])
+    ws_metadata.append([None])
 
     # column labels
     sub_attrs = []
@@ -1629,6 +1655,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None):
     merge_ranges = []
     field_validations = []
 
+    i_row = len(ws_metadata)
     i_col = 0
     for attr in attrs:
         if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells:
@@ -1637,7 +1664,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None):
             has_group_headings = True
             group_headings.extend([attr.verbose_name] * len(this_sub_attrs))
             attr_headings.extend([sub_attr.verbose_name for sub_attr in this_sub_attrs])
-            merge_ranges.append((0, i_col, 0, i_col + len(this_sub_attrs) - 1))
+            merge_ranges.append((i_row, i_col, i_row, i_col + len(this_sub_attrs) - 1))
             i_col += len(this_sub_attrs)
             field_validations.extend([sub_attr.get_excel_validation(sheet_models=sheet_models) for sub_attr in this_sub_attrs])
         else:
@@ -1662,7 +1689,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None):
         headings.append(group_headings)
     headings.append(attr_headings)
 
-    return (attrs, sub_attrs, headings, merge_ranges, field_validations)
+    return (attrs, sub_attrs, headings, merge_ranges, field_validations, ws_metadata)
 
 
 def get_ordered_attributes(cls, include_all_attributes=True):
