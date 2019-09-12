@@ -1,9 +1,9 @@
 !Name,!Type,!Parent,!Format,!Description
-Parent,Class,,column,Represents a parent
+Parent,Class,,row,Represents a parent
 Id,Attribute,Parent,Slug,Identifier
 Name,Attribute,Parent,String,Name
 Id,Attribute,Child,Slug,Identifier
 Name,Attribute,Child,String,Name
 Parents,Attribute,Child,"ManyToMany('Parent', related_name='children')",Parents
 Formula,Attribute,Child,chem.EmpiricalFormula,Empirical formula
-Child,Class,,column,Represents a child
+Child,Class,,row,Represents a child

@@ -454,7 +454,7 @@ def init_schema(filename, name=None, out_filename=None):
             if row['!Parent']:
                 raise ValueError('Class "{}" cannot have a parent'.format(cls_name))
 
-            cls['tab_orientation'] = TabularOrientation[row['!Format'] or 'column']
+            cls['tab_orientation'] = TabularOrientation[row['!Format'] or 'row']
 
             def_verbose_name = '!' + cls_name
             def_verbose_name_plural = '!' + cls_name
@@ -471,7 +471,7 @@ def init_schema(filename, name=None, out_filename=None):
                     'name': cls_name,
                     'attrs': {},
                     'attr_order': [],
-                    'tab_orientation': TabularOrientation.column,
+                    'tab_orientation': TabularOrientation.row,
                     'verbose_name': None,
                     'verbose_name_plural': None,
                     'desc': None,
