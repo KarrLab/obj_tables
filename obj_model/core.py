@@ -149,14 +149,21 @@ class ModelMeta(type):
         return cls
 
     @classmethod
-    def validate_meta(metacls, name, bases, namespace):
-        if namespace['Meta'].verbose_name == 'Table of contents':
-            raise ValueError('Verbose name for {} cannot be "Table of contents", '
-                             'which is reserved for the table of contents'.format(name))
+    def validate_meta(metacls, name, bases, namespace, sbtab=False):
+        if sbtab:
+            reversed_names = ['!!!README']
+        else:
+            reversed_names = ['Table of contents']
 
-        if namespace['Meta'].verbose_name_plural == 'Table of contents':
-            raise ValueError('Plural verbose name for {} cannot be "Table of contents", '
-                             'which is reserved for the table of contents'.format(name))
+        if namespace['Meta'].verbose_name in reversed_names:
+            raise ValueError('Verbose name for {} cannot be {}, '
+                             'which is reserved for the table of contents'.format(
+                                 name, ', '.join('"' + n + '"' for n in reversed_names)))
+
+        if namespace['Meta'].verbose_name_plural in reversed_names:
+            raise ValueError('Plural verbose name for {} cannot be {}, '
+                             'which is reserved for the table of contents'.format(
+                                 name, ', '.join('"' + n + '"' for n in reversed_names)))
 
     @classmethod
     def validate_attributes(metacls, name, bases, namespace):
@@ -7589,6 +7596,5 @@ class ObjModelWarning(UserWarning):
 class SchemaWarning(ObjModelWarning):
     """ Schema warning """
     pass
-
 
 from . import expression

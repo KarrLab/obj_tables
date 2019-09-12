@@ -394,19 +394,25 @@ def get_attrs():
     return attr_names
 
 
-def init_schema(filename, name=None, out_filename=None):
+def init_schema(filename, name=None, out_filename=None, sbtab=False):
     """ Initialize an `obj_model` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
 
     The tabular specification should contain the following columns:
 
-    * !Name
-    * !Type
-    * !Parent
-    * !Format
-    * (Optional) !Verbose name
-    * (Optional) !Verbose name plural
-    * (Optional) !Description
+    .. table:: Computational prediction tools that can generate data which can be used to build, calibrate, and validate WC models.
+        :name: tab_prediction_tools
+
+        ===================  ==================  ========
+        Default              SBtab               Optional
+        ===================  ==================  ========
+        Name                 !Name                       
+        Type                 !Type                       
+        Parent               !IsPartOf                   
+        Format               !Format                     
+        Verbose name         !VerboseName        Y       
+        Verbose name plural  !VerboseNamePlural  Y       
+        Description          !Description        Y        
 
     Args:
         filename (:obj:`str`): path to 
@@ -421,10 +427,14 @@ def init_schema(filename, name=None, out_filename=None):
     """
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
-        schema_sheet_name = '!Schema'
+        schema_sheet_name = 'Schema'
+        if sbtab:
+            schema_sheet_name = '!!!' + schema_sheet_name
     elif ext in ['.csv', '.tsv']:
         if '*' in filename:
-            schema_sheet_name = '!Schema'
+            schema_sheet_name = 'Schema'
+            if sbtab:
+                schema_sheet_name = '!!!' + schema_sheet_name
         else:
             schema_sheet_name = ''
             filename = filename.replace(ext, '*' + ext)
@@ -434,14 +444,31 @@ def init_schema(filename, name=None, out_filename=None):
     wb = wc_utils.workbook.io.read(filename)
     ws = wb[schema_sheet_name]
 
+    if sbtab:
+        name_col_name = '!ComponentName'
+        type_col_name = '!ComponentType'
+        parent_col_name = '!IsPartOf'
+        format_col_name = '!Format'    
+        verbose_name_col_name = '!VerboseName'
+        verbose_name_plural_col_name = '!VerboseNamePlural'
+        desc_col_name = '!Description'
+    else:
+        name_col_name = 'Name'
+        type_col_name = 'Type'
+        parent_col_name = 'Parent'
+        format_col_name = 'Format'    
+        verbose_name_col_name = 'Verbose name'
+        verbose_name_plural_col_name = 'Verbose name plural'
+        desc_col_name = 'Description'
+
     cls_specs = {}
     for row_list in ws[1:]:
         row = {}
         for header, cell in zip(ws[0], row_list):
             row[header] = cell
 
-        if row['!Type'] == 'Class':
-            cls_name = row['!Name']
+        if row[type_col_name] == 'Class':
+            cls_name = row[name_col_name]
             if cls_name in cls_specs:
                 cls = cls_specs[cls_name]
             else:
@@ -451,19 +478,23 @@ def init_schema(filename, name=None, out_filename=None):
                     'attr_order': [],
                 }
 
-            if row['!Parent']:
+            if row[parent_col_name]:
                 raise ValueError('Class "{}" cannot have a parent'.format(cls_name))
 
-            cls['tab_orientation'] = TabularOrientation[row['!Format'] or 'row']
+            cls['tab_orientation'] = TabularOrientation[row[format_col_name] or 'row']
 
-            def_verbose_name = '!' + cls_name
-            def_verbose_name_plural = '!' + cls_name
-            cls['verbose_name'] = row.get('!VerboseName', def_verbose_name) or def_verbose_name
-            cls['verbose_name_plural'] = row.get('!VerboseNamePlural', def_verbose_name_plural) or def_verbose_name_plural
-            cls['desc'] = row.get('!Description', None) or None
+            if sbtab:
+                def_verbose_name = '!' + cls_name
+                def_verbose_name_plural = '!' + cls_name
+            else:
+                def_verbose_name = None
+                def_verbose_name_plural = None
+            cls['verbose_name'] = row.get(verbose_name_col_name, def_verbose_name) or def_verbose_name
+            cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, def_verbose_name_plural) or def_verbose_name_plural
+            cls['desc'] = row.get(desc_col_name, None) or None
 
-        elif row['!Type'] == 'Attribute':
-            cls_name = row['!Parent']
+        elif row[type_col_name] == 'Attribute':
+            cls_name = row[parent_col_name]
             if cls_name in cls_specs:
                 cls = cls_specs[cls_name]
             else:
@@ -477,40 +508,44 @@ def init_schema(filename, name=None, out_filename=None):
                     'desc': None,
                 }
 
-            attr_name = stringcase.snakecase(row['!Name'])
+            attr_name = stringcase.snakecase(row[name_col_name])
 
             if attr_name == 'Meta':
                 raise ValueError('"{}" cannot have attribute with name "Meta"'.format(
                     cls_name))  # pragma: no cover # unreachable because snake case is all lowercase
             if attr_name in cls['attrs']:
                 raise ValueError('Attribute "{}" of "{}" can only be defined once'.format(
-                    row['!Name'], cls_name))
+                    row[name_col_name], cls_name))
 
             cls['attrs'][attr_name] = {
                 'name': attr_name,
-                'type': row['!Format'],
-                'desc': row.get('!Description', None),
-                'verbose_name': row.get('!VerboseName', '!' + row['!Name'])
+                'type': row[format_col_name],
+                'desc': row.get(desc_col_name, None),
+                'verbose_name': row.get(verbose_name_col_name, '!' + row[name_col_name])
             }
             cls['attr_order'].append(attr_name)
 
         else:
-            raise ValueError('Type "{}" is not supported'.format(row['!Type']))
+            raise ValueError('Type "{}" is not supported'.format(row[type_col_name]))
 
     module_name = name or rand_schema_name()
     module = type(module_name, (types.ModuleType, ), {})
     all_attrs = get_attrs()
     for cls_spec in cls_specs.values():
+        meta_attrs = {
+            'tabular_orientation': cls_spec['tab_orientation'],
+            'attribute_order': tuple(cls_spec['attr_order']),
+            'help': cls_spec['desc'],
+        }
+        if cls_spec['verbose_name']:
+            meta_attrs['verbose_name'] = cls_spec['verbose_name']
+        if cls_spec['verbose_name_plural']:
+            meta_attrs['verbose_name_plural'] = cls_spec['verbose_name_plural']
+
         attrs = {
             '__module__': module_name,
             '__doc__': cls_spec['desc'],
-            'Meta': type('Meta', (Model.Meta, ), {
-                'tabular_orientation': cls_spec['tab_orientation'],
-                'attribute_order': tuple(cls_spec['attr_order']),
-                'verbose_name': cls_spec['verbose_name'],
-                'verbose_name_plural': cls_spec['verbose_name_plural'],
-                'help': cls_spec['desc'],
-            }),
+            'Meta': type('Meta', (Model.Meta, ), meta_attrs),
         }
         for attr_spec in cls_spec['attrs'].values():
             attr_type_spec, _, args = attr_spec['type'].partition('(')

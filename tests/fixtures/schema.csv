@@ -1,4 +1,4 @@
-!Name,!Type,!Parent,!Format,!Description
+!ComponentName,!ComponentType,!IsPartOf,!Format,!Description
 Parent,Class,,row,Represents a parent
 Id,Attribute,Parent,Slug,Identifier
 Name,Attribute,Parent,String,Name
