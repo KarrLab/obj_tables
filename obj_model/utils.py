@@ -21,6 +21,7 @@ import obj_model.io
 import os.path
 import random
 import string
+import stringcase
 import types
 import wc_utils.workbook.io
 
@@ -363,7 +364,7 @@ class SchemaRepoMetadata(RepoMetadata):
 
 
 def get_attrs():
-    """ Get a dictionary of the defined types of attributes for use with `gen_schema`.
+    """ Get a dictionary of the defined types of attributes for use with `init_schema`.
 
     Returns:
         :obj:`dict`: dictionary which maps the name of each attribute to its instance
@@ -393,17 +394,19 @@ def get_attrs():
     return attr_names
 
 
-def gen_schema(filename, name=None, out_filename=None):
-    """ Generate an `obj_model` schema from a tabular declarative specification in
+def init_schema(filename, name=None, out_filename=None):
+    """ Initialize an `obj_model` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
 
     The tabular specification should contain the following columns:
 
-    * !Class name
-    * (Optional) !Class description
-    * !Attribute name
-    * !Attribute type
-    * (Optional) !Attribute description
+    * !Name
+    * !Type
+    * !Parent
+    * !Format
+    * (Optional) !Verbose name
+    * (Optional) !Verbose name plural
+    * (Optional) !Description
 
     Args:
         filename (:obj:`str`): path to 
@@ -418,10 +421,10 @@ def gen_schema(filename, name=None, out_filename=None):
     """
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
-        schema_sheet_name = 'Schema'
+        schema_sheet_name = '!Schema'
     elif ext in ['.csv', '.tsv']:
         if '*' in filename:
-            schema_sheet_name = 'Schema'
+            schema_sheet_name = '!Schema'
         else:
             schema_sheet_name = ''
             filename = filename.replace(ext, '*' + ext)
@@ -432,41 +435,67 @@ def gen_schema(filename, name=None, out_filename=None):
     ws = wb[schema_sheet_name]
 
     cls_specs = {}
-    for row in ws[1:]:
-        attr = {}
-        for header, cell in zip(ws[0], row):
-            attr[header] = cell
+    for row_list in ws[1:]:
+        row = {}
+        for header, cell in zip(ws[0], row_list):
+            row[header] = cell
 
-        cls_name = attr['!Class name']
-        if cls_name in cls_specs:
-            cls = cls_specs[cls_name]
+        if row['!Type'] == 'Class':
+            cls_name = row['!Name']
+            if cls_name in cls_specs:
+                cls = cls_specs[cls_name]
+            else:
+                cls = cls_specs[cls_name] = {
+                    'name': cls_name,
+                    'attrs': {},
+                    'attr_order': [],
+                }
+
+            if row['!Parent']:
+                raise ValueError('Class "{}" cannot have a parent'.format(cls_name))
+
+            cls['tab_orientation'] = TabularOrientation[row['!Format'] or 'column']
+
+            def_verbose_name = '!' + cls_name
+            def_verbose_name_plural = '!' + cls_name
+            cls['verbose_name'] = row.get('!VerboseName', def_verbose_name) or def_verbose_name
+            cls['verbose_name_plural'] = row.get('!VerboseNamePlural', def_verbose_name_plural) or def_verbose_name_plural
+            cls['desc'] = row.get('!Description', None) or None
+
+        elif row['!Type'] == 'Attribute':
+            cls_name = row['!Parent']
+            if cls_name in cls_specs:
+                cls = cls_specs[cls_name]
+            else:
+                cls = cls_specs[cls_name] = {
+                    'name': cls_name,
+                    'attrs': {},
+                    'attr_order': [],
+                    'tab_orientation': TabularOrientation.column,
+                    'verbose_name': None,
+                    'verbose_name_plural': None,
+                    'desc': None,
+                }
+
+            attr_name = stringcase.snakecase(row['!Name'])
+
+            if attr_name == 'Meta':
+                raise ValueError('"{}" cannot have attribute with name "Meta"'.format(
+                    cls_name))  # pragma: no cover # unreachable because snake case is all lowercase
+            if attr_name in cls['attrs']:
+                raise ValueError('Attribute "{}" of "{}" can only be defined once'.format(
+                    row['!Name'], cls_name))
+
+            cls['attrs'][attr_name] = {
+                'name': attr_name,
+                'type': row['!Format'],
+                'desc': row.get('!Description', None),
+                'verbose_name': row.get('!VerboseName', '!' + row['!Name'])
+            }
+            cls['attr_order'].append(attr_name)
+
         else:
-            cls = cls_specs[cls_name] = {
-                'name': cls_name,
-                'desc': None,
-                'attrs': {},
-                'attr_order': []}
-
-        cls_desc = attr.get('!Class description', None) or None
-        if cls['desc'] and cls_desc and cls['desc'] != cls_desc:
-            raise ValueError('Attribute "{}" of "{}" must have consistent class description'.format(
-                attr['!Attribute name'], cls_name))
-        elif cls_desc:
-            cls['desc'] = cls_desc
-
-        attr_name = attr['!Attribute name']
-        if attr_name == 'Meta':
-            raise ValueError('"{}" cannot have attribute with name "Meta"'.format(
-                cls_name))
-        if attr_name in cls['attrs']:
-            raise ValueError('Attribute "{}" of "{}" can only be defined once'.format(
-                attr_name, cls_name))
-        cls['attrs'][attr_name] = {
-            'name': attr_name,
-            'type': attr['!Attribute type'],
-            'desc': attr.get('!Attribute description', None),
-        }
-        cls['attr_order'].append(attr_name)
+            raise ValueError('Type "{}" is not supported'.format(row['!Type']))
 
     module_name = name or rand_schema_name()
     module = type(module_name, (types.ModuleType, ), {})
@@ -476,7 +505,10 @@ def gen_schema(filename, name=None, out_filename=None):
             '__module__': module_name,
             '__doc__': cls_spec['desc'],
             'Meta': type('Meta', (Model.Meta, ), {
+                'tabular_orientation': cls_spec['tab_orientation'],
                 'attribute_order': tuple(cls_spec['attr_order']),
+                'verbose_name': cls_spec['verbose_name'],
+                'verbose_name_plural': cls_spec['verbose_name_plural'],
                 'help': cls_spec['desc'],
             }),
         }
@@ -488,6 +520,7 @@ def gen_schema(filename, name=None, out_filename=None):
                 attr = eval('func(' + args, {}, {'func': attr_type})
             else:
                 attr = attr_type()
+            attr.verbose_name = attr_spec['verbose_name']
             attr.help = attr_spec['desc']
             attrs[attr_spec['name']] = attr
 
@@ -519,15 +552,27 @@ def gen_schema(filename, name=None, out_filename=None):
                     attr_spec = cls_spec['attrs'][attr_name]
                     attr_type = attr_spec['type']
                     if '(' in attr_type:
+                        attr_type = attr_type.strip()
                         attr_type = attr_type.replace('(', 'Attribute(', 1)
+                        attr_type = attr_type[0:-1] + ", verbose_name='{}')".format(
+                            attr_spec['verbose_name'].replace("'", "\'"))
                     else:
-                        attr_type += 'Attribute()'
+                        attr_type += "Attribute(verbose_name='{}')".format(
+                            attr_spec['verbose_name'].replace("'", "\'"))
                     file.write('    {} = obj_model.{}\n'.format(attr_spec['name'], attr_type))
 
                 file.write('\n')
                 file.write('    class Meta(obj_model.Model.Meta):\n')
+                file.write("        tabular_orientation = obj_model.TabularOrientation.{}\n".format(
+                    cls_spec['tab_orientation'].name))
                 file.write("        attribute_order = ('{}',)\n".format(
                     "', '".join(cls_spec['attr_order'])
+                ))
+                file.write("        verbose_name = '{}'\n".format(
+                    cls_spec['verbose_name'].replace("'", "\'")
+                ))
+                file.write("        verbose_name_plural = '{}'\n".format(
+                    cls_spec['verbose_name_plural'].replace("'", "\'")
                 ))
                 if cls_spec['desc']:
                     file.write("        help = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))

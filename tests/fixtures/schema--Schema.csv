@@ -1,7 +1,0 @@
-!Class name,!Class description,!Attribute name,!Attribute type,!Attribute description
-Parent,Represents a parent,id,Slug,Identifier
-Parent,,name,String,Name
-Child,Represents a child,id,Slug,Identifier
-Child,,name,String,Name
-Child,,parents,"ManyToMany('Parent', related_name='children')",Parents
-Child,,formula,chem.EmpiricalFormula,Empirical formula

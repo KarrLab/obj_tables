@@ -56,7 +56,7 @@ class TestCli(unittest.TestCase):
     def test_convert(self):
         csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
-        with __main__.App(argv=['gen-schema', csv_file, py_file]) as app:
+        with __main__.App(argv=['init-schema', csv_file, py_file]) as app:
             app.run()
         schema = utils.get_schema(py_file)
         models = list(utils.get_models(schema).values())
@@ -76,7 +76,7 @@ class TestCli(unittest.TestCase):
     def test_diff(self):
         csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
-        with __main__.App(argv=['gen-schema', csv_file, py_file]) as app:
+        with __main__.App(argv=['init-schema', csv_file, py_file]) as app:
             app.run()
         schema = utils.get_schema(py_file)
         models = list(utils.get_models(schema).values())
@@ -119,10 +119,10 @@ class TestCli(unittest.TestCase):
             with __main__.App(argv=['diff', csv_file, 'Child', xl_file_3, xl_file_1]) as app:
                 app.run()
 
-    def test_gen_schema(self):
+    def test_init_schema(self):
         csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
-        with __main__.App(argv=['gen-schema', csv_file, py_file]) as app:
+        with __main__.App(argv=['init-schema', csv_file, py_file]) as app:
             app.run()
 
         schema = utils.get_schema(py_file)
@@ -135,7 +135,7 @@ class TestCli(unittest.TestCase):
             app.run()
 
         py_file = os.path.join(self.tempdir, 'schema.py')
-        with __main__.App(argv=['gen-schema', csv_file, py_file]) as app:
+        with __main__.App(argv=['init-schema', csv_file, py_file]) as app:
             app.run()
         schema = utils.get_schema(py_file)
 
@@ -155,7 +155,7 @@ class TestCli(unittest.TestCase):
     def test_normalize(self):
         csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
-        with __main__.App(argv=['gen-schema', csv_file, py_file]) as app:
+        with __main__.App(argv=['init-schema', csv_file, py_file]) as app:
             app.run()
         schema = utils.get_schema(py_file)
         models = list(utils.get_models(schema).values())
@@ -180,7 +180,7 @@ class TestCli(unittest.TestCase):
     def test_validate(self):
         csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
-        with __main__.App(argv=['gen-schema', csv_file, py_file]) as app:
+        with __main__.App(argv=['init-schema', csv_file, py_file]) as app:
             app.run()
         schema = utils.get_schema(py_file)
         models = list(utils.get_models(schema).values())
@@ -195,7 +195,7 @@ class TestCli(unittest.TestCase):
 
         xl_file_2 = os.path.join(self.tempdir, 'file2.xlsx')
         wb = wc_utils.workbook.io.read(xl_file_1)
-        wb['Children'][2][0] = 'c_0'
+        wb['!Child'][2][0] = 'c_0'
         wc_utils.workbook.io.write(xl_file_2, wb)
         with self.assertRaises(SystemExit):
             with __main__.App(argv=['validate', csv_file, xl_file_2]) as app:

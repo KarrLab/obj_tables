@@ -366,8 +366,8 @@ class GenSchemaTestCase(unittest.TestCase):
 
     def test_get_models(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.gen_schema('tests/fixtures/schema.csv',
-                                  out_filename=out_filename)
+        schema = utils.init_schema('tests/fixtures/schema.csv',
+                                   out_filename=out_filename)
         self.assertEqual(sorted(utils.get_models(schema).keys()), ['Child', 'Parent'])
 
         schema = utils.get_schema(out_filename)
@@ -378,10 +378,10 @@ class GenSchemaTestCase(unittest.TestCase):
         self.assertTrue(name.startswith('schema_'))
         self.assertEqual(len(name), len('schema_') + 8)
 
-    def test_gen_schema(self):
+    def test_init_schema(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.gen_schema('tests/fixtures/schema.csv',
-                                  out_filename=out_filename)
+        schema = utils.init_schema('tests/fixtures/schema.csv',
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
@@ -414,18 +414,18 @@ class GenSchemaTestCase(unittest.TestCase):
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
-    def test_gen_schema_from_excel(self):
+    def test_init_schema_from_excel(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema_csv = 'tests/fixtures/schema*.csv'
-        schema_xl = 'tests/fixtures/schema.xlsx'
+        schema_xl = os.path.join(self.tmp_dirname, 'schema.xlsx')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['Schema'] = wb.pop('')
+        wb['!Schema'] = wb.pop('')
         wc_utils.workbook.io.write(schema_xl, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.gen_schema(schema_xl,
-                                  out_filename=out_filename)
+        schema = utils.init_schema(schema_xl,
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
@@ -458,18 +458,18 @@ class GenSchemaTestCase(unittest.TestCase):
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
-    def test_gen_schema_from_csv_workbook(self):
+    def test_init_schema_from_csv_workbook(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema_csv = 'tests/fixtures/schema*.csv'
-        schema_csv_wb = 'tests/fixtures/schema-*.csv'
+        schema_csv_wb = os.path.join(self.tmp_dirname, 'schema-*.csv')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['Schema'] = wb.pop('')
+        wb['!Schema'] = wb.pop('')
         wc_utils.workbook.io.write(schema_csv_wb, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.gen_schema(schema_csv_wb,
-                                  out_filename=out_filename)
+        schema = utils.init_schema(schema_csv_wb,
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
@@ -502,35 +502,34 @@ class GenSchemaTestCase(unittest.TestCase):
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
-    def test_gen_schema_errors(self):
+    def test_init_schema_errors(self):
         with self.assertRaisesRegex(ValueError, 'format is not supported'):
-            utils.gen_schema(os.path.join(self.tmp_dirname, 'schema.txt'))
+            utils.init_schema(os.path.join(self.tmp_dirname, 'schema.txt'))
 
         filename = os.path.join(self.tmp_dirname, 'schema.csv')
         col_headings = [
-            '!Class name',
-            '!Class description',
-            '!Attribute name',
-            '!Attribute type',
-            '!Attribute description',
+            '!Name',
+            '!Type',
+            '!Parent',
+            '!Format',
+            '!Description',
         ]
 
         with open(filename, 'w') as file:
             file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1-1', 'attr1', 'String', 'attr1'])))
-            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1-2', 'attr2', 'String', 'attr2'])))
-        with self.assertRaisesRegex(ValueError, 'must have consistent class description'):
-            utils.gen_schema(filename)
+            file.write('{}\n'.format(','.join(['Cls1', 'Class', 'Doc', 'column', ''])))
+        with self.assertRaisesRegex(ValueError, 'cannot have a parent'):
+            utils.init_schema(filename)
 
         with open(filename, 'w') as file:
             file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1-1', 'Meta', 'String', 'Meta'])))
-        with self.assertRaisesRegex(ValueError, 'cannot have attribute with name "Meta"'):
-            utils.gen_schema(filename)
-
-        with open(filename, 'w') as file:
-            file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1', 'attr1', 'String', 'attr1'])))
-            file.write('{}\n'.format(','.join(['Cls1', 'Desc 1', 'attr1', 'String', 'attr2'])))
+            file.write('{}\n'.format(','.join(['Attr1', 'Attribute', 'Cls1', 'String', 'attr1'])))
+            file.write('{}\n'.format(','.join(['Attr1', 'Attribute', 'Cls1', 'String', 'attr2'])))
         with self.assertRaisesRegex(ValueError, 'can only be defined once'):
-            utils.gen_schema(filename)
+            utils.init_schema(filename)
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Cls1', 'Unsupported', 'Doc', 'column', ''])))
+        with self.assertRaisesRegex(ValueError, 'is not supported'):
+            utils.init_schema(filename)

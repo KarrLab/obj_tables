@@ -122,12 +122,12 @@ class DiffController(cement.Controller):
             print('Workbooks are equivalent')
 
 
-class GenSchemaController(cement.Controller):
-    """ Generate a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV) """
+class InitSchemaController(cement.Controller):
+    """ Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV) """
     class Meta:
-        label = 'gen-schema'
-        description = 'Generate a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'
-        help = 'Generate a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'
+        label = 'init-schema'
+        description = 'Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'
+        help = 'Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [
@@ -140,7 +140,7 @@ class GenSchemaController(cement.Controller):
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
-        utils.gen_schema(args.in_file, out_filename=args.out_file)
+        utils.init_schema(args.in_file, out_filename=args.out_file)
         print('Schema saved to {}'.format(args.out_file))
 
 
@@ -241,8 +241,8 @@ class App(cement.App):
             BaseController,
             ValidateController,
             NormalizeController,
-            GenTemplateController,
-            GenSchemaController,
+            InitSchemaController,
+            GenTemplateController,            
             DiffController,
             ConvertController,
         ]
@@ -269,6 +269,6 @@ def get_schema_models(filename):
     if ext == '.py':
         schema = utils.get_schema(filename)
     else:
-        schema = utils.gen_schema(filename)
+        schema = utils.init_schema(filename)
     models = list(utils.get_models(schema).values())
     return (schema, models)
