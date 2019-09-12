@@ -894,6 +894,30 @@ class TestIo(unittest.TestCase):
         for obj, obj_2 in zip(objs, objs_2):
             self.assertTrue(obj_2.is_equal(obj))
 
+    def test_ignore_empty_rows(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', )
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        wb = Workbook()
+        ws = wb['Nodes'] = Worksheet()
+        ws.append(Row(['Id', 'Name']))
+        ws.append(Row(['a', 'A']))
+        ws.append(Row(['b', 'B']))
+        ws.append(Row(['', '']))
+        ws.append(Row(['d', 'D']))
+        write_workbook(filename, wb)
+
+        objs = obj_model.io.Reader().run(filename, [Node])
+        self.assertEqual(len(objs), 3)
+        
+        with self.assertRaisesRegex(ValueError, r'contains error\(s\)'):
+            obj_model.io.Reader().run(filename, [Node], ignore_empty_rows=False)
+
 
 class TestMetadataModels(unittest.TestCase):
 
@@ -1894,7 +1918,7 @@ class StrictReadingTestCase(unittest.TestCase):
         })
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_missing_attributes=True)
+        WorkbookReader().run(filename, [Model], ignore_missing_attributes=True, ignore_empty_rows=False)
 
     def test_extra_attribute(self):
         class Model(core.Model):

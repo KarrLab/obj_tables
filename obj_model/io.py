@@ -32,11 +32,11 @@ from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, Tabul
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
-from wc_utils.workbook.core import get_column_letter
-from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 from wc_utils.util import git
+from wc_utils.workbook.core import get_column_letter
+from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 
 
 TOC_NAME = 'Table of contents'
@@ -110,12 +110,12 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             try:
                 data_repo_metadata_obj = utils.DataRepoMetadata()
                 unsuitable_changes = utils.set_git_repo_metadata_from_path(data_repo_metadata_obj,
-                    git.RepoMetadataCollectionType.DATA_REPO, path=path)
+                                                                           git.RepoMetadataCollectionType.DATA_REPO, path=path)
                 metadata_objects.append(data_repo_metadata_obj)
                 if unsuitable_changes:
                     warn("Git repo metadata for data repo was obtained; "
-                        "Ensure that the data file '{}' doesn't depend on these changes in the git "
-                        "repo containing it:\n{}".format(path, '\n'.join(unsuitable_changes)), IoWarning)
+                         "Ensure that the data file '{}' doesn't depend on these changes in the git "
+                         "repo containing it:\n{}".format(path, '\n'.join(unsuitable_changes)), IoWarning)
 
             except ValueError as e:
                 warn("Cannot obtain git repo metadata for data repo containing: '{}':\n{}".format(
@@ -129,11 +129,11 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                 if not spec:
                     raise ValueError("package '{}' not found".format(schema_package))
                 unsuitable_changes = utils.set_git_repo_metadata_from_path(schema_repo_metadata,
-                                                      git.RepoMetadataCollectionType.SCHEMA_REPO,
-                                                      path=spec.origin)
+                                                                           git.RepoMetadataCollectionType.SCHEMA_REPO,
+                                                                           path=spec.origin)
                 if unsuitable_changes:
                     raise ValueError("Cannot gather metadata for schema repo from Git repo "
-                        "containing '{}':\n{}".format(path, '\n'.join(unsuitable_changes)))
+                                     "containing '{}':\n{}".format(path, '\n'.join(unsuitable_changes)))
                 metadata_objects.append(schema_repo_metadata)
             except ValueError as e:
                 warn("Cannot obtain git repo metadata for schema repo '{}' used by data file: '{}':\n{}".format(
@@ -617,7 +617,8 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
-            ignore_attribute_order=False, group_objects_by_model=False, validate=True):
+            ignore_attribute_order=False, ignore_empty_rows=True,
+            group_objects_by_model=False, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:
@@ -636,8 +637,9 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
                 worksheet/file doesn't contain all of attributes in a model in `models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
-            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+            ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
                 in the canonical order
+            ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -653,7 +655,8 @@ class JsonReader(ReaderBase):
 
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
-            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, 
+            ignore_attribute_order=False, ignore_empty_rows=True,
             group_objects_by_model=False, validate=True):
         """ Read model objects from file(s) and, optionally, validate them
 
@@ -673,8 +676,9 @@ class JsonReader(ReaderBase):
                 worksheet/file doesn't contain all of attributes in a model in `models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
-            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+            ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
                 in the canonical order
+            ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -766,7 +770,8 @@ class WorkbookReader(ReaderBase):
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
-            ignore_attribute_order=False, group_objects_by_model=True, validate=True):
+            ignore_attribute_order=False, ignore_empty_rows=True,
+            group_objects_by_model=True, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
@@ -788,8 +793,9 @@ class WorkbookReader(ReaderBase):
                 worksheet/file doesn't contain all of attributes in a model in `models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
-            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+            ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
                 in the canonical order
+            ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -903,6 +909,7 @@ class WorkbookReader(ReaderBase):
                 ignore_missing_attributes=ignore_missing_attributes,
                 ignore_extra_attributes=ignore_extra_attributes,
                 ignore_attribute_order=ignore_attribute_order,
+                ignore_empty_rows=ignore_empty_rows,
                 validate=validate)
             if model_attributes:
                 attributes[model] = model_attributes
@@ -973,7 +980,8 @@ class WorkbookReader(ReaderBase):
                 return None
 
     def read_model(self, reader, model, include_all_attributes=True,
-                   ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False,
+                   ignore_missing_attributes=False, ignore_extra_attributes=False,
+                   ignore_attribute_order=False, ignore_empty_rows=True,
                    validate=True):
         """ Instantiate a list of objects from data in a table in a file
 
@@ -986,8 +994,9 @@ class WorkbookReader(ReaderBase):
                 don't have all of attributes in the model
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if attributes
                 in the data are not in the model
-            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided in the
+            ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided in the
                 canonical order
+            ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
@@ -1010,9 +1019,11 @@ class WorkbookReader(ReaderBase):
         # get worksheet
         exp_attrs, exp_sub_attrs, exp_headings, _, _ = get_fields(model, include_all_attributes=include_all_attributes)
         if model.Meta.tabular_orientation == TabularOrientation.row:
-            data, _, headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=len(exp_headings))
+            data, _, headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=len(
+                exp_headings), ignore_empty_rows=ignore_empty_rows)
         else:
-            data, headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=len(exp_headings))
+            data, headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=len(
+                exp_headings), ignore_empty_cols=ignore_empty_rows)
             data = transpose(data)
         if len(exp_headings) == 1:
             group_headings = [None] * len(headings[-1])
@@ -1170,7 +1181,8 @@ class WorkbookReader(ReaderBase):
             errors = []
         return (sub_attrs, data, errors, objects)
 
-    def read_sheet(self, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0):
+    def read_sheet(self, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0,
+                   ignore_empty_rows=False, ignore_empty_cols=False):
         """ Read worksheet or file into a two-dimensional list
 
         Args:
@@ -1178,6 +1190,8 @@ class WorkbookReader(ReaderBase):
             sheet_name (:obj:`str`): worksheet name
             num_row_heading_columns (:obj:`int`, optional): number of columns of row headings
             num_column_heading_rows (:obj:`int`, optional): number of rows of column headings
+            ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
+            ignore_empty_cols (:obj:`bool`, optional): if :obj:`True`, ignore empty columns
 
         Returns:
             :obj:`tuple`:
@@ -1189,6 +1203,24 @@ class WorkbookReader(ReaderBase):
             :obj:`ValueError`: if worksheet doesn't have header rows or columns
         """
         data = reader.read_worksheet(sheet_name)
+
+        def remove_empty_rows(data):
+            for row in list(data):
+                empty = True
+                for cell in row:
+                    if cell not in ['', None]:
+                        empty = False
+                        break
+                if empty:
+                    data.remove(row)
+
+        if ignore_empty_rows:
+            remove_empty_rows(data)
+
+        if ignore_empty_cols:
+            data = transpose(data)
+            remove_empty_rows(data)
+            data = transpose(data)
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1392,7 +1424,8 @@ class Reader(ReaderBase):
     def run(self, path, models=None,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
-            ignore_attribute_order=False, group_objects_by_model=False, validate=True):
+            ignore_attribute_order=False, ignore_empty_rows=True, 
+            group_objects_by_model=False, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:
@@ -1411,8 +1444,9 @@ class Reader(ReaderBase):
                 worksheet/file doesn't contain all of attributes in a model in `models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
-            ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+            ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
                 in the canonical order
+            ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -1430,13 +1464,15 @@ class Reader(ReaderBase):
                             ignore_missing_attributes=ignore_missing_attributes,
                             ignore_extra_attributes=ignore_extra_attributes,
                             ignore_attribute_order=ignore_attribute_order,
+                            ignore_empty_rows=ignore_empty_rows,
                             group_objects_by_model=group_objects_by_model,
                             validate=validate)
 
 
 def convert(source, destination, models,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
-            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, ignore_attribute_order=False):
+            include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False, 
+            ignore_attribute_order=False, ignore_empty_rows=True):
     """ Convert among comma-separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
     tab-separated (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
 
@@ -1456,8 +1492,9 @@ def convert(source, destination, models,
             worksheet/file doesn't contain all of attributes in a model in `models`
         ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
             attributes in the data are not in the model
-        ignore_attribute_order (:obj:`bool`): if :obj:`True`, do not require the attributes to be provided
+        ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
             in the canonical order
+        ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
     """
     reader = Reader.get_reader(source)()
     writer = Writer.get_writer(destination)()
@@ -1471,6 +1508,7 @@ def convert(source, destination, models,
         kwargs['ignore_missing_attributes'] = ignore_missing_attributes
         kwargs['ignore_extra_attributes'] = ignore_extra_attributes
         kwargs['ignore_attribute_order'] = ignore_attribute_order
+        kwargs['ignore_empty_rows'] = ignore_empty_rows
     objects = reader.run(source, models=models, group_objects_by_model=False, **kwargs)
 
     writer.run(destination, objects, models=models, get_related=False)
