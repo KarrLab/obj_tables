@@ -30,7 +30,7 @@ from warnings import warn
 from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                             InvalidObject, excel_col_name,
-                            InvalidAttribute, ObjModelWarning, 
+                            InvalidAttribute, ObjModelWarning,
                             DEFAULT_TOC_NAME, DEFAULT_SBTAB_TOC_NAME)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.util.misc import quote
@@ -53,7 +53,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, toc_name=DEFAULT_TOC_NAME, extra_entries=0, data_repo_metadata=False, schema_package=None,
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
             sbtab=False):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
@@ -73,7 +73,6 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
-            toc_name (:obj:`str`, optional): name of table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; a warning will be generated if the repo repo is not
@@ -148,7 +147,7 @@ class JsonWriter(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=False, toc_name=DEFAULT_TOC_NAME, extra_entries=0, data_repo_metadata=False, schema_package=None,
+            toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None,
             sbtab=False):
         """ Write a list of model classes to a JSON or YAML file
 
@@ -167,7 +166,6 @@ class JsonWriter(WriterBase):
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
-            toc_name (:obj:`str`, optional): name of table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
@@ -239,7 +237,7 @@ class WorkbookWriter(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, toc_name=DEFAULT_TOC_NAME, extra_entries=0, data_repo_metadata=False, schema_package=None,
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
             sbtab=False):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
@@ -261,7 +259,6 @@ class WorkbookWriter(WriterBase):
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
-            toc_name (:obj:`str`, optional): name of table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
@@ -351,7 +348,7 @@ class WorkbookWriter(WriterBase):
         # add table of contents to workbook
         all_models = models + unordered_models
         if toc:
-            self.write_toc(writer, all_models, grouped_objects, sheet_name=toc_name)
+            self.write_toc(writer, all_models, grouped_objects, sbtab=sbtab)
 
         # add sheets to workbook
         sheet_models = list(filter(lambda model: model.Meta.tabular_orientation not in [
@@ -369,15 +366,19 @@ class WorkbookWriter(WriterBase):
         # finalize workbook
         writer.finalize_workbook()
 
-    def write_toc(self, writer, models, grouped_objects, sheet_name=DEFAULT_TOC_NAME):
+    def write_toc(self, writer, models, grouped_objects, sbtab=False):
         """ Write a worksheet with a table of contents
 
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear in the table of contents
-            sheet_name (:obj:`str`, optional): sheet name of table of contents
+            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
+        if sbtab:
+            sheet_name = DEFAULT_SBTAB_TOC_NAME
+        else:
+            sheet_name = DEFAULT_TOC_NAME
 
         content = [['Table', 'Description', 'Number of objects']]
         hyperlinks = []
@@ -409,7 +410,7 @@ class WorkbookWriter(WriterBase):
         writer.write_worksheet(sheet_name, content, style=style)
 
     def write_model(self, writer, model, objects, sheet_models, include_all_attributes=True, encoded=None, extra_entries=0,
-        sbtab=False):
+                    sbtab=False):
         """ Write a list of model objects to a file
 
         Args:
@@ -576,7 +577,7 @@ class Writer(WriterBase):
 
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, toc_name=DEFAULT_TOC_NAME, extra_entries=0, data_repo_metadata=False, schema_package=None,
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
             sbtab=False):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
@@ -598,7 +599,6 @@ class Writer(WriterBase):
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
             toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
-            toc_name (:obj:`str`, optional): name of table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
@@ -611,7 +611,7 @@ class Writer(WriterBase):
         Writer().run(path, objects, models=models, get_related=get_related,
                      include_all_attributes=include_all_attributes, validate=validate,
                      title=title, description=description, keywords=keywords,
-                     language=language, creator=creator, toc=toc, toc_name=toc_name, extra_entries=extra_entries,
+                     language=language, creator=creator, toc=toc, extra_entries=extra_entries,
                      data_repo_metadata=data_repo_metadata, schema_package=schema_package,
                      sbtab=sbtab)
 
@@ -631,7 +631,6 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            toc_name=DEFAULT_TOC_NAME,
             group_objects_by_model=False, validate=True,
             sbtab=False):
         """ Read a list of model objects from file(s) and, optionally, validate them
@@ -655,7 +654,6 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
                 in the canonical order
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
-            toc_name (:obj:`str`, optional): name of table of contents
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -674,7 +672,6 @@ class JsonReader(ReaderBase):
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            toc_name=DEFAULT_TOC_NAME,
             group_objects_by_model=False, validate=True,
             sbtab=False):
         """ Read model objects from file(s) and, optionally, validate them
@@ -698,7 +695,6 @@ class JsonReader(ReaderBase):
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
                 in the canonical order
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
-            toc_name (:obj:`str`, optional): name of table of contents
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -792,7 +788,6 @@ class WorkbookReader(ReaderBase):
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            toc_name=DEFAULT_TOC_NAME,
             group_objects_by_model=True, validate=True,
             sbtab=False):
         """ Read a list of model objects from file(s) and, optionally, validate them
@@ -819,7 +814,6 @@ class WorkbookReader(ReaderBase):
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
                 in the canonical order
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
-            toc_name (:obj:`str`, optional): name of table of contents
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -860,8 +854,12 @@ class WorkbookReader(ReaderBase):
 
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
-        if toc_name in sheet_names:
-            sheet_names.remove(toc_name)
+        if sbtab:
+            toc_sheet_name = DEFAULT_SBTAB_TOC_NAME
+        else:
+            toc_sheet_name = DEFAULT_TOC_NAME
+        if toc_sheet_name in sheet_names:
+            sheet_names.remove(toc_sheet_name)
         # drop metadata models unless they're requested
         for metadata_model in (utils.DataRepoMetadata, utils.SchemaRepoMetadata):
             if metadata_model not in models:
@@ -935,7 +933,6 @@ class WorkbookReader(ReaderBase):
                 ignore_extra_attributes=ignore_extra_attributes,
                 ignore_attribute_order=ignore_attribute_order,
                 ignore_empty_rows=ignore_empty_rows,
-                toc_name=toc_name,
                 validate=validate,
                 sbtab=sbtab)
             if model_attributes:
@@ -1009,7 +1006,6 @@ class WorkbookReader(ReaderBase):
     def read_model(self, reader, model, include_all_attributes=True,
                    ignore_missing_attributes=False, ignore_extra_attributes=False,
                    ignore_attribute_order=False, ignore_empty_rows=True,
-                   toc_name=DEFAULT_TOC_NAME,
                    validate=True,
                    sbtab=False):
         """ Instantiate a list of objects from data in a table in a file
@@ -1026,7 +1022,6 @@ class WorkbookReader(ReaderBase):
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided in the
                 canonical order
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
-            toc_name (:obj:`str`, optional): name of table of contents
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
@@ -1051,10 +1046,10 @@ class WorkbookReader(ReaderBase):
         exp_attrs, exp_sub_attrs, exp_headings, _, _ = get_fields(model, include_all_attributes=include_all_attributes)
         if model.Meta.tabular_orientation == TabularOrientation.row:
             data, _, headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=len(
-                exp_headings), ignore_empty_rows=ignore_empty_rows, toc_name=toc_name)
+                exp_headings), ignore_empty_rows=ignore_empty_rows)
         else:
             data, headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=len(
-                exp_headings), ignore_empty_cols=ignore_empty_rows, toc_name=toc_name)
+                exp_headings), ignore_empty_cols=ignore_empty_rows)
             data = transpose(data)
         if len(exp_headings) == 1:
             group_headings = [None] * len(headings[-1])
@@ -1213,7 +1208,7 @@ class WorkbookReader(ReaderBase):
         return (sub_attrs, data, errors, objects)
 
     def read_sheet(self, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0,
-                   ignore_empty_rows=False, ignore_empty_cols=False, toc_name=DEFAULT_TOC_NAME):
+                   ignore_empty_rows=False, ignore_empty_cols=False):
         """ Read worksheet or file into a two-dimensional list
 
         Args:
@@ -1223,7 +1218,6 @@ class WorkbookReader(ReaderBase):
             num_column_heading_rows (:obj:`int`, optional): number of rows of column headings
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             ignore_empty_cols (:obj:`bool`, optional): if :obj:`True`, ignore empty columns
-            toc_name (:obj:`str`, optional): name of table of contents
 
         Returns:
             :obj:`tuple`:
@@ -1457,7 +1451,6 @@ class Reader(ReaderBase):
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            toc_name=DEFAULT_TOC_NAME,
             group_objects_by_model=False, validate=True,
             sbtab=False):
         """ Read a list of model objects from file(s) and, optionally, validate them
@@ -1481,7 +1474,6 @@ class Reader(ReaderBase):
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
                 in the canonical order
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
-            toc_name (:obj:`str`, optional): name of table of contents
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
@@ -1501,7 +1493,6 @@ class Reader(ReaderBase):
                             ignore_extra_attributes=ignore_extra_attributes,
                             ignore_attribute_order=ignore_attribute_order,
                             ignore_empty_rows=ignore_empty_rows,
-                            toc_name=toc_name,
                             group_objects_by_model=group_objects_by_model,
                             validate=validate,
                             sbtab=sbtab)
@@ -1510,7 +1501,7 @@ class Reader(ReaderBase):
 def convert(source, destination, models,
             ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
-            ignore_attribute_order=False, ignore_empty_rows=True, toc_name=DEFAULT_TOC_NAME,
+            ignore_attribute_order=False, ignore_empty_rows=True,
             sbtab=False):
     """ Convert among comma-separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
     tab-separated (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
@@ -1534,7 +1525,6 @@ def convert(source, destination, models,
         ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
             in the canonical order
         ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
-        toc_name (:obj:`str`, optional): name of table of contents
         sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
     """
     reader = Reader.get_reader(source)()
@@ -1550,15 +1540,14 @@ def convert(source, destination, models,
         kwargs['ignore_extra_attributes'] = ignore_extra_attributes
         kwargs['ignore_attribute_order'] = ignore_attribute_order
         kwargs['ignore_empty_rows'] = ignore_empty_rows
-        kwargs['toc_name'] = toc_name
         kwargs['sbtab'] = sbtab
     objects = reader.run(source, models=models, group_objects_by_model=False, **kwargs)
 
-    writer.run(destination, objects, models=models, get_related=False, toc_name=toc_name, sbtab=sbtab)
+    writer.run(destination, objects, models=models, get_related=False, sbtab=sbtab)
 
 
 def create_template(path, models, title=None, description=None, keywords=None,
-                    version=None, language=None, creator=None, toc=True, toc_name=DEFAULT_TOC_NAME, 
+                    version=None, language=None, creator=None, toc=True,
                     extra_entries=10, sbtab=False):
     """ Create a template for a model
 
@@ -1574,14 +1563,13 @@ def create_template(path, models, title=None, description=None, keywords=None,
         language (:obj:`str`, optional): language
         creator (:obj:`str`, optional): creator
         toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
-        toc_name (:obj:`str`, optional): name of table of contents
         extra_entries (:obj:`int`, optional): additional entries to display
         sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
     """
     Writer.get_writer(path)().run(path, [], models,
                                   title=title, description=description, keywords=keywords,
                                   version=version, language=language, creator=creator,
-                                  toc=toc, toc_name=toc_name, extra_entries=extra_entries,
+                                  toc=toc, extra_entries=extra_entries,
                                   sbtab=sbtab)
 
 

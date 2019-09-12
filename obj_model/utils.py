@@ -452,6 +452,9 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         verbose_name_col_name = '!VerboseName'
         verbose_name_plural_col_name = '!VerboseNamePlural'
         desc_col_name = '!Description'
+
+        class_type = 'Table'
+        attr_type = 'Column'
     else:
         name_col_name = 'Name'
         type_col_name = 'Type'
@@ -461,13 +464,16 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         verbose_name_plural_col_name = 'Verbose name plural'
         desc_col_name = 'Description'
 
+        class_type = 'Class'
+        attr_type = 'Attribute'
+
     cls_specs = {}
     for row_list in ws[1:]:
         row = {}
         for header, cell in zip(ws[0], row_list):
             row[header] = cell
 
-        if row[type_col_name] == 'Class':
+        if row[type_col_name] == class_type:
             cls_name = row[name_col_name]
             if cls_name in cls_specs:
                 cls = cls_specs[cls_name]
@@ -493,7 +499,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, def_verbose_name_plural) or def_verbose_name_plural
             cls['desc'] = row.get(desc_col_name, None) or None
 
-        elif row[type_col_name] == 'Attribute':
+        elif row[type_col_name] == attr_type:
             cls_name = row[parent_col_name]
             if cls_name in cls_specs:
                 cls = cls_specs[cls_name]

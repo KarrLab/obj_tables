@@ -521,14 +521,14 @@ class InitSchemaTestCase(unittest.TestCase):
 
         with open(filename, 'w') as file:
             file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Cls1', 'Class', 'Doc', 'column', ''])))
+            file.write('{}\n'.format(','.join(['Cls1', 'Table', 'Doc', 'column', ''])))
         with self.assertRaisesRegex(ValueError, 'cannot have a parent'):
             utils.init_schema(filename, sbtab=True)
 
         with open(filename, 'w') as file:
             file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Attr1', 'Attribute', 'Cls1', 'String', 'attr1'])))
-            file.write('{}\n'.format(','.join(['Attr1', 'Attribute', 'Cls1', 'String', 'attr2'])))
+            file.write('{}\n'.format(','.join(['Attr1', 'Column', 'Cls1', 'String', 'attr1'])))
+            file.write('{}\n'.format(','.join(['Attr1', 'Column', 'Cls1', 'String', 'attr2'])))
         with self.assertRaisesRegex(ValueError, 'can only be defined once'):
             utils.init_schema(filename, sbtab=True)
 
