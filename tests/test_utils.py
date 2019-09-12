@@ -357,7 +357,7 @@ class TestMetadata(unittest.TestCase):
         self.assertIn('chem.EmpiricalFormula', attrs)
 
 
-class GenSchemaTestCase(unittest.TestCase):
+class InitSchemaTestCase(unittest.TestCase):
     def setUp(self):
         self.tmp_dirname = tempfile.mkdtemp()
 
