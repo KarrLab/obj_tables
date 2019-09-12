@@ -57,6 +57,9 @@ import wc_utils.workbook.io
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
 
 
+DEFAULT_TOC_NAME = 'Table of contents'
+DEFAULT_SBTAB_TOC_NAME = '!!!README'
+
 class ModelMerge(int, Enum):
     """ Types of model merging operations """
     join = 1
@@ -149,21 +152,18 @@ class ModelMeta(type):
         return cls
 
     @classmethod
-    def validate_meta(metacls, name, bases, namespace, sbtab=False):
-        if sbtab:
-            reversed_names = ['!!!README']
-        else:
-            reversed_names = ['Table of contents']
+    def validate_meta(metacls, name, bases, namespace): 
+        reserved_names = [DEFAULT_TOC_NAME, DEFAULT_SBTAB_TOC_NAME]
 
-        if namespace['Meta'].verbose_name in reversed_names:
+        if namespace['Meta'].verbose_name in reserved_names:
             raise ValueError('Verbose name for {} cannot be {}, '
                              'which is reserved for the table of contents'.format(
-                                 name, ', '.join('"' + n + '"' for n in reversed_names)))
+                                 name, ', '.join('"' + n + '"' for n in reserved_names)))
 
-        if namespace['Meta'].verbose_name_plural in reversed_names:
+        if namespace['Meta'].verbose_name_plural in reserved_names:
             raise ValueError('Plural verbose name for {} cannot be {}, '
                              'which is reserved for the table of contents'.format(
-                                 name, ', '.join('"' + n + '"' for n in reversed_names)))
+                                 name, ', '.join('"' + n + '"' for n in reserved_names)))
 
     @classmethod
     def validate_attributes(metacls, name, bases, namespace):

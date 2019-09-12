@@ -30,16 +30,14 @@ from warnings import warn
 from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                             InvalidObject, excel_col_name,
-                            InvalidAttribute, ObjModelWarning)
+                            InvalidAttribute, ObjModelWarning, 
+                            DEFAULT_TOC_NAME, DEFAULT_SBTAB_TOC_NAME)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 from wc_utils.util import git
 from wc_utils.workbook.core import get_column_letter
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
-
-
-DEFAULT_TOC_NAME = 'Table of contents'
 
 
 class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
