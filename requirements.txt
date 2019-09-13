@@ -5,6 +5,7 @@ inflect
 natsort
 networkx
 numpy
+pandas
 pint >= 0.9
 pronto
 python_dateutil

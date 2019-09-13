@@ -57,6 +57,9 @@ import wc_utils.workbook.io
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
 
 
+DEFAULT_TOC_NAME = 'Table of contents'
+DEFAULT_SBTAB_TOC_NAME = '!!!README'
+
 class ModelMerge(int, Enum):
     """ Types of model merging operations """
     join = 1
@@ -149,14 +152,22 @@ class ModelMeta(type):
         return cls
 
     @classmethod
-    def validate_meta(metacls, name, bases, namespace):
-        if namespace['Meta'].verbose_name == 'Table of contents':
-            raise ValueError('Verbose name for {} cannot be "Table of contents", '
-                             'which is reserved for the table of contents'.format(name))
+    def validate_meta(metacls, name, bases, namespace): 
+        reserved_names = [
+            DEFAULT_TOC_NAME, 
+            DEFAULT_SBTAB_TOC_NAME,
+            'Definition',
+            ]
 
-        if namespace['Meta'].verbose_name_plural == 'Table of contents':
-            raise ValueError('Plural verbose name for {} cannot be "Table of contents", '
-                             'which is reserved for the table of contents'.format(name))
+        if namespace['Meta'].verbose_name in reserved_names:
+            raise ValueError('Verbose name for {} cannot be {}, '
+                             'which is reserved for the table of contents'.format(
+                                 name, ', '.join('"' + n + '"' for n in reserved_names)))
+
+        if namespace['Meta'].verbose_name_plural in reserved_names:
+            raise ValueError('Plural verbose name for {} cannot be {}, '
+                             'which is reserved for the table of contents'.format(
+                                 name, ', '.join('"' + n + '"' for n in reserved_names)))
 
     @classmethod
     def validate_attributes(metacls, name, bases, namespace):
@@ -294,8 +305,8 @@ class ModelMeta(type):
                 if isinstance(attr.related_class, string_types):
                     related_class_name = attr.related_class
                     if '.' not in related_class_name:
-                        related_class_name = namespace[
-                            '__module__'] + '.' + related_class_name
+                        related_class_name = namespace.get(
+                            '__module__', '') + '.' + related_class_name
 
                     related_class = get_model(related_class_name)
                 else:
@@ -965,7 +976,10 @@ class Model(with_metaclass(ModelMeta, object)):
 
     Attributes:
         _source (:obj:`ModelSource`): file location, worksheet, column, and row where the object was defined
-        objects (:obj:`Manager`): a `Manager` that supports searching for `Model` instances
+        _comments (:obj:`list` of :obj:`str`): comments
+
+    Class attributes:
+        objects (:obj:`Manager`): a `Manager` that supports searching for `Model` instances        
     """
 
     class Meta(object):
@@ -1011,7 +1025,7 @@ class Model(with_metaclass(ModelMeta, object)):
         children = {}
         merge = ModelMerge.join
 
-    def __init__(self, **kwargs):
+    def __init__(self, _comments=None, **kwargs):
         """
         Args:
             **kwargs: dictionary of keyword arguments with keys equal to the names of the model attributes
@@ -1056,6 +1070,7 @@ class Model(with_metaclass(ModelMeta, object)):
             setattr(self, attr_name, val)
 
         self._source = None
+        self._comments = _comments or []
 
         # register this Model instance with the class' Manager
         self.__class__.objects._register_obj(self)
@@ -3540,10 +3555,12 @@ class EnumAttribute(LiteralAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -3654,10 +3671,12 @@ class BooleanAttribute(LiteralAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -3856,10 +3875,12 @@ class FloatAttribute(NumericAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -3952,10 +3973,12 @@ class PositiveFloatAttribute(FloatAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -4141,10 +4164,12 @@ class IntegerAttribute(NumericAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -4233,10 +4258,12 @@ class PositiveIntegerAttribute(IntegerAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -4392,10 +4419,12 @@ class StringAttribute(LiteralAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -4751,10 +4780,12 @@ class DateAttribute(LiteralAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -4926,10 +4957,12 @@ class TimeAttribute(LiteralAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -5116,10 +5149,12 @@ class DateTimeAttribute(LiteralAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -6168,10 +6203,12 @@ class OneToOneAttribute(RelatedAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -6511,10 +6548,12 @@ class ManyToOneAttribute(RelatedAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -6845,10 +6884,12 @@ class OneToManyAttribute(RelatedAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -7190,10 +7231,12 @@ class ManyToManyAttribute(RelatedAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
         validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
@@ -7561,6 +7604,5 @@ class ObjModelWarning(UserWarning):
 class SchemaWarning(ObjModelWarning):
     """ Schema warning """
     pass
-
 
 from . import expression

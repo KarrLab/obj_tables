@@ -144,7 +144,8 @@ class TestIo(unittest.TestCase):
         self.tmp_dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.tmp_dirname)
+        # shutil.rmtree(self.tmp_dirname)
+        print(self.tmp_dirname)
 
     def test_dummy_model(self):
         # test integrity of relationships
@@ -210,7 +211,7 @@ class TestIo(unittest.TestCase):
 
         # test no validation
         wb = read_workbook(filename)
-        wb['Nodes'][2][2] = 'node_0'
+        wb['Nodes'][4][2] = 'node_0'
         filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
         write_workbook(filename2, wb, style={
             MainRoot.Meta.verbose_name: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -327,9 +328,9 @@ class TestIo(unittest.TestCase):
         workbook = reader.run()
 
         # edit heading
-        headings = workbook['Main root'][0]
+        headings = workbook['Main root'][2]
         self.assertEqual(headings[0], 'Identifier')
-        workbook['Main root'][0][0] = 'id'
+        workbook['Main root'][2][0] = 'id'
 
         # write workbook
         writer.run(workbook, style={
@@ -347,7 +348,7 @@ class TestIo(unittest.TestCase):
 
         """ test case insensitivity """
         # edit heading
-        workbook['Main root'][0][0] = 'ID'
+        workbook['Main root'][2][0] = 'ID'
 
         # write workbook
         writer.run(workbook, style={
@@ -853,7 +854,7 @@ class TestIo(unittest.TestCase):
         # error
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         wb = read_workbook(filename)
-        wb['Nodes'][2][1] = 'a'
+        wb['Nodes'][4][1] = 'a'
         filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
         write_workbook(filename, wb)
         with self.assertRaisesRegex(ValueError, 'model cannot be loaded'):
@@ -893,6 +894,30 @@ class TestIo(unittest.TestCase):
         objs_2 = obj_model.io.Reader().run(path, [Model1, Model2])
         for obj, obj_2 in zip(objs, objs_2):
             self.assertTrue(obj_2.is_equal(obj))
+
+    def test_ignore_empty_rows(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', )
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        wb = Workbook()
+        ws = wb['Nodes'] = Worksheet()
+        ws.append(Row(['Id', 'Name']))
+        ws.append(Row(['a', 'A']))
+        ws.append(Row(['b', 'B']))
+        ws.append(Row(['', '']))
+        ws.append(Row(['d', 'D']))
+        write_workbook(filename, wb)
+
+        objs = obj_model.io.Reader().run(filename, [Node])
+        self.assertEqual(len(objs), 3)
+        
+        with self.assertRaisesRegex(ValueError, r'contains error\(s\)'):
+            obj_model.io.Reader().run(filename, [Node], ignore_empty_rows=False)
 
 
 class TestMetadataModels(unittest.TestCase):
@@ -1331,6 +1356,7 @@ class TestMisc(unittest.TestCase):
                            TestModel,
                            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
                            headings=[['Column_B', 'Column_C']],
+                           ws_metadata=[],
                            validation=None)
         xslx_writer.finalize_workbook()
 
@@ -1861,11 +1887,23 @@ class StrictReadingTestCase(unittest.TestCase):
             def serialize(self):
                 return '{} {}'.format(self.value, self.units)
 
+        class Quantity2(core.Model):
+            value = core.FloatAttribute()
+            units = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('value', 'units')
+                tabular_orientation = core.TabularOrientation.multiple_cells
+
+            def serialize(self):
+                return '{} {}'.format(self.value, self.units)
+
         class Model(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
             attr1 = core.StringAttribute()
             attr2 = core.StringAttribute()
             quantity = core.OneToOneAttribute(Quantity, related_name='model')
+            quantity2 = core.OneToOneAttribute(Quantity2, related_name='model')
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'attr1', 'attr2')
@@ -1876,9 +1914,9 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
-        ws.append(Row([None, None, None, 'Quantity', 'Quantity']))
-        ws.append(Row(['Id', 'Attr1', 'Attr2', 'Value', 'Units']))
-        ws.append(Row(['m1', '1', '2', 1.2, 'g']))
+        ws.append(Row([None, None, None, 'Quantity', 'Quantity', 'Quantity2', 'Quantity2']))
+        ws.append(Row(['Id', 'Attr1', 'Attr2', 'Value', 'Units', 'Value', 'Units']))
+        ws.append(Row(['m1', '1', '2', 1.2, 'g', 1.2, 'g']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
@@ -1886,15 +1924,15 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
-        ws.append(Row([None, None]))
-        ws.append(Row(['Id', 'Attr2']))
-        ws.append(Row(['m1', '2']))
+        ws.append(Row([None, None, 'Quantity2', 'Quantity2']))
+        ws.append(Row(['Id', 'Attr2', 'Value', 'Units']))
+        ws.append(Row(['m1', '2', 1.2, 'g']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_missing_attributes=True)
+        WorkbookReader().run(filename, [Model], ignore_missing_attributes=True, ignore_empty_rows=False)
 
     def test_extra_attribute(self):
         class Model(core.Model):
@@ -2387,7 +2425,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][1][1] = ']'
+        wb['Parents'][3][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2432,7 +2470,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][1][1] = ']'
+        wb['Parents'][3][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2477,7 +2515,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][1][1] = ']'
+        wb['Parents'][3][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2522,7 +2560,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][1][1] = ']'
+        wb['Parents'][3][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),

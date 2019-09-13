@@ -8,14 +8,68 @@
 """
 
 from __future__ import unicode_literals
+from datetime import datetime
 from itertools import chain
 from pathlib import Path
 from random import shuffle
-import collections
 from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
-    InvalidObject, Validator, TabularOrientation)
+                            InvalidObject, Validator, TabularOrientation)
 from wc_utils.util import git
-import obj_model
+import collections
+import importlib
+import obj_model.io
+import os.path
+import pandas
+import random
+import string
+import stringcase
+import types
+import wc_utils.workbook.io
+
+
+def get_schema(path, name=None):
+    """ Get a Python schema
+
+    Args:        
+        path (:obj:`str`): path to Python schema
+        name (:obj:`str`, optional): Python name for schema module
+
+    Returns:
+        :obj:`types.ModuleType`: schema
+    """
+    name = name or rand_schema_name()
+    loader = importlib.machinery.SourceFileLoader(name, path)
+    schema = loader.load_module()
+    return schema
+
+
+def rand_schema_name(len=8):
+    """ Generate a random Python module name of a schema
+
+    Args:
+        len (:obj:`int`, optional): length of random name
+
+    Returns:
+        :obj:`str`: random name for schema
+    """
+    return 'schema_' + ''.join(random.choice(string.ascii_lowercase) for i in range(len))
+
+
+def get_models(module):
+    """ Get the models in a module
+
+    Args:
+        module (:obj:`types.ModuleType`): module
+
+    Returns:
+        :obj:`dict` of :obj:`str`\ : :obj:`Model`: dictionary that maps the names of models to models
+    """
+    models = {}
+    for attr_name in dir(module):
+        attr = getattr(module, attr_name)
+        if isinstance(attr, type) and issubclass(attr, Model):
+            models[attr_name] = attr
+    return models
 
 
 def get_related_models(root_model, include_root_model=False):
@@ -239,22 +293,22 @@ def read_metadata_from_file(pathname):
     reader = obj_model.io.Reader.get_reader(pathname)
 
     metadata_instances = reader().run(pathname, [DataRepoMetadata, SchemaRepoMetadata],
-        ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True,
-        ignore_attribute_order=True)
+                                      ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True,
+                                      ignore_attribute_order=True)
     metadata_class_to_attr = {
         DataRepoMetadata: 'data_repo_metadata',
         SchemaRepoMetadata: 'schema_repo_metadata'
     }
     data_file_metadata_dict = {
         'data_repo_metadata': None,
-         'schema_repo_metadata': None
+        'schema_repo_metadata': None
     }
     for model_class, instances in metadata_instances.items():
         if len(instances) == 1:
             data_file_metadata_dict[metadata_class_to_attr[model_class]] = instances[0]
         elif 1 < len(instances):
             raise ValueError("Multiple instances of {} found in '{}'".format(model_class.__name__,
-                pathname))
+                                                                             pathname))
     return DataFileMetadata(**data_file_metadata_dict)
 
 
@@ -285,7 +339,7 @@ def add_metadata_to_file(pathname, models, schema_package=None):
     objects = obj_model.io.Reader().run(str(path), models=models)
     # write file with metadata
     obj_model.io.Writer().run(str(path), objects, models=models, data_repo_metadata=True,
-        schema_package=schema_package)
+                              schema_package=schema_package)
     return path
 
 
@@ -308,3 +362,312 @@ class DataRepoMetadata(RepoMetadata):
 class SchemaRepoMetadata(RepoMetadata):
     """ Model to store Git version info for the repo that defines the obj_model schema used by a data file """
     pass
+
+
+def get_attrs():
+    """ Get a dictionary of the defined types of attributes for use with :obj:`init_schema`.
+
+    Returns:
+        :obj:`dict`: dictionary which maps the name of each attribute to its instance
+    """
+    attr_names = {}
+    attrs = set()
+    seen = set()
+    to_see = [(obj_model, [])]
+    while to_see:
+        module, module_path = to_see.pop()
+        seen.add(module)
+        for attr_name in dir(module):
+            attr = getattr(module, attr_name)
+            if isinstance(attr, type) and issubclass(attr, Attribute) and \
+                    attr != Attribute and \
+                    attr not in attrs:
+                assert attr_name.endswith('Attribute')
+                attrs.add(attr)
+                short_attr_name, _, _ = attr_name.rpartition('Attribute')
+                attr_names['.'.join(module_path + [short_attr_name])] = attr
+            elif not isinstance(attr, dict) and \
+                    isinstance(attr, types.ModuleType) and \
+                    attr.__package__ == 'obj_model' and \
+                    attr not in seen:
+                to_see.append((attr, module_path + [attr_name]))
+
+    return attr_names
+
+
+def init_schema(filename, name=None, out_filename=None, sbtab=False):
+    """ Initialize an `obj_model` schema from a tabular declarative specification in
+    :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
+
+    This method supports two formats:
+
+    * `obj_model`
+    * `SBtab <https://www.sbtab.net>`_
+
+    The tabular specification should contain the following columns for each format:
+
+    .. table:: Computational prediction tools that can generate data which can be used to build, calibrate, and validate WC models.
+        :name: tab_prediction_tools
+
+        ===================  ==================  ========
+        `obj_model`          SBtab               Optional
+        ===================  ==================  ========
+        Name                 !Name                       
+        Type                 !Type                       
+        Parent               !IsPartOf                   
+        Format               !Format                     
+        Verbose name         !VerboseName        Y       
+        Verbose name plural  !VerboseNamePlural  Y       
+        Description          !Description        Y        
+
+    Args:
+        filename (:obj:`str`): path to 
+        out_filename (:obj:`str`, optional): path to save schema
+
+    Returns:
+        :obj:`types.ModuleType`: module with classes
+
+    Raises:
+        :obj:`ValueError`: if schema specification is not in a supported format or 
+            the schema specification is invalid
+    """
+    from obj_model.io import WorkbookReader
+
+    base, ext = os.path.splitext(filename)
+    if ext in ['.xlsx']:
+        if sbtab:
+            schema_sheet_name = 'Definition'
+        else:
+            schema_sheet_name = 'Schema'
+        if sbtab:
+            schema_sheet_name = '!!' + schema_sheet_name
+    elif ext in ['.csv', '.tsv']:
+        if '*' in filename:
+            if sbtab:
+                schema_sheet_name = 'Definition'
+            else:
+                schema_sheet_name = 'Schema'
+            if sbtab:
+                schema_sheet_name = '!!' + schema_sheet_name
+        else:
+            schema_sheet_name = ''
+    else:
+        raise ValueError('{} format is not supported'.format(ext))
+
+    wb = wc_utils.workbook.io.read(filename)
+    ws = wb[schema_sheet_name]
+
+    if sbtab:
+        name_col_name = '!ComponentName'
+        type_col_name = '!ComponentType'
+        parent_col_name = '!IsPartOf'
+        format_col_name = '!Format'
+        verbose_name_col_name = '!VerboseName'
+        verbose_name_plural_col_name = '!VerboseNamePlural'
+        desc_col_name = '!Description'
+
+        class_type = 'Table'
+        attr_type = 'Column'
+    else:
+        name_col_name = 'Name'
+        type_col_name = 'Type'
+        parent_col_name = 'Parent'
+        format_col_name = 'Format'
+        verbose_name_col_name = 'Verbose name'
+        verbose_name_plural_col_name = 'Verbose name plural'
+        desc_col_name = 'Description'
+
+        class_type = 'Class'
+        attr_type = 'Attribute'
+
+    rows = ws
+    ws_metadata = WorkbookReader.parse_ws_metadata(rows, sbtab=sbtab)
+    if sbtab:
+        assert ws_metadata['TableType'] == 'Definition', "TableType must be 'Definition'"
+
+    header_row = rows[0]
+    if sbtab:
+        assert all(cell.startswith('!') for cell in header_row)
+    rows = rows[1:]
+
+    cls_specs = {}
+    for row_list in rows:
+        row = {}
+        for header, cell in zip(header_row, row_list):
+            row[header] = cell
+
+        if row[type_col_name] == class_type:
+            cls_name = row[name_col_name]
+            if cls_name in cls_specs:
+                cls = cls_specs[cls_name]
+            else:
+                cls = cls_specs[cls_name] = {
+                    'name': cls_name,
+                    'attrs': {},
+                    'attr_order': [],
+                }
+
+            if row[parent_col_name]:
+                raise ValueError('Class "{}" cannot have a parent'.format(cls_name))
+
+            cls['tab_orientation'] = TabularOrientation[row[format_col_name] or 'row']
+
+            if sbtab:
+                def_verbose_name = '!' + cls_name
+                def_verbose_name_plural = '!' + cls_name
+            else:
+                def_verbose_name = None
+                def_verbose_name_plural = None
+            cls['verbose_name'] = row.get(verbose_name_col_name, def_verbose_name) or def_verbose_name
+            cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, def_verbose_name_plural) or def_verbose_name_plural
+            cls['desc'] = row.get(desc_col_name, None) or None
+
+        elif row[type_col_name] == attr_type:
+            cls_name = row[parent_col_name]
+            if cls_name in cls_specs:
+                cls = cls_specs[cls_name]
+            else:
+                cls = cls_specs[cls_name] = {
+                    'name': cls_name,
+                    'attrs': {},
+                    'attr_order': [],
+                    'tab_orientation': TabularOrientation.row,
+                    'verbose_name': None,
+                    'verbose_name_plural': None,
+                    'desc': None,
+                }
+
+            attr_name = stringcase.snakecase(row[name_col_name])
+
+            if attr_name == 'Meta':
+                raise ValueError('"{}" cannot have attribute with name "Meta"'.format(
+                    cls_name))  # pragma: no cover # unreachable because snake case is all lowercase
+            if attr_name in cls['attrs']:
+                raise ValueError('Attribute "{}" of "{}" can only be defined once'.format(
+                    row[name_col_name], cls_name))
+
+            cls['attrs'][attr_name] = {
+                'name': attr_name,
+                'type': row[format_col_name],
+                'desc': row.get(desc_col_name, None),
+                'verbose_name': row.get(verbose_name_col_name, '!' + row[name_col_name])
+            }
+            cls['attr_order'].append(attr_name)
+
+        else:
+            raise ValueError('Type "{}" is not supported'.format(row[type_col_name]))
+
+    module_name = name or rand_schema_name()
+    module = type(module_name, (types.ModuleType, ), {})
+    all_attrs = get_attrs()
+    for cls_spec in cls_specs.values():
+        meta_attrs = {
+            'tabular_orientation': cls_spec['tab_orientation'],
+            'attribute_order': tuple(cls_spec['attr_order']),
+            'help': cls_spec['desc'],
+        }
+        if cls_spec['verbose_name']:
+            meta_attrs['verbose_name'] = cls_spec['verbose_name']
+        if cls_spec['verbose_name_plural']:
+            meta_attrs['verbose_name_plural'] = cls_spec['verbose_name_plural']
+
+        attrs = {
+            '__module__': module_name,
+            '__doc__': cls_spec['desc'],
+            'Meta': type('Meta', (Model.Meta, ), meta_attrs),
+        }
+        for attr_spec in cls_spec['attrs'].values():
+            attr_type_spec, _, args = attr_spec['type'].partition('(')
+            attr_type = all_attrs[attr_type_spec]
+
+            if args:
+                attr = eval('func(' + args, {}, {'func': attr_type})
+            else:
+                attr = attr_type()
+            attr.verbose_name = attr_spec['verbose_name']
+            attr.help = attr_spec['desc']
+            attrs[attr_spec['name']] = attr
+
+        cls = type(cls_spec['name'], (Model, ), attrs)
+        setattr(module, cls_spec['name'], cls)
+
+    if out_filename:
+        with open(out_filename, 'w') as file:
+            file.write('# Schema automatically generated at {:%Y-%m-%d %H:%M:%S}\n\n'.format(
+                datetime.now()))
+
+            file.write('import obj_model\n')
+            obj_model_modules = set()
+            for cls_spec in cls_specs.values():
+                for attr_spec in cls_spec['attrs'].values():
+                    obj_model_modules.add(attr_spec['type'].rpartition('.')[0])
+            if '' in obj_model_modules:
+                obj_model_modules.remove('')
+            for obj_model_module in obj_model_modules:
+                file.write('import obj_model.{}\n'.format(obj_model_module))
+
+            for cls_spec in cls_specs.values():
+                file.write('\n')
+                file.write('\n')
+                file.write('class {}(obj_model.Model):\n'.format(cls_spec['name']))
+                if cls_spec['desc']:
+                    file.write('    """ {} """\n\n'.format(cls_spec['desc']))
+                for attr_name in cls_spec['attr_order']:
+                    attr_spec = cls_spec['attrs'][attr_name]
+                    attr_type = attr_spec['type']
+                    if '(' in attr_type:
+                        attr_type = attr_type.strip()
+                        attr_type = attr_type.replace('(', 'Attribute(', 1)
+                        attr_type = attr_type[0:-1] + ", verbose_name='{}')".format(
+                            attr_spec['verbose_name'].replace("'", "\'"))
+                    else:
+                        attr_type += "Attribute(verbose_name='{}')".format(
+                            attr_spec['verbose_name'].replace("'", "\'"))
+                    file.write('    {} = obj_model.{}\n'.format(attr_spec['name'], attr_type))
+
+                file.write('\n')
+                file.write('    class Meta(obj_model.Model.Meta):\n')
+                file.write("        tabular_orientation = obj_model.TabularOrientation.{}\n".format(
+                    cls_spec['tab_orientation'].name))
+                file.write("        attribute_order = ('{}',)\n".format(
+                    "', '".join(cls_spec['attr_order'])
+                ))
+                file.write("        verbose_name = '{}'\n".format(
+                    cls_spec['verbose_name'].replace("'", "\'")
+                ))
+                file.write("        verbose_name_plural = '{}'\n".format(
+                    cls_spec['verbose_name_plural'].replace("'", "\'")
+                ))
+                if cls_spec['desc']:
+                    file.write("        help = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
+
+    return module
+
+
+def to_pandas(objs, models=None, get_related=True,
+              include_all_attributes=True, validate=True,
+              sbtab=False):
+    """ Generate a pandas representation of a collection of objects
+
+    Args:
+        objs (:obj:`list` of :obj:`Model`): objects
+        models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
+            appear as worksheets; all models which are not in `models` will
+            follow in alphabetical order
+        get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
+        include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+            not explictly included in `Model.Meta.attribute_order`
+        validate (:obj:`bool`, optional): if :obj:`True`, validate the data
+        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+
+    Returns:
+        :obj:`dict`: dictionary that maps models (:obj:`Model`) to 
+            the instances of each model (:obj:`pandas.DataFrame`)
+    """
+    from obj_model.io import PandasWriter
+    return PandasWriter().run(objs,
+                              models=models,
+                              get_related=get_related,
+                              include_all_attributes=include_all_attributes,
+                              validate=validate,
+                              sbtab=sbtab)

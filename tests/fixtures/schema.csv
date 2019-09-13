@@ -1,0 +1,10 @@
+!!SBtab TableID='Definition' TableName='Table and column definitions' TableType='Definition' SBtabVersion='1.0',,,,
+!ComponentName,!ComponentType,!IsPartOf,!Format,!Description
+Parent,Table,,row,Represents a parent
+Id,Column,Parent,Slug,Identifier
+Name,Column,Parent,String,Name
+Id,Column,Child,Slug,Identifier
+Name,Column,Child,String,Name
+Parents,Column,Child,"ManyToMany('Parent', related_name='children')",Parents
+Formula,Column,Child,chem.EmpiricalFormula,Empirical formula
+Child,Table,,row,Represents a child

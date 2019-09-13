@@ -2336,7 +2336,8 @@ class GitRepo(object):
             :obj:`str`: the pathname to a temporary directory
         """
         for temp_dir in self.temp_dirs:
-            shutil.rmtree(temp_dir)
+            if os.path.isdir(temp_dir):
+                shutil.rmtree(temp_dir)
 
     def clone_repo_from_url(self, url, branch='master', directory=None):
         """ Clone a repo from an URL

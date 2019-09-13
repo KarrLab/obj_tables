@@ -8,11 +8,14 @@
 """
 from six import string_types
 import git
+import numpy.testing
+import obj_model.io
 import os
 import shutil
 import sys
 import tempfile
 import unittest
+import wc_utils.workbook.io
 from obj_model import core, utils
 from obj_model.utils import DataRepoMetadata, SchemaRepoMetadata
 from wc_utils.util.git import GitHubRepoForTests, RepoMetadataCollectionType
@@ -125,8 +128,8 @@ class TestUtils(unittest.TestCase):
         (root, nodes, leaves) = (self.root, self.nodes, self.leaves)
         objects = [root] + nodes + leaves
         for grouped_objects in [
-            utils.group_objects_by_model(objects),
-            utils.group_objects_by_model(objects + nodes)]:
+                utils.group_objects_by_model(objects),
+                utils.group_objects_by_model(objects + nodes)]:
             self.assertEqual(grouped_objects[Root], [root])
             self.assertEqual(set(grouped_objects[Node]), set(nodes))
             self.assertEqual(set(grouped_objects[Leaf]), set(leaves))
@@ -345,3 +348,295 @@ class TestMetadata(unittest.TestCase):
             self.assertEqual(metadata.branch, 'master')
             self.assertTrue(isinstance(metadata.revision, str))
             self.assertEqual(len(metadata.revision), 40)
+
+    def test_get_attrs(self):
+        attrs = utils.get_attrs()
+        self.assertIn('String', attrs)
+        self.assertNotIn('core.String', attrs)
+        self.assertNotIn('core.StringAttribute', attrs)
+        self.assertNotIn('StringAttribute', attrs)
+        self.assertIn('chem.EmpiricalFormula', attrs)
+
+
+class InitSchemaTestCase(unittest.TestCase):
+    def setUp(self):
+        self.tmp_dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dirname)
+
+    def test_get_models(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.init_schema('tests/fixtures/schema.csv',
+                                   out_filename=out_filename,
+                                   sbtab=True)
+        self.assertEqual(sorted(utils.get_models(schema).keys()), ['Child', 'Parent'])
+
+        schema = utils.get_schema(out_filename)
+        self.assertEqual(sorted(utils.get_models(schema).keys()), ['Child', 'Parent'])
+
+    def test_rand_schema_name(self):
+        name = utils.rand_schema_name(len=8)
+        self.assertTrue(name.startswith('schema_'))
+        self.assertEqual(len(name), len('schema_') + 8)
+
+    def test_init_schema(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.init_schema('tests/fixtures/schema.csv',
+                                   out_filename=out_filename,
+                                   sbtab=True)
+
+        p_0 = schema.Parent(id='p_0')
+        c_0 = p_0.children.create(id='c_0')
+        c_1 = p_0.children.create(id='c_1')
+        c_2 = p_0.children.create(id='c_2')
+        c_0._comments = ['A', 'B']
+        c_1._comments = ['C', 'D']
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+        self.assertEqual(p_0_b.children.get_one(id='c_0')._comments, c_0._comments)
+        self.assertEqual(p_0_b.children.get_one(id='c_1')._comments, c_1._comments)
+        self.assertEqual(p_0_b.children.get_one(id='c_2')._comments, c_2._comments)
+
+        # import module and test
+        schema = utils.get_schema(out_filename)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+    def test_init_schema_from_excel(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema_csv = 'tests/fixtures/schema*.csv'
+        schema_xl = os.path.join(self.tmp_dirname, 'schema.xlsx')
+
+        wb = wc_utils.workbook.io.read(schema_csv)
+        wb['!!Definition'] = wb.pop('')
+        wc_utils.workbook.io.write(schema_xl, wb)
+
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.init_schema(schema_xl,
+                                   out_filename=out_filename,
+                                   sbtab=True)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+        # import module and test
+        schema = utils.get_schema(out_filename)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+    def test_init_schema_from_csv_workbook(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema_csv = 'tests/fixtures/schema*.csv'
+        schema_csv_wb = os.path.join(self.tmp_dirname, 'schema-*.csv')
+
+        wb = wc_utils.workbook.io.read(schema_csv)
+        wb['!!Definition'] = wb.pop('')
+        wc_utils.workbook.io.write(schema_csv_wb, wb)
+
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.init_schema(schema_csv_wb,
+                                   out_filename=out_filename,
+                                   sbtab=True)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+        # import module and test
+        schema = utils.get_schema(out_filename)
+
+        p_0 = schema.Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+    def test_init_schema_errors(self):
+        with self.assertRaisesRegex(ValueError, 'format is not supported'):
+            utils.init_schema(os.path.join(self.tmp_dirname, 'schema.txt'), sbtab=True)
+
+        filename = os.path.join(self.tmp_dirname, 'schema.csv')
+        ws_metadata = ['!!SBtab',
+                       "TableID='Definition'",
+                       "TableName='Allowed_types'",
+                       "TableType='Definition'",
+                       "SBtabVersion='1.0'",
+                       ]
+
+        col_headings = [
+            '!ComponentName',
+            '!ComponentType',
+            '!IsPartOf',
+            '!Format',
+            '!Description',
+        ]
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Cls1', 'Table', 'Doc', 'column', ''])))
+        with self.assertRaisesRegex(ValueError, 'cannot have a parent'):
+            utils.init_schema(filename, sbtab=True)
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Attr1', 'Column', 'Cls1', 'String', 'attr1'])))
+            file.write('{}\n'.format(','.join(['Attr1', 'Column', 'Cls1', 'String', 'attr2'])))
+        with self.assertRaisesRegex(ValueError, 'can only be defined once'):
+            utils.init_schema(filename, sbtab=True)
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Cls1', 'Unsupported', 'Doc', 'column', ''])))
+        with self.assertRaisesRegex(ValueError, 'is not supported'):
+            utils.init_schema(filename, sbtab=True)
+
+
+class ToPandasTestCase(unittest.TestCase):
+    def test(self):
+        class Child(core.Model):
+            id = core.SlugAttribute(verbose_name='!Id')
+            name = core.StringAttribute(verbose_name='!Name')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name')
+                verbose_name = '!Child'
+                verbose_name_plural = '!Child'
+
+        class Parent(core.Model):
+            id = core.SlugAttribute(verbose_name='!Id')
+            name = core.StringAttribute(verbose_name='!Name')
+            children = core.ManyToManyAttribute(Child, related_name='parents',
+                                                verbose_name='!Children')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', 'children')
+                verbose_name = '!Parent'
+                verbose_name_plural = '!Parent'
+
+        p_0 = Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+        p_0.children.create(id='c_2')
+
+        dfs = utils.to_pandas([p_0], models=[Parent, Child], sbtab=True)
+        self.assertEqual(dfs[Parent].columns.tolist(), ['Id', 'Name', 'Children'])
+        self.assertEqual(dfs[Child].columns.tolist(), ['Id', 'Name'])
+        self.assertEqual(dfs[Parent].values.tolist(), [['p_0', '', 'c_0, c_1, c_2']])
+        self.assertEqual(dfs[Child].values.tolist(), [['c_0', ''], ['c_1', ''], ['c_2', '']])
+
+    def test_multicell(self):
+        class Child(core.Model):
+            id = core.SlugAttribute(verbose_name='!Id')
+            name = core.StringAttribute(verbose_name='!Name')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name')
+                tabular_orientation = core.TabularOrientation.multiple_cells
+                verbose_name = '!Child'
+                verbose_name_plural = '!Child'
+
+        class Parent(core.Model):
+            id = core.SlugAttribute(verbose_name='!Id')
+            name = core.StringAttribute(verbose_name='!Name')
+            child = core.ManyToOneAttribute(Child, related_name='parents',
+                                            verbose_name='!Child')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', 'child')
+                verbose_name = '!Parent'
+                verbose_name_plural = '!Parent'
+
+        p_0 = Parent(id='p_0')
+        p_0.child = Child(id='c_0')
+        p_1 = Parent(id='p_1')
+        p_1.child = Child(id='c_1')
+
+        dfs = utils.to_pandas([p_0, p_1], models=[Parent, Child], sbtab=True)
+        numpy.testing.assert_array_equal(dfs[Parent].columns.tolist(), [
+            (float('nan'), 'Id'),
+            (float('nan'), 'Name'),
+            ('Child', 'Id'),
+            ('Child', 'Name'),
+        ])
+        self.assertNotIn(Child, dfs)
+        self.assertEqual(dfs[Parent].values.tolist(), [
+            ['p_0', '', 'c_0', ''],
+            ['p_1', '', 'c_1', ''],
+        ])
