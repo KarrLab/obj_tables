@@ -20,7 +20,6 @@ import importlib
 import obj_model.io
 import os.path
 import random
-import re
 import string
 import stringcase
 import types
@@ -426,6 +425,8 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         :obj:`ValueError`: if schema specification is not in a supported format or 
             the schema specification is invalid
     """
+    from obj_model.io import WorkbookReader
+
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
         if sbtab:
@@ -473,28 +474,10 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         class_type = 'Class'
         attr_type = 'Attribute'
 
-    rows = list(ws)
-    metadata_row = None
-    for row in list(rows):
-        if row and isinstance(row[0], str) and row[0].startswith('!!'):
-            if row[0].startswith('!!SBtab'):
-                metadata_row = row
-            rows.remove(row)
-        else:
-            break
+    rows = ws
+    ws_metadata = WorkbookReader.parse_ws_metadata(rows, sbtab=sbtab)
     if sbtab:
-        if not metadata_row:
-            raise ValueError('Schema table must have metadata')
-
-        assert re.match(r"^!!SBtab( +(.*?)='((?:[^'\\]|\\.)*)')* *$", metadata_row[0]), \
-            'Metadata must consist of key-value pairs'
-
-        results = re.findall(r" +(.*?)='((?:[^'\\]|\\.)*)'", 
-            metadata_row[0][7:])
-        metaprops = {key: val for key, val in results}
-
-        assert metaprops['TableType'] == 'Definition', "TableType must be 'Definition'"
-        assert metaprops['SBtabVersion'] == '1.0', "SBtabVersion must be '1.0'"
+        assert ws_metadata['TableType'] == 'Definition', "TableType must be 'Definition'"
 
     header_row = rows[0]
     if sbtab:

@@ -20,6 +20,7 @@ import importlib
 import inspect
 import json
 import os
+import re
 import six
 import stringcase
 import wc_utils.workbook.io
@@ -1259,11 +1260,7 @@ class WorkbookReader(ReaderBase):
         data = reader.read_worksheet(sheet_name)
 
         # strip out rows with table name and description
-        for row in list(data):
-            if row and ((isinstance(row[0], str) and row[0].startswith('!!')) or all(cell in ['', None] for cell in row)):
-                data.remove(row)
-            else:
-                break
+        ws_metadata = self.parse_ws_metadata(data, sbtab=sbtab)        
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1309,6 +1306,47 @@ class WorkbookReader(ReaderBase):
             data = transpose(data)
 
         return (data, row_headings, column_headings)
+
+    @staticmethod
+    def parse_ws_metadata(rows, sbtab=False):
+        """ Parse worksheet metadata
+
+        Args:
+            rows (:obj:`list`): rows
+            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+
+        Returns:
+            :obj:`dict` or :obj:`list`: if :obj:`sbtab`, returns a dictionary of properties;
+                otherwise returns a list of comments
+        """
+        ws_metadata = []
+        for row in list(rows):
+            if row and isinstance(row[0], str) and row[0].startswith('!!'):
+                if sbtab and row[0].startswith('!!SBtab'):
+                    ws_metadata.append(row[0])
+                if not sbtab:
+                    ws_metadata.append(row[0][2:].strip())
+                rows.remove(row)
+            elif row and all(cell in ['', None] for cell in row):
+                rows.remove(row)
+            else:
+                break
+
+        if sbtab:
+            assert len(ws_metadata) == 1, 'Metadata must consist of a list of key-value pairs'
+            assert re.match(r"^!!SBtab( +(.*?)='((?:[^'\\]|\\.)*)')* *$", ws_metadata[0]), \
+                'Metadata must consist of a list of key-value pairs'
+
+            results = re.findall(r" +(.*?)='((?:[^'\\]|\\.)*)'", 
+                ws_metadata[0][7:])
+            
+            ws_metadata = {key: val for key, val in results}
+            
+            assert ws_metadata['SBtabVersion'] == '1.0'
+
+            return ws_metadata
+        else:
+            return ws_metadata
 
     def link_model(self, model, attributes, data, objects, objects_by_primary_attribute, decoded=None):
         """ Construct object graph
