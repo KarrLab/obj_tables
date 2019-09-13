@@ -3393,7 +3393,7 @@ class EnumAttribute(LiteralAttribute):
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
-            enum_class (:obj:`type`): subclass of :obj:`Enum`
+            enum_class (:obj:`type` or :obj:`list`): subclass of :obj:`Enum` or :obj:`list` of enumerated values
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`object`, optional): default value
             default_cleaned_value (:obj:`Enum`, optional): value to replace
@@ -3409,14 +3409,22 @@ class EnumAttribute(LiteralAttribute):
             :obj:`ValueError`: if :obj:`enum_class` is not a subclass of :obj:`Enum`, if :obj:`default` is not an instance
                 of :obj:`enum_class`, or if :obj:`default_cleaned_value` is not an instance of :obj:`enum_class`
         """
-        if not issubclass(enum_class, Enum):
-            raise ValueError('`enum_class` must be a subclass of `Enum`')
-        if default is not None and not isinstance(default, enum_class):
-            raise ValueError(
-                '`default` must be `None` or an instance of `enum_class`')
-        if default_cleaned_value is not None and not isinstance(default_cleaned_value, enum_class):
-            raise ValueError(
-                '`default_cleaned_value` must be `None` or an instance of `enum_class`')
+        if not isinstance(enum_class, type) or not issubclass(enum_class, Enum):
+            enum_class = Enum('AttributeEnum', names=enum_class)
+        if default is not None:
+            if not isinstance(default, enum_class):
+                if default in enum_class.__members__:
+                    default = enum_class[default]
+                else:
+                    raise ValueError(
+                        '`default` must be `None` or an instance of `enum_class`')
+        if default_cleaned_value is not None:
+            if not isinstance(default_cleaned_value, enum_class):
+                if default_cleaned_value in enum_class.__members__:
+                    default_cleaned_value = enum_class[default_cleaned_value]
+                else:
+                    raise ValueError(
+                        '`default_cleaned_value` must be `None` or an instance of `enum_class`')
 
         super(EnumAttribute, self).__init__(default=default,
                                             default_cleaned_value=default_cleaned_value,

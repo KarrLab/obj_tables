@@ -658,8 +658,8 @@ class TestCore(unittest.TestCase):
         class TestEnum(enum.Enum):
             val0 = 0
 
-        with self.assertRaisesRegex(ValueError, 'must be a subclass of `Enum`'):
-            core.EnumAttribute(int)
+        core.EnumAttribute(['a', 'b', 'c'])
+        core.EnumAttribute(['a', 'b', 'c'], default='a', default_cleaned_value='b')
 
         with self.assertRaisesRegex(ValueError, '`default` must be `None` or an instance of `enum_class`'):
             core.EnumAttribute(TestEnum, default=0)

@@ -7,4 +7,5 @@ Id,Column,Child,slug,Identifier
 Name,Column,Child,string,Name
 Parents,Column,Child,"manyToMany('Parent', related_name='children')",Parents
 Formula,Column,Child,chem.EmpiricalFormula,Empirical formula
+Size,Column,Child,"enum(['small', 'medium', 'large'], default='small', default_cleaned_value='small')",Size
 Child,Table,,row,Represents a child
