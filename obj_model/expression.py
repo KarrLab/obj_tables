@@ -63,7 +63,7 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
         """ Serialize related object
 
         Args:
-            expression (:obj:`obj_model.Model`): the referenced Expression
+            expression (:obj:`obj_model.Model`): the referenced `Expression`
             encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
@@ -315,10 +315,10 @@ class Expression(object):
 
     @classmethod
     def deserialize(cls, model_cls, value, objects):
-        """ Deserialize value into an `Expression`
+        """ Deserialize `value` into an `Expression`
 
         Args:
-            model_cls (:obj:`type`): expression class
+            model_cls (:obj:`type`): `Expression` class or subclass
             value (:obj:`str`): string representation of the mathematical expression, in a
                 Python expression
             objects (:obj:`dict`): dictionary of objects which can be used in `expression`, grouped by model
@@ -365,7 +365,7 @@ class Expression(object):
         """ Set the linear coefficients for the related objects
 
         Args:
-            obj (:obj:`Model`): expression object
+            obj (:obj:`Model`): `Expression` object
         """
         model_cls = obj.__class__
         parsed_expr = obj._parsed_expression
@@ -444,7 +444,7 @@ class Expression(object):
             model_obj._parsed_expression)
         cls.set_lin_coeffs(model_obj)
 
-        # check related objects matches the tokens of the _parsed_expression
+        # check that related objects match the tokens of the _parsed_expression
         related_objs = {}
         for related_attr_name, related_attr in model_cls.Meta.attributes.items():
             if isinstance(related_attr, RelatedAttribute):
@@ -467,7 +467,7 @@ class Expression(object):
             attr_err = InvalidAttribute(attr, ['Related objects must match the tokens of the analyzed expression'])
             return InvalidObject(model_obj, [attr_err])
 
-        # check expression is valid
+        # check that expression is valid
         try:
             rv = model_obj._parsed_expression.test_eval()
             if model_obj.Meta.expression_type:
