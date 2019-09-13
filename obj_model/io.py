@@ -1260,7 +1260,7 @@ class WorkbookReader(ReaderBase):
         data = reader.read_worksheet(sheet_name)
 
         # strip out rows with table name and description
-        ws_metadata = self.parse_ws_metadata(data, sbtab=sbtab)        
+        ws_metadata = self.parse_ws_metadata(data, sbtab=sbtab)
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1337,11 +1337,11 @@ class WorkbookReader(ReaderBase):
             assert re.match(r"^!!SBtab( +(.*?)='((?:[^'\\]|\\.)*)')* *$", ws_metadata[0]), \
                 'Metadata must consist of a list of key-value pairs'
 
-            results = re.findall(r" +(.*?)='((?:[^'\\]|\\.)*)'", 
-                ws_metadata[0][7:])
-            
+            results = re.findall(r" +(.*?)='((?:[^'\\]|\\.)*)'",
+                                 ws_metadata[0][7:])
+
             ws_metadata = {key: val for key, val in results}
-            
+
             assert ws_metadata['SBtabVersion'] == '1.0'
 
             return ws_metadata
