@@ -437,7 +437,6 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                 schema_sheet_name = '!!!' + schema_sheet_name
         else:
             schema_sheet_name = ''
-            filename = filename.replace(ext, '*' + ext)
     else:
         raise ValueError('{} format is not supported'.format(ext))
 
