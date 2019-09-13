@@ -422,7 +422,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_xl = os.path.join(self.tmp_dirname, 'schema.xlsx')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['!!!Schema'] = wb.pop('')
+        wb['!!Definition'] = wb.pop('')
         wc_utils.workbook.io.write(schema_xl, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -467,7 +467,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_csv_wb = os.path.join(self.tmp_dirname, 'schema-*.csv')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['!!!Schema'] = wb.pop('')
+        wb['!!Definition'] = wb.pop('')
         wc_utils.workbook.io.write(schema_csv_wb, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -511,6 +511,13 @@ class InitSchemaTestCase(unittest.TestCase):
             utils.init_schema(os.path.join(self.tmp_dirname, 'schema.txt'), sbtab=True)
 
         filename = os.path.join(self.tmp_dirname, 'schema.csv')
+        ws_metadata = ['!!SBtab',
+                       "TableID='Definition'",
+                       "TableName='Allowed_types'",
+                       "TableType='Definition'",
+                       "SBtabVersion='1.0'",
+                       ]
+
         col_headings = [
             '!ComponentName',
             '!ComponentType',
@@ -520,12 +527,14 @@ class InitSchemaTestCase(unittest.TestCase):
         ]
 
         with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
             file.write('{}\n'.format(','.join(col_headings)))
             file.write('{}\n'.format(','.join(['Cls1', 'Table', 'Doc', 'column', ''])))
         with self.assertRaisesRegex(ValueError, 'cannot have a parent'):
             utils.init_schema(filename, sbtab=True)
 
         with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
             file.write('{}\n'.format(','.join(col_headings)))
             file.write('{}\n'.format(','.join(['Attr1', 'Column', 'Cls1', 'String', 'attr1'])))
             file.write('{}\n'.format(','.join(['Attr1', 'Column', 'Cls1', 'String', 'attr2'])))
@@ -533,6 +542,7 @@ class InitSchemaTestCase(unittest.TestCase):
             utils.init_schema(filename, sbtab=True)
 
         with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
             file.write('{}\n'.format(','.join(col_headings)))
             file.write('{}\n'.format(','.join(['Cls1', 'Unsupported', 'Doc', 'column', ''])))
         with self.assertRaisesRegex(ValueError, 'is not supported'):

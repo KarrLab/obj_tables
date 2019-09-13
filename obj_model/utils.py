@@ -20,6 +20,7 @@ import importlib
 import obj_model.io
 import os.path
 import random
+import re
 import string
 import stringcase
 import types
@@ -427,14 +428,20 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
     """
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
-        schema_sheet_name = 'Schema'
         if sbtab:
-            schema_sheet_name = '!!!' + schema_sheet_name
+            schema_sheet_name = 'Definition'
+        else:
+            schema_sheet_name = 'Schema'
+        if sbtab:
+            schema_sheet_name = '!!' + schema_sheet_name
     elif ext in ['.csv', '.tsv']:
         if '*' in filename:
-            schema_sheet_name = 'Schema'
             if sbtab:
-                schema_sheet_name = '!!!' + schema_sheet_name
+                schema_sheet_name = 'Definition'
+            else:
+                schema_sheet_name = 'Schema'
+            if sbtab:
+                schema_sheet_name = '!!' + schema_sheet_name
         else:
             schema_sheet_name = ''
     else:
@@ -447,7 +454,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         name_col_name = '!ComponentName'
         type_col_name = '!ComponentType'
         parent_col_name = '!IsPartOf'
-        format_col_name = '!Format'    
+        format_col_name = '!Format'
         verbose_name_col_name = '!VerboseName'
         verbose_name_plural_col_name = '!VerboseNamePlural'
         desc_col_name = '!Description'
@@ -458,7 +465,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         name_col_name = 'Name'
         type_col_name = 'Type'
         parent_col_name = 'Parent'
-        format_col_name = 'Format'    
+        format_col_name = 'Format'
         verbose_name_col_name = 'Verbose name'
         verbose_name_plural_col_name = 'Verbose name plural'
         desc_col_name = 'Description'
@@ -466,10 +473,38 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         class_type = 'Class'
         attr_type = 'Attribute'
 
+    rows = list(ws)
+    metadata_row = None
+    for row in list(rows):
+        if row and isinstance(row[0], str) and row[0].startswith('!!'):
+            if row[0].startswith('!!SBtab'):
+                metadata_row = row
+            rows.remove(row)
+        else:
+            break
+    if sbtab:
+        if not metadata_row:
+            raise ValueError('Schema table must have metadata')
+
+        assert re.match(r"^!!SBtab( +(.*?)='((?:[^'\\]|\\.)*)')* *$", metadata_row[0]), \
+            'Metadata must consist of key-value pairs'
+
+        results = re.findall(r" +(.*?)='((?:[^'\\]|\\.)*)'", 
+            metadata_row[0][7:])
+        metaprops = {key: val for key, val in results}
+
+        assert metaprops['TableType'] == 'Definition', "TableType must be 'Definition'"
+        assert metaprops['SBtabVersion'] == '1.0', "SBtabVersion must be '1.0'"
+
+    header_row = rows[0]
+    if sbtab:
+        assert all(cell.startswith('!') for cell in header_row)
+    rows = rows[1:]
+
     cls_specs = {}
-    for row_list in ws[1:]:
+    for row_list in rows:
         row = {}
-        for header, cell in zip(ws[0], row_list):
+        for header, cell in zip(header_row, row_list):
             row[header] = cell
 
         if row[type_col_name] == class_type:

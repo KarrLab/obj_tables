@@ -21,6 +21,7 @@ import inspect
 import json
 import os
 import six
+import stringcase
 import wc_utils.workbook.io
 import yaml
 from itertools import chain, compress
@@ -54,7 +55,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
-            sbtab=False):
+            sbtab=False, sbtab_doc_id=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -81,6 +82,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+            sbtab_doc_id (:obj:`str`, optional): document id for use with SBtab
         """
         pass  # pragma: no cover
 
@@ -148,7 +150,7 @@ class JsonWriter(WriterBase):
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None,
-            sbtab=False):
+            sbtab=False, sbtab_doc_id=None):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -173,6 +175,7 @@ class JsonWriter(WriterBase):
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+            sbtab_doc_id (:obj:`str`, optional): document id for use with SBtab
 
         Raises:
             :obj:`ValueError`: if model names are not unique or output format is not supported
@@ -238,7 +241,7 @@ class WorkbookWriter(WriterBase):
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
-            sbtab=False):
+            sbtab=False, sbtab_doc_id=None):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
 
@@ -266,6 +269,7 @@ class WorkbookWriter(WriterBase):
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+            sbtab_doc_id (:obj:`str`, optional): document id for use with SBtab
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -348,7 +352,7 @@ class WorkbookWriter(WriterBase):
         # add table of contents to workbook
         all_models = models + unordered_models
         if toc:
-            self.write_toc(writer, all_models, grouped_objects, sbtab=sbtab)
+            self.write_toc(writer, all_models, grouped_objects, sbtab=sbtab, sbtab_doc_id=sbtab_doc_id)
 
         # add sheets to workbook
         sheet_models = list(filter(lambda model: model.Meta.tabular_orientation not in [
@@ -361,12 +365,12 @@ class WorkbookWriter(WriterBase):
                 objects = []
 
             self.write_model(writer, model, objects, sheet_models, include_all_attributes=include_all_attributes, encoded=encoded,
-                             extra_entries=extra_entries, sbtab=sbtab)
+                             extra_entries=extra_entries, sbtab=sbtab, sbtab_doc_id=sbtab_doc_id)
 
         # finalize workbook
         writer.finalize_workbook()
 
-    def write_toc(self, writer, models, grouped_objects, sbtab=False):
+    def write_toc(self, writer, models, grouped_objects, sbtab=False, sbtab_doc_id=None):
         """ Write a worksheet with a table of contents
 
         Args:
@@ -374,13 +378,26 @@ class WorkbookWriter(WriterBase):
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear in the table of contents
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+            sbtab_doc_id (:obj:`str`, optional): document id for use with SBtab
         """
         if sbtab:
             sheet_name = DEFAULT_SBTAB_TOC_NAME
+            ws_metadata = ["!!SBtab",
+                           "TableID='{}'".format(DEFAULT_SBTAB_TOC_NAME),
+                           "TableName='{}'".format(DEFAULT_SBTAB_TOC_NAME),
+                           "TableType='{}'".format(DEFAULT_SBTAB_TOC_NAME),
+                           "SBtabVersion='{}'".format('1.0'),
+                           ]
+            if sbtab_doc_id:
+                ws_metadata.insert(1, "DocumentID='{}'".format(sbtab_doc_id))
+            content = [
+                [' '.join(ws_metadata)],
+                ['!Table', '!Description', '!NumberOfObjects'],
+            ]
         else:
             sheet_name = DEFAULT_TOC_NAME
+            content = [['Table', 'Description', 'Number of objects']]
 
-        content = [['Table', 'Description', 'Number of objects']]
         hyperlinks = []
         for i_model, model in enumerate(models):
             if model.Meta.tabular_orientation in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
@@ -410,7 +427,7 @@ class WorkbookWriter(WriterBase):
         writer.write_worksheet(sheet_name, content, style=style)
 
     def write_model(self, writer, model, objects, sheet_models, include_all_attributes=True, encoded=None, extra_entries=0,
-                    sbtab=False):
+                    sbtab=False, sbtab_doc_id=None):
         """ Write a list of model objects to a file
 
         Args:
@@ -423,12 +440,14 @@ class WorkbookWriter(WriterBase):
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
             extra_entries (:obj:`int`, optional): additional entries to display
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+            sbtab_doc_id (:obj:`str`, optional): document id for use with SBtab
         """
         attrs, _, headings, merge_ranges, field_validations, ws_metadata = get_fields(
             model,
             include_all_attributes=include_all_attributes,
             sheet_models=sheet_models,
-            sbtab=sbtab)
+            sbtab=sbtab,
+            sbtab_doc_id=sbtab_doc_id)
 
         # objects
         model.sort(objects)
@@ -484,7 +503,7 @@ class WorkbookWriter(WriterBase):
             style.auto_filter = True
             style.head_rows = len(ws_metadata) + len(column_headings)
             if merge_ranges:
-                style.merge_ranges = merge_ranges                
+                style.merge_ranges = merge_ranges
             else:
                 style.merge_ranges = []
         else:
@@ -494,12 +513,12 @@ class WorkbookWriter(WriterBase):
             row_headings = headings
             column_headings = []
             style.head_rows = len(ws_metadata)
-            style.head_columns = len(row_headings)            
+            style.head_columns = len(row_headings)
             if merge_ranges:
                 n = len(ws_metadata)
                 style.merge_ranges = [(start_col + n, start_row - n, end_col + n, end_row - n)
                                       for start_row, start_col, end_row, end_col in merge_ranges]
-            else:                
+            else:
                 style.merge_ranges = []
 
         # merge data, headings
@@ -584,7 +603,7 @@ class Writer(WriterBase):
     def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
-            sbtab=False):
+            sbtab=False, sbtab_doc_id=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -612,6 +631,7 @@ class Writer(WriterBase):
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+            sbtab_doc_id (:obj:`str`, optional): document id for use with SBtab
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, models=models, get_related=get_related,
@@ -619,7 +639,7 @@ class Writer(WriterBase):
                      title=title, description=description, keywords=keywords,
                      language=language, creator=creator, toc=toc, extra_entries=extra_entries,
                      data_repo_metadata=data_repo_metadata, schema_package=schema_package,
-                     sbtab=sbtab)
+                     sbtab=sbtab, sbtab_doc_id=sbtab_doc_id)
 
 
 class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
@@ -1556,8 +1576,8 @@ def convert(source, destination, models,
         kwargs['ignore_extra_attributes'] = ignore_extra_attributes
         kwargs['ignore_attribute_order'] = ignore_attribute_order
         kwargs['ignore_empty_rows'] = ignore_empty_rows
-    objects = reader.run(source, models=models, group_objects_by_model=False, 
-        sbtab=sbtab, **kwargs)
+    objects = reader.run(source, models=models, group_objects_by_model=False,
+                         sbtab=sbtab, **kwargs)
 
     writer.run(destination, objects, models=models, get_related=False, sbtab=sbtab)
 
@@ -1590,7 +1610,7 @@ def create_template(path, models, title=None, description=None, keywords=None,
 
 
 def get_fields(cls, include_all_attributes=True, sheet_models=None,
-               sbtab=False):
+               sbtab=False, sbtab_doc_id=None):
     """ Get the attributes, headings, and validation for a worksheet
 
     Args:
@@ -1600,6 +1620,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None,
         sheet_models (:obj:`list` of :obj:`Model`, optional): list of models encoded as separate worksheets; used
             to setup Excel validation for related attributes
         sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab formatting
+        sbtab_doc_id (:obj:`str`, optional): document id for use with SBtab
 
     Returns:
         :obj:`tuple`:
@@ -1642,10 +1663,20 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None,
     attrs = get_ordered_attributes(cls, include_all_attributes=include_all_attributes)
 
     # worksheet metadata
-    ws_metadata = [['!! ' + cls.Meta.verbose_name_plural]]
-    if cls.Meta.help:
-        ws_metadata.append(['!! ' + cls.Meta.help])
-    ws_metadata.append([None])
+    if sbtab:
+        ws_metadata = [[' '.join(["!!SBtab",
+                                  "TableID='{}'".format(cls.__name__),
+                                  "TableName='{}'".format(cls.Meta.help.replace("'", "\'")),
+                                  "TableType='{}'".format(cls.__name__),
+                                  "SBtabVersion='{}'".format('1.0'),
+                                  ])]]
+        if sbtab_doc_id:
+            ws_metadata[0].insert(1, "DocumentID='{}'".format(sbtab_doc_id))
+    else:
+        ws_metadata = [['!! ' + cls.Meta.verbose_name_plural]]
+        if cls.Meta.help:
+            ws_metadata.append(['!! ' + cls.Meta.help])
+        ws_metadata.append([None])
 
     # column labels
     sub_attrs = []

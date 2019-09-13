@@ -1,3 +1,4 @@
+!!SBtab TableID='Definition' TableName='Table and column definitions' TableType='Definition' SBtabVersion='1.0',,,,
 !ComponentName,!ComponentType,!IsPartOf,!Format,!Description
 Parent,Table,,row,Represents a parent
 Id,Column,Parent,Slug,Identifier

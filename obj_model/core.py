@@ -153,7 +153,11 @@ class ModelMeta(type):
 
     @classmethod
     def validate_meta(metacls, name, bases, namespace): 
-        reserved_names = [DEFAULT_TOC_NAME, DEFAULT_SBTAB_TOC_NAME]
+        reserved_names = [
+            DEFAULT_TOC_NAME, 
+            DEFAULT_SBTAB_TOC_NAME,
+            'Definition',
+            ]
 
         if namespace['Meta'].verbose_name in reserved_names:
             raise ValueError('Verbose name for {} cannot be {}, '
