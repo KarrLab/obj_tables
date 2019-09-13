@@ -12,13 +12,14 @@ from datetime import datetime
 from itertools import chain
 from pathlib import Path
 from random import shuffle
-import collections
 from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
                             InvalidObject, Validator, TabularOrientation)
 from wc_utils.util import git
+import collections
 import importlib
 import obj_model.io
 import os.path
+import pandas
 import random
 import string
 import stringcase
@@ -641,3 +642,32 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     file.write("        help = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
 
     return module
+
+
+def to_pandas(objs, models=None, get_related=True,
+              include_all_attributes=True, validate=True,
+              sbtab=False):
+    """ Generate a pandas representation of a collection of objects
+
+    Args:
+        objs (:obj:`list` of :obj:`Model`): objects
+        models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
+            appear as worksheets; all models which are not in `models` will
+            follow in alphabetical order
+        get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
+        include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+            not explictly included in `Model.Meta.attribute_order`
+        validate (:obj:`bool`, optional): if :obj:`True`, validate the data
+        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+
+    Returns:
+        :obj:`dict`: dictionary that maps models (:obj:`Model`) to 
+            the instances of each model (:obj:`pandas.DataFrame`)
+    """
+    from obj_model.io import PandasWriter
+    return PandasWriter().run(objs,
+                              models=models,
+                              get_related=get_related,
+                              include_all_attributes=include_all_attributes,
+                              validate=validate,
+                              sbtab=sbtab)

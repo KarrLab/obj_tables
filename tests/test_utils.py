@@ -8,6 +8,7 @@
 """
 from six import string_types
 import git
+import numpy.testing
 import obj_model.io
 import os
 import shutil
@@ -565,3 +566,77 @@ class InitSchemaTestCase(unittest.TestCase):
             file.write('{}\n'.format(','.join(['Cls1', 'Unsupported', 'Doc', 'column', ''])))
         with self.assertRaisesRegex(ValueError, 'is not supported'):
             utils.init_schema(filename, sbtab=True)
+
+
+class ToPandasTestCase(unittest.TestCase):
+    def test(self):
+        class Child(core.Model):
+            id = core.SlugAttribute(verbose_name='!Id')
+            name = core.StringAttribute(verbose_name='!Name')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name')
+                verbose_name = '!Child'
+                verbose_name_plural = '!Child'
+
+        class Parent(core.Model):
+            id = core.SlugAttribute(verbose_name='!Id')
+            name = core.StringAttribute(verbose_name='!Name')
+            children = core.ManyToManyAttribute(Child, related_name='parents',
+                                                verbose_name='!Children')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', 'children')
+                verbose_name = '!Parent'
+                verbose_name_plural = '!Parent'
+
+        p_0 = Parent(id='p_0')
+        p_0.children.create(id='c_0')
+        p_0.children.create(id='c_1')
+        p_0.children.create(id='c_2')
+
+        dfs = utils.to_pandas([p_0], models=[Parent, Child], sbtab=True)
+        self.assertEqual(dfs[Parent].columns.tolist(), ['Id', 'Name', 'Children'])
+        self.assertEqual(dfs[Child].columns.tolist(), ['Id', 'Name'])
+        self.assertEqual(dfs[Parent].values.tolist(), [['p_0', '', 'c_0, c_1, c_2']])
+        self.assertEqual(dfs[Child].values.tolist(), [['c_0', ''], ['c_1', ''], ['c_2', '']])
+
+    def test_multicell(self):
+        class Child(core.Model):
+            id = core.SlugAttribute(verbose_name='!Id')
+            name = core.StringAttribute(verbose_name='!Name')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name')
+                tabular_orientation = core.TabularOrientation.multiple_cells
+                verbose_name = '!Child'
+                verbose_name_plural = '!Child'
+
+        class Parent(core.Model):
+            id = core.SlugAttribute(verbose_name='!Id')
+            name = core.StringAttribute(verbose_name='!Name')
+            child = core.ManyToOneAttribute(Child, related_name='parents',
+                                            verbose_name='!Child')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', 'child')
+                verbose_name = '!Parent'
+                verbose_name_plural = '!Parent'
+
+        p_0 = Parent(id='p_0')
+        p_0.child = Child(id='c_0')
+        p_1 = Parent(id='p_1')
+        p_1.child = Child(id='c_1')
+
+        dfs = utils.to_pandas([p_0, p_1], models=[Parent, Child], sbtab=True)
+        numpy.testing.assert_array_equal(dfs[Parent].columns.tolist(), [
+            (float('nan'), 'Id'),
+            (float('nan'), 'Name'),
+            ('Child', 'Id'),
+            ('Child', 'Name'),
+        ])
+        self.assertNotIn(Child, dfs)
+        self.assertEqual(dfs[Parent].values.tolist(), [
+            ['p_0', '', 'c_0', ''],
+            ['p_1', '', 'c_1', ''],
+        ])

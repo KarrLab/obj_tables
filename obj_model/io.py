@@ -20,6 +20,7 @@ import importlib
 import inspect
 import json
 import os
+import pandas
 import re
 import six
 import stringcase
@@ -489,9 +490,11 @@ class WorkbookWriter(WriterBase):
         validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.tabular_orientation.name],
                                          fields=field_validations)
 
-        self.write_sheet(writer, model, data, headings, ws_metadata, validation, extra_entries=extra_entries, merge_ranges=merge_ranges)
+        self.write_sheet(writer, model, data, headings, ws_metadata, validation,
+                         extra_entries=extra_entries, merge_ranges=merge_ranges, sbtab=sbtab)
 
-    def write_sheet(self, writer, model, data, headings, ws_metadata, validation, extra_entries=0, merge_ranges=None):
+    def write_sheet(self, writer, model, data, headings, ws_metadata, validation,
+                    extra_entries=0, merge_ranges=None, sbtab=False):
         """ Write data to sheet
 
         Args:
@@ -504,6 +507,7 @@ class WorkbookWriter(WriterBase):
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
             merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
+            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
         style = self.create_worksheet_style(model, extra_entries=extra_entries)
         if model.Meta.tabular_orientation == TabularOrientation.row:
@@ -583,6 +587,80 @@ class WorkbookWriter(WriterBase):
             style.extra_columns = extra_entries
 
         return style
+
+
+class PandasWriter(WorkbookWriter):
+    """ Write model instances to a dictionary of :obj:`pandas.DataFrame` 
+
+    Attributes:
+        _data_frames (:obj:`dict`): dictionary that maps models (:obj:`Model`)
+            to their instances (:obj:`pandas.DataFrame`)
+    """
+
+    def __init__(self):
+        self._data_frames = None
+
+    def run(self, objects, models=None, get_related=True,
+            include_all_attributes=True, validate=True,
+            sbtab=False):
+        """ Write model instances to a dictionary of :obj:`pandas.DataFrame`
+
+        Args:
+            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
+            models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
+                appear as worksheets; all models which are not in `models` will
+                follow in alphabetical order
+            get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
+            include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
+                not explictly included in `Model.Meta.attribute_order`
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
+            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+
+        Returns:
+            :obj:`dict`: dictionary that maps models (:obj:`Model`) to their
+                instances (:obj:`pandas.DataFrame`)
+        """
+        self._data_frames = {}
+        super(PandasWriter, self).run('*.csv', objects,
+                                      models=models,
+                                      get_related=get_related,
+                                      include_all_attributes=include_all_attributes,
+                                      validate=validate,
+                                      toc=False,
+                                      sbtab=sbtab)
+        return self._data_frames
+
+    def write_sheet(self, writer, model, data, headings, ws_metadata, validation,
+                    extra_entries=0, merge_ranges=None, sbtab=False):
+        """ Write data to sheet
+
+        Args:
+            writer (:obj:`wc_utils.workbook.io.Writer`): io writer
+            model (:obj:`type`): model
+            data (:obj:`list` of :obj:`list` of :obj:`object`): list of list of cell values
+            headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headingsvalidations
+            ws_metadata (:obj:`list` of :obj:`list` of :obj:`str`): worksheet metadata (name, description)
+                to print at the top of the worksheet
+            validation (:obj:`WorksheetValidation`): validation
+            extra_entries (:obj:`int`, optional): additional entries to display
+            merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
+            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+        """
+        if len(headings) == 1:
+            columns = []
+            for h in headings[0]:
+                if sbtab and h.startswith('!'):
+                    columns.append(h[1:])
+                else:
+                    columns.append(h)
+        else:
+            for row in headings:
+                for i_cell, cell in enumerate(row):
+                    if sbtab and isinstance(cell, str) and cell.startswith('!'):
+                        row[i_cell] = cell[1:]
+            columns = pandas.MultiIndex.from_tuples(transpose(headings))
+
+        self._data_frames[model] = pandas.DataFrame(data, columns=columns)
 
 
 class Writer(WriterBase):
