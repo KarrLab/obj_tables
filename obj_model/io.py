@@ -396,12 +396,14 @@ class WorkbookWriter(WriterBase):
                            ]
             if sbtab_doc_id:
                 ws_metadata.insert(1, "DocumentID='{}'".format(sbtab_doc_id))
+            head_rows = 2
             content = [
                 [' '.join(ws_metadata)],
                 ['!Table', '!Description', '!NumberOfObjects'],
             ]
         else:
             sheet_name = DEFAULT_TOC_NAME
+            head_rows = 1
             content = [['Table', 'Description', 'Number of objects']]
 
         hyperlinks = []
@@ -422,7 +424,7 @@ class WorkbookWriter(WriterBase):
             head_row_fill_pattern='solid',
             head_row_fill_fgcolor='CCCCCC',
             merged_head_fill_fgcolor='AAAAAA',
-            head_rows=1,
+            head_rows=head_rows,
             head_columns=0,
             extra_rows=0,
             extra_columns=0,
@@ -487,6 +489,8 @@ class WorkbookWriter(WriterBase):
             data.append(obj_data)
 
         # validations
+        if model.Meta.tabular_orientation == TabularOrientation.column:
+            field_validations = [None] * len(ws_metadata) + field_validations
         validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.tabular_orientation.name],
                                          fields=field_validations)
 

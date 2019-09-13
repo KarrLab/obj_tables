@@ -264,9 +264,9 @@ class TestCore(unittest.TestCase):
         leaf = Leaf()
 
         self.assertEqual(set(vars(root).keys()), set(
-            ('_source', 'label', 'leaves', 'leaves2')))
+            ('_source', '_comments', 'label', 'leaves', 'leaves2')))
         self.assertEqual(set(vars(leaf).keys()), set(
-            ('_source', 'root', 'id', 'name')))
+            ('_source', '_comments', 'root', 'id', 'name')))
 
     def test_attribute_order(self):
         self.assertLessEqual(set(Root.Meta.attribute_order), set(Root.Meta.attributes.keys()))

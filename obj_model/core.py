@@ -58,7 +58,7 @@ import wc_utils.workbook.io
 
 
 DEFAULT_TOC_NAME = 'Table of contents'
-DEFAULT_SBTAB_TOC_NAME = '!!!README'
+DEFAULT_SBTAB_TOC_NAME = '!README'
 
 class ModelMerge(int, Enum):
     """ Types of model merging operations """

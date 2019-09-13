@@ -578,7 +578,15 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         }
         for attr_spec in cls_spec['attrs'].values():
             attr_type_spec, _, args = attr_spec['type'].partition('(')
+            if sbtab:
+                attr_type_spec_module, sep, attr_type_spec_class = attr_type_spec.rpartition('.')
+                attr_type_spec = attr_type_spec_module + sep + stringcase.capitalcase(attr_type_spec_class)
             attr_type = all_attrs[attr_type_spec]
+            attr_spec['python_type'] = attr_type_spec + 'Attribute'
+            if args:
+                attr_spec['python_args'] = args[0:-1] + ", verbose_name='{}'".format(attr_spec['verbose_name'])
+            else:
+                attr_spec['python_args'] = "verbose_name='{}'".format(attr_spec['verbose_name'])
 
             if args:
                 attr = eval('func(' + args, {}, {'func': attr_type})
@@ -596,15 +604,14 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             file.write('# Schema automatically generated at {:%Y-%m-%d %H:%M:%S}\n\n'.format(
                 datetime.now()))
 
-            file.write('import obj_model\n')
-            obj_model_modules = set()
+            imported_modules = set(['obj_model'])
             for cls_spec in cls_specs.values():
                 for attr_spec in cls_spec['attrs'].values():
-                    obj_model_modules.add(attr_spec['type'].rpartition('.')[0])
-            if '' in obj_model_modules:
-                obj_model_modules.remove('')
-            for obj_model_module in obj_model_modules:
-                file.write('import obj_model.{}\n'.format(obj_model_module))
+                    imported_modules.add('obj_model.' + attr_spec['python_type'].rpartition('.')[0])
+            if 'obj_model.' in imported_modules:
+                imported_modules.remove('obj_model.')
+            for imported_module in imported_modules:
+                file.write('import {}\n'.format(imported_module))
 
             for cls_spec in cls_specs.values():
                 file.write('\n')
@@ -614,16 +621,9 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     file.write('    """ {} """\n\n'.format(cls_spec['desc']))
                 for attr_name in cls_spec['attr_order']:
                     attr_spec = cls_spec['attrs'][attr_name]
-                    attr_type = attr_spec['type']
-                    if '(' in attr_type:
-                        attr_type = attr_type.strip()
-                        attr_type = attr_type.replace('(', 'Attribute(', 1)
-                        attr_type = attr_type[0:-1] + ", verbose_name='{}')".format(
-                            attr_spec['verbose_name'].replace("'", "\'"))
-                    else:
-                        attr_type += "Attribute(verbose_name='{}')".format(
-                            attr_spec['verbose_name'].replace("'", "\'"))
-                    file.write('    {} = obj_model.{}\n'.format(attr_spec['name'], attr_type))
+                    file.write('    {} = obj_model.{}({})\n'.format(attr_spec['name'], 
+                        attr_spec['python_type'], 
+                        attr_spec['python_args']))
 
                 file.write('\n')
                 file.write('    class Meta(obj_model.Model.Meta):\n')
