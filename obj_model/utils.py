@@ -364,7 +364,7 @@ class SchemaRepoMetadata(RepoMetadata):
 
 
 def get_attrs():
-    """ Get a dictionary of the defined types of attributes for use with `init_schema`.
+    """ Get a dictionary of the defined types of attributes for use with :obj:`init_schema`.
 
     Returns:
         :obj:`dict`: dictionary which maps the name of each attribute to its instance
@@ -398,13 +398,18 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
     """ Initialize an `obj_model` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
 
-    The tabular specification should contain the following columns:
+    This method supports two formats:
+
+    * `obj_model`
+    * `SBtab <https://www.sbtab.net>`_
+
+    The tabular specification should contain the following columns for each format:
 
     .. table:: Computational prediction tools that can generate data which can be used to build, calibrate, and validate WC models.
         :name: tab_prediction_tools
 
         ===================  ==================  ========
-        Default              SBtab               Optional
+        `obj_model`          SBtab               Optional
         ===================  ==================  ========
         Name                 !Name                       
         Type                 !Type                       

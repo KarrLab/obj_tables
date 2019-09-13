@@ -25,6 +25,7 @@ import six
 import stringcase
 import wc_utils.workbook.io
 import yaml
+from datetime import datetime
 from itertools import chain, compress
 from natsort import natsorted, ns
 from os.path import basename, dirname, splitext
@@ -383,11 +384,14 @@ class WorkbookWriter(WriterBase):
         """
         if sbtab:
             sheet_name = DEFAULT_SBTAB_TOC_NAME
+            now = datetime.now()
             ws_metadata = ["!!SBtab",
                            "TableID='{}'".format(DEFAULT_SBTAB_TOC_NAME),
                            "TableName='{}'".format(DEFAULT_SBTAB_TOC_NAME),
                            "TableType='{}'".format(DEFAULT_SBTAB_TOC_NAME),
                            "SBtabVersion='{}'".format('1.0'),
+                           "ModelCreationTime='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
+                               now.year, now.month, now.day, now.hour, now.minute, now.second),
                            ]
             if sbtab_doc_id:
                 ws_metadata.insert(1, "DocumentID='{}'".format(sbtab_doc_id))
@@ -1730,11 +1734,14 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None,
 
     # worksheet metadata
     if sbtab:
+        now = datetime.now()
         ws_metadata = [[' '.join(["!!SBtab",
                                   "TableID='{}'".format(cls.__name__),
                                   "TableName='{}'".format(cls.Meta.help.replace("'", "\'")),
                                   "TableType='{}'".format(cls.__name__),
                                   "SBtabVersion='{}'".format('1.0'),
+                                  "ModelCreationTime='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
+                                      now.year, now.month, now.day, now.hour, now.minute, now.second),
                                   ])]]
         if sbtab_doc_id:
             ws_metadata[0].insert(1, "DocumentID='{}'".format(sbtab_doc_id))
