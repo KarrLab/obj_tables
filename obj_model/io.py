@@ -1261,6 +1261,11 @@ class WorkbookReader(ReaderBase):
 
         # strip out rows with table name and description
         ws_metadata = self.parse_ws_metadata(data, sbtab=sbtab)
+        if sbtab:
+            assert ws_metadata['TableType'] == sheet_name[1:], \
+                "TableType must be '{}'".format(sheet_name[1:])
+            assert ws_metadata['TableID'] == sheet_name[1:], \
+                "TableType must be '{}'".format(sheet_name[1:])
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
