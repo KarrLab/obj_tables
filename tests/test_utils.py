@@ -386,18 +386,26 @@ class InitSchemaTestCase(unittest.TestCase):
                                    sbtab=True)
 
         p_0 = schema.Parent(id='p_0')
-        p_0.children.create(id='c_0')
-        p_0.children.create(id='c_1')
+        c_0 = p_0.children.create(id='c_0')
+        c_1 = p_0.children.create(id='c_1')
+        c_2 = p_0.children.create(id='c_2')
+        c_0._comments = ['A', 'B']
+        c_1._comments = ['C', 'D']
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_model.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child])
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
         p_0_b = obj_model.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child])[schema.Parent][0]
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
+        self.assertEqual(p_0_b.children.get_one(id='c_0')._comments, c_0._comments)
+        self.assertEqual(p_0_b.children.get_one(id='c_1')._comments, c_1._comments)
+        self.assertEqual(p_0_b.children.get_one(id='c_2')._comments, c_2._comments)
 
         # import module and test
         schema = utils.get_schema(out_filename)
@@ -409,10 +417,12 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_model.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child])
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
         p_0_b = obj_model.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child])[schema.Parent][0]
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
@@ -437,10 +447,12 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_model.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child])
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
         p_0_b = obj_model.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child])[schema.Parent][0]
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
@@ -454,10 +466,12 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_model.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child])
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
         p_0_b = obj_model.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child])[schema.Parent][0]
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
@@ -482,10 +496,12 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_model.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child])
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
         p_0_b = obj_model.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child])[schema.Parent][0]
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
@@ -499,10 +515,12 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_model.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child])
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
         p_0_b = obj_model.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child])[schema.Parent][0]
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 

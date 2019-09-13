@@ -455,6 +455,11 @@ class WorkbookWriter(WriterBase):
 
         data = []
         for obj in objects:
+            # comments
+            for comment in obj._comments:
+                data.append(['% ' + comment])
+
+            # properties
             obj_data = []
             for attr in attrs:
                 val = getattr(obj, attr.name)
@@ -1189,13 +1194,31 @@ class WorkbookReader(ReaderBase):
             else:
                 attribute_seq.append(group_attr.name + '.' + attr.name)
 
+        # group comments with objects
+        if sbtab:
+            objs_comments = []
+            obj_comments = []
+            for row in list(data):
+                if row and isinstance(row[0], str) and row[0].startswith('%'):
+                    obj_comments.append(row[0][1:].strip())
+                    data.remove(row)
+                else:
+                    objs_comments.append(obj_comments)
+                    obj_comments = []
+            if obj_comments:
+                assert objs_comments, 'Each comment must be associated with a row'
+                objs_comments[-1].extend(obj_comments)
+        else:
+            objs_comments = [[]] * len(data)
+
         # load the data into objects
         objects = []
         errors = []
         transposed = model.Meta.tabular_orientation == TabularOrientation.column
 
-        for row_num, obj_data in enumerate(data, start=2):
+        for row_num, (obj_data, obj_comments) in enumerate(zip(data, objs_comments), start=2):
             obj = model()
+            obj._comments = obj_comments
 
             # save object location in file
             obj.set_source(reader.path, sheet_name, attribute_seq, row_num)

@@ -976,7 +976,10 @@ class Model(with_metaclass(ModelMeta, object)):
 
     Attributes:
         _source (:obj:`ModelSource`): file location, worksheet, column, and row where the object was defined
-        objects (:obj:`Manager`): a `Manager` that supports searching for `Model` instances
+        _comments (:obj:`list` of :obj:`str`): comments
+
+    Class attributes:
+        objects (:obj:`Manager`): a `Manager` that supports searching for `Model` instances        
     """
 
     class Meta(object):
@@ -1022,7 +1025,7 @@ class Model(with_metaclass(ModelMeta, object)):
         children = {}
         merge = ModelMerge.join
 
-    def __init__(self, **kwargs):
+    def __init__(self, _comments=None, **kwargs):
         """
         Args:
             **kwargs: dictionary of keyword arguments with keys equal to the names of the model attributes
@@ -1067,6 +1070,7 @@ class Model(with_metaclass(ModelMeta, object)):
             setattr(self, attr_name, val)
 
         self._source = None
+        self._comments = _comments or []
 
         # register this Model instance with the class' Manager
         self.__class__.objects._register_obj(self)
