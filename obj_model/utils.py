@@ -474,7 +474,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         verbose_name_plural_col_name = 'Verbose name plural'
         desc_col_name = 'Description'
 
-        class_type = 'Class'
+        class_type = 'Model'
         attr_type = 'Attribute'
 
     rows = ws
