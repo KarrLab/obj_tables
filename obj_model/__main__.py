@@ -48,15 +48,22 @@ class ConvertController(cement.Controller):
             (['out_wb_file'], dict(type=str,
                                    help='Path to save the workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['--sbtab'], dict(action='store_true', default=False,
-                                 help='Use SBtab format')),
+                               help='Use SBtab format')),
         ]
 
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file, args.sbtab)
-        objs = io.Reader().run(args.in_wb_file, models=models, group_objects_by_model=False,
-                                       ignore_sheet_order=True, sbtab=args.sbtab)
+        if args.sbtab:
+            kwargs = io.SBTAB_DEFAULT_READER_OPTS
+        else:
+            kwargs = {}
+        objs = io.Reader().run(args.in_wb_file,
+                               models=models,
+                               group_objects_by_model=False,
+                               sbtab=args.sbtab,
+                               **kwargs)
         io.Writer().run(args.out_wb_file, objs, models=models, sbtab=args.sbtab)
         print('Workbook saved to {}'.format(args.out_wb_file))
 
@@ -79,17 +86,27 @@ class DiffController(cement.Controller):
             (['wb_file_2'], dict(type=str,
                                  help='Path to the second workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['--sbtab'], dict(action='store_true', default=False,
-                                 help='Use SBtab format')),
+                               help='Use SBtab format')),
         ]
 
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file, args.sbtab)
-        objs1 = io.Reader().run(args.wb_file_1, models=models, 
-            ignore_sheet_order=True, group_objects_by_model=True, sbtab=args.sbtab)
-        objs2 = io.Reader().run(args.wb_file_2, models=models, 
-            ignore_sheet_order=True, group_objects_by_model=True, sbtab=args.sbtab)
+        if args.sbtab:
+            kwargs = io.SBTAB_DEFAULT_READER_OPTS
+        else:
+            kwargs = {}
+        objs1 = io.Reader().run(args.wb_file_1,
+                                models=models,
+                                group_objects_by_model=True,
+                                sbtab=args.sbtab,
+                                **kwargs)
+        objs2 = io.Reader().run(args.wb_file_2,
+                                models=models,
+                                group_objects_by_model=True,
+                                sbtab=args.sbtab,
+                                **kwargs)
 
         for model in models:
             if model.__name__ == args.model:
@@ -142,7 +159,7 @@ class InitSchemaController(cement.Controller):
             (['out_file'], dict(type=str,
                                 help='Path to save Python schema (.py)')),
             (['--sbtab'], dict(action='store_true', default=False,
-                                 help='Use SBtab format')),
+                               help='Use SBtab format')),
         ]
 
     @cement.ex(hide=True)
@@ -166,7 +183,7 @@ class GenTemplateController(cement.Controller):
             (['template_file'], dict(type=str,
                                      help='Path to save the template (.csv, .tsv, .xlsx)')),
             (['--sbtab'], dict(action='store_true', default=False,
-                                 help='Use SBtab format')),
+                               help='Use SBtab format')),
         ]
 
     @cement.ex(hide=True)
@@ -195,7 +212,7 @@ class NormalizeController(cement.Controller):
             (['out_wb_file'], dict(type=str,
                                    help='Path to save the normalized workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['--sbtab'], dict(action='store_true', default=False,
-                                 help='Use SBtab format')),
+                               help='Use SBtab format')),
         ]
 
     @cement.ex(hide=True)
@@ -208,8 +225,15 @@ class NormalizeController(cement.Controller):
         if model.__name__ != args.model:
             raise SystemExit('Workbook does not have model "{}"'.format(args.model))
 
-        objs = io.Reader().run(args.in_wb_file, models=models, group_objects_by_model=False,
-                                       ignore_sheet_order=True, sbtab=args.sbtab)
+        if args.sbtab:
+            kwargs = io.SBTAB_DEFAULT_READER_OPTS
+        else:
+            kwargs = {}
+        objs = io.Reader().run(args.in_wb_file,
+                               models=models,
+                               group_objects_by_model=False,
+                               sbtab=args.sbtab,
+                               **kwargs)
         for obj in objs:
             if isinstance(obj, model):
                 obj.normalize()
@@ -231,7 +255,7 @@ class ValidateController(cement.Controller):
             (['wb_file'], dict(type=str,
                                help='Path to the workbooks (.csv, .json, .tsv, .xlsx, .yml)')),
             (['--sbtab'], dict(action='store_true', default=False,
-                                 help='Use SBtab format')),
+                               help='Use SBtab format')),
         ]
 
     @cement.ex(hide=True)
@@ -239,8 +263,15 @@ class ValidateController(cement.Controller):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file, args.sbtab)
         try:
-            io.Reader().run(args.wb_file, models=models, group_objects_by_model=False,
-                                    ignore_sheet_order=True, sbtab=args.sbtab)
+            if args.sbtab:
+                kwargs = io.SBTAB_DEFAULT_READER_OPTS
+            else:
+                kwargs = {}
+            io.Reader().run(args.wb_file,
+                            models=models,
+                            group_objects_by_model=False,
+                            sbtab=args.sbtab,
+                            **kwargs)
         except ValueError as err:
             raise SystemExit(str(err))
         print('Workbook {} is valid'.format(args.wb_file))
@@ -256,7 +287,7 @@ class App(cement.App):
             ValidateController,
             NormalizeController,
             InitSchemaController,
-            GenTemplateController,            
+            GenTemplateController,
             DiffController,
             ConvertController,
         ]

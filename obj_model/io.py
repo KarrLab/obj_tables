@@ -43,6 +43,15 @@ from wc_utils.util import git
 from wc_utils.workbook.core import get_column_letter
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 
+SBTAB_DEFAULT_READER_OPTS = {
+    'ignore_missing_sheets': True, 
+    'ignore_extra_sheets': True, 
+    'ignore_sheet_order': True, 
+    'ignore_missing_attributes': True, 
+    'ignore_extra_attributes': True,
+    'ignore_attribute_order': True, 
+}
+
 
 class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     """ Interface for classes which write model objects to file(s)

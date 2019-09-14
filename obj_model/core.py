@@ -57,7 +57,7 @@ import wc_utils.workbook.io
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
 
 
-DEFAULT_TOC_NAME = '_Table of contents'
+DEFAULT_TOC_NAME = 'Table of contents'
 DEFAULT_SBTAB_TOC_NAME = 'README'
 DEFAULT_SCHEMA_NAME = '_Schema'
 DEFAULT_SBTAB_SCHEMA_NAME = 'DEFINITION'
