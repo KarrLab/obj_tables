@@ -1163,10 +1163,10 @@ class WorkbookReader(ReaderBase):
         exp_attrs, exp_sub_attrs, exp_headings, _, _, _ = get_fields(
             model, include_all_attributes=include_all_attributes, sbtab=sbtab)
         if model.Meta.tabular_orientation == TabularOrientation.row:
-            data, _, headings = self.read_sheet(reader, sheet_name, num_column_heading_rows=len(
+            data, _, headings, top_comments = self.read_sheet(reader, sheet_name, num_column_heading_rows=len(
                 exp_headings), ignore_empty_rows=ignore_empty_rows, sbtab=sbtab)
         else:
-            data, headings, _ = self.read_sheet(reader, sheet_name, num_row_heading_columns=len(
+            data, headings, _, top_comments = self.read_sheet(reader, sheet_name, num_row_heading_columns=len(
                 exp_headings), ignore_empty_cols=ignore_empty_rows, sbtab=sbtab)
             data = transpose(data)
         if len(exp_headings) == 1:
@@ -1282,7 +1282,7 @@ class WorkbookReader(ReaderBase):
         # group comments with objects
         if sbtab:
             objs_comments = []
-            obj_comments = []
+            obj_comments = top_comments
             for row in list(data):
                 if row and isinstance(row[0], str) and row[0].startswith('%'):
                     obj_comments.append(row[0][1:].strip())
@@ -1358,9 +1358,11 @@ class WorkbookReader(ReaderBase):
 
         Returns:
             :obj:`tuple`:
-                * `list` of `list`: two-dimensional list of table values
-                * `list` of `list`: row headings
-                * `list` of `list`: column_headings
+
+                * :obj:`list` of :obj:`list`: two-dimensional list of table values
+                * :obj:`list` of :obj:`list`: row headings
+                * :obj:`list` of :obj:`list`: column_headings
+                * :obj:`list` of :obj:`str`: comments above column headings
 
         Raises:
             :obj:`ValueError`: if worksheet doesn't have header rows or columns
@@ -1368,7 +1370,7 @@ class WorkbookReader(ReaderBase):
         data = reader.read_worksheet(sheet_name)
 
         # strip out rows with table name and description
-        ws_metadata = self.parse_ws_metadata(data, sbtab=sbtab)
+        ws_metadata, top_comments = self.parse_ws_metadata(data, sbtab=sbtab)
         if sbtab:
             assert ws_metadata['TableID'] == sheet_name[1:], \
                 "TableID must be '{}'".format(sheet_name[1:])
@@ -1416,7 +1418,7 @@ class WorkbookReader(ReaderBase):
             remove_empty_rows(data)
             data = transpose(data)
 
-        return (data, row_headings, column_headings)
+        return (data, row_headings, column_headings, top_comments)
 
     @staticmethod
     def parse_ws_metadata(rows, sbtab=False):
@@ -1427,21 +1429,42 @@ class WorkbookReader(ReaderBase):
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
-            :obj:`dict` or :obj:`list`: if :obj:`sbtab`, returns a dictionary of properties;
-                otherwise returns a list of comments
+            :obj:`tuple`:
+
+                * :obj:`dict` or :obj:`list`: if :obj:`sbtab`, returns a dictionary of properties;
+                  otherwise returns a list of comments
+                * :obj:`list` of :obj:`str`: comments
         """
         ws_metadata = []
+        comments = []
         for row in list(rows):
-            if row and isinstance(row[0], str) and row[0].startswith('!!'):
+            if not row or all(cell in ['', None] for cell in row):
+                rows.remove(row)
+            elif sbtab and row and isinstance(row[0], str) and row[0].startswith('%'):
+                comment = row[0][1:].strip()
+                if comment:
+                    comments.append(comment)
+                rows.remove(row)
+            elif row and isinstance(row[0], str) and row[0].startswith('!!'):
                 if sbtab and row[0].startswith('!!SBtab'):
                     ws_metadata.append(row[0])
                 if not sbtab:
                     ws_metadata.append(row[0][2:].strip())
                 rows.remove(row)
-            elif row and all(cell in ['', None] for cell in row):
-                rows.remove(row)
             else:
                 break
+
+        if sbtab:
+            for row in list(rows):
+                if not row or all(cell in ['', None] for cell in row):
+                    rows.remove(row)
+                elif isinstance(row[0], str) and row[0].startswith('%'):
+                    comment = row[0][1:].strip()
+                    if comment:
+                        comments.append(comment)
+                    rows.remove(row)
+                else:
+                    break
 
         if sbtab:
             assert len(ws_metadata) == 1, 'Metadata must consist of a list of key-value pairs'
@@ -1455,9 +1478,7 @@ class WorkbookReader(ReaderBase):
 
             assert ws_metadata['SBtabVersion'] == '2.0'
 
-            return ws_metadata
-        else:
-            return ws_metadata
+        return (ws_metadata, comments)
 
     def link_model(self, model, attributes, data, objects, objects_by_primary_attribute, decoded=None):
         """ Construct object graph

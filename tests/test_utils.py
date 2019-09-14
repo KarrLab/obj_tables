@@ -15,6 +15,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+import wc_utils.workbook
 import wc_utils.workbook.io
 from obj_model import core, utils
 from obj_model.utils import DataRepoMetadata, SchemaRepoMetadata
@@ -639,3 +640,37 @@ class ToPandasTestCase(unittest.TestCase):
             ['p_0', '', 'c_0', ''],
             ['p_1', '', 'c_1', ''],
         ])
+
+    def test_comments(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.init_schema('tests/fixtures/schema.csv',
+                                   out_filename=out_filename,
+                                   sbtab=True)
+
+        p_0 = schema.Parent(id='p_0')
+        c_0 = p_0.children.create(id='c_0')
+        c_1 = p_0.children.create(id='c_1')
+        c_2 = p_0.children.create(id='c_2')
+        c_0._comments = ['A', 'B']
+        c_1._comments = ['C', 'D']
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+
+        wb = wc_utils.workbook.io.read(filename)
+        wb['!Child'].insert(0, wc_utils.workbook.Row(['% 123']))
+        wb['!Child'].append(wc_utils.workbook.Row(['% 456']))
+        wc_utils.workbook.io.write(filename, wb)
+
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True)[schema.Parent][0]
+
+        self.assertTrue(p_0_b.is_equal(p_0))
+        self.assertEqual(p_0_b.children.get_one(id='c_0')._comments, ['123'] + c_0._comments)
+        self.assertEqual(p_0_b.children.get_one(id='c_1')._comments, c_1._comments)
+        self.assertEqual(p_0_b.children.get_one(id='c_2')._comments, c_2._comments + ['456'])

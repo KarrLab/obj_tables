@@ -478,7 +478,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         attr_type = 'Attribute'
 
     rows = ws
-    ws_metadata = WorkbookReader.parse_ws_metadata(rows, sbtab=sbtab)
+    ws_metadata, _ = WorkbookReader.parse_ws_metadata(rows, sbtab=sbtab)
     if sbtab:
         assert ws_metadata['TableID'] == DEFAULT_SBTAB_SCHEMA_NAME, \
             "TableID must be '{}'".format(DEFAULT_SBTAB_SCHEMA_NAME)

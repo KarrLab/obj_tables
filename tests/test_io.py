@@ -1369,9 +1369,9 @@ class TestMisc(unittest.TestCase):
         reader = WorkbookReader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
-        data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet',
-                                                                num_row_heading_columns=0,
-                                                                num_column_heading_rows=1)
+        data, row_headings, column_headings, _ = reader.read_sheet(xlsx_reader, 'Sheet',
+                                                                   num_row_heading_columns=0,
+                                                                   num_column_heading_rows=1)
         self.assertEqual(len(data), 2)
         self.assertEqual(list(data[0]), ['Cell_2_B', 'Cell_2_C'])
         self.assertEqual(list(data[1]), ['Cell_3_B', 'Cell_3_C'])
