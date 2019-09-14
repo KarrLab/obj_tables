@@ -567,6 +567,91 @@ class InitSchemaTestCase(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'is not supported'):
             utils.init_schema(filename, sbtab=True)
 
+    def test_extra_sheets(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.init_schema('tests/fixtures/schema.csv',
+                                   out_filename=out_filename,
+                                   sbtab=True)
+
+        p_0 = schema.Parent(id='p_0')
+        c_0 = p_0.children.create(id='c_0')
+        c_1 = p_0.children.create(id='c_1')
+        c_2 = p_0.children.create(id='c_2')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+
+        wb = wc_utils.workbook.io.read(filename)
+        wb['Extra'] = wc_utils.workbook.Worksheet()
+        wc_utils.workbook.io.write(filename, wb)
+
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True, ignore_extra_sheets=True)[schema.Parent][0]
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+        with self.assertRaisesRegex(ValueError, 'No matching models'):
+            obj_model.io.WorkbookReader().run(
+                filename,
+                models=[schema.Parent, schema.Child],
+                sbtab=True, ignore_extra_sheets=False)[schema.Parent][0]
+
+        wb = wc_utils.workbook.io.read(filename)
+        wb['!Extra'] = wb.pop('Extra')
+        wc_utils.workbook.io.write(filename, wb)
+        with self.assertRaisesRegex(ValueError, 'No matching models'):
+            obj_model.io.WorkbookReader().run(
+                filename,
+                models=[schema.Parent, schema.Child],
+                sbtab=True, ignore_extra_sheets=True)[schema.Parent][0]
+
+    def test_extra_attributes(self):
+        out_filename = os.path.join(self.tmp_dirname, 'schema.py')
+        schema = utils.init_schema('tests/fixtures/schema.csv',
+                                   out_filename=out_filename,
+                                   sbtab=True)
+
+        p_0 = schema.Parent(id='p_0')
+        c_0 = p_0.children.create(id='c_0')
+        c_1 = p_0.children.create(id='c_1')
+        c_2 = p_0.children.create(id='c_2')
+
+        filename = os.path.join(self.tmp_dirname, 'data.xlsx')
+        obj_model.io.WorkbookWriter().run(
+            filename, [p_0],
+            models=[schema.Parent, schema.Child],
+            sbtab=True)
+
+        wb = wc_utils.workbook.io.read(filename)
+        wb['!Child'][1].append('Extra')
+        wc_utils.workbook.io.write(filename, wb)
+
+        p_0_b = obj_model.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True, ignore_extra_attributes=True)[schema.Parent][0]
+        self.assertTrue(p_0_b.is_equal(p_0))
+
+        with self.assertRaisesRegex(ValueError, 'does not match any attribute'):
+            obj_model.io.WorkbookReader().run(
+                filename,
+                models=[schema.Parent, schema.Child],
+                sbtab=True, ignore_extra_attributes=False)[schema.Parent][0]
+
+        wb = wc_utils.workbook.io.read(filename)
+        wb['!Child'][1][-1] = '!Extra'
+        wc_utils.workbook.io.write(filename, wb)
+        with self.assertRaisesRegex(ValueError, 'does not match any attribute'):
+            obj_model.io.WorkbookReader().run(
+                filename,
+                models=[schema.Parent, schema.Child],
+                sbtab=True, ignore_extra_attributes=True)[schema.Parent][0]
+    
+
     def test_comments(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema = utils.init_schema('tests/fixtures/schema.csv',

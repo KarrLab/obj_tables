@@ -44,12 +44,12 @@ from wc_utils.workbook.core import get_column_letter
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 
 SBTAB_DEFAULT_READER_OPTS = {
-    'ignore_missing_sheets': True, 
-    'ignore_extra_sheets': True, 
-    'ignore_sheet_order': True, 
-    'ignore_missing_attributes': True, 
+    'ignore_missing_sheets': True,
+    'ignore_extra_sheets': True,
+    'ignore_sheet_order': True,
+    'ignore_missing_attributes': True,
     'ignore_extra_attributes': True,
-    'ignore_attribute_order': True, 
+    'ignore_attribute_order': True,
 }
 
 
@@ -1031,6 +1031,12 @@ class WorkbookReader(ReaderBase):
             if extra_sheet_names:
                 raise ValueError("No matching models for worksheets/files {} / '{}'".format(
                     basename(path), "', '".join(sorted(extra_sheet_names))))
+        elif sbtab and ignore_extra_sheets:
+            extra_sheet_names = set(sheet_names).difference(set(used_sheet_names))
+            invalid_extra_sheet_names = [n for n in extra_sheet_names if n.startswith('!')]
+            if invalid_extra_sheet_names:
+                raise ValueError("No matching models for worksheets/files {} / '{}'".format(
+                    basename(path), "', '".join(sorted(invalid_extra_sheet_names))))
 
         if not ignore_sheet_order and ext == '.xlsx':
             if not is_sorted(sheet_order):
@@ -1226,6 +1232,12 @@ class WorkbookReader(ReaderBase):
                 else:
                     errors.append("Header '{}' in row {}, col {} does not match any attribute".format(
                         attr_heading, row, col))
+            if attr is None and sbtab and ignore_extra_attributes:
+                if isinstance(attr_heading, str) and attr_heading.startswith('!'):
+                    row, col, hdr_entries = self.header_row_col_names(idx, ext, model.Meta.tabular_orientation)
+                    errors.append("Header '{}' in row {}, col {} does not match any attribute".format(
+                        attr_heading[1:], row, col))
+
             if ignore_extra_attributes:
                 if attr is None:
                     good_columns.append(0)
