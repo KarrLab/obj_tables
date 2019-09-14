@@ -8,4 +8,9 @@ Name,Column,Child,string,Name
 Parents,Column,Child,"manyToMany('Parent', related_name='children')",Parents
 Formula,Column,Child,chem.EmpiricalFormula,Empirical formula
 Size,Column,Child,"enum(['small', 'medium', 'large'], default='small', default_cleaned_value='small')",Size
+Quantity,Column,Child,"manyToOne('Quantity', related_name='children')",
 Child,Table,,row,Represents a child
+Quantity,Table,,multiple_cells,Represents a quantity
+Id,Column,Quantity,slug,Identifier
+Value,Column,Quantity,string,Value
+Units,Column,Quantity,string,Units

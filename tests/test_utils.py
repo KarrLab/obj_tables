@@ -371,10 +371,12 @@ class InitSchemaTestCase(unittest.TestCase):
         schema = utils.init_schema('tests/fixtures/schema.csv',
                                    out_filename=out_filename,
                                    sbtab=True)
-        self.assertEqual(sorted(utils.get_models(schema).keys()), ['Child', 'Parent'])
+        self.assertEqual(sorted(utils.get_models(schema).keys()), 
+            ['Child', 'Parent', 'Quantity'])
 
         schema = utils.get_schema(out_filename)
-        self.assertEqual(sorted(utils.get_models(schema).keys()), ['Child', 'Parent'])
+        self.assertEqual(sorted(utils.get_models(schema).keys()), 
+            ['Child', 'Parent', 'Quantity'])
 
     def test_rand_schema_name(self):
         name = utils.rand_schema_name(len=8)
@@ -627,7 +629,7 @@ class InitSchemaTestCase(unittest.TestCase):
             sbtab=True)
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Child'][1].append('Extra')
+        wb['!Child'][2].append('Extra')
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_model.io.WorkbookReader().run(
@@ -643,7 +645,7 @@ class InitSchemaTestCase(unittest.TestCase):
                 sbtab=True, ignore_extra_attributes=False)[schema.Parent][0]
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Child'][1][-1] = '!Extra'
+        wb['!Child'][2][-1] = '!Extra'
         wc_utils.workbook.io.write(filename, wb)
         with self.assertRaisesRegex(ValueError, 'does not match any attribute'):
             obj_model.io.WorkbookReader().run(

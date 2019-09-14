@@ -70,7 +70,10 @@ class TestCli(unittest.TestCase):
         with __main__.App(argv=['convert', csv_file, xl_file_1, csv_file_2, '--sbtab']) as app:
             app.run()
 
-        p_0_b = io.WorkbookReader().run(csv_file_2, models=models, sbtab=True)[schema.Parent][0]
+        p_0_b = io.WorkbookReader().run(csv_file_2,
+                                        models=models,
+                                        sbtab=True,
+                                        **io.SBTAB_DEFAULT_READER_OPTS)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
     def test_diff(self):
@@ -126,7 +129,7 @@ class TestCli(unittest.TestCase):
             app.run()
 
         schema = utils.get_schema(py_file)
-        self.assertEqual(sorted(utils.get_models(schema)), ['Child', 'Parent'])
+        self.assertEqual(sorted(utils.get_models(schema)), ['Child', 'Parent', 'Quantity'])
 
     def test_gen_template(self):
         csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
@@ -141,10 +144,12 @@ class TestCli(unittest.TestCase):
 
         objs = io.WorkbookReader().run(xl_file,
                                        models=list(utils.get_models(schema).values()),
-                                       sbtab=True)
+                                       sbtab=True,
+                                       **io.SBTAB_DEFAULT_READER_OPTS)
         self.assertEqual(objs, {
             schema.Parent: [],
             schema.Child: [],
+            schema.Quantity: [],
         })
 
         csv_file = os.path.join(self.tempdir, 'file-*.xlsx')
@@ -152,7 +157,8 @@ class TestCli(unittest.TestCase):
             app.run()
         objs = io.WorkbookReader().run(csv_file, models=list(utils.get_models(schema).values()),
                                        group_objects_by_model=False,
-                                       sbtab=True)
+                                       sbtab=True,
+                                       **io.SBTAB_DEFAULT_READER_OPTS)
         self.assertEqual(objs, None)
 
     def test_normalize(self):
@@ -175,7 +181,8 @@ class TestCli(unittest.TestCase):
 
         p_0_b = io.WorkbookReader().run(xl_file_2,
                                         models=models,
-                                        sbtab=True)[schema.Parent][0]
+                                        sbtab=True,
+                                        **io.SBTAB_DEFAULT_READER_OPTS)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         with self.assertRaises(SystemExit):
@@ -200,7 +207,7 @@ class TestCli(unittest.TestCase):
 
         xl_file_2 = os.path.join(self.tempdir, 'file2.xlsx')
         wb = wc_utils.workbook.io.read(xl_file_1)
-        wb['!Child'][3][0] = 'c_0'
+        wb['!Child'][4][0] = 'c_0'
         wc_utils.workbook.io.write(xl_file_2, wb)
         with self.assertRaises(SystemExit):
             with __main__.App(argv=['validate', csv_file, xl_file_2, '--sbtab']) as app:
