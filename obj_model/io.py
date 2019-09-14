@@ -384,15 +384,14 @@ class WorkbookWriter(WriterBase):
             sbtab_doc_id (:obj:`str`, optional): document id for use with SBtab
         """
         if sbtab:
-            sheet_name = DEFAULT_SBTAB_TOC_NAME
+            sheet_name = '!' + DEFAULT_SBTAB_TOC_NAME
             now = datetime.now()
             ws_metadata = ["!!SBtab",
                            "TableID='{}'".format(DEFAULT_SBTAB_TOC_NAME),
-                           "TableName='{}'".format(DEFAULT_SBTAB_TOC_NAME),
-                           "TableType='{}'".format(DEFAULT_SBTAB_TOC_NAME),
-                           "SBtabVersion='{}'".format('1.0'),
-                           "ModelCreationTime='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
+                           "TableName='Table/model and column/attribute definitions'",
+                           "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
                                now.year, now.month, now.day, now.hour, now.minute, now.second),
+                           "SBtabVersion='{}'".format('2.0'),
                            ]
             if sbtab_doc_id:
                 ws_metadata.insert(1, "DocumentID='{}'".format(sbtab_doc_id))
@@ -973,7 +972,7 @@ class WorkbookReader(ReaderBase):
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
         if sbtab:
-            toc_sheet_name = DEFAULT_SBTAB_TOC_NAME
+            toc_sheet_name = '!' + DEFAULT_SBTAB_TOC_NAME
         else:
             toc_sheet_name = DEFAULT_TOC_NAME
         if toc_sheet_name in sheet_names:
@@ -1371,10 +1370,8 @@ class WorkbookReader(ReaderBase):
         # strip out rows with table name and description
         ws_metadata = self.parse_ws_metadata(data, sbtab=sbtab)
         if sbtab:
-            assert ws_metadata['TableType'] == sheet_name[1:], \
-                "TableType must be '{}'".format(sheet_name[1:])
             assert ws_metadata['TableID'] == sheet_name[1:], \
-                "TableType must be '{}'".format(sheet_name[1:])
+                "TableID must be '{}'".format(sheet_name[1:])
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1456,7 +1453,7 @@ class WorkbookReader(ReaderBase):
 
             ws_metadata = {key: val for key, val in results}
 
-            assert ws_metadata['SBtabVersion'] == '1.0'
+            assert ws_metadata['SBtabVersion'] == '2.0'
 
             return ws_metadata
         else:
@@ -1820,10 +1817,9 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None,
         ws_metadata = [[' '.join(["!!SBtab",
                                   "TableID='{}'".format(cls.__name__),
                                   "TableName='{}'".format(cls.Meta.help.replace("'", "\'")),
-                                  "TableType='{}'".format(cls.__name__),
-                                  "SBtabVersion='{}'".format('1.0'),
-                                  "ModelCreationTime='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
+                                  "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
                                       now.year, now.month, now.day, now.hour, now.minute, now.second),
+                                  "SBtabVersion='{}'".format('2.0'),
                                   ])]]
         if sbtab_doc_id:
             ws_metadata[0].insert(1, "DocumentID='{}'".format(sbtab_doc_id))

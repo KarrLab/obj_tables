@@ -474,12 +474,12 @@ class TestCore(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'cannot be'):
             class TestModel1(core.Model):
                 class Meta(core.Model.Meta):
-                    verbose_name = 'Table of contents'
+                    verbose_name = '_Table of contents'
 
         with self.assertRaisesRegex(ValueError, 'cannot be'):
             class TestModel2(core.Model):
                 class Meta(core.Model.Meta):
-                    verbose_name_plural = 'Table of contents'
+                    verbose_name_plural = '_Table of contents'
 
     def test_model_validate_related_attributes(self):
         class TestParent(core.Model):

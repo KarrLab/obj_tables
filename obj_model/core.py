@@ -57,8 +57,10 @@ import wc_utils.workbook.io
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
 
 
-DEFAULT_TOC_NAME = 'Table of contents'
-DEFAULT_SBTAB_TOC_NAME = '!README'
+DEFAULT_TOC_NAME = '_Table of contents'
+DEFAULT_SBTAB_TOC_NAME = 'README'
+DEFAULT_SCHEMA_NAME = '_Schema'
+DEFAULT_SBTAB_SCHEMA_NAME = 'DEFINITION'
 
 class ModelMerge(int, Enum):
     """ Types of model merging operations """
@@ -155,8 +157,8 @@ class ModelMeta(type):
     def validate_meta(metacls, name, bases, namespace): 
         reserved_names = [
             DEFAULT_TOC_NAME, 
-            DEFAULT_SBTAB_TOC_NAME,
-            'Definition',
+            '!' + DEFAULT_SBTAB_TOC_NAME,
+            '!' + DEFAULT_SBTAB_SCHEMA_NAME,
             ]
 
         if namespace['Meta'].verbose_name in reserved_names:

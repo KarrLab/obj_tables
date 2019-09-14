@@ -433,7 +433,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_xl = os.path.join(self.tmp_dirname, 'schema.xlsx')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['!!Definition'] = wb.pop('')
+        wb['!DEFINITION'] = wb.pop('')
         wc_utils.workbook.io.write(schema_xl, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -482,7 +482,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_csv_wb = os.path.join(self.tmp_dirname, 'schema-*.csv')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['!!Definition'] = wb.pop('')
+        wb['!DEFINITION'] = wb.pop('')
         wc_utils.workbook.io.write(schema_csv_wb, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -531,10 +531,9 @@ class InitSchemaTestCase(unittest.TestCase):
 
         filename = os.path.join(self.tmp_dirname, 'schema.csv')
         ws_metadata = ['!!SBtab',
-                       "TableID='Definition'",
+                       "TableID='DEFINITION'",
                        "TableName='Allowed_types'",
-                       "TableType='Definition'",
-                       "SBtabVersion='1.0'",
+                       "SBtabVersion='2.0'",
                        ]
 
         col_headings = [
