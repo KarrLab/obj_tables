@@ -661,6 +661,7 @@ class InitSchemaTestCase(unittest.TestCase):
                                    sbtab=True)
 
         p_0 = schema.Parent(id='p_0')
+        p_0._comments = ['W', 'Y']
         c_0 = p_0.children.create(id='c_0')
         c_1 = p_0.children.create(id='c_1')
         c_2 = p_0.children.create(id='c_2')
@@ -674,6 +675,8 @@ class InitSchemaTestCase(unittest.TestCase):
             sbtab=True)
 
         wb = wc_utils.workbook.io.read(filename)
+        wb['!Parent'].insert(0, wc_utils.workbook.Row(['% W']))
+        wb['!Parent'][2].append('% Z')
         wb['!Child'].insert(0, wc_utils.workbook.Row(['% 123']))
         wb['!Child'].append(wc_utils.workbook.Row(['% 456']))
         wc_utils.workbook.io.write(filename, wb)
@@ -684,6 +687,7 @@ class InitSchemaTestCase(unittest.TestCase):
             sbtab=True)[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
+        self.assertEqual(p_0_b._comments, ['W'] + p_0._comments + ['Z'])
         self.assertEqual(p_0_b.children.get_one(id='c_0')._comments, ['123'] + c_0._comments)
         self.assertEqual(p_0_b.children.get_one(id='c_1')._comments, c_1._comments)
         self.assertEqual(p_0_b.children.get_one(id='c_2')._comments, c_2._comments + ['456'])

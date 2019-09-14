@@ -1,6 +1,6 @@
 !!SBtab TableID='DEFINITION' TableName='Table/model and column/attribute definitions' SBtabVersion='2.0',,,,
 !ComponentName,!ComponentType,!IsPartOf,!Format,!Description
-Parent,Table,,row,Represents a parent
+Parent,Table,,column,Represents a parent
 Id,Column,Parent,slug,Identifier
 Name,Column,Parent,string,Name
 Id,Column,Child,slug,Identifier
