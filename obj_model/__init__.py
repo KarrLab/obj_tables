@@ -17,7 +17,8 @@ from .core import (Model, Attribute,
                    ObjModelWarning, SchemaWarning,
                    ModelSource, TabularOrientation,
                    get_models, get_model, excel_col_name,
-                   ModelMerge)
+                   ModelMerge,
+                   TOC_NAME, SBTAB_TOC_NAME, SCHEMA_NAME, SBTAB_SCHEMA_NAME)
 from . import abstract
 from . import expression
 from . import io
