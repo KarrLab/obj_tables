@@ -395,25 +395,32 @@ class WorkbookWriter(WriterBase):
         """
         if sbtab:
             sheet_name = '!' + DEFAULT_SBTAB_TOC_NAME
-            now = datetime.now()
-            ws_metadata = ["!!SBtab",
-                           "TableID='{}'".format(DEFAULT_SBTAB_TOC_NAME),
-                           "TableName='Table/model and column/attribute definitions'",
-                           "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
-                               now.year, now.month, now.day, now.hour, now.minute, now.second),
-                           "SBtabVersion='{}'".format('2.0'),
-                           ]
-            if doc_id:
-                ws_metadata.insert(1, "DocumentID='{}'".format(doc_id))
-            head_rows = 2
-            content = [
-                [' '.join(ws_metadata)],
-                ['!Table', '!Description', '!NumberOfObjects'],
-            ]
+            format = 'SBtab'
+            table_id = DEFAULT_SBTAB_TOC_NAME
+            version = '2.0'
+            headings = ['!Table', '!Description', '!NumberOfObjects']
         else:
             sheet_name = DEFAULT_TOC_NAME
-            head_rows = 1
-            content = [['Table', 'Description', 'Number of objects']]
+            format = 'ObjModel'
+            table_id = DEFAULT_TOC_NAME
+            version = obj_model.__version__
+            headings = ['Table', 'Description', 'Number of objects']
+        
+        now = datetime.now()
+        ws_metadata = ["!!{}".format(format),
+                       "TableID='{}'".format(table_id),
+                       "TableName='{}'".format(table_id[0].upper() + table_id[1:].lower()),
+                       "Description='Table/model and column/attribute definitions'",
+                       "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
+                           now.year, now.month, now.day, now.hour, now.minute, now.second),
+                       "{}Version='{}'".format(format, version),
+                       ]
+        if doc_id:
+            ws_metadata.insert(1, "DocumentID='{}'".format(doc_id))
+        content = [
+            [' '.join(ws_metadata)],
+            headings,
+        ]
 
         hyperlinks = []
         for i_model, model in enumerate(models):
@@ -433,15 +440,10 @@ class WorkbookWriter(WriterBase):
                 ])
 
         style = WorksheetStyle(
-            head_row_font_bold=True,
-            head_row_fill_pattern='solid',
-            head_row_fill_fgcolor='CCCCCC',
-            merged_head_fill_fgcolor='AAAAAA',
-            head_rows=head_rows,
-            head_columns=0,
+            title_rows=1,
+            head_rows=1,
             extra_rows=0,
             extra_columns=0,
-            row_height=15.01,
             hyperlinks=hyperlinks,
         )
 
@@ -532,7 +534,8 @@ class WorkbookWriter(WriterBase):
             row_headings = []
             column_headings = headings
             style.auto_filter = True
-            style.head_rows = len(ws_metadata) + len(column_headings)
+            style.title_rows = len(ws_metadata)
+            style.head_rows = len(column_headings)
             if merge_ranges:
                 style.merge_ranges = merge_ranges
             else:
@@ -543,7 +546,8 @@ class WorkbookWriter(WriterBase):
             style.auto_filter = False
             row_headings = headings
             column_headings = []
-            style.head_rows = len(ws_metadata)
+            style.title_rows = len(ws_metadata)
+            style.head_rows = 0
             style.head_columns = len(row_headings)
             if merge_ranges:
                 n = len(ws_metadata)
@@ -585,22 +589,13 @@ class WorkbookWriter(WriterBase):
             :obj:`WorksheetStyle`: worksheet style
         """
         style = WorksheetStyle(
-            head_row_font_bold=True,
-            head_row_fill_pattern='solid',
-            head_row_fill_fgcolor='CCCCCC',
-            merged_head_fill_fgcolor='AAAAAA',
             extra_rows=0,
             extra_columns=0,
-            row_height=15.01,
         )
 
         if model.Meta.tabular_orientation == TabularOrientation.row:
-            style.head_rows = 1
-            style.head_columns = 0
             style.extra_rows = extra_entries
         else:
-            style.head_rows = 0
-            style.head_columns = 1
             style.extra_columns = extra_entries
 
         return style
