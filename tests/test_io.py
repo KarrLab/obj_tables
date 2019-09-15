@@ -182,6 +182,8 @@ class TestIo(unittest.TestCase):
         WorkbookWriter().run(filename2, [root2], [MainRoot, Node, Leaf, ])
         original = read_workbook(filename)
         copy = read_workbook(filename2)
+        for sheet in copy.keys():
+            copy[sheet][0][0] = original[sheet][0][0] # because dates will be different
         self.assertEqual(copy, original)
 
         self.assertEqual(set([x.id for x in root2.nodes]), set([x.id for x in root.nodes]))
@@ -328,9 +330,9 @@ class TestIo(unittest.TestCase):
         workbook = reader.run()
 
         # edit heading
-        headings = workbook['Main root'][2]
+        headings = workbook['Main root'][1]
         self.assertEqual(headings[0], 'Identifier')
-        workbook['Main root'][2][0] = 'id'
+        workbook['Main root'][1][0] = 'id'
 
         # write workbook
         writer.run(workbook, style={
@@ -348,7 +350,7 @@ class TestIo(unittest.TestCase):
 
         """ test case insensitivity """
         # edit heading
-        workbook['Main root'][2][0] = 'ID'
+        workbook['Main root'][1][0] = 'ID'
 
         # write workbook
         writer.run(workbook, style={
@@ -2425,7 +2427,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][3][1] = ']'
+        wb['Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2470,7 +2472,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][3][1] = ']'
+        wb['Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2515,7 +2517,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][3][1] = ']'
+        wb['Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2560,7 +2562,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][3][1] = ']'
+        wb['Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),

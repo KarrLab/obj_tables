@@ -22,6 +22,7 @@ import obj_model.io
 import os.path
 import pandas
 import random
+import re
 import string
 import stringcase
 import types
@@ -530,12 +531,20 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     'attrs': {},
                     'attr_order': [],
                     'tab_orientation': TabularOrientation.row,
-                    'verbose_name': None,
-                    'verbose_name_plural': None,
+                    'verbose_name': '!' + cls_name,
+                    'verbose_name_plural': '!' + cls_name,
                     'desc': None,
                 }
 
-            attr_name = stringcase.snakecase(row[name_col_name])
+            if sbtab:
+                attr_name = row[name_col_name]
+                assert re.match(r'^[a-zA-Z0-9:>]+$', attr_name), \
+                    "Attribute names must consist of alphanumeric characters, colons, and forward carets"
+                attr_name = attr_name.replace('>', '_').replace(':', '_')
+                attr_name = stringcase.snakecase(attr_name)
+                attr_name = attr_name.replace('__', '_')
+            else:
+                attr_name = stringcase.snakecase(row[name_col_name])
 
             if attr_name == 'Meta':
                 raise ValueError('"{}" cannot have attribute with name "Meta"'.format(
