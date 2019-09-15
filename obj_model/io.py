@@ -36,12 +36,12 @@ from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning,
-                            DEFAULT_TOC_NAME, DEFAULT_SBTAB_TOC_NAME)
+                            TOC_NAME, SBTAB_TOC_NAME)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
 from wc_utils.util import git
-from wc_utils.workbook.core import get_column_letter
+from wc_utils.workbook.core import get_column_letter, Formula
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 
 SBTAB_DEFAULT_READER_OPTS = {
@@ -394,18 +394,18 @@ class WorkbookWriter(WriterBase):
             doc_id (:obj:`str`, optional): document id for use with SBtab
         """
         if sbtab:
-            sheet_name = '!' + DEFAULT_SBTAB_TOC_NAME
+            sheet_name = '!' + SBTAB_TOC_NAME
             format = 'SBtab'
-            table_id = DEFAULT_SBTAB_TOC_NAME
+            table_id = SBTAB_TOC_NAME
             version = '2.0'
             headings = ['!Table', '!Description', '!NumberOfObjects']
         else:
-            sheet_name = DEFAULT_TOC_NAME
+            sheet_name = TOC_NAME
             format = 'ObjModel'
-            table_id = DEFAULT_TOC_NAME
+            table_id = TOC_NAME
             version = obj_model.__version__
             headings = ['Table', 'Description', 'Number of objects']
-        
+
         now = datetime.now()
         ws_metadata = ["!!{}".format(format),
                        "TableID='{}'".format(table_id),
@@ -431,13 +431,33 @@ class WorkbookWriter(WriterBase):
                 ws_name = model.Meta.verbose_name_plural
             else:
                 ws_name = model.Meta.verbose_name
-            hyperlinks.append(Hyperlink(i_model + 1, 0, "internal:'{}'!A1".format(ws_name),
+            hyperlinks.append(Hyperlink(i_model + 1, 0,
+                                        "internal:'{}'!A1".format(ws_name),
                                         tip='Click to view {}'.format(ws_name.lower())))
+            if sbtab:
+                ws_display_name = ws_name[1:]
+            else:
+                ws_display_name = ws_name
+
+            has_multiple_cells = False
+            for attr in model.Meta.attributes.values():
+                if isinstance(attr, RelatedAttribute) and \
+                        attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells:
+                    has_multiple_cells = True
+                    break
+
+            if model.Meta.tabular_orientation == TabularOrientation.row:
+                range = 'A{}:A{}'.format(3 + has_multiple_cells, 2 ** 20)
+            else:
+                range = '{}2:{}2'.format(get_column_letter(1 + has_multiple_cells),
+                                         get_column_letter(2 ** 14))
+
             content.append([
-                ws_name, 
-                model.Meta.help, 
-                len(grouped_objects.get(model, [])),
-                ])
+                ws_display_name,
+                model.Meta.help,
+                Formula("=COUNTA('{}'!{})".format(ws_name, range),
+                        len(grouped_objects.get(model, []))),
+            ])
 
         style = WorksheetStyle(
             title_rows=1,
@@ -981,9 +1001,9 @@ class WorkbookReader(ReaderBase):
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
         if sbtab:
-            toc_sheet_name = '!' + DEFAULT_SBTAB_TOC_NAME
+            toc_sheet_name = '!' + SBTAB_TOC_NAME
         else:
-            toc_sheet_name = DEFAULT_TOC_NAME
+            toc_sheet_name = TOC_NAME
         if toc_sheet_name in sheet_names:
             sheet_names.remove(toc_sheet_name)
         # drop metadata models unless they're requested
@@ -1865,7 +1885,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None,
 
     now = datetime.now()
     ws_metadata = [[' '.join(["!!{}".format(format),
-                              "TableID='{}'".format(cls.__name__),    
+                              "TableID='{}'".format(cls.__name__),
                               "TableName='{}'".format(table_name),
                               "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
                                   now.year, now.month, now.day, now.hour, now.minute, now.second),

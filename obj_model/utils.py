@@ -14,7 +14,7 @@ from pathlib import Path
 from random import shuffle
 from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
                             InvalidObject, Validator, TabularOrientation,
-                            DEFAULT_SCHEMA_NAME, DEFAULT_SBTAB_SCHEMA_NAME)
+                            SCHEMA_NAME, SBTAB_SCHEMA_NAME)
 from wc_utils.util import git
 import collections
 import importlib
@@ -438,15 +438,15 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
         if sbtab:
-            schema_sheet_name = '!' + DEFAULT_SBTAB_SCHEMA_NAME
+            schema_sheet_name = '!' + SBTAB_SCHEMA_NAME
         else:
-            schema_sheet_name = DEFAULT_SCHEMA_NAME
+            schema_sheet_name = SCHEMA_NAME
     elif ext in ['.csv', '.tsv']:
         if '*' in filename:
             if sbtab:
-                schema_sheet_name = '!' + DEFAULT_SBTAB_SCHEMA_NAME
+                schema_sheet_name = '!' + SBTAB_SCHEMA_NAME
             else:
-                schema_sheet_name = DEFAULT_SCHEMA_NAME
+                schema_sheet_name = SCHEMA_NAME
         else:
             schema_sheet_name = ''
     else:
@@ -481,8 +481,8 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
     rows = ws
     ws_metadata, _ = WorkbookReader.parse_ws_metadata(rows, sbtab=sbtab)
     if sbtab:
-        assert ws_metadata['TableID'] == DEFAULT_SBTAB_SCHEMA_NAME, \
-            "TableID must be '{}'".format(DEFAULT_SBTAB_SCHEMA_NAME)
+        assert ws_metadata['TableID'] == SBTAB_SCHEMA_NAME, \
+            "TableID must be '{}'".format(SBTAB_SCHEMA_NAME)
 
     header_row = rows[0]
     if sbtab:
