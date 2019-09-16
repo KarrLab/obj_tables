@@ -13,7 +13,8 @@ from itertools import chain
 from pathlib import Path
 from random import shuffle
 from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
-                            InvalidObject, Validator, TabularOrientation)
+                            InvalidObject, Validator, TabularOrientation,
+                            SCHEMA_NAME, SBTAB_SCHEMA_NAME)
 from wc_utils.util import git
 import collections
 import importlib
@@ -21,6 +22,7 @@ import obj_model.io
 import os.path
 import pandas
 import random
+import re
 import string
 import stringcase
 import types
@@ -436,19 +438,15 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
         if sbtab:
-            schema_sheet_name = 'Definition'
+            schema_sheet_name = '!' + SBTAB_SCHEMA_NAME
         else:
-            schema_sheet_name = 'Schema'
-        if sbtab:
-            schema_sheet_name = '!!' + schema_sheet_name
+            schema_sheet_name = SCHEMA_NAME
     elif ext in ['.csv', '.tsv']:
         if '*' in filename:
             if sbtab:
-                schema_sheet_name = 'Definition'
+                schema_sheet_name = '!' + SBTAB_SCHEMA_NAME
             else:
-                schema_sheet_name = 'Schema'
-            if sbtab:
-                schema_sheet_name = '!!' + schema_sheet_name
+                schema_sheet_name = SCHEMA_NAME
         else:
             schema_sheet_name = ''
     else:
@@ -477,13 +475,14 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         verbose_name_plural_col_name = 'Verbose name plural'
         desc_col_name = 'Description'
 
-        class_type = 'Class'
+        class_type = 'Model'
         attr_type = 'Attribute'
 
     rows = ws
-    ws_metadata = WorkbookReader.parse_ws_metadata(rows, sbtab=sbtab)
+    metadata, _ = WorkbookReader.read_worksheet_metadata(rows, sbtab=sbtab)
     if sbtab:
-        assert ws_metadata['TableType'] == 'Definition', "TableType must be 'Definition'"
+        assert metadata['TableID'] == SBTAB_SCHEMA_NAME, \
+            "TableID must be '{}'".format(SBTAB_SCHEMA_NAME)
 
     header_row = rows[0]
     if sbtab:
@@ -532,12 +531,20 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     'attrs': {},
                     'attr_order': [],
                     'tab_orientation': TabularOrientation.row,
-                    'verbose_name': None,
-                    'verbose_name_plural': None,
+                    'verbose_name': '!' + cls_name,
+                    'verbose_name_plural': '!' + cls_name,
                     'desc': None,
                 }
 
-            attr_name = stringcase.snakecase(row[name_col_name])
+            if sbtab:
+                attr_name = row[name_col_name]
+                assert re.match(r'^[a-zA-Z0-9:>]+$', attr_name), \
+                    "Attribute names must consist of alphanumeric characters, colons, and forward carets"
+                attr_name = attr_name.replace('>', '_').replace(':', '_')
+                attr_name = stringcase.snakecase(attr_name)
+                attr_name = attr_name.replace('__', '_')
+            else:
+                attr_name = stringcase.snakecase(row[name_col_name])
 
             if attr_name == 'Meta':
                 raise ValueError('"{}" cannot have attribute with name "Meta"'.format(
@@ -564,7 +571,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         meta_attrs = {
             'tabular_orientation': cls_spec['tab_orientation'],
             'attribute_order': tuple(cls_spec['attr_order']),
-            'help': cls_spec['desc'],
+            'description': cls_spec['desc'],
         }
         if cls_spec['verbose_name']:
             meta_attrs['verbose_name'] = cls_spec['verbose_name']
@@ -578,14 +585,22 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         }
         for attr_spec in cls_spec['attrs'].values():
             attr_type_spec, _, args = attr_spec['type'].partition('(')
+            if sbtab:
+                attr_type_spec_module, sep, attr_type_spec_class = attr_type_spec.rpartition('.')
+                attr_type_spec = attr_type_spec_module + sep + stringcase.capitalcase(attr_type_spec_class)
             attr_type = all_attrs[attr_type_spec]
+            attr_spec['python_type'] = attr_type_spec + 'Attribute'
+            if args:
+                attr_spec['python_args'] = args[0:-1] + ", verbose_name='{}'".format(attr_spec['verbose_name'])
+            else:
+                attr_spec['python_args'] = "verbose_name='{}'".format(attr_spec['verbose_name'])
 
             if args:
                 attr = eval('func(' + args, {}, {'func': attr_type})
             else:
                 attr = attr_type()
             attr.verbose_name = attr_spec['verbose_name']
-            attr.help = attr_spec['desc']
+            attr.description = attr_spec['desc']
             attrs[attr_spec['name']] = attr
 
         cls = type(cls_spec['name'], (Model, ), attrs)
@@ -596,15 +611,14 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             file.write('# Schema automatically generated at {:%Y-%m-%d %H:%M:%S}\n\n'.format(
                 datetime.now()))
 
-            file.write('import obj_model\n')
-            obj_model_modules = set()
+            imported_modules = set(['obj_model'])
             for cls_spec in cls_specs.values():
                 for attr_spec in cls_spec['attrs'].values():
-                    obj_model_modules.add(attr_spec['type'].rpartition('.')[0])
-            if '' in obj_model_modules:
-                obj_model_modules.remove('')
-            for obj_model_module in obj_model_modules:
-                file.write('import obj_model.{}\n'.format(obj_model_module))
+                    imported_modules.add('obj_model.' + attr_spec['python_type'].rpartition('.')[0])
+            if 'obj_model.' in imported_modules:
+                imported_modules.remove('obj_model.')
+            for imported_module in imported_modules:
+                file.write('import {}\n'.format(imported_module))
 
             for cls_spec in cls_specs.values():
                 file.write('\n')
@@ -614,16 +628,9 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     file.write('    """ {} """\n\n'.format(cls_spec['desc']))
                 for attr_name in cls_spec['attr_order']:
                     attr_spec = cls_spec['attrs'][attr_name]
-                    attr_type = attr_spec['type']
-                    if '(' in attr_type:
-                        attr_type = attr_type.strip()
-                        attr_type = attr_type.replace('(', 'Attribute(', 1)
-                        attr_type = attr_type[0:-1] + ", verbose_name='{}')".format(
-                            attr_spec['verbose_name'].replace("'", "\'"))
-                    else:
-                        attr_type += "Attribute(verbose_name='{}')".format(
-                            attr_spec['verbose_name'].replace("'", "\'"))
-                    file.write('    {} = obj_model.{}\n'.format(attr_spec['name'], attr_type))
+                    file.write('    {} = obj_model.{}({})\n'.format(attr_spec['name'],
+                                                                    attr_spec['python_type'],
+                                                                    attr_spec['python_args']))
 
                 file.write('\n')
                 file.write('    class Meta(obj_model.Model.Meta):\n')
@@ -639,7 +646,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     cls_spec['verbose_name_plural'].replace("'", "\'")
                 ))
                 if cls_spec['desc']:
-                    file.write("        help = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
+                    file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
 
     return module
 
@@ -671,3 +678,65 @@ def to_pandas(objs, models=None, get_related=True,
                               include_all_attributes=include_all_attributes,
                               validate=validate,
                               sbtab=sbtab)
+
+
+def diff_workbooks(filename_1, filename_2, models, model_name, sbtab=False):
+    """ Get difference of models in two workbooks
+
+    Args:
+        filename_1 (:obj:`str`): path to first workbook
+        filename_2 (:obj:`str`): path to second workbook
+        models (:obj:`list` of :obj:`Model`): schema for objects to compare
+        model_name (:obj:`str`): Type of objects to compare
+        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+
+    Returns:
+        :obj:`list` of :obj:`str`: list of differences
+    """
+    if sbtab:
+        kwargs = obj_model.io.SBTAB_DEFAULT_READER_OPTS
+    else:
+        kwargs = {}
+    objs1 = obj_model.io.Reader().run(filename_1,
+                                      models=models,
+                                      group_objects_by_model=True,
+                                      sbtab=sbtab,
+                                      **kwargs)
+    objs2 = obj_model.io.Reader().run(filename_2,
+                                      models=models,
+                                      group_objects_by_model=True,
+                                      sbtab=sbtab,
+                                      **kwargs)
+
+    for model in models:
+        if model.__name__ == model_name:
+            break
+    if model.__name__ != model_name:
+        raise SystemExit('Workbook does not have model "{}"'.format(model_name))
+
+    obj_diffs = []
+    for obj1 in list(objs1[model]):
+        match = False
+        for obj2 in list(objs2[model]):
+            if obj1.serialize() == obj2.serialize():
+                match = True
+                objs2[model].remove(obj2)
+                obj_diff = obj1.difference(obj2)
+                if obj_diff:
+                    obj_diffs.append(obj_diff)
+                break
+        if match:
+            objs1[model].remove(obj1)
+
+    diffs = []
+    if objs1[model]:
+        diffs.append('{} objects in the first workbook are missing from the second:\n  {}'.format(
+            len(objs1[model]), '\n  '.join(obj.serialize() for obj in objs1[model])))
+    if objs2[model]:
+        diffs.append('{} objects in the second workbook are missing from the first:\n  {}'.format(
+            len(objs2[model]), '\n  '.join(obj.serialize() for obj in objs2[model])))
+    if obj_diffs:
+        diffs.append('{} objects are different in the workbooks:\n  {}'.format(
+            len(obj_diffs), '\n  '.join(obj_diffs)))
+
+    return diffs

@@ -1,10 +1,16 @@
-!!SBtab TableID='Definition' TableName='Table and column definitions' TableType='Definition' SBtabVersion='1.0',,,,
+!!SBtab TableID='DEFINITION' TableName='Table/model and column/attribute definitions' SBtabVersion='2.0',,,,
 !ComponentName,!ComponentType,!IsPartOf,!Format,!Description
-Parent,Table,,row,Represents a parent
-Id,Column,Parent,Slug,Identifier
-Name,Column,Parent,String,Name
-Id,Column,Child,Slug,Identifier
-Name,Column,Child,String,Name
-Parents,Column,Child,"ManyToMany('Parent', related_name='children')",Parents
+Parent,Table,,column,Represents a parent
+Id,Column,Parent,slug,Identifier
+Name,Column,Parent,string,Name
+Id,Column,Child,slug,Identifier
+Name,Column,Child,string,Name
+Parents,Column,Child,"manyToMany('Parent', related_name='children')",Parents
 Formula,Column,Child,chem.EmpiricalFormula,Empirical formula
+Size,Column,Child,"enum(['small', 'medium', 'large'], default='small', default_cleaned_value='small')",Size
+Quantity,Column,Child,"manyToOne('Quantity', related_name='children')",
 Child,Table,,row,Represents a child
+Quantity,Table,,multiple_cells,Represents a quantity
+Id,Column,Quantity,slug,Identifier
+Value,Column,Quantity,string,Value
+Units,Column,Quantity,string,Units

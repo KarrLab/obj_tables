@@ -19,6 +19,7 @@ import enum
 import json
 import math
 import mock
+import obj_model
 import obj_model.io
 import obj_model.expression
 import openpyxl
@@ -144,8 +145,7 @@ class TestIo(unittest.TestCase):
         self.tmp_dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        # shutil.rmtree(self.tmp_dirname)
-        print(self.tmp_dirname)
+        shutil.rmtree(self.tmp_dirname)
 
     def test_dummy_model(self):
         # test integrity of relationships
@@ -160,9 +160,9 @@ class TestIo(unittest.TestCase):
         objects = utils.group_objects_by_model(objects)
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [root], [MainRoot, Node, Leaf, ])
-        WorkbookWriter().run(filename, root, [MainRoot, Node, Leaf, ])
-        objects2 = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        WorkbookWriter().run(filename, [root], models=[MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename, root, models=[MainRoot, Node, Leaf, ])
+        objects2 = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf, OneToManyRow])
 
         # validate
         all_objects2 = []
@@ -179,9 +179,11 @@ class TestIo(unittest.TestCase):
         root2 = objects2[MainRoot].pop()
 
         filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
-        WorkbookWriter().run(filename2, [root2], [MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename2, [root2], models=[MainRoot, Node, Leaf, ])
         original = read_workbook(filename)
         copy = read_workbook(filename2)
+        for sheet in copy.keys():
+            copy[sheet][0][0] = original[sheet][0][0]  # because dates will be different
         self.assertEqual(copy, original)
 
         self.assertEqual(set([x.id for x in root2.nodes]), set([x.id for x in root.nodes]))
@@ -192,10 +194,10 @@ class TestIo(unittest.TestCase):
 
         #
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, root, [MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename, root, models=[MainRoot, Node, Leaf, ])
 
-        WorkbookWriter().run(filename, None, [MainRoot, Node, Leaf, ])
-        objects2 = WorkbookReader().run(filename, [MainRoot, Node, Leaf, ], group_objects_by_model=False)
+        WorkbookWriter().run(filename, None, models=[MainRoot, Node, Leaf, ])
+        objects2 = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf, ], group_objects_by_model=False)
         self.assertEqual(objects2, None)
         objects2 = obj_model.io.Reader().run(filename, models=[MainRoot, Node, Leaf, ], group_objects_by_model=False)
         self.assertEqual(objects2, None)
@@ -246,7 +248,7 @@ class TestIo(unittest.TestCase):
                 attribute_order = ('str_attr', 'int_attr', 'int_attr2', 'test0')
 
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', 'test_manager.xlsx')
-        WorkbookReader().run(filename, [Example0, Example1])
+        WorkbookReader().run(filename, models=[Example0, Example1])
 
         self.assertEqual(len(Example0.objects.get(id='A')), 1)
         self.assertEqual(len(Example1.objects.get(str_attr='C')), 2)
@@ -261,14 +263,14 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'test-*.csv')
 
         # write to file
-        WorkbookWriter().run(filename, [self.root], [MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename, [self.root], models=[MainRoot, Node, Leaf, ])
 
         """ test reading worksheet by the model's name """
         # rename worksheet
         self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Main root.csv')))
         os.rename(os.path.join(self.tmp_dirname, 'test-Main root.csv'), os.path.join(self.tmp_dirname, 'test-MainRoot.csv'))
 
-        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -278,7 +280,7 @@ class TestIo(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Leaves.csv')))
         os.rename(os.path.join(self.tmp_dirname, 'test-Leaves.csv'), os.path.join(self.tmp_dirname, 'test-Leaf.csv'))
 
-        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -288,7 +290,7 @@ class TestIo(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-MainRoot.csv')))
         os.rename(os.path.join(self.tmp_dirname, 'test-MainRoot.csv'), os.path.join(self.tmp_dirname, 'test-Main roots.csv'))
 
-        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -298,7 +300,7 @@ class TestIo(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(self.tmp_dirname, 'test-Main roots.csv')))
         os.rename(os.path.join(self.tmp_dirname, 'test-Main roots.csv'), os.path.join(self.tmp_dirname, 'test-main roots.csv'))
 
-        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -308,10 +310,10 @@ class TestIo(unittest.TestCase):
         filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
 
         # write to file
-        WorkbookWriter().run(filename, [self.root], [MainRoot, Node, Leaf, ])
+        WorkbookWriter().run(filename, [self.root], models=[MainRoot, Node, Leaf, ])
 
         """ test reading attributes by verbose name """
-        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -328,9 +330,9 @@ class TestIo(unittest.TestCase):
         workbook = reader.run()
 
         # edit heading
-        headings = workbook['Main root'][2]
+        headings = workbook['Main root'][1]
         self.assertEqual(headings[0], 'Identifier')
-        workbook['Main root'][2][0] = 'id'
+        workbook['Main root'][1][0] = 'id'
 
         # write workbook
         writer.run(workbook, style={
@@ -341,14 +343,14 @@ class TestIo(unittest.TestCase):
         })
 
         # check that attributes can be read by name
-        objects = WorkbookReader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename2, models=[MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
 
         """ test case insensitivity """
         # edit heading
-        workbook['Main root'][2][0] = 'ID'
+        workbook['Main root'][1][0] = 'ID'
 
         # write workbook
         writer.run(workbook, style={
@@ -359,7 +361,7 @@ class TestIo(unittest.TestCase):
         })
 
         # check that attributes can be read by name
-        objects = WorkbookReader().run(filename2, [MainRoot, Node, Leaf, OneToManyRow])
+        objects = WorkbookReader().run(filename2, models=[MainRoot, Node, Leaf, OneToManyRow])
         root = objects[MainRoot].pop()
 
         self.assertTrue(root.is_equal(self.root))
@@ -387,9 +389,9 @@ class TestIo(unittest.TestCase):
         '''
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', fixture_file)
         if do_not_catch:
-            WorkbookReader().run(filename, models)
+            WorkbookReader().run(filename, models=models)
         with self.assertRaises(Exception) as context:
-            WorkbookReader().run(filename, models)
+            WorkbookReader().run(filename, models=models)
         for msg in expected_messages:
             if not use_re:
                 msg = re.escape(msg)
@@ -413,7 +415,7 @@ class TestIo(unittest.TestCase):
 
         file = 'test-locations.xlsx'
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', file)
-        models = WorkbookReader().run(filename, [Normal, Transposed])
+        models = WorkbookReader().run(filename, models=[Normal, Transposed])
         ext = 'xlsx'
         normals = models[Normal]
         for obj in normals:
@@ -441,7 +443,7 @@ class TestIo(unittest.TestCase):
 
         file = 'test-locations-*.csv'
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', file)
-        models = WorkbookReader().run(filename, [Normal, Transposed])
+        models = WorkbookReader().run(filename, models=[Normal, Transposed])
         ext = 'csv'
         normals = models[Normal]
         for obj in normals:
@@ -585,21 +587,21 @@ class TestIo(unittest.TestCase):
 
         models = [MainRoot, Node, Leaf, OneToManyRow]
 
-        WorkbookWriter().run(filename_xls1, [self.root], models)
+        WorkbookWriter().run(filename_xls1, [self.root], models=models)
 
         convert(filename_xls1, filename_csv, models)
         convert(filename_csv, filename_xls2, models)
 
-        objects2 = WorkbookReader().run(filename_csv, models)
+        objects2 = WorkbookReader().run(filename_csv, models=models)
         self.assertTrue(self.root.is_equal(objects2[MainRoot][0]))
 
-        objects2 = WorkbookReader().run(filename_xls2, models)
+        objects2 = WorkbookReader().run(filename_xls2, models=models)
         self.assertTrue(self.root.is_equal(objects2[MainRoot][0]))
 
     def test_create_template(self):
         filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
         create_template(filename, [MainRoot, Node, Leaf])
-        objects = WorkbookReader().run(filename, [MainRoot, Node, Leaf])
+        objects = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf])
         self.assertEqual(objects, {
             MainRoot: [],
             Node: [],
@@ -615,13 +617,13 @@ class TestIo(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             # raises extra sheet exception
-            WorkbookReader().run(filename, [SimpleModel])
+            WorkbookReader().run(filename, models=[SimpleModel])
         self.assertEqual(str(context.exception),
                          "No matching models for worksheets/files {} / 'extra sheet'".format(fixture_file))
 
         with self.assertRaises(ValueError) as context:
             # raises extra attribute exception
-            WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True)
+            WorkbookReader().run(filename, models=[SimpleModel], ignore_extra_sheets=True)
         self.assertRegex(str(context.exception),
                          "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
@@ -633,7 +635,7 @@ class TestIo(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             # raises validation exception on 'too short'
-            WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True,
+            WorkbookReader().run(filename, models=[SimpleModel], ignore_extra_sheets=True,
                                  ignore_extra_attributes=True)
         self.assertRegex(str(context.exception),
                          "The model cannot be loaded because 'test_run_options.*' contains error.*")
@@ -647,7 +649,7 @@ class TestIo(unittest.TestCase):
 
         class SimpleModel(core.Model):
             val = core.StringAttribute()
-        model = WorkbookReader().run(filename, [SimpleModel], ignore_extra_sheets=True,
+        model = WorkbookReader().run(filename, models=[SimpleModel], ignore_extra_sheets=True,
                                      ignore_extra_attributes=True)
         self.assertIn('too short', [r.val for r in model[SimpleModel]])
 
@@ -762,7 +764,7 @@ class TestIo(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True)
             value = core.FloatAttribute()
 
-        models = WorkbookReader().run(filename, [TestModel])[TestModel]
+        models = WorkbookReader().run(filename, models=[TestModel])[TestModel]
         models.sort(key=lambda model: model.id)
 
         m = TestModel.objects.get_one(id='Model-2')
@@ -797,7 +799,7 @@ class TestIo(unittest.TestCase):
         })
 
         with self.assertRaisesRegex(ValueError, 'The model cannot be loaded'):
-            WorkbookReader().run(filename, [TestModel])
+            WorkbookReader().run(filename, models=[TestModel])
 
     def test_tabular_orientation_multiple_cells(self):
         class Node(core.Model):
@@ -846,8 +848,8 @@ class TestIo(unittest.TestCase):
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         writer = WorkbookWriter()
-        writer.run(filename, nodes, [Node, Unit])
-        nodes_2 = WorkbookReader().run(filename, [Node, Unit])[Node]
+        writer.run(filename, nodes, models=[Node, Unit])
+        nodes_2 = WorkbookReader().run(filename, models=[Node, Unit])[Node]
         for node, node_2 in zip(nodes, nodes_2):
             self.assertTrue(node_2.is_equal(node))
 
@@ -858,14 +860,14 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
         write_workbook(filename, wb)
         with self.assertRaisesRegex(ValueError, 'model cannot be loaded'):
-            WorkbookReader().run(filename, [Node, Unit])
+            WorkbookReader().run(filename, models=[Node, Unit])
 
         # column orientation
         Node.Meta.tabular_orientation = core.TabularOrientation.column
         filename = os.path.join(self.tmp_dirname, 'test2.xlsx')
         writer = WorkbookWriter()
-        writer.run(filename, nodes, [Node, Unit])
-        nodes_2 = WorkbookReader().run(filename, [Node, Unit])[Node]
+        writer.run(filename, nodes, models=[Node, Unit])
+        nodes_2 = WorkbookReader().run(filename, models=[Node, Unit])[Node]
         for node, node_2 in zip(nodes, nodes_2):
             self.assertTrue(node_2.is_equal(node))
 
@@ -884,14 +886,14 @@ class TestIo(unittest.TestCase):
         ]
 
         path = os.path.join(self.tmp_dirname, 'test.xlsx')
-        obj_model.io.Writer().run(path, objs, [Model1, Model2])
-        objs_2 = obj_model.io.Reader().run(path, [Model1, Model2])
+        obj_model.io.Writer().run(path, objs, models=[Model1, Model2])
+        objs_2 = obj_model.io.Reader().run(path, models=[Model1, Model2])
         for obj, obj_2 in zip(objs, objs_2):
             self.assertTrue(obj_2.is_equal(obj))
 
         path = os.path.join(self.tmp_dirname, 'test*.csv')
-        obj_model.io.Writer().run(path, objs, [Model1, Model2])
-        objs_2 = obj_model.io.Reader().run(path, [Model1, Model2])
+        obj_model.io.Writer().run(path, objs, models=[Model1, Model2])
+        objs_2 = obj_model.io.Reader().run(path, models=[Model1, Model2])
         for obj, obj_2 in zip(objs, objs_2):
             self.assertTrue(obj_2.is_equal(obj))
 
@@ -913,11 +915,47 @@ class TestIo(unittest.TestCase):
         ws.append(Row(['d', 'D']))
         write_workbook(filename, wb)
 
-        objs = obj_model.io.Reader().run(filename, [Node])
+        objs = obj_model.io.Reader().run(filename, models=[Node])
         self.assertEqual(len(objs), 3)
-        
+
         with self.assertRaisesRegex(ValueError, r'contains error\(s\)'):
-            obj_model.io.Reader().run(filename, [Node], ignore_empty_rows=False)
+            obj_model.io.Reader().run(filename, models=[Node], ignore_empty_rows=False)
+
+    def test_model_metadata(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+
+        objs = [
+            Node(id='a', name='A'),
+            Node(id='b', name='B'),
+            Node(id='c', name='C'),
+        ]
+        model_metadata = {Node: {
+            'attr1': 'val1',
+            'attr2': 'val2',
+        }}
+
+        writer = obj_model.io.Writer()
+        writer.run(filename, objs, model_metadata=model_metadata, models=[Node])
+
+        reader = obj_model.io.Reader()
+        objs2 = reader.run(filename, models=[Node])
+        for obj, obj2 in zip(objs, objs2):
+            self.assertTrue(obj2.is_equal(obj))
+
+        model_metadata = {Node: {
+            'TableID': 'Node',
+            'TableName': 'Nodes',
+            'ObjModelVersion': obj_model.__version__,
+            'attr1': 'val1',
+            'attr2': 'val2',
+        }}
+        reader._model_metadata[Node].pop('Date')
+        print(reader._model_metadata)
+        self.assertEqual(reader._model_metadata, model_metadata)
 
 
 class TestMetadataModels(unittest.TestCase):
@@ -964,8 +1002,8 @@ class TestMetadataModels(unittest.TestCase):
         ### test metadata return ###
         # read data repo metadata
         file_in_repo = os.path.join(self.test_data_repo_dir, 'test.xlsx')
-        writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
-        objs_read = reader.run(file_in_repo, [utils.DataRepoMetadata, self.Model1])
+        writer.run(file_in_repo, self.objs, models=[self.Model1], data_repo_metadata=True)
+        objs_read = reader.run(file_in_repo, models=[utils.DataRepoMetadata, self.Model1])
         data_repo_metadata = objs_read[0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
         self.assertEqual(data_repo_metadata.branch, 'master')
@@ -975,17 +1013,17 @@ class TestMetadataModels(unittest.TestCase):
             self.assertTrue(obj_read.is_equal(obj))
 
         models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
-        objs_read = reader.run(file_in_repo, models_expected, ignore_extra_sheets=True,
-            ignore_missing_sheets=True)
+        objs_read = reader.run(file_in_repo, models=models_expected, ignore_extra_sheets=True,
+                               ignore_missing_sheets=True)
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.SchemaRepoMetadata not in obj_types)
 
         # write data and schema repo metadata to data file
-        writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True,
-            schema_package='test_repo')
+        writer.run(file_in_repo, self.objs, models=[self.Model1], data_repo_metadata=True,
+                   schema_package='test_repo')
 
         # read data and schema metadata
-        objs_read = reader.run(file_in_repo, models_expected, ignore_extra_sheets=True)
+        objs_read = reader.run(file_in_repo, models=models_expected, ignore_extra_sheets=True)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
@@ -995,9 +1033,9 @@ class TestMetadataModels(unittest.TestCase):
 
         # test csv files with metadata
         csv_path = os.path.join(self.test_data_repo_dir, 'test*.csv')
-        writer.run(csv_path, self.objs, [self.Model1], data_repo_metadata=True,
-                                  schema_package='test_repo')
-        objs_read = reader.run(csv_path, models_expected, ignore_extra_sheets=True)
+        writer.run(csv_path, self.objs, models=[self.Model1], data_repo_metadata=True,
+                   schema_package='test_repo')
+        objs_read = reader.run(csv_path, models=models_expected, ignore_extra_sheets=True)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 
@@ -1006,7 +1044,7 @@ class TestMetadataModels(unittest.TestCase):
         # data repo metadata not written: data file not in a repo
         with pytest.warns(obj_model.io.IoWarning) as w:
             file_not_in_repo = os.path.join(self.tmp_dirname, 'test.xlsx')
-            writer.run(file_not_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
+            writer.run(file_not_in_repo, self.objs, models=[self.Model1], data_repo_metadata=True)
             self.assertEqual(len(w), 1)
             warning_msg = str(w[0].message)
             self.assertIn('Cannot obtain git repo metadata for data repo', warning_msg)
@@ -1019,7 +1057,7 @@ class TestMetadataModels(unittest.TestCase):
             f.write('hello world!')
         with pytest.warns(obj_model.io.IoWarning) as w:
             # write data file in test data repo
-            writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True)
+            writer.run(file_in_repo, self.objs, models=[self.Model1], data_repo_metadata=True)
             self.assertEqual(len(w), 1)
             warning_msg = str(w[0].message)
             self.assertIn("Git repo metadata for data repo was obtained", warning_msg)
@@ -1028,8 +1066,8 @@ class TestMetadataModels(unittest.TestCase):
         ## schema repo ##
         with pytest.warns(obj_model.io.IoWarning) as w:
             # test schema package not found
-            writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
-                                      schema_package='not a schema package')
+            writer.run(file_in_repo, self.objs, models=[self.Model1], data_repo_metadata=False,
+                       schema_package='not a schema package')
             self.assertEqual(len(w), 1)
             warning_msg = str(w[0].message)
             self.assertRegex(warning_msg, "package '.+' not found")
@@ -1041,14 +1079,14 @@ class TestMetadataModels(unittest.TestCase):
             with open(file_in_schema_repo, 'w') as f:
                 f.write('hello world!')
             package_name = 'test_repo'
-            writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
-                schema_package=package_name)
+            writer.run(file_in_repo, self.objs, models=[self.Model1], data_repo_metadata=False,
+                       schema_package=package_name)
             self.assertEqual(len(w), 1)
             warning_msg = str(w[0].message)
             self.assertRegex(warning_msg,
-                "Cannot obtain git repo metadata for schema repo '.+' used by data file:")
+                             "Cannot obtain git repo metadata for schema repo '.+' used by data file:")
             self.assertIn("Cannot gather metadata for schema repo from Git repo containing",
-                warning_msg)
+                          warning_msg)
 
         # clean up
         os.remove(file_in_repo)
@@ -1066,8 +1104,8 @@ class TestMetadataModels(unittest.TestCase):
 
         # write data repo metadata in obj_model file
         path_1 = os.path.join(self.test_data_repo_dir, 'out.json')
-        obj_model.io.JsonWriter().run(path_1, self.objs, [self.Model1], data_repo_metadata=True)
-        objs_read = obj_model.io.JsonReader().run(path_1, [utils.DataRepoMetadata, self.Model1])
+        obj_model.io.JsonWriter().run(path_1, self.objs, models=[self.Model1], data_repo_metadata=True)
+        objs_read = obj_model.io.JsonReader().run(path_1, models=[utils.DataRepoMetadata, self.Model1])
         data_repo_metadata = objs_read[0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
         self.assertEqual(data_repo_metadata.branch, 'master')
@@ -1077,10 +1115,10 @@ class TestMetadataModels(unittest.TestCase):
             self.assertTrue(obj_read.is_equal(obj))
 
         # test data and schema repo metadata in obj_model file
-        obj_model.io.JsonWriter().run(path_1, self.objs, [self.Model1], data_repo_metadata=True,
+        obj_model.io.JsonWriter().run(path_1, self.objs, models=[self.Model1], data_repo_metadata=True,
                                       schema_package='test_repo')
         metadata_models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
-        objs_read = obj_model.io.JsonReader().run(path_1, metadata_models_expected + [self.Model1])
+        objs_read = obj_model.io.JsonReader().run(path_1, models=metadata_models_expected + [self.Model1])
         for obj, model in zip(objs_read, metadata_models_expected):
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
@@ -1103,9 +1141,9 @@ class TestMetadataModels(unittest.TestCase):
 
         # list of objects
         path = os.path.join(self.tmp_dirname, 'out.json')
-        obj_model.io.JsonWriter().run(path, objs, [Parent, Child])
+        obj_model.io.JsonWriter().run(path, objs, models=[Parent, Child])
 
-        objs = obj_model.io.JsonReader().run(path, [Parent, Child])
+        objs = obj_model.io.JsonReader().run(path, models=[Parent, Child])
         p_b = next(obj for obj in objs if isinstance(obj, Parent))
         self.assertTrue(p_b.is_equal(p))
 
@@ -1116,17 +1154,17 @@ class TestMetadataModels(unittest.TestCase):
             json.dump(objs, file)
 
         with self.assertRaisesRegex(ValueError, 'Unsupported type'):
-            obj_model.io.JsonReader().run(path, [Parent, Child])
+            obj_model.io.JsonReader().run(path, models=[Parent, Child])
 
-        objs = obj_model.io.JsonReader().run(path, [Parent, Child], ignore_extra_sheets=True)
+        objs = obj_model.io.JsonReader().run(path, models=[Parent, Child], ignore_extra_sheets=True)
         p_b = next(obj for obj in objs if isinstance(obj, Parent))
         self.assertTrue(p_b.is_equal(p))
 
         # single object
         path = os.path.join(self.tmp_dirname, 'out.json')
-        obj_model.io.JsonWriter().run(path, p, [Parent, Child])
+        obj_model.io.JsonWriter().run(path, p, models=[Parent, Child])
 
-        p_b = obj_model.io.JsonReader().run(path, [Parent, Child])
+        p_b = obj_model.io.JsonReader().run(path, models=[Parent, Child])
         self.assertTrue(p_b.is_equal(p))
 
         obj = {'__type': 'UnsupportedType', 'field': 'data'}
@@ -1134,10 +1172,11 @@ class TestMetadataModels(unittest.TestCase):
             json.dump(obj, file)
 
         with self.assertRaisesRegex(ValueError, 'Unsupported type'):
-            obj_model.io.JsonReader().run(path, [Parent, Child])
+            obj_model.io.JsonReader().run(path, models=[Parent, Child])
 
-        obj = obj_model.io.JsonReader().run(path, [Parent, Child], ignore_extra_sheets=True)
+        obj = obj_model.io.JsonReader().run(path, models=[Parent, Child], ignore_extra_sheets=True)
         self.assertEqual(obj, None)
+
 
 class TestMisc(unittest.TestCase):
 
@@ -1179,9 +1218,9 @@ class TestMisc(unittest.TestCase):
         filename = os.path.join(self.dirname, 'test.xlsx')
 
         writer = WorkbookWriter()
-        writer.run(filename, parents, [Parent1, Child1])
+        writer.run(filename, parents, models=[Parent1, Child1])
 
-        objects = WorkbookReader().run(filename, [Parent1, Child1])
+        objects = WorkbookReader().run(filename, models=[Parent1, Child1])
         objects[Parent1].sort(key=lambda parent: parent.id)
         for orig_parent, copy_parent in zip(parents, objects[Parent1]):
             self.assertTrue(orig_parent.is_equal(copy_parent))
@@ -1196,7 +1235,7 @@ class TestMisc(unittest.TestCase):
         writer = WorkbookWriter()
 
         with pytest.warns(IoWarning):
-            writer.run(filename, [node], [Node2])
+            writer.run(filename, [node], models=[Node2])
 
     def test_writer_error_if_not_serializable(self):
         class ChildrenAttribute3(core.OneToManyAttribute):
@@ -1217,7 +1256,7 @@ class TestMisc(unittest.TestCase):
         writer = WorkbookWriter()
 
         with self.assertRaisesRegex(ValueError, 'cannot be serialized'):
-            writer.run(filename, [parent], [Parent3, Child3])
+            writer.run(filename, [parent], models=[Parent3, Child3])
 
     def test_reader_error_if_not_serializable(self):
         class WriterChildrenAttribute(core.OneToManyAttribute):
@@ -1266,10 +1305,10 @@ class TestMisc(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = WorkbookWriter()
-        writer.run(filename, [parent], [WriterParent, WriterChild])
+        writer.run(filename, [parent], models=[WriterParent, WriterChild])
 
         with self.assertRaisesRegex(ValueError, 'cannot be serialized'):
-            WorkbookReader().run(filename, [ReaderParent, ReaderChild])
+            WorkbookReader().run(filename, models=[ReaderParent, ReaderChild])
 
     def test_abiguous_sheet_names_error(self):
         class Node4(core.Model):
@@ -1291,11 +1330,11 @@ class TestMisc(unittest.TestCase):
         writer = WorkbookWriter()
 
         with self.assertRaisesRegex(ValueError, 'cannot be unambiguously mapped to models'):
-            writer.run(filename, [node1, node2], [Node4, Node5])
+            writer.run(filename, [node1, node2], models=[Node4, Node5])
 
-        writer.run(filename, [node1], [Node4])
+        writer.run(filename, [node1], models=[Node4])
         with self.assertRaisesRegex(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):
-            WorkbookReader().run(filename, [Node4, Node5])
+            WorkbookReader().run(filename, models=[Node4, Node5])
 
     def test_read_missing_sheet(self):
         class Node6(core.Model):
@@ -1312,9 +1351,9 @@ class TestMisc(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer = WorkbookWriter()
-        writer.run(filename, nodes, [Node6])
+        writer.run(filename, nodes, models=[Node6])
 
-        objects = WorkbookReader().run(filename, [Node6, Node7], ignore_missing_sheets=True)
+        objects = WorkbookReader().run(filename, models=[Node6, Node7], ignore_missing_sheets=True)
         objects[Node6].sort(key=lambda node: node.id)
         for orig_node, copy_node in zip(nodes, objects[Node6]):
             self.assertTrue(orig_node.is_equal(copy_node))
@@ -1335,10 +1374,10 @@ class TestMisc(unittest.TestCase):
         writer = WorkbookWriter()
 
         with pytest.warns(IoWarning):
-            writer.run(filename, nodes, [Node8])
+            writer.run(filename, nodes, models=[Node8])
 
         with self.assertRaisesRegex(ValueError, 'Duplicate, case insensitive, headers:'):
-            WorkbookReader().run(filename, [Node8])
+            WorkbookReader().run(filename, models=[Node8])
 
     def test_row_and_column_headings(self):
         class TestModel(core.Model):
@@ -1356,7 +1395,7 @@ class TestMisc(unittest.TestCase):
                            TestModel,
                            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
                            headings=[['Column_B', 'Column_C']],
-                           ws_metadata=[],
+                           metadata_headings=[],
                            validation=None)
         xslx_writer.finalize_workbook()
 
@@ -1369,9 +1408,10 @@ class TestMisc(unittest.TestCase):
         reader = WorkbookReader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
-        data, row_headings, column_headings = reader.read_sheet(xlsx_reader, 'Sheet',
-                                                                num_row_heading_columns=0,
-                                                                num_column_heading_rows=1)
+        reader._model_metadata = {}
+        data, row_headings, column_headings, _ = reader.read_sheet(TestModel, xlsx_reader, 'Sheet',
+                                                                   num_row_heading_columns=0,
+                                                                   num_column_heading_rows=1)
         self.assertEqual(len(data), 2)
         self.assertEqual(list(data[0]), ['Cell_2_B', 'Cell_2_C'])
         self.assertEqual(list(data[1]), ['Cell_3_B', 'Cell_3_C'])
@@ -1407,7 +1447,7 @@ class TestMisc(unittest.TestCase):
             value = core.FloatAttribute(verbose_name='Value')
 
         with self.assertRaisesRegex(ValueError, 'Value must be a `float`'):
-            WorkbookReader().run(filename, [Node10])
+            WorkbookReader().run(filename, models=[Node10])
 
     def test_write_read_subset_of_attributes(self):
         class Parent(core.Model):
@@ -1554,7 +1594,7 @@ class ReadEmptyCellTestCase(unittest.TestCase):
             TestModel.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
 
-        objects = WorkbookReader().run(filename, [TestModel])[TestModel]
+        objects = WorkbookReader().run(filename, models=[TestModel])[TestModel]
         objects.sort(key=lambda m: m.id)
 
         self.assertTrue(math.isnan(objects[0].value_1))
@@ -1598,9 +1638,9 @@ class InheritedIoTestCase(unittest.TestCase):
         aa1.b = bb1
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [aa1], [AA, BB])
+        WorkbookWriter().run(filename, [aa1], models=[AA, BB])
 
-        aa2 = WorkbookReader().run(filename, [AA, BB])[AA][0]
+        aa2 = WorkbookReader().run(filename, models=[AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertEqual(aa1.b.a, aa1)
 
@@ -1629,9 +1669,9 @@ class InheritedIoTestCase(unittest.TestCase):
         aa1.b = bb1
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [aa1], [AA, BB])
+        WorkbookWriter().run(filename, [aa1], models=[AA, BB])
 
-        aa2 = WorkbookReader().run(filename, [AA, BB])[AA][0]
+        aa2 = WorkbookReader().run(filename, models=[AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertIn(aa1, aa1.b.a_s)
 
@@ -1660,9 +1700,9 @@ class InheritedIoTestCase(unittest.TestCase):
         aa1.bs.append(bb1)
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [aa1], [AA, BB])
+        WorkbookWriter().run(filename, [aa1], models=[AA, BB])
 
-        aa2 = WorkbookReader().run(filename, [AA, BB])[AA][0]
+        aa2 = WorkbookReader().run(filename, models=[AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertEqual(bb1.a, aa1)
 
@@ -1691,9 +1731,9 @@ class InheritedIoTestCase(unittest.TestCase):
         aa1.bs.append(bb1)
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [aa1], [AA, BB])
+        WorkbookWriter().run(filename, [aa1], models=[AA, BB])
 
-        aa2 = WorkbookReader().run(filename, [AA, BB])[AA][0]
+        aa2 = WorkbookReader().run(filename, models=[AA, BB])[AA][0]
         self.assertTrue(aa2.is_equal(aa1))
         self.assertIn(aa1, bb1.a_s)
 
@@ -1713,17 +1753,17 @@ class StrictReadingTestCase(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True)
         m1 = Model1(id='m1')
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [m1], [Model1])
+        WorkbookWriter().run(filename, [m1], models=[Model1])
 
-        result = WorkbookReader().run(filename, [Model1])
+        result = WorkbookReader().run(filename, models=[Model1])
         self.assertEqual(set(result.keys()), set([Model1]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertTrue(m1.is_equal(result[Model1][0]))
 
         with self.assertRaises(ValueError):
-            WorkbookReader().run(filename, [Model1, Model2])
+            WorkbookReader().run(filename, models=[Model1, Model2])
 
-        result = WorkbookReader().run(filename, [Model1, Model2], ignore_missing_sheets=True)
+        result = WorkbookReader().run(filename, models=[Model1, Model2], ignore_missing_sheets=True)
         self.assertEqual(set(result.keys()), set([Model1, Model2]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertEqual(len(result[Model2]), 0)
@@ -1738,9 +1778,9 @@ class StrictReadingTestCase(unittest.TestCase):
         m1 = Model1(id='m1')
         m2 = Model2(id='m2')
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [m1, m2], [Model1, Model2])
+        WorkbookWriter().run(filename, [m1, m2], models=[Model1, Model2])
 
-        result = WorkbookReader().run(filename, [Model1, Model2])
+        result = WorkbookReader().run(filename, models=[Model1, Model2])
         self.assertEqual(set(result.keys()), set([Model1, Model2]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertEqual(len(result[Model2]), 1)
@@ -1748,9 +1788,9 @@ class StrictReadingTestCase(unittest.TestCase):
         self.assertTrue(m2.is_equal(result[Model2][0]))
 
         with self.assertRaises(ValueError):
-            WorkbookReader().run(filename, [Model1])
+            WorkbookReader().run(filename, models=[Model1])
 
-        result = WorkbookReader().run(filename, [Model1], ignore_extra_sheets=True)
+        result = WorkbookReader().run(filename, models=[Model1], ignore_extra_sheets=True)
         self.assertEqual(set(result.keys()), set([Model1]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertTrue(m1.is_equal(result[Model1][0]))
@@ -1771,15 +1811,15 @@ class StrictReadingTestCase(unittest.TestCase):
         m1 = Model1(id='m1')
         m2 = Model2(id='m2')
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [m1, m2], [Model1, Model2])
+        WorkbookWriter().run(filename, [m1, m2], models=[Model1, Model2])
 
-        WorkbookReader().run(filename, [Model1, Model2])
+        WorkbookReader().run(filename, models=[Model1, Model2])
         with self.assertRaises(ValueError):
-            WorkbookReader().run(filename, [Model2, Model1])
-        WorkbookReader().run(filename, [Model2, Model1], ignore_sheet_order=True)
+            WorkbookReader().run(filename, models=[Model2, Model1])
+        WorkbookReader().run(filename, models=[Model2, Model1], ignore_sheet_order=True)
 
-        WorkbookWriter().run(filename, [m1], [Model1])
-        WorkbookReader().run(filename, [Model1, Model3], ignore_missing_sheets=True)
+        WorkbookWriter().run(filename, [m1], models=[Model1])
+        WorkbookReader().run(filename, models=[Model1, Model3], ignore_missing_sheets=True)
 
     def test_no_header_rows(self):
         class Model(core.Model):
@@ -1799,7 +1839,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        result = WorkbookReader().run(filename, [Model])
+        result = WorkbookReader().run(filename, models=[Model])
         self.assertEqual(result, {Model: []})
 
         wb = Workbook()
@@ -1809,8 +1849,10 @@ class StrictReadingTestCase(unittest.TestCase):
         })
         reader = get_reader('.xlsx')(filename)
         reader.initialize_workbook()
+        wb_reader = WorkbookReader()
+        wb_reader._model_metadata = {}
         with self.assertRaisesRegex(ValueError, r'must have 1 header row\(s\)'):
-            WorkbookReader().read_sheet(reader, 'Models', num_column_heading_rows=1)
+            wb_reader.read_sheet(Model, reader, 'Models', num_column_heading_rows=1)
 
     def test_no_header_cols(self):
         class Model(core.Model):
@@ -1832,7 +1874,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -1840,7 +1882,7 @@ class StrictReadingTestCase(unittest.TestCase):
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaisesRegex(ValueError, r'must have 1 header column\(s\)'):
-            WorkbookReader().run(filename, [Model])
+            WorkbookReader().run(filename, models=[Model])
 
     def test_missing_attribute(self):
         class Model(core.Model):
@@ -1862,7 +1904,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -1872,8 +1914,8 @@ class StrictReadingTestCase(unittest.TestCase):
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaises(ValueError):
-            WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_missing_attributes=True)
+            WorkbookReader().run(filename, models=[Model])
+        WorkbookReader().run(filename, models=[Model], ignore_missing_attributes=True)
 
     def test_missing_attribute_inline(self):
         class Quantity(core.Model):
@@ -1920,7 +1962,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -1931,8 +1973,8 @@ class StrictReadingTestCase(unittest.TestCase):
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaises(ValueError):
-            WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_missing_attributes=True, ignore_empty_rows=False)
+            WorkbookReader().run(filename, models=[Model])
+        WorkbookReader().run(filename, models=[Model], ignore_missing_attributes=True, ignore_empty_rows=False)
 
     def test_extra_attribute(self):
         class Model(core.Model):
@@ -1954,7 +1996,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -1964,8 +2006,8 @@ class StrictReadingTestCase(unittest.TestCase):
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaises(ValueError):
-            WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_extra_attributes=True)
+            WorkbookReader().run(filename, models=[Model])
+        WorkbookReader().run(filename, models=[Model], ignore_extra_attributes=True)
 
     def test_different_attribute_order(self):
         class Model(core.Model):
@@ -1987,7 +2029,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -2002,8 +2044,8 @@ class StrictReadingTestCase(unittest.TestCase):
             "\n      B1: Attr1"
             "\n      C1: Attr2"
         )):
-            WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
+            WorkbookReader().run(filename, models=[Model])
+        WorkbookReader().run(filename, models=[Model], ignore_attribute_order=True)
 
     def test_different_attribute_order_transpose(self):
         class Model(core.Model):
@@ -2027,7 +2069,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -2043,8 +2085,8 @@ class StrictReadingTestCase(unittest.TestCase):
             "\n      A2: Attr1"
             "\n      A3: Attr2"
         )):
-            WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
+            WorkbookReader().run(filename, models=[Model])
+        WorkbookReader().run(filename, models=[Model], ignore_attribute_order=True)
 
     def test_different_attribute_order_inline(self):
         class Quantity(core.Model):
@@ -2079,7 +2121,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -2102,8 +2144,8 @@ class StrictReadingTestCase(unittest.TestCase):
             "\n      E1: Quantity"
             "\n      E2: Units"
         )):
-            WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
+            WorkbookReader().run(filename, models=[Model])
+        WorkbookReader().run(filename, models=[Model], ignore_attribute_order=True)
 
     def test_different_attribute_order_inline_transpose(self):
         class Quantity(core.Model):
@@ -2141,7 +2183,7 @@ class StrictReadingTestCase(unittest.TestCase):
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        WorkbookReader().run(filename, [Model])
+        WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
         wb['Models'] = ws = Worksheet()
@@ -2166,8 +2208,8 @@ class StrictReadingTestCase(unittest.TestCase):
             "\n      A5: Quantity"
             "\n      B5: Units"
         )):
-            WorkbookReader().run(filename, [Model])
-        WorkbookReader().run(filename, [Model], ignore_attribute_order=True)
+            WorkbookReader().run(filename, models=[Model])
+        WorkbookReader().run(filename, models=[Model], ignore_attribute_order=True)
 
 
 class JsonTestCase(unittest.TestCase):
@@ -2208,11 +2250,11 @@ class JsonTestCase(unittest.TestCase):
 
         path = os.path.join(self.dirname, 'out.json')
         obj_model.io.JsonWriter().run(path, aa_0)
-        aa_0_2 = obj_model.io.JsonReader().run(path, [AA])
+        aa_0_2 = obj_model.io.JsonReader().run(path, models=[AA])
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
         obj_model.io.JsonWriter().run(path, [aa_0, aa_1], models=AA)
-        aas = obj_model.io.JsonReader().run(path, [AA])
+        aas = obj_model.io.JsonReader().run(path, models=[AA])
         aas.sort(key=lambda aa: aa.id)
         self.assertEqual(len(aas), 2)
         self.assertTrue(aa_0.is_equal(aas[0]))
@@ -2224,7 +2266,7 @@ class JsonTestCase(unittest.TestCase):
         with open(path, 'w') as file:
             json.dump(objs, file)
         with self.assertRaisesRegex(ValueError, 'fails to validate'):
-            obj_model.io.JsonReader().run(path, [AA])
+            obj_model.io.JsonReader().run(path, models=[AA])
 
         obj_model.io.JsonWriter().run(path, aa_0, models=AA)
         aa_0_2 = obj_model.io.JsonReader().run(path, models=AA)
@@ -2244,12 +2286,12 @@ class JsonTestCase(unittest.TestCase):
 
         path = os.path.join(self.dirname, 'out.yml')
         obj_model.io.JsonWriter().run(path, aa_0)
-        aa_0_2 = obj_model.io.JsonReader().run(path, [AA])
+        aa_0_2 = obj_model.io.JsonReader().run(path, models=[AA])
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
         path = os.path.join(self.dirname, 'out.yml')
         obj_model.io.Writer().run(path, aa_0)
-        aa_0_2 = obj_model.io.Reader().run(path, [AA])
+        aa_0_2 = obj_model.io.Reader().run(path, models=[AA])
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
         path = os.path.join(self.dirname, 'out.yml')
@@ -2260,7 +2302,7 @@ class JsonTestCase(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unsupported format'):
             obj_model.io.JsonWriter().run(path, aa_0)
         with self.assertRaisesRegex(ValueError, 'Unsupported format'):
-            obj_model.io.JsonReader().run(path, [AA])
+            obj_model.io.JsonReader().run(path, models=[AA])
 
         old_AA = AA
 
@@ -2425,7 +2467,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][3][1] = ']'
+        wb['Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2470,7 +2512,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][3][1] = ']'
+        wb['Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2515,7 +2557,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][3][1] = ']'
+        wb['Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2560,7 +2602,7 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][3][1] = ']'
+        wb['Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2830,7 +2872,7 @@ class ExcelValidationTestCase(unittest.TestCase):
             pos_int_attr_1 = core.PositiveIntegerAttribute(default_cleaned_value=3)
             pos_int_attr_2 = core.PositiveIntegerAttribute(default_cleaned_value=3, max=10, unique=True)
 
-            str_attr_1 = core.StringAttribute(default_cleaned_value='default val', help='Enter a string')
+            str_attr_1 = core.StringAttribute(default_cleaned_value='default val', description='Enter a string')
             str_attr_2 = core.StringAttribute(min_length=1, max_length=None)
             str_attr_3 = core.StringAttribute(min_length=0, max_length=10)
             str_attr_4 = core.StringAttribute(min_length=1, max_length=10, unique=True)
@@ -2904,7 +2946,7 @@ class ExcelValidationTestCase(unittest.TestCase):
                                    )
 
         for attr in TestParent.Meta.attributes.values():
-            attr.help = 'A helpful description'
+            attr.description = 'A helpful description'
 
         objects = [
             TestParent(id='parent_a',
@@ -2944,7 +2986,7 @@ class ExcelValidationTestCase(unittest.TestCase):
         ]
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, objects, [TestParent, TestChild1, TestChild2])
+        WorkbookWriter().run(filename, objects, models=[TestParent, TestChild1, TestChild2])
 
     def test_no_primary_attr(self):
         class TestChild1(core.Model):
@@ -3021,7 +3063,7 @@ class ExcelValidationTestCase(unittest.TestCase):
                 return self.id
 
         for attr in TestParent.Meta.attributes.values():
-            attr.help = 'A helpful description'
+            attr.description = 'A helpful description'
 
         objects = [
             TestParent(id='parent_a'),
@@ -3033,4 +3075,4 @@ class ExcelValidationTestCase(unittest.TestCase):
         ]
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, objects, [TestParent, TestChild1, TestChild2])
+        WorkbookWriter().run(filename, objects, models=[TestParent, TestChild1, TestChild2])

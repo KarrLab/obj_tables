@@ -1054,6 +1054,43 @@ class ParsedExpressionTestCase(unittest.TestCase):
         with self.assertRaisesRegex(ParsedExpressionError, 'Unsupported units'):
             func.expression._parsed_expression.eval({}, with_units=True)
 
+    def test___prep_expr_for_tokenization(self):
+        parsed_expr = ParsedExpression
+
+        # substitutes tokens that begin with numbers
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0abc'), '__digit__0abc')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0abc + x'), '__digit__0abc + x')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('x + 0abc'), 'x + __digit__0abc')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0abc / 1def2'), '__digit__0abc / __digit__1def2')
+
+        # doesn't substitute numbers
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0'), '0')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0.1'), '0.1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('-0.2'), '-0.2')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('+0.3'), '+0.3')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0 + 1'), '0 + 1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('x * 0 + 1'), 'x * 0 + 1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('x *0 + 1'), 'x *0 + 1')
+
+        # doesn't substitute exponential notation
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2e1'), '2e1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2.1e1'), '2.1e1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2e+1'), '2e+1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2e-1'), '2e-1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2e1.1'), '2e1.1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2E1'), '2E1')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2e1 + x'), '2e1 + x')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('x + 2e1'), 'x + 2e1')
+
+        # doesn't substitute hexidecimal numbers
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0xff'), '0xff')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0xFF'), '0xFF')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0xAA ** 0xFF'), '0xAA ** 0xFF')
+
+        # combinations
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0abc/0xAA'), '__digit__0abc/0xAA')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2e1*0abc/0xAA'), '2e1*__digit__0abc/0xAA')
+
 
 class ParsedExpressionErrorTestCase(unittest.TestCase):
     def test___init__(self):
