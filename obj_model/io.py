@@ -65,7 +65,8 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     MODELS = ()
 
     @abc.abstractmethod
-    def run(self, path, objects, models=None, get_related=True, include_all_attributes=True, validate=True,
+    def run(self, path, objects, model_metadata=None, models=None,
+            get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
             sbtab=False, doc_id=None):
@@ -75,6 +76,8 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
+            model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
+                be saved to header row (e.g., `!!ObjModel ...`)
             models (:obj:`list` of :obj:`Model`, optional): models
             get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
@@ -532,7 +535,7 @@ class WorkbookWriter(WriterBase):
         self.write_sheet(writer, model, data, headings, metadata, validation,
                          extra_entries=extra_entries, merge_ranges=merge_ranges, sbtab=sbtab)
 
-    def write_sheet(self, writer, model, data, headings, metadata, validation,
+    def write_sheet(self, writer, model, data, headings, model_metadata, validation,
                     extra_entries=0, merge_ranges=None, sbtab=False):
         """ Write data to sheet
 
@@ -541,7 +544,7 @@ class WorkbookWriter(WriterBase):
             model (:obj:`type`): model
             data (:obj:`list` of :obj:`list` of :obj:`object`): list of list of cell values
             headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headingsvalidations
-            metadata (:obj:`list` of :obj:`list` of :obj:`str`): model metadata (name, description)
+            model_metadata (:obj:`list` of :obj:`list` of :obj:`str`): model metadata (name, description)
                 to print at the top of the worksheet
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
@@ -554,7 +557,7 @@ class WorkbookWriter(WriterBase):
             row_headings = []
             column_headings = headings
             style.auto_filter = True
-            style.title_rows = len(metadata)
+            style.title_rows = len(model_metadata)
             style.head_rows = len(column_headings)
             if merge_ranges:
                 style.merge_ranges = merge_ranges
@@ -566,11 +569,11 @@ class WorkbookWriter(WriterBase):
             style.auto_filter = False
             row_headings = headings
             column_headings = []
-            style.title_rows = len(metadata)
+            style.title_rows = len(model_metadata)
             style.head_rows = 0
             style.head_columns = len(row_headings)
             if merge_ranges:
-                n = len(metadata)
+                n = len(model_metadata)
                 style.merge_ranges = [(start_col + n, start_row - n, end_col + n, end_row - n)
                                       for start_row, start_col, end_row, end_col in merge_ranges]
             else:
@@ -592,7 +595,7 @@ class WorkbookWriter(WriterBase):
                 column_heading.insert(
                     0, None)  # pragma: no cover # unreachable because row_headings and column_headings cannot both be non-empty
 
-        content = metadata + column_headings + data
+        content = model_metadata + column_headings + data
 
         # write content to worksheet
         writer.write_worksheet(sheet_name, content, style=style, validation=validation)
@@ -662,7 +665,7 @@ class PandasWriter(WorkbookWriter):
                                       sbtab=sbtab)
         return self._data_frames
 
-    def write_sheet(self, writer, model, data, headings, metadata, validation,
+    def write_sheet(self, writer, model, data, headings, model_metadata, validation,
                     extra_entries=0, merge_ranges=None, sbtab=False):
         """ Write data to sheet
 
@@ -671,7 +674,7 @@ class PandasWriter(WorkbookWriter):
             model (:obj:`type`): model
             data (:obj:`list` of :obj:`list` of :obj:`object`): list of list of cell values
             headings (:obj:`list` of :obj:`list` of :obj:`str`): list of list of row headingsvalidations
-            metadata (:obj:`list` of :obj:`list` of :obj:`str`): model metadata (name, description)
+            model_metadata (:obj:`list` of :obj:`list` of :obj:`str`): model metadata (name, description)
                 to print at the top of the worksheet
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
@@ -766,7 +769,7 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
     """ Interface for classes which write model objects to file(s)
 
     Attributes:
-        _metadata (:obj:`dict`): dictionary which maps models (:obj:`Model`) to dictionaries of
+        _model_metadata (:obj:`dict`): dictionary which maps models (:obj:`Model`) to dictionaries of
             metadata read from a document (e.g., `!!ObjModel Date='...' ...`)
 
         MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which
@@ -776,7 +779,7 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
     MODELS = ()
 
     def __init__(self):
-        self._metadata = None
+        self._model_metadata = None
 
     @abc.abstractmethod
     def run(self, path, models=None,
@@ -997,7 +1000,7 @@ class WorkbookReader(ReaderBase):
 
         # initialize reading
         reader.initialize_workbook()
-        self._metadata = {}
+        self._model_metadata = {}
 
         # check that at least one model is defined
         if models is None:
@@ -1423,10 +1426,10 @@ class WorkbookReader(ReaderBase):
         data = reader.read_worksheet(sheet_name)
 
         # strip out rows with table name and description
-        metadata, top_comments = self.read_worksheet_metadata(data, sbtab=sbtab)
-        self._metadata[model] = metadata
+        model_metadata, top_comments = self.read_worksheet_metadata(data, sbtab=sbtab)
+        self._model_metadata[model] = model_metadata
         if sbtab:
-            assert metadata['TableID'] == sheet_name[1:], \
+            assert model_metadata['TableID'] == sheet_name[1:], \
                 "TableID must be '{}'".format(sheet_name[1:])
 
         if len(data) < num_column_heading_rows:
@@ -1764,7 +1767,7 @@ class Reader(ReaderBase):
                             group_objects_by_model=group_objects_by_model,
                             validate=validate,
                             sbtab=sbtab)
-        self._metadata = reader._metadata
+        self._model_metadata = reader._model_metadata
         return result
 
 
@@ -1896,7 +1899,7 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None,
     # attribute order
     attrs = get_ordered_attributes(cls, include_all_attributes=include_all_attributes)
 
-    # worksheet metadata
+    # model metadata
     if sbtab:
         format = 'SBtab'
         table_name = cls.Meta.verbose_name[1:]

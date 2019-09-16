@@ -1359,7 +1359,7 @@ class TestMisc(unittest.TestCase):
                            TestModel,
                            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
                            headings=[['Column_B', 'Column_C']],
-                           metadata=[],
+                           model_metadata=[],
                            validation=None)
         xslx_writer.finalize_workbook()
 
@@ -1372,7 +1372,7 @@ class TestMisc(unittest.TestCase):
         reader = WorkbookReader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
-        reader._metadata = {}
+        reader._model_metadata = {}
         data, row_headings, column_headings, _ = reader.read_sheet(TestModel, xlsx_reader, 'Sheet',
                                                                    num_row_heading_columns=0,
                                                                    num_column_heading_rows=1)
@@ -1814,7 +1814,7 @@ class StrictReadingTestCase(unittest.TestCase):
         reader = get_reader('.xlsx')(filename)
         reader.initialize_workbook()
         wb_reader = WorkbookReader()
-        wb_reader._metadata = {}
+        wb_reader._model_metadata = {}
         with self.assertRaisesRegex(ValueError, r'must have 1 header row\(s\)'):
             wb_reader.read_sheet(Model, reader, 'Models', num_column_heading_rows=1)
 
