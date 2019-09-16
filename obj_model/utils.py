@@ -628,9 +628,9 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     file.write('    """ {} """\n\n'.format(cls_spec['desc']))
                 for attr_name in cls_spec['attr_order']:
                     attr_spec = cls_spec['attrs'][attr_name]
-                    file.write('    {} = obj_model.{}({})\n'.format(attr_spec['name'], 
-                        attr_spec['python_type'], 
-                        attr_spec['python_args']))
+                    file.write('    {} = obj_model.{}({})\n'.format(attr_spec['name'],
+                                                                    attr_spec['python_type'],
+                                                                    attr_spec['python_args']))
 
                 file.write('\n')
                 file.write('    class Meta(obj_model.Model.Meta):\n')
@@ -678,3 +678,65 @@ def to_pandas(objs, models=None, get_related=True,
                               include_all_attributes=include_all_attributes,
                               validate=validate,
                               sbtab=sbtab)
+
+
+def diff_workbooks(filename_1, filename_2, models, model_name, sbtab=False):
+    """ Get difference of models in two workbooks
+
+    Args:
+        filename_1 (:obj:`str`): path to first workbook
+        filename_2 (:obj:`str`): path to second workbook
+        models (:obj:`list` of :obj:`Model`): schema for objects to compare
+        model_name (:obj:`str`): Type of objects to compare
+        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
+
+    Returns:
+        :obj:`list` of :obj:`str`: list of differences
+    """
+    if sbtab:
+        kwargs = obj_model.io.SBTAB_DEFAULT_READER_OPTS
+    else:
+        kwargs = {}
+    objs1 = obj_model.io.Reader().run(filename_1,
+                                      models=models,
+                                      group_objects_by_model=True,
+                                      sbtab=sbtab,
+                                      **kwargs)
+    objs2 = obj_model.io.Reader().run(filename_2,
+                                      models=models,
+                                      group_objects_by_model=True,
+                                      sbtab=sbtab,
+                                      **kwargs)
+
+    for model in models:
+        if model.__name__ == model_name:
+            break
+    if model.__name__ != model_name:
+        raise SystemExit('Workbook does not have model "{}"'.format(model_name))
+
+    obj_diffs = []
+    for obj1 in list(objs1[model]):
+        match = False
+        for obj2 in list(objs2[model]):
+            if obj1.serialize() == obj2.serialize():
+                match = True
+                objs2[model].remove(obj2)
+                obj_diff = obj1.difference(obj2)
+                if obj_diff:
+                    obj_diffs.append(obj_diff)
+                break
+        if match:
+            objs1[model].remove(obj1)
+
+    diffs = []
+    if objs1[model]:
+        diffs.append('{} objects in the first workbook are missing from the second:\n  {}'.format(
+            len(objs1[model]), '\n  '.join(obj.serialize() for obj in objs1[model])))
+    if objs2[model]:
+        diffs.append('{} objects in the second workbook are missing from the first:\n  {}'.format(
+            len(objs2[model]), '\n  '.join(obj.serialize() for obj in objs2[model])))
+    if obj_diffs:
+        diffs.append('{} objects are different in the workbooks:\n  {}'.format(
+            len(obj_diffs), '\n  '.join(obj_diffs)))
+
+    return diffs

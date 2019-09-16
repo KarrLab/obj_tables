@@ -93,56 +93,11 @@ class DiffController(cement.Controller):
     def _default(self):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file, args.sbtab)
-        if args.sbtab:
-            kwargs = io.SBTAB_DEFAULT_READER_OPTS
-        else:
-            kwargs = {}
-        objs1 = io.Reader().run(args.wb_file_1,
-                                models=models,
-                                group_objects_by_model=True,
-                                sbtab=args.sbtab,
-                                **kwargs)
-        objs2 = io.Reader().run(args.wb_file_2,
-                                models=models,
-                                group_objects_by_model=True,
-                                sbtab=args.sbtab,
-                                **kwargs)
-
-        for model in models:
-            if model.__name__ == args.model:
-                break
-        if model.__name__ != args.model:
-            raise SystemExit('Workbook does not have model "{}"'.format(args.model))
-
-        diffs = []
-        for obj1 in list(objs1[model]):
-            match = False
-            for obj2 in list(objs2[model]):
-                if obj1.serialize() == obj2.serialize():
-                    match = True
-                    objs2[model].remove(obj2)
-                    diff = obj1.difference(obj2)
-                    if diff:
-                        diffs.append(diff)
-                    break
-            if match:
-                objs1[model].remove(obj1)
-
-        errors = []
-        if objs1[model]:
-            errors.append('{} objects in the first workbook are missing from the second:\n  {}'.format(
-                len(objs1[model]), '\n  '.join(obj.serialize() for obj in objs1[model])))
-        if objs2[model]:
-            errors.append('{} objects in the second workbook are missing from the first:\n  {}'.format(
-                len(objs2[model]), '\n  '.join(obj.serialize() for obj in objs2[model])))
+        diffs = utils.diff_workbooks(args.wb_file_1, args.wb_file_2,
+                                     models, args.model, sbtab=args.sbtab)
         if diffs:
-            errors.append('{} objects are different in the workbooks:\n  {}'.format(
-                len(diffs), '\n  '.join(diffs)))
-        if errors:
-            raise SystemExit('\n\n'.join(errors))
-
-        if not objs1[model] and not objs2[model] and not diffs:
-            print('Workbooks are equivalent')
+            raise SystemExit('\n\n'.join(diffs))
+        print('Workbooks are equivalent')
 
 
 class InitSchemaController(cement.Controller):
@@ -198,8 +153,8 @@ class NormalizeController(cement.Controller):
     """ Normalize a workbook according to a schema """
     class Meta:
         label = 'normalize'
-        description = 'Generate a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'
-        help = 'Generate a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'
+        description = 'Normalize a workbook according to a schema'
+        help = 'Normalize a workbook according to a schema'
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [
