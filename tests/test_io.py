@@ -183,7 +183,7 @@ class TestIo(unittest.TestCase):
         original = read_workbook(filename)
         copy = read_workbook(filename2)
         for sheet in copy.keys():
-            copy[sheet][0][0] = original[sheet][0][0] # because dates will be different
+            copy[sheet][0][0] = original[sheet][0][0]  # because dates will be different
         self.assertEqual(copy, original)
 
         self.assertEqual(set([x.id for x in root2.nodes]), set([x.id for x in root.nodes]))
@@ -917,7 +917,7 @@ class TestIo(unittest.TestCase):
 
         objs = obj_model.io.Reader().run(filename, [Node])
         self.assertEqual(len(objs), 3)
-        
+
         with self.assertRaisesRegex(ValueError, r'contains error\(s\)'):
             obj_model.io.Reader().run(filename, [Node], ignore_empty_rows=False)
 
@@ -978,13 +978,13 @@ class TestMetadataModels(unittest.TestCase):
 
         models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
         objs_read = reader.run(file_in_repo, models_expected, ignore_extra_sheets=True,
-            ignore_missing_sheets=True)
+                               ignore_missing_sheets=True)
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.SchemaRepoMetadata not in obj_types)
 
         # write data and schema repo metadata to data file
         writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=True,
-            schema_package='test_repo')
+                   schema_package='test_repo')
 
         # read data and schema metadata
         objs_read = reader.run(file_in_repo, models_expected, ignore_extra_sheets=True)
@@ -998,7 +998,7 @@ class TestMetadataModels(unittest.TestCase):
         # test csv files with metadata
         csv_path = os.path.join(self.test_data_repo_dir, 'test*.csv')
         writer.run(csv_path, self.objs, [self.Model1], data_repo_metadata=True,
-                                  schema_package='test_repo')
+                   schema_package='test_repo')
         objs_read = reader.run(csv_path, models_expected, ignore_extra_sheets=True)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
@@ -1031,7 +1031,7 @@ class TestMetadataModels(unittest.TestCase):
         with pytest.warns(obj_model.io.IoWarning) as w:
             # test schema package not found
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
-                                      schema_package='not a schema package')
+                       schema_package='not a schema package')
             self.assertEqual(len(w), 1)
             warning_msg = str(w[0].message)
             self.assertRegex(warning_msg, "package '.+' not found")
@@ -1044,13 +1044,13 @@ class TestMetadataModels(unittest.TestCase):
                 f.write('hello world!')
             package_name = 'test_repo'
             writer.run(file_in_repo, self.objs, [self.Model1], data_repo_metadata=False,
-                schema_package=package_name)
+                       schema_package=package_name)
             self.assertEqual(len(w), 1)
             warning_msg = str(w[0].message)
             self.assertRegex(warning_msg,
-                "Cannot obtain git repo metadata for schema repo '.+' used by data file:")
+                             "Cannot obtain git repo metadata for schema repo '.+' used by data file:")
             self.assertIn("Cannot gather metadata for schema repo from Git repo containing",
-                warning_msg)
+                          warning_msg)
 
         # clean up
         os.remove(file_in_repo)
@@ -1140,6 +1140,7 @@ class TestMetadataModels(unittest.TestCase):
 
         obj = obj_model.io.JsonReader().run(path, [Parent, Child], ignore_extra_sheets=True)
         self.assertEqual(obj, None)
+
 
 class TestMisc(unittest.TestCase):
 
@@ -1358,7 +1359,7 @@ class TestMisc(unittest.TestCase):
                            TestModel,
                            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
                            headings=[['Column_B', 'Column_C']],
-                           ws_metadata=[],
+                           metadata=[],
                            validation=None)
         xslx_writer.finalize_workbook()
 
@@ -1371,7 +1372,8 @@ class TestMisc(unittest.TestCase):
         reader = WorkbookReader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
-        data, row_headings, column_headings, _ = reader.read_sheet(xlsx_reader, 'Sheet',
+        reader._metadata = {}
+        data, row_headings, column_headings, _ = reader.read_sheet(TestModel, xlsx_reader, 'Sheet',
                                                                    num_row_heading_columns=0,
                                                                    num_column_heading_rows=1)
         self.assertEqual(len(data), 2)
@@ -1811,8 +1813,10 @@ class StrictReadingTestCase(unittest.TestCase):
         })
         reader = get_reader('.xlsx')(filename)
         reader.initialize_workbook()
+        wb_reader = WorkbookReader()
+        wb_reader._metadata = {}
         with self.assertRaisesRegex(ValueError, r'must have 1 header row\(s\)'):
-            WorkbookReader().read_sheet(reader, 'Models', num_column_heading_rows=1)
+            wb_reader.read_sheet(Model, reader, 'Models', num_column_heading_rows=1)
 
     def test_no_header_cols(self):
         class Model(core.Model):
