@@ -616,7 +616,7 @@ class ParsedExpression(object):
         related_objects (:obj:`dict`): models that are referenced in :obj:`expression`; maps model type to dict that maps model id to model instance
         lin_coeffs (:obj:`dict`): linear coefficients of models that are referenced in :obj:`expression`; maps model type to dict that maps models to coefficients
         errors (:obj:`list` of :obj:`str`): errors found when parsing an :obj:`expression` fails
-        _obj_model_tokens (:obj:`list` of :obj:`ObjModelToken`): tokens obtained when an :obj:`expression` is successfully `tokenize`d; if empty, then this :obj:`ParsedExpression` cannot use :obj:`eval`
+        _obj_model_tokens (:obj:`list` of :obj:`ObjModelToken`): tokens obtained when an :obj:`expression` is successfully `tokenize`\ d; if empty, then this :obj:`ParsedExpression` cannot use :obj:`eval`
         _compiled_expression (:obj:`str`): compiled expression that can be evaluated by :obj:`eval`
         _compiled_expression_with_units (:obj:`str`): compiled expression with units that can be evaluated by :obj:`eval`
         _compiled_namespace (:obj:`dict`): compiled namespace for evaluation by :obj:`eval`
@@ -1009,7 +1009,8 @@ class ParsedExpression(object):
                 identifier keys in `self._objs` must already be casefold'ed; default = False
 
         Returns:
-            * :obj:`list`: of :obj:`ObjModelToken`s
+
+            * :obj:`list`: of :obj:`ObjModelToken`\ s
             * :obj:`dict`: dict of Model instances used by this list, grouped by Model type
             * :obj:`list` of :obj:`str`: list of errors
 
@@ -1122,14 +1123,15 @@ class ParsedExpression(object):
         return (self._obj_model_tokens, self.related_objects, None)
 
     def test_eval(self, values=1., with_units=False):
-        """ Test evaluate the expression with the value of all used models equal to `test_val`.
+        """ Test evaluate this :obj:`ParsedExpression` with the value of all models given by `values`
 
         This is used to validate this :obj:`ParsedExpression`, as well as for testing.
 
         Args:
-            values (:obj:`float` or :obj:`dict`, optional): value, dictionary that maps model types to
-                values, or dictionary that maps model types to dictionaries that map model ids
-                to values
+            values (:obj:`float` or :obj:`dict`, optional): value(s) of models used by the test
+                evaluation; if a scalar, then that value is used for all models; if a `dict` then
+                it maps model types to their values, or it maps model types to dictionaries that map
+                model ids to the values of individual models used in the test
             with_units (:obj:`bool`, optional): if :obj:`True`, evaluate units
 
         Returns:
