@@ -704,10 +704,11 @@ class ParsedExpression(object):
 
         self.__reset_tokenization()
 
-    def __prep_expr_for_tokenization(self, expr):
+    @staticmethod
+    def __prep_expr_for_tokenization(expr):
         """ Prepare an expression for tokenization with the Python tokenizer
 
-        * Add suffix to names (identifiers of obj_model objects) that begin with a number
+        * Add prefix ("__digit__") to names (identifiers of obj_model objects) that begin with a number
 
         Args:
             expr (:obj:`str`): expression
@@ -716,6 +717,7 @@ class ParsedExpression(object):
             :obj:`str`: prepared expression
         """
         return re.sub(r'(^|\b)'
+                      # ignore tokens which are regular, exponential, and hexidecimal numbers
                       r'(?!((0[x][0-9a-f]+(\b|$))|([0-9]+e[\-\+]?[0-9]+(\b|$))))'
                       r'([0-9]+[a-z_][0-9a-z_]*)'
                       r'(\b|$)',
