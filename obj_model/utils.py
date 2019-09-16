@@ -571,7 +571,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         meta_attrs = {
             'tabular_orientation': cls_spec['tab_orientation'],
             'attribute_order': tuple(cls_spec['attr_order']),
-            'help': cls_spec['desc'],
+            'description': cls_spec['desc'],
         }
         if cls_spec['verbose_name']:
             meta_attrs['verbose_name'] = cls_spec['verbose_name']
@@ -600,7 +600,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             else:
                 attr = attr_type()
             attr.verbose_name = attr_spec['verbose_name']
-            attr.help = attr_spec['desc']
+            attr.description = attr_spec['desc']
             attrs[attr_spec['name']] = attr
 
         cls = type(cls_spec['name'], (Model, ), attrs)
@@ -646,7 +646,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     cls_spec['verbose_name_plural'].replace("'", "\'")
                 ))
                 if cls_spec['desc']:
-                    file.write("        help = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
+                    file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
 
     return module
 

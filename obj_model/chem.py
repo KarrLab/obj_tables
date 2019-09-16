@@ -14,14 +14,14 @@ import wc_utils.workbook.io
 class EmpiricalFormulaAttribute(core.LiteralAttribute):
     """ Empirical formula attribute """
 
-    def __init__(self, default=None, none_value=None, verbose_name='', help="An empirical formula (e.g. 'H2O', 'CO2', or 'NaCl')",
+    def __init__(self, default=None, none_value=None, verbose_name='', description="An empirical formula (e.g. 'H2O', 'CO2', or 'NaCl')",
                  primary=False, unique=False):
         """
         Args:
             default (:obj:`chem.EmpiricalFormula`, :obj:`dict`, :obj:`str`, or :obj:`None`, optional): default value
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
-            help (:obj:`str`, optional): help string
+            description (:obj:`str`, optional): description
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
@@ -29,7 +29,8 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
             default = chem.EmpiricalFormula(default)
 
         super(EmpiricalFormulaAttribute, self).__init__(default=default, none_value=none_value,
-                                                        verbose_name=verbose_name, help=help,
+                                                        verbose_name=verbose_name,
+                                                        description=description,
                                                         primary=primary, unique=unique)
 
     def deserialize(self, value):
@@ -130,7 +131,7 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
 
     def get_excel_validation(self, sheet_models=None):
         """ Get Excel validation
-        
+
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
 
@@ -163,25 +164,26 @@ class ChemicalStructureAttribute(core.LongStringAttribute):
     """ Attribute for the structures of chemical compounds """
 
     def __init__(self, default=None, none_value=None, verbose_name='',
-                 help=("The SMILES- or BpForms-encoded structure of a chemical compound."
-                       "\n"
-                       "\nExamples:"
-                       "\n  Small molecules (SMILES): C([N+])C([O-])=O"
-                       "\n  DNA (BpForms/dna): A{m2C}GT"
-                       "\n  RNA (BpForms/rna): AC{02G}U"
-                       "\n  Protein (BpForms/protein): RNC{AA0037}E"),
+                 description=("The SMILES- or BpForms-encoded structure of a chemical compound."
+                              "\n"
+                              "\nExamples:"
+                              "\n  Small molecules (SMILES): C([N+])C([O-])=O"
+                              "\n  DNA (BpForms/dna): A{m2C}GT"
+                              "\n  RNA (BpForms/rna): AC{02G}U"
+                              "\n  Protein (BpForms/protein): RNC{AA0037}E"),
                  primary=False, unique=False):
         """
         Args:
             default (:obj:`chem.EmpiricalFormula`, :obj:`dict`, :obj:`str`, or :obj:`None`, optional): default value
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
-            help (:obj:`str`, optional): help string
+            description (:obj:`str`, optional): description
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(ChemicalStructureAttribute, self).__init__(default=default, none_value=none_value,
-                                                         verbose_name=verbose_name, help=help,
+                                                         verbose_name=verbose_name,
+                                                         description=description,
                                                          primary=primary, unique=unique)
 
     def deserialize(self, value):

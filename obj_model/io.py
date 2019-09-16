@@ -454,7 +454,7 @@ class WorkbookWriter(WriterBase):
 
             content.append([
                 ws_display_name,
-                model.Meta.help,
+                model.Meta.description,
                 Formula("=COUNTA('{}'!{})".format(ws_name, range),
                         len(grouped_objects.get(model, []))),
             ])
@@ -1891,8 +1891,8 @@ def get_fields(cls, include_all_attributes=True, sheet_models=None,
                                   now.year, now.month, now.day, now.hour, now.minute, now.second),
                               "{}Version='{}'".format(format, version),
                               ])]]
-    if cls.Meta.help:
-        ws_metadata[0].insert(3, "Description='{}'".format(cls.Meta.help.replace("'", "\'")))
+    if cls.Meta.description:
+        ws_metadata[0].insert(3, "Description='{}'".format(cls.Meta.description.replace("'", "\'")))
     if doc_id:
         ws_metadata[0].insert(1, "DocumentID='{}'".format(doc_id))
 

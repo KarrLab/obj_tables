@@ -24,14 +24,14 @@ class FeatureLocationAttribute(core.LiteralAttribute):
         default (:obj:`Bio.SeqFeature.FeatureLocation`): default value
     """
 
-    def __init__(self, default=None, none_value=None, verbose_name='', help='',
+    def __init__(self, default=None, none_value=None, verbose_name='', description='',
                  primary=False, unique=False):
         """
         Args:
             default (:obj:`Bio.SeqFeature.FeatureLocation`, optional): default value
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
-            help (:obj:`str`, optional): help string
+            description (:obj:`str`, optional): description
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
@@ -39,7 +39,8 @@ class FeatureLocationAttribute(core.LiteralAttribute):
             raise ValueError('`default` must be a `Bio.SeqFeature.FeatureLocation` or `None`')
 
         super(FeatureLocationAttribute, self).__init__(default=default, none_value=none_value,
-                                                       verbose_name=verbose_name, help=help,
+                                                       verbose_name=verbose_name,
+                                                       description=description,
                                                        primary=primary, unique=unique)
 
     def deserialize(self, value):
@@ -166,7 +167,7 @@ class BioSeqAttribute(core.LiteralAttribute):
         default (:obj:`Bio.Seq.Seq`): default value
     """
 
-    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', help='',
+    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
                  primary=False, unique=False):
         """
         Args:
@@ -175,7 +176,7 @@ class BioSeqAttribute(core.LiteralAttribute):
             default (:obj:`Bio.Seq.Seq`, optional): default value
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
-            help (:obj:`str`, optional): help string
+            description (:obj:`str`, optional): description
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
@@ -187,7 +188,8 @@ class BioSeqAttribute(core.LiteralAttribute):
             raise ValueError('`max_length` must be an integer greater than or equal to `min_length`')
 
         super(BioSeqAttribute, self).__init__(default=default, none_value=none_value,
-                                              verbose_name=verbose_name, help=help,
+                                              verbose_name=verbose_name,
+                                              description=description,
                                               primary=primary, unique=unique)
 
         self.alphabet = None
@@ -333,7 +335,7 @@ class BioSeqAttribute(core.LiteralAttribute):
 class BioDnaSeqAttribute(BioSeqAttribute):
     """ Bio.Seq.Seq attribute with Bio.Alphabet.DNAAlphabet """
 
-    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', help='',
+    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
                  primary=False, unique=False):
         """
         Args:
@@ -342,12 +344,13 @@ class BioDnaSeqAttribute(BioSeqAttribute):
             default (:obj:`Bio.Seq.Seq`, optional): default value
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
-            help (:obj:`str`, optional): help string
+            description (:obj:`str`, optional): description
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(BioDnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
-                                                 none_value=none_value, verbose_name=verbose_name, help=help,
+                                                 none_value=none_value, verbose_name=verbose_name,
+                                                 description=description,
                                                  primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.DNAAlphabet()
 
@@ -355,7 +358,7 @@ class BioDnaSeqAttribute(BioSeqAttribute):
 class BioProteinSeqAttribute(BioSeqAttribute):
     """ Bio.Seq.Seq attribute with Bio.Alphabet.ProteinAlphabet """
 
-    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', help='',
+    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
                  primary=False, unique=False):
         """
         Args:
@@ -364,12 +367,13 @@ class BioProteinSeqAttribute(BioSeqAttribute):
             default (:obj:`Bio.Seq.Seq`, optional): default value
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
-            help (:obj:`str`, optional): help string
+            description (:obj:`str`, optional): description
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(BioProteinSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
-                                                     none_value=none_value, verbose_name=verbose_name, help=help,
+                                                     none_value=none_value, verbose_name=verbose_name,
+                                                     description=description,
                                                      primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.ProteinAlphabet()
 
@@ -377,7 +381,7 @@ class BioProteinSeqAttribute(BioSeqAttribute):
 class BioRnaSeqAttribute(BioSeqAttribute):
     """ Bio.Seq.Seq attribute with Bio.Alphabet.RNAAlphabet """
 
-    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', help='',
+    def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
                  primary=False, unique=False):
         """
         Args:
@@ -386,12 +390,13 @@ class BioRnaSeqAttribute(BioSeqAttribute):
             default (:obj:`Bio.Seq.Seq`, optional): default value
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
-            help (:obj:`str`, optional): help string
+            description (:obj:`str`, optional): description
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(BioRnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
-                                                 none_value=none_value, verbose_name=verbose_name, help=help,
+                                                 none_value=none_value, verbose_name=verbose_name,
+                                                 description=description,
                                                  primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.RNAAlphabet()
 
@@ -399,9 +404,10 @@ class BioRnaSeqAttribute(BioSeqAttribute):
 class FrequencyPositionMatrixAttribute(core.LiteralAttribute):
     """ Bio.motif.matrix.FrequencyPositionMatrix attribute """
 
-    def __init__(self, verbose_name='', help=''):
+    def __init__(self, verbose_name='', description=''):
         super(FrequencyPositionMatrixAttribute, self).__init__(
-            default=None, verbose_name=verbose_name, help=help)
+            default=None, verbose_name=verbose_name,
+            description=description)
 
     def validate(self, obj, value):
         """ Determine if `value` is a valid value

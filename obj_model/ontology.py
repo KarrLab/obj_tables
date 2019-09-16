@@ -23,7 +23,7 @@ class OntologyAttribute(core.LiteralAttribute):
     """
 
     def __init__(self, ontology, namespace=None, terms=None, none=True, default=None, default_cleaned_value=None, none_value=None,
-                 verbose_name='', help='',
+                 verbose_name='', description='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
@@ -36,7 +36,7 @@ class OntologyAttribute(core.LiteralAttribute):
                 :obj:`None` values with during cleaning
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
-            help (:obj:`str`, optional): help string
+            description (:obj:`str`, optional): description
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
@@ -67,7 +67,7 @@ class OntologyAttribute(core.LiteralAttribute):
 
         super(OntologyAttribute, self).__init__(default=default,
                                                 default_cleaned_value=default_cleaned_value, none_value=none_value,
-                                                verbose_name=verbose_name, help=help,
+                                                verbose_name=verbose_name, description=description,
                                                 primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
         self.ontology = ontology

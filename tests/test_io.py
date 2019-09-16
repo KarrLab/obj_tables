@@ -2832,7 +2832,7 @@ class ExcelValidationTestCase(unittest.TestCase):
             pos_int_attr_1 = core.PositiveIntegerAttribute(default_cleaned_value=3)
             pos_int_attr_2 = core.PositiveIntegerAttribute(default_cleaned_value=3, max=10, unique=True)
 
-            str_attr_1 = core.StringAttribute(default_cleaned_value='default val', help='Enter a string')
+            str_attr_1 = core.StringAttribute(default_cleaned_value='default val', description='Enter a string')
             str_attr_2 = core.StringAttribute(min_length=1, max_length=None)
             str_attr_3 = core.StringAttribute(min_length=0, max_length=10)
             str_attr_4 = core.StringAttribute(min_length=1, max_length=10, unique=True)
@@ -2906,7 +2906,7 @@ class ExcelValidationTestCase(unittest.TestCase):
                                    )
 
         for attr in TestParent.Meta.attributes.values():
-            attr.help = 'A helpful description'
+            attr.description = 'A helpful description'
 
         objects = [
             TestParent(id='parent_a',
@@ -3023,7 +3023,7 @@ class ExcelValidationTestCase(unittest.TestCase):
                 return self.id
 
         for attr in TestParent.Meta.attributes.values():
-            attr.help = 'A helpful description'
+            attr.description = 'A helpful description'
 
         objects = [
             TestParent(id='parent_a'),
