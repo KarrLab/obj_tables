@@ -59,12 +59,14 @@ class ConvertController(cement.Controller):
             kwargs = io.SBTAB_DEFAULT_READER_OPTS
         else:
             kwargs = {}
-        objs = io.Reader().run(args.in_wb_file,
-                               models=models,
-                               group_objects_by_model=False,
-                               sbtab=args.sbtab,
-                               **kwargs)
-        io.Writer().run(args.out_wb_file, objs, models=models, sbtab=args.sbtab)
+        reader = io.Reader()
+        objs = reader.run(args.in_wb_file,
+                          models=models,
+                          group_objects_by_model=False,
+                          sbtab=args.sbtab,
+                          **kwargs)
+        io.Writer().run(args.out_wb_file, objs, model_metadata=reader._model_metadata,
+                        models=models, sbtab=args.sbtab)
         print('Workbook saved to {}'.format(args.out_wb_file))
 
 
@@ -184,15 +186,17 @@ class NormalizeController(cement.Controller):
             kwargs = io.SBTAB_DEFAULT_READER_OPTS
         else:
             kwargs = {}
-        objs = io.Reader().run(args.in_wb_file,
-                               models=models,
-                               group_objects_by_model=False,
-                               sbtab=args.sbtab,
-                               **kwargs)
+        reader = io.Reader()
+        objs = reader.run(args.in_wb_file,
+                          models=models,
+                          group_objects_by_model=False,
+                          sbtab=args.sbtab,
+                          **kwargs)
         for obj in objs:
             if isinstance(obj, model):
                 obj.normalize()
-        io.Writer().run(args.out_wb_file, objs, models=models, sbtab=args.sbtab)
+        io.Writer().run(args.out_wb_file, objs, model_metadata=reader._model_metadata,
+                        models=models, sbtab=args.sbtab)
         print('Normalized workbook saved to {}'.format(args.out_wb_file))
 
 

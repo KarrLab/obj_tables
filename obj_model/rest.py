@@ -95,8 +95,8 @@ class Convert(flask_restplus.Resource):
 
         _, models = get_schema_models(schema_filename, sbtab)
 
-        objs = read_workbook(in_wb_filename, models, sbtab)
-        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, models=models, sbtab=sbtab)
+        objs, model_metadata = read_workbook(in_wb_filename, models, sbtab)
+        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models, sbtab=sbtab)
 
         shutil.rmtree(schema_dir)
         shutil.rmtree(in_wb_dir)
@@ -204,7 +204,7 @@ class GenTemplate(flask_restplus.Resource):
 
         _, models = get_schema_models(schema_filename, sbtab)
 
-        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, [], models=models, sbtab=sbtab)
+        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, [], {}, models=models, sbtab=sbtab)
 
         shutil.rmtree(schema_dir)
 
@@ -318,12 +318,12 @@ class Normalize(flask_restplus.Resource):
         _, models = get_schema_models(schema_filename, sbtab)
         model = get_model(models, model_name)
 
-        objs = read_workbook(in_wb_filename, models, sbtab)
+        objs, model_metadata = read_workbook(in_wb_filename, models, sbtab)
         for obj in objs:
             if isinstance(obj, model):
                 obj.normalize()
 
-        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, models=models, sbtab=sbtab)
+        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models, sbtab=sbtab)
 
         shutil.rmtree(schema_dir)
         shutil.rmtree(in_wb_dir)
@@ -465,24 +465,30 @@ def read_workbook(filename, models, sbtab=False):
         sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
     Returns:
-        :obj:`dict`: dictionary that maps types to a dictionary of instance
+        :obj:`tuple`:
+
+            * :obj:`dict`: dictionary that maps types to a dictionary of instance
+            * :obj:`dict`: dictionary of model metadata
     """
     if sbtab:
         kwargs = io.SBTAB_DEFAULT_READER_OPTS
     else:
         kwargs = {}
-    return io.Reader().run(filename,
-                           models=models,
-                           group_objects_by_model=False,
-                           sbtab=sbtab,
-                           **kwargs)
+    reader = io.Reader()
+    result = reader.run(filename,
+                        models=models,
+                        group_objects_by_model=False,
+                        sbtab=sbtab,
+                        **kwargs)
+    return result, reader._model_metadata
 
 
-def save_out_workbook(format, objs, models, sbtab=False):
+def save_out_workbook(format, objs, model_metadata, models, sbtab=False):
     """
     Args:
         format (:obj:`str`): format (.csv, .tsv, .xlsx)
         objs (:obj:`dict`): dictionary that maps types to instances
+        model_metadata (:obj:`dict`): dictionary of model metadata
         models (:obj:`list` of :obj:`core.Model`): models
         sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
@@ -499,7 +505,7 @@ def save_out_workbook(format, objs, models, sbtab=False):
     else:
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
-    io.Writer().run(temp_filename, objs, models=models, sbtab=sbtab)
+    io.Writer().run(temp_filename, objs, model_metadata=model_metadata, models=models, sbtab=sbtab)
 
     if format in ['csv', 'tsv']:
         filename = os.path.join(dir, 'workbook.{}.zip'.format(format))

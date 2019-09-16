@@ -163,8 +163,8 @@ class TestMediumDataset(TestDataset):
         model = generate_model(self.n_gene, self.n_rna, self.n_prot, self.n_met)
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, [model], [Model, Gene, Rna, Protein, Metabolite, Reaction, ])
-        objects2 = WorkbookReader().run(filename, [Model, Gene, Rna, Protein, Metabolite, Reaction, ])
+        WorkbookWriter().run(filename, [model], models=[Model, Gene, Rna, Protein, Metabolite, Reaction, ])
+        objects2 = WorkbookReader().run(filename, models=[Model, Gene, Rna, Protein, Metabolite, Reaction, ])
 
         model2 = objects2[Model].pop()
         self.assertTrue(model2.is_equal(model))
@@ -189,8 +189,8 @@ class TestLargeDataset(TestDataset):
         all_objects = get_all_objects(model)
 
         filename = os.path.join(self.dirname, 'test.xlsx')
-        WorkbookWriter().run(filename, all_objects, [Model, Gene, Rna, Protein, Metabolite, Reaction, ], get_related=False)
-        objects2 = WorkbookReader().run(filename, [Model, Gene, Rna, Protein, Metabolite, Reaction, ])
+        WorkbookWriter().run(filename, all_objects, models=[Model, Gene, Rna, Protein, Metabolite, Reaction, ], get_related=False)
+        objects2 = WorkbookReader().run(filename, models=[Model, Gene, Rna, Protein, Metabolite, Reaction, ])
 
 
 @unittest.skip("Skipped because test is long")

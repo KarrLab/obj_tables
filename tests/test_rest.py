@@ -26,8 +26,7 @@ class RestTestCase(unittest.TestCase):
         self.tempdir = tempfile.mkdtemp()
 
     def tearDown(self):
-        # shutil.rmtree(self.tempdir)
-        print(self.tempdir)
+        shutil.rmtree(self.tempdir)
 
     def test_PrefixMiddleware(self):
         rest.PrefixMiddleware(rest.app).__call__({'PATH_INFO': 'x'}, lambda x, y: None)
