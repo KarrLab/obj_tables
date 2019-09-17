@@ -9,6 +9,14 @@ import os
 
 name = 'obj_model'
 dirname = os.path.dirname(__file__)
+package_data = {
+    name: [
+        'VERSION',
+        'web_app/app.css',
+        'web_app/app.js',
+        'web_app/index.html',
+    ],
+}
 
 # get package metadata
 md = pkg_utils.get_package_metadata(dirname, name)
@@ -48,11 +56,7 @@ setuptools.setup(
     keywords='object model, schema',
 
     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
-    package_data={
-        name: [
-            'VERSION',
-        ],
-    },
+    package_data=package_data,
 
     entry_points={
         'console_scripts': [

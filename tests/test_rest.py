@@ -86,7 +86,7 @@ class RestTestCase(unittest.TestCase):
                     rv = client.post('/api/diff/', data={
                         'schema': (schema_file, os.path.basename(schema_filename)),
                         'model': 'Parent',
-                        'workbook-1': (wb_file_1, os.path.basename(xl_file_1)),
+                        'workbook': (wb_file_1, os.path.basename(xl_file_1)),
                         'workbook-2': (wb_file_2, os.path.basename(xl_file_1)),
                         'sbtab': True,
                     })
@@ -99,7 +99,7 @@ class RestTestCase(unittest.TestCase):
                     rv = client.post('/api/diff/', data={
                         'schema': (schema_file, os.path.basename(schema_filename)),
                         'model': 'Parent',
-                        'workbook-1': (wb_file_1, os.path.basename(xl_file_1)),
+                        'workbook': (wb_file_1, os.path.basename(xl_file_1)),
                         'workbook-2': (wb_file_2, os.path.basename(xl_file_2)),
                         'sbtab': True,
                     })

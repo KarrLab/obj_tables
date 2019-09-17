@@ -12,3 +12,8 @@ include requirements.txt
 
 # documentation
 include README.rst
+
+# web app
+include obj_model/web_app/app.css
+include obj_model/web_app/app.js
+include obj_model/web_app/index.html

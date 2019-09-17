@@ -1,0 +1,118 @@
+h1, h2, h3, h4, h5, div, p { font-family: 'Raleway', sans-serif; }
+tt {
+    font-family: 'Courier New', 'Courier';
+    background: #efefef;
+    padding: 2px;
+}
+
+.grid-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+h1, .h1 {
+    color: #3bafda;
+    font-size: 1.8rem;
+    font-weight: bold;
+    padding-bottom: 1rem;
+}
+h2, .h2 {
+    color: #fff;
+    font-size: 1.5rem;
+    margin-top: 4rem;
+    margin-bottom: 0.2rem;
+    padding: 0.2rem;
+    text-align: center;
+    font-weight: bold;
+}
+h3, .h3 {
+    font-size: 1.25rem;
+    margin-top: 1.0rem;
+    margin-bottom: 0.5em;
+    padding: 0.2rem;
+    text-align: center;
+    font-weight: bold;
+}
+h4, .h4, h5, .h5 {
+    font-size: 1.0rem;
+    margin-top: 1.0rem;
+    margin-bottom: 0.2em;
+    text-align: center;
+    font-weight: bold;
+}
+
+
+.blue h2{ background: #3bafda;}
+.blue h3{ color: #3bafda; border-bottom: 2px solid #3bafda;}
+.green h2{ background: #2ad7b0;}
+.green h3{ color: #2ad7b0; border-bottom: 2px solid #2ad7b0; }
+.purple h2{ background: #da3baf; }
+.purple h3{ color: #da3baf; border-bottom: 2px solid #da3baf; }
+.orange h2{ background: #f6bb42; }
+.orange h3{ color: #f6bb42; border-bottom: 2px solid #f6bb42; }
+.orange h4{ color: #f6bb42;}
+.red h2 { background: #fe174b; }
+.red h3 { color: #fe174b; border-bottom: 2px solid #fe174b; }
+
+p, div, label { color: #333; }
+
+form { text-align: left; }
+label { font-weight: bold; }
+textarea { height: 100px; }
+
+#submit {
+    margin-top: 1rem;
+}
+
+p.before_list {
+    margin-bottom: 0px;
+}
+
+pre {
+    font-family: 'Courier New', 'Courier';
+    background: #f6f6f6;
+    padding: 0.5rem;
+    overflow: visible;
+    border-radius: 0.3rem;
+    margin-top: 0rem;
+}
+
+/* table of contents */
+.toc {
+    background: #f6f6f6;
+    border-radius: 0.3rem;
+    border: 1px solid #ccc;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+.toc h3 {
+    color: #333;
+    font-size: 1.0rem;
+    margin: 0px;
+    padding: 0px;
+    margin-top: 0.5rem;
+    margin-bottom: 0.2rem;
+    padding-bottom: 0.2rem;
+    border-color: #333;
+}
+.toc a {
+    color: #333;
+}
+.toc a:hover {
+    color: #3bafda;
+}
+.toc ul li{
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 120%;
+}
+.toc ul ul li {
+    margin-top: 0rem;
+    font-size: 0.85rem;
+    line-height: 120%;
+}
+.toc ul ul ul li {
+    margin-top: 0rem;
+    font-size: 0.80rem;
+    line-height: 120%;
+}

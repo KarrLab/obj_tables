@@ -1,0 +1,606 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ObjModel: a toolkit for parsing and validating tables with relational schemas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-icon-fonts@0.1.1/foundation-icons.css"
+        integrity="sha256-CWltC/W+elkkUKhitcztPiSfE3AEpzAvrkmEqB68Lx0="
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.3/dist/css/foundation.min.css"
+      integrity="sha256-xpOKVlYXzQ3P03j397+jWFZLMBXLES3IiryeClgU5og= sha384-gP4DhqyoT9b1vaikoHi9XQ8If7UNLO73JFOOlQV1RATrA7D0O7TjJZifac6NwPps sha512-AKwIib1E+xDeXe0tCgbc9uSvPwVYl6Awj7xl0FoaPFostZHOuDQ1abnDNCYtxL/HWEnVOMrFyf91TDgLPi9pNg=="
+      crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+    <link rel="stylesheet" href="app.css">
+  </head>
+  <body>
+    <div class="grid-container">
+      <div class="grid-x grid-padding-x">
+        <div class="large-12 cell">
+          <h1><i>ObjModel</i>: a toolkit for parsing and validating tables with relational schemas</h1>
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x blue">
+        <div class="large-9 cell">
+          <p><i>ObjModel</i> is a toolkit for working with complex data as collections of tables which combines the ease of use and flexibility of Excel with the rigor and power of defined schemas.</p>
+
+          <p class="before_list"><i>ObjModel</i> makes it easy to
+          <ul>
+            <li>Use collections of tables (e.g., an Excel workbook) as a interface to view and edit complex datasets that describe relationships and other complex datatypes,</li>
+            <li>Use embedded tables and grammars to encode relational information into columns and groups of columns of tables,</li>
+            <li>Define schemas for collections of tables,</li>
+            <li>Use these schema to validate collections of tables and parse them into Python data structures for analysis,</li>
+            <li>Conduct operations on complex datasets such as comparing and merging datasets, and</li>
+            <li>Edit schemas and migrate datasets to new versions of schemas.</li>
+          </ul>
+
+          <p class="before_list">The <i>ObjModel</i> toolkit includes five components:
+          <ul>
+            <li><b>Tabular format for describing schemas for datasets encoded as collections of tables.</b> This includes the data type of each column, relationships between rows in tables, and two methods for encoding complex relational information into cells:
+              <ul>
+                <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, <i>ObjModel</i> can encode related models into groups of columns. <i>ObjModel</i> uses merged headings to distinguish these columns.</li>
+                <li><b>Embedded grammars for relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, grammars can be used to encode relationships to multiple instances of multiple models within a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+            </ul>
+            </li>
+            <li><b>Numerous data types</b> for scientific research including types for chemoinformatics, genomics, and mathematics.</li> 
+            <li><b>Software tools for generating Excel workbooks for editing datasets</b> according to schemas. This enables users to use Excel as a graphical user interface for editing datasets. As outlined below, this leverages a variety of features of Excel.</li>
+            <li><b>Software tools for parsing and validating datasets</b> according to schemas.</li>
+            <li><b>Software tools for manipulating complex datasets</b>, including creating, analyzing, comparing, merging, and migrating datasets.</li>
+          </ul>
+
+          <p class="before_list"><i>ObjModel</i> enables users to leverage Excel as a graphical user interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:
+          <ul>
+            <li><b>Table of contents:</b> Each Excel-encoded dataset includes a worksheet that describes the contents of each worksheet, displays the number of instances of each model, and provides hyperlinks to the worksheets that encode the instances of each model.</li>
+            <li><b>Formatted model titles:</b> Each worksheet that encodes a model includes a title bar which describes the model. These title bars are formatted, frozen, and protected from editing.</li>
+            <li><b>Formatted attribute headings:</b> Each worksheet that encodes a model includes headings for each column and group of columns. These headings are formatted, auto-filtered, frozen, and protected from editing.</li>
+            <li><b>Inline help for attributes:</b> <i>ObjModel</i> uses Excel comments to embed help information about each attribute into its heading.</li>
+            <li><b>Select menus for enumerations and relationships:</b> <i>ObjModel</i> provides select menus for each attribute that encodes an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>            
+            <li><b>Instant validation:</b> <i>ObjModel</i> uses Excel to validate several properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. <i>ObjModel</i> Python schemas can be used to implement thorough validations.</i>
+            <li><b>Hidden extra rows and columns:</b> To help users focus on the attributes of their models, <i>ObjModel</i> protects and hides all additional rows and columns.</li>
+          </ul>
+
+          <p class="before_list"><i>ObjModel</i> makes it easy to implement rigorous validations of datasets: 
+          <ul>
+            <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively (e.g. <tt>string(min_length=8)</tt>). More complex validations can be defined using a Python schema or by implementing custom types of attributes.</li>
+            <li><b>Instance validation:</b> Users can implement custom instance-level validations by creating a Python module which implements a schema and implementing the <tt>validate</tt> methods of the classes.</li>
+            <li><b>Model-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules which implement schemas can also capture tuples of attributes which must be unique across all instances of a model. See the documentation <a href="https://docs.karrlab.org/obj_model"><i class="fi-link"></i></a> for more information.</li>
+          </ul>
+
+          <p class="before_list"><i>ObjModel</i> provides four user interfaces to the software tools: 
+          <ul>
+            <li><b>Web app</b> below <a href="#app"><i class="fi-arrow-down"></i></a>: The web app enables users to use <i>ObjModel</i> without having to install any software.</li> 
+            <li><b>REST API</b> <a href="api/"><i class="fi-link"></i></a>: The REST API enables users to use <i>ObjModel</i> programmatically without having to install any software.</li>
+            <li><b>Command line interface</b> <a href="https://pypi.python.org/pypi/obj_model/"><i class="fi-link"></i></a>: The command line interface enables users to use <i>ObjModel</i> without having to upload data to this website.</li>
+            <li><b>Python library</b> <a href="https://pypi.python.org/pypi/obj_model/"><i class="fi-link"></i></a>: The Python library enables users to extend <i>ObjModel</i> with custom attributes and validation and use <i>ObjModel</i> to analyze complex datasets.</li>
+          </ul>
+
+          <p><i>ObjModel</i> is available open-source <a href="https://github.com/KarrLab/obj_model"><i class="fi-social-github"></i></a> under the MIT license <a href="https://github.com/KarrLab/obj_model/blob/master/LICENSE"><i class="fi-link"></i></a>.</p>
+
+          <p><i>ObjModel</i> was developed to implement languages for describing whole-cell computational models <a href="https://www.wholecell.org"><i class="fi-link"></i></a> and the data needed to build and verify them.</p>
+        </div>
+        <div class="large-3 cell">
+          <div class="toc">
+            <h3>Table of contents</h3>
+            <ul>
+              <li><a href="#app">Web app</a></li>              
+              <li><a href="#table-format">Formats for tables</a></li>
+              <li><a href="#schema-format">Format for schemas</a></li>
+              <li><a href="#data-types">Data types</a></li>
+              <li><a href="#tools">Software tools</a>
+              <li><a href="#interfaces">User interfaces</a>
+                <ul>
+                  <li><a href="#app">Web app</a></li>
+                  <li><a href="#rest">REST API</a></li>
+                  <li><a href="#cli">Command line interface</a></li>
+                  <li><a href="#python">Python library</a></li>
+                </ul>
+              </li>
+              <li><a href="#other-resources">Other useful resources</a></li>
+              <li><a href="#help">Tutorials, docs, and help</a></li>
+              <li><a href="#contribute">Contributing to <i>ObjModel</i></a></li>
+              <li><a href="#about">About <i>ObjModel</i></a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x blue">
+        <a name="calculator"></a>
+        <div class="large-12 cell">
+          <h2>Web app</h2>
+        </div>
+        <div class="large-6 cell">
+          <h3>Form</h3>
+          <a name="form"></a>
+          <form>
+            <label>Select an operation
+              <select id="method" name="method">
+                <option value="convert">Convert: convert a dataset to another format according to a schema</option>
+                <option value="diff">Difference: compare the semantic meaning two datasets according to a schema</option>
+                <option value="gen-template">Generate template: generate a template set of tables for a schema</option>
+                <option value="init-schema">Initialize Python schema: generate a Python module that implements a tabular-formatted schema</option>
+                <option value="normalize">Normalize: pretty format a dataset according to a schema</option>                
+                <option value="validate" selected>Validate: check that a dataset adheres to a schema and report any errors</option>
+              </select>
+            </label>
+
+            <label>Upload a schema (.csv, .tsv, .xlsx). See the documentation below <a href="#schema-format"><i class="fi-arrow-down"></i></a> for information about the format.
+              <input type="file" id="schema" name="schema" accept=".csv,.tsv,.xlsx" />
+            </label>
+
+            <label id="label_model">Enter the name of a model to difference or normalize
+              <input type="text" id="model" name="model" />
+            </label>
+
+            <label id="label_workbook">Upload a dataset
+              <input type="file" id="workbook" name="workbook" accept=".csv,.tsv,.xlsx,.zip" />
+            </label>
+
+            <label id="label_workbook-2">Upload a second dataset
+              <input type="file" id="workbook-2" name="workbook-2" accept=".csv,.tsv,.xlsx,.zip" />
+            </label>
+
+            <label id="label_format">Select an output format
+              <select id="format" name="format">
+                <option value="xlsx" selected>Excel workbook</option>
+                <option value="csv">Zip archive of comma-separated tables</option>
+                <option value="tsv">Zip archive of tab-separated tables</option>
+              </select>
+            </label>
+          
+            <input id="submit" type="button" class="button" value="Submit"/>
+          </form>
+        </div>
+
+        <div class="large-6 cell">
+          <h3>Output</h3>
+            <textarea id="errors" name="errors" style="height: 12.5rem; margin-top: 1.25rem;" disabled>
+            </textarea>
+        </div>
+
+      </div>
+
+      <div class="grid-x grid-padding-x orange">
+        <a name="table-format"></a>
+        <div class="large-12 cell">
+            <h2>Tabular format datasets</h2>
+            
+            <h3>File formats</h3>
+            <p class="before_list"><i>ObjModel</i> supports three formats for collections of tables, or datasets:</p>
+            <ul>
+              <li>Excel workbook: Each worksheet contains a table which encodes the instances of a model. The names of the worksheets should be <tt>!</tt> followed by the name of a model in the schema (e.g., <tt>!ModelName</tt>).</li>
+              <li>Set of CSV or TSV files: Each file contains a table which encodes the instances of a model. The names of the files should follow the pattern <tt>dir/!*.csv</tt> (e.g., <tt>Doc/!ModelName.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
+              <li>Single text file with multiple CSV or TSV formatted tables: Each table within the dataset encodes the instances of a model.</li>
+            </ul>
+
+            <h3>Model metdata</h3>
+            <p>The first row in each table must describe the version of <i>ObjModel</i> used by the table and the model which the table represents (e.g., <tt>!!ObjModel ObjModelVersion='2.0' TableID='&lt;model_name&gt;'</tt>).</p>
+
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjModel ObjModelVersion='2.0' TableID='model_name' Description='Model description'</tt>).</p>
+
+            <h3>Model instances (rows) and attributes (columns)</h3>
+            <p>The attributes of each model are represented by the columns of its table, each instance of each model is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
+
+            <h3>Encoding multiple models in a single table</h3>
+            <p class="before_list">To help users encode complex relationships into a minimal number of tables, relationships between models can be encoded into groups of columns and individual cells.</p>
+            <ul>
+              <li><b>Encoding *-to-one related data into groups of columns:</b> *-to-one relationships to other instances of models can be encoded into a series of consecutive columns by setting the formats of the related models to <tt>multiple_cells</tt> in the schema. When this feature is used, tables must include an additional row of column headings which indicates the groups of columns.</li>
+              <li><b>Encoding *-to-many related data into individual columns:</b> *-to-many relationships to other instance of models can be encoded into a single column by setting the formats of the related models to <tt>cell</tt> and defining a grammar for serializing and deserializing the related instances to/from strings which can be written to and read from individual cells. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+            </ul>
+
+            <h3>Encoding models into transposed tables</h3>
+            <p>Optionally, a model can be encoded into a transposed table in which the columns represent instances of the model and the rows represent attributes of the model. This feature is useful for models which are intended to only have a single instance. Models can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
+
+            <h3>Comments</h3>
+            <p>Comments about individual model instances can be encoded by inserting rows whose first cell begins with <tt>%</tt>.</p>
+
+            <h3>Additional tables, rows, and columns outside the scope of schemas</h3>
+            <p>Excel workbooks can include additional worksheets. Worksheets that are outside the scope of the schema must have names which do not not begin with an <tt>!</tt>.</p>
+
+            <p>Tables can include additional columns. Columns that are outside of the scope of the schema must have names which do not begin with an <tt>!</tt>.</p>
+
+            <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
+
+            <h3>Example</h3>
+            <p>The following example illustrates how to encode parents, children, and the heights of children into two tables according to the example schema below. In tables, the Height model enables height information to be encapsulated into a group of columns. The Height model also enables the Python representation of the data to encapsulate height information into a separate class. This helps make tables and Python code more human-readable.</p>
+
+            <p>Additional examples are available at <a href="https://www.sbtab.net/">SBtab.net</a>.</p>
+
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="2">!!ObjModel TableID='Parent' ObjModelVersion='2.0'</th>
+                </tr>
+                <tr>
+                  <th>Id</th>
+                  <th>Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>jane_doe</td><td>Jane Doe</td></tr>
+                <tr><td>john_doe</td><td>John Doe</td></tr>                
+              </tbody>
+            </table>
+
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="7">!!ObjModel TableID='Child' ObjModelVersion='2.0'</th>
+                </tr>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th colspan="3" style="text-align: center;">Height</th>
+                </tr>
+                <tr>
+                  <th>Id</th>
+                  <th>Name</th>
+                  <th>Gender</th>
+                  <th>Parents</th>
+                  <th>Id</th>
+                  <th>Magnitude</th>
+                  <th>Units</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>jamie_doe</td>
+                  <td>Jamie Doe</td>
+                  <td>female</td>
+                  <td>jane_doe</td>
+                  <td>jimie_doe_height</td>
+                  <td>5.5</td>
+                  <td>ft</td>
+                </tr>
+                <tr>
+                  <td>jimie_doe</td>
+                  <td>Jimie Doe</td>
+                  <td>male</td>
+                  <td>jane_doe, john_doe</td>
+                  <td>jimie_doe_height</td>
+                  <td>1.7</td>
+                  <td>m</td>
+                </tr>                
+              </tbody>
+            </table>
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x blue">
+        <a name="schema-format"></a>
+        <a name="subunit-composition"></a>
+        <div class="large-12 cell">
+            <h2>Formats for schemas</h2>
+            
+            <p>Schemas can either be defined using the tabular format described here or defined using the Python API. The tabular format is easier to use. The Python API enables methods for manipulating data to be encapsulated with schemas. This makes it easy to define custom validations such as for the element balance of a chemical reaction or for the lack of cycles in a network. Furthermore, the software tools can generate Python schemas from tabular-formatted schemas, which is a convenient starting point for further development.</p>
+
+            <h3>Tabular format</h3>
+            <p>Tabular-formatted schemas should begin with a single header row which indicates that the dataset is encoded in an ObjModel schema (<tt>!!ObjModel TableID="DEFINITION" ...</tt>).</p>
+            
+            <p>After the header row, the schema file should contain a table with the following columns that defines the models/tables and their attributes/columns. Each row in the table should define a single model or attribute.</p>
+            
+            <p>Tabular-formatted schemas can be saved in comma-separated (.csv), tab-separated (.tsv), or Excel (.xlsx) format.</p>
+            
+            <p class="before_list">The table should contain the following columns:</p>
+            <ul>
+              <li><b><tt>!Name</tt></b>: Name of the component</li>
+              <li><b><tt>!Type</tt></b>: Type of the component (<tt>Model</tt> or <tt>Attribute</tt>)</li>
+              <li><b><tt>!Parent</tt></b>: 
+                <ul>
+                  <li>Models: Not applicable</li>
+                  <li>Atttributes: Name of the model that the attribute belongs to</li>
+                </ul></li>
+              <li><b><tt>!Format</tt></b>: 
+                <ul>
+                  <li>Tables: 
+                    <ul>
+                      <li><tt>row</tt>: Encode the instances of the model as rows</li>
+                      <li><tt>column</tt>: Encode the instances of the model as columns (i.e. transposed table)</li>
+                      <li><tt>multiple_cells</tt>: Encode the instances of the model within a group of columns in the tables of the one-to-many and one-to-one related models</li>
+                      <li><tt>cell</tt>: Encode the instances of the model within columns of the related models, optionally, using a grammar</li>
+                    </ul>
+                  </li>
+                  <li>Columns: One of the data types listed below (e.g., <tt>String</tt>, <tt>Float</tt>). Arguments for the data types can be description in parenthesis (e.g., <tt>String(min_length=5)</tt>. The arguments enable users to customize how data types function and are validated. See the documentation <a href="https://docs.karrlab.org/obj_model"><i class="fi-link"></i></a> for more information about the types and their arguments.</li>
+                </ul>
+              </li>
+              <li>(Optional) <b><tt>!Description</tt></b>: Description of the component</li>
+            </ul>
+
+            <h3>Example</h3>
+            <p>The following example illustrates a schema for encoding three models of parents, children, and heights into two tables of parents and children, with the heights of the children embedded into a group of columns within the children table.</p>
+
+            <p>Additional examples are available at <a href="https://www.sbtab.net/">SBtab.net</a>.</p>
+
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="5">!!ObjModel TableID='DEFINITION' TableName='Table/model and column/attribute definitions' ObjModelVersion='2.0'</th>
+                </tr>
+                <tr>
+                  <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Parent</td><td>Table</td><td></td><td>column</td><td>Represents a parent</td></tr>
+                <tr><td>Id</td><td>Column</td><td>Parent</td><td>slug</td><td>Identifier</td></tr>
+                <tr><td>Name</td><td>Column</td><td>Parent</td><td>string</td><td></td></tr>
+                <tr><td>Child</td><td>Table</td><td></td><td>row</td><td>Represents a child</td></tr>
+                <tr><td>Id</td><td>Column</td><td>Child</td><td>slug</td><td>Identifier</td></tr>
+                <tr><td>Name</td><td>Column</td><td>Child</td><td>string</td><td></td></tr>                
+                <tr><td>Gender</td><td>Column</td><td>Child</td><td>enum(['female', 'male'])</td><td></td></tr>
+                <tr><td>Parents</td><td>Column</td><td>Child</td><td>manyToMany('Parent', related_name='children')</td><td></td></tr>
+                <tr><td>Height</td><td>Column</td><td>Child</td><td>manyToOne('Height', related_name='children')</td><td></td></tr>                
+                <tr><td>Height</td><td>Table</td><td></td><td>multiple_cells</td><td>Represents a quantity</td></tr>
+                <tr><td>Id</td><td>Column</td><td>Height</td><td>slug</td><td>Identifier</td></tr>
+                <tr><td>Magnitude</td><td>Column</td><td>Height</td><td>float</td><td></td></tr>
+                <tr><td>Units</td><td>Column</td><td>Height</td><td>string</td><td></td></tr>
+              </tbody>
+            </table>          
+
+          <h3>Python format</h3>
+          <p>Schemas can also be implemented as Python modules. The software can convert tabular-formatted schemas into Python modules. The Python module format provides more flexibility than the tabular format. For example, Python-formatted schemas can encapsulate methods into schemas, which can be used to implement custom validations.</p>
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x orange">
+        <a name="data-types"></a>
+        <div class="large-12 cell">
+            <h2>Data types</h2>
+            <p><i>ObjModel</i> supports numerous datatypes and makes it easy to implement additional types. For example, <i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> extends <i>ObjModel</i> by adding a variety of types for genomics, systems biology, and synthetic biology research.</p>
+        </div>
+        
+        <div class="large-3 cell">
+          <h3>Strings</h3>
+          <ul>
+              <li>Long string</li>
+              <li>Regular expression string</li>
+              <li>String</li>
+          </ul>
+        </div>
+        <div class="large-3 cell">
+          <h3>Numbers</h3>
+          <ul>
+              <li>Boolean</li>
+              <li>Integer</li>
+              <li>Float</li>
+              <li>Positive integer</li>
+              <li>Positive float</li>
+          </ul>
+        </div>
+        <div class="large-3 cell">
+          <h3>Dates/times</h3>
+          <ul>
+              <li>Date</li>
+              <li>Date/time</li>
+              <li>Time</li>
+          </ul>
+        </div>
+        <div class="large-3 cell">
+          <h3>Internet</h3>
+          <ul>            
+            <li>Email</li>
+            <li>URL</li>
+          </ul>
+        </div>
+        <div class="large-3 cell">
+          <h3>Enumerations</h3>
+          <ul>            
+            <li>Enumeration</li>
+          </ul>
+        </div>        
+        <div class="large-3 cell">
+          <h3>Relationships</h3>
+          <ul>            
+            <li>One-to-one</li>
+            <li>One-to-many</li>
+            <li>Many-to-one</li>
+            <li>Many-to-many</li>
+          </ul>
+        </div>
+
+        <div class="large-3 cell">
+          <h3>Chemistry (<i>SBtab</i>)</h3>
+          <ul>            
+            <li>Chemical formula</li>
+            <li>Chemical structure (SMILES, BpForms <a href="https://www.bpforms.org"><i class="fi-link"></i></a>, BcForms <a href="https://www.bcforms.org"><i class="fi-link"></i></a>) </li>
+          </ul>
+        </div>
+
+        <div class="large-3 cell">
+          <h3>Genomics (<i>SBtab</i>)</h3>
+          <ul>            
+            <li>DNA, RNA, and protein sequences (Biopython <a href="https://biopython.org/"><i class="fi-link"></i></a>)</li>
+            <li>Feature location (Biopython <a href="https://biopython.org/"><i class="fi-link"></i></a>)</li>
+            <li>Frequency position matrix (Biopython <a href="https://biopython.org/"><i class="fi-link"></i></a>)</li>
+          </ul>
+        </div>
+
+        <div class="large-3 cell">
+          <h3>Informatics (<i>SBtab</i>)</h3>
+          <ul>            
+            <li>Ontology term (Pronto <a href="https://pronto.readthedocs.io"><i class="fi-link"></i></a>)</li>
+          </ul>
+        </div>
+
+        <div class="large-3 cell">
+          <h3>Mathematics (<i>SBtab</i>)</h3>
+          <ul>            
+            <li>Array (NumPy <a href="https://numpy.org"><i class="fi-link"></i></a>)</li>
+            <li>Matrix (NumPy <a href="https://numpy.org"><i class="fi-link"></i></a>)</li>
+            <li>Python expressions</li>
+            <li>Symbolic expression (SymPy <a href="https://www.sympy.org"><i class="fi-link"></i></a>)</li>
+            <li>Symbolic symbos (SymPy <a href="https://www.sympy.org"><i class="fi-link"></i></a>)</li>
+          </ul>
+        </div>
+
+        <div class="large-3 cell">
+          <h3>Physics (<i>SBtab</i>)</h3>
+          <ul>            
+            <li>Units (Pint <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a>)</li>
+          </ul>
+        </div>
+
+      </div>
+
+       <div class="grid-x grid-padding-x blue">
+        <a name="tools"></a>
+        <div class="large-12 cell">
+          <h2>Software tools</h2>
+          <p class="before_list"><i>ObjModel</i> includes a variety of methods for working with schemas and datasets:</p>
+          <ul>
+            <li>Generate a Python module that implements a tabular-formatted schema.</li>
+            <li>Generate a template Excel, CSV, or TSV file(s) for a schema.</li>
+            <li>Programmatically construct, search, and analyze datasets.</li>
+            <li>Use Git to revision datasets.</li>
+            <li>Normalize datasets into a deterministically reproducible ordering.</li>
+            <li>Validate that a dataset adheres to a schema and report any errors.</li> 
+            <li>Pretty format a dataset according to a schema.</li>
+            <li>Use a schema to compare the semantic meaning of two datasets.</li>
+            <li>Use a schema to convert a dataset to an alternate format.</li>
+            <li>Use a schema to convert a dataset to a dictionary of pandas <a href="https://pandas.pydata.org"><i class="fi-link"></i></a> data frames.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x orange">
+        <a name="interfaces"></a>
+        <div class="large-12 cell">
+          <h2>User interfaces</h2>
+          <p class="before_list"><i>ObjModel</i> includes four user interfaces to the software tools described above.</p>
+        </div>
+        <div class="large-3 cell">
+          <h3>Web app</h3>
+          A web app is available above <a href="#app"><i class="fi-arrow-up"></i></a>.
+        </div>
+        <div class="large-3 cell">
+          <a name="rest"></a>
+          <h3>REST API</h3>
+          A REST API is available at <a href="https://www.objmodel.org/api">objmodel.org/api</a>.
+        </div>
+        <div class="large-3 cell">
+          <a name="cli"></a>
+          <h3>Command line interface</h3>
+          A command line interface is available from PyPI <a href="https://pypi.python.org/pypi/obj_model"><i class="fi-link"></i></a>.
+        </div>
+        <div class="large-3 cell">
+          <a name="python"></a>
+          <h3>Python library</h3>
+          A Python library is available from PyPI <a href="https://pypi.python.org/pypi/obj_model"><i class="fi-link"></i></a>.
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x blue">
+        <a name="other-resources"></a>
+        <div class="large-12 cell">
+          <h2>Resources for determining the structures of complexes</h2>
+          <p class="before_list">Below are several resources which can be helpful for working with <i>ObjModel</i>.</p>
+          <ul>
+            <li>Microsoft Excel <a href="https://products.office.com/en-us/excel"><i class="fi-link"></i></a></li>
+            <li>WPS Office <a href="https://www.wps.com"><i class="fi-link"></i></a>: Free editor for Linux, Mac, and Windows</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x orange">
+        <a name="help"></a>
+        <div class="large-12 cell">
+          <h2>Tutorials, documentation, and help</h2>
+        </div>
+        <div class="large-6 cell">
+          <h3>Documentation for the formats for schemas and datasets</h3>
+          Documentation for the format for the schemas and the formats for the collections of tables is available above <a href="#formats"><i class="fi-arrow-up"></i></a>. Additional information is available at docs.karrlab.org <a href="https://docs.karrlab.org/obj_model"><i class="fi-link"></i>.</a>
+        </div>
+        <div class="large-6 cell">
+          <h3>Query builder for the REST API</h3>
+          A visual interface for building REST queries is available at <a href="https://www.objmodel.org/api">objmodel.org/api</a>.
+        </div>
+        <div class="large-6 cell">
+          <h3>Documentation for the REST API</h3>
+          Documentation for the REST API is available at <a href="https://www.objmodel.org/api">objmodel.org/api</a>.
+        </div>
+        <div class="large-6 cell">
+          <h3>Documentation for the command line program</h3>
+          Documentation for the command line program is available inline by running <tt>obj-model --help</tt>.
+        </div>
+        <div class="large-6 cell">
+          <h3>Tutorial for the Python API</h3>
+          A Jupyter notebook with an interactive tutorial is available at sandbox.karrlab.org <a href="http://sandbox.karrlab.org/tree/obj_model"><i class="fi-link"></i></a>.
+        </div>
+        <div class="large-6 cell">
+          <h3>Documentation for the Python API</h3>
+          Documentation for the Python API is available at docs.karrlab.org <a href="https://docs.karrlab.org/obj_model"><i class="fi-link"></i></a>.
+        </div>
+        <div class="large-6 cell">
+          <h3>Questions</h3>
+          Please contact the Karr Lab <a href="mailto:info@karrlab.org"><i class="fi-mail"></i></a> with any questions.
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x blue">
+        <a name="contribute"></a>
+        <div class="large-12 cell">
+          <h2>Contributing to <i>ObjModel</i></h2>
+        </div>
+        <div class="large-12 cell" style="margin-top: 1rem; padding-top: 0.2rem;">
+          To contribute to the software, please submit a Git pull request <a href="https://github.com/karrlab/obj_model/pulls"><i class="fi-link"></i></a>.
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x orange">
+        <a name="about"></a>
+        <div class="large-12 cell">
+          <h2>About <i>ObjModel</i></h2>
+        </div>
+        <div class="large-4 cell">
+          <h3>Source code</h3>
+          <i>ObjModel</i> is available open-source from GitHub <a href="https://github.com/KarrLab/obj_model"><i class="fi-social-github"></i></a>.
+        </div>
+        <div class="large-4 cell">
+          <h3>License</h3>
+          <i>ObjModel</i> is released under the MIT license <a href="https://github.com/KarrLab/obj_model/blob/master/LICENSE"><i class="fi-link"></i></a>.
+        </div>
+        <div class="large-4 cell">
+          <h3>Citing <i>ObjModel</i></h3>
+          Coming soon!
+        </div>
+        <div class="large-4 cell">
+          <h3>Team</h3>
+          <p class="before_list"><i>ObjModel</i> was developed by the Karr Lab <a href="https://www.karrlab.org"><i class="fi-link"></i></a> at the Icahn School of Medicine at Mount Sinai <a href="https://www.mssm.edu/"><i class="fi-link"></i></a> in New York, US and the Applied Mathematics and Computer Science, from Genomes to the Environment research unit <a href="http://maiage.jouy.inra.fr/?q=en"><i class="fi-link"></i></a> at the Institut National de la Recherche Agronomique <a href="http://www.jouy.inra.fr/en"><i class="fi-link"></i></a> in Jouy en Josas, FR.</p>
+          
+          <ul>
+            <li>Arthur Goldberg <a href="https://www.mountsinai.org/profiles/arthur-p-goldberg"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/arthurgoldberg/"><i class="fi-social-linkedin"></i></a></li>
+            <li>Jonathan Karr <a href="https://www.karrlab.org/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/jonrkarr/"><i class="fi-social-linkedin"></i></a></li>        
+            <li>Wolfram Liebermeister <a href="https://www.metabolic-economics.de/liebermeister/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/wolfram-liebermeister-28264226/"><i class="fi-social-linkedin"></i></a></li>
+            <li>Timo Lubitz <a href="https://www.timolubitz.de/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/timo-lubitz-7a443117a/"><i class="fi-social-linkedin"></i></a></li>
+          </ul>
+        </div>
+        <div class="large-4 cell">
+          <h3>Acknowledgements</h3>
+          <i>ObjModel</i> was supported by a National Institute of Health P41 award <a href="https://projectreporter.nih.gov/project_info_details.cfm?aid=9460251"><i class="fi-link"></i></a>, a National Institute of Health MIRA R35 award <a href="https://projectreporter.nih.gov/project_info_details.cfm?aid=9509480"><i class="fi-link"></i></a>, and a National Science Foundation INSPIRE award <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1649014"><i class="fi-link"></i></a>.
+        </div>
+        <div class="large-4 cell">
+          <h3>Questions/comments</h3>
+          Please contact the Karr Lab <a href="mailto:info@karrlab.org"><i class="fi-mail"></i></a> with any questions or comments.
+        </div>
+      </div>
+
+
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+      crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.3/dist/js/foundation.min.js"
+      integrity="sha256-/PFxCnsMh+nTuM0k3VJCRch1gwnCfKjaP8rJNq5SoBg= sha384-9ksAFjQjZnpqt6VtpjMjlp2S0qrGbcwF/rvrLUg2vciMhwc1UJJeAAOLuJ96w+Nj sha512-UMSn6RHqqJeJcIfV1eS2tPKCjzaHkU/KqgAnQ7Nzn0mLicFxaVhm9vq7zG5+0LALt15j1ljlg8Fp9PT1VGNmDw=="
+      crossorigin="anonymous"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

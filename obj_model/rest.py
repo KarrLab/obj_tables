@@ -122,7 +122,7 @@ diff_parser.add_argument('model',
                          type=str,
                          required=True,
                          help='Type of objects to compare')
-diff_parser.add_argument('workbook-1', location='files',
+diff_parser.add_argument('workbook', location='files',
                          type=FileStorage,
                          required=True,
                          help='First workbook (.csv, .tsv, .zip of .csv or .tsv, .xlsx)')
@@ -152,7 +152,7 @@ class Diff(flask_restplus.Resource):
         args = diff_parser.parse_args()
         schema_dir, schema_filename = save_schema(args['schema'])
         model_name = args['model']
-        wb_dir_1, wb_filename_1 = save_in_workbook(args['workbook-1'])
+        wb_dir_1, wb_filename_1 = save_in_workbook(args['workbook'])
         wb_dir_2, wb_filename_2 = save_in_workbook(args['workbook-2'])
         sbtab = args['sbtab']
 
