@@ -978,9 +978,6 @@ class ParsedExpressionTestCase(unittest.TestCase):
 
         func.expression.parameters.get_one(id='p_1').units = unit_registry.parse_units('g')
         func.expression.parameters.get_one(id='p_2').units = unit_registry.parse_units('l')
-        rv = func.expression._parsed_expression.eval({}, with_units=True)
-        self.assertEqual(rv.magnitude, 0.4)
-        self.assertEqual(rv.units, unit_registry.parse_units('g l^-1'))
 
     def test_eval_with_units_and_boolean(self):
         func_1 = SubFunction(id='func_1', units=unit_registry.parse_units('dimensionless'))
