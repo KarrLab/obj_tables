@@ -616,6 +616,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
         wb = wc_utils.workbook.io.read(filename)
         wb['Extra'] = wc_utils.workbook.Worksheet()
+        wb['!' + core.SBTAB_SCHEMA_NAME] = wc_utils.workbook.Worksheet()
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_model.io.WorkbookReader().run(

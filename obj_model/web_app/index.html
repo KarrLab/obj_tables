@@ -205,46 +205,46 @@
             <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
 
             <h3>Example</h3>
-            <p>The following example illustrates how to encode parents, children, and the heights of children into two tables according to the example schema below. In tables, the Height model enables height information to be encapsulated into a group of columns. The Height model also enables the Python representation of the data to encapsulate height information into a separate class. This helps make tables and Python code more human-readable.</p>
-
-            <p>Additional examples are available at <a href="https://www.sbtab.net/">SBtab.net</a>.</p>
+            <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame model enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame model also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>
 
             <table>
               <thead>
                 <tr>
-                  <th colspan="2">!!ObjModel TableID='Parent' ObjModelVersion='2.0'</th>
+                  <th colspan="2">!!SBtab TableID='Parent' SBtabVersion='2.0'</th>
                 </tr>
                 <tr>
-                  <th>Id</th>
-                  <th>Name</th>
+                  <th>!Id</th>
+                  <th>!Name</th>
                 </tr>
               </thead>
               <tbody>
                 <tr><td>jane_doe</td><td>Jane Doe</td></tr>
-                <tr><td>john_doe</td><td>John Doe</td></tr>                
+                <tr><td>john_doe</td><td>John Doe</td></tr>
+                <tr><td>mary_roe</td><td>Mary Roe</td></tr>
+                <tr><td>richard_roe</td><td>Richard Roe</td></tr>                
               </tbody>
             </table>
 
             <table>
               <thead>
                 <tr>
-                  <th colspan="7">!!ObjModel TableID='Child' ObjModelVersion='2.0'</th>
+                  <th colspan="7">!!SBtab TableID='Child' SBtabVersion='2.0'</th>
                 </tr>
                 <tr>
                   <th></th>
                   <th></th>
                   <th></th>
                   <th></th>
-                  <th colspan="3" style="text-align: center;">Height</th>
+                  <th colspan="3" style="text-align: center;">!FavoriteVideoGame</th>
                 </tr>
                 <tr>
-                  <th>Id</th>
-                  <th>Name</th>
-                  <th>Gender</th>
-                  <th>Parents</th>
-                  <th>Id</th>
-                  <th>Magnitude</th>
-                  <th>Units</th>
+                  <th>!Id</th>
+                  <th>!Name</th>
+                  <th>!Gender</th>
+                  <th>!Parents</th>
+                  <th>!Name</th>                  
+                  <th>!Publisher</th>
+                  <th>!Year</th>
                 </tr>
               </thead>
               <tbody>
@@ -252,22 +252,44 @@
                   <td>jamie_doe</td>
                   <td>Jamie Doe</td>
                   <td>female</td>
-                  <td>jane_doe</td>
-                  <td>jimie_doe_height</td>
-                  <td>5.5</td>
-                  <td>ft</td>
+                  <td>jane_doe, john_doe</td>
+                  <td>Legend of Zelda</td>
+                  <td>Nintendo</td>
+                  <td>1986</td>
                 </tr>
                 <tr>
                   <td>jimie_doe</td>
                   <td>Jimie Doe</td>
                   <td>male</td>
                   <td>jane_doe, john_doe</td>
-                  <td>jimie_doe_height</td>
-                  <td>1.7</td>
-                  <td>m</td>
-                </tr>                
+                  <td>Super Mario Brothers</td>
+                  <td>Nintendo</td>
+                  <td>1985</td>
+                </tr>
+                <tr>
+                  <td>linda_roe</td>
+                  <td>Linda Roe</td>
+                  <td>female</td>
+                  <td>mary_roe, richard_roe</td>
+                  <td>Sonic the Hedgehog</td>
+                  <td>Sega</td>
+                  <td>1991</td>
+                </tr>
+                <tr>
+                  <td>mike_roe</td>
+                  <td>Michael Roe</td>
+                  <td>male</td>
+                  <td>mary_roe, richard_roe</td>
+                  <td>SimCity</td>
+                  <td>Electronic Arts</td>
+                  <td>1989</td>
+                </tr> 
               </tbody>
             </table>
+
+            <p>Excel and Python files for the example are available here <a href="https://github.com/KarrLab/obj_model/tree/master/obj_model/web_app/examples/"><i class="fi-link"></i></a>.</p>
+
+            <p>Additional examples are available at <a href="https://www.sbtab.net/">SBtab.net</a>.</p>
         </div>
       </div>
 
@@ -312,14 +334,12 @@
             </ul>
 
             <h3>Example</h3>
-            <p>The following example illustrates a schema for encoding three models of parents, children, and heights into two tables of parents and children, with the heights of the children embedded into a group of columns within the children table.</p>
-
-            <p>Additional examples are available at <a href="https://www.sbtab.net/">SBtab.net</a>.</p>
+            <p>The following example illustrates a schema for encoding three models of parents, children, and their favorite video games into two tables of parents and children, with the favorite games of the children embedded into a group of columns within the children table.</p>
 
             <table>
               <thead>
                 <tr>
-                  <th colspan="5">!!ObjModel TableID='DEFINITION' TableName='Table/model and column/attribute definitions' ObjModelVersion='2.0'</th>
+                  <th colspan="5">!!SBtab TableID='DEFINITION' TableName='Table/model and column/attribute definitions' SBtabVersion='2.0'</th>
                 </tr>
                 <tr>
                   <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Description</th>
@@ -334,13 +354,17 @@
                 <tr><td>Name</td><td>Column</td><td>Child</td><td>string</td><td></td></tr>                
                 <tr><td>Gender</td><td>Column</td><td>Child</td><td>enum(['female', 'male'])</td><td></td></tr>
                 <tr><td>Parents</td><td>Column</td><td>Child</td><td>manyToMany('Parent', related_name='children')</td><td></td></tr>
-                <tr><td>Height</td><td>Column</td><td>Child</td><td>manyToOne('Height', related_name='children')</td><td></td></tr>                
-                <tr><td>Height</td><td>Table</td><td></td><td>multiple_cells</td><td>Represents a quantity</td></tr>
-                <tr><td>Id</td><td>Column</td><td>Height</td><td>slug</td><td>Identifier</td></tr>
-                <tr><td>Magnitude</td><td>Column</td><td>Height</td><td>float</td><td></td></tr>
-                <tr><td>Units</td><td>Column</td><td>Height</td><td>string</td><td></td></tr>
+                <tr><td>FavoriteVideoGame</td><td>Column</td><td>Child</td><td>manyToOne('Game', related_name='children')</td><td></td></tr>                
+                <tr><td>Game</td><td>Table</td><td></td><td>multiple_cells</td><td>Represents a video game</td></tr>
+                <tr><td>Name</td><td>Column</td><td>Game</td><td>string(unique=True)</td><td></td></tr>
+                <tr><td>Publisher</td><td>Column</td><td>Game</td><td>float</td><td></td></tr>
+                <tr><td>Year</td><td>Column</td><td>Game</td><td>integer</td><td></td></tr>
               </tbody>
-            </table>          
+            </table> 
+
+          <p>Excel and Python files for the example are available here <a href="https://github.com/KarrLab/obj_model/tree/master/obj_model/web_app/examples/"><i class="fi-link"></i></a>.</p>
+
+          <p>Additional examples are available at <a href="https://www.sbtab.net/">SBtab.net</a>.</p>         
 
           <h3>Python format</h3>
           <p>Schemas can also be implemented as Python modules. The software can convert tabular-formatted schemas into Python modules. The Python module format provides more flexibility than the tabular format. For example, Python-formatted schemas can encapsulate methods into schemas, which can be used to implement custom validations.</p>

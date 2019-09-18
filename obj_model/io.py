@@ -36,7 +36,8 @@ from obj_model import utils
 from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjModelWarning,
-                            TOC_NAME, SBTAB_TOC_NAME)
+                            TOC_NAME, SBTAB_TOC_NAME,
+                            SCHEMA_NAME, SBTAB_SCHEMA_NAME)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
@@ -1011,12 +1012,18 @@ class WorkbookReader(ReaderBase):
 
         # check that sheets can be unambiguously mapped to models
         sheet_names = reader.get_sheet_names()
+
         if sbtab:
             toc_sheet_name = '!' + SBTAB_TOC_NAME
+            schema_sheet_name = '!' + SBTAB_SCHEMA_NAME
         else:
             toc_sheet_name = TOC_NAME
+            schema_sheet_name = SCHEMA_NAME
         if toc_sheet_name in sheet_names:
             sheet_names.remove(toc_sheet_name)
+        if schema_sheet_name in sheet_names:
+            sheet_names.remove(schema_sheet_name)
+
         # drop metadata models unless they're requested
         for metadata_model in (utils.DataRepoMetadata, utils.SchemaRepoMetadata):
             if metadata_model not in models:
