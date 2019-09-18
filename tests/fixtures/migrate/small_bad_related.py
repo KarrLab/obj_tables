@@ -30,7 +30,7 @@ class Test(Model):
 
     class Meta(Model.Meta):
         attribute_order = ('id', 'name', 'references')
-        tabular_orientation = TabularOrientation.column
+        table_format = TabularOrientation.column
 
 
 class Reference(Model):

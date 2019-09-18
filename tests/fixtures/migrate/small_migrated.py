@@ -23,7 +23,7 @@ class Test(obj_model.Model):
 
     class Meta(obj_model.Model.Meta):
         attribute_order = ('id', 'name', 'version', 'revision', 'migrated_attr')
-        tabular_orientation = TabularOrientation.column
+        table_format = TabularOrientation.column
 
 
 class NewModel(obj_model.Model):
@@ -40,7 +40,7 @@ class Property(obj_model.Model):
 
     class Meta(obj_model.Model.Meta):
         attribute_order = ('id', 'test', 'value')
-        tabular_orientation = TabularOrientation.column
+        table_format = TabularOrientation.column
 
 
 class Subtest(obj_model.Model):

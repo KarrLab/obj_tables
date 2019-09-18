@@ -20,7 +20,7 @@ class Test(obj_model.Model):
 
     class Meta(obj_model.Model.Meta):
         attribute_order = ('id', 'name', 'revision', 'existing_attr')
-        tabular_orientation = TabularOrientation.column
+        table_format = TabularOrientation.column
 
 
 class Reference(obj_model.Model):

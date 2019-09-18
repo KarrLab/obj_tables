@@ -926,7 +926,7 @@ class Migrator(object):
             :obj:`str`: name of migrated file
         """
         return [model for model in models.values()
-            if model.Meta.tabular_orientation not in [TabularOrientation.cell, TabularOrientation.multiple_cells]]
+            if model.Meta.table_format not in [TabularOrientation.cell, TabularOrientation.multiple_cells]]
 
     def read_existing_file(self, existing_file):
         """ Read models from existing file

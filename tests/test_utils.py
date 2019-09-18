@@ -99,7 +99,7 @@ class TestUtils(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('value', 'units')
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
 
             def serialize(self):
                 return '{} {}'.format(value, units)
@@ -763,7 +763,7 @@ class ToPandasTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'name')
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
                 verbose_name = '!Child'
                 verbose_name_plural = '!Child'
 

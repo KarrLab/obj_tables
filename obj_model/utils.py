@@ -135,7 +135,7 @@ def get_attribute_by_name(cls, group_name, attr_name, verbose_name=False, case_i
                                        or (verbose_name and attr.verbose_name.lower() == attr_name.lower()))):
                 return (None, attr)
         else:
-            if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.tabular_orientation == TabularOrientation.multiple_cells:
+            if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TabularOrientation.multiple_cells:
                 if attr.name.lower() == group_name.lower() or attr.verbose_name.lower() == group_name.lower():
                     sub_attr = get_attribute_by_name(attr.related_class, None, attr_name, verbose_name=verbose_name,
                                                      case_insensitive=case_insensitive)
@@ -352,7 +352,7 @@ class RepoMetadata(Model):
     revision = StringAttribute()
 
     class Meta(Model.Meta):
-        tabular_orientation = TabularOrientation.column
+        table_format = TabularOrientation.column
         attribute_order = ('url', 'branch', 'revision')
 
 
@@ -573,7 +573,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
     all_attrs = get_attrs()
     for cls_spec in cls_specs.values():
         meta_attrs = {
-            'tabular_orientation': cls_spec['tab_orientation'],
+            'table_format': cls_spec['tab_orientation'],
             'attribute_order': tuple(cls_spec['attr_order']),
             'description': cls_spec['desc'],
         }
@@ -638,7 +638,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
 
                 file.write('\n')
                 file.write('    class Meta(obj_model.Model.Meta):\n')
-                file.write("        tabular_orientation = obj_model.TabularOrientation.{}\n".format(
+                file.write("        table_format = obj_model.TabularOrientation.{}\n".format(
                     cls_spec['tab_orientation'].name))
                 file.write("        attribute_order = ('{}',)\n".format(
                     "', '".join(cls_spec['attr_order'])

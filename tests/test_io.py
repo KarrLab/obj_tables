@@ -43,7 +43,7 @@ class MainRoot(core.Model):
 
     class Meta(core.Model.Meta):
         attribute_order = ('id', 'name', )
-        tabular_orientation = core.TabularOrientation.column
+        table_format = core.TabularOrientation.column
 
 
 class Node(core.Model):
@@ -108,7 +108,7 @@ class OneToManyInline(core.Model):
 
     class Meta(core.Model.Meta):
         attribute_order = ('id',)
-        tabular_orientation = core.TabularOrientation.cell
+        table_format = core.TabularOrientation.cell
 
 
 class TestIo(unittest.TestCase):
@@ -411,7 +411,7 @@ class TestIo(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('tid', 's', )
-                tabular_orientation = core.TabularOrientation.column
+                table_format = core.TabularOrientation.column
 
         file = 'test-locations.xlsx'
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', file)
@@ -522,7 +522,7 @@ class TestIo(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'val', )
-                tabular_orientation = core.TabularOrientation.column
+                table_format = core.TabularOrientation.column
 
         RE_msgs = [
             "Leaf\n"
@@ -801,7 +801,7 @@ class TestIo(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'The model cannot be loaded'):
             WorkbookReader().run(filename, models=[TestModel])
 
-    def test_tabular_orientation_multiple_cells(self):
+    def test_table_format_multiple_cells(self):
         class Node(core.Model):
             id = core.SlugAttribute()
             quantity_1 = core.OneToOneAttribute('Quantity', related_name='node_1')
@@ -817,7 +817,7 @@ class TestIo(unittest.TestCase):
             units = core.ManyToManyAttribute('Unit', related_name='quantities_2')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
                 attribute_order = ('value', 'unit', 'units')
 
             def serialize(self):
@@ -863,7 +863,7 @@ class TestIo(unittest.TestCase):
             WorkbookReader().run(filename, models=[Node, Unit])
 
         # column orientation
-        Node.Meta.tabular_orientation = core.TabularOrientation.column
+        Node.Meta.table_format = core.TabularOrientation.column
         filename = os.path.join(self.tmp_dirname, 'test2.xlsx')
         writer = WorkbookWriter()
         writer.run(filename, nodes, models=[Node, Unit])
@@ -1806,7 +1806,7 @@ class StrictReadingTestCase(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True)
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.column
+                table_format = core.TabularOrientation.column
 
         m1 = Model1(id='m1')
         m2 = Model2(id='m2')
@@ -1861,7 +1861,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'attr')
-                tabular_orientation = core.TabularOrientation.column
+                table_format = core.TabularOrientation.column
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer_cls = get_writer('.xlsx')
@@ -1924,7 +1924,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('value', 'units')
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
 
             def serialize(self):
                 return '{} {}'.format(self.value, self.units)
@@ -1935,7 +1935,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('value', 'units')
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
 
             def serialize(self):
                 return '{} {}'.format(self.value, self.units)
@@ -2055,7 +2055,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'attr1', 'attr2')
-                tabular_orientation = core.TabularOrientation.column
+                table_format = core.TabularOrientation.column
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer_cls = get_writer('.xlsx')
@@ -2095,7 +2095,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('value', 'units')
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
 
             def serialize(self):
                 return '{} {}'.format(self.value, self.units)
@@ -2154,7 +2154,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('value', 'units')
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
 
             def serialize(self):
                 return '{} {}'.format(self.value, self.units)
@@ -2167,7 +2167,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'attr1', 'attr2')
-                tabular_orientation = core.TabularOrientation.column
+                table_format = core.TabularOrientation.column
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         writer_cls = get_writer('.xlsx')
@@ -2393,21 +2393,21 @@ class InlineJsonTestCase(unittest.TestCase):
             name = core.StringAttribute()
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class GrandChild(core.Model):
             name = core.StringAttribute()
             sibling = core.OneToOneAttribute(OtherGrandChild, related_name='sibling')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class Child(core.Model):
             name = core.StringAttribute()
             children = core.OneToManyAttribute(GrandChild, related_name='parent')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -2440,7 +2440,7 @@ class InlineJsonTestCase(unittest.TestCase):
             child = core.ManyToOneAttribute(GrandChild, related_name='parents')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -2485,7 +2485,7 @@ class InlineJsonTestCase(unittest.TestCase):
             children = core.OneToManyAttribute(GrandChild, related_name='parent')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -2530,7 +2530,7 @@ class InlineJsonTestCase(unittest.TestCase):
             children = core.ManyToManyAttribute(GrandChild, related_name='parents')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -2575,7 +2575,7 @@ class InlineJsonTestCase(unittest.TestCase):
             child = core.OneToOneAttribute(GrandChild, related_name='parent')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -2704,7 +2704,7 @@ class UtilsTestCase(unittest.TestCase):
             id = core.SlugAttribute()
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
                 attribute_order = ('id',)
 
             def serialize(self):
@@ -2715,7 +2715,7 @@ class UtilsTestCase(unittest.TestCase):
             unit = core.OneToOneAttribute(Unit, related_name='quantity')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
                 attribute_order = ('value', 'unit')
 
             def serialize(self):
@@ -2732,7 +2732,7 @@ class UtilsTestCase(unittest.TestCase):
             id = core.SlugAttribute()
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
                 attribute_order = ('id',)
 
             def serialize(self):
@@ -2747,7 +2747,7 @@ class UtilsTestCase(unittest.TestCase):
             unit = core.OneToOneAttribute(Unit, related_name='quantity')
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.multiple_cells
+                table_format = core.TabularOrientation.multiple_cells
                 attribute_order = ('value', 'unit')
 
             def serialize(self):
@@ -2785,7 +2785,7 @@ class ExcelValidationTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id',)
-                tabular_orientation = core.TabularOrientation.column
+                table_format = core.TabularOrientation.column
 
         sbo_ontotology = pronto.Ontology('tests/fixtures/SBO.obo')
         unit_registry = pint.UnitRegistry()
@@ -3003,7 +3003,7 @@ class ExcelValidationTestCase(unittest.TestCase):
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id',)
-                tabular_orientation = core.TabularOrientation.column
+                table_format = core.TabularOrientation.column
 
             def serialize(self):
                 return self.id

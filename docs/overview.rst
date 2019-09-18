@@ -89,7 +89,7 @@ To allow developers to customize the behavior of each :obj:`Model` subclass, :ob
 * `attribute_order`: :obj:`tuple` of attribute names; controls order in which attributes should be printed when serialized
 * `frozen_columns`: :obj:`int`: controls how many columns should be frozen when the model is serialized to Excel
 * `ordering`: :obj:`tuple` of attribute names; controls the order in which objects should be printed when serialized
-* `tabular_orientation`: :obj:`TabularOrientation`: controls orientation (row, column, inline) of model when serialized
+* `table_format`: :obj:`TabularOrientation`: controls orientation (row, column, inline) of model when serialized
 * `unique_together`: :obj:`tuple` of attribute names; controls what tuples of attribute values must be unique
 * `verbose_name`: verbose name of the model; used for (de)serialization
 * `verbose_name_plural`: plural verbose name of the model; used for (de)serialization

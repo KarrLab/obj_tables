@@ -173,7 +173,7 @@ class UniqueTogetherRoot(core.Model):
 class InlineRoot(core.Model):
 
     class Meta(core.Model.Meta):
-        tabular_orientation = core.TabularOrientation.cell
+        table_format = core.TabularOrientation.cell
 
 
 class Example0(core.Model):
@@ -491,7 +491,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True)
 
             class Meta (core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class TestParent(core.Model):
             pass
@@ -4049,7 +4049,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=False)
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
@@ -4060,7 +4060,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=False)
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
@@ -4078,7 +4078,7 @@ class TestCore(unittest.TestCase):
             id = core.StringAttribute(primary=True, unique=True)
 
             class Meta(core.Model.Meta):
-                tabular_orientation = core.TabularOrientation.cell
+                table_format = core.TabularOrientation.cell
 
         class TestParent(core.Model):
             children = core.OneToManyAttribute(TestChild, related_name='parent')
