@@ -55,10 +55,9 @@ class ConvertController(cement.Controller):
     def _default(self):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file, args.sbtab)
+        kwargs = {}
         if args.sbtab:
             kwargs = io.SBTAB_DEFAULT_READER_OPTS
-        else:
-            kwargs = {}
         reader = io.Reader()
         objs = reader.run(args.in_wb_file,
                           models=models,
@@ -185,10 +184,9 @@ class NormalizeController(cement.Controller):
         if model.__name__ != args.model:
             raise SystemExit('Workbook does not have model "{}"'.format(args.model))
 
+        kwargs = {}
         if args.sbtab:
             kwargs = io.SBTAB_DEFAULT_READER_OPTS
-        else:
-            kwargs = {}
         reader = io.Reader()
         objs = reader.run(args.in_wb_file,
                           models=models,
@@ -225,10 +223,9 @@ class ValidateController(cement.Controller):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file, args.sbtab)
         try:
+            kwargs = {}
             if args.sbtab:
                 kwargs = io.SBTAB_DEFAULT_READER_OPTS
-            else:
-                kwargs = {}
             io.Reader().run(args.wb_file,
                             models=models,
                             group_objects_by_model=False,

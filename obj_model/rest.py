@@ -28,9 +28,8 @@ import zipfile
 # setup app
 app = flask.Flask(__name__)
 cors = flask_cors.CORS(app,
-            resources={r"/*": {"origins": "*"}},
-            expose_headers=["content-disposition"])
-
+                       resources={r"/*": {"origins": "*"}},
+                       expose_headers=["content-disposition"])
 
 
 class PrefixMiddleware(object):
@@ -168,11 +167,11 @@ class Diff(flask_restplus.Resource):
 
         try:
             _, models = get_schema_models(schema_filename, sbtab)
-        except Exception as err:
-            flask_restplus.abort(400, str(err))
+        except Exception as err:            
             shutil.rmtree(schema_dir)
             shutil.rmtree(wb_dir_1)
             shutil.rmtree(wb_dir_2)
+            flask_restplus.abort(400, str(err))
 
         model = get_model(models, model_name)
 
@@ -416,17 +415,16 @@ class Validate(flask_restplus.Resource):
 
         try:
             _, models = get_schema_models(schema_filename, sbtab)
+            kwargs = {}
             if sbtab:
                 kwargs = io.SBTAB_DEFAULT_READER_OPTS
-            else:
-                kwargs = {}
             objs = io.Reader().run(wb_filename,
                                    models=models,
                                    group_objects_by_model=False,
                                    sbtab=sbtab,
                                    validate=False,
                                    **kwargs)
-        except ValueError as err:
+        except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
             shutil.rmtree(schema_dir)
@@ -517,10 +515,9 @@ def read_workbook(filename, models, sbtab=False):
             * :obj:`dict`: dictionary that maps types to a dictionary of instance
             * :obj:`dict`: dictionary of model metadata
     """
+    kwargs = {}
     if sbtab:
         kwargs = io.SBTAB_DEFAULT_READER_OPTS
-    else:
-        kwargs = {}
     reader = io.Reader()
     result = reader.run(filename,
                         models=models,

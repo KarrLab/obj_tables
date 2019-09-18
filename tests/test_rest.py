@@ -51,6 +51,7 @@ class RestTestCase(unittest.TestCase):
                     'format': 'xlsx',
                     'sbtab': True,
                 })
+        self.assertEqual(rv.status_code, 200)
         workbook_filename_2 = os.path.join(self.tempdir, 'file2.xlsx')
         with open(workbook_filename_2, 'wb') as file:
             file.write(rv.data)
@@ -60,6 +61,18 @@ class RestTestCase(unittest.TestCase):
                                         sbtab=True,
                                         **io.SBTAB_DEFAULT_READER_OPTS)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
+
+        # invalid schema
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
+        with open(schema_filename, 'rb') as schema_file:
+            with open(workbook_filename_1, 'rb') as workbook_file:
+                rv = client.post('/api/convert/', data={
+                    'schema': (schema_file, os.path.basename(schema_filename)),
+                    'workbook': (workbook_file, os.path.basename(workbook_filename_1)),
+                    'format': 'xlsx',
+                    'sbtab': True,
+                })
+        self.assertEqual(rv.status_code, 400)
 
     def test_diff(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
@@ -106,6 +119,37 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertNotEqual(rv.json, [])
 
+        # invalid workbook        
+        wb = wc_utils.workbook.io.read(xl_file_2)
+        wb['!Child2'] = wb.pop('!Child')
+        wc_utils.workbook.io.write(xl_file_2, wb)
+
+        with open(schema_filename, 'rb') as schema_file:
+            with open(xl_file_1, 'rb') as wb_file_1:
+                with open(xl_file_2, 'rb') as wb_file_2:
+                    rv = client.post('/api/diff/', data={
+                        'schema': (schema_file, os.path.basename(schema_filename)),
+                        'model': 'Parent',
+                        'workbook': (wb_file_1, os.path.basename(xl_file_1)),
+                        'workbook-2': (wb_file_2, os.path.basename(xl_file_2)),
+                        'sbtab': True,
+                    })
+        self.assertEqual(rv.status_code, 400)
+
+        # invalid schema
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
+        with open(schema_filename, 'rb') as schema_file:
+            with open(xl_file_1, 'rb') as wb_file_1:
+                with open(xl_file_2, 'rb') as wb_file_2:
+                    rv = client.post('/api/diff/', data={
+                        'schema': (schema_file, os.path.basename(schema_filename)),
+                        'model': 'Parent',
+                        'workbook': (wb_file_1, os.path.basename(xl_file_1)),
+                        'workbook-2': (wb_file_2, os.path.basename(xl_file_2)),
+                        'sbtab': True,
+                    })
+        self.assertEqual(rv.status_code, 400)
+
     def test_gen_template(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema = utils.init_schema(schema_filename, sbtab=True)
@@ -118,6 +162,7 @@ class RestTestCase(unittest.TestCase):
                 'format': 'xlsx',
                 'sbtab': True,
             })
+        self.assertEqual(rv.status_code, 200)
         workbook_filename = os.path.join(self.tempdir, 'file.xlsx')
         with open(workbook_filename, 'wb') as file:
             file.write(rv.data)
@@ -128,6 +173,16 @@ class RestTestCase(unittest.TestCase):
                                        group_objects_by_model=False,
                                        **io.SBTAB_DEFAULT_READER_OPTS)
         self.assertEqual(objs, None)
+
+        # invalid schema
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
+        with open(schema_filename, 'rb') as schema_file:
+            rv = client.post('/api/gen-template/', data={
+                'schema': (schema_file, os.path.basename(schema_filename)),
+                'format': 'xlsx',
+                'sbtab': True,
+            })
+        self.assertEqual(rv.status_code, 400)
 
     def test_init_schema(self):
         client = rest.app.test_client()
@@ -148,6 +203,15 @@ class RestTestCase(unittest.TestCase):
         schema = utils.get_schema(py_file)
         self.assertEqual(sorted(utils.get_models(schema)),
                          ['Child', 'Parent', 'Quantity'])
+
+        # invalid schema
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
+        with open(schema_filename, 'rb') as schema_file:
+            rv = client.post('/api/init-schema/', data={
+                'schema': (schema_file, os.path.basename(schema_filename)),
+                'sbtab': True,
+            })
+        self.assertEqual(rv.status_code, 400)
 
     def test_init_schema_error(self):
         client = rest.app.test_client()
@@ -184,6 +248,7 @@ class RestTestCase(unittest.TestCase):
                     'format': 'xlsx',
                     'sbtab': True,
                 })
+        self.assertEqual(rv.status_code, 200)
         out_workbook_file = os.path.join(self.tempdir, 'file2.xlsx')
         with open(out_workbook_file, 'wb') as file:
             file.write(rv.data)
@@ -204,6 +269,7 @@ class RestTestCase(unittest.TestCase):
                     'format': 'tsv',
                     'sbtab': True,
                 })
+        self.assertEqual(rv.status_code, 200)
         out_workbook_file = os.path.join(self.tempdir, '*.tsv')
         with zipfile.ZipFile(BytesIO(rv.data)) as zip_file:
             zip_file.extractall(self.tempdir)
@@ -213,6 +279,35 @@ class RestTestCase(unittest.TestCase):
                                         sbtab=True,
                                         **io.SBTAB_DEFAULT_READER_OPTS)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
+
+        # invalid workbook
+        wb = wc_utils.workbook.io.read(in_workbook_filename)
+        wb['!Child2'] = wb.pop('!Child')
+        wc_utils.workbook.io.write(in_workbook_filename, wb)
+
+        with open(schema_filename, 'rb') as schema_file:
+            with open(in_workbook_filename, 'rb') as in_workbook_file:
+                rv = client.post('/api/normalize/', data={
+                    'schema': (schema_file, os.path.basename(schema_filename)),
+                    'model': 'Parent',
+                    'workbook': (in_workbook_file, os.path.basename(in_workbook_filename)),
+                    'format': 'xlsx',
+                    'sbtab': True,
+                })
+        self.assertEqual(rv.status_code, 400)
+
+        # invalid schema
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')        
+        with open(schema_filename, 'rb') as schema_file:
+            with open(in_workbook_filename, 'rb') as in_workbook_file:
+                rv = client.post('/api/normalize/', data={
+                    'schema': (schema_file, os.path.basename(schema_filename)),
+                    'model': 'Parent',
+                    'workbook': (in_workbook_file, os.path.basename(in_workbook_filename)),
+                    'format': 'xlsx',
+                    'sbtab': True,
+                })
+        self.assertEqual(rv.status_code, 400)
 
     def test_validate(self):
         client = rest.app.test_client()
@@ -311,6 +406,17 @@ class RestTestCase(unittest.TestCase):
                     'sbtab': True,
                 })
 
+        self.assertEqual(rv.status_code, 400)
+
+        # invalid schema
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
+        with open(schema_filename, 'rb') as schema_file:
+            with open(wb_filename, 'rb') as wb_file:
+                rv = client.post('/api/validate/', data={
+                    'schema': (schema_file, os.path.basename(schema_filename)),
+                    'workbook': (wb_file, os.path.basename(wb_filename)),
+                    'sbtab': True,
+                })
         self.assertEqual(rv.status_code, 400)
 
     def test_get_model(self):

@@ -697,10 +697,9 @@ def diff_workbooks(filename_1, filename_2, models, model_name, sbtab=False):
     Returns:
         :obj:`list` of :obj:`str`: list of differences
     """
+    kwargs = {}
     if sbtab:
         kwargs = obj_model.io.SBTAB_DEFAULT_READER_OPTS
-    else:
-        kwargs = {}
     objs1 = obj_model.io.Reader().run(filename_1,
                                       models=models,
                                       group_objects_by_model=True,

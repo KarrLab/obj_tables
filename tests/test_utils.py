@@ -371,12 +371,12 @@ class InitSchemaTestCase(unittest.TestCase):
         schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
                                    out_filename=out_filename,
                                    sbtab=True)
-        self.assertEqual(sorted(utils.get_models(schema).keys()), 
-            ['Child', 'Parent', 'Quantity'])
+        self.assertEqual(sorted(utils.get_models(schema).keys()),
+                         ['Child', 'Parent', 'Quantity'])
 
         schema = utils.get_schema(out_filename)
-        self.assertEqual(sorted(utils.get_models(schema).keys()), 
-            ['Child', 'Parent', 'Quantity'])
+        self.assertEqual(sorted(utils.get_models(schema).keys()),
+                         ['Child', 'Parent', 'Quantity'])
 
     def test_rand_schema_name(self):
         name = utils.rand_schema_name(len=8)
@@ -477,7 +477,35 @@ class InitSchemaTestCase(unittest.TestCase):
             models=[schema.Parent, schema.Child],
             sbtab=True)[schema.Parent][0]
 
-        self.assertTrue(p_0_b.is_equal(p_0))
+        self.assertTrue(p_0_b.  is_equal(p_0))
+
+        # invalid schema
+        schema_xl_2 = os.path.join(self.tmp_dirname, 'schema-invalid.xlsx')
+
+        wb = wc_utils.workbook.io.read(schema_xl)
+        wb['DEFINITION'] = wb.pop('!DEFINITION')
+        wc_utils.workbook.io.write(schema_xl_2, wb)
+        with self.assertRaisesRegex(ValueError, 'must contain a sheet'):
+            utils.init_schema(schema_xl_2,
+                              out_filename=out_filename,
+                              sbtab=True)
+
+        wb = wc_utils.workbook.io.read(schema_xl)
+        wb['!DEFINITION'][0][0] = wb['!DEFINITION'][0][0].replace(
+            "TableID='DEFINITION'", "TableID='DEF'")
+        wc_utils.workbook.io.write(schema_xl_2, wb)
+        with self.assertRaisesRegex(ValueError, 'TableID must be'):
+            utils.init_schema(schema_xl_2,
+                              out_filename=out_filename,
+                              sbtab=True)
+
+        wb = wc_utils.workbook.io.read(schema_xl)
+        wb['!DEFINITION'][3][0] = wb['!DEFINITION'][3][0] + '?'
+        wc_utils.workbook.io.write(schema_xl_2, wb)
+        with self.assertRaisesRegex(ValueError, 'names must consist of'):
+            utils.init_schema(schema_xl_2,
+                              out_filename=out_filename,
+                              sbtab=True)
 
     def test_init_schema_from_csv_workbook(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -652,7 +680,6 @@ class InitSchemaTestCase(unittest.TestCase):
                 filename,
                 models=[schema.Parent, schema.Child],
                 sbtab=True, ignore_extra_attributes=True)[schema.Parent][0]
-    
 
     def test_comments(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -661,7 +688,7 @@ class InitSchemaTestCase(unittest.TestCase):
                                    sbtab=True)
 
         p_0 = schema.Parent(id='p_0')
-        p_0._comments = ['W', 'Y']
+        p_0._comments = ['X', 'Y']
         c_0 = p_0.children.create(id='c_0')
         c_1 = p_0.children.create(id='c_1')
         c_2 = p_0.children.create(id='c_2')
@@ -675,8 +702,11 @@ class InitSchemaTestCase(unittest.TestCase):
             sbtab=True)
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Parent'].insert(0, wc_utils.workbook.Row(['% W']))
-        wb['!Parent'][2].append('% Z')
+        wb['!Parent'].insert(0, wc_utils.workbook.Row(['% V']))
+        wb['!Parent'].insert(0, wc_utils.workbook.Row([]))
+        wb['!Parent'].insert(3, wc_utils.workbook.Row([]))
+        wb['!Parent'].insert(3, wc_utils.workbook.Row(['% W']))
+        wb['!Parent'][5].append('% Z')
         wb['!Child'].insert(0, wc_utils.workbook.Row(['% 123']))
         wb['!Child'].append(wc_utils.workbook.Row(['% 456']))
         wc_utils.workbook.io.write(filename, wb)
@@ -687,7 +717,7 @@ class InitSchemaTestCase(unittest.TestCase):
             sbtab=True)[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
-        self.assertEqual(p_0_b._comments, ['W'] + p_0._comments + ['Z'])
+        self.assertEqual(p_0_b._comments, ['V', 'W'] + p_0._comments + ['Z'])
         self.assertEqual(p_0_b.children.get_one(id='c_0')._comments, ['123'] + c_0._comments)
         self.assertEqual(p_0_b.children.get_one(id='c_1')._comments, c_1._comments)
         self.assertEqual(p_0_b.children.get_one(id='c_2')._comments, c_2._comments + ['456'])

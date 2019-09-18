@@ -1517,18 +1517,6 @@ class WorkbookReader(ReaderBase):
             else:
                 break
 
-        if sbtab:
-            for row in list(rows):
-                if not row or all(cell in ['', None] for cell in row):
-                    rows.remove(row)
-                elif isinstance(row[0], str) and row[0].startswith('%'):
-                    comment = row[0][1:].strip()
-                    if comment:
-                        comments.append(comment)
-                    rows.remove(row)
-                else:
-                    break
-
         metadata = {}
         for metadata_heading in metadata_headings:
             pattern = r"^!!{}( +(.*?)='((?:[^'\\]|\\.)*)')* *$".format(format)
