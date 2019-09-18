@@ -2,7 +2,7 @@
 [![Documentation](https://readthedocs.org/projects/obj-tables/badge/?version=latest)](http://docs.karrlab.org/obj_tables)
 [![Test results](https://circleci.com/gh/KarrLab/obj_tables.svg?style=shield)](https://circleci.com/gh/KarrLab/obj_tables)
 [![Test coverage](https://coveralls.io/repos/github/KarrLab/obj_tables/badge.svg)](https://coveralls.io/github/KarrLab/obj_tables)
-[![Code analysis](https://api.codeclimate.com/v1/badges/2c4b64abc8bef2ea4e22/maintainability)](https://codeclimate.com/github/KarrLab/obj_tables)
+[![Code analysis](https://api.codeclimate.com/v1/badges/164d7483a2d3bb68b3ca/maintainability)](https://codeclimate.com/github/KarrLab/obj_tables)
 [![License](https://img.shields.io/github/license/KarrLab/obj_tables.svg)](LICENSE)
 ![Analytics](https://ga-beacon.appspot.com/UA-86759801-1/obj_tables/README.md?pixel)
 
