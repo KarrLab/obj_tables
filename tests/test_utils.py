@@ -481,7 +481,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_init_schema_from_csv_workbook(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema_csv = 'tests/fixtures/schema*.csv'
+        schema_csv = 'tests/fixtures/declarative_schema/schema*.csv'
         schema_csv_wb = os.path.join(self.tmp_dirname, 'schema-*.csv')
 
         wb = wc_utils.workbook.io.read(schema_csv)

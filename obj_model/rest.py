@@ -1,4 +1,3 @@
-from flask_cors import CORS
 """ REST API
 
 :Author: Jonathan Karr <karr@mssm.edu>
@@ -14,6 +13,7 @@ from .__main__ import get_schema_models
 from wc_utils.util.string import indent_forest
 from werkzeug.datastructures import FileStorage
 import flask
+import flask_cors
 import flask_restplus
 import flask_restplus.errors
 import flask_restplus.fields
@@ -27,11 +27,10 @@ import zipfile
 
 # setup app
 app = flask.Flask(__name__)
-
-# for testing on localhost; todo: remove
-cors = CORS(app,
-            resources={r"/*": {"origins": "http://localhost"}},
+cors = flask_cors.CORS(app,
+            resources={r"/*": {"origins": "*"}},
             expose_headers=["content-disposition"])
+
 
 
 class PrefixMiddleware(object):
@@ -53,7 +52,7 @@ app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/api')
 
 api = flask_restplus.Api(app,
                          title='ObjModel REST API',
-                         description='REST API for generating and working with schemas for tables',
+                         description='REST API for generating and working with schemas for tabular-formatted datasets',
                          contact='info@karrlab.org',
                          version=obj_model.__version__,
                          license='MIT',
@@ -90,7 +89,8 @@ class Convert(flask_restplus.Resource):
 
     def post(self):
         """ Convert a schema-encoded workbook to another format (CSV, Excel, JSON, TSV, YAML)
-
+        """
+        """
         Returns:
             :obj:`flask.Response`: response with workbook
         """
@@ -154,7 +154,8 @@ class Diff(flask_restplus.Resource):
 
     def post(self):
         """ Calculate the difference between two workbooks according to a schema
-
+        """
+        """
         Returns:
             :obj:`list` of :obj:`str`: list of difference between workbooks
         """
@@ -214,7 +215,8 @@ class GenTemplate(flask_restplus.Resource):
 
     def post(self):
         """ Generate a template workbook (Excel, CSV, TSV) for a schema or declarative description of a schema
-
+        """
+        """
         Returns:
             :obj:`flask.Response`: response with workbook
         """
@@ -264,7 +266,8 @@ class InitSchema(flask_restplus.Resource):
 
     def post(self):
         """ Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)
-
+        """
+        """
         Returns:
             :obj:`flask.Response`: response with Python schema
         """
@@ -331,7 +334,8 @@ class Normalize(flask_restplus.Resource):
 
     def post(self):
         """ Normalize a workbook according to a schema
-
+        """
+        """
         Returns:
             :obj:`flask.Response`: response with workbook
         """
@@ -400,7 +404,8 @@ class Validate(flask_restplus.Resource):
 
     def post(self):
         """ Validate that a workbook is consistent with a schema, and report any errors
-
+        """
+        """
         Returns:
             :obj:`str`: errors
         """
