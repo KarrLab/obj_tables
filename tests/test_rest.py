@@ -32,7 +32,7 @@ class RestTestCase(unittest.TestCase):
         rest.PrefixMiddleware(rest.app).__call__({'PATH_INFO': 'x'}, lambda x, y: None)
 
     def test_convert(self):
-        schema_filename = os.path.join('tests', 'fixtures', 'schema.csv')
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema = utils.init_schema(schema_filename, sbtab=True)
         models = list(utils.get_models(schema).values())
 
@@ -62,7 +62,7 @@ class RestTestCase(unittest.TestCase):
         self.assertTrue(p_0_b.is_equal(p_0))
 
     def test_diff(self):
-        schema_filename = os.path.join('tests', 'fixtures', 'schema.csv')
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema = utils.init_schema(schema_filename, sbtab=True)
         models = list(utils.get_models(schema).values())
 
@@ -107,7 +107,7 @@ class RestTestCase(unittest.TestCase):
         self.assertNotEqual(rv.json, [])
 
     def test_gen_template(self):
-        schema_filename = os.path.join('tests', 'fixtures', 'schema.csv')
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema = utils.init_schema(schema_filename, sbtab=True)
         models = list(utils.get_models(schema).values())
 
@@ -132,7 +132,7 @@ class RestTestCase(unittest.TestCase):
     def test_init_schema(self):
         client = rest.app.test_client()
 
-        schema_filename = os.path.join('tests', 'fixtures', 'schema.csv')
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
 
         with open(schema_filename, 'rb') as schema_file:
             rv = client.post('/api/init-schema/', data={
@@ -152,7 +152,7 @@ class RestTestCase(unittest.TestCase):
     def test_init_schema_error(self):
         client = rest.app.test_client()
 
-        schema_filename = os.path.join('tests', 'fixtures', 'schema.csv')
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
 
         with open(schema_filename, 'rb') as schema_file:
             rv = client.post('/api/init-schema/', data={
@@ -162,7 +162,7 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 400)
 
     def test_normalize(self):
-        schema_filename = os.path.join('tests', 'fixtures', 'schema.csv')
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema = utils.init_schema(schema_filename, sbtab=True)
         models = list(utils.get_models(schema).values())
 
@@ -217,7 +217,7 @@ class RestTestCase(unittest.TestCase):
     def test_validate(self):
         client = rest.app.test_client()
 
-        schema_filename = os.path.join('tests', 'fixtures', 'schema.csv')
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema = utils.init_schema(schema_filename, sbtab=True)
         models = list(utils.get_models(schema).values())
 
@@ -314,7 +314,7 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 400)
 
     def test_get_model(self):
-        schema_filename = os.path.join('tests', 'fixtures', 'schema.csv')
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema = utils.init_schema(schema_filename, sbtab=True)
         models = list(utils.get_models(schema).values())
 

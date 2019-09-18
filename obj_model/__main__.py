@@ -95,8 +95,11 @@ class DiffController(cement.Controller):
     def _default(self):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file, args.sbtab)
-        diffs = utils.diff_workbooks(args.wb_file_1, args.wb_file_2,
-                                     models, args.model, sbtab=args.sbtab)
+        try:
+            diffs = utils.diff_workbooks(args.wb_file_1, args.wb_file_2,
+                                         models, args.model, sbtab=args.sbtab)
+        except ValueError as err:
+            raise SystemExit(str(err))
         if diffs:
             raise SystemExit('\n\n'.join(diffs))
         print('Workbooks are equivalent')

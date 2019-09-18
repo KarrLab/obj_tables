@@ -54,7 +54,7 @@ class TestCli(unittest.TestCase):
                 self.assertEqual(capture_output.get_text(), obj_model.__version__)
 
     def test_convert(self):
-        csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
+        csv_file = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
         with __main__.App(argv=['init-schema', csv_file, py_file, '--sbtab']) as app:
             app.run()
@@ -77,7 +77,7 @@ class TestCli(unittest.TestCase):
         self.assertTrue(p_0_b.is_equal(p_0))
 
     def test_diff(self):
-        csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
+        csv_file = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
         with __main__.App(argv=['init-schema', csv_file, py_file, '--sbtab']) as app:
             app.run()
@@ -123,7 +123,7 @@ class TestCli(unittest.TestCase):
                 app.run()
 
     def test_init_schema(self):
-        csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
+        csv_file = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
         with __main__.App(argv=['init-schema', csv_file, py_file, '--sbtab']) as app:
             app.run()
@@ -132,7 +132,7 @@ class TestCli(unittest.TestCase):
         self.assertEqual(sorted(utils.get_models(schema)), ['Child', 'Parent', 'Quantity'])
 
     def test_gen_template(self):
-        csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
+        csv_file = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         xl_file = os.path.join(self.tempdir, 'file.xlsx')
         with __main__.App(argv=['gen-template', csv_file, xl_file, '--sbtab']) as app:
             app.run()
@@ -162,7 +162,7 @@ class TestCli(unittest.TestCase):
         self.assertEqual(objs, None)
 
     def test_normalize(self):
-        csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
+        csv_file = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
         with __main__.App(argv=['init-schema', csv_file, py_file, '--sbtab']) as app:
             app.run()
@@ -190,7 +190,7 @@ class TestCli(unittest.TestCase):
                 app.run()
 
     def test_validate(self):
-        csv_file = os.path.join('tests', 'fixtures', 'schema.csv')
+        csv_file = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         py_file = os.path.join(self.tempdir, 'schema.py')
         with __main__.App(argv=['init-schema', csv_file, py_file, '--sbtab']) as app:
             app.run()

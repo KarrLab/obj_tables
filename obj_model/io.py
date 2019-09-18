@@ -453,7 +453,7 @@ class WorkbookWriter(WriterBase):
             if model.Meta.tabular_orientation == TabularOrientation.row:
                 range = 'A{}:A{}'.format(3 + has_multiple_cells, 2 ** 20)
             else:
-                range = '{}2:{}2'.format(get_column_letter(1 + has_multiple_cells),
+                range = '{}2:{}2'.format(get_column_letter(2 + has_multiple_cells),
                                          get_column_letter(2 ** 14))
 
             content.append([
@@ -1347,7 +1347,7 @@ class WorkbookReader(ReaderBase):
                     objs_comments.append(obj_comments)
                     obj_comments = []
             if obj_comments:
-                assert objs_comments, 'Each comment must be associated with a row'
+                assert objs_comments, 'Each comment must be associated with a row.'
                 objs_comments[-1].extend(obj_comments)
         else:
             objs_comments = [[]] * len(data)
@@ -1431,7 +1431,7 @@ class WorkbookReader(ReaderBase):
         self._model_metadata[model] = model_metadata
         if sbtab:
             assert model_metadata['TableID'] == sheet_name[1:], \
-                "TableID must be '{}'".format(sheet_name[1:])
+                "TableID must be '{}'.".format(sheet_name[1:])
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1533,17 +1533,17 @@ class WorkbookReader(ReaderBase):
         for metadata_heading in metadata_headings:
             pattern = r"^!!{}( +(.*?)='((?:[^'\\]|\\.)*)')* *$".format(format)
             assert re.match(pattern, metadata_heading), \
-                'Metadata must consist of a list of key-value pairs'
+                'Metadata must consist of a list of key-value pairs.'
 
             results = re.findall(r" +(.*?)='((?:[^'\\]|\\.)*)'",
                                  metadata_heading[len(format) + 2:])
             for key, val in results:
-                assert key not in metadata, "'{}' metadata cannot be repeated".format(key)
+                assert key not in metadata, "'{}' metadata cannot be repeated.".format(key)
                 metadata[key] = val
 
         if sbtab:
-            assert len(metadata_headings) == 1, 'Metadata must consist of a list of key-value pairs'
-            assert metadata[format + 'Version'] == version
+            assert len(metadata_headings) == 1, 'Metadata must consist of a list of key-value pairs.'
+            assert metadata[format + 'Version'] == version, 'Version must be ' + version
 
         return (metadata, comments)
 

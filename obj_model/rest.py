@@ -1,4 +1,5 @@
-""" JSON REST API
+from flask_cors import CORS
+""" REST API
 
 :Author: Jonathan Karr <karr@mssm.edu>
 :Date: 2019-09-15
@@ -10,6 +11,7 @@ from . import core
 from . import io
 from . import utils
 from .__main__ import get_schema_models
+from wc_utils.util.string import indent_forest
 from werkzeug.datastructures import FileStorage
 import flask
 import flask_restplus
@@ -25,6 +27,11 @@ import zipfile
 
 # setup app
 app = flask.Flask(__name__)
+
+# for testing on localhost; todo: remove
+cors = CORS(app,
+            resources={r"/*": {"origins": "http://localhost"}},
+            expose_headers=["content-disposition"])
 
 
 class PrefixMiddleware(object):
@@ -45,8 +52,8 @@ class PrefixMiddleware(object):
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/api')
 
 api = flask_restplus.Api(app,
-                         title='ObjModel JSON REST API',
-                         description='JSON REST API for generating and working with schemas for tables',
+                         title='ObjModel REST API',
+                         description='REST API for generating and working with schemas for tables',
                          contact='info@karrlab.org',
                          version=obj_model.__version__,
                          license='MIT',
@@ -93,13 +100,15 @@ class Convert(flask_restplus.Resource):
         format = args['format']
         sbtab = args['sbtab']
 
-        _, models = get_schema_models(schema_filename, sbtab)
-
-        objs, model_metadata = read_workbook(in_wb_filename, models, sbtab)
-        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models, sbtab=sbtab)
-
-        shutil.rmtree(schema_dir)
-        shutil.rmtree(in_wb_dir)
+        try:
+            _, models = get_schema_models(schema_filename, sbtab)
+            objs, model_metadata = read_workbook(in_wb_filename, models, sbtab)
+            out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models, sbtab=sbtab)
+        except Exception as err:
+            flask_restplus.abort(400, str(err))
+        finally:
+            shutil.rmtree(schema_dir)
+            shutil.rmtree(in_wb_dir)
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -156,13 +165,25 @@ class Diff(flask_restplus.Resource):
         wb_dir_2, wb_filename_2 = save_in_workbook(args['workbook-2'])
         sbtab = args['sbtab']
 
-        _, models = get_schema_models(schema_filename, sbtab)
+        try:
+            _, models = get_schema_models(schema_filename, sbtab)
+        except Exception as err:
+            flask_restplus.abort(400, str(err))
+            shutil.rmtree(schema_dir)
+            shutil.rmtree(wb_dir_1)
+            shutil.rmtree(wb_dir_2)
+
         model = get_model(models, model_name)
-        diffs = utils.diff_workbooks(wb_filename_1, wb_filename_2,
-                                     models, model_name, sbtab=sbtab)
-        shutil.rmtree(schema_dir)
-        shutil.rmtree(wb_dir_1)
-        shutil.rmtree(wb_dir_2)
+
+        try:
+            diffs = utils.diff_workbooks(wb_filename_1, wb_filename_2,
+                                         models, model_name, sbtab=sbtab)
+        except Exception as err:
+            flask_restplus.abort(400, str(err))
+        finally:
+            shutil.rmtree(schema_dir)
+            shutil.rmtree(wb_dir_1)
+            shutil.rmtree(wb_dir_2)
 
         return diffs
 
@@ -202,11 +223,14 @@ class GenTemplate(flask_restplus.Resource):
         format = args['format']
         sbtab = args['sbtab']
 
-        _, models = get_schema_models(schema_filename, sbtab)
+        try:
+            _, models = get_schema_models(schema_filename, sbtab)
+        except Exception as err:
+            flask_restplus.abort(400, str(err))
+        finally:
+            shutil.rmtree(schema_dir)
 
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, [], {}, models=models, sbtab=sbtab)
-
-        shutil.rmtree(schema_dir)
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -253,16 +277,19 @@ class InitSchema(flask_restplus.Resource):
 
         sbtab = args['sbtab']
 
-        utils.init_schema(schema_filename,
-                          out_filename=py_schema_filename,
-                          sbtab=sbtab)
+        try:
+            utils.init_schema(schema_filename,
+                              out_filename=py_schema_filename,
+                              sbtab=sbtab)
+        except Exception as err:
+            flask_restplus.abort(400, str(err))
+        finally:
+            shutil.rmtree(schema_dir)
 
-        shutil.rmtree(schema_dir)
-
-        @flask.after_this_request
-        def remove_out_file(response):
-            shutil.rmtree(py_schema_dir)
-            return response
+            @flask.after_this_request
+            def remove_out_file(response):
+                shutil.rmtree(py_schema_dir)
+                return response
 
         return flask.send_file(py_schema_filename,
                                attachment_filename='schema.py',
@@ -315,18 +342,27 @@ class Normalize(flask_restplus.Resource):
         format = args['format']
         sbtab = args['sbtab']
 
-        _, models = get_schema_models(schema_filename, sbtab)
+        try:
+            _, models = get_schema_models(schema_filename, sbtab)
+        except Exception as err:
+            shutil.rmtree(schema_dir)
+            shutil.rmtree(in_wb_dir)
+            flask_restplus.abort(400, str(err))
+
         model = get_model(models, model_name)
 
-        objs, model_metadata = read_workbook(in_wb_filename, models, sbtab)
-        for obj in objs:
-            if isinstance(obj, model):
-                obj.normalize()
+        try:
+            objs, model_metadata = read_workbook(in_wb_filename, models, sbtab)
+            for obj in objs:
+                if isinstance(obj, model):
+                    obj.normalize()
+        except Exception as err:
+            flask_restplus.abort(400, str(err))
+        finally:
+            shutil.rmtree(schema_dir)
+            shutil.rmtree(in_wb_dir)
 
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models, sbtab=sbtab)
-
-        shutil.rmtree(schema_dir)
-        shutil.rmtree(in_wb_dir)
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -373,23 +409,29 @@ class Validate(flask_restplus.Resource):
         wb_dir, wb_filename = save_in_workbook(args['workbook'])
         sbtab = args['sbtab']
 
-        _, models = get_schema_models(schema_filename, sbtab)
         try:
+            _, models = get_schema_models(schema_filename, sbtab)
             if sbtab:
                 kwargs = io.SBTAB_DEFAULT_READER_OPTS
             else:
                 kwargs = {}
-            io.Reader().run(wb_filename,
-                            models=models,
-                            group_objects_by_model=False,
-                            sbtab=sbtab,
-                            **kwargs)
-            err_msg = ''
+            objs = io.Reader().run(wb_filename,
+                                   models=models,
+                                   group_objects_by_model=False,
+                                   sbtab=sbtab,
+                                   validate=False,
+                                   **kwargs)
         except ValueError as err:
-            err_msg = str(err)
+            flask_restplus.abort(400, str(err))
+        finally:
+            shutil.rmtree(schema_dir)
+            shutil.rmtree(wb_dir)
 
-        shutil.rmtree(schema_dir)
-        shutil.rmtree(wb_dir)
+        errors = core.Validator().validate(objs)
+        if errors:
+            err_msg = indent_forest(['The dataset is invalid:', [errors]])
+        else:
+            err_msg = ''
 
         return err_msg
 
@@ -407,7 +449,7 @@ def save_schema(file_storage):
             * :obj:`str`: local path to schema file
     """
     if os.path.splitext(file_storage.filename)[1] not in ['.csv', '.tsv', '.xlsx']:
-        flask_restplus.abort(400, 'Schema must be a .csv, .tsv or .xlsx file')
+        flask_restplus.abort(400, 'Schema must be a .csv, .tsv or .xlsx file.')
 
     dir = tempfile.mkdtemp()
     filename = os.path.join(dir, file_storage.filename)
@@ -430,7 +472,7 @@ def save_in_workbook(file_storage):
             * :obj:`str`: local path to workbook file
     """
     if os.path.splitext(file_storage.filename)[1] not in ['.csv', '.tsv', '.xlsx', '.zip']:
-        flask_restplus.abort(400, 'Workbook must be a .csv, .tsv .xlsx, or .zip file')
+        flask_restplus.abort(400, 'Workbook must be a .csv, .tsv .xlsx, or .zip file.')
 
     dir = tempfile.mkdtemp()
 
@@ -442,7 +484,7 @@ def save_in_workbook(file_storage):
                 has_csv = has_csv or os.path.splitext(f.filename)[1] == '.csv'
                 has_tsv = has_tsv or os.path.splitext(f.filename)[1] == '.tsv'
             if (has_csv and has_tsv) or (not has_csv and not has_tsv):
-                flask_restplus.abort(400, 'Workbook must contain .csv or .tsv files')
+                flask_restplus.abort(400, 'Workbook must contain .csv or .tsv files.')
             if has_csv:
                 filename = os.path.join(dir, '*.csv')
             else:
@@ -534,5 +576,5 @@ def get_model(models, name):
         if model.__name__ == name:
             break
     if model.__name__ != name:
-        flask_restplus.abort(400, 'Workbook does not have model "{}"'.format(name))
+        flask_restplus.abort(400, 'Workbook does not have model "{}".'.format(name))
     return model

@@ -368,7 +368,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_get_models(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.init_schema('tests/fixtures/schema.csv',
+        schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
                                    out_filename=out_filename,
                                    sbtab=True)
         self.assertEqual(sorted(utils.get_models(schema).keys()), 
@@ -385,7 +385,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_init_schema(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.init_schema('tests/fixtures/schema.csv',
+        schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
                                    out_filename=out_filename,
                                    sbtab=True)
 
@@ -432,7 +432,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_init_schema_from_excel(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema_csv = 'tests/fixtures/schema*.csv'
+        schema_csv = 'tests/fixtures/declarative_schema/schema*.csv'
         schema_xl = os.path.join(self.tmp_dirname, 'schema.xlsx')
 
         wb = wc_utils.workbook.io.read(schema_csv)
@@ -571,7 +571,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_extra_sheets(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.init_schema('tests/fixtures/schema.csv',
+        schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
                                    out_filename=out_filename,
                                    sbtab=True)
 
@@ -613,7 +613,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_extra_attributes(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.init_schema('tests/fixtures/schema.csv',
+        schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
                                    out_filename=out_filename,
                                    sbtab=True)
 
@@ -656,7 +656,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_comments(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema = utils.init_schema('tests/fixtures/schema.csv',
+        schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
                                    out_filename=out_filename,
                                    sbtab=True)
 

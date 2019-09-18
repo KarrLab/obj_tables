@@ -450,9 +450,12 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         else:
             schema_sheet_name = ''
     else:
-        raise ValueError('{} format is not supported'.format(ext))
+        raise ValueError('{} format is not supported.'.format(ext))
 
     wb = wc_utils.workbook.io.read(filename)
+    if schema_sheet_name not in wb:
+        raise ValueError('File must contain a sheet with name "{}".'.format(
+            schema_sheet_name))
     ws = wb[schema_sheet_name]
 
     if sbtab:
@@ -481,12 +484,13 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
     rows = ws
     metadata, _ = WorkbookReader.read_worksheet_metadata(rows, sbtab=sbtab)
     if sbtab:
-        assert metadata['TableID'] == SBTAB_SCHEMA_NAME, \
-            "TableID must be '{}'".format(SBTAB_SCHEMA_NAME)
+        schema_name = SBTAB_SCHEMA_NAME
+    else:
+        schema_name = SCHEMA_NAME
+    if metadata.get('TableID', None) != schema_name:
+        raise ValueError("TableID must be '{}'.".format(SBTAB_SCHEMA_NAME))
 
     header_row = rows[0]
-    if sbtab:
-        assert all(cell.startswith('!') for cell in header_row)
     rows = rows[1:]
 
     cls_specs = {}
@@ -507,7 +511,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                 }
 
             if row[parent_col_name]:
-                raise ValueError('Class "{}" cannot have a parent'.format(cls_name))
+                raise ValueError('Class "{}" cannot have a parent.'.format(cls_name))
 
             cls['tab_orientation'] = TabularOrientation[row[format_col_name] or 'row']
 
@@ -538,8 +542,8 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
 
             if sbtab:
                 attr_name = row[name_col_name]
-                assert re.match(r'^[a-zA-Z0-9:>]+$', attr_name), \
-                    "Attribute names must consist of alphanumeric characters, colons, and forward carets"
+                if not re.match(r'^[a-zA-Z0-9:>]+$', attr_name):
+                    raise ValueError("Attribute names must consist of alphanumeric characters, colons, and forward carets.")
                 attr_name = attr_name.replace('>', '_').replace(':', '_')
                 attr_name = stringcase.snakecase(attr_name)
                 attr_name = attr_name.replace('__', '_')
@@ -547,10 +551,10 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                 attr_name = stringcase.snakecase(row[name_col_name])
 
             if attr_name == 'Meta':
-                raise ValueError('"{}" cannot have attribute with name "Meta"'.format(
+                raise ValueError('"{}" cannot have attribute with name "Meta".'.format(
                     cls_name))  # pragma: no cover # unreachable because snake case is all lowercase
             if attr_name in cls['attrs']:
-                raise ValueError('Attribute "{}" of "{}" can only be defined once'.format(
+                raise ValueError('Attribute "{}" of "{}" can only be defined once.'.format(
                     row[name_col_name], cls_name))
 
             cls['attrs'][attr_name] = {
@@ -562,7 +566,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             cls['attr_order'].append(attr_name)
 
         else:
-            raise ValueError('Type "{}" is not supported'.format(row[type_col_name]))
+            raise ValueError('Type "{}" is not supported.'.format(row[type_col_name]))
 
     module_name = name or rand_schema_name()
     module = type(module_name, (types.ModuleType, ), {})
@@ -712,7 +716,7 @@ def diff_workbooks(filename_1, filename_2, models, model_name, sbtab=False):
         if model.__name__ == model_name:
             break
     if model.__name__ != model_name:
-        raise SystemExit('Workbook does not have model "{}"'.format(model_name))
+        raise ValueError('Workbook does not have model "{}".'.format(model_name))
 
     obj_diffs = []
     for obj1 in list(objs1[model]):
