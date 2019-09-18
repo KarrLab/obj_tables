@@ -36,3 +36,6 @@ docs/_build
 
 # temporary files for migration tests
 tests/fixtures/migrate/tmp/
+
+# ssh password
+.sshpassword

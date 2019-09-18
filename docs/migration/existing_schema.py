@@ -1,4 +1,4 @@
-from obj_model import (Model, SlugAttribute, StringAttribute,
+from obj_tables import (Model, SlugAttribute, StringAttribute,
     FloatAttribute, PositiveIntegerAttribute)
 
 class Test(Model):

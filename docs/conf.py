@@ -85,7 +85,7 @@ author = 'Jonathan Karr, Arthur Goldberg'
 # built documents.
 #
 # The short X.Y version.
-filename = os.path.join(os.path.dirname(__file__), '..', 'obj_model', 'VERSION')
+filename = os.path.join(os.path.dirname(__file__), '..', 'obj_tables', 'VERSION')
 with open(filename, 'r') as file:
     version = file.read()
 # The full version, including alpha/beta/rc tags.
@@ -169,9 +169,9 @@ def linkcode_resolve(domain, info):
         return None
     rel_filename = info['module'].replace('.', '/')
     if os.path.isfile(os.path.join(os.path.dirname(__file__), '..', rel_filename + '.py')):
-        return "https://github.com/KarrLab/obj_model/blob/master/{}.py".format(rel_filename)
+        return "https://github.com/KarrLab/obj_tables/blob/master/{}.py".format(rel_filename)
     else:
-        return "https://github.com/KarrLab/obj_model/blob/master/{}/__init__.py".format(rel_filename)
+        return "https://github.com/KarrLab/obj_tables/blob/master/{}/__init__.py".format(rel_filename)
 
 
 # -- napoleon options -----------------------------------------------------
@@ -308,7 +308,7 @@ html_show_copyright = True
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'obj_model_doc'
+htmlhelp_basename = 'obj_tables_doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -334,7 +334,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'obj_model.tex', 'Object model documentation',
+    (master_doc, 'obj_tables.tex', 'Object model documentation',
      'Jonathan Karr, Arthur Goldberg', 'manual'),
 ]
 
@@ -376,7 +376,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'obj_model', 'Object model documentation',
+    (master_doc, 'obj_tables', 'Object model documentation',
      [author], 1)
 ]
 
@@ -391,7 +391,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'obj_model', 'Object model documentation',
+    (master_doc, 'obj_tables', 'Object model documentation',
      author, 'Object model', 'One line description of project.',
      'Miscellaneous'),
 ]
@@ -420,7 +420,7 @@ googleanalytics_id = 'UA-86340737-1'
 
 # -- if RTD, redirect to https://docs.karrlab.org  ------------------------
 
-addmetahtml_content = '<meta http-equiv="refresh" content="0; url=https://docs.karrlab.org/obj_model" />'
+addmetahtml_content = '<meta http-equiv="refresh" content="0; url=https://docs.karrlab.org/obj_tables" />'
 addmetahtml_enabled = os.getenv('READTHEDOCS', '') == 'True'
 
 # Table width fix for Read the Docs Sphinx theme (https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html) ------------------------

@@ -6,8 +6,8 @@
 :License: MIT
 """
 
-from obj_model import core
-from obj_model import units
+from obj_tables import core
+from obj_tables import units
 from wc_utils.util.units import unit_registry
 import pint
 import unittest

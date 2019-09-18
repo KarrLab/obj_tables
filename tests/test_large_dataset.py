@@ -6,8 +6,8 @@
 :License: MIT
 """
 
-from obj_model import core, utils
-from obj_model.io import WorkbookReader, WorkbookWriter
+from obj_tables import core, utils
+from obj_tables.io import WorkbookReader, WorkbookWriter
 from wc_utils.util.list import is_sorted
 import os
 import shutil

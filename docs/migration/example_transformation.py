@@ -1,5 +1,5 @@
 # an example transformations program
-from obj_model.migrate import MigrationWrapper, MigratorError
+from obj_tables.migrate import MigrationWrapper, MigratorError
 
 class TransformationExample(MigrationWrapper):
 
@@ -10,7 +10,7 @@ class TransformationExample(MigrationWrapper):
         
         Args:
             migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            existing_models (:obj:`list` of `obj_model.Model`:) the models
+            existing_models (:obj:`list` of `obj_tables.Model`:) the models
                 that will be migrated
         """
         try:
@@ -25,7 +25,7 @@ class TransformationExample(MigrationWrapper):
 
         Args:
             migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            migrated_models (:obj:`list` of `obj_model.Model`:) all models
+            migrated_models (:obj:`list` of `obj_tables.Model`:) all models
                 that have been migrated
         """
         pass

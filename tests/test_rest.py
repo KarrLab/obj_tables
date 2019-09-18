@@ -7,11 +7,11 @@
 """
 
 from io import BytesIO
-from obj_model import io
-from obj_model import rest
-from obj_model import utils
+from obj_tables import io
+from obj_tables import rest
+from obj_tables import utils
 import glob
-import obj_model
+import obj_tables
 import os
 import shutil
 import tempfile

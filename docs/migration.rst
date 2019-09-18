@@ -14,8 +14,8 @@ Many systems, including database systems and web software frameworks, provide to
 so that users can avoid the tedious and error-prone manual effort that's usually required when a schema is changed
 and large amounts of data must be migrated.
 
-Packages that use Object model (:obj:`obj_model`) store data in Excel, csv or tsv files. The structure of
-the data in a file is defined by a schema that uses :obj:`obj_model`. Object model *migration* enables automated
+Packages that use Object model (:obj:`obj_tables`) store data in Excel, csv or tsv files. The structure of
+the data in a file is defined by a schema that uses :obj:`obj_tables`. Object model *migration* enables automated
 migration of these data files.
 
 This page explains the concepts of Object model migration and provides detailed instructions on how to configure and use it.
@@ -37,7 +37,7 @@ one repository is both the *data repo* and the *schema repo*.
     :alt: Schema and data repos
 
     Dependencies among Git repositories involved in data migration.
-    The *schema repo* uses :obj:`obj_model` to define a schema. The *data repo* stores data files
+    The *schema repo* uses :obj:`obj_tables` to define a schema. The *data repo* stores data files
     that use the data model defined in the schema repo.
 
 Migration further assumes that the schema defined in a schema repo is stored in a single Python file,
@@ -55,7 +55,7 @@ recorded in the schema repo's commits, which are used by migration.
     :alt: Example data file migration
 
     Example migration of file :obj:`biomodel_x.xlsx`.
-    Three Git repositories are involved: :obj:`obj_model`, :obj:`wc_lang`, and :obj:`biomodel_x`.
+    Three Git repositories are involved: :obj:`obj_tables`, :obj:`wc_lang`, and :obj:`biomodel_x`.
     Time increases upward, and within any repository later commits depend on earlier ones.
     :obj:`wc_lang` is a schema repo that defines the data model for files stored in the data repo :obj:`biomodel_x`.
     The earliest illustrated commit of :obj:`biomodel_x` contains a version of :obj:`biomodel_x.xlsx` that depends on
@@ -66,7 +66,7 @@ recorded in the schema repo's commits, which are used by migration.
 
 We decompose the ways in which a schema can be changed into these categories:
 
-* Add a :obj:`obj_model.core.Model` (henceforth, *Model*) definition
+* Add a :obj:`obj_tables.core.Model` (henceforth, *Model*) definition
 * Remove a *Model* definition
 * Rename a *Model* definition
 * Add an attribute to a *Model*
@@ -246,11 +246,11 @@ converts the floats in attribute :obj:`Test.size` into ints:
 .. literalinclude:: migration/example_transformation.py
   :language: Python
 
-Transformations are subclasses of :obj:`obj_model.migrate.MigrationWrapper`. `Model` instances can
+Transformations are subclasses of :obj:`obj_tables.migrate.MigrationWrapper`. `Model` instances can
 be converted before or after migration, or both. 
 The :obj:`prepare_existing_models` method converts models before migration, while 
 :obj:`modify_migrated_models` converts them after migration. Both methods have the same signature.
-The :obj:`migrator` argument provides an instance of :obj:`obj_model.migrate.Migrator`, the class
+The :obj:`migrator` argument provides an instance of :obj:`obj_tables.migrate.Migrator`, the class
 that performs migration. Its attributes provide information about the migration. E.g., this
 code uses :obj:`migrator.existing_defs` which is a dictionary that maps each *Model*'s name
 to its class definition to obtain the definition of the :obj:`Test` class.

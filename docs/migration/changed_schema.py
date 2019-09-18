@@ -1,4 +1,4 @@
-from obj_model import Model, SlugAttribute, StringAttribute, IntegerAttribute
+from obj_tables import Model, SlugAttribute, StringAttribute, IntegerAttribute
 
 class ChangedTest(Model):  # Model Test renamed to ChangedTest
     id = SlugAttribute()

@@ -7,7 +7,7 @@ representation of a biochemical model -- into a python object instance.
 `deserialize()` returns an error when the string representation cannot be parsed into the
 python object. Deserialization methods for related attributes (subclasses of `RelatedAttribute`)
 do not get called until all other attributes have been deserialized. In particular, they're called
-by `obj_model.io.WorkbookReader.link_model`. Therefore, they get passed all objects that are not inline,
+by `obj_tables.io.WorkbookReader.link_model`. Therefore, they get passed all objects that are not inline,
 which can then be referenced to deserialize the related attribute.
 
 
@@ -285,7 +285,7 @@ class ModelMeta(type):
             raise ValueError("{} cannot contain identical attribute sets: {}".format(
                 meta_attribute_name, str(equivalent_tuples)))
 
-    # enable suspension of checking of same related attribute name so that obj_model schemas can be migrated
+    # enable suspension of checking of same related attribute name so that obj_tables schemas can be migrated
     CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
 
     @classmethod
@@ -607,8 +607,8 @@ class Manager(object):
         for attr_tuple, d in self._index_dicts.items():
             print('\tindexed attr tuple:', attr_tuple, file=file)
             for k, v in d.items():
-                print('\t\tk,v', k, {id(obj_model)
-                                     for obj_model in v}, file=file)
+                print('\t\tk,v', k, {id(obj_tables)
+                                     for obj_tables in v}, file=file)
         print("Reverse dicts for '{}':".format(self.cls.__name__), file=file)
         for obj, attr_keys in self._reverse_index.items():
             print("\tmodel at {}".format(id(obj)), file=file)
@@ -7606,12 +7606,12 @@ def excel_col_name(col):
     return ''.join(result)
 
 
-class ObjModelWarning(UserWarning):
-    """ :obj:`obj_model` warning """
+class ObjTablesWarning(UserWarning):
+    """ :obj:`obj_tables` warning """
     pass
 
 
-class SchemaWarning(ObjModelWarning):
+class SchemaWarning(ObjTablesWarning):
     """ Schema warning """
     pass
 

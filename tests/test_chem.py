@@ -6,27 +6,27 @@
 :License: MIT
 """
 
-from obj_model import core
+from obj_tables import core
 from wc_utils.util import chem
-import obj_model.chem
+import obj_tables.chem
 import unittest
 
 
 class ChemAttributeTestCase(unittest.TestCase):
 
     def test_empirical_formula_attribute(self):
-        attr = obj_model.chem.EmpiricalFormulaAttribute()
-        primary_attr = obj_model.chem.EmpiricalFormulaAttribute(primary=True, unique=True)
+        attr = obj_tables.chem.EmpiricalFormulaAttribute()
+        primary_attr = obj_tables.chem.EmpiricalFormulaAttribute(primary=True, unique=True)
         self.assertEqual(attr.default, None)
 
-        attr = obj_model.chem.EmpiricalFormulaAttribute(default='C1H1O2')
+        attr = obj_tables.chem.EmpiricalFormulaAttribute(default='C1H1O2')
         self.assertEqual(attr.default, chem.EmpiricalFormula('C1H1O2'))
 
-        attr = obj_model.chem.EmpiricalFormulaAttribute(default=chem.EmpiricalFormula('C1H1O2'))
+        attr = obj_tables.chem.EmpiricalFormulaAttribute(default=chem.EmpiricalFormula('C1H1O2'))
         self.assertEqual(attr.default, chem.EmpiricalFormula('C1H1O2'))
 
         class Node(core.Model):
-            value = obj_model.chem.EmpiricalFormulaAttribute()
+            value = obj_tables.chem.EmpiricalFormulaAttribute()
 
         attr = Node.Meta.attributes['value']
 
@@ -55,7 +55,7 @@ class ChemAttributeTestCase(unittest.TestCase):
         self.assertNotEqual(attr.validate(node, 'x'), None)
         self.assertNotEqual(attr.validate(node, 1), None)
 
-        attr2 = obj_model.chem.EmpiricalFormulaAttribute(primary=True)
+        attr2 = obj_tables.chem.EmpiricalFormulaAttribute(primary=True)
         self.assertEqual(attr.validate(None, None), None)
         self.assertEqual(attr.validate(None, chem.EmpiricalFormula('C')), None)
         self.assertNotEqual(attr2.validate(None, None), None)
@@ -83,8 +83,8 @@ class ChemAttributeTestCase(unittest.TestCase):
         primary_attr.get_excel_validation()
 
     def test_structure_attribute(self):
-        attr = obj_model.chem.ChemicalStructureAttribute()
-        primary_attr = obj_model.chem.ChemicalStructureAttribute(primary=True, unique=True)
+        attr = obj_tables.chem.ChemicalStructureAttribute()
+        primary_attr = obj_tables.chem.ChemicalStructureAttribute(primary=True, unique=True)
 
         smiles = '[OH2]'
         self.assertEqual(attr.deserialize(smiles), (smiles, None))

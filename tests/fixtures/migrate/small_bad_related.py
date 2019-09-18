@@ -1,4 +1,4 @@
-from obj_model import (Model, BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
+from obj_tables import (Model, BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
     TabularOrientation)

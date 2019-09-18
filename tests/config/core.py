@@ -26,8 +26,8 @@ def get_config(extra=None):
         default=pkg_resources.resource_filename('tests', 'config/core.default.cfg'),
         schema=pkg_resources.resource_filename('tests', 'config/core.schema.cfg'),
         user=(
-            'obj_model.cfg',
-            os.path.expanduser('~/.wc/obj_model.cfg'),
+            'obj_tables.cfg',
+            os.path.expanduser('~/.wc/obj_tables.cfg'),
         ),
     )
 

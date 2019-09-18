@@ -12,13 +12,13 @@ from datetime import datetime
 from itertools import chain
 from pathlib import Path
 from random import shuffle
-from obj_model.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
+from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
                             InvalidObject, Validator, TabularOrientation,
                             SCHEMA_NAME, SBTAB_SCHEMA_NAME)
 from wc_utils.util import git
 import collections
 import importlib
-import obj_model.io
+import obj_tables.io
 import os.path
 import pandas
 import random
@@ -270,16 +270,16 @@ def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', 
     return unsuitable_changes
 
 
-# Git repository metadata from an `obj_model` data file
+# Git repository metadata from an `obj_tables` data file
 DataFileMetadata = collections.namedtuple('DataFileMetadata', 'data_repo_metadata, schema_repo_metadata')
-DataFileMetadata.__doc__ += ': Git repository metadata from an obj_model data file'
+DataFileMetadata.__doc__ += ': Git repository metadata from an obj_tables data file'
 DataFileMetadata.data_repo_metadata.__doc__ = "Git metadata about the repository containing the file"
 DataFileMetadata.schema_repo_metadata.__doc__ = \
-    "Git metadata about the repository containing the obj_model schema used by the file"
+    "Git metadata about the repository containing the obj_tables schema used by the file"
 
 
 def read_metadata_from_file(pathname):
-    """ Read Git repository metadata from an `obj_model` data file
+    """ Read Git repository metadata from an `obj_tables` data file
 
     Args:
         pathname (:obj:`str`): path to the data file
@@ -292,7 +292,7 @@ def read_metadata_from_file(pathname):
         :obj:`ValueError`: if `pathname`'s extension is not supported,
             or unexpected metadata instances are found
     """
-    reader = obj_model.io.Reader.get_reader(pathname)
+    reader = obj_tables.io.Reader.get_reader(pathname)
 
     metadata_instances = reader().run(pathname, [DataRepoMetadata, SchemaRepoMetadata],
                                       ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True,
@@ -319,14 +319,14 @@ def read_metadata_from_file(pathname):
 # the existing file and using WriterBase.make_metadata_objects() to obtain the metadata
 # todo: make a CLI command for add_metadata_to_file -- it will need to use IO classes like migrate.py
 def add_metadata_to_file(pathname, models, schema_package=None):
-    """ Add Git repository metadata to an existing `obj_model` data file
+    """ Add Git repository metadata to an existing `obj_tables` data file
 
     Overwrites the existing file
 
     Args:
-        pathname (:obj:`str`): path to an `obj_model` data file in a Git repo
+        pathname (:obj:`str`): path to an `obj_tables` data file in a Git repo
         models (:obj:`list` of :obj:`types.TypeType`, optional): list of types of objects to read
-        schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+        schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
             used by the file; if not :obj:`None`, try to write metadata information about the
             the schema's Git repository: the repo must be current with origin
 
@@ -338,9 +338,9 @@ def add_metadata_to_file(pathname, models, schema_package=None):
     """
     # read file
     path = Path(pathname).resolve()
-    objects = obj_model.io.Reader().run(str(path), models=models)
+    objects = obj_tables.io.Reader().run(str(path), models=models)
     # write file with metadata
-    obj_model.io.Writer().run(str(path), objects, models=models, data_repo_metadata=True,
+    obj_tables.io.Writer().run(str(path), objects, models=models, data_repo_metadata=True,
                               schema_package=schema_package)
     return path
 
@@ -362,7 +362,7 @@ class DataRepoMetadata(RepoMetadata):
 
 
 class SchemaRepoMetadata(RepoMetadata):
-    """ Model to store Git version info for the repo that defines the obj_model schema used by a data file """
+    """ Model to store Git version info for the repo that defines the obj_tables schema used by a data file """
     pass
 
 
@@ -375,7 +375,7 @@ def get_attrs():
     attr_names = {}
     attrs = set()
     seen = set()
-    to_see = [(obj_model, [])]
+    to_see = [(obj_tables, [])]
     while to_see:
         module, module_path = to_see.pop()
         seen.add(module)
@@ -390,7 +390,7 @@ def get_attrs():
                 attr_names['.'.join(module_path + [short_attr_name])] = attr
             elif not isinstance(attr, dict) and \
                     isinstance(attr, types.ModuleType) and \
-                    attr.__package__ == 'obj_model' and \
+                    attr.__package__ == 'obj_tables' and \
                     attr not in seen:
                 to_see.append((attr, module_path + [attr_name]))
 
@@ -398,12 +398,12 @@ def get_attrs():
 
 
 def init_schema(filename, name=None, out_filename=None, sbtab=False):
-    """ Initialize an `obj_model` schema from a tabular declarative specification in
+    """ Initialize an `obj_tables` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
 
     This method supports two formats:
 
-    * `obj_model`
+    * `obj_tables`
     * `SBtab <https://www.sbtab.net>`_
 
     The tabular specification should contain the following columns for each format:
@@ -412,7 +412,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         :name: tab_prediction_tools
 
         ===================  ==================  ========
-        `obj_model`          SBtab               Optional
+        `obj_tables`          SBtab               Optional
         ===================  ==================  ========
         Name                 !Name                       
         Type                 !Type                       
@@ -433,7 +433,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         :obj:`ValueError`: if schema specification is not in a supported format or 
             the schema specification is invalid
     """
-    from obj_model.io import WorkbookReader
+    from obj_tables.io import WorkbookReader
 
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
@@ -615,30 +615,30 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             file.write('# Schema automatically generated at {:%Y-%m-%d %H:%M:%S}\n\n'.format(
                 datetime.now()))
 
-            imported_modules = set(['obj_model'])
+            imported_modules = set(['obj_tables'])
             for cls_spec in cls_specs.values():
                 for attr_spec in cls_spec['attrs'].values():
-                    imported_modules.add('obj_model.' + attr_spec['python_type'].rpartition('.')[0])
-            if 'obj_model.' in imported_modules:
-                imported_modules.remove('obj_model.')
+                    imported_modules.add('obj_tables.' + attr_spec['python_type'].rpartition('.')[0])
+            if 'obj_tables.' in imported_modules:
+                imported_modules.remove('obj_tables.')
             for imported_module in imported_modules:
                 file.write('import {}\n'.format(imported_module))
 
             for cls_spec in cls_specs.values():
                 file.write('\n')
                 file.write('\n')
-                file.write('class {}(obj_model.Model):\n'.format(cls_spec['name']))
+                file.write('class {}(obj_tables.Model):\n'.format(cls_spec['name']))
                 if cls_spec['desc']:
                     file.write('    """ {} """\n\n'.format(cls_spec['desc']))
                 for attr_name in cls_spec['attr_order']:
                     attr_spec = cls_spec['attrs'][attr_name]
-                    file.write('    {} = obj_model.{}({})\n'.format(attr_spec['name'],
+                    file.write('    {} = obj_tables.{}({})\n'.format(attr_spec['name'],
                                                                     attr_spec['python_type'],
                                                                     attr_spec['python_args']))
 
                 file.write('\n')
-                file.write('    class Meta(obj_model.Model.Meta):\n')
-                file.write("        table_format = obj_model.TabularOrientation.{}\n".format(
+                file.write('    class Meta(obj_tables.Model.Meta):\n')
+                file.write("        table_format = obj_tables.TabularOrientation.{}\n".format(
                     cls_spec['tab_orientation'].name))
                 file.write("        attribute_order = ('{}',)\n".format(
                     "', '".join(cls_spec['attr_order'])
@@ -675,7 +675,7 @@ def to_pandas(objs, models=None, get_related=True,
         :obj:`dict`: dictionary that maps models (:obj:`Model`) to 
             the instances of each model (:obj:`pandas.DataFrame`)
     """
-    from obj_model.io import PandasWriter
+    from obj_tables.io import PandasWriter
     return PandasWriter().run(objs,
                               models=models,
                               get_related=get_related,
@@ -699,13 +699,13 @@ def diff_workbooks(filename_1, filename_2, models, model_name, sbtab=False):
     """
     kwargs = {}
     if sbtab:
-        kwargs = obj_model.io.SBTAB_DEFAULT_READER_OPTS
-    objs1 = obj_model.io.Reader().run(filename_1,
+        kwargs = obj_tables.io.SBTAB_DEFAULT_READER_OPTS
+    objs1 = obj_tables.io.Reader().run(filename_1,
                                       models=models,
                                       group_objects_by_model=True,
                                       sbtab=sbtab,
                                       **kwargs)
-    objs2 = obj_model.io.Reader().run(filename_2,
+    objs2 = obj_tables.io.Reader().run(filename_2,
                                       models=models,
                                       group_objects_by_model=True,
                                       sbtab=sbtab,

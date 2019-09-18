@@ -2,7 +2,7 @@
 include README.rst
 
 # version
-include obj_model/VERSION
+include obj_tables/VERSION
 
 # license
 include LICENSE
@@ -14,6 +14,6 @@ include requirements.txt
 include README.rst
 
 # web app
-include obj_model/web_app/app.css
-include obj_model/web_app/app.js
-include obj_model/web_app/index.html
+include obj_tables/web_app/app.css
+include obj_tables/web_app/app.js
+include obj_tables/web_app/index.html

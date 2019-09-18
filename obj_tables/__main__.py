@@ -10,7 +10,7 @@ from . import core
 from . import io
 from . import utils
 import cement
-import obj_model
+import obj_tables
 import os.path
 import sys
 import types
@@ -24,7 +24,7 @@ class BaseController(cement.Controller):
         description = "Command line utilities for modeling data in tables (Excel, CSV, TSV)"
         help = "Command line utilities for modeling data in tables (Excel, CSV, TSV)"
         arguments = [
-            (['-v', '--version'], dict(action='version', version=obj_model.__version__)),
+            (['-v', '--version'], dict(action='version', version=obj_tables.__version__)),
         ]
 
     @cement.ex(hide=True)
@@ -239,7 +239,7 @@ class ValidateController(cement.Controller):
 class App(cement.App):
     """ Command line application """
     class Meta:
-        label = 'obj-model'
+        label = 'obj-tables'
         base_controller = 'base'
         handlers = [
             BaseController,

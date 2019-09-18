@@ -6,13 +6,13 @@
 :License: MIT
 """
 
-from obj_model import __main__
-from obj_model import io
-from obj_model import utils
+from obj_tables import __main__
+from obj_tables import io
+from obj_tables import utils
 import capturer
 import importlib
 import mock
-import obj_model
+import obj_tables
 import os.path
 import shutil
 import tempfile
@@ -29,29 +29,29 @@ class TestCli(unittest.TestCase):
         shutil.rmtree(self.tempdir)
 
     def test_raw_cli(self):
-        with mock.patch('sys.argv', ['obj-model', '--help']):
+        with mock.patch('sys.argv', ['obj-tables', '--help']):
             with capturer.CaptureOutput(relay=False):
                 with self.assertRaises(SystemExit) as context:
                     __main__.main()
-                    self.assertRegex(context.Exception, 'usage: obj-model')
+                    self.assertRegex(context.Exception, 'usage: obj-tables')
 
-        with mock.patch('sys.argv', ['obj-model']):
+        with mock.patch('sys.argv', ['obj-tables']):
             with capturer.CaptureOutput(relay=False) as capture_output:
                 __main__.main()
-                self.assertRegex(capture_output.get_text(), 'usage: obj-model')
+                self.assertRegex(capture_output.get_text(), 'usage: obj-tables')
 
     def test_get_version(self):
         with capturer.CaptureOutput(relay=False, termination_delay=0.1) as capture_output:
             with __main__.App(argv=['-v']) as app:
                 with self.assertRaises(SystemExit):
                     app.run()
-                self.assertEqual(capture_output.get_text(), obj_model.__version__)
+                self.assertEqual(capture_output.get_text(), obj_tables.__version__)
 
         with capturer.CaptureOutput(relay=False, termination_delay=0.1) as capture_output:
             with __main__.App(argv=['--version']) as app:
                 with self.assertRaises(SystemExit):
                     app.run()
-                self.assertEqual(capture_output.get_text(), obj_model.__version__)
+                self.assertEqual(capture_output.get_text(), obj_tables.__version__)
 
     def test_convert(self):
         csv_file = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')

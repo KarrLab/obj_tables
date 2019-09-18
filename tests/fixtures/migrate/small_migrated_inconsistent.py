@@ -1,12 +1,12 @@
-from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
+from obj_tables import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
     TabularOrientation)
 
-import obj_model
+import obj_tables
 
 
-class Test(obj_model.Model):
+class Test(obj_tables.Model):
     """ Test
 
     Related attributes:
@@ -15,13 +15,13 @@ class Test(obj_model.Model):
     """
     id = SlugAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id',)
 
 
-class Property(obj_model.Model):
+class Property(obj_tables.Model):
     id = SlugAttribute()
     value = StringAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'value')

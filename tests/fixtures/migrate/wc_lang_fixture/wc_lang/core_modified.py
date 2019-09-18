@@ -20,7 +20,7 @@ This module defines classes that represent the schema of a biochemical model:
 * :obj:`Reference`
 * :obj:`Identifier`
 
-These are all instances of `obj_model.Model`, an alias for `obj_model.Model`.
+These are all instances of `obj_tables.Model`, an alias for `obj_tables.Model`.
 A biochemical model may contain a list of instances of each of these classes, interlinked
 by object references. For example, a :obj:`Reaction` will reference its constituent
 :obj:`SpeciesCoefficient` instances, and the :obj:`RateLaw` that describes the reaction's rate.
@@ -37,7 +37,7 @@ This module also defines numerous classes that serve as attributes of these clas
 from enum import Enum, EnumMeta
 from math import ceil, floor, exp, log, log10, isinf, isnan
 from natsort import natsorted, ns
-from obj_model import (BooleanAttribute, EnumAttribute,
+from obj_tables import (BooleanAttribute, EnumAttribute,
                        FloatAttribute,
                        IntegerAttribute, PositiveIntegerAttribute,
                        RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
@@ -45,12 +45,12 @@ from obj_model import (BooleanAttribute, EnumAttribute,
                        OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
                        ManyToOneRelatedManager,
                        InvalidObject, InvalidAttribute, TabularOrientation)
-from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
+from obj_tables.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
                                   ExpressionStaticTermMeta, ExpressionDynamicTermMeta,
                                   ExpressionExpressionTermMeta, Expression,
                                   ParsedExpression, ParsedExpressionError)
-from obj_model.ontology import OntologyAttribute
-from obj_model.units import UnitAttribute
+from obj_tables.ontology import OntologyAttribute
+from obj_tables.units import UnitAttribute
 from wc_lang.sbml.util import SbmlModelMixin, SbmlAssignmentRuleMixin, LibSbmlInterface
 from wc_utils.util.chem import EmpiricalFormula, OpenBabelUtils
 from wc_utils.util.enumerate import CaseInsensitiveEnum, CaseInsensitiveEnumMeta
@@ -64,8 +64,8 @@ import collections
 import datetime
 import libsbml
 import networkx
-import obj_model
-import obj_model.chem
+import obj_tables
+import obj_tables.chem
 import openbabel
 import pkg_resources
 import pronto.term
@@ -79,11 +79,11 @@ import warnings
 with open(pkg_resources.resource_filename('wc_lang', 'VERSION'), 'r') as file:
     wc_lang_version = file.read().strip()
 
-# wc_lang generates obj_model SchemaWarning warnings because some Models lack primary attributes.
+# wc_lang generates obj_tables SchemaWarning warnings because some Models lack primary attributes.
 # These models include :obj:`RateLaw`, :obj:`SpeciesCoefficient`, :obj:`RateLawExpression`, and :obj:`Species`.
 # However, these are not needed by the workbook and delimiter-separated representations of
 # models on disk. Therefore, suppress the warnings.
-warnings.filterwarnings('ignore', '', obj_model.SchemaWarning, 'obj_model')
+warnings.filterwarnings('ignore', '', obj_tables.SchemaWarning, 'obj_tables')
 
 # configuration
 
@@ -722,7 +722,7 @@ class SubmodelsToModelRelatedManager(ManyToOneRelatedManager):
         return (core_model, [submodel.model for submodel in submodels])
 
 
-class CommentAttribute(obj_model.LongStringAttribute):
+class CommentAttribute(obj_tables.LongStringAttribute):
     """ Comment attribute """
 
     SEPARATOR = '\n\n'
@@ -742,7 +742,7 @@ class CommentAttribute(obj_model.LongStringAttribute):
             setattr(left, self.name, left_val + self.SEPARATOR + right_val)
 
 
-class Model(obj_model.Model, SbmlModelMixin):
+class Model(obj_tables.Model, SbmlModelMixin):
     """ Model
 
     Attributes:
@@ -801,7 +801,7 @@ class Model(obj_model.Model, SbmlModelMixin):
     created = DateTimeAttribute()
     updated = DateTimeAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name', 'version',
                            'url', 'branch', 'revision',
                            'wc_lang_version',
@@ -889,7 +889,7 @@ class Model(obj_model.Model, SbmlModelMixin):
             # get name of self-referential attribute, if any
             expression_type = model_type.Meta.expression_term_model
             for self_ref_attr_name, self_ref_attr in expression_type.Meta.attributes.items():
-                if isinstance(self_ref_attr, obj_model.RelatedAttribute) and self_ref_attr.related_class == model_type:
+                if isinstance(self_ref_attr, obj_tables.RelatedAttribute) and self_ref_attr.related_class == model_type:
                     break
 
             # find cyclic dependencies
@@ -1234,7 +1234,7 @@ class Model(obj_model.Model, SbmlModelMixin):
             kwargs (:obj:`dict` of :obj:`str` --> :obj:`object`): dictionary of attribute name/value pairs to find matching objects
 
         Returns:
-            :obj:`obj_model.Model`: component with `id`, or `None` if there is no component with `id`=`id`
+            :obj:`obj_tables.Model`: component with `id`, or `None` if there is no component with `id`=`id`
         """
         if '__type' in kwargs:
             __type = kwargs.pop('__type')
@@ -1269,7 +1269,7 @@ class Model(obj_model.Model, SbmlModelMixin):
         """
         self.Meta.attributes['comments'].merge(self, other, other_objs_in_self, self_objs_in_other)
         for attr in self.Meta.attributes.values():
-            if isinstance(attr, obj_model.RelatedAttribute):
+            if isinstance(attr, obj_tables.RelatedAttribute):
                 attr.merge(self, other, other_objs_in_self, self_objs_in_other)
 
     def export_to_sbml(self, sbml_model):
@@ -1357,7 +1357,7 @@ class Model(obj_model.Model, SbmlModelMixin):
         LibSbmlInterface.get_authors_annotation(self, sbml, objs)
 
 
-class Taxon(obj_model.Model, SbmlModelMixin):
+class Taxon(obj_tables.Model, SbmlModelMixin):
     """ Biological taxon (e.g. family, genus, species, strain, etc.)
 
     Attributes:
@@ -1377,7 +1377,7 @@ class Taxon(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = OneToManyAttribute('Reference', related_name='taxon')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name',
                            'rank',
                            'identifiers', 'comments', 'references')
@@ -1392,7 +1392,7 @@ class Taxon(obj_model.Model, SbmlModelMixin):
         }
 
 
-class Environment(obj_model.Model, SbmlModelMixin):
+class Environment(obj_tables.Model, SbmlModelMixin):
     """ Environment
 
     Attributes:
@@ -1417,7 +1417,7 @@ class Environment(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = OneToManyAttribute('Reference', related_name='env')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name',
                            'temp', 'temp_units',
                            'identifiers', 'comments', 'references')
@@ -1432,7 +1432,7 @@ class Environment(obj_model.Model, SbmlModelMixin):
         }
 
 
-class Submodel(obj_model.Model, SbmlModelMixin):
+class Submodel(obj_tables.Model, SbmlModelMixin):
     """ Submodel
 
     Attributes:
@@ -1467,11 +1467,11 @@ class Submodel(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='submodels')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name', 'framework',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         indexed_attrs_tuples = (('id',), )
-        merge = obj_model.ModelMerge.append
+        merge = obj_tables.ModelMerge.append
         children = {
             'submodel': ('model', 'reactions', 'dfba_obj', 'dfba_obj_reactions',
                          'identifiers', 'evidence', 'conclusions', 'references', 'changes'),
@@ -1683,14 +1683,14 @@ class Submodel(obj_model.Model, SbmlModelMixin):
         LibSbmlInterface.get_authors_annotation(self.model, sbml, objs)
 
 
-class DfbaObjectiveExpression(obj_model.Model, Expression, SbmlModelMixin):
+class DfbaObjectiveExpression(obj_tables.Model, Expression, SbmlModelMixin):
     """ A mathematical expression of Reactions and DfbaObjReactions
 
     The expression used by a :obj:`DfbaObjective`.
 
     Attributes:
         expression (:obj:`str`): mathematical expression
-        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_model.Model`
+        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_tables.Model`
         reactions (:obj:`list` of :obj:`Reaction`): reactions used by this expression
         dfba_obj_reactions (:obj:`list` of :obj:`Species`): dFBA objective reactions used by this expression
 
@@ -1705,12 +1705,12 @@ class DfbaObjectiveExpression(obj_model.Model, Expression, SbmlModelMixin):
     dfba_obj_reactions = OneToManyAttribute('DfbaObjReaction', related_name='dfba_obj_expression',
                                             verbose_name='dFBA objective reactions', verbose_related_name='dFBA objective expression')
 
-    class Meta(obj_model.Model.Meta, Expression.Meta):
+    class Meta(obj_tables.Model.Meta, Expression.Meta):
         table_format = TabularOrientation.cell
         expression_valid_functions = ()
         expression_term_models = ('Reaction', 'DfbaObjReaction')
         verbose_name = 'dFBA objective expression'
-        merge = obj_model.ModelMerge.append
+        merge = obj_tables.ModelMerge.append
         expression_unit_registry = unit_registry
         children = {
             'submodel': ('reactions', 'dfba_obj_reactions'),
@@ -1790,7 +1790,7 @@ class DfbaObjectiveExpression(obj_model.Model, Expression, SbmlModelMixin):
         """ Merge attributes of two objects
 
         Args:
-            other (:obj:`obj_model.Model`): other model
+            other (:obj:`obj_tables.Model`): other model
             other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
                 in a model
             self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
@@ -1800,7 +1800,7 @@ class DfbaObjectiveExpression(obj_model.Model, Expression, SbmlModelMixin):
         Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
 
 
-class DfbaObjective(obj_model.Model, SbmlModelMixin):
+class DfbaObjective(obj_tables.Model, SbmlModelMixin):
     """ dFBA objective function
 
     Attributes:
@@ -1838,14 +1838,14 @@ class DfbaObjective(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='dfba_objs', verbose_related_name='dFBA objectives')
 
-    class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionExpressionTermMeta):
         verbose_name = 'dFBA objective'
         attribute_order = ('id', 'name', 'submodel', 'expression', 'units',
                            'reaction_rate_units', 'coefficient_units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         expression_term_model = DfbaObjectiveExpression
         expression_term_units = 'units'
-        merge = obj_model.ModelMerge.append
+        merge = obj_tables.ModelMerge.append
         children = {
             'submodel': ('expression', 'identifiers', 'evidence', 'conclusions', 'references'),
             'core_model': ('expression', 'identifiers', 'evidence', 'conclusions', 'references'),
@@ -2037,7 +2037,7 @@ class DfbaObjective(obj_model.Model, SbmlModelMixin):
         return det_dedupe(products)
 
 
-class InitVolume(obj_model.Model, SbmlModelMixin):
+class InitVolume(obj_tables.Model, SbmlModelMixin):
     """ Initial volume of a compartment
 
     Attributes:
@@ -2060,7 +2060,7 @@ class InitVolume(obj_model.Model, SbmlModelMixin):
                           choices=(unit_registry.parse_units('l'),),
                           default=unit_registry.parse_units('l'))
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         table_format = TabularOrientation.multiple_cells
         unique_together = (('distribution', 'mean', 'std', 'units'), )
         attribute_order = ('distribution', 'mean', 'std', 'units')
@@ -2082,7 +2082,7 @@ class InitVolume(obj_model.Model, SbmlModelMixin):
         return '__'.join([str(self.distribution), str(self.mean), str(self.std), str(self.units)])
 
 
-class Ph(obj_model.Model, SbmlModelMixin):
+class Ph(obj_tables.Model, SbmlModelMixin):
     """ pH of a compartment
 
     Attributes:
@@ -2105,7 +2105,7 @@ class Ph(obj_model.Model, SbmlModelMixin):
                           choices=(unit_registry.parse_units('dimensionless'),),
                           default=unit_registry.parse_units('dimensionless'))
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         table_format = TabularOrientation.multiple_cells
         unique_together = (('distribution', 'mean', 'std', 'units'), )
         attribute_order = ('distribution', 'mean', 'std', 'units')
@@ -2127,7 +2127,7 @@ class Ph(obj_model.Model, SbmlModelMixin):
         return '__'.join([str(self.distribution), str(self.mean), str(self.std), str(self.units)])
 
 
-class Compartment(obj_model.Model, SbmlModelMixin):
+class Compartment(obj_tables.Model, SbmlModelMixin):
     """ Compartment
 
     Attributes:
@@ -2187,7 +2187,7 @@ class Compartment(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='compartments')
 
-    class Meta(obj_model.Model.Meta, ExpressionDynamicTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionDynamicTermMeta):
         attribute_order = ('id', 'name',
                            'biological_type', 'physical_type', 'geometry', 'parent_compartment',
                            'mass_units', 'init_volume', 'init_density', 'ph',
@@ -2403,7 +2403,7 @@ ChemicalStructureAlphabet = CaseInsensitiveEnum('ChemicalStructureAlphabet', lis
 # :obj:`CaseInsensitiveEnum`: Alphabet of a BpForms-encoded chemical structure
 
 
-class ChemicalStructure(obj_model.Model, SbmlModelMixin):
+class ChemicalStructure(obj_tables.Model, SbmlModelMixin):
     """ Structure of a chemical compound
 
     Attributes:
@@ -2419,11 +2419,11 @@ class ChemicalStructure(obj_model.Model, SbmlModelMixin):
     format = EnumAttribute(ChemicalStructureFormat, none=True)
     alphabet = EnumAttribute(ChemicalStructureAlphabet, none=True)
 
-    empirical_formula = obj_model.chem.EmpiricalFormulaAttribute()
+    empirical_formula = obj_tables.chem.EmpiricalFormulaAttribute()
     molecular_weight = FloatAttribute(min=0)
     charge = IntegerAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         table_format = TabularOrientation.multiple_cells
         unique_together = (('value', 'format', 'alphabet',
                             'empirical_formula', 'molecular_weight', 'charge',), )
@@ -2554,7 +2554,7 @@ class ChemicalStructure(obj_model.Model, SbmlModelMixin):
         return self.empirical_formula and self.empirical_formula['C'] > 0
 
 
-class SpeciesType(obj_model.Model, SbmlModelMixin):
+class SpeciesType(obj_tables.Model, SbmlModelMixin):
     """ Species type
 
     Attributes:
@@ -2587,7 +2587,7 @@ class SpeciesType(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='species_types')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         verbose_name = 'Species type'
         attribute_order = ('id', 'name', 'structure', 'type',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
@@ -2603,7 +2603,7 @@ class SpeciesType(obj_model.Model, SbmlModelMixin):
         }
 
 
-class Species(obj_model.Model, SbmlModelMixin):
+class Species(obj_tables.Model, SbmlModelMixin):
     """ Species (tuple of species type, compartment)
 
     Attributes:
@@ -2643,7 +2643,7 @@ class Species(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='species')
 
-    class Meta(obj_model.Model.Meta, ExpressionDynamicTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionDynamicTermMeta):
         attribute_order = ('id', 'name', 'species_type', 'compartment', 'units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         frozen_columns = 1
@@ -2892,7 +2892,7 @@ class Species(obj_model.Model, SbmlModelMixin):
                     break
 
 
-class DistributionInitConcentration(obj_model.Model, SbmlModelMixin):
+class DistributionInitConcentration(obj_tables.Model, SbmlModelMixin):
     """ Distribution of the initial concentration of a species
     at the beginning of each cell cycle
 
@@ -2946,7 +2946,7 @@ class DistributionInitConcentration(obj_model.Model, SbmlModelMixin):
     references = ManyToManyAttribute('Reference', related_name='distribution_init_concentrations',
                                      verbose_related_name='Initial species concentrations')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         # unique_together = (('species', ), )
         attribute_order = ('id', 'name', 'species',
                            'distribution', 'mean', 'std', 'units',
@@ -2996,14 +2996,14 @@ class DistributionInitConcentration(obj_model.Model, SbmlModelMixin):
         return None
 
 
-class ObservableExpression(obj_model.Model, Expression, SbmlModelMixin):
+class ObservableExpression(obj_tables.Model, Expression, SbmlModelMixin):
     """ A mathematical expression of Observables and Species
 
     The expression used by a `Observable`.
 
     Attributes:
         expression (:obj:`str`): mathematical expression for an Observable
-        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_model.Model`
+        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_tables.Model`
         species (:obj:`list` of :obj:`Species`): Species used by this Observable expression
         observables (:obj:`list` of :obj:`Observable`): other Observables used by this Observable expression
 
@@ -3016,7 +3016,7 @@ class ObservableExpression(obj_model.Model, Expression, SbmlModelMixin):
     species = ManyToManyAttribute(Species, related_name='observable_expressions')
     observables = ManyToManyAttribute('Observable', related_name='observable_expressions')
 
-    class Meta(obj_model.Model.Meta, Expression.Meta):
+    class Meta(obj_tables.Model.Meta, Expression.Meta):
         table_format = TabularOrientation.cell
         expression_term_models = ('Species', 'Observable')
         expression_is_linear = True
@@ -3067,7 +3067,7 @@ class ObservableExpression(obj_model.Model, Expression, SbmlModelMixin):
         """ Merge attributes of two objects
 
         Args:
-            other (:obj:`obj_model.Model`): other model
+            other (:obj:`obj_tables.Model`): other model
             other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
                 in a model
             self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
@@ -3077,7 +3077,7 @@ class ObservableExpression(obj_model.Model, Expression, SbmlModelMixin):
         Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
 
 
-class Observable(obj_model.Model, SbmlAssignmentRuleMixin):
+class Observable(obj_tables.Model, SbmlAssignmentRuleMixin):
     """ Observable: a linear function of other Observbles and Species
 
     Attributes:
@@ -3112,7 +3112,7 @@ class Observable(obj_model.Model, SbmlAssignmentRuleMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='observables')
 
-    class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionExpressionTermMeta):
         attribute_order = ('id', 'name', 'expression', 'units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         expression_term_model = ObservableExpression
@@ -3127,14 +3127,14 @@ class Observable(obj_model.Model, SbmlAssignmentRuleMixin):
         }
 
 
-class FunctionExpression(obj_model.Model, Expression, SbmlModelMixin):
+class FunctionExpression(obj_tables.Model, Expression, SbmlModelMixin):
     """ A mathematical expression of Functions, Observbles, Parameters and Python functions
 
     The expression used by a :obj:`Function`.
 
     Attributes:
         expression (:obj:`str`): mathematical expression for a Function
-        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_model.Model`
+        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_tables.Model`
         species (:obj:`list` of :obj:`Species`): Species used by this function expression
         observables (:obj:`list` of :obj:`Observable`): Observables used by this function expression
         parameters (:obj:`list` of :obj:`ParameterRenamed`): Parameters used by this function expression
@@ -3152,7 +3152,7 @@ class FunctionExpression(obj_model.Model, Expression, SbmlModelMixin):
     functions = ManyToManyAttribute('Function', related_name='function_expressions')
     compartments = ManyToManyAttribute(Compartment, related_name='function_expressions')
 
-    class Meta(obj_model.Model.Meta, Expression.Meta):
+    class Meta(obj_tables.Model.Meta, Expression.Meta):
         table_format = TabularOrientation.cell
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
@@ -3202,7 +3202,7 @@ class FunctionExpression(obj_model.Model, Expression, SbmlModelMixin):
         """ Merge attributes of two objects
 
         Args:
-            other (:obj:`obj_model.Model`): other model
+            other (:obj:`obj_tables.Model`): other model
             other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
                 in a model
             self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
@@ -3212,7 +3212,7 @@ class FunctionExpression(obj_model.Model, Expression, SbmlModelMixin):
         Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
 
 
-class Function(obj_model.Model, SbmlAssignmentRuleMixin):
+class Function(obj_tables.Model, SbmlAssignmentRuleMixin):
     """ Function: a mathematical expression of Functions, Observbles, Parameters and Python functions
 
     Attributes:
@@ -3244,7 +3244,7 @@ class Function(obj_model.Model, SbmlAssignmentRuleMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='functions')
 
-    class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionExpressionTermMeta):
         attribute_order = ('id', 'name', 'expression', 'units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         expression_term_model = FunctionExpression
@@ -3297,14 +3297,14 @@ class Function(obj_model.Model, SbmlAssignmentRuleMixin):
         return None
 
 
-class StopConditionExpression(obj_model.Model, Expression):
+class StopConditionExpression(obj_tables.Model, Expression):
     """ A mathematical expression of Functions, Observables, Parameters and Python functions
 
     The expression used by a :obj:`StopCondition`.
 
     Attributes:
         expression (:obj:`str`): mathematical expression for a StopCondition
-        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_model.Model`
+        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_tables.Model`
         species (:obj:`list` of :obj:`Species`): Species used by this stop condition expression
         observables (:obj:`list` of :obj:`Observable`): Observables used by this stop condition expression
         parameters (:obj:`list` of :obj:`ParameterRenamed`): Parameters used by this stop condition expression
@@ -3323,7 +3323,7 @@ class StopConditionExpression(obj_model.Model, Expression):
     functions = ManyToManyAttribute(Function, related_name='stop_condition_expressions')
     compartments = ManyToManyAttribute(Compartment, related_name='stop_condition_expressions')
 
-    class Meta(obj_model.Model.Meta, Expression.Meta):
+    class Meta(obj_tables.Model.Meta, Expression.Meta):
         table_format = TabularOrientation.cell
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_type = bool
@@ -3374,7 +3374,7 @@ class StopConditionExpression(obj_model.Model, Expression):
         """ Merge attributes of two objects
 
         Args:
-            other (:obj:`obj_model.Model`): other model
+            other (:obj:`obj_tables.Model`): other model
             other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
                 in a model
             self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
@@ -3384,7 +3384,7 @@ class StopConditionExpression(obj_model.Model, Expression):
         Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
 
 
-class StopCondition(obj_model.Model):
+class StopCondition(obj_tables.Model):
     """ StopCondition: Simulation of a model terminates when one of its stop conditions is true.
 
     A Boolean expression of Functions, Observbles, Parameters and Python functions. Stop conditions
@@ -3419,7 +3419,7 @@ class StopCondition(obj_model.Model):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='stop_conditions')
 
-    class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionExpressionTermMeta):
         attribute_order = ('id', 'name', 'expression', 'units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         expression_term_model = StopConditionExpression
@@ -3474,7 +3474,7 @@ class StopCondition(obj_model.Model):
         return None
 
 
-class FluxBounds(obj_model.Model, SbmlModelMixin):
+class FluxBounds(obj_tables.Model, SbmlModelMixin):
     """ Flux bounds 
 
     Attributes:
@@ -3492,7 +3492,7 @@ class FluxBounds(obj_model.Model, SbmlModelMixin):
                           choices=(unit_registry.parse_units('M s^-1'),),
                           default=None, none=True, verbose_name='Units')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         table_format = TabularOrientation.multiple_cells
         unique_together = (('min', 'max', 'units'), )
         attribute_order = ('min', 'max', 'units')
@@ -3514,7 +3514,7 @@ class FluxBounds(obj_model.Model, SbmlModelMixin):
         return '__'.join([str(self.min), str(self.max), str(self.units)])
 
 
-class Reaction(obj_model.Model, SbmlModelMixin):
+class Reaction(obj_tables.Model, SbmlModelMixin):
     """ Reaction
 
     Attributes:
@@ -3552,14 +3552,14 @@ class Reaction(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='reactions')
 
-    class Meta(obj_model.Model.Meta, ExpressionDynamicTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionDynamicTermMeta):
         attribute_order = ('id', 'name', 'submodel',
                            'participants', 'reversible',
                            'rate_units', 'flux_bounds',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         indexed_attrs_tuples = (('id',), )
         expression_term_units = 'rate_units'
-        merge = obj_model.ModelMerge.append
+        merge = obj_tables.ModelMerge.append
         children = {
             'submodel': ('participants', 'rate_laws', 'flux_bounds',
                          'identifiers', 'evidence', 'conclusions', 'references'),
@@ -3903,7 +3903,7 @@ class Reaction(obj_model.Model, SbmlModelMixin):
         LibSbmlInterface.get_annotations(self, annots, sbml_rxn, objs)
 
 
-class SpeciesCoefficient(obj_model.Model, SbmlModelMixin):
+class SpeciesCoefficient(obj_tables.Model, SbmlModelMixin):
     """ A tuple of a species and a coefficient
 
     Attributes:
@@ -3918,7 +3918,7 @@ class SpeciesCoefficient(obj_model.Model, SbmlModelMixin):
     species = ManyToOneAttribute(Species, related_name='species_coefficients')
     coefficient = FloatAttribute(nan=False)
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         unique_together = (('species', 'coefficient'),)
         attribute_order = ('species', 'coefficient')
         frozen_columns = 1
@@ -4026,12 +4026,12 @@ class SpeciesCoefficient(obj_model.Model, SbmlModelMixin):
             return (None, InvalidAttribute(attr, ['Invalid species coefficient']))
 
 
-class RateLawExpression(obj_model.Model, Expression, SbmlModelMixin):
+class RateLawExpression(obj_tables.Model, Expression, SbmlModelMixin):
     """ Rate law expression
 
     Attributes:
         expression (:obj:`str`): mathematical expression of the rate law
-        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_model.Model`
+        _parsed_expression (:obj:`ParsedExpression`): an analyzed `expression`; not an `obj_tables.Model`
         species (:obj:`list` of :obj:`Species`): species whose dynamic concentrations are used in the rate law
         parameters (:obj:`list` of :obj:`ParameterRenamed`): parameters whose values are used in the rate law
         compartments (:obj:`list` of :obj:`Compartment`): Compartments used by this stop condition expression
@@ -4047,7 +4047,7 @@ class RateLawExpression(obj_model.Model, Expression, SbmlModelMixin):
     functions = ManyToManyAttribute(Function, related_name='rate_law_expressions')
     compartments = ManyToManyAttribute(Compartment, related_name='rate_law_expressions')
 
-    class Meta(obj_model.Model.Meta, Expression.Meta):
+    class Meta(obj_tables.Model.Meta, Expression.Meta):
         attribute_order = ('expression', 'species', 'parameters')
         table_format = TabularOrientation.cell
         ordering = ('expression',)
@@ -4100,7 +4100,7 @@ class RateLawExpression(obj_model.Model, Expression, SbmlModelMixin):
         """ Merge attributes of two objects
 
         Args:
-            other (:obj:`obj_model.Model`): other model
+            other (:obj:`obj_tables.Model`): other model
             other_objs_in_self (:obj:`dict`): dictionary that maps instances of objects in another model to objects
                 in a model
             self_objs_in_other (:obj:`dict`): dictionary that maps instances of objects in a model to objects
@@ -4110,7 +4110,7 @@ class RateLawExpression(obj_model.Model, Expression, SbmlModelMixin):
         Expression.merge_attrs(self, other, other_objs_in_self, self_objs_in_other)
 
 
-class RateLaw(obj_model.Model, SbmlModelMixin):
+class RateLaw(obj_tables.Model, SbmlModelMixin):
     """ Rate law
 
     Attributes:
@@ -4146,7 +4146,7 @@ class RateLaw(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='rate_laws')
 
-    class Meta(obj_model.Model.Meta, ExpressionExpressionTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionExpressionTermMeta):
         attribute_order = ('id', 'name', 'reaction', 'direction', 'type',
                            'expression', 'units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
@@ -4323,7 +4323,7 @@ class RateLaw(obj_model.Model, SbmlModelMixin):
         return formula
 
 
-class DfbaObjSpecies(obj_model.Model, SbmlModelMixin):
+class DfbaObjSpecies(obj_tables.Model, SbmlModelMixin):
     """ DfbaObjSpecies
 
     A dFBA objective reaction contains a list of DfbaObjSpecies instances. Distinct DfbaObjSpecies
@@ -4364,14 +4364,14 @@ class DfbaObjSpecies(obj_model.Model, SbmlModelMixin):
     references = ManyToManyAttribute('Reference', related_name='dfba_obj_species',
                                      verbose_related_name='dFBA objective species')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         # unique_together = (('dfba_obj_reaction', 'species'), )
         attribute_order = ('id', 'name', 'dfba_obj_reaction',
                            'species', 'value', 'units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         verbose_name = 'dFBA objective species'
         verbose_name_plural = 'dFBA objective species'
-        merge = obj_model.ModelMerge.append
+        merge = obj_tables.ModelMerge.append
         children = {
             'submodel': ('dfba_obj_reaction', 'species', 'identifiers', 'evidence', 'conclusions', 'references'),
             'core_model': ('dfba_obj_reaction', 'species', 'identifiers', 'evidence', 'conclusions', 'references'),
@@ -4428,7 +4428,7 @@ class DfbaObjSpecies(obj_model.Model, SbmlModelMixin):
         return None
 
 
-class DfbaObjReaction(obj_model.Model, SbmlModelMixin):
+class DfbaObjReaction(obj_tables.Model, SbmlModelMixin):
     """ A pseudo-reaction used to represent the interface between metabolism and other
     cell processes.
 
@@ -4467,13 +4467,13 @@ class DfbaObjReaction(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='dfba_obj_reactions', verbose_related_name='dFBA objective reactions')
 
-    class Meta(obj_model.Model.Meta, ExpressionDynamicTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionDynamicTermMeta):
         attribute_order = ('id', 'name', 'submodel', 'units', 'cell_size_units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
         indexed_attrs_tuples = (('id',), )
         verbose_name = 'dFBA objective reaction'
         expression_term_units = 'units'
-        merge = obj_model.ModelMerge.append
+        merge = obj_tables.ModelMerge.append
         children = {
             'submodel': ('dfba_obj_species', 'identifiers', 'evidence', 'conclusions', 'references'),
             'core_model': ('dfba_obj_species', 'identifiers', 'evidence', 'conclusions', 'references'),
@@ -4601,7 +4601,7 @@ class DfbaObjReaction(obj_model.Model, SbmlModelMixin):
         LibSbmlInterface.get_annotations(self, LibSbmlInterface.gen_nested_attr_paths(['identifiers']), sbml_rxn, objs)
 
 
-class ParameterRenamed(obj_model.Model, SbmlModelMixin):
+class ParameterRenamed(obj_tables.Model, SbmlModelMixin):
     """ ParameterRenamed
 
     Attributes:
@@ -4641,7 +4641,7 @@ class ParameterRenamed(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='parameters')
 
-    class Meta(obj_model.Model.Meta, ExpressionStaticTermMeta):
+    class Meta(obj_tables.Model.Meta, ExpressionStaticTermMeta):
         attribute_order = ('id', 'name', 'type',
                            'value', 'std', 'units',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references')
@@ -4707,7 +4707,7 @@ class ParameterRenamed(obj_model.Model, SbmlModelMixin):
         LibSbmlInterface.get_annotations(self, LibSbmlInterface.gen_nested_attr_paths(annots), sbml, objs)
 
 
-class ObservationGenotype(obj_model.Model, SbmlModelMixin):
+class ObservationGenotype(obj_tables.Model, SbmlModelMixin):
     """ Genotype of an observation
 
     Attributes:
@@ -4721,7 +4721,7 @@ class ObservationGenotype(obj_model.Model, SbmlModelMixin):
     taxon = StringAttribute()
     variant = StringAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         table_format = TabularOrientation.multiple_cells
         unique_together = (('taxon', 'variant', ), )
         attribute_order = ('taxon', 'variant')
@@ -4743,7 +4743,7 @@ class ObservationGenotype(obj_model.Model, SbmlModelMixin):
         return '__'.join([self.taxon, self.variant])
 
 
-class ObservationEnv(obj_model.Model, SbmlModelMixin):
+class ObservationEnv(obj_tables.Model, SbmlModelMixin):
     """ Environment of an observation
 
     Attributes:
@@ -4771,7 +4771,7 @@ class ObservationEnv(obj_model.Model, SbmlModelMixin):
     growth_media = LongStringAttribute()
     condition = LongStringAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         table_format = TabularOrientation.multiple_cells
         unique_together = (('temp', 'temp_units', 'ph', 'ph_units', 'growth_media', 'condition'), )
         attribute_order = ('temp', 'temp_units', 'ph', 'ph_units', 'growth_media', 'condition')
@@ -4824,7 +4824,7 @@ class ObservationEnv(obj_model.Model, SbmlModelMixin):
         return None
 
 
-class Process(obj_model.Model, SbmlModelMixin):
+class Process(obj_tables.Model, SbmlModelMixin):
     """ A process of an observation or conclusion 
 
     Attributes:
@@ -4840,7 +4840,7 @@ class Process(obj_model.Model, SbmlModelMixin):
     name = LongStringAttribute()
     version = StringAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         table_format = TabularOrientation.multiple_cells
         unique_together = (('name', 'version'), )
         attribute_order = ('name', 'version')
@@ -4862,7 +4862,7 @@ class Process(obj_model.Model, SbmlModelMixin):
         return '__'.join([self.name, self.version])
 
 
-class Observation(obj_model.Model):
+class Observation(obj_tables.Model):
     """ Observation
 
     Attributes:
@@ -4908,7 +4908,7 @@ class Observation(obj_model.Model):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='observations')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name',
                            'value', 'std', 'units',
                            'type', 'genotype', 'env',
@@ -4924,7 +4924,7 @@ class Observation(obj_model.Model):
         }
 
 
-class ObservationSet(obj_model.Model, SbmlModelMixin):
+class ObservationSet(obj_tables.Model, SbmlModelMixin):
     """ Set of co-observed observations
 
     Attributes:
@@ -4944,7 +4944,7 @@ class ObservationSet(obj_model.Model, SbmlModelMixin):
     comments = CommentAttribute()
     references = ManyToManyAttribute('Reference', related_name='observation_sets')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name',
                            'observations',
                            'identifiers', 'comments', 'references')
@@ -4958,7 +4958,7 @@ class ObservationSet(obj_model.Model, SbmlModelMixin):
         }
 
 
-class Evidence(obj_model.Model):
+class Evidence(obj_tables.Model):
     """ Observation that supports/disputes an conclusion
 
     Attributes:
@@ -4994,7 +4994,7 @@ class Evidence(obj_model.Model):
     strength = FloatAttribute()
     quality = FloatAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         table_format = TabularOrientation.cell
         attribute_order = ('observation', 'type', 'strength', 'quality')
         children = {
@@ -5102,7 +5102,7 @@ class Evidence(obj_model.Model):
         return (obj, None)
 
 
-class Conclusion(obj_model.Model):
+class Conclusion(obj_tables.Model):
     """ Conclusion of one or more observations
 
     Attributes:
@@ -5160,7 +5160,7 @@ class Conclusion(obj_model.Model):
     authors = ManyToManyAttribute('Author', related_name='conclusions')
     date = DateTimeAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name',
                            'value', 'std', 'units',
                            'type', 'process',
@@ -5175,7 +5175,7 @@ class Conclusion(obj_model.Model):
         }
 
 
-class Reference(obj_model.Model):
+class Reference(obj_tables.Model):
     """ Reference
 
     Attributes:
@@ -5243,7 +5243,7 @@ class Reference(obj_model.Model):
     identifiers = IdentifierManyToManyAttribute(related_name='references')
     comments = CommentAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name',
                            'title', 'author', 'editor', 'year', 'type', 'publication', 'publisher',
                            'series', 'volume', 'number', 'issue', 'edition', 'chapter', 'pages',
@@ -5258,7 +5258,7 @@ class Reference(obj_model.Model):
         }
 
 
-class Author(obj_model.Model, SbmlModelMixin):
+class Author(obj_tables.Model, SbmlModelMixin):
     """ An author of a model
 
     Attributes:
@@ -5295,7 +5295,7 @@ class Author(obj_model.Model, SbmlModelMixin):
     identifiers = IdentifierManyToManyAttribute(related_name='authors')
     comments = LongStringAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name',
                            'last_name', 'first_name', 'middle_name',
                            'title', 'organization',
@@ -5335,7 +5335,7 @@ class Author(obj_model.Model, SbmlModelMixin):
         return None
 
 
-class Change(obj_model.Model, SbmlModelMixin):
+class Change(obj_tables.Model, SbmlModelMixin):
     """ A change to a model
 
     Attributes:
@@ -5381,7 +5381,7 @@ class Change(obj_model.Model, SbmlModelMixin):
     authors = ManyToManyAttribute('Author', related_name='changes')
     date = DateTimeAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name',
                            'type', 'target', 'target_submodel', 'target_type', 'reason', 'reason_type', 'intention', 'intention_type',
                            'identifiers', 'evidence', 'conclusions', 'comments', 'references',
@@ -5396,7 +5396,7 @@ class Change(obj_model.Model, SbmlModelMixin):
         }
 
 
-class Identifier(obj_model.Model, SbmlModelMixin):
+class Identifier(obj_tables.Model, SbmlModelMixin):
     """ Reference to an entry in a namespace
 
     Attributes:
@@ -5431,7 +5431,7 @@ class Identifier(obj_model.Model, SbmlModelMixin):
     namespace = StringAttribute(min_length=1)
     id = StringAttribute(min_length=1)
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         unique_together = (('namespace', 'id', ), )
         table_format = TabularOrientation.cell
         attribute_order = ('namespace', 'id')
@@ -5480,7 +5480,7 @@ class Identifier(obj_model.Model, SbmlModelMixin):
         return (identifier, None)
 
 
-class Validator(obj_model.Validator):
+class Validator(obj_tables.Validator):
     def run(self, model, get_related=True):
         """ Validate a model and return its errors
 

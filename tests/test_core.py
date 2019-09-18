@@ -9,8 +9,8 @@
 
 from contextlib import contextmanager
 from datetime import date, time, datetime
-from obj_model import core
-import obj_model
+from obj_tables import core
+import obj_tables
 import abduct
 import attrdict
 import enum
@@ -3507,7 +3507,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(Example2.objects.all(), None)
 
     def test_simple_manager_example(self):
-        from obj_model.core import Model, StringAttribute, IntegerAttribute, OneToManyAttribute
+        from obj_tables.core import Model, StringAttribute, IntegerAttribute, OneToManyAttribute
 
         class Example1(Model):
             str_attr = StringAttribute()
@@ -4949,7 +4949,7 @@ class BigModel(core.Model):
     # include an id to make this cacheable
     # used in TestCaching.perf_no_caching
     id = core.SlugAttribute()
-    data = obj_model.obj_math.NumpyArrayAttribute()
+    data = obj_tables.obj_math.NumpyArrayAttribute()
     neighbors = core.ManyToManyAttribute('BigModel', related_name='neighbors')
 
 
@@ -4958,7 +4958,7 @@ class TestCaching(unittest.TestCase):
 
     @staticmethod
     def perf_no_caching(obj_data_size=1000, measurement_period=1000, alpha=10):
-        """ Test performance of obj_model.Model networks that use large amounts of memory
+        """ Test performance of obj_tables.Model networks that use large amounts of memory
 
         Results depend on the underlying system, of course.
 

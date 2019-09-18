@@ -1,5 +1,5 @@
 # a migrations configuration
-# round-trip migrations, which transform an obj_model model file to itself
+# round-trip migrations, which transform an obj_tables model file to itself
 simple_migration:
     schema_files: [small_existing.py, small_existing.py]
     existing_files: [example_existing_model.xlsx]

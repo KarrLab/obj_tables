@@ -19,7 +19,7 @@ import copy
 import importlib
 import inspect
 import json
-import obj_model
+import obj_tables
 import os
 import pandas
 import re
@@ -32,10 +32,10 @@ from itertools import chain, compress
 from natsort import natsorted, ns
 from os.path import basename, dirname, splitext
 from warnings import warn
-from obj_model import utils
-from obj_model.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
+from obj_tables import utils
+from obj_tables.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
                             InvalidObject, excel_col_name,
-                            InvalidAttribute, ObjModelWarning,
+                            InvalidAttribute, ObjTablesWarning,
                             TOC_NAME, SBTAB_TOC_NAME,
                             SCHEMA_NAME, SBTAB_SCHEMA_NAME)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
@@ -78,7 +78,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjModel ...`)
+                be saved to header row (e.g., `!!ObjTables ...`)
             models (:obj:`list` of :obj:`Model`, optional): models
             get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
@@ -95,7 +95,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; a warning will be generated if the repo repo is not
                 current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
@@ -114,7 +114,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
                 about the Git repo containing `path`; the repo must be current with origin, except
                 for the file at `path`
             path (:obj:`str`): path of the file(s) that will be written
-            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to obtain metadata information about the
                 the schema's Git repository from a package on `sys.path`: the repo must be current
                 with its origin
@@ -173,7 +173,7 @@ class JsonWriter(WriterBase):
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjModel ...`)
+                be saved to header row (e.g., `!!ObjTables ...`)
             models (:obj:`list` of :obj:`Model`, optional): models
             get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
@@ -189,7 +189,7 @@ class JsonWriter(WriterBase):
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
@@ -266,7 +266,7 @@ class WorkbookWriter(WriterBase):
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): `model` instance or list of `model` instances
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjModel ...`)
+                be saved to header row (e.g., `!!ObjTables ...`)
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
@@ -284,7 +284,7 @@ class WorkbookWriter(WriterBase):
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
@@ -408,9 +408,9 @@ class WorkbookWriter(WriterBase):
             headings = ['!Table', '!Description', '!NumberOfObjects']
         else:
             sheet_name = TOC_NAME
-            format = 'ObjModel'
+            format = 'ObjTables'
             table_id = TOC_NAME
-            version = obj_model.__version__
+            version = obj_tables.__version__
             headings = ['Table', 'Description', 'Number of objects']
 
         now = datetime.now()
@@ -735,7 +735,7 @@ class Writer(WriterBase):
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjModel ...`)
+                be saved to header row (e.g., `!!ObjTables ...`)
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear as worksheets; all models which are not in `models` will
                 follow in alphabetical order
@@ -753,7 +753,7 @@ class Writer(WriterBase):
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_model` schema
+            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
@@ -772,7 +772,7 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
 
     Attributes:
         _model_metadata (:obj:`dict`): dictionary which maps models (:obj:`Model`) to dictionaries of
-            metadata read from a document (e.g., `!!ObjModel Date='...' ...`)
+            metadata read from a document (e.g., `!!ObjTables Date='...' ...`)
 
         MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which
             to export them
@@ -1504,8 +1504,8 @@ class WorkbookReader(ReaderBase):
             format = 'SBtab'
             version = '2.0'
         else:
-            format = 'ObjModel'
-            version = obj_model.__version__
+            format = 'ObjTables'
+            version = obj_tables.__version__
 
         metadata_headings = []
         comments = []
@@ -1546,7 +1546,7 @@ class WorkbookReader(ReaderBase):
         """ Construct object graph
 
         Args:
-            model (:obj:`Model`): an `obj_model.core.Model`
+            model (:obj:`Model`): an `obj_tables.core.Model`
             attributes (:obj:`list` of :obj:`Attribute`): attribute order of `data`
             data (:obj:`list` of :obj:`list` of :obj:`object`): nested list of object data
             objects (:obj:`list`): list of model objects in order of `data`
@@ -1904,9 +1904,9 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
         table_name = cls.Meta.verbose_name[1:]
         version = '2.0'
     else:
-        format = 'ObjModel'
+        format = 'ObjTables'
         table_name = cls.Meta.verbose_name_plural
-        version = obj_model.__version__
+        version = obj_tables.__version__
 
     now = datetime.now()
     metadata = dict(metadata)
@@ -2012,6 +2012,6 @@ def get_ordered_attributes(cls, include_all_attributes=True):
     return attrs
 
 
-class IoWarning(ObjModelWarning):
+class IoWarning(ObjTablesWarning):
     """ IO warning """
     pass

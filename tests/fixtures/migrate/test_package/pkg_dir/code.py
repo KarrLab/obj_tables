@@ -1,8 +1,8 @@
-import obj_model
-from obj_model import SlugAttribute
+import obj_tables
+from obj_tables import SlugAttribute
 
-class Foo(obj_model.Model):
+class Foo(obj_tables.Model):
     id = SlugAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id',)

@@ -1,14 +1,14 @@
 import re
 
-from obj_model import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
+from obj_tables import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
     TabularOrientation)
 
-import obj_model
+import obj_tables
 
 
-class Test(obj_model.Model):
+class Test(obj_tables.Model):
     """ Test
 
     Related attributes:
@@ -21,38 +21,38 @@ class Test(obj_model.Model):
     revision = StringAttribute(default='0.0')
     existing_attr = StringAttribute(default='existing_attr_val')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name', 'version', 'revision', 'existing_attr')
         table_format = TabularOrientation.column
 
 
-class DeletedModel(obj_model.Model):
+class DeletedModel(obj_tables.Model):
     id = SlugAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id',)
 
 
-class Property(obj_model.Model):
+class Property(obj_tables.Model):
     id = SlugAttribute()
     test = OneToOneAttribute(Test, related_name='property')
     value = PositiveIntegerAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'test', 'value')
         table_format = TabularOrientation.column
 
 
-class Subtest(obj_model.Model):
+class Subtest(obj_tables.Model):
     id = SlugAttribute()
     test = ManyToOneAttribute(Test, related_name='subtests')
     references = ManyToManyAttribute('Reference', related_name='subtests')
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'test', 'references')
 
 
-class Reference(obj_model.Model):
+class Reference(obj_tables.Model):
     """ Reference
 
     Related attributes:
@@ -61,5 +61,5 @@ class Reference(obj_model.Model):
     id = SlugAttribute()
     value = StringAttribute()
 
-    class Meta(obj_model.Model.Meta):
+    class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'value')

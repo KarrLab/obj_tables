@@ -9,7 +9,7 @@
 from six import string_types
 import git
 import numpy.testing
-import obj_model.io
+import obj_tables.io
 import os
 import shutil
 import sys
@@ -17,8 +17,8 @@ import tempfile
 import unittest
 import wc_utils.workbook
 import wc_utils.workbook.io
-from obj_model import core, utils
-from obj_model.utils import DataRepoMetadata, SchemaRepoMetadata
+from obj_tables import core, utils
+from obj_tables.utils import DataRepoMetadata, SchemaRepoMetadata
 from wc_utils.util.git import GitHubRepoForTests, RepoMetadataCollectionType
 
 
@@ -397,11 +397,11 @@ class InitSchemaTestCase(unittest.TestCase):
         c_1._comments = ['C', 'D']
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True)[schema.Parent][0]
@@ -419,11 +419,11 @@ class InitSchemaTestCase(unittest.TestCase):
         p_0.children.create(id='c_1')
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True)[schema.Parent][0]
@@ -449,11 +449,11 @@ class InitSchemaTestCase(unittest.TestCase):
         p_0.children.create(id='c_1')
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True)[schema.Parent][0]
@@ -468,11 +468,11 @@ class InitSchemaTestCase(unittest.TestCase):
         p_0.children.create(id='c_1')
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True)[schema.Parent][0]
@@ -526,11 +526,11 @@ class InitSchemaTestCase(unittest.TestCase):
         p_0.children.create(id='c_1')
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True)[schema.Parent][0]
@@ -545,11 +545,11 @@ class InitSchemaTestCase(unittest.TestCase):
         p_0.children.create(id='c_1')
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True)[schema.Parent][0]
@@ -609,7 +609,7 @@ class InitSchemaTestCase(unittest.TestCase):
         c_2 = p_0.children.create(id='c_2')
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
@@ -619,14 +619,14 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['!' + core.SBTAB_SCHEMA_NAME] = wc_utils.workbook.Worksheet()
         wc_utils.workbook.io.write(filename, wb)
 
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True, ignore_extra_sheets=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         with self.assertRaisesRegex(ValueError, 'No matching models'):
-            obj_model.io.WorkbookReader().run(
+            obj_tables.io.WorkbookReader().run(
                 filename,
                 models=[schema.Parent, schema.Child],
                 sbtab=True, ignore_extra_sheets=False)[schema.Parent][0]
@@ -635,7 +635,7 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['!Extra'] = wb.pop('Extra')
         wc_utils.workbook.io.write(filename, wb)
         with self.assertRaisesRegex(ValueError, 'No matching models'):
-            obj_model.io.WorkbookReader().run(
+            obj_tables.io.WorkbookReader().run(
                 filename,
                 models=[schema.Parent, schema.Child],
                 sbtab=True, ignore_extra_sheets=True)[schema.Parent][0]
@@ -652,7 +652,7 @@ class InitSchemaTestCase(unittest.TestCase):
         c_2 = p_0.children.create(id='c_2')
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
@@ -661,14 +661,14 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['!Child'][2].append('Extra')
         wc_utils.workbook.io.write(filename, wb)
 
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True, ignore_extra_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         with self.assertRaisesRegex(ValueError, 'does not match any attribute'):
-            obj_model.io.WorkbookReader().run(
+            obj_tables.io.WorkbookReader().run(
                 filename,
                 models=[schema.Parent, schema.Child],
                 sbtab=True, ignore_extra_attributes=False)[schema.Parent][0]
@@ -677,7 +677,7 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['!Child'][2][-1] = '!Extra'
         wc_utils.workbook.io.write(filename, wb)
         with self.assertRaisesRegex(ValueError, 'does not match any attribute'):
-            obj_model.io.WorkbookReader().run(
+            obj_tables.io.WorkbookReader().run(
                 filename,
                 models=[schema.Parent, schema.Child],
                 sbtab=True, ignore_extra_attributes=True)[schema.Parent][0]
@@ -697,7 +697,7 @@ class InitSchemaTestCase(unittest.TestCase):
         c_1._comments = ['C', 'D']
 
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
-        obj_model.io.WorkbookWriter().run(
+        obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
             models=[schema.Parent, schema.Child],
             sbtab=True)
@@ -712,7 +712,7 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['!Child'].append(wc_utils.workbook.Row(['% 456']))
         wc_utils.workbook.io.write(filename, wb)
 
-        p_0_b = obj_model.io.WorkbookReader().run(
+        p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
             sbtab=True)[schema.Parent][0]

@@ -34,14 +34,14 @@ import tempfile
 import warnings
 import yaml
 
-from obj_model import TabularOrientation, RelatedAttribute, get_models, utils
-from obj_model.expression import ParsedExpression, ObjModelTokenCodes
-from obj_model.io import WorkbookReader, Reader, Writer
-from obj_model.utils import SchemaRepoMetadata
+from obj_tables import TabularOrientation, RelatedAttribute, get_models, utils
+from obj_tables.expression import ParsedExpression, ObjTablesTokenCodes
+from obj_tables.io import WorkbookReader, Reader, Writer
+from obj_tables.utils import SchemaRepoMetadata
 from wc_utils.config.core import AltResourceName
 from wc_utils.util.files import normalize_filename, remove_silently
 from wc_utils.util.list import det_find_dupes, det_count_elements, dict_by_class
-import obj_model
+import obj_tables
 import wc_utils
 
 # todo: more intuitive expression of renamed_attributes as [ExistingModelName.existing_attr_name, MigratedModelName.migrated_attr_name]
@@ -49,7 +49,7 @@ import wc_utils
 
 
 class MigratorError(Exception):
-    """ Exception raised for errors in obj_model.migrate
+    """ Exception raised for errors in obj_tables.migrate
 
     Attributes:
         message (:obj:`str`): the exception's message
@@ -150,7 +150,7 @@ class SchemaModule(object):
         If `model`'s name is already munged, return the name.
 
         Args:
-            model (:obj:`obj_model.Model`): a model
+            model (:obj:`obj_tables.Model`): a model
 
         Returns:
             :obj:`str`: a munged name for model, made by appending `SchemaModule.MUNGED_MODEL_NAME_SUFFIX`
@@ -167,7 +167,7 @@ class SchemaModule(object):
         If `model`'s name isn't munged, return the name.
 
         Args:
-            model (:obj:`obj_model.Model`): a model
+            model (:obj:`obj_tables.Model`): a model
 
         Returns:
             :obj:`str`: an unmunged name for `model`, made by removing the suffix
@@ -183,7 +183,7 @@ class SchemaModule(object):
         """ Is `model`'s name munged
 
         Args:
-            model (:obj:`obj_model.Model`): a model
+            model (:obj:`obj_tables.Model`): a model
 
         Returns:
             :obj:`bool`: True if `model` is munged
@@ -261,7 +261,7 @@ class SchemaModule(object):
         sys.path.insert(0, self.directory)
 
         # todo: is this suspension of check that related attribute names don't clash really needed?
-        obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
+        obj_tables.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = False
 
         def print_file(fn, max=100):
             print('\timporting: {}:'.format(fn))
@@ -326,8 +326,8 @@ class SchemaModule(object):
                 names = set()
                 for name, cls in inspect.getmembers(new_module, inspect.isclass):
                     names.add(name)
-                    if issubclass(cls, obj_model.core.Model) and \
-                        not cls in {obj_model.Model, obj_model.abstract.AbstractModel}:
+                    if issubclass(cls, obj_tables.core.Model) and \
+                        not cls in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
                         models_found.add(name)
                 print('targets in names', names.intersection(targets))
                 print('targets in models_found', models_found.intersection(targets))
@@ -338,7 +338,7 @@ class SchemaModule(object):
         finally:
 
             # reset global variable
-            obj_model.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
+            obj_tables.core.ModelMeta.CHECK_SAME_RELATED_ATTRIBUTE_NAME = True
 
             # unmunge names of all models, so they're normal for all other wc code
             SchemaModule._unmunge_all_munged_model_names()
@@ -399,25 +399,25 @@ class SchemaModule(object):
         return new_module
 
     def _get_model_defs(self, module):
-        """ Obtain the `obj_model.Model`\ s in a module
+        """ Obtain the `obj_tables.Model`\ s in a module
 
         Args:
-            module (:obj:`Module`): a `Module` containing subclasses of `obj_model.Model`
+            module (:obj:`Module`): a `Module` containing subclasses of `obj_tables.Model`
 
         Returns:
             :obj:`dict`: the Models in a module
 
         Raises:
-            :obj:`MigratorError`: if no subclasses of `obj_model.Model` are found
+            :obj:`MigratorError`: if no subclasses of `obj_tables.Model` are found
         """
         models = {}
         for name, cls in inspect.getmembers(module, inspect.isclass):
-            if issubclass(cls, obj_model.core.Model) and \
-                not cls in {obj_model.Model, obj_model.abstract.AbstractModel}:
+            if issubclass(cls, obj_tables.core.Model) and \
+                not cls in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
                 models[name] = cls
-        # ensure that a schema contains some obj_model.Models
+        # ensure that a schema contains some obj_tables.Models
         if not models:
-            raise MigratorError("No subclasses of obj_model.Model found in '{}'".format(self.abs_module_path))
+            raise MigratorError("No subclasses of obj_tables.Model found in '{}'".format(self.abs_module_path))
 
         ### temporary hack until all references to GitMetadata are removed from test repos ###
         # todo: rebuild test_repo & migration_test_repo without references to GitMetadata
@@ -434,7 +434,7 @@ class SchemaModule(object):
         """ Check consistency of an imported module
 
         Args:
-            module (:obj:`Module`, optional): a `Module` containing subclasses of `obj_model.Model`;
+            module (:obj:`Module`, optional): a `Module` containing subclasses of `obj_tables.Model`;
             if not provided, the module is imported
 
         Returns:
@@ -456,7 +456,7 @@ class SchemaModule(object):
         return errors
 
     def run(self):
-        """ Import a schema and provide its `obj_model.Model`\ s
+        """ Import a schema and provide its `obj_tables.Model`\ s
 
         Returns:
             :obj:`dict`: the imported Models
@@ -480,8 +480,8 @@ class Migrator(object):
     Attributes:
         existing_schema (:obj:`SchemaModule`): the existing schema, and its properties
         migrated_schema (:obj:`SchemaModule`): the migrated schema, and its properties
-        existing_defs (:obj:`dict`): `obj_model.Model` definitions of the existing models, keyed by name
-        migrated_defs (:obj:`dict`): `obj_model.Model` definitions of the migrated models, keyed by name
+        existing_defs (:obj:`dict`): `obj_tables.Model` definitions of the existing models, keyed by name
+        migrated_defs (:obj:`dict`): `obj_tables.Model` definitions of the migrated models, keyed by name
         deleted_models (:obj:`set`): model types defined in the existing models but not the migrated models
         renamed_models (:obj:`list` of :obj:`tuple`): model types renamed from the existing to the
             migrated schema
@@ -515,7 +515,7 @@ class Migrator(object):
     # the name of the attribute used in expression Models to hold their ParsedExpressions
     PARSED_EXPR = '_parsed_expression'
 
-    # default R/W methods are the obj_model.io methods
+    # default R/W methods are the obj_tables.io methods
     DEFAULT_IO_CLASSES = dict(reader=Reader, writer=Writer)
 
     def __init__(self, existing_defs_file=None, migrated_defs_file=None, renamed_models=None,
@@ -676,8 +676,8 @@ class Migrator(object):
         """ Get the corresponding migrated class and attribute for the existing class and attribute
 
         Args:
-            existing_class (:obj:`obj_model.core.ModelMeta` or :obj:`str`): an existing class
-            existing_attribute (:obj:`obj_model.core.ModelMeta` or :obj:`str`): an attribute in
+            existing_class (:obj:`obj_tables.core.ModelMeta` or :obj:`str`): an existing class
+            existing_attribute (:obj:`obj_tables.core.ModelMeta` or :obj:`str`): an attribute in
                 `existing_class`
 
         Returns:
@@ -686,9 +686,9 @@ class Migrator(object):
         """
 
         # convert existing_class and existing_attribute to strings
-        if isinstance(existing_class, obj_model.core.ModelMeta):
+        if isinstance(existing_class, obj_tables.core.ModelMeta):
             existing_class = existing_class.__name__
-        if isinstance(existing_attribute, obj_model.Attribute):
+        if isinstance(existing_attribute, obj_tables.Attribute):
             existing_attribute = existing_attribute.name
 
         # try to map existing_class, existing_attribute in renamed attributes
@@ -766,7 +766,7 @@ class Migrator(object):
             # return these inconsistencies because they prevent checks below from running accurately
             return inconsistencies
 
-        # constraint: existing_model and migrated_model must be have the same type, which will be obj_model.core.ModelMeta
+        # constraint: existing_model and migrated_model must be have the same type, which will be obj_tables.core.ModelMeta
         existing_model_cls = self.existing_defs[existing_model]
         migrated_model_cls = self.migrated_defs[migrated_model]
         if type(existing_model_cls) != type(migrated_model_cls):
@@ -808,7 +808,7 @@ class Migrator(object):
         related_attrs_to_check = ['related_name', 'primary_class', 'related_class']
         for existing_attr_name, existing_attr in existing_model_cls.Meta.attributes.items():
             migrated_class, migrated_attr = self._get_mapped_attribute(existing_model, existing_attr_name)
-            if migrated_attr and isinstance(existing_attr, obj_model.RelatedAttribute):
+            if migrated_attr and isinstance(existing_attr, obj_tables.RelatedAttribute):
                 migrated_attr = migrated_model_cls.Meta.attributes[migrated_attr]
                 for rel_attr in related_attrs_to_check:
                     existing_rel_attr = getattr(existing_attr, rel_attr)
@@ -846,7 +846,7 @@ class Migrator(object):
             existing_file (:obj:`str`): pathname of file being migrated
 
         Returns:
-            :obj:`list` of `obj_model.core.ModelMeta`: existing models in the same order as worksheets
+            :obj:`list` of `obj_tables.core.ModelMeta`: existing models in the same order as worksheets
                 in `existing_file`, followed by existing models with ambiguous sheet names
         """
         _, ext = os.path.splitext(existing_file)
@@ -888,10 +888,10 @@ class Migrator(object):
         used to sequence worksheets or files in migrated file(s).
 
         Args:
-            model_order (:obj:`list` of `obj_model.core.ModelMeta`:): order of existing models
+            model_order (:obj:`list` of `obj_tables.core.ModelMeta`:): order of existing models
 
         Returns:
-            :obj:`list` of `obj_model.core.ModelMeta`: migrated models in the same order as
+            :obj:`list` of `obj_tables.core.ModelMeta`: migrated models in the same order as
                 the corresponding existing models, followed by migrated models sorted by name
         """
 
@@ -920,7 +920,7 @@ class Migrator(object):
         """ Select subset of `models` that are stored in a worksheet or file
 
         Args:
-            models (:obj:`dict` of `obj_model.core.ModelMeta`): model classes keyed by name
+            models (:obj:`dict` of `obj_tables.core.ModelMeta`): model classes keyed by name
 
         Returns:
             :obj:`str`: name of migrated file
@@ -938,7 +938,7 @@ class Migrator(object):
             existing_file (:obj:`str`): pathname of file to migrate
 
         Returns:
-            :obj:`list` of `obj_model.Model`: the models in `existing_file`
+            :obj:`list` of `obj_tables.Model`: the models in `existing_file`
         """
         Reader = self.io_classes['reader']
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
@@ -950,17 +950,17 @@ class Migrator(object):
             for obj_list in existing_models.values():
                 models.extend(obj_list)
             existing_models = models
-        existing_models = obj_model.core.Model.get_all_related(existing_models)
+        existing_models = obj_tables.core.Model.get_all_related(existing_models)
         return existing_models
 
     def migrate(self, existing_models):
         """ Migrate existing model instances to the migrated schema
 
         Args:
-            existing_models (:obj:`list` of `obj_model.Model`:) the models being migrated
+            existing_models (:obj:`list` of `obj_tables.Model`:) the models being migrated
 
         Returns:
-            :obj:`list` of `obj_model.Model`: the migrated models
+            :obj:`list` of `obj_tables.Model`: the migrated models
         """
         all_models = self._deep_migrate(existing_models)
         self._connect_models(all_models)
@@ -998,8 +998,8 @@ class Migrator(object):
         Does not perform validation -- validation must be performed independently.
 
         Args:
-            migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
-            model_order (:obj:`list` of `obj_model.core.ModelMeta`:) migrated models in the order they should appear in a workbook
+            migrated_models (:obj:`list` of `obj_tables.Model`:) the migrated models
+            model_order (:obj:`list` of `obj_tables.core.ModelMeta`:) migrated models in the order they should appear in a workbook
             existing_file (:obj:`str`): pathname of file that is being migrated
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided, save migrated file with migrated suffix in same directory as source file
             migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename; default is `Migrator.MIGRATE_SUFFIX`
@@ -1029,10 +1029,10 @@ class Migrator(object):
         """ Migrate existing models, and transform them with methods in `transformations`, if they're defined
 
         Args:
-            existing_models (:obj:`list` of `obj_model.Model`:) the existing models
+            existing_models (:obj:`list` of `obj_tables.Model`:) the existing models
 
         Returns:
-            :obj:`list` of `obj_model.Model`: the migrated models, including any transformations
+            :obj:`list` of `obj_tables.Model`: the migrated models, including any transformations
                 by `transformations`
         """
         # if it exists, execute prepare_existing_models in `transformations`
@@ -1055,7 +1055,7 @@ class Migrator(object):
 
         Args:
             existing_file (:obj:`str`): pathname of file being migrated
-            migrated_models (:obj:`list` of `obj_model.Model`:) the migrated models
+            migrated_models (:obj:`list` of `obj_tables.Model`:) the migrated models
             schema_metadata_model (:obj:`SchemaRepoMetadata`): a git metadata model for the
                 migrated models schema
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
@@ -1112,8 +1112,8 @@ class Migrator(object):
         """ Check a model instance against its definition
 
         Args:
-            existing_model (:obj:`obj_model.Model`): the existing model
-            existing_model_def (:obj:`obj_model.core.ModelMeta`): type of the existing model
+            existing_model (:obj:`obj_tables.Model`): the existing model
+            existing_model_def (:obj:`obj_tables.core.ModelMeta`): type of the existing model
 
         Returns:
             :obj:`list`: uninitialized attributes in `existing_model`
@@ -1133,7 +1133,7 @@ class Migrator(object):
         """ Check existing model instances against their definitions
 
         Args:
-            existing_models (:obj:`list` of `obj_model.Model`:) the models being migrated
+            existing_models (:obj:`list` of `obj_tables.Model`:) the models being migrated
 
         Returns:
             :obj:`list`: counts of uninitialized attributes in `existing_models`
@@ -1152,12 +1152,12 @@ class Migrator(object):
         """ Migrate a model instance's non-related attributes
 
         Args:
-            existing_model (:obj:`obj_model.Model`): an existing model instance
-            existing_model_def (:obj:`obj_model.core.ModelMeta`): type of the existing model
-            migrated_model_def (:obj:`obj_model.core.ModelMeta`): type of the migrated model
+            existing_model (:obj:`obj_tables.Model`): an existing model instance
+            existing_model_def (:obj:`obj_tables.core.ModelMeta`): type of the existing model
+            migrated_model_def (:obj:`obj_tables.core.ModelMeta`): type of the migrated model
 
         Returns:
-            :obj:`obj_model.Model`: a `migrated_model_def` instance migrated from `existing_model`
+            :obj:`obj_tables.Model`: a `migrated_model_def` instance migrated from `existing_model`
         """
         migrated_model = migrated_model_def()
 
@@ -1170,12 +1170,12 @@ class Migrator(object):
             if migrated_attr is None:
                 continue
 
-            if not isinstance(attr, obj_model.RelatedAttribute):
+            if not isinstance(attr, obj_tables.RelatedAttribute):
                 if val is None:
                     copy_val = val
                 elif isinstance(val, (string_types, bool, integer_types, float, Enum, )):
                     copy_val = val
-                elif isinstance(attr, obj_model.ontology.OntologyAttribute):
+                elif isinstance(attr, obj_tables.ontology.OntologyAttribute):
                     # pronto does not properly implement deepcopy
                     # temporarily share refs to OntologyAttribute between existing and migrated models
                     copy_val = val
@@ -1213,9 +1213,9 @@ class Migrator(object):
         else:
             # rename changed model type names used in ModelType.id notation
             wc_token_strings = []
-            for wc_token in existing_analyzed_expr._obj_model_tokens:
+            for wc_token in existing_analyzed_expr._obj_tables_tokens:
                 wc_token_string = wc_token.token_string
-                if wc_token.code == ObjModelTokenCodes.obj_id and \
+                if wc_token.code == ObjTablesTokenCodes.obj_id and \
                     wc_token.model_type.__name__ in changed_model_types and \
                     wc_token_string.startswith(wc_token.model_type.__name__ + '.'):
 
@@ -1237,8 +1237,8 @@ class Migrator(object):
         is assigned to the appropriate attribute in `migrated_model`.
 
         Args:
-            existing_model (:obj:`obj_model.Model`): the existing model
-            migrated_model (:obj:`obj_model.Model`): the corresponding migrated model
+            existing_model (:obj:`obj_tables.Model`): the existing model
+            migrated_model (:obj:`obj_tables.Model`): the corresponding migrated model
             migrated_models (:obj:`dict`): dict of Models; maps migrated model type to a dict mapping
                 migrated model ids to migrated model instances
 
@@ -1300,7 +1300,7 @@ class Migrator(object):
         Assumes that otherwise the schemas are identical
 
         Args:
-            existing_models (:obj:`list` of `obj_model.Model`): the existing models
+            existing_models (:obj:`list` of `obj_tables.Model`): the existing models
 
         Returns:
             :obj:`list`: list of (existing model, corresponding migrated model) pairs
@@ -1326,7 +1326,7 @@ class Migrator(object):
     def _connect_models(self, existing_migrated_pairs):
         """ Connect migrated model instances
 
-        Migrate `obj_model.RelatedAttribute` connections among existing models to migrated models
+        Migrate `obj_tables.RelatedAttribute` connections among existing models to migrated models
 
         Args:
             existing_migrated_pairs (:obj:`list` of `tuple`): pairs of corresponding existing and
@@ -1341,11 +1341,11 @@ class Migrator(object):
                 if migrated_attr is None:
                     continue
 
-                if isinstance(attr, obj_model.RelatedAttribute):
+                if isinstance(attr, obj_tables.RelatedAttribute):
                     val = getattr(existing_model, attr_name)
                     if val is None:
                         migrated_val = val
-                    elif isinstance(val, obj_model.core.Model):
+                    elif isinstance(val, obj_tables.core.Model):
                         migrated_val = getattr(val, self._migrated_copy_attr_name)
                     elif isinstance(val, (set, list, tuple)):
                         migrated_val = []
@@ -1390,7 +1390,7 @@ class Migrator(object):
 
 
 class MigrationWrapper(ABC):
-    """ Interface for classes that define a pair of methods that can modify `obj_model.Model`\ s being migrated
+    """ Interface for classes that define a pair of methods that can modify `obj_tables.Model`\ s being migrated
 
     :obj:`MigrationWrapper` defines the interface used by `transformations`. If it's defined, `transformations`
     uses `prepare_existing_models()` to modify existing models just before they are migrated and uses
@@ -1406,7 +1406,7 @@ class MigrationWrapper(ABC):
 
         Args:
             migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            existing_models (:obj:`list` of `obj_model.Model`:) the models that will be migrated
+            existing_models (:obj:`list` of `obj_tables.Model`:) the models that will be migrated
         """
         pass
 
@@ -1416,7 +1416,7 @@ class MigrationWrapper(ABC):
 
         Args:
             migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            migrated_models (:obj:`list` of `obj_model.Model`:) all models that have been migrated
+            migrated_models (:obj:`list` of `obj_tables.Model`:) all models that have been migrated
         """
         pass
 
@@ -3391,7 +3391,7 @@ class CementControllers(object):
     """ Cement Controllers for cement CLIs in data and schema repos involved with migrating files
 
     Because these controllers are used by multiple schema and data repos, they're defined here and
-    imported into `__main__.py` modules in schema repos that use `obj_model` to define data schemas
+    imported into `__main__.py` modules in schema repos that use `obj_tables` to define data schemas
     and into `__main__.py`
     modules in data repos that contain data files to migrate. `wc_lang` is an example schema repo.
     `wc_sim` is an example data repo that contains data files whose schema is defined in `wc_lang`.

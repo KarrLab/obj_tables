@@ -6,14 +6,14 @@
 :License: MIT
 """
 
-from obj_model import core
+from obj_tables import core
 import Bio.Alphabet
 import Bio.motifs.matrix
 import Bio.Seq
 import Bio.SeqFeature
 import json
 import mock
-import obj_model.bio
+import obj_tables.bio
 import unittest
 
 
@@ -21,17 +21,17 @@ class BioAttributeTestCase(unittest.TestCase):
 
     def test_FeatureLocationAttribute(self):
         # construction
-        attr = obj_model.bio.FeatureLocationAttribute()
+        attr = obj_tables.bio.FeatureLocationAttribute()
         self.assertEqual(attr.get_default(), None)
 
-        attr = obj_model.bio.FeatureLocationAttribute(default=Bio.SeqFeature.FeatureLocation(10, 10, 1))
+        attr = obj_tables.bio.FeatureLocationAttribute(default=Bio.SeqFeature.FeatureLocation(10, 10, 1))
         self.assertEqual(attr.get_default(), Bio.SeqFeature.FeatureLocation(10, 10, 1))
 
         with self.assertRaisesRegex(ValueError, '`default` must be a `Bio.SeqFeature.FeatureLocation`'):
-            obj_model.bio.FeatureLocationAttribute(default='')
+            obj_tables.bio.FeatureLocationAttribute(default='')
 
         # deserialize
-        attr = obj_model.bio.FeatureLocationAttribute()
+        attr = obj_tables.bio.FeatureLocationAttribute()
         self.assertEqual(attr.deserialize(None), (None, None))
         self.assertEqual(attr.deserialize(''), (None, None))
         self.assertEqual(attr.deserialize('10,10,1'), (Bio.SeqFeature.FeatureLocation(10, 10, 1), None))
@@ -44,21 +44,21 @@ class BioAttributeTestCase(unittest.TestCase):
 
         # validate
         obj = None
-        attr = obj_model.bio.FeatureLocationAttribute()
+        attr = obj_tables.bio.FeatureLocationAttribute()
         self.assertEqual(attr.validate(obj, None), None)
         self.assertEqual(attr.validate(obj, Bio.SeqFeature.FeatureLocation(10, 10, 1)), None)
         self.assertNotEqual(attr.validate(obj, 1), None)
 
-        attr = obj_model.bio.FeatureLocationAttribute(primary=True)
+        attr = obj_tables.bio.FeatureLocationAttribute(primary=True)
         self.assertNotEqual(attr.validate(obj, None), None)
 
         with mock.patch.object(core.Attribute, 'validate', return_value=core.InvalidAttribute(None, [])):
             obj = None
-            attr = obj_model.bio.FeatureLocationAttribute()
+            attr = obj_tables.bio.FeatureLocationAttribute()
             self.assertEqual(attr.validate(obj, None), None)
 
         # validate unique
-        attr = obj_model.bio.FeatureLocationAttribute()
+        attr = obj_tables.bio.FeatureLocationAttribute()
         self.assertEqual(attr.validate_unique([], [
             Bio.SeqFeature.FeatureLocation(10, 10, 1),
             None,
@@ -77,7 +77,7 @@ class BioAttributeTestCase(unittest.TestCase):
         ]), None)
 
         # serialize
-        attr = obj_model.bio.FeatureLocationAttribute()
+        attr = obj_tables.bio.FeatureLocationAttribute()
         self.assertEqual(attr.serialize(None), '')
         self.assertEqual(attr.serialize(Bio.SeqFeature.FeatureLocation(10, 10, 1)), '10,10,1')
 
@@ -99,25 +99,25 @@ class BioAttributeTestCase(unittest.TestCase):
 
     def test_BioSeqAttribute(self):
         class Node(core.Model):
-            value = obj_model.bio.BioSeqAttribute()
+            value = obj_tables.bio.BioSeqAttribute()
 
         attr = Node.Meta.attributes['value']
 
         # constructor
-        attr2 = obj_model.bio.BioSeqAttribute(default=None)
+        attr2 = obj_tables.bio.BioSeqAttribute(default=None)
         self.assertEqual(attr2.get_default(), None)
 
-        attr2 = obj_model.bio.BioSeqAttribute(default=Bio.Seq.Seq('acgt'))
+        attr2 = obj_tables.bio.BioSeqAttribute(default=Bio.Seq.Seq('acgt'))
         self.assertEqual(attr2.get_default(), Bio.Seq.Seq('acgt'))
 
         with self.assertRaisesRegex(ValueError, '`default` must be a `Bio.Seq.Seq` or `None`'):
-            obj_model.bio.BioSeqAttribute(default='acgt')
+            obj_tables.bio.BioSeqAttribute(default='acgt')
 
         with self.assertRaisesRegex(ValueError, '`min_length` must be a non-negative integer'):
-            obj_model.bio.BioSeqAttribute(min_length=-1)
+            obj_tables.bio.BioSeqAttribute(min_length=-1)
 
         with self.assertRaisesRegex(ValueError, '`max_length` must be an integer greater than or equal to `min_length`'):
-            obj_model.bio.BioSeqAttribute(min_length=10, max_length=5)
+            obj_tables.bio.BioSeqAttribute(min_length=10, max_length=5)
 
         # deserialize
         self.assertEqual(attr.deserialize(''), (None, None))
@@ -199,7 +199,7 @@ class BioAttributeTestCase(unittest.TestCase):
         with mock.patch.object(core.Attribute, 'validate', return_value=core.InvalidAttribute(None, [])):
             self.assertEqual(attr.validate(node, Bio.Seq.Seq('acgt')), None)
 
-        attr2 = obj_model.bio.BioSeqAttribute(primary=True)
+        attr2 = obj_tables.bio.BioSeqAttribute(primary=True)
         self.assertNotEqual(attr2.validate(None, None), None)
 
         # validate_unique
@@ -228,7 +228,7 @@ class BioAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(attr.to_builtin(seq)), seq)
 
     def test_BioDnaSeqAttribute(self):
-        attr = obj_model.bio.BioDnaSeqAttribute()
+        attr = obj_tables.bio.BioDnaSeqAttribute()
         self.assertEqual(attr.alphabet.letters, Bio.Alphabet.DNAAlphabet().letters)
 
         # to/from JSON
@@ -247,7 +247,7 @@ class BioAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(attr.to_builtin(seq)), seq)
 
     def test_BioRnaSeqAttribute(self):
-        attr = obj_model.bio.BioRnaSeqAttribute()
+        attr = obj_tables.bio.BioRnaSeqAttribute()
         self.assertEqual(attr.alphabet.letters, Bio.Alphabet.RNAAlphabet().letters)
 
         # to/from JSON
@@ -267,7 +267,7 @@ class BioAttributeTestCase(unittest.TestCase):
 
     def test_BioProteinSeqAttribute(self):
         class Node(core.Model):
-            value = obj_model.bio.BioProteinSeqAttribute()
+            value = obj_tables.bio.BioProteinSeqAttribute()
 
         attr = Node.Meta.attributes['value']
 
@@ -319,7 +319,7 @@ class BioAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(attr.to_builtin(seq)), seq)
 
     def test_FrequencyPositionMatrixAttribute(self):
-        attr = obj_model.bio.FrequencyPositionMatrixAttribute()
+        attr = obj_tables.bio.FrequencyPositionMatrixAttribute()
 
         alphabet = Bio.Alphabet.DNAAlphabet()
         alphabet.letters = 'ACGT'

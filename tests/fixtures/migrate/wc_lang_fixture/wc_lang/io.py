@@ -14,14 +14,14 @@ Supported file types:
 
 from wc_lang import core
 from wc_utils.util.string import indent_forest
-import obj_model.utils
-import obj_model
+import obj_tables.utils
+import obj_tables
 import os
 import wc_lang
 import wc_lang.config.core
 
 
-class Writer(obj_model.io.Writer):
+class Writer(obj_tables.io.Writer):
     """ Write model to file(s) """
 
     MODELS = (
@@ -60,7 +60,7 @@ class Writer(obj_model.io.Writer):
             set_repo_metadata_from_path (:obj:`bool`, optional): if :obj:`True`, set the Git repository metadata (URL,
                 branch, revision) for the model from the parent directory of :obj:`core_path`
         """
-        if issubclass(self.get_writer(path), obj_model.io.WorkbookWriter):
+        if issubclass(self.get_writer(path), obj_tables.io.WorkbookWriter):
             self.validate_implicit_relationships()
             self.validate_implicit_relationships_are_set(model)
 
@@ -73,7 +73,7 @@ class Writer(obj_model.io.Writer):
 
         # default meta data for exported model
         if set_repo_metadata_from_path:
-            obj_model.utils.set_git_repo_metadata_from_path(model, path)
+            obj_tables.utils.set_git_repo_metadata_from_path(model, path)
 
         # default meta data for exported file
         if title is None:
@@ -103,12 +103,12 @@ class Writer(obj_model.io.Writer):
                 to :obj:`core.Model`
         """
         for attr in core.Model.Meta.attributes.values():
-            if isinstance(attr, obj_model.RelatedAttribute) and \
+            if isinstance(attr, obj_tables.RelatedAttribute) and \
                     attr.related_class != core.Identifier:
                 raise Exception('Relationships from `Model` not supported')
 
         for attr in core.Model.Meta.related_attributes.values():
-            if not isinstance(attr, (obj_model.OneToOneAttribute, obj_model.ManyToOneAttribute)):
+            if not isinstance(attr, (obj_tables.OneToOneAttribute, obj_tables.ManyToOneAttribute)):
                 raise Exception('Only one-to-one and many-to-one relationships are supported to `Model`')
 
     def validate_implicit_relationships_are_set(self, model):
@@ -124,13 +124,13 @@ class Writer(obj_model.io.Writer):
         """
         for obj in model.get_related():
             for attr in obj.Meta.attributes.values():
-                if isinstance(attr, obj_model.RelatedAttribute) and \
+                if isinstance(attr, obj_tables.RelatedAttribute) and \
                         attr.related_class == core.Model:
                     if getattr(obj, attr.name) != model:
                         raise ValueError('{}.{} must be set to the instance of `Model`'.format(obj.__class__.__name__, attr.name))
 
 
-class Reader(obj_model.io.Reader):
+class Reader(obj_tables.io.Reader):
     """ Read model from file(s) """
 
     MODELS = Writer.MODELS
@@ -164,13 +164,13 @@ class Reader(obj_model.io.Reader):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`dict`: model objects grouped by `obj_model.Model` class
+            :obj:`dict`: model objects grouped by `obj_tables.Model` class
 
         Raises:
             :obj:`ValueError`: if the file defines zero or multiple models or the model defined in the file(s) is
                 invalid
         """
-        if issubclass(self.get_reader(path), obj_model.io.WorkbookReader):
+        if issubclass(self.get_reader(path), obj_tables.io.WorkbookReader):
             Writer.validate_implicit_relationships()
 
         if models is None:
@@ -207,10 +207,10 @@ class Reader(obj_model.io.Reader):
         model = objects[core.Model][0]
 
         # add implicit relationships to `Model`
-        if issubclass(self.get_reader(path), obj_model.io.WorkbookReader):
+        if issubclass(self.get_reader(path), obj_tables.io.WorkbookReader):
             for cls, cls_objects in objects.items():
                 for attr in cls.Meta.attributes.values():
-                    if isinstance(attr, obj_model.RelatedAttribute) and \
+                    if isinstance(attr, obj_tables.RelatedAttribute) and \
                             attr.related_class == core.Model:
                         for cls_obj in cls_objects:
                             setattr(cls_obj, attr.name, model)
@@ -222,7 +222,7 @@ class Reader(obj_model.io.Reader):
             for cls_objs in objects.values():
                 objs.extend(cls_objs)
 
-            errors = obj_model.Validator().validate(objs)
+            errors = obj_tables.Validator().validate(objs)
             if errors:
                 raise ValueError(
                     indent_forest(['The model cannot be loaded because it fails to validate:', [errors]]))

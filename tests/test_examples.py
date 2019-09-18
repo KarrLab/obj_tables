@@ -6,16 +6,16 @@
 :License: MIT
 """
 
-from obj_model import io
-from obj_model import utils
-import obj_model
+from obj_tables import io
+from obj_tables import utils
+import obj_tables
 import os
 import unittest
 
 
 class ExamplesTestCase(unittest.TestCase):
     def test_web_app_example(self):
-        filename = 'obj_model/web_app/examples/parents_children.xlsx'
+        filename = 'obj_tables/web_app/examples/parents_children.xlsx'
         sbtab = True
 
         schema = utils.init_schema(filename, sbtab=sbtab)
@@ -79,28 +79,28 @@ class ExamplesTestCase(unittest.TestCase):
         jamie_doe.favorite_video_game.year = 1986
 
         #########################
-        import obj_model
+        import obj_tables
 
         objects = [jane_doe, john_doe, mary_roe, richard_roe,
                    jamie_doe, jimie_doe, linda_roe, mike_roe]
-        errors = obj_model.Validator().run(objects)
+        errors = obj_tables.Validator().run(objects)
         assert errors is None
 
         #########################
-        import obj_model.io
+        import obj_tables.io
 
-        filename = 'obj_model/web_app/examples/parents_children.xlsx'
-        objects = obj_model.io.Reader().run(filename, sbtab=True,
+        filename = 'obj_tables/web_app/examples/parents_children.xlsx'
+        objects = obj_tables.io.Reader().run(filename, sbtab=True,
                                             models=[parents_children.Parent, parents_children.Child],
                                             group_objects_by_model=True)
         parents = objects[parents_children.Parent]
         jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')
 
         #########################
-        filename = 'obj_model/web_app/examples/parents_children_copy.xlsx'
+        filename = 'obj_tables/web_app/examples/parents_children_copy.xlsx'
         objects = [jane_doe, john_doe, mary_roe, richard_roe,
                    jamie_doe, jimie_doe, linda_roe, mike_roe]
-        obj_model.io.Writer().run(filename, objects,
+        obj_tables.io.Writer().run(filename, objects,
                                   models=[parents_children.Parent, parents_children.Child],
                                   sbtab=True)
 

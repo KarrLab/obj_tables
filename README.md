@@ -1,10 +1,10 @@
-[![PyPI package](https://img.shields.io/pypi/v/obj_model.svg)](https://pypi.python.org/pypi/obj_model)
-[![Documentation](https://readthedocs.org/projects/obj-model/badge/?version=latest)](http://docs.karrlab.org/obj_model)
-[![Test results](https://circleci.com/gh/KarrLab/obj_model.svg?style=shield)](https://circleci.com/gh/KarrLab/obj_model)
-[![Test coverage](https://coveralls.io/repos/github/KarrLab/obj_model/badge.svg)](https://coveralls.io/github/KarrLab/obj_model)
-[![Code analysis](https://api.codeclimate.com/v1/badges/2c4b64abc8bef2ea4e22/maintainability)](https://codeclimate.com/github/KarrLab/obj_model)
-[![License](https://img.shields.io/github/license/KarrLab/obj_model.svg)](LICENSE)
-![Analytics](https://ga-beacon.appspot.com/UA-86759801-1/obj_model/README.md?pixel)
+[![PyPI package](https://img.shields.io/pypi/v/obj_tables.svg)](https://pypi.python.org/pypi/obj_tables)
+[![Documentation](https://readthedocs.org/projects/obj-tables/badge/?version=latest)](http://docs.karrlab.org/obj_tables)
+[![Test results](https://circleci.com/gh/KarrLab/obj_tables.svg?style=shield)](https://circleci.com/gh/KarrLab/obj_tables)
+[![Test coverage](https://coveralls.io/repos/github/KarrLab/obj_tables/badge.svg)](https://coveralls.io/github/KarrLab/obj_tables)
+[![Code analysis](https://api.codeclimate.com/v1/badges/2c4b64abc8bef2ea4e22/maintainability)](https://codeclimate.com/github/KarrLab/obj_tables)
+[![License](https://img.shields.io/github/license/KarrLab/obj_tables.svg)](LICENSE)
+![Analytics](https://ga-beacon.appspot.com/UA-86759801-1/obj_tables/README.md?pixel)
 
 # Database-independent Django-like object model
 
@@ -14,19 +14,19 @@ The `io` module provides methods to serialize and deserialize schema objects to/
 ## Installation
 * Latest release from PyPI
   ```
-  pip install obj_model
+  pip install obj_tables
   ```
 
 * Latest revision from GitHub
   ```
   pip install git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
-  pip install git+https://github.com/KarrLab/obj_model.git#egg=obj_model
+  pip install git+https://github.com/KarrLab/obj_tables.git#egg=obj_tables
   ```
 
 ## Example usage
 
 ## Documentation
-Please see the [documentation](http://docs.karrlab.org/obj_model).
+Please see the [documentation](http://docs.karrlab.org/obj_tables).
 
 ## License
 The software is released under the [MIT license](LICENSE).

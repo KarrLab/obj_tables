@@ -7,7 +7,7 @@ except ImportError:
     import pkg_utils
 import os
 
-name = 'obj_model'
+name = 'obj_tables'
 dirname = os.path.dirname(__file__)
 package_data = {
     name: [
@@ -60,7 +60,7 @@ setuptools.setup(
 
     entry_points={
         'console_scripts': [
-            'obj-model = obj_model.__main__:main',
+            'obj-tables = obj_tables.__main__:main',
         ],
     },
 

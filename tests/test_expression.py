@@ -6,17 +6,17 @@
 :License: MIT
 """
 
-from obj_model.core import (Model, SlugAttribute, FloatAttribute, StringAttribute,
+from obj_tables.core import (Model, SlugAttribute, FloatAttribute, StringAttribute,
                             ManyToOneAttribute, ManyToManyAttribute,
                             InvalidObject, InvalidAttribute)
-from obj_model.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
+from obj_tables.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
                                   ExpressionStaticTermMeta, ExpressionDynamicTermMeta,
                                   ExpressionExpressionTermMeta,
-                                  ObjModelTokenCodes, ObjModelToken, LexMatch,
+                                  ObjTablesTokenCodes, ObjTablesToken, LexMatch,
                                   Expression, ParsedExpression,
                                   ParsedExpressionValidator, LinearParsedExpressionValidator,
                                   ParsedExpressionError)
-from obj_model.units import UnitAttribute
+from obj_tables.units import UnitAttribute
 from wc_utils.util.units import unit_registry
 import mock
 import re
@@ -468,7 +468,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
             }
         })
         self.assertEqual(func, None)
-        self.assertRegex(str(error), 'is ambiguous. ObjModelToken matches')
+        self.assertRegex(str(error), 'is ambiguous. ObjTablesToken matches')
 
     def test__get_model_type(self):
         expr = '3 + 5 * 6'
@@ -513,12 +513,12 @@ class ParsedExpressionTestCase(unittest.TestCase):
         lex_match = parsed_expr._get_disambiguated_id(0, case_fold_match=case_fold_match)
         self.assertIsInstance(lex_match, LexMatch)
         self.assertEqual(lex_match.num_py_tokens, len(pattern))
-        self.assertEqual(len(lex_match.obj_model_tokens), 1)
-        obj_model_token = lex_match.obj_model_tokens[0]
-        self.assertEqual(obj_model_token,
-                         # note: obj_model_token.model is cheating
-                         ObjModelToken(ObjModelTokenCodes.obj_id, expr, disambig_type,
-                                       id, obj_model_token.model))
+        self.assertEqual(len(lex_match.obj_tables_tokens), 1)
+        obj_tables_token = lex_match.obj_tables_tokens[0]
+        self.assertEqual(obj_tables_token,
+                         # note: obj_tables_token.model is cheating
+                         ObjTablesToken(ObjTablesTokenCodes.obj_id, expr, disambig_type,
+                                       id, obj_tables_token.model))
 
     def test_disambiguated_id(self):
         self.do_disambiguated_id_error_test(
@@ -577,14 +577,14 @@ class ParsedExpressionTestCase(unittest.TestCase):
         lex_match = parsed_expr._get_related_obj_id(0, case_fold_match=case_fold_match)
         self.assertIsInstance(lex_match, LexMatch)
         self.assertEqual(lex_match.num_py_tokens, len(pattern))
-        self.assertEqual(len(lex_match.obj_model_tokens), 1)
-        obj_model_token = lex_match.obj_model_tokens[0]
+        self.assertEqual(len(lex_match.obj_tables_tokens), 1)
+        obj_tables_token = lex_match.obj_tables_tokens[0]
 
-        self.assertEqual(obj_model_token,
-                         # note: obj_model_token.model is cheating
-                         ObjModelToken(ObjModelTokenCodes.obj_id, expected_token_string,
+        self.assertEqual(obj_tables_token,
+                         # note: obj_tables_token.model is cheating
+                         ObjTablesToken(ObjTablesTokenCodes.obj_id, expected_token_string,
                                        expected_related_type,
-                                       expected_id, obj_model_token.model))
+                                       expected_id, obj_tables_token.model))
 
     def test_related_object_id_matches(self):
         objects = {
@@ -630,9 +630,9 @@ class ParsedExpressionTestCase(unittest.TestCase):
         lex_match = parsed_expr._get_func_call_id(0)
         self.assertTrue(isinstance(lex_match, LexMatch))
         self.assertEqual(lex_match.num_py_tokens, len(parsed_expr.FUNC_PATTERN))
-        self.assertEqual(len(lex_match.obj_model_tokens), 2)
-        self.assertEqual(lex_match.obj_model_tokens[0], ObjModelToken(ObjModelTokenCodes.math_func_id, 'log'))
-        self.assertEqual(lex_match.obj_model_tokens[1], ObjModelToken(ObjModelTokenCodes.op, '('))
+        self.assertEqual(len(lex_match.obj_tables_tokens), 2)
+        self.assertEqual(lex_match.obj_tables_tokens[0], ObjTablesToken(ObjTablesTokenCodes.math_func_id, 'log'))
+        self.assertEqual(lex_match.obj_tables_tokens[1], ObjTablesToken(ObjTablesTokenCodes.op, '('))
 
         # no token match
         parsed_expr = self.make_parsed_expr('no_fun + 3')
@@ -669,9 +669,9 @@ class ParsedExpressionTestCase(unittest.TestCase):
                 },
             }
         parsed_expr = ParsedExpression(model_type, 'attr', expr, test_objects)
-        obj_model_tokens, related_objects, _ = parsed_expr.tokenize(case_fold_match=case_fold_match)
+        obj_tables_tokens, related_objects, _ = parsed_expr.tokenize(case_fold_match=case_fold_match)
         self.assertEqual(parsed_expr.errors, [])
-        self.assertEqual(obj_model_tokens, expected_wc_tokens)
+        self.assertEqual(obj_tables_tokens, expected_wc_tokens)
         for obj_types in test_objects:
             if obj_types in expected_related_objs.keys():
                 self.assertEqual(related_objects[obj_types], expected_related_objs[obj_types])
@@ -689,15 +689,15 @@ class ParsedExpressionTestCase(unittest.TestCase):
     def test_non_identifier_tokens(self):
         expr = ' 7 * ( 5 - 3 ) / 2'
         expected_wc_tokens = [
-            ObjModelToken(code=ObjModelTokenCodes.number, token_string='7'),
-            ObjModelToken(code=ObjModelTokenCodes.op, token_string='*'),
-            ObjModelToken(code=ObjModelTokenCodes.op, token_string='('),
-            ObjModelToken(code=ObjModelTokenCodes.number, token_string='5'),
-            ObjModelToken(code=ObjModelTokenCodes.op, token_string='-'),
-            ObjModelToken(code=ObjModelTokenCodes.number, token_string='3'),
-            ObjModelToken(code=ObjModelTokenCodes.op, token_string=')'),
-            ObjModelToken(code=ObjModelTokenCodes.op, token_string='/'),
-            ObjModelToken(code=ObjModelTokenCodes.number, token_string='2'),
+            ObjTablesToken(code=ObjTablesTokenCodes.number, token_string='7'),
+            ObjTablesToken(code=ObjTablesTokenCodes.op, token_string='*'),
+            ObjTablesToken(code=ObjTablesTokenCodes.op, token_string='('),
+            ObjTablesToken(code=ObjTablesTokenCodes.number, token_string='5'),
+            ObjTablesToken(code=ObjTablesTokenCodes.op, token_string='-'),
+            ObjTablesToken(code=ObjTablesTokenCodes.number, token_string='3'),
+            ObjTablesToken(code=ObjTablesTokenCodes.op, token_string=')'),
+            ObjTablesToken(code=ObjTablesTokenCodes.op, token_string='/'),
+            ObjTablesToken(code=ObjTablesTokenCodes.number, token_string='2'),
         ]
         self.do_tokenize_id_test(expr, expected_wc_tokens, {})
 
@@ -715,7 +715,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
             },
         }
         expected_wc_tokens = \
-            [ObjModelToken(ObjModelTokenCodes.obj_id, expr, SubFunction,
+            [ObjTablesToken(ObjTablesTokenCodes.obj_id, expr, SubFunction,
                            expr, sub_func)]
         expected_related_objs = self.extract_from_objects(objs, [(SubFunction, expr)])
         self.do_tokenize_id_test(expr, expected_wc_tokens, expected_related_objs, test_objects=objs)
@@ -723,12 +723,12 @@ class ParsedExpressionTestCase(unittest.TestCase):
         # test _get_disambiguated_id
         expr = 'Parameter.duped_id + 2*SubFunction.duped_id'
         expected_wc_tokens = [
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'Parameter.duped_id', Parameter, 'duped_id',
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'Parameter.duped_id', Parameter, 'duped_id',
                           objs[Parameter]['duped_id']),
-            ObjModelToken(ObjModelTokenCodes.op, '+'),
-            ObjModelToken(ObjModelTokenCodes.number, '2'),
-            ObjModelToken(ObjModelTokenCodes.op, '*'),
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'SubFunction.duped_id', SubFunction, 'duped_id',
+            ObjTablesToken(ObjTablesTokenCodes.op, '+'),
+            ObjTablesToken(ObjTablesTokenCodes.number, '2'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '*'),
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'SubFunction.duped_id', SubFunction, 'duped_id',
                           objs[SubFunction]['duped_id']),
         ]
         expected_related_objs = self.extract_from_objects(objs, [(Parameter, 'duped_id'),
@@ -739,15 +739,15 @@ class ParsedExpressionTestCase(unittest.TestCase):
         expr = 'log(3) + func_1 - SubFunction.Function'
         objs = {SubFunction: {'func_1': SubFunction(), 'Function': SubFunction()}}
         expected_wc_tokens = [
-            ObjModelToken(code=ObjModelTokenCodes.math_func_id, token_string='log'),
-            ObjModelToken(ObjModelTokenCodes.op, '('),
-            ObjModelToken(ObjModelTokenCodes.number, '3'),
-            ObjModelToken(ObjModelTokenCodes.op, ')'),
-            ObjModelToken(ObjModelTokenCodes.op, '+'),
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'func_1', SubFunction, 'func_1',
+            ObjTablesToken(code=ObjTablesTokenCodes.math_func_id, token_string='log'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '('),
+            ObjTablesToken(ObjTablesTokenCodes.number, '3'),
+            ObjTablesToken(ObjTablesTokenCodes.op, ')'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '+'),
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'func_1', SubFunction, 'func_1',
                           objs[SubFunction]['func_1']),
-            ObjModelToken(ObjModelTokenCodes.op, '-'),
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'SubFunction.Function', SubFunction, 'Function',
+            ObjTablesToken(ObjTablesTokenCodes.op, '-'),
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'SubFunction.Function', SubFunction, 'Function',
                           objs[SubFunction]['Function'])
         ]
         expected_related_objs = self.extract_from_objects(objs,
@@ -761,10 +761,10 @@ class ParsedExpressionTestCase(unittest.TestCase):
             LinearSubFunction: {'duped_id': LinearSubFunction()},
         }
         expected_wc_tokens = [
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'TEST_ID', SubFunction, 'test_id',
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'TEST_ID', SubFunction, 'test_id',
                           objs[SubFunction]['test_id']),
-            ObjModelToken(ObjModelTokenCodes.op, '-'),
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'SubFunction.DUPED_ID', SubFunction, 'duped_id',
+            ObjTablesToken(ObjTablesTokenCodes.op, '-'),
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'SubFunction.DUPED_ID', SubFunction, 'duped_id',
                           objs[SubFunction]['duped_id']),
         ]
         expected_related_objs = self.extract_from_objects(objs, [(SubFunction, 'duped_id'),
@@ -780,7 +780,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
         }
         expr = 'SubFunction.test_id'
         expected_wc_tokens = [
-            ObjModelToken(ObjModelTokenCodes.obj_id, expr, SubFunction, 'test_id',
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, expr, SubFunction, 'test_id',
                           test_objects[SubFunction]['test_id'])
         ]
         expected_related_objs = self.extract_from_objects(test_objects, [(SubFunction, 'test_id')])
@@ -794,7 +794,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
         }
         expr = 'LinearSubFunction.fun_2'
         expected_wc_tokens = [
-            ObjModelToken(ObjModelTokenCodes.obj_id, expr, LinearSubFunction, 'fun_2',
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, expr, LinearSubFunction, 'fun_2',
                           test_objects[LinearSubFunction]['fun_2'])
         ]
         expected_related_objs = self.extract_from_objects(test_objects, [(LinearSubFunction, 'fun_2')])
@@ -867,11 +867,11 @@ class ParsedExpressionTestCase(unittest.TestCase):
         })
         self.assertIn(expr, str(parsed_expr))
         self.assertIn('errors: []', str(parsed_expr))
-        self.assertIn('obj_model_tokens: []', str(parsed_expr))
+        self.assertIn('obj_tables_tokens: []', str(parsed_expr))
         parsed_expr.tokenize()
         self.assertIn(expr, str(parsed_expr))
         self.assertIn('errors: []', str(parsed_expr))
-        self.assertIn('obj_model_tokens: [ObjModelToken', str(parsed_expr))
+        self.assertIn('obj_tables_tokens: [ObjTablesToken', str(parsed_expr))
 
     def test_model_class_lacks_meta(self):
         class Foo(object):
@@ -916,7 +916,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
 
         parsed_expr._compile()
 
-        parsed_expr._obj_model_tokens = None
+        parsed_expr._obj_tables_tokens = None
         with self.assertRaisesRegex(ParsedExpressionError, 'not been successfully tokenized'):
             parsed_expr._compile()
 
@@ -933,7 +933,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
         self.do_test_eval('p_1 * 1p', Function, FunctionExpression, 1., 3.)
         self.do_test_eval('p_1 * 1p + func_1', Function, FunctionExpression, 1., 7.)
 
-        # test combination of ObjModelTokenCodes
+        # test combination of ObjTablesTokenCodes
         expected_val = 4 * 1. + pow(2, 2.) + 4.
         self.do_test_eval('4 * p_1 + pow(2, p_2) + func_1', Function, FunctionExpression,
                           None, expected_val)
@@ -1103,63 +1103,63 @@ class ParsedExpressionValidatorTestCase(unittest.TestCase):
     def test_expression_verifier(self):
 
         number_is_good_transitions = [   # (current state, message, next state)
-            ('start', (ObjModelTokenCodes.number, None), 'accept'),
+            ('start', (ObjTablesTokenCodes.number, None), 'accept'),
         ]
         expression_verifier = ParsedExpressionValidator('start', 'accept', number_is_good_transitions)
         number_is_good = [
-            ObjModelToken(ObjModelTokenCodes.number, '3'),
+            ObjTablesToken(ObjTablesTokenCodes.number, '3'),
         ]
-        valid, error = expression_verifier.validate(mock.Mock(_obj_model_tokens=number_is_good))
+        valid, error = expression_verifier.validate(mock.Mock(_obj_tables_tokens=number_is_good))
         self.assertTrue(valid)
         self.assertTrue(error is None)
         # an empty expression is invalid
-        valid, error = expression_verifier.validate(mock.Mock(_obj_model_tokens=[]))
+        valid, error = expression_verifier.validate(mock.Mock(_obj_tables_tokens=[]))
         self.assertFalse(valid)
 
     def test_linear_expression_verifier(self):
 
-        obj_model_tokens = [   # id0 - 3*id1 - 3.5*id1 + 3.14e+2*id3
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'id0'),
-            ObjModelToken(ObjModelTokenCodes.op, '-'),
-            ObjModelToken(ObjModelTokenCodes.number, '3'),
-            ObjModelToken(ObjModelTokenCodes.op, '*'),
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'id1'),
-            ObjModelToken(ObjModelTokenCodes.op, '-'),
-            ObjModelToken(ObjModelTokenCodes.number, '3.5'),
-            ObjModelToken(ObjModelTokenCodes.op, '*'),
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'id1'),
-            ObjModelToken(ObjModelTokenCodes.op, '+'),
-            ObjModelToken(ObjModelTokenCodes.number, '3.14e+2'),
-            ObjModelToken(ObjModelTokenCodes.op, '*'),
-            ObjModelToken(ObjModelTokenCodes.obj_id, 'id3'),
+        obj_tables_tokens = [   # id0 - 3*id1 - 3.5*id1 + 3.14e+2*id3
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'id0'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '-'),
+            ObjTablesToken(ObjTablesTokenCodes.number, '3'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '*'),
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'id1'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '-'),
+            ObjTablesToken(ObjTablesTokenCodes.number, '3.5'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '*'),
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'id1'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '+'),
+            ObjTablesToken(ObjTablesTokenCodes.number, '3.14e+2'),
+            ObjTablesToken(ObjTablesTokenCodes.op, '*'),
+            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'id3'),
         ]
-        valid_linear_expr = mock.Mock(_obj_model_tokens=obj_model_tokens)
+        valid_linear_expr = mock.Mock(_obj_tables_tokens=obj_tables_tokens)
 
         linear_expression_verifier = LinearParsedExpressionValidator()
         valid, error = linear_expression_verifier.validate(valid_linear_expr)
         self.assertTrue(valid)
         self.assertTrue(error is None)
-        # dropping any single token from obj_model_tokens produces an invalid expression
-        for i in range(len(obj_model_tokens)):
-            wc_tokens_without_i = obj_model_tokens[:i] + obj_model_tokens[i+1:]
-            valid, error = linear_expression_verifier.validate(mock.Mock(_obj_model_tokens=wc_tokens_without_i))
+        # dropping any single token from obj_tables_tokens produces an invalid expression
+        for i in range(len(obj_tables_tokens)):
+            wc_tokens_without_i = obj_tables_tokens[:i] + obj_tables_tokens[i+1:]
+            valid, error = linear_expression_verifier.validate(mock.Mock(_obj_tables_tokens=wc_tokens_without_i))
             self.assertFalse(valid)
 
         # an empty expression is valid
-        valid, error = linear_expression_verifier.validate(mock.Mock(_obj_model_tokens=[]))
+        valid, error = linear_expression_verifier.validate(mock.Mock(_obj_tables_tokens=[]))
         self.assertTrue(valid)
         self.assertTrue(error is None)
 
         invalid_wc_tokens = [
-            [ObjModelToken(ObjModelTokenCodes.math_func_id, 'log')],    # math functions not allowed
-            [ObjModelToken(ObjModelTokenCodes.number, '3j')],           # numbers must be floats
+            [ObjTablesToken(ObjTablesTokenCodes.math_func_id, 'log')],    # math functions not allowed
+            [ObjTablesToken(ObjTablesTokenCodes.number, '3j')],           # numbers must be floats
         ]
         for invalid_wc_token in invalid_wc_tokens:
-            valid, error = linear_expression_verifier.validate(mock.Mock(_obj_model_tokens=invalid_wc_token))
+            valid, error = linear_expression_verifier.validate(mock.Mock(_obj_tables_tokens=invalid_wc_token))
             self.assertFalse(valid)
 
         invalid_wc_tokens = [
-            [ObjModelToken(ObjModelTokenCodes.other, ',')],             # other not allowed
+            [ObjTablesToken(ObjTablesTokenCodes.other, ',')],             # other not allowed
         ]
         for invalid_wc_token in invalid_wc_tokens:
             error = linear_expression_verifier._make_dfsa_messages(invalid_wc_token)

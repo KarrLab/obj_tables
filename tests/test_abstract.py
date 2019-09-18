@@ -6,26 +6,26 @@
 :License: MIT
 """
 
-import obj_model.abstract
-import obj_model.core
+import obj_tables.abstract
+import obj_tables.core
 import unittest
 
 
-class Child(obj_model.core.Model):
-    name = obj_model.core.SlugAttribute()
+class Child(obj_tables.core.Model):
+    name = obj_tables.core.SlugAttribute()
 
 
-class A_Abc(obj_model.abstract.AbstractModel):
-    name = obj_model.core.SlugAttribute()
-    children = obj_model.core.OneToManyAttribute(Child, related_name='parent')
+class A_Abc(obj_tables.abstract.AbstractModel):
+    name = obj_tables.core.SlugAttribute()
+    children = obj_tables.core.OneToManyAttribute(Child, related_name='parent')
 
-    @obj_model.abstract.abstractmethod
+    @obj_tables.abstract.abstractmethod
     def abstract_method(self, x, y=None):
         pass
 
 
 class A_Still_Abc(A_Abc):
-    long_name = obj_model.core.LongStringAttribute()
+    long_name = obj_tables.core.LongStringAttribute()
     pass
 
 
