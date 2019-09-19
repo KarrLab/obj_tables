@@ -15,7 +15,7 @@ import unittest
 
 class ExamplesTestCase(unittest.TestCase):
     def test_web_app_example(self):
-        filename = 'obj_tables/web_app/examples/parents_children.xlsx'
+        filename = 'examples/parents_children.xlsx'
         sbtab = True
 
         schema = utils.init_schema(filename, sbtab=sbtab)
@@ -89,7 +89,7 @@ class ExamplesTestCase(unittest.TestCase):
         #########################
         import obj_tables.io
 
-        filename = 'obj_tables/web_app/examples/parents_children.xlsx'
+        filename = 'examples/parents_children.xlsx'
         objects = obj_tables.io.Reader().run(filename, sbtab=True,
                                             models=[parents_children.Parent, parents_children.Child],
                                             group_objects_by_model=True)
@@ -97,7 +97,7 @@ class ExamplesTestCase(unittest.TestCase):
         jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')
 
         #########################
-        filename = 'obj_tables/web_app/examples/parents_children_copy.xlsx'
+        filename = 'examples/parents_children_copy.xlsx'
         objects = [jane_doe, john_doe, mary_roe, richard_roe,
                    jamie_doe, jimie_doe, linda_roe, mike_roe]
         obj_tables.io.Writer().run(filename, objects,
