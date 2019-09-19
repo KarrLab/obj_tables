@@ -856,14 +856,6 @@ class Migrator(object):
 
         existing_models_migrating = [self.existing_defs[model_name] for model_name in self.models_map.keys()]
 
-        # detect sheets that cannot be unambiguously mapped
-        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, existing_models_migrating)
-        if ambiguous_sheet_names:
-            msg = 'The following sheets cannot be unambiguously mapped to models:'
-            for sheet_name, models in ambiguous_sheet_names.items():
-                msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
-            warn(msg, MigrateWarning)
-
         # use the existing_file sheet names to establish the order of existing models
         model_order = [None]*len(sheet_names)
         ambiguous_models = []

@@ -436,7 +436,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_xl = os.path.join(self.tmp_dirname, 'schema.xlsx')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['!DEFINITION'] = wb.pop('')
+        wb['!' + core.SCHEMA_SHEET_NAME] = wb.pop('')
         wc_utils.workbook.io.write(schema_xl, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -483,7 +483,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_xl_2 = os.path.join(self.tmp_dirname, 'schema-invalid.xlsx')
 
         wb = wc_utils.workbook.io.read(schema_xl)
-        wb['DEFINITION'] = wb.pop('!DEFINITION')
+        wb[core.SCHEMA_SHEET_NAME] = wb.pop('!' + core.SCHEMA_SHEET_NAME)
         wc_utils.workbook.io.write(schema_xl_2, wb)
         with self.assertRaisesRegex(ValueError, 'must contain a sheet'):
             utils.init_schema(schema_xl_2,
@@ -491,16 +491,16 @@ class InitSchemaTestCase(unittest.TestCase):
                               sbtab=True)
 
         wb = wc_utils.workbook.io.read(schema_xl)
-        wb['!DEFINITION'][0][0] = wb['!DEFINITION'][0][0].replace(
-            "TableID='DEFINITION'", "TableID='DEF'")
+        wb['!' + core.SCHEMA_SHEET_NAME][0][0] = wb['!' + core.SCHEMA_SHEET_NAME][0][0].replace(
+            "TableType='{}'".format(core.SCHEMA_TABLE_TYPE), "TableID='{}'".format('my' + core.SCHEMA_TABLE_TYPE))
         wc_utils.workbook.io.write(schema_xl_2, wb)
-        with self.assertRaisesRegex(ValueError, 'TableID must be'):
+        with self.assertRaisesRegex(ValueError, 'TableType must be'):
             utils.init_schema(schema_xl_2,
                               out_filename=out_filename,
                               sbtab=True)
 
         wb = wc_utils.workbook.io.read(schema_xl)
-        wb['!DEFINITION'][3][0] = wb['!DEFINITION'][3][0] + '?'
+        wb['!' + core.SCHEMA_SHEET_NAME][3][0] = wb['!' + core.SCHEMA_SHEET_NAME][3][0] + '?'
         wc_utils.workbook.io.write(schema_xl_2, wb)
         with self.assertRaisesRegex(ValueError, 'names must consist of'):
             utils.init_schema(schema_xl_2,
@@ -513,7 +513,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_csv_wb = os.path.join(self.tmp_dirname, 'schema-*.csv')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['!DEFINITION'] = wb.pop('')
+        wb['!' + core.SCHEMA_SHEET_NAME] = wb.pop('')
         wc_utils.workbook.io.write(schema_csv_wb, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -562,8 +562,8 @@ class InitSchemaTestCase(unittest.TestCase):
 
         filename = os.path.join(self.tmp_dirname, 'schema.csv')
         ws_metadata = ['!!SBtab',
-                       "TableID='DEFINITION'",
-                       "TableName='Allowed_types'",
+                       "TableType='{}'".format(core.SCHEMA_TABLE_TYPE),
+                       "TableName='Schema'",
                        "SBtabVersion='2.0'",
                        ]
 
@@ -616,29 +616,32 @@ class InitSchemaTestCase(unittest.TestCase):
 
         wb = wc_utils.workbook.io.read(filename)
         wb['Extra'] = wc_utils.workbook.Worksheet()
-        wb['!' + core.SBTAB_SCHEMA_NAME] = wc_utils.workbook.Worksheet()
+        wb['Extra'].append(wc_utils.workbook.Row([
+            "!!SBtab TableType='Data' TableID='Extra' SBtabVersion='2.0'"]))
+        wb['!' + core.SCHEMA_SHEET_NAME] = wc_utils.workbook.Worksheet()
+        wb['!' + core.SCHEMA_SHEET_NAME].append(wc_utils.workbook.Row([
+            "!!SBtab TableType='{}' SBtabVersion='2.0'".format(core.SCHEMA_TABLE_TYPE)]))
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
-            sbtab=True, ignore_extra_sheets=True)[schema.Parent][0]
+            sbtab=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
+
+        wb = wc_utils.workbook.io.read(filename)
+        wb['!Extra'] = wb.pop('Extra')
+        wc_utils.workbook.io.write(filename, wb)
+        obj_tables.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            sbtab=True, ignore_extra_sheets=True)[schema.Parent][0]
 
         with self.assertRaisesRegex(ValueError, 'No matching models'):
             obj_tables.io.WorkbookReader().run(
                 filename,
                 models=[schema.Parent, schema.Child],
                 sbtab=True, ignore_extra_sheets=False)[schema.Parent][0]
-
-        wb = wc_utils.workbook.io.read(filename)
-        wb['!Extra'] = wb.pop('Extra')
-        wc_utils.workbook.io.write(filename, wb)
-        with self.assertRaisesRegex(ValueError, 'No matching models'):
-            obj_tables.io.WorkbookReader().run(
-                filename,
-                models=[schema.Parent, schema.Child],
-                sbtab=True, ignore_extra_sheets=True)[schema.Parent][0]
 
     def test_extra_attributes(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')

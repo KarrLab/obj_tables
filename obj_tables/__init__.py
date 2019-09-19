@@ -18,7 +18,8 @@ from .core import (Model, Attribute,
                    ModelSource, TableFormat,
                    get_models, get_model, excel_col_name,
                    ModelMerge,
-                   TOC_NAME, SBTAB_TOC_NAME, SCHEMA_NAME, SBTAB_SCHEMA_NAME)
+                   TOC_TABLE_TYPE, TOC_SHEET_NAME, 
+                   SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 from . import abstract
 from . import expression
 from . import io

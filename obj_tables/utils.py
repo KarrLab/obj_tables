@@ -14,7 +14,7 @@ from pathlib import Path
 from random import shuffle
 from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
                             InvalidObject, Validator, TableFormat,
-                            SCHEMA_NAME, SBTAB_SCHEMA_NAME)
+                            SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 from wc_utils.util import git
 import collections
 import importlib
@@ -437,26 +437,20 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
 
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
-        if sbtab:
-            schema_sheet_name = '!' + SBTAB_SCHEMA_NAME
-        else:
-            schema_sheet_name = SCHEMA_NAME
+        sheet_name = '!' + SCHEMA_SHEET_NAME
     elif ext in ['.csv', '.tsv']:
         if '*' in filename:
-            if sbtab:
-                schema_sheet_name = '!' + SBTAB_SCHEMA_NAME
-            else:
-                schema_sheet_name = SCHEMA_NAME
+            sheet_name = '!' + SCHEMA_SHEET_NAME
         else:
-            schema_sheet_name = ''
+            sheet_name = ''
     else:
         raise ValueError('{} format is not supported.'.format(ext))
 
     wb = wc_utils.workbook.io.read(filename)
-    if schema_sheet_name not in wb:
+    if sheet_name not in wb:
         raise ValueError('File must contain a sheet with name "{}".'.format(
-            schema_sheet_name))
-    ws = wb[schema_sheet_name]
+            sheet_name))
+    ws = wb[sheet_name]
 
     if sbtab:
         name_col_name = '!ComponentName'
@@ -470,25 +464,21 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         class_type = 'Table'
         attr_type = 'Column'
     else:
-        name_col_name = 'Name'
-        type_col_name = 'Type'
-        parent_col_name = 'Parent'
-        format_col_name = 'Format'
-        verbose_name_col_name = 'Verbose name'
-        verbose_name_plural_col_name = 'Verbose name plural'
-        desc_col_name = 'Description'
+        name_col_name = '!Name'
+        type_col_name = '!Type'
+        parent_col_name = '!Parent'
+        format_col_name = '!Format'
+        verbose_name_col_name = '!Verbose name'
+        verbose_name_plural_col_name = '!Verbose name plural'
+        desc_col_name = '!Description'
 
         class_type = 'Model'
         attr_type = 'Attribute'
 
     rows = ws
-    metadata, _ = WorkbookReader.read_worksheet_metadata(rows, sbtab=sbtab)
-    if sbtab:
-        schema_name = SBTAB_SCHEMA_NAME
-    else:
-        schema_name = SCHEMA_NAME
-    if metadata.get('TableID', None) != schema_name:
-        raise ValueError("TableID must be '{}'.".format(SBTAB_SCHEMA_NAME))
+    metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows, sbtab=sbtab)
+    if metadata.get('TableType', None) != SCHEMA_TABLE_TYPE:
+        raise ValueError("TableType must be '{}'.".format(SCHEMA_TABLE_TYPE))
 
     header_row = rows[0]
     rows = rows[1:]

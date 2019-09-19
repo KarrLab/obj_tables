@@ -1,4 +1,4 @@
-!!SBtab TableID='DEFINITION' TableName='Table/model and column/attribute definitions' SBtabVersion='2.0',,,,
+!!SBtab TableType='Schema' Description='Table/model and column/attribute definitions' SBtabVersion='2.0',,,,
 !ComponentName,!ComponentType,!IsPartOf,!Format,!Description
 Parent,Table,,column,Represents a parent
 Id,Column,Parent,slug,Identifier

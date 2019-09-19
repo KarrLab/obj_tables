@@ -619,7 +619,7 @@ class TestIo(unittest.TestCase):
             # raises extra sheet exception
             WorkbookReader().run(filename, models=[SimpleModel])
         self.assertEqual(str(context.exception),
-                         "No matching models for worksheets/files {} / 'extra sheet'".format(fixture_file))
+                         "No matching models for worksheets with TableIDs 'extra sheet' in {}".format(fixture_file))
 
         with self.assertRaises(ValueError) as context:
             # raises extra attribute exception
@@ -656,37 +656,6 @@ class TestIo(unittest.TestCase):
     def test_run_options(self):
         self.run_options_helper('test_run_options.xlsx')
         self.run_options_helper('test_run_options-*.csv')
-
-    def test_get_ambiguous_sheet_names(self):
-        class TestModel(core.Model):
-            pass
-
-        class TestModels(core.Model):
-            pass
-
-        class TestModels2(core.Model):
-            pass
-
-        class TestModels3(core.Model):
-
-            class Meta(core.Model.Meta):
-                verbose_name = 'TestModel'
-
-        self.assertEqual(sorted(WorkbookReader.get_possible_model_sheet_names(TestModel)),
-                         sorted(['TestModel', 'Test model', 'Test models']))
-        self.assertEqual(sorted(WorkbookReader.get_possible_model_sheet_names(TestModels)),
-                         sorted(['TestModels', 'Test models', 'Test modelss']))
-        self.assertEqual(sorted(WorkbookReader.get_possible_model_sheet_names(TestModels2)),
-                         sorted(['TestModels2', 'Test models2', 'Test models2s']))
-        self.assertEqual(sorted(WorkbookReader.get_possible_model_sheet_names(TestModels3)),
-                         sorted(['TestModels3', 'TestModel', 'TestModels']))
-
-        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(['Test models', 'Test model', 'TestModel', 'TestModels'], [
-            TestModel, TestModels, TestModels2, TestModels3])
-        self.assertEqual(len(ambiguous_sheet_names), 3)
-        self.assertEqual(ambiguous_sheet_names['Test models'], [TestModel, TestModels])
-        self.assertEqual(ambiguous_sheet_names['TestModel'], [TestModel, TestModels3])
-        self.assertEqual(ambiguous_sheet_names['TestModels'], [TestModels, TestModels3])
 
     def test_read_empty_numeric_cell(self):
         wb = openpyxl.Workbook()
@@ -947,6 +916,7 @@ class TestIo(unittest.TestCase):
             self.assertTrue(obj2.is_equal(obj))
 
         model_metadata = {Node: {
+            'TableType': 'Data',
             'TableID': 'Node',
             'TableName': 'Nodes',
             'ObjTablesVersion': obj_tables.__version__,
@@ -1308,32 +1278,6 @@ class TestMisc(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, 'cannot be serialized'):
             WorkbookReader().run(filename, models=[ReaderParent, ReaderChild])
-
-    def test_abiguous_sheet_names_error(self):
-        class Node4(core.Model):
-            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
-
-            class Meta(core.Model.Meta):
-                verbose_name = 'Node'
-
-        class Node5(core.Model):
-            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
-
-            class Meta(core.Model.Meta):
-                verbose_name = 'Node'
-
-        node1 = Node4(id='node_1')
-        node2 = Node5(id='node_2')
-
-        filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = WorkbookWriter()
-
-        with self.assertRaisesRegex(ValueError, 'cannot be unambiguously mapped to models'):
-            writer.run(filename, [node1, node2], models=[Node4, Node5])
-
-        writer.run(filename, [node1], models=[Node4])
-        with self.assertRaisesRegex(ValueError, 'The following sheets cannot be unambiguously mapped to models:'):
-            WorkbookReader().run(filename, models=[Node4, Node5])
 
     def test_read_missing_sheet(self):
         class Node6(core.Model):

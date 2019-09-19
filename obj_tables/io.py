@@ -8,8 +8,8 @@
 
 :Author: Jonathan Karr <karr@mssm.edu>
 :Author: Arthur Goldberg <Arthur.Goldberg@mssm.edu>
-:Date: 2016-11-23
-:Copyright: 2016, Karr Lab
+:Date: 2019-09-19
+:Copyright: 2016-2019, Karr Lab
 :License: MIT
 """
 
@@ -34,10 +34,10 @@ from os.path import basename, dirname, splitext
 from warnings import warn
 from obj_tables import utils
 from obj_tables.core import (Model, Attribute, RelatedAttribute, Validator, TableFormat,
-                            InvalidObject, excel_col_name,
-                            InvalidAttribute, ObjTablesWarning,
-                            TOC_NAME, SBTAB_TOC_NAME,
-                            SCHEMA_NAME, SBTAB_SCHEMA_NAME)
+                             InvalidObject, excel_col_name,
+                             InvalidAttribute, ObjTablesWarning,
+                             TOC_TABLE_TYPE, TOC_SHEET_NAME,
+                             SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
@@ -345,12 +345,6 @@ class WorkbookWriter(WriterBase):
                 sheet_names.append(model.Meta.verbose_name_plural)
             else:
                 sheet_names.append(model.Meta.verbose_name)
-        ambiguous_sheet_names = WorkbookReader.get_ambiguous_sheet_names(sheet_names, models)
-        if ambiguous_sheet_names:
-            msg = 'The following sheets cannot be unambiguously mapped to models:'
-            for sheet_name, models in ambiguous_sheet_names.items():
-                msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
-            raise ValueError(msg)
 
         # check that models are serializble
         for cls in grouped_objects.keys():
@@ -400,23 +394,21 @@ class WorkbookWriter(WriterBase):
                 appear in the table of contents
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
+        sheet_name = '!' + TOC_SHEET_NAME
+        table_type = TOC_TABLE_TYPE
         if sbtab:
-            sheet_name = '!' + SBTAB_TOC_NAME
             format = 'SBtab'
-            table_id = SBTAB_TOC_NAME
             version = '2.0'
             headings = ['!Table', '!Description', '!NumberOfObjects']
         else:
-            sheet_name = TOC_NAME
             format = 'ObjTables'
-            table_id = TOC_NAME
             version = obj_tables.__version__
-            headings = ['Table', 'Description', 'Number of objects']
+            headings = ['!Table', '!Description', '!Number of objects']
 
         now = datetime.now()
         metadata = ["!!{}".format(format),
-                    "TableID='{}'".format(table_id),
-                    "TableName='{}'".format(table_id[0].upper() + table_id[1:].lower()),
+                    "TableType='{}'".format(table_type),
+                    "TableName='{}'".format('Table of contents'),
                     "Description='Table/model and column/attribute definitions'",
                     "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
             now.year, now.month, now.day, now.hour, now.minute, now.second),
@@ -1010,76 +1002,98 @@ class WorkbookReader(ReaderBase):
         if not isinstance(models, (list, tuple)):
             models = [models]
 
-        # check that sheets can be unambiguously mapped to models
+        # map sheet names to model names
         sheet_names = reader.get_sheet_names()
 
+        model_name_to_sheet_name = collections.OrderedDict()
+        sheet_name_to_model_name = collections.OrderedDict()
         if sbtab:
-            toc_sheet_name = '!' + SBTAB_TOC_NAME
-            schema_sheet_name = '!' + SBTAB_SCHEMA_NAME
+            for sheet_name in sheet_names:
+                if sheet_name.startswith('!'):
+                    data = reader.read_worksheet(sheet_name)
+                    metadata, _ = self.read_worksheet_metadata(sheet_name, data, sbtab=sbtab)
+                    if metadata['TableType'] != 'Data':
+                        continue
+                    assert 'TableID' in metadata, 'Metadata for sheet "{}" must define the TableID.'.format(sheet_name)
+                    model_name_to_sheet_name[metadata['TableID']] = sheet_name
+                    sheet_name_to_model_name[sheet_name] = metadata['TableID']
         else:
-            toc_sheet_name = TOC_NAME
-            schema_sheet_name = SCHEMA_NAME
-        if toc_sheet_name in sheet_names:
-            sheet_names.remove(toc_sheet_name)
-        if schema_sheet_name in sheet_names:
-            sheet_names.remove(schema_sheet_name)
+            unordered_sheet_name_to_model_name = {}
+            for model in models:
+                sheet_name = self.get_model_sheet_name(sheet_names, model)
+                if sheet_name:
+                    unordered_sheet_name_to_model_name[sheet_name] = model.__name__
+
+            for sheet_name in sheet_names:
+                if sheet_name in unordered_sheet_name_to_model_name:
+                    sheet_name_to_model_name[sheet_name] = unordered_sheet_name_to_model_name[sheet_name]
+                    model_name_to_sheet_name[unordered_sheet_name_to_model_name[sheet_name]] = sheet_name
+                else:
+                    sheet_name_to_model_name[sheet_name] = None
 
         # drop metadata models unless they're requested
+        if sbtab:
+            ignore_model_names = []
+        else:
+            ignore_model_names = [TOC_SHEET_NAME, SCHEMA_SHEET_NAME]
+
         for metadata_model in (utils.DataRepoMetadata, utils.SchemaRepoMetadata):
             if metadata_model not in models:
-                if metadata_model.Meta.verbose_name in sheet_names:
-                    sheet_names.remove(metadata_model.Meta.verbose_name)
+                ignore_model_names.append(metadata_model.Meta.verbose_name)
 
-        ambiguous_sheet_names = self.get_ambiguous_sheet_names(sheet_names, models)
-        if ambiguous_sheet_names:
-            msg = 'The following sheets cannot be unambiguously mapped to models:'
-            for sheet_name, models in ambiguous_sheet_names.items():
-                msg += '\n  {}: {}'.format(sheet_name, ', '.join(model.__name__ for model in models))
-            raise ValueError(msg)
+        for ignore_model_name in ignore_model_names:
+            model_name_to_sheet_name.pop(ignore_model_name, None)
+
+        # build maps between sheet names and models
+        model_name_to_model = {model.__name__: model for model in models}
+
+        model_to_sheet_name = collections.OrderedDict()
+        for model_name, sheet_name in model_name_to_sheet_name.items():
+            model = model_name_to_model.get(model_name, None)
+            if model:
+                model_to_sheet_name[model] = sheet_name
+
+        sheet_name_to_model = collections.OrderedDict()
+        for sheet_name, model_name in sheet_name_to_model_name.items():
+            sheet_name_to_model[sheet_name] = model_name_to_model.get(model_name, None)
 
         # optionally,
-        # * check every sheet is defined
+        # * check every models is defined
         # * check no extra sheets are defined
         # * check the models are defined in the canonical order
-        expected_sheet_names = []
-        used_sheet_names = []
-        sheet_order = []
-        expected_sheet_order = []
-        for model in models:
-            model_sheet_name = self.get_model_sheet_name(sheet_names, model)
-            if model_sheet_name:
-                expected_sheet_names.append(model_sheet_name)
-                used_sheet_names.append(model_sheet_name)
-                sheet_order.append(sheet_names.index(model_sheet_name))
-                expected_sheet_order.append(model_sheet_name)
-            elif not inspect.isabstract(model):
-                if model.Meta.table_format == TableFormat.row:
-                    expected_sheet_names.append(model.Meta.verbose_name_plural)
-                else:
-                    expected_sheet_names.append(model.Meta.verbose_name)
-
         if not ignore_missing_sheets:
-            missing_sheet_names = set(expected_sheet_names).difference(set(used_sheet_names))
-            if missing_sheet_names:
-                raise ValueError("Files/worksheets {} / '{}' must be defined".format(
-                    basename(path), "', '".join(sorted(missing_sheet_names))))
+            missing_models = []
+            for model in models:
+                if not inspect.isabstract(model) and \
+                        model.Meta.table_format in [TableFormat.row, TableFormat.column] and \
+                        model not in model_to_sheet_name:
+                    missing_models.append(model.__name__)
+
+            if missing_models:
+                raise ValueError("Models '{}' must be defined".format(
+                    "', '".join(sorted(missing_models))))
 
         if not ignore_extra_sheets:
-            extra_sheet_names = set(sheet_names).difference(set(used_sheet_names))
-            if extra_sheet_names:
-                raise ValueError("No matching models for worksheets/files {} / '{}'".format(
-                    basename(path), "', '".join(sorted(extra_sheet_names))))
-        elif sbtab and ignore_extra_sheets:
-            extra_sheet_names = set(sheet_names).difference(set(used_sheet_names))
-            invalid_extra_sheet_names = [n for n in extra_sheet_names if n.startswith('!')]
-            if invalid_extra_sheet_names:
-                raise ValueError("No matching models for worksheets/files {} / '{}'".format(
-                    basename(path), "', '".join(sorted(invalid_extra_sheet_names))))
+            extra_sheet_names = []
+            for sheet_name, model in sheet_name_to_model.items():
+                if not model:
+                    extra_sheet_names.append(sheet_name)
 
-        if not ignore_sheet_order and ext == '.xlsx':
-            if not is_sorted(sheet_order):
+            extra_sheet_names = set(extra_sheet_names) - set(['!' + TOC_SHEET_NAME, '!' + SCHEMA_SHEET_NAME])
+
+            if extra_sheet_names:
+                raise ValueError("No matching models for worksheets with TableIDs '{}' in {}".format(
+                    "', '".join(sorted(extra_sheet_names)), os.path.basename(path)))
+
+        if ext == '.xlsx' and not ignore_sheet_order:
+            expected_model_order = []
+            for model in models:
+                if model in model_to_sheet_name:
+                    expected_model_order.append(model)
+
+            if expected_model_order != list(model_to_sheet_name.keys()):
                 raise ValueError('The sheets must be provided in this order:\n  {}'.format(
-                    '\n  '.join(expected_sheet_order)))
+                    '\n  '.join(model.__name__ for model in expected_model_order)))
 
         # check that models are valid
         for model in models:
@@ -1095,9 +1109,9 @@ class WorkbookReader(ReaderBase):
         data = {}
         errors = {}
         objects = {}
-        for model in models:
+        for model, sheet_name in model_to_sheet_name.items():
             model_attributes, model_data, model_errors, model_objects = self.read_model(
-                reader, model,
+                reader, sheet_name, model,
                 include_all_attributes=include_all_attributes,
                 ignore_missing_attributes=ignore_missing_attributes,
                 ignore_extra_attributes=ignore_extra_attributes,
@@ -1173,7 +1187,7 @@ class WorkbookReader(ReaderBase):
             else:
                 return None
 
-    def read_model(self, reader, model, include_all_attributes=True,
+    def read_model(self, reader, sheet_name, model, include_all_attributes=True,
                    ignore_missing_attributes=False, ignore_extra_attributes=False,
                    ignore_attribute_order=False, ignore_empty_rows=True,
                    validate=True,
@@ -1182,6 +1196,7 @@ class WorkbookReader(ReaderBase):
 
         Args:
             reader (:obj:`wc_utils.workbook.io.Reader`): reader
+            sheet_name (:obj:`str`): sheet name
             model (:obj:`type`): the model describing the objects' schema
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
                 not explictly included in `Model.Meta.attribute_order`
@@ -1208,9 +1223,6 @@ class WorkbookReader(ReaderBase):
         """
         _, ext = splitext(reader.path)
         ext = ext.lower()
-        sheet_name = self.get_model_sheet_name(reader.get_sheet_names(), model)
-        if not sheet_name:
-            return ([], [], None, [])
 
         # get worksheet
         exp_attrs, exp_sub_attrs, exp_headings, _, _, _ = get_fields(
@@ -1434,9 +1446,11 @@ class WorkbookReader(ReaderBase):
         data = reader.read_worksheet(sheet_name)
 
         # strip out rows with table name and description
-        model_metadata, top_comments = self.read_worksheet_metadata(data, sbtab=sbtab)
+        model_metadata, top_comments = self.read_worksheet_metadata(sheet_name, data, sbtab=sbtab)
         self._model_metadata[model] = model_metadata
         if sbtab:
+            assert model_metadata['TableType'] == 'Data', \
+                "TableType must be '{}'.".format('Data')
             assert model_metadata['TableID'] == sheet_name[1:], \
                 "TableID must be '{}'.".format(sheet_name[1:])
 
@@ -1486,10 +1500,11 @@ class WorkbookReader(ReaderBase):
         return (data, row_headings, column_headings, top_comments)
 
     @staticmethod
-    def read_worksheet_metadata(rows, sbtab=False):
+    def read_worksheet_metadata(sheet_name, rows, sbtab=False):
         """ Read worksheet metadata
 
         Args:
+            sheet_name (:obj:`str`): sheet name
             rows (:obj:`list`): rows
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
@@ -1524,21 +1539,26 @@ class WorkbookReader(ReaderBase):
             else:
                 break
 
+        if sbtab:
+            assert len(metadata_headings) == 1, \
+                'Metadata for sheet "{}" must consist of a list of key-value pairs.'.format(sheet_name)
+
         metadata = {}
         for metadata_heading in metadata_headings:
             pattern = r"^!!{}( +(.*?)='((?:[^'\\]|\\.)*)')* *$".format(format)
             assert re.match(pattern, metadata_heading), \
-                'Metadata must consist of a list of key-value pairs.'
+                'Metadata for sheet "{}" must consist of a list of key-value pairs.'.format(sheet_name)
 
             results = re.findall(r" +(.*?)='((?:[^'\\]|\\.)*)'",
                                  metadata_heading[len(format) + 2:])
             for key, val in results:
-                assert key not in metadata, "'{}' metadata cannot be repeated.".format(key)
+                assert key not in metadata, '"{}" metadata for sheet "{}" cannot be repeated.'.format(
+                    key, sheet_name)
                 metadata[key] = val
 
         if sbtab:
-            assert len(metadata_headings) == 1, 'Metadata must consist of a list of key-value pairs.'
-            assert metadata[format + 'Version'] == version, 'Version must be ' + version
+            assert metadata.get(format + 'Version') == version, '{}Version for sheet "{}" must be {}'.format(
+                format, sheet_name, version)
 
         return (metadata, comments)
 
@@ -1666,30 +1686,6 @@ class WorkbookReader(ReaderBase):
             :obj:`set`: set of possible sheet names for a model
         """
         return set([model.__name__, model.Meta.verbose_name, model.Meta.verbose_name_plural])
-
-    @classmethod
-    def get_ambiguous_sheet_names(cls, sheet_names, models):
-        """ Get names of sheets that cannot be unambiguously mapped to models (sheet names that map to multiple models).
-
-        Args:
-            sheet_names (:obj:`list` of :obj:`str`): names of the sheets in the workbook/files
-            models (:obj:`list` of :obj:`Model`): list of models
-
-        Returns:
-            :obj:`dict` of :obj:`str`, :obj:`list` of :obj:`Model`: dictionary of ambiguous sheet names and their matching models
-        """
-        sheets_to_models = {}
-        for sheet_name in sheet_names:
-            sheets_to_models[sheet_name] = []
-            for model in models:
-                for possible_sheet_name in cls.get_possible_model_sheet_names(model):
-                    if sheet_name == possible_sheet_name:
-                        sheets_to_models[sheet_name].append(model)
-
-            if len(sheets_to_models[sheet_name]) <= 1:
-                sheets_to_models.pop(sheet_name)
-
-        return sheets_to_models
 
 
 class Reader(ReaderBase):
@@ -1910,6 +1906,7 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
 
     now = datetime.now()
     metadata = dict(metadata)
+    metadata['TableType'] = 'Data'
     metadata['TableID'] = cls.__name__
     metadata['TableName'] = table_name
     metadata.pop('Description', None)
@@ -1919,7 +1916,7 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
         now.year, now.month, now.day, now.hour, now.minute, now.second)
     metadata[format + 'Version'] = version
 
-    keys = ['TableID', 'TableName', 'Date', format + 'Version']
+    keys = ['TableType', 'TableID', 'TableName', 'Date', format + 'Version']
     if 'Description' in metadata:
         keys.insert(2, 'Description')
     keys += sorted(set(metadata.keys()) - set(keys))
