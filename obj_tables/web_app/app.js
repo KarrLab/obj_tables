@@ -179,7 +179,7 @@ $('#submit').click(function (evt) {
             break;
     }
 
-    var url = 'http://127.0.0.1:5000/api/' + method + '/';
+    var url = '/api/' + method + '/';
 
     var request = new XMLHttpRequest();
     request.open('POST', url, async=true);
