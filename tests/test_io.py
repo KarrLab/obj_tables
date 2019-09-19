@@ -954,7 +954,6 @@ class TestIo(unittest.TestCase):
             'attr2': 'val2',
         }}
         reader._model_metadata[Node].pop('Date')
-        print(reader._model_metadata)
         self.assertEqual(reader._model_metadata, model_metadata)
 
 
