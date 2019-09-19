@@ -13,7 +13,7 @@ from itertools import chain
 from pathlib import Path
 from random import shuffle
 from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
-                            InvalidObject, Validator, TabularOrientation,
+                            InvalidObject, Validator, TableFormat,
                             SCHEMA_NAME, SBTAB_SCHEMA_NAME)
 from wc_utils.util import git
 import collections
@@ -135,7 +135,7 @@ def get_attribute_by_name(cls, group_name, attr_name, verbose_name=False, case_i
                                        or (verbose_name and attr.verbose_name.lower() == attr_name.lower()))):
                 return (None, attr)
         else:
-            if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TabularOrientation.multiple_cells:
+            if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TableFormat.multiple_cells:
                 if attr.name.lower() == group_name.lower() or attr.verbose_name.lower() == group_name.lower():
                     sub_attr = get_attribute_by_name(attr.related_class, None, attr_name, verbose_name=verbose_name,
                                                      case_insensitive=case_insensitive)
@@ -352,7 +352,7 @@ class RepoMetadata(Model):
     revision = StringAttribute()
 
     class Meta(Model.Meta):
-        table_format = TabularOrientation.column
+        table_format = TableFormat.column
         attribute_order = ('url', 'branch', 'revision')
 
 
@@ -513,7 +513,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             if row[parent_col_name]:
                 raise ValueError('Class "{}" cannot have a parent.'.format(cls_name))
 
-            cls['tab_orientation'] = TabularOrientation[row[format_col_name] or 'row']
+            cls['tab_orientation'] = TableFormat[row[format_col_name] or 'row']
 
             if sbtab:
                 def_verbose_name = '!' + cls_name
@@ -534,7 +534,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     'name': cls_name,
                     'attrs': {},
                     'attr_order': [],
-                    'tab_orientation': TabularOrientation.row,
+                    'tab_orientation': TableFormat.row,
                     'verbose_name': '!' + cls_name,
                     'verbose_name_plural': '!' + cls_name,
                     'desc': None,
@@ -638,7 +638,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
 
                 file.write('\n')
                 file.write('    class Meta(obj_tables.Model.Meta):\n')
-                file.write("        table_format = obj_tables.TabularOrientation.{}\n".format(
+                file.write("        table_format = obj_tables.TableFormat.{}\n".format(
                     cls_spec['tab_orientation'].name))
                 file.write("        attribute_order = ('{}',)\n".format(
                     "', '".join(cls_spec['attr_order'])

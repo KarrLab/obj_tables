@@ -1,7 +1,7 @@
 from obj_tables import (Model, BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-    TabularOrientation)
+    TableFormat)
 
 
 class Reference(Model):
@@ -30,7 +30,7 @@ class Test(Model):
 
     class Meta(Model.Meta):
         attribute_order = ('id', 'name', 'references')
-        table_format = TabularOrientation.column
+        table_format = TableFormat.column
 
 
 class Reference(Model):

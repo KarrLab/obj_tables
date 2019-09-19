@@ -8,7 +8,7 @@ class Parent(obj_tables.Model):
     name = obj_tables.StringAttribute(verbose_name='!Name')
 
     class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TabularOrientation.column
+        table_format = obj_tables.TableFormat.column
         attribute_order = ('id', 'name',)
         verbose_name = '!Parent'
         verbose_name_plural = '!Parent'
@@ -22,7 +22,7 @@ class Child(obj_tables.Model):
     favorite_video_game = obj_tables.ManyToOneAttribute('Game', related_name='children', verbose_name='!FavoriteVideoGame')
 
     class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TabularOrientation.row
+        table_format = obj_tables.TableFormat.row
         attribute_order = ('id', 'name', 'gender', 'parents', 'favorite_video_game',)
         verbose_name = '!Child'
         verbose_name_plural = '!Child'
@@ -34,7 +34,7 @@ class Game(obj_tables.Model):
     year = obj_tables.IntegerAttribute(verbose_name='!Year')
 
     class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TabularOrientation.multiple_cells
+        table_format = obj_tables.TableFormat.multiple_cells
         attribute_order = ('name', 'publisher', 'year',)
         verbose_name = '!Game'
         verbose_name_plural = '!Game'

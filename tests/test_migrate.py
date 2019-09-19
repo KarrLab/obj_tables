@@ -47,7 +47,7 @@ import obj_tables
 from obj_tables import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-    RelatedAttribute, TabularOrientation, migrate, obj_math, get_models)
+    RelatedAttribute, TableFormat, migrate, obj_math, get_models)
 from obj_tables import utils
 from wc_utils.workbook.io import read as read_workbook
 from wc_utils.util.files import remove_silently

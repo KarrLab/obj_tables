@@ -34,7 +34,7 @@ import tempfile
 import warnings
 import yaml
 
-from obj_tables import TabularOrientation, RelatedAttribute, get_models, utils
+from obj_tables import TableFormat, RelatedAttribute, get_models, utils
 from obj_tables.expression import ParsedExpression, ObjTablesTokenCodes
 from obj_tables.io import WorkbookReader, Reader, Writer
 from obj_tables.utils import SchemaRepoMetadata
@@ -926,7 +926,7 @@ class Migrator(object):
             :obj:`str`: name of migrated file
         """
         return [model for model in models.values()
-            if model.Meta.table_format not in [TabularOrientation.cell, TabularOrientation.multiple_cells]]
+            if model.Meta.table_format not in [TableFormat.cell, TableFormat.multiple_cells]]
 
     def read_existing_file(self, existing_file):
         """ Read models from existing file

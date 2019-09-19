@@ -44,7 +44,7 @@ from obj_tables import (BooleanAttribute, EnumAttribute,
                        UrlAttribute, EmailAttribute, DateTimeAttribute,
                        OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
                        ManyToOneRelatedManager,
-                       InvalidObject, InvalidAttribute, TabularOrientation)
+                       InvalidObject, InvalidAttribute, TableFormat)
 from obj_tables.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
                                   ExpressionStaticTermMeta, ExpressionDynamicTermMeta,
                                   ExpressionExpressionTermMeta, Expression,
@@ -808,7 +808,7 @@ class Model(obj_tables.Model, SbmlModelMixin):
                            'time_units',
                            'identifiers', 'comments',
                            'created', 'updated')
-        table_format = TabularOrientation.column
+        table_format = TableFormat.column
         children = {
             'submodel': ('taxon', 'env'),
             'core_model': ('taxon', 'env',
@@ -1381,7 +1381,7 @@ class Taxon(obj_tables.Model, SbmlModelMixin):
         attribute_order = ('id', 'name',
                            'rank',
                            'identifiers', 'comments', 'references')
-        table_format = TabularOrientation.column
+        table_format = TableFormat.column
         children = {
             'submodel': ('identifiers', 'references'),
             'core_model': ('identifiers', 'references'),
@@ -1421,7 +1421,7 @@ class Environment(obj_tables.Model, SbmlModelMixin):
         attribute_order = ('id', 'name',
                            'temp', 'temp_units',
                            'identifiers', 'comments', 'references')
-        table_format = TabularOrientation.column
+        table_format = TableFormat.column
         children = {
             'submodel': ('identifiers', 'references'),
             'core_model': ('identifiers', 'references'),
@@ -1706,7 +1706,7 @@ class DfbaObjectiveExpression(obj_tables.Model, Expression, SbmlModelMixin):
                                             verbose_name='dFBA objective reactions', verbose_related_name='dFBA objective expression')
 
     class Meta(obj_tables.Model.Meta, Expression.Meta):
-        table_format = TabularOrientation.cell
+        table_format = TableFormat.cell
         expression_valid_functions = ()
         expression_term_models = ('Reaction', 'DfbaObjReaction')
         verbose_name = 'dFBA objective expression'
@@ -2061,7 +2061,7 @@ class InitVolume(obj_tables.Model, SbmlModelMixin):
                           default=unit_registry.parse_units('l'))
 
     class Meta(obj_tables.Model.Meta):
-        table_format = TabularOrientation.multiple_cells
+        table_format = TableFormat.multiple_cells
         unique_together = (('distribution', 'mean', 'std', 'units'), )
         attribute_order = ('distribution', 'mean', 'std', 'units')
         children = {
@@ -2106,7 +2106,7 @@ class Ph(obj_tables.Model, SbmlModelMixin):
                           default=unit_registry.parse_units('dimensionless'))
 
     class Meta(obj_tables.Model.Meta):
-        table_format = TabularOrientation.multiple_cells
+        table_format = TableFormat.multiple_cells
         unique_together = (('distribution', 'mean', 'std', 'units'), )
         attribute_order = ('distribution', 'mean', 'std', 'units')
         children = {
@@ -2424,7 +2424,7 @@ class ChemicalStructure(obj_tables.Model, SbmlModelMixin):
     charge = IntegerAttribute()
 
     class Meta(obj_tables.Model.Meta):
-        table_format = TabularOrientation.multiple_cells
+        table_format = TableFormat.multiple_cells
         unique_together = (('value', 'format', 'alphabet',
                             'empirical_formula', 'molecular_weight', 'charge',), )
         attribute_order = ('value', 'format', 'alphabet',
@@ -3017,7 +3017,7 @@ class ObservableExpression(obj_tables.Model, Expression, SbmlModelMixin):
     observables = ManyToManyAttribute('Observable', related_name='observable_expressions')
 
     class Meta(obj_tables.Model.Meta, Expression.Meta):
-        table_format = TabularOrientation.cell
+        table_format = TableFormat.cell
         expression_term_models = ('Species', 'Observable')
         expression_is_linear = True
         expression_unit_registry = unit_registry
@@ -3153,7 +3153,7 @@ class FunctionExpression(obj_tables.Model, Expression, SbmlModelMixin):
     compartments = ManyToManyAttribute(Compartment, related_name='function_expressions')
 
     class Meta(obj_tables.Model.Meta, Expression.Meta):
-        table_format = TabularOrientation.cell
+        table_format = TableFormat.cell
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
         children = {
@@ -3324,7 +3324,7 @@ class StopConditionExpression(obj_tables.Model, Expression):
     compartments = ManyToManyAttribute(Compartment, related_name='stop_condition_expressions')
 
     class Meta(obj_tables.Model.Meta, Expression.Meta):
-        table_format = TabularOrientation.cell
+        table_format = TableFormat.cell
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_type = bool
         expression_unit_registry = unit_registry
@@ -3493,7 +3493,7 @@ class FluxBounds(obj_tables.Model, SbmlModelMixin):
                           default=None, none=True, verbose_name='Units')
 
     class Meta(obj_tables.Model.Meta):
-        table_format = TabularOrientation.multiple_cells
+        table_format = TableFormat.multiple_cells
         unique_together = (('min', 'max', 'units'), )
         attribute_order = ('min', 'max', 'units')
         children = {
@@ -3922,7 +3922,7 @@ class SpeciesCoefficient(obj_tables.Model, SbmlModelMixin):
         unique_together = (('species', 'coefficient'),)
         attribute_order = ('species', 'coefficient')
         frozen_columns = 1
-        table_format = TabularOrientation.cell
+        table_format = TableFormat.cell
         ordering = ('species', 'coefficient')
         children = {
             'submodel': ('species',),
@@ -4049,7 +4049,7 @@ class RateLawExpression(obj_tables.Model, Expression, SbmlModelMixin):
 
     class Meta(obj_tables.Model.Meta, Expression.Meta):
         attribute_order = ('expression', 'species', 'parameters')
-        table_format = TabularOrientation.cell
+        table_format = TableFormat.cell
         ordering = ('expression',)
         expression_term_models = ('ParameterRenamed', 'Species', 'Observable', 'Function', 'Compartment')
         expression_unit_registry = unit_registry
@@ -4722,7 +4722,7 @@ class ObservationGenotype(obj_tables.Model, SbmlModelMixin):
     variant = StringAttribute()
 
     class Meta(obj_tables.Model.Meta):
-        table_format = TabularOrientation.multiple_cells
+        table_format = TableFormat.multiple_cells
         unique_together = (('taxon', 'variant', ), )
         attribute_order = ('taxon', 'variant')
         children = {
@@ -4772,7 +4772,7 @@ class ObservationEnv(obj_tables.Model, SbmlModelMixin):
     condition = LongStringAttribute()
 
     class Meta(obj_tables.Model.Meta):
-        table_format = TabularOrientation.multiple_cells
+        table_format = TableFormat.multiple_cells
         unique_together = (('temp', 'temp_units', 'ph', 'ph_units', 'growth_media', 'condition'), )
         attribute_order = ('temp', 'temp_units', 'ph', 'ph_units', 'growth_media', 'condition')
         children = {
@@ -4841,7 +4841,7 @@ class Process(obj_tables.Model, SbmlModelMixin):
     version = StringAttribute()
 
     class Meta(obj_tables.Model.Meta):
-        table_format = TabularOrientation.multiple_cells
+        table_format = TableFormat.multiple_cells
         unique_together = (('name', 'version'), )
         attribute_order = ('name', 'version')
         children = {
@@ -4995,7 +4995,7 @@ class Evidence(obj_tables.Model):
     quality = FloatAttribute()
 
     class Meta(obj_tables.Model.Meta):
-        table_format = TabularOrientation.cell
+        table_format = TableFormat.cell
         attribute_order = ('observation', 'type', 'strength', 'quality')
         children = {
             'submodel': ('observation',),
@@ -5433,7 +5433,7 @@ class Identifier(obj_tables.Model, SbmlModelMixin):
 
     class Meta(obj_tables.Model.Meta):
         unique_together = (('namespace', 'id', ), )
-        table_format = TabularOrientation.cell
+        table_format = TableFormat.cell
         attribute_order = ('namespace', 'id')
         frozen_columns = 2
         ordering = ('namespace', 'id', )

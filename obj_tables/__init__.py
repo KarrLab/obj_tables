@@ -15,7 +15,7 @@ from .core import (Model, Attribute,
                    RelatedAttribute, OneToOneAttribute, OneToManyAttribute, ManyToOneAttribute, ManyToManyAttribute,
                    InvalidObjectSet, InvalidModel, InvalidObject, InvalidAttribute, Validator,
                    ObjTablesWarning, SchemaWarning,
-                   ModelSource, TabularOrientation,
+                   ModelSource, TableFormat,
                    get_models, get_model, excel_col_name,
                    ModelMerge,
                    TOC_NAME, SBTAB_TOC_NAME, SCHEMA_NAME, SBTAB_SCHEMA_NAME)

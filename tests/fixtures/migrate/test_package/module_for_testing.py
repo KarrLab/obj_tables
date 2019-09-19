@@ -6,7 +6,7 @@ import numpy
 from obj_tables import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
                        PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute,
                        LongStringAttribute, UrlAttribute, OneToOneAttribute, ManyToOneAttribute,
-                       ManyToManyAttribute, OneToManyAttribute, TabularOrientation)
+                       ManyToManyAttribute, OneToManyAttribute, TableFormat)
 import obj_tables
 from test_package.pkg_dir.code import Foo
 
@@ -20,7 +20,7 @@ class Test(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name', 'revision', 'existing_attr')
-        table_format = TabularOrientation.column
+        table_format = TableFormat.column
 
 
 class Reference(obj_tables.Model):

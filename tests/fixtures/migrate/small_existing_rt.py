@@ -3,7 +3,7 @@ import re
 from obj_tables import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
     PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
     UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-    TabularOrientation)
+    TableFormat)
 
 import obj_tables
 
@@ -23,7 +23,7 @@ class Test(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'name', 'version', 'revision', 'existing_attr')
-        table_format = TabularOrientation.column
+        table_format = TableFormat.column
 
 
 class Property(obj_tables.Model):
@@ -33,7 +33,7 @@ class Property(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         attribute_order = ('id', 'test', 'value')
-        table_format = TabularOrientation.column
+        table_format = TableFormat.column
 
 
 class Subtest(obj_tables.Model):

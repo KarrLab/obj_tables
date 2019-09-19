@@ -33,7 +33,7 @@ from natsort import natsorted, ns
 from os.path import basename, dirname, splitext
 from warnings import warn
 from obj_tables import utils
-from obj_tables.core import (Model, Attribute, RelatedAttribute, Validator, TabularOrientation,
+from obj_tables.core import (Model, Attribute, RelatedAttribute, Validator, TableFormat,
                             InvalidObject, excel_col_name,
                             InvalidAttribute, ObjTablesWarning,
                             TOC_NAME, SBTAB_TOC_NAME,
@@ -333,7 +333,7 @@ class WorkbookWriter(WriterBase):
                 models.append(model)
 
         models = list(filter(lambda model: model.Meta.table_format not in [
-                      TabularOrientation.cell, TabularOrientation.multiple_cells], models))
+                      TableFormat.cell, TableFormat.multiple_cells], models))
 
         if not models:
             raise ValueError('At least one `Model` must be provided')
@@ -341,7 +341,7 @@ class WorkbookWriter(WriterBase):
         # check that models can be unambiguously mapped to worksheets
         sheet_names = []
         for model in models:
-            if model.Meta.table_format == TabularOrientation.row:
+            if model.Meta.table_format == TableFormat.row:
                 sheet_names.append(model.Meta.verbose_name_plural)
             else:
                 sheet_names.append(model.Meta.verbose_name)
@@ -376,7 +376,7 @@ class WorkbookWriter(WriterBase):
 
         # add sheets to workbook
         sheet_models = list(filter(lambda model: model.Meta.table_format not in [
-            TabularOrientation.cell, TabularOrientation.multiple_cells], all_models))
+            TableFormat.cell, TableFormat.multiple_cells], all_models))
         encoded = {}
         for model in sheet_models:
             if model in grouped_objects:
@@ -429,10 +429,10 @@ class WorkbookWriter(WriterBase):
 
         hyperlinks = []
         for i_model, model in enumerate(models):
-            if model.Meta.table_format in [TabularOrientation.cell, TabularOrientation.multiple_cells]:
+            if model.Meta.table_format in [TableFormat.cell, TableFormat.multiple_cells]:
                 continue
 
-            if model.Meta.table_format == TabularOrientation.row:
+            if model.Meta.table_format == TableFormat.row:
                 ws_name = model.Meta.verbose_name_plural
             else:
                 ws_name = model.Meta.verbose_name
@@ -447,11 +447,11 @@ class WorkbookWriter(WriterBase):
             has_multiple_cells = False
             for attr in model.Meta.attributes.values():
                 if isinstance(attr, RelatedAttribute) and \
-                        attr.related_class.Meta.table_format == TabularOrientation.multiple_cells:
+                        attr.related_class.Meta.table_format == TableFormat.multiple_cells:
                     has_multiple_cells = True
                     break
 
-            if model.Meta.table_format == TabularOrientation.row:
+            if model.Meta.table_format == TableFormat.row:
                 range = 'A{}:A{}'.format(3 + has_multiple_cells, 2 ** 20)
             else:
                 range = '{}2:{}2'.format(get_column_letter(2 + has_multiple_cells),
@@ -510,7 +510,7 @@ class WorkbookWriter(WriterBase):
             for attr in attrs:
                 val = getattr(obj, attr.name)
                 if isinstance(attr, RelatedAttribute):
-                    if attr.related_class.Meta.table_format == TabularOrientation.multiple_cells:
+                    if attr.related_class.Meta.table_format == TableFormat.multiple_cells:
                         sub_attrs = get_ordered_attributes(attr.related_class, include_all_attributes=include_all_attributes)
                         for sub_attr in sub_attrs:
                             if val:
@@ -528,7 +528,7 @@ class WorkbookWriter(WriterBase):
             data.append(obj_data)
 
         # validations
-        if model.Meta.table_format == TabularOrientation.column:
+        if model.Meta.table_format == TableFormat.column:
             field_validations = [None] * len(metadata_headings) + field_validations
         validation = WorksheetValidation(orientation=WorksheetValidationOrientation[model.Meta.table_format.name],
                                          fields=field_validations)
@@ -553,7 +553,7 @@ class WorkbookWriter(WriterBase):
             sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
         style = self.create_worksheet_style(model, extra_entries=extra_entries)
-        if model.Meta.table_format == TabularOrientation.row:
+        if model.Meta.table_format == TableFormat.row:
             sheet_name = model.Meta.verbose_name_plural
             row_headings = []
             column_headings = headings
@@ -617,7 +617,7 @@ class WorkbookWriter(WriterBase):
             extra_columns=0,
         )
 
-        if model.Meta.table_format == TabularOrientation.row:
+        if model.Meta.table_format == TableFormat.row:
             style.extra_rows = extra_entries
         else:
             style.extra_columns = extra_entries
@@ -1053,7 +1053,7 @@ class WorkbookReader(ReaderBase):
                 sheet_order.append(sheet_names.index(model_sheet_name))
                 expected_sheet_order.append(model_sheet_name)
             elif not inspect.isabstract(model):
-                if model.Meta.table_format == TabularOrientation.row:
+                if model.Meta.table_format == TableFormat.row:
                     expected_sheet_names.append(model.Meta.verbose_name_plural)
                 else:
                     expected_sheet_names.append(model.Meta.verbose_name)
@@ -1215,7 +1215,7 @@ class WorkbookReader(ReaderBase):
         # get worksheet
         exp_attrs, exp_sub_attrs, exp_headings, _, _, _ = get_fields(
             model, {}, include_all_attributes=include_all_attributes, sbtab=sbtab)
-        if model.Meta.table_format == TabularOrientation.row:
+        if model.Meta.table_format == TableFormat.row:
             data, _, headings, top_comments = self.read_sheet(model, reader, sheet_name,
                                                               num_column_heading_rows=len(exp_headings),
                                                               ignore_empty_rows=ignore_empty_rows,
@@ -1306,18 +1306,18 @@ class WorkbookReader(ReaderBase):
         if not ignore_attribute_order:
             canonical_sub_attrs = list(filter(lambda sub_attr: sub_attr in sub_attrs, exp_sub_attrs))
             if sub_attrs != canonical_sub_attrs:
-                if model.Meta.table_format == TabularOrientation.row:
+                if model.Meta.table_format == TableFormat.row:
                     orientation = 'columns'
                 else:
                     orientation = 'rows'
 
                 if len(exp_headings) == 1:
-                    if model.Meta.table_format == TabularOrientation.row:
+                    if model.Meta.table_format == TableFormat.row:
                         msgs = ['{}1: {}'.format(get_column_letter(i + 1), a) for i, a in enumerate(exp_headings[0])]
                     else:
                         msgs = ['A{}: {}'.format(i + 1, a) for i, a in enumerate(exp_headings[0])]
                 else:
-                    if model.Meta.table_format == TabularOrientation.row:
+                    if model.Meta.table_format == TableFormat.row:
                         msgs = ['{}1: {}\n  {}2: {}'.format(get_column_letter(i + 1), g or '', get_column_letter(i + 1), a)
                                 for i, (g, a) in enumerate(zip(exp_headings[0], exp_headings[1]))]
                     else:
@@ -1362,7 +1362,7 @@ class WorkbookReader(ReaderBase):
         # load the data into objects
         objects = []
         errors = []
-        transposed = model.Meta.table_format == TabularOrientation.column
+        transposed = model.Meta.table_format == TableFormat.column
 
         for row_num, (obj_data, obj_comments) in enumerate(zip(data, objs_comments), start=2):
             obj = model()
@@ -1585,7 +1585,7 @@ class WorkbookReader(ReaderBase):
                         setattr(sub_obj, sub_attr.name, value)
 
             for attr in model.Meta.attributes.values():
-                if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TabularOrientation.multiple_cells:
+                if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TableFormat.multiple_cells:
                     val = getattr(obj, attr.name)
                     if val:
                         if attr.related_class not in objects_by_primary_attribute:
@@ -1613,12 +1613,12 @@ class WorkbookReader(ReaderBase):
         Args:
             index (:obj:`int`): index in header sequence
             file_ext (:obj:`str`): extension for model file
-            orientation (:obj:`TabularOrientation`): orientation of the stored table
+            orientation (:obj:`TableFormat`): orientation of the stored table
 
         Returns:
             :obj:`tuple` of row, column, header_entries
         """
-        if table_format == TabularOrientation.row:
+        if table_format == TableFormat.row:
             row, col, hdr_entries = (1, index, 'column')
         else:
             row, col, hdr_entries = (index, 1, 'row')
@@ -1863,7 +1863,7 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
 
             * :obj:`list` of :obj:`Attribute`: Attributes of :obj:`cls` in the order they should be encoded as one or 
               more columns in a worksheet. Attributes which define \*-to-one relationships to other classes which 
-              are encoded as multiple cells (:obj:`TabularOrientation.multiple_cells`) will be encoded as multiple 
+              are encoded as multiple cells (:obj:`TableFormat.multiple_cells`) will be encoded as multiple 
               columns. All other attributes will be encoded as a single column. 
 
               This represents a nested tree of attributes. 
@@ -1873,7 +1873,7 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
             * :obj:`list` of tuple of :obj:`Attribute`: 
               Flattened representation of the first return value. This is a list of attributes of 
               :obj:`cls` and attributes of classes related to :obj:`cls` by \*-to-one relationships that are encoded as multiple cells 
-              (:obj:`TabularOrientation.multiple_cells`), in the order they are encoded as columns in a worksheet.
+              (:obj:`TableFormat.multiple_cells`), in the order they are encoded as columns in a worksheet.
 
               Each element of the list is a tuple.
 
@@ -1938,7 +1938,7 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
     i_row = len(metadata_headings)
     i_col = 0
     for attr in attrs:
-        if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TabularOrientation.multiple_cells:
+        if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TableFormat.multiple_cells:
             this_sub_attrs = get_ordered_attributes(attr.related_class, include_all_attributes=include_all_attributes)
             sub_attrs.extend([(attr, sub_attr) for sub_attr in this_sub_attrs])
             has_group_headings = True
@@ -2002,9 +2002,9 @@ def get_ordered_attributes(cls, include_all_attributes=True):
     attrs = [cls.Meta.attributes[attr_name] for attr_name in attr_names]
 
     # error check
-    if cls.Meta.table_format == TabularOrientation.multiple_cells:
+    if cls.Meta.table_format == TableFormat.multiple_cells:
         for attr in attrs:
-            if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TabularOrientation.multiple_cells:
+            if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TableFormat.multiple_cells:
                 raise ValueError('Classes with orientation "multiple_cells" cannot have relationships '
                                  'to other classes with the same orientation')
 
