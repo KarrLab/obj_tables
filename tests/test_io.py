@@ -208,7 +208,7 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         obj_tables.io.Writer().run(filename, root, models=[MainRoot, Node, Leaf, OneToManyRow])
         objects2 = obj_tables.io.Reader().run(filename, models=[MainRoot, Node, Leaf, OneToManyRow],
-                                             group_objects_by_model=True)
+                                              group_objects_by_model=True)
         self.assertTrue(root.is_equal(objects2[MainRoot][0]))
 
         # test no validation
@@ -802,19 +802,16 @@ class TestIo(unittest.TestCase):
             WorkbookReader().run(filename, models=[TestModel])
 
     def test_table_format_multiple_cells(self):
-        class Node(core.Model):
+        class Unit(core.Model):
             id = core.SlugAttribute()
-            quantity_1 = core.OneToOneAttribute('Quantity', related_name='node_1')
-            quantity_2 = core.ManyToOneAttribute('Quantity', related_name='node_2_list')
-            comments = core.LongStringAttribute()
 
             class Meta(core.Model.Meta):
-                attribute_order = ('id', 'quantity_1', 'quantity_2', 'comments')
+                attribute_order = ('id',)
 
         class Quantity(core.Model):
             value = core.FloatAttribute()
-            unit = core.ManyToOneAttribute('Unit', related_name='quantities_1')
-            units = core.ManyToManyAttribute('Unit', related_name='quantities_2')
+            unit = core.ManyToOneAttribute(Unit, related_name='quantities_1')
+            units = core.ManyToManyAttribute(Unit, related_name='quantities_2')
 
             class Meta(core.Model.Meta):
                 table_format = core.TabularOrientation.multiple_cells
@@ -823,11 +820,14 @@ class TestIo(unittest.TestCase):
             def serialize(self):
                 return '{} {}'.format(self.value, self.unit.id)
 
-        class Unit(core.Model):
+        class Node(core.Model):
             id = core.SlugAttribute()
+            quantity_1 = core.OneToOneAttribute(Quantity, related_name='node_1')
+            quantity_2 = core.ManyToOneAttribute(Quantity, related_name='node_2_list')
+            comments = core.LongStringAttribute()
 
             class Meta(core.Model.Meta):
-                attribute_order = ('id',)
+                attribute_order = ('id', 'quantity_1', 'quantity_2', 'comments')
 
         u1 = Unit(id='m')
         u2 = Unit(id='s')
@@ -1096,7 +1096,7 @@ class TestMetadataModels(unittest.TestCase):
         file_with_metadata = os.path.join(os.path.dirname(__file__), 'fixtures', 'metadata',
                                           'both-metadata.xlsx')
         objs_read = obj_tables.io.Reader().run(file_with_metadata, utils.DataRepoMetadata,
-                                              ignore_extra_sheets=True)
+                                               ignore_extra_sheets=True)
         self.assertEqual(len(objs_read), 1)
         self.assertTrue(isinstance(objs_read[0], utils.DataRepoMetadata))
 
@@ -1116,7 +1116,7 @@ class TestMetadataModels(unittest.TestCase):
 
         # test data and schema repo metadata in obj_tables file
         obj_tables.io.JsonWriter().run(path_1, self.objs, models=[self.Model1], data_repo_metadata=True,
-                                      schema_package='test_repo')
+                                       schema_package='test_repo')
         metadata_models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
         objs_read = obj_tables.io.JsonReader().run(path_1, models=metadata_models_expected + [self.Model1])
         for obj, model in zip(objs_read, metadata_models_expected):
@@ -2355,7 +2355,7 @@ class JsonTestCase(unittest.TestCase):
         convert(filename_1_xlsx, filename_2_json, models=models)
 
         objects2 = obj_tables.io.Reader.get_reader(filename_2_json)().run(filename_2_json, models=models,
-                                                                         group_objects_by_model=True)
+                                                                          group_objects_by_model=True)
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
         self.assertTrue(root.is_equal(root2))
@@ -2364,7 +2364,7 @@ class JsonTestCase(unittest.TestCase):
         convert(filename_2_json, filename_3_xlsx, models=models)
 
         objects2 = obj_tables.io.Reader.get_reader(filename_3_xlsx)().run(filename_3_xlsx, models=models,
-                                                                         group_objects_by_model=True)
+                                                                          group_objects_by_model=True)
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
         self.assertTrue(root.is_equal(root2))
