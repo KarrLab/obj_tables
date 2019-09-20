@@ -9,6 +9,7 @@
 from six import string_types
 import git
 import numpy.testing
+import obj_tables
 import obj_tables.io
 import os
 import shutil
@@ -369,8 +370,7 @@ class InitSchemaTestCase(unittest.TestCase):
     def test_get_models(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                   out_filename=out_filename,
-                                   sbtab=True)
+                                   out_filename=out_filename)
         self.assertEqual(sorted(utils.get_models(schema).keys()),
                          ['Child', 'Parent', 'Quantity'])
 
@@ -386,8 +386,7 @@ class InitSchemaTestCase(unittest.TestCase):
     def test_init_schema(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                   out_filename=out_filename,
-                                   sbtab=True)
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         c_0 = p_0.children.create(id='c_0')
@@ -399,12 +398,10 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True)[schema.Parent][0]
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
         self.assertEqual(p_0_b.children.get_one(id='c_0')._comments, c_0._comments)
@@ -421,12 +418,10 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True)[schema.Parent][0]
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
@@ -441,8 +436,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema = utils.init_schema(schema_xl,
-                                   out_filename=out_filename,
-                                   sbtab=True)
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
@@ -451,12 +445,10 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True)[schema.Parent][0]
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
@@ -470,12 +462,10 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True)[schema.Parent][0]
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
 
         self.assertTrue(p_0_b.  is_equal(p_0))
 
@@ -487,25 +477,22 @@ class InitSchemaTestCase(unittest.TestCase):
         wc_utils.workbook.io.write(schema_xl_2, wb)
         with self.assertRaisesRegex(ValueError, 'must contain a sheet'):
             utils.init_schema(schema_xl_2,
-                              out_filename=out_filename,
-                              sbtab=True)
+                              out_filename=out_filename)
 
         wb = wc_utils.workbook.io.read(schema_xl)
         wb['!' + core.SCHEMA_SHEET_NAME][0][0] = wb['!' + core.SCHEMA_SHEET_NAME][0][0].replace(
-            "TableType='{}'".format(core.SCHEMA_TABLE_TYPE), "TableID='{}'".format('my' + core.SCHEMA_TABLE_TYPE))
+            "TableType='{}'".format(core.SCHEMA_TABLE_TYPE), "ModelId='{}'".format('my' + core.SCHEMA_TABLE_TYPE))
         wc_utils.workbook.io.write(schema_xl_2, wb)
         with self.assertRaisesRegex(ValueError, 'TableType must be'):
             utils.init_schema(schema_xl_2,
-                              out_filename=out_filename,
-                              sbtab=True)
+                              out_filename=out_filename)
 
         wb = wc_utils.workbook.io.read(schema_xl)
         wb['!' + core.SCHEMA_SHEET_NAME][3][0] = wb['!' + core.SCHEMA_SHEET_NAME][3][0] + '?'
         wc_utils.workbook.io.write(schema_xl_2, wb)
         with self.assertRaisesRegex(ValueError, 'names must consist of'):
             utils.init_schema(schema_xl_2,
-                              out_filename=out_filename,
-                              sbtab=True)
+                              out_filename=out_filename)
 
     def test_init_schema_from_csv_workbook(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -518,8 +505,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema = utils.init_schema(schema_csv_wb,
-                                   out_filename=out_filename,
-                                   sbtab=True)
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
@@ -528,12 +514,10 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True)[schema.Parent][0]
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
@@ -547,30 +531,28 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True)[schema.Parent][0]
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
     def test_init_schema_errors(self):
         with self.assertRaisesRegex(ValueError, 'format is not supported'):
-            utils.init_schema(os.path.join(self.tmp_dirname, 'schema.txt'), sbtab=True)
+            utils.init_schema(os.path.join(self.tmp_dirname, 'schema.txt'))
 
         filename = os.path.join(self.tmp_dirname, 'schema.csv')
-        ws_metadata = ['!!SBtab',
+        ws_metadata = ['!!ObjTables',
                        "TableType='{}'".format(core.SCHEMA_TABLE_TYPE),
-                       "TableName='Schema'",
-                       "SBtabVersion='2.0'",
+                       "Description='Schema'",
+                       "ObjTablesVersion='{}'".format(obj_tables.__version__),
                        ]
 
         col_headings = [
-            '!ComponentName',
-            '!ComponentType',
-            '!IsPartOf',
+            '!Name',
+            '!Type',
+            '!Parent',
             '!Format',
             '!Description',
         ]
@@ -578,30 +560,29 @@ class InitSchemaTestCase(unittest.TestCase):
         with open(filename, 'w') as file:
             file.write('{}\n'.format(' '.join(ws_metadata)))
             file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Cls1', 'Table', 'Doc', 'column', ''])))
+            file.write('{}\n'.format(','.join(['Cls1', 'Model', 'Doc', 'column', ''])))
         with self.assertRaisesRegex(ValueError, 'cannot have a parent'):
-            utils.init_schema(filename, sbtab=True)
+            utils.init_schema(filename)
 
         with open(filename, 'w') as file:
             file.write('{}\n'.format(' '.join(ws_metadata)))
             file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Attr1', 'Column', 'Cls1', 'String', 'attr1'])))
-            file.write('{}\n'.format(','.join(['Attr1', 'Column', 'Cls1', 'String', 'attr2'])))
+            file.write('{}\n'.format(','.join(['Attr1', 'Attribute', 'Cls1', 'String', 'attr1'])))
+            file.write('{}\n'.format(','.join(['Attr1', 'Attribute', 'Cls1', 'String', 'attr2'])))
         with self.assertRaisesRegex(ValueError, 'can only be defined once'):
-            utils.init_schema(filename, sbtab=True)
+            utils.init_schema(filename)
 
         with open(filename, 'w') as file:
             file.write('{}\n'.format(' '.join(ws_metadata)))
             file.write('{}\n'.format(','.join(col_headings)))
             file.write('{}\n'.format(','.join(['Cls1', 'Unsupported', 'Doc', 'column', ''])))
         with self.assertRaisesRegex(ValueError, 'is not supported'):
-            utils.init_schema(filename, sbtab=True)
+            utils.init_schema(filename)
 
     def test_extra_sheets(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                   out_filename=out_filename,
-                                   sbtab=True)
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         c_0 = p_0.children.create(id='c_0')
@@ -611,43 +592,36 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
 
         wb = wc_utils.workbook.io.read(filename)
         wb['Extra'] = wc_utils.workbook.Worksheet()
         wb['Extra'].append(wc_utils.workbook.Row([
-            "!!SBtab TableType='Data' TableID='Extra' SBtabVersion='2.0'"]))
+            "!!ObjTables TableType='Data' ModelId='Extra' ObjTablesVersion='{}'".format(
+                obj_tables.__version__)]))
         wb['!' + core.SCHEMA_SHEET_NAME] = wc_utils.workbook.Worksheet()
         wb['!' + core.SCHEMA_SHEET_NAME].append(wc_utils.workbook.Row([
-            "!!SBtab TableType='{}' SBtabVersion='2.0'".format(core.SCHEMA_TABLE_TYPE)]))
+            "!!ObjTables TableType='{}' ObjTablesVersion='{}'".format(
+                core.SCHEMA_TABLE_TYPE, obj_tables.__version__)]))
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True)[schema.Parent][0]
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         wb = wc_utils.workbook.io.read(filename)
         wb['!Extra'] = wb.pop('Extra')
         wc_utils.workbook.io.write(filename, wb)
-        obj_tables.io.WorkbookReader().run(
-            filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True, ignore_extra_sheets=True)[schema.Parent][0]
-
         with self.assertRaisesRegex(ValueError, 'No matching models'):
             obj_tables.io.WorkbookReader().run(
                 filename,
-                models=[schema.Parent, schema.Child],
-                sbtab=True, ignore_extra_sheets=False)[schema.Parent][0]
+                models=[schema.Parent, schema.Child])
 
     def test_extra_attributes(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                   out_filename=out_filename,
-                                   sbtab=True)
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         c_0 = p_0.children.create(id='c_0')
@@ -657,39 +631,41 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Child'][2].append('Extra')
+        wb['!Children'][2].append('!Extra')
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
             models=[schema.Parent, schema.Child],
-            sbtab=True, ignore_extra_attributes=True)[schema.Parent][0]
+            ignore_extra_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         with self.assertRaisesRegex(ValueError, 'does not match any attribute'):
             obj_tables.io.WorkbookReader().run(
                 filename,
                 models=[schema.Parent, schema.Child],
-                sbtab=True, ignore_extra_attributes=False)[schema.Parent][0]
+                ignore_extra_attributes=False)[schema.Parent][0]
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Child'][2][-1] = '!Extra'
+        wb['!Children'][2][-1] = '!Extra'
         wc_utils.workbook.io.write(filename, wb)
+        obj_tables.io.WorkbookReader().run(
+            filename,
+            models=[schema.Parent, schema.Child],
+            ignore_extra_attributes=True)[schema.Parent][0]
         with self.assertRaisesRegex(ValueError, 'does not match any attribute'):
             obj_tables.io.WorkbookReader().run(
                 filename,
                 models=[schema.Parent, schema.Child],
-                sbtab=True, ignore_extra_attributes=True)[schema.Parent][0]
+                ignore_extra_attributes=False)[schema.Parent][0]
 
     def test_comments(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                   out_filename=out_filename,
-                                   sbtab=True)
+                                   out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0._comments = ['X', 'Y']
@@ -702,8 +678,7 @@ class InitSchemaTestCase(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'data.xlsx')
         obj_tables.io.WorkbookWriter().run(
             filename, [p_0],
-            models=[schema.Parent, schema.Child],
-            sbtab=True)
+            models=[schema.Parent, schema.Child])
 
         wb = wc_utils.workbook.io.read(filename)
         wb['!Parent'].insert(0, wc_utils.workbook.Row(['% V']))
@@ -711,14 +686,13 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['!Parent'].insert(3, wc_utils.workbook.Row([]))
         wb['!Parent'].insert(3, wc_utils.workbook.Row(['% W']))
         wb['!Parent'][5].append('% Z')
-        wb['!Child'].insert(0, wc_utils.workbook.Row(['% 123']))
-        wb['!Child'].append(wc_utils.workbook.Row(['% 456']))
+        wb['!Children'].insert(0, wc_utils.workbook.Row(['% 123']))
+        wb['!Children'].append(wc_utils.workbook.Row(['% 456']))
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
             filename,
-            models=[schema.Parent, schema.Child],
-            sbtab=True)[schema.Parent][0]
+            models=[schema.Parent, schema.Child])[schema.Parent][0]
 
         self.assertTrue(p_0_b.is_equal(p_0))
         self.assertEqual(p_0_b._comments, ['V', 'W'] + p_0._comments + ['Z'])
@@ -730,31 +704,31 @@ class InitSchemaTestCase(unittest.TestCase):
 class ToPandasTestCase(unittest.TestCase):
     def test(self):
         class Child(core.Model):
-            id = core.SlugAttribute(verbose_name='!Id')
-            name = core.StringAttribute(verbose_name='!Name')
+            id = core.SlugAttribute(verbose_name='Id')
+            name = core.StringAttribute(verbose_name='Name')
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'name')
-                verbose_name = '!Child'
-                verbose_name_plural = '!Child'
+                verbose_name = 'Child'
+                verbose_name_plural = 'Child'
 
         class Parent(core.Model):
-            id = core.SlugAttribute(verbose_name='!Id')
-            name = core.StringAttribute(verbose_name='!Name')
+            id = core.SlugAttribute(verbose_name='Id')
+            name = core.StringAttribute(verbose_name='Name')
             children = core.ManyToManyAttribute(Child, related_name='parents',
-                                                verbose_name='!Children')
+                                                verbose_name='Children')
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'name', 'children')
-                verbose_name = '!Parent'
-                verbose_name_plural = '!Parent'
+                verbose_name = 'Parent'
+                verbose_name_plural = 'Parent'
 
         p_0 = Parent(id='p_0')
         p_0.children.create(id='c_0')
         p_0.children.create(id='c_1')
         p_0.children.create(id='c_2')
 
-        dfs = utils.to_pandas([p_0], models=[Parent, Child], sbtab=True)
+        dfs = utils.to_pandas([p_0], models=[Parent, Child])
         self.assertEqual(dfs[Parent].columns.tolist(), ['Id', 'Name', 'Children'])
         self.assertEqual(dfs[Child].columns.tolist(), ['Id', 'Name'])
         self.assertEqual(dfs[Parent].values.tolist(), [['p_0', '', 'c_0, c_1, c_2']])
@@ -762,32 +736,32 @@ class ToPandasTestCase(unittest.TestCase):
 
     def test_multicell(self):
         class Child(core.Model):
-            id = core.SlugAttribute(verbose_name='!Id')
-            name = core.StringAttribute(verbose_name='!Name')
+            id = core.SlugAttribute(verbose_name='Id')
+            name = core.StringAttribute(verbose_name='Name')
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'name')
                 table_format = core.TableFormat.multiple_cells
-                verbose_name = '!Child'
-                verbose_name_plural = '!Child'
+                verbose_name = 'Child'
+                verbose_name_plural = 'Child'
 
         class Parent(core.Model):
-            id = core.SlugAttribute(verbose_name='!Id')
-            name = core.StringAttribute(verbose_name='!Name')
+            id = core.SlugAttribute(verbose_name='Id')
+            name = core.StringAttribute(verbose_name='Name')
             child = core.ManyToOneAttribute(Child, related_name='parents',
-                                            verbose_name='!Child')
+                                            verbose_name='Child')
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'name', 'child')
-                verbose_name = '!Parent'
-                verbose_name_plural = '!Parent'
+                verbose_name = 'Parent'
+                verbose_name_plural = 'Parent'
 
         p_0 = Parent(id='p_0')
         p_0.child = Child(id='c_0')
         p_1 = Parent(id='p_1')
         p_1.child = Child(id='c_1')
 
-        dfs = utils.to_pandas([p_0, p_1], models=[Parent, Child], sbtab=True)
+        dfs = utils.to_pandas([p_0, p_1], models=[Parent, Child])
         numpy.testing.assert_array_equal(dfs[Parent].columns.tolist(), [
             (float('nan'), 'Id'),
             (float('nan'), 'Name'),

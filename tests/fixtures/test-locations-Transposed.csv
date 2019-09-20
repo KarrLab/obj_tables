@@ -1,2 +1,3 @@
-tid,t_1,t_2
-s,long,z
+!!ObjTables TableType='Data' ModelId='Transposed',,
+!tid,t_1,t_2
+!s,long,z

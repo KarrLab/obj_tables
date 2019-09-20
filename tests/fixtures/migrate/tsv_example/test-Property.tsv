@@ -1,3 +1,4 @@
-Id	prop_1
-Test	Mpn_Karr_2016
-Value	3.0
+!!ObjTables TableType='Data' ModelId='Property'	
+!Id	prop_1
+!Test	Mpn_Karr_2016
+!Value	3

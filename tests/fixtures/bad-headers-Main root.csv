@@ -1,5 +1,6 @@
-Id,root
-Name,€
+!!ObjTables TableType='Data' ModelId='MainRoot',
+!Id,root
+!Name,€
 ,
 ,
-x,
+!x,

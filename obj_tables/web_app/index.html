@@ -177,9 +177,9 @@
             </ul>
 
             <h3>Model metdata</h3>
-            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the model which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='2.0' TableID='&lt;model_name&gt;'</tt>).</p>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the model which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' ModelId='&lt;model_name&gt;'</tt>).</p>
 
-            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='2.0' TableID='model_name' Description='Model description'</tt>).</p>
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' ModelId='model_id' ModelName='Model name' Description='Model description'</tt>).</p>
 
             <h3>Model instances (rows) and attributes (columns)</h3>
             <p>The attributes of each model are represented by the columns of its table, each instance of each model is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
@@ -210,7 +210,7 @@
             <table>
               <thead>
                 <tr>
-                  <th colspan="2">!!SBtab TableType='Data' TableID='Parent' SBtabVersion='2.0'</th>
+                  <th colspan="2">!!ObjTables TableType='Data' ModelId='Parent' ObjTablesVersion='0.0.8'</th>
                 </tr>
                 <tr>
                   <th>!Id</th>
@@ -228,7 +228,7 @@
             <table>
               <thead>
                 <tr>
-                  <th colspan="7">!!SBtab TableType='Data' TableID='Child' SBtabVersion='2.0'</th>
+                  <th colspan="7">!!ObjTables TableType='Data' ModelId='Child' ObjTablesVersion='0.0.8'</th>
                 </tr>
                 <tr>
                   <th></th>
@@ -302,7 +302,7 @@
             <p>Schemas can either be defined using the tabular format described here or defined using the Python API. The tabular format is easier to use. The Python API enables methods for manipulating data to be encapsulated with schemas. This makes it easy to define custom validations such as for the element balance of a chemical reaction or for the lack of cycles in a network. Furthermore, the software tools can generate Python schemas from tabular-formatted schemas, which is a convenient starting point for further development.</p>
 
             <h3>Tabular format</h3>
-            <p>Tabular-formatted schemas should begin with a single header row which indicates that the dataset is encoded in an ObjTables schema (<tt>!!ObjTables TableID="DEFINITION" ...</tt>).</p>
+            <p>Tabular-formatted schemas should begin with a single header row which indicates that the dataset is encoded in an ObjTables schema (<tt>!!ObjTables TableType="Schema" ...</tt>).</p>
 
             <p>After the header row, the schema file should contain a table with the following columns that defines the models/tables and their attributes/columns. Each row in the table should define a single model or attribute.</p>
 
@@ -339,7 +339,7 @@
             <table>
               <thead>
                 <tr>
-                  <th colspan="5">!!SBtab TableType='Schema' TableName='Table/model and column/attribute definitions' SBtabVersion='2.0'</th>
+                  <th colspan="5">!!ObjTables TableType='Schema' Description='Table/model and column/attribute definitions' ObjTablesVersion='0.0.8'</th>
                 </tr>
                 <tr>
                   <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Description</th>
@@ -347,18 +347,18 @@
               </thead>
               <tbody>
                 <tr><td>Parent</td><td>Table</td><td></td><td>column</td><td>Represents a parent</td></tr>
-                <tr><td>Id</td><td>Column</td><td>Parent</td><td>slug</td><td>Identifier</td></tr>
-                <tr><td>Name</td><td>Column</td><td>Parent</td><td>string</td><td></td></tr>
+                <tr><td>Id</td><td>Column</td><td>Parent</td><td>String(unique=True, primary=True)</td><td>Identifier</td></tr>
+                <tr><td>Name</td><td>Column</td><td>Parent</td><td>String</td><td></td></tr>
                 <tr><td>Child</td><td>Table</td><td></td><td>row</td><td>Represents a child</td></tr>
-                <tr><td>Id</td><td>Column</td><td>Child</td><td>slug</td><td>Identifier</td></tr>
-                <tr><td>Name</td><td>Column</td><td>Child</td><td>string</td><td></td></tr>
-                <tr><td>Gender</td><td>Column</td><td>Child</td><td>enum(['female', 'male'])</td><td></td></tr>
-                <tr><td>Parents</td><td>Column</td><td>Child</td><td>manyToMany('Parent', related_name='children')</td><td></td></tr>
-                <tr><td>FavoriteVideoGame</td><td>Column</td><td>Child</td><td>manyToOne('Game', related_name='children')</td><td></td></tr>
+                <tr><td>Id</td><td>Column</td><td>Child</td><td>String(unique=True, primary=True)</td><td>Identifier</td></tr>
+                <tr><td>Name</td><td>Column</td><td>Child</td><td>String</td><td></td></tr>
+                <tr><td>Gender</td><td>Column</td><td>Child</td><td>Enum(['female', 'male'])</td><td></td></tr>
+                <tr><td>Parents</td><td>Column</td><td>Child</td><td>ManyToMany('Parent', related_name='children')</td><td></td></tr>
+                <tr><td>FavoriteVideoGame</td><td>Column</td><td>Child</td><td>ManyToOne('Game', related_name='children')</td><td></td></tr>
                 <tr><td>Game</td><td>Table</td><td></td><td>multiple_cells</td><td>Represents a video game</td></tr>
-                <tr><td>Name</td><td>Column</td><td>Game</td><td>string(unique=True)</td><td></td></tr>
-                <tr><td>Publisher</td><td>Column</td><td>Game</td><td>float</td><td></td></tr>
-                <tr><td>Year</td><td>Column</td><td>Game</td><td>integer</td><td></td></tr>
+                <tr><td>Name</td><td>Column</td><td>Game</td><td>String(unique=True, primary=True)</td><td></td></tr>
+                <tr><td>Publisher</td><td>Column</td><td>Game</td><td>String</td><td></td></tr>
+                <tr><td>Year</td><td>Column</td><td>Game</td><td>Integer</td><td></td></tr>
               </tbody>
             </table>
 
@@ -582,7 +582,7 @@ assert errors is None</pre>
           <pre>import obj_tables.io
 
 filename = 'examples/parents_children.xlsx'
-objects = obj_tables.io.Reader().run(filename, sbtab=True,
+objects = obj_tables.io.Reader().run(filename,
                                     models=[parents_children.Parent, parents_children.Child],
                                     group_objects_by_model=True)
 parents = objects[parents_children.Parent]
@@ -593,8 +593,7 @@ jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')</pre>
 objects = [jane_doe, john_doe, mary_roe, richard_roe,
            jamie_doe, jimie_doe, linda_roe, mike_roe]
 obj_tables.io.Writer().run(filename, objects,
-                          models=[parents_children.Parent, parents_children.Child],
-                          sbtab=True)</pre>
+                          models=[parents_children.Parent, parents_children.Child])</pre>
 
           <h4>Analyzing datasets</h4>
           <pre>assert jane_doe.is_equal(jane_doe_2)</pre>

@@ -136,7 +136,7 @@ class Reader(obj_tables.io.Reader):
     MODELS = Writer.MODELS
 
     def run(self, path, models=None,
-            ignore_missing_sheets=None, ignore_extra_sheets=None, ignore_sheet_order=None,
+            ignore_missing_models=None, ignore_sheet_order=None,
             include_all_attributes=False, ignore_missing_attributes=None, ignore_extra_attributes=None, ignore_attribute_order=None,
             group_objects_by_model=True, validate=None):
         """ Read a list of model objects from file(s) and, optionally, validate them
@@ -145,10 +145,8 @@ class Reader(obj_tables.io.Reader):
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
                 of object to read or list of types of objects to read
-            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+            ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
-                other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
@@ -177,10 +175,8 @@ class Reader(obj_tables.io.Reader):
             models = self.MODELS
 
         config = wc_lang.config.core.get_config()['wc_lang']['io']
-        if ignore_missing_sheets is None:
-            ignore_missing_sheets = not config['strict']
-        if ignore_extra_sheets is None:
-            ignore_extra_sheets = not config['strict']
+        if ignore_missing_models is None:
+            ignore_missing_models = not config['strict']
         if ignore_sheet_order is None:
             ignore_sheet_order = not config['strict']
         if ignore_missing_attributes is None:
@@ -191,8 +187,7 @@ class Reader(obj_tables.io.Reader):
             ignore_attribute_order = not config['strict']
 
         objects = super(Reader, self).run(path, models=models,
-                                          ignore_missing_sheets=ignore_missing_sheets,
-                                          ignore_extra_sheets=ignore_extra_sheets,
+                                          ignore_missing_models=ignore_missing_models,
                                           ignore_sheet_order=ignore_sheet_order,
                                           include_all_attributes=include_all_attributes,
                                           ignore_missing_attributes=ignore_missing_attributes,

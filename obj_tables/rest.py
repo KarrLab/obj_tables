@@ -73,11 +73,6 @@ convert_parser.add_argument('format',
                             default='xlsx',
                             required=False,
                             help='Format to convert workbook')
-convert_parser.add_argument('sbtab',
-                            type=flask_restplus.inputs.boolean,
-                            default=False,
-                            required=False,
-                            help='If true, use SBtab format; default: false')
 
 
 @api.route("/convert/",
@@ -97,12 +92,11 @@ class Convert(flask_restplus.Resource):
         schema_dir, schema_filename = save_schema(args['schema'])
         in_wb_dir, in_wb_filename = save_in_workbook(args['workbook'])
         format = args['format']
-        sbtab = args['sbtab']
 
         try:
-            _, models = get_schema_models(schema_filename, sbtab)
-            objs, model_metadata = read_workbook(in_wb_filename, models, sbtab)
-            out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models, sbtab=sbtab)
+            _, models = get_schema_models(schema_filename)
+            objs, model_metadata = read_workbook(in_wb_filename, models)
+            out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -138,11 +132,6 @@ diff_parser.add_argument('workbook-2', location='files',
                          type=FileStorage,
                          required=True,
                          help='Second workbook (.csv, .tsv, .zip of .csv or .tsv, .xlsx)')
-diff_parser.add_argument('sbtab',
-                         type=flask_restplus.inputs.boolean,
-                         default=False,
-                         required=False,
-                         help='If true, use SBtab format; default: false')
 
 
 @api.route("/diff/",
@@ -163,11 +152,10 @@ class Diff(flask_restplus.Resource):
         model_name = args['model']
         wb_dir_1, wb_filename_1 = save_in_workbook(args['workbook'])
         wb_dir_2, wb_filename_2 = save_in_workbook(args['workbook-2'])
-        sbtab = args['sbtab']
 
         try:
-            _, models = get_schema_models(schema_filename, sbtab)
-        except Exception as err:            
+            _, models = get_schema_models(schema_filename)
+        except Exception as err:
             shutil.rmtree(schema_dir)
             shutil.rmtree(wb_dir_1)
             shutil.rmtree(wb_dir_2)
@@ -177,7 +165,7 @@ class Diff(flask_restplus.Resource):
 
         try:
             diffs = utils.diff_workbooks(wb_filename_1, wb_filename_2,
-                                         models, model_name, sbtab=sbtab)
+                                         models, model_name)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -199,11 +187,6 @@ gen_template_parser.add_argument('format',
                                  default='xlsx',
                                  required=False,
                                  help='Format for template')
-gen_template_parser.add_argument('sbtab',
-                                 type=flask_restplus.inputs.boolean,
-                                 default=False,
-                                 required=False,
-                                 help='If true, use SBtab format; default: false')
 
 
 @api.route("/gen-template/",
@@ -222,16 +205,15 @@ class GenTemplate(flask_restplus.Resource):
         args = gen_template_parser.parse_args()
         schema_dir, schema_filename = save_schema(args['schema'])
         format = args['format']
-        sbtab = args['sbtab']
 
         try:
-            _, models = get_schema_models(schema_filename, sbtab)
+            _, models = get_schema_models(schema_filename)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
             shutil.rmtree(schema_dir)
 
-        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, [], {}, models=models, sbtab=sbtab)
+        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, [], {}, models=models)
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -250,11 +232,6 @@ init_schema_parser.add_argument('schema', location='files',
                                 type=FileStorage,
                                 required=True,
                                 help='File with tabular description of schema (.csv, .tsv, .xlsx)')
-init_schema_parser.add_argument('sbtab',
-                                type=flask_restplus.inputs.boolean,
-                                default=False,
-                                required=False,
-                                help='If true, use SBtab format; default: false')
 
 
 @api.route("/init-schema/",
@@ -277,12 +254,9 @@ class InitSchema(flask_restplus.Resource):
         py_schema_dir = tempfile.mkdtemp()
         py_schema_filename = os.path.join(py_schema_dir, 'schema.py')
 
-        sbtab = args['sbtab']
-
         try:
             utils.init_schema(schema_filename,
-                              out_filename=py_schema_filename,
-                              sbtab=sbtab)
+                              out_filename=py_schema_filename)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -318,11 +292,6 @@ norm_parser.add_argument('format',
                          default='xlsx',
                          required=False,
                          help='Format for normalized workbook')
-norm_parser.add_argument('sbtab',
-                         type=flask_restplus.inputs.boolean,
-                         default=False,
-                         required=False,
-                         help='If true, use SBtab format; default: false')
 
 
 @api.route("/normalize/",
@@ -343,10 +312,9 @@ class Normalize(flask_restplus.Resource):
         model_name = args['model']
         in_wb_dir, in_wb_filename = save_in_workbook(args['workbook'])
         format = args['format']
-        sbtab = args['sbtab']
 
         try:
-            _, models = get_schema_models(schema_filename, sbtab)
+            _, models = get_schema_models(schema_filename)
         except Exception as err:
             shutil.rmtree(schema_dir)
             shutil.rmtree(in_wb_dir)
@@ -355,7 +323,7 @@ class Normalize(flask_restplus.Resource):
         model = get_model(models, model_name)
 
         try:
-            objs, model_metadata = read_workbook(in_wb_filename, models, sbtab)
+            objs, model_metadata = read_workbook(in_wb_filename, models)
             for obj in objs:
                 if isinstance(obj, model):
                     obj.normalize()
@@ -365,7 +333,7 @@ class Normalize(flask_restplus.Resource):
             shutil.rmtree(schema_dir)
             shutil.rmtree(in_wb_dir)
 
-        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models, sbtab=sbtab)
+        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models)
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -388,11 +356,6 @@ validate_parser.add_argument('workbook', location='files',
                              type=FileStorage,
                              required=True,
                              help='Workbook (.csv, .tsv, .zip of .csv or .tsv, .xlsx)')
-validate_parser.add_argument('sbtab',
-                             type=flask_restplus.inputs.boolean,
-                             default=False,
-                             required=False,
-                             help='If true, use SBtab format; default: false')
 
 
 @api.route("/validate/")
@@ -411,19 +374,13 @@ class Validate(flask_restplus.Resource):
         args = validate_parser.parse_args()
         schema_dir, schema_filename = save_schema(args['schema'])
         wb_dir, wb_filename = save_in_workbook(args['workbook'])
-        sbtab = args['sbtab']
 
         try:
-            _, models = get_schema_models(schema_filename, sbtab)
-            kwargs = {}
-            if sbtab:
-                kwargs = io.SBTAB_DEFAULT_READER_OPTS
+            _, models = get_schema_models(schema_filename)
             objs = io.Reader().run(wb_filename,
                                    models=models,
                                    group_objects_by_model=False,
-                                   sbtab=sbtab,
-                                   validate=False,
-                                   **kwargs)
+                                   validate=False)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -501,13 +458,12 @@ def save_in_workbook(file_storage):
     return (dir, filename)
 
 
-def read_workbook(filename, models, sbtab=False):
+def read_workbook(filename, models):
     """ Read a workbook
 
     Args:
         filename (:obj:`str`): path to workbook
         models (:obj:`list` of :obj:`core.Model`): models
-        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
     Returns:
         :obj:`tuple`:
@@ -515,26 +471,20 @@ def read_workbook(filename, models, sbtab=False):
             * :obj:`dict`: dictionary that maps types to a dictionary of instance
             * :obj:`dict`: dictionary of model metadata
     """
-    kwargs = {}
-    if sbtab:
-        kwargs = io.SBTAB_DEFAULT_READER_OPTS
     reader = io.Reader()
     result = reader.run(filename,
                         models=models,
-                        group_objects_by_model=False,
-                        sbtab=sbtab,
-                        **kwargs)
+                        group_objects_by_model=False)
     return result, reader._model_metadata
 
 
-def save_out_workbook(format, objs, model_metadata, models, sbtab=False):
+def save_out_workbook(format, objs, model_metadata, models):
     """
     Args:
         format (:obj:`str`): format (.csv, .tsv, .xlsx)
         objs (:obj:`dict`): dictionary that maps types to instances
         model_metadata (:obj:`dict`): dictionary of model metadata
         models (:obj:`list` of :obj:`core.Model`): models
-        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
     Returns:
         :obj:`tuple`:
@@ -549,7 +499,7 @@ def save_out_workbook(format, objs, model_metadata, models, sbtab=False):
     else:
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
-    io.Writer().run(temp_filename, objs, model_metadata=model_metadata, models=models, sbtab=sbtab)
+    io.Writer().run(temp_filename, objs, model_metadata=model_metadata, models=models)
 
     if format in ['csv', 'tsv']:
         filename = os.path.join(dir, 'workbook.{}.zip'.format(format))

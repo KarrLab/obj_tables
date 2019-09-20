@@ -1,3 +1,4 @@
-Branch,master
-Revision,1c94981e846a733b59500393df3a0ca3b507c18e
-Url,https://github.com/KarrLab/test_data_repo.git
+!!ObjTables TableType='Data' ModelId='DataRepoMetadata',
+!Branch,master
+!Revision,1c94981e846a733b59500393df3a0ca3b507c18e
+!Url,https://github.com/KarrLab/test_data_repo.git

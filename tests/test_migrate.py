@@ -41,13 +41,13 @@ import yaml
 
 from .config import core
 from obj_tables.migrate import (MigratorError, MigrateWarning, SchemaModule, Migrator, MigrationController,
-    MigrationSpec, SchemaChanges, DataSchemaMigration, GitRepo, VirtualEnvUtil,
-    CementControllers, data_repo_migration_controllers, schema_repo_migration_controllers, MigrationWrapper)
+                                MigrationSpec, SchemaChanges, DataSchemaMigration, GitRepo, VirtualEnvUtil,
+                                CementControllers, data_repo_migration_controllers, schema_repo_migration_controllers, MigrationWrapper)
 import obj_tables
 from obj_tables import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
-    PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
-    UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-    RelatedAttribute, TableFormat, migrate, obj_math, get_models)
+                        PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
+                        UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
+                        RelatedAttribute, TableFormat, migrate, obj_math, get_models)
 from obj_tables import utils
 from wc_utils.workbook.io import read as read_workbook
 from wc_utils.util.files import remove_silently
@@ -57,6 +57,7 @@ from obj_tables.io import TOC_SHEET_NAME, SCHEMA_SHEET_NAME, Reader, Writer
 from obj_tables.utils import SchemaRepoMetadata
 from wc_utils.util.git import GitHubRepoForTests
 
+
 def make_tmp_dirs_n_small_schemas_paths(test_case):
     test_case.fixtures_path = fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures', 'migrate')
     test_case.tmp_dir = mkdtemp()
@@ -64,12 +65,14 @@ def make_tmp_dirs_n_small_schemas_paths(test_case):
     test_case.migrated_defs_path = os.path.join(test_case.fixtures_path, 'small_migrated.py')
     test_case.small_bad_related_path = os.path.join(test_case.fixtures_path, 'small_bad_related.py')
 
+
 def make_wc_lang_migration_fixtures(test_case):
     # set up wc_lang migration testing fixtures
     test_case.wc_lang_fixtures_path = os.path.join(test_case.fixtures_path, 'wc_lang_fixture', 'wc_lang')
     test_case.wc_lang_schema_existing = os.path.join(test_case.wc_lang_fixtures_path, 'core.py')
     test_case.wc_lang_schema_modified = os.path.join(test_case.wc_lang_fixtures_path, 'core_modified.py')
     test_case.wc_lang_model_copy = copy_file_to_tmp(test_case, 'example-wc_lang-model.xlsx')
+
 
 def copy_file_to_tmp(test_case, name):
     """ Copy file `name` to a new dir in the tmp dir and return its pathname
@@ -92,17 +95,19 @@ def copy_file_to_tmp(test_case, name):
         shutil.copy(os.path.join(test_case.fixtures_path, name), tmp_filename)
     return tmp_filename
 
+
 def temp_pathname(testcase, name):
     # create a pathname for a file called name in new temp dir, which will be discarded by tearDown()
     return os.path.join(mkdtemp(dir=testcase.tmp_dir), name)
 
+
 def make_migrators_in_memory(test_case):
 
-    ### create migrator with renaming that doesn't use models in files
+    # create migrator with renaming that doesn't use models in files
     test_case.migrator_for_error_tests = migrator_for_error_tests = Migrator()
 
     ### these classes contain migration errors for validation tests ###
-    ### existing models
+    # existing models
     class RelatedObj(obj_tables.Model):
         id = SlugAttribute()
     test_case.RelatedObj = RelatedObj
@@ -127,7 +132,7 @@ def make_migrators_in_memory(test_case):
         'TestExisting2': TestExisting2,
         'TestNotMigrated': TestNotMigrated}
 
-    ### migrated models
+    # migrated models
     class NewRelatedObj(obj_tables.Model):
         id = SlugAttribute()
     test_case.NewRelatedObj = NewRelatedObj
@@ -147,7 +152,7 @@ def make_migrators_in_memory(test_case):
         'TestMigrated': TestMigrated,
         'TestMigrated2': TestMigrated2}
 
-    ### renaming maps
+    # renaming maps
     migrator_for_error_tests.renamed_models = [
         ('RelatedObj', 'NewRelatedObj'),
         ('TestExisting', 'TestMigrated'),
@@ -165,7 +170,7 @@ def make_migrators_in_memory(test_case):
     test_case.migrator_for_error_tests_2 = migrator_for_error_tests_2 = Migrator()
     migrator_for_error_tests_2.existing_defs = migrator_for_error_tests.existing_defs
     migrator_for_error_tests_2.migrated_defs = migrator_for_error_tests.migrated_defs
-    ### renaming maps
+    # renaming maps
     migrator_for_error_tests_2.renamed_models = [
         ('TestExisting', 'TestMigrated'),
         ('TestExisting2', 'TestMigrated2')]
@@ -185,7 +190,7 @@ def make_migrators_in_memory(test_case):
 
     class GoodExisting(obj_tables.Model):
         id = SlugAttribute()
-        attr_a = StringAttribute() # renamed to attr_b
+        attr_a = StringAttribute()  # renamed to attr_b
         unmigrated_attr = StringAttribute()
         np_array = obj_math.NumpyArrayAttribute()
         related = OneToOneAttribute(GoodRelatedCls, related_name='test')
@@ -216,9 +221,11 @@ def make_migrators_in_memory(test_case):
     good_migrator._validate_renamed_models()
     good_migrator._validate_renamed_attrs()
 
+
 def rm_tmp_dirs(test_case):
     # remove a test_case's temp dir
     shutil.rmtree(test_case.tmp_dir)
+
 
 def invert_renaming(renaming):
     # invert a list of renamed_models or renamed_attributes
@@ -228,25 +235,26 @@ def invert_renaming(renaming):
         inverted_renaming.append((migrated, existing))
     return inverted_renaming
 
+
 def assert_differing_workbooks(test_case, existing_model_file, migrated_model_file):
     assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, equal=False)
 
+
 def remove_workbook_metadata(workbook):
-    metadata_sheet_names = ['!' + TOC_SHEET_NAME, '!' + SCHEMA_SHEET_NAME, 
-                            'Data repo metadata', 'Schema repo metadata']
+    metadata_sheet_names = ['!' + TOC_SHEET_NAME, '!' + SCHEMA_SHEET_NAME,
+                            '!Data repo metadata', '!Schema repo metadata']
     for metadata_sheet_name in metadata_sheet_names:
         if metadata_sheet_name in workbook:
             workbook.pop(metadata_sheet_name)
+
 
 def assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, equal=True):
     # test whether a pair of model files are identical, or not identical if equal=False
     existing_workbook = read_workbook(existing_model_file)
     migrated_workbook = read_workbook(migrated_model_file)
 
-    remove_ws_metadata(existing_workbook)
-    remove_ws_metadata(migrated_workbook)
-
     for workbook in [existing_workbook, migrated_workbook]:
+        remove_ws_metadata(workbook)
         remove_workbook_metadata(workbook)
 
     if equal:
@@ -259,14 +267,18 @@ def assert_equal_workbooks(test_case, existing_model_file, migrated_model_file, 
     else:
         test_case.assertNotEqual(existing_workbook, migrated_workbook)
 
+
 def remove_ws_metadata(wb):
+    wb.pop(TOC_SHEET_NAME, None)
+
     for sheet in wb.values():
         for row in list(sheet):
-            if row and ((isinstance(row[0], str) and row[0].startswith('!!')) or \
-                all(cell in ['', None] for cell in row)):
+            if row and ((isinstance(row[0], str) and row[0].startswith('!!')) or
+                        all(cell in ['', None] for cell in row)):
                 sheet.remove(row)
             else:
                 break
+
 
 class MigrationFixtures(unittest.TestCase):
     """ Reused fixture set up and tear down
@@ -295,7 +307,7 @@ class MigrationFixtures(unittest.TestCase):
 
         self.migration_spec_cfg_file = os.path.join(self.fixtures_path, 'config_rt_migrations.yaml')
         self.bad_migration_spec_conf_file = os.path.join(self.fixtures_path,
-            'config_example_bad_migrations.yaml')
+                                                         'config_example_bad_migrations.yaml')
 
         make_migrators_in_memory(self)
 
@@ -313,9 +325,9 @@ class MigrationFixtures(unittest.TestCase):
 
         # set up expressions testing fixtures
         self.wc_lang_no_change_migrator = Migrator(self.wc_lang_schema_existing,
-            self.wc_lang_schema_existing)
+                                                   self.wc_lang_schema_existing)
         self.wc_lang_changes_migrator = Migrator(self.wc_lang_schema_existing,
-            self.wc_lang_schema_modified, renamed_models=[('Parameter', 'ParameterRenamed')])
+                                                 self.wc_lang_schema_modified, renamed_models=[('Parameter', 'ParameterRenamed')])
         self.no_change_migrator_model = self.set_up_fun_expr_fixtures(
             self.wc_lang_no_change_migrator, 'Parameter', 'Parameter')
         self.changes_migrator_model = \
@@ -323,10 +335,10 @@ class MigrationFixtures(unittest.TestCase):
 
         # since MigrationSpec specifies a sequence of migrations, embed renamings in lists
         self.migration_spec = MigrationSpec('name',
-            existing_files=[self.example_existing_rt_model_copy],
-            schema_files=[self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path],
-            seq_of_renamed_models=[self.existing_2_migrated_renamed_models],
-            seq_of_renamed_attributes=[self.existing_2_migrated_renamed_attributes])
+                                            existing_files=[self.example_existing_rt_model_copy],
+                                            schema_files=[self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path],
+                                            seq_of_renamed_models=[self.existing_2_migrated_renamed_models],
+                                            seq_of_renamed_attributes=[self.existing_2_migrated_renamed_attributes])
 
         # files to delete that are not in a temp directory
         self.files_to_delete = set()
@@ -346,7 +358,7 @@ class MigrationFixtures(unittest.TestCase):
         objects[Function]['fun_1'] = fun_1
         Expression.make_obj(model, Function, 'fun_2', 'param_1 + 2* Function.fun_1()', objects)
         Expression.make_obj(model, Function, 'disambiguated_fun', 'Parameter.param_1 + 2* Function.fun_1()',
-            objects)
+                            objects)
         return model
 
     def tearDown(self):
@@ -386,14 +398,14 @@ class TestSchemaModule(MigrationFixtures):
         expected_package = None
         expected_module = 'small_existing'
         self.assertEqual(parse_module_path(self.existing_defs_path),
-            (expected_dir, expected_package, expected_module))
+                         (expected_dir, expected_package, expected_module))
 
         # module in package
         expected_dir = self.fixtures_path
         expected_package = 'test_package'
         expected_module = 'test_package.module_for_testing'
         self.assertEqual(parse_module_path(self.module_for_testing),
-            (expected_dir, expected_package, expected_module))
+                         (expected_dir, expected_package, expected_module))
 
     def check_imported_module(self, schema_module, module_name, module):
         """ Check that an imported module has the right models and relationships between them
@@ -425,7 +437,7 @@ class TestSchemaModule(MigrationFixtures):
             right_model, right_attr = right
             left_related = getattr(model_defs[left_model], left_attr).related_class
             self.assertEqual(left_related, model_defs[right_model],
-                "left_related: {}, model_defs[right_model]: {}".format(id(left_related), id(model_defs[right_model])))
+                             "left_related: {}, model_defs[right_model]: {}".format(id(left_related), id(model_defs[right_model])))
             right_related = model_defs[right_model].Meta.related_attributes[right_attr].related_class
             self.assertEqual(left_related, right_related)
 
@@ -497,12 +509,12 @@ class TestSchemaModule(MigrationFixtures):
                 if isinstance(local_attr.attr, RelatedAttribute):
                     related_class = local_attr.related_class
                     self.assertIn(related_class.__name__, model_names,
-                        "{}.{} references a {}, but it's not a model name in module {}".format(
-                            model_name, attr_name, related_class.__name__, module.__name__))
+                                  "{}.{} references a {}, but it's not a model name in module {}".format(
+                                      model_name, attr_name, related_class.__name__, module.__name__))
                     self.assertEqual(related_class, model_defs[related_class.__name__],
-                        "{}.{} references a {}, but it's not the model in module {}: {} != {}".format(
-                            model_name, attr_name, related_class.__name__, module.__name__,
-                            id(related_class), id(model_defs[related_class.__name__])))
+                                     "{}.{} references a {}, but it's not the model in module {}: {} != {}".format(
+                        model_name, attr_name, related_class.__name__, module.__name__,
+                        id(related_class), id(model_defs[related_class.__name__])))
 
     def test_import_module_for_migration(self):
         # import copy of schema in single file from a new dir
@@ -552,7 +564,7 @@ class TestSchemaModule(MigrationFixtures):
         # test _check_imported_models errors exception
         sm = SchemaModule(self.small_bad_related_path)
         with self.assertRaisesRegex(MigratorError,
-            r"\w+\.\w+ references a \w+, but it's not the model in module \w+"):
+                                    r"\w+\.\w+ references a \w+, but it's not the model in module \w+"):
             sm.import_module_for_migration()
 
         # import a module that's new and missing an attribute
@@ -561,7 +573,7 @@ class TestSchemaModule(MigrationFixtures):
         f.write('# no code')
         f.close()
         with self.assertRaisesRegex(MigratorError,
-            "module in '.+' missing required attribute 'no_such_attribute'"):
+                                    "module in '.+' missing required attribute 'no_such_attribute'"):
             SchemaModule(module_missing_attr).import_module_for_migration(required_attrs=['no_such_attribute'])
 
         # test exception for bad mod_patterns type
@@ -569,10 +581,10 @@ class TestSchemaModule(MigrationFixtures):
         sm = SchemaModule(copy_of_small_existing)
         with capturer.CaptureOutput(relay=False) as capture_output:
             with self.assertRaisesRegex(MigratorError,
-                "mod_patterns must be an iterator that's not a string"):
+                                        "mod_patterns must be an iterator that's not a string"):
                 sm.import_module_for_migration(debug=True, mod_patterns=3)
             with self.assertRaisesRegex(MigratorError,
-                "mod_patterns must be an iterator that's not a string"):
+                                        "mod_patterns must be an iterator that's not a string"):
                 sm.import_module_for_migration(debug=True, mod_patterns='hi mom')
 
         # test debug of import_module_for_migration
@@ -630,7 +642,7 @@ class TestSchemaModule(MigrationFixtures):
 
     def test_check_imported_models(self):
         for good_schema_path in [self.existing_defs_path, self.migrated_defs_path, self.wc_lang_schema_existing,
-            self.wc_lang_schema_modified]:
+                                 self.wc_lang_schema_modified]:
             sm = SchemaModule(good_schema_path)
             self.assertEqual(sm._check_imported_models(), [])
 
@@ -667,6 +679,7 @@ class TestMigrator(MigrationFixtures):
     def setUp(self):
         super().setUp()
         # make a MigrationWrapper transformations with prepare_existing_models and modify_migrated_models that invert each other
+
         class InvertingPropertyWrapper(MigrationWrapper):
 
             def prepare_existing_models(self, migrator, existing_models):
@@ -683,7 +696,7 @@ class TestMigrator(MigrationFixtures):
 
         inverting_property_wrapper = InvertingPropertyWrapper()
         self.inverting_transforms_migrator = Migrator(self.existing_defs_path, self.existing_defs_path,
-            transformations=inverting_property_wrapper)
+                                                      transformations=inverting_property_wrapper)
         self.inverting_transforms_migrator.prepare()
 
     def tearDown(self):
@@ -693,17 +706,17 @@ class TestMigrator(MigrationFixtures):
         migrator_for_error_tests = self.migrator_for_error_tests
         self.assertEqual(migrator_for_error_tests._validate_renamed_models(), [])
         self.assertEqual(migrator_for_error_tests.models_map,
-            {'TestExisting': 'TestMigrated', 'RelatedObj': 'NewRelatedObj', 'TestExisting2': 'TestMigrated2'})
+                         {'TestExisting': 'TestMigrated', 'RelatedObj': 'NewRelatedObj', 'TestExisting2': 'TestMigrated2'})
 
         # test errors
         migrator_for_error_tests.renamed_models = [('NotExisting', 'TestMigrated')]
         self.assertIn('in renamed models not an existing model',
-            migrator_for_error_tests._validate_renamed_models()[0])
+                      migrator_for_error_tests._validate_renamed_models()[0])
         self.assertEqual(migrator_for_error_tests.models_map, {})
 
         migrator_for_error_tests.renamed_models = [('TestExisting', 'NotMigrated')]
         self.assertIn('in renamed models not a migrated model',
-            migrator_for_error_tests._validate_renamed_models()[0])
+                      migrator_for_error_tests._validate_renamed_models()[0])
 
         migrator_for_error_tests.renamed_models = [
             ('TestExisting', 'TestMigrated'),
@@ -717,54 +730,54 @@ class TestMigrator(MigrationFixtures):
 
         self.assertEqual(migrator_for_error_tests._validate_renamed_attrs(), [])
         self.assertEqual(migrator_for_error_tests.renamed_attributes_map,
-            dict(migrator_for_error_tests.renamed_attributes))
+                         dict(migrator_for_error_tests.renamed_attributes))
 
         # test errors
         for renamed_attributes in [
             [(('NotExisting', 'attr_a'), ('TestMigrated', 'attr_b'))],
-            [(('TestExisting', 'no_such_attr'), ('TestMigrated', 'attr_b'))]]:
+                [(('TestExisting', 'no_such_attr'), ('TestMigrated', 'attr_b'))]]:
             migrator_for_error_tests.renamed_attributes = renamed_attributes
             self.assertIn('in renamed attributes not an existing model.attribute',
-                migrator_for_error_tests._validate_renamed_attrs()[0])
+                          migrator_for_error_tests._validate_renamed_attrs()[0])
         self.assertEqual(migrator_for_error_tests.renamed_attributes_map, {})
 
         for renamed_attributes in [
             [(('TestExisting', 'attr_a'), ('NotMigrated', 'attr_b'))],
-            [(('TestExisting', 'attr_a'), ('TestMigrated', 'no_such_attr'))]]:
+                [(('TestExisting', 'attr_a'), ('TestMigrated', 'no_such_attr'))]]:
             migrator_for_error_tests.renamed_attributes = renamed_attributes
             self.assertIn('in renamed attributes not a migrated model.attribute',
-                migrator_for_error_tests._validate_renamed_attrs()[0])
+                          migrator_for_error_tests._validate_renamed_attrs()[0])
 
         for renamed_attributes in [
             [(('NotExisting', 'attr_a'), ('TestMigrated', 'attr_b'))],
-            [(('TestExisting', 'attr_a'), ('NotMigrated', 'attr_b'))]]:
+                [(('TestExisting', 'attr_a'), ('NotMigrated', 'attr_b'))]]:
             migrator_for_error_tests.renamed_attributes = renamed_attributes
             self.assertRegex(migrator_for_error_tests._validate_renamed_attrs()[1],
-                "renamed attribute '.*' not consistent with renamed models")
+                             "renamed attribute '.*' not consistent with renamed models")
 
         migrator_for_error_tests.renamed_attributes = [
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b')),
             (('TestExisting', 'attr_a'), ('TestMigrated', 'attr_b'))]
         self.assertIn('duplicated existing attributes in renamed attributes:',
-            migrator_for_error_tests._validate_renamed_attrs()[0])
+                      migrator_for_error_tests._validate_renamed_attrs()[0])
         self.assertIn('duplicated migrated attributes in renamed attributes:',
-            migrator_for_error_tests._validate_renamed_attrs()[1])
+                      migrator_for_error_tests._validate_renamed_attrs()[1])
 
     def test_get_mapped_attribute(self):
         migrator_for_error_tests = self.migrator_for_error_tests
 
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('TestExisting', 'attr_a'),
-            ('TestMigrated', 'attr_b'))
+                         ('TestMigrated', 'attr_b'))
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute(
             self.TestExisting, self.TestExisting.Meta.attributes['id']), ('TestMigrated', 'id'))
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('TestExisting', 'no_attr'),
-            (None, None))
+                         (None, None))
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('NotExisting', 'id'),
-            (None, None))
+                         (None, None))
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'id'),
-            ('NewRelatedObj', 'id'))
+                         ('NewRelatedObj', 'id'))
         self.assertEqual(migrator_for_error_tests._get_mapped_attribute('RelatedObj', 'no_attr'),
-            (None, None))
+                         (None, None))
 
     def test_load_defs_from_files(self):
         migrator = Migrator(self.existing_defs_path, self.migrated_defs_path)
@@ -780,26 +793,27 @@ class TestMigrator(MigrationFixtures):
         migrator_for_error_tests = self.migrator_for_error_tests
 
         inconsistencies = migrator_for_error_tests._get_inconsistencies('NotExistingModel',
-            'NotMigratedModel')
+                                                                        'NotMigratedModel')
         self.assertRegex(inconsistencies[0], "existing model .* not found in")
         self.assertRegex(inconsistencies[1],
-            "migrated model .* corresponding to existing model .* not found in")
+                         "migrated model .* corresponding to existing model .* not found in")
 
-        class A(object): pass
+        class A(object):
+            pass
         migrator_for_error_tests.existing_defs['A'] = A
         migrator_for_error_tests.models_map['A'] = 'X'
         inconsistencies = migrator_for_error_tests._get_inconsistencies('A', 'NewRelatedObj')
         self.assertRegex(inconsistencies[0],
-            "type of existing model '.*' doesn't equal type of migrated model '.*'")
+                         "type of existing model '.*' doesn't equal type of migrated model '.*'")
         self.assertRegex(inconsistencies[1],
-            "models map says '.*' migrates to '.*', but _get_inconsistencies parameters say '.*' migrates to '.*'")
+                         "models map says '.*' migrates to '.*', but _get_inconsistencies parameters say '.*' migrates to '.*'")
         A.__name__ = 'foo'
         self.NewRelatedObj.__name__ = 'foo'
         inconsistencies = migrator_for_error_tests._get_inconsistencies('A', 'NewRelatedObj')
         self.assertRegex(inconsistencies[1],
-            "name of existing model class '.+' not equal to its name in the models map '.+'")
+                         "name of existing model class '.+' not equal to its name in the models map '.+'")
         self.assertRegex(inconsistencies[2],
-            "name of migrated model class '.+' not equal to its name in the models map '.+'")
+                         "name of migrated model class '.+' not equal to its name in the models map '.+'")
         # clean up
         del migrator_for_error_tests.existing_defs['A']
         del migrator_for_error_tests.models_map['A']
@@ -808,18 +822,18 @@ class TestMigrator(MigrationFixtures):
 
         inconsistencies = migrator_for_error_tests._get_inconsistencies('TestExisting', 'TestMigrated')
         self.assertRegex(inconsistencies[0],
-            r"existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+")
+                         r"existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+")
 
         inconsistencies = migrator_for_error_tests._get_inconsistencies('TestExisting2', 'TestMigrated2')
         self.assertRegex(inconsistencies[0],
-            r".+\..+\..+ is '.+', which differs from the migrated value of .+\..+\..+, which is '.+'")
+                         r".+\..+\..+ is '.+', which differs from the migrated value of .+\..+\..+, which is '.+'")
         self.assertRegex(inconsistencies[1],
-            r".+\..+\..+ is '.+', which migrates to '.+', but it differs from .+\..+\..+, which is '.+'")
+                         r".+\..+\..+ is '.+', which migrates to '.+', but it differs from .+\..+\..+, which is '.+'")
 
         inconsistencies = self.migrator_for_error_tests_2._get_inconsistencies('TestExisting2',
-            'TestMigrated2')
+                                                                               'TestMigrated2')
         self.assertRegex(inconsistencies[1],
-            r"existing model '.+' is not migrated, but is referenced by migrated attribute .+\..+")
+                         r"existing model '.+' is not migrated, but is referenced by migrated attribute .+\..+")
 
     def test_get_model_order(self):
         migrator = self.migrator
@@ -827,25 +841,34 @@ class TestMigrator(MigrationFixtures):
         existing_model_order = migrator._get_existing_model_order(self.example_existing_model_copy)
         migrated_model_order = migrator._migrate_model_order(existing_model_order)
         expected_model_order = [migrator.migrated_defs[model]
-            for model in ['Test', 'Property', 'Subtest', 'Reference', 'NewModel']]
+                                for model in ['Test', 'Property', 'Subtest', 'Reference', 'NewModel']]
+
         self.assertEqual(migrated_model_order, expected_model_order)
-        class NoSuchModel(obj_tables.Model): pass
+
+        class NoSuchModel(obj_tables.Model):
+            pass
         with self.assertRaisesRegex(MigratorError, "model 'NoSuchModel' not found in the model map"):
             migrator._migrate_model_order([NoSuchModel])
 
         # test ambiguous_sheet_names
-        class FirstUnambiguousModel(obj_tables.Model): pass
+        class FirstUnambiguousModel(obj_tables.Model):
+            pass
 
-        class SecondUnambiguousModel(obj_tables.Model): pass
+        class SecondUnambiguousModel(obj_tables.Model):
+            pass
 
         # models with ambiguous sheet names
-        class TestModel(obj_tables.Model): pass
+        class TestModel(obj_tables.Model):
+            pass
 
-        class TestModels3(obj_tables.Model): pass
+        class TestModels3(obj_tables.Model):
+            pass
 
-        class RenamedModel(obj_tables.Model): pass
+        class RenamedModel(obj_tables.Model):
+            pass
 
-        class NewModel(obj_tables.Model): pass
+        class NewModel(obj_tables.Model):
+            pass
 
         migrator_2 = Migrator('', '')
         migrated_models = dict(
@@ -865,8 +888,8 @@ class TestMigrator(MigrationFixtures):
             SecondUnambiguousModel='RenamedModel'
         )
         example_ambiguous_sheets = os.path.join(self.fixtures_path, 'example_ambiguous_sheets.xlsx')
-        expected_order = ['FirstUnambiguousModel', 'RenamedModel', 'TestModel', 
-            'TestModels3', 'NewModel']
+        expected_order = ['FirstUnambiguousModel', 'RenamedModel', 'TestModel',
+                          'TestModels3', 'NewModel']
         existing_model_order = migrator_2._get_existing_model_order(example_ambiguous_sheets)
 
         migrated_model_order = migrator_2._migrate_model_order(existing_model_order)
@@ -885,17 +908,17 @@ class TestMigrator(MigrationFixtures):
         migrator = self.migrator
         migrator.renamed_attributes = [(('Test', 'name'), ('Test', 'no_such_name'))]
         with self.assertRaisesRegex(MigratorError,
-            "'.*' in renamed attributes not a migrated model.attribute"):
+                                    "'.*' in renamed attributes not a migrated model.attribute"):
             migrator.prepare()
         migrator.renamed_attributes = []
 
         # triggering inconsistencies in prepare() requires inconsistent schema on disk
         inconsistent_migrated_model_defs_path = os.path.join(self.fixtures_path,
-            'small_migrated_inconsistent.py')
+                                                             'small_migrated_inconsistent.py')
         inconsistent_migrator = Migrator(self.existing_defs_path, inconsistent_migrated_model_defs_path)
         inconsistent_migrator._load_defs_from_files()
         with self.assertRaisesRegex(MigratorError,
-            r"existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+"):
+                                    r"existing attribute .+\..+ type .+ differs from its migrated attribute .+\..+ type .+"):
             inconsistent_migrator.prepare()
 
     def test_read_existing_file(self):
@@ -930,7 +953,7 @@ class TestMigrator(MigrationFixtures):
             related=grc_1
         )
         migrated_model = self.good_migrator._migrate_model(good_existing_1, self.GoodExisting,
-            self.GoodMigrated)
+                                                           self.GoodMigrated)
         self.assertEqual(migrated_model.id, id)
         self.assertEqual(migrated_model.attr_b, attr_a_b)
         numpy.testing.assert_equal(migrated_model.np_array, np_array_val)
@@ -942,7 +965,7 @@ class TestMigrator(MigrationFixtures):
             np_array=np_array_val
         )
         migrated_model = self.good_migrator._migrate_model(good_existing_2, self.GoodExisting,
-            self.GoodMigrated)
+                                                           self.GoodMigrated)
         self.assertEqual(migrated_model.id, id)
         self.assertEqual(migrated_model.attr_b, attr_a_b)
         numpy.testing.assert_equal(migrated_model.np_array, np_array_val)
@@ -987,10 +1010,10 @@ class TestMigrator(MigrationFixtures):
                         for wc_token in migrated_expr._obj_tables_tokens:
                             if hasattr(wc_token, 'model_type'):
                                 self.assertTrue(getattr(wc_token, 'model_type') in
-                                    self.changes_migrator_model.migrated_defs.values())
+                                                self.changes_migrator_model.migrated_defs.values())
             duped_migrated_params = [migrated_models[1]]*2
             with self.assertRaisesRegex(MigratorError,
-                "model type 'Parameter.*' has duplicated id: '.+'"):
+                                        "model type 'Parameter.*' has duplicated id: '.+'"):
                 migrator._migrate_all_analyzed_exprs(zip(['ignored']*2, duped_migrated_params))
 
             if migrator == self.wc_lang_no_change_migrator:
@@ -1017,8 +1040,8 @@ class TestMigrator(MigrationFixtures):
         property_value = 7
         ExistingProperty = existing_defs['Property']
         property = ExistingProperty(id=property_id,
-            test=None,
-            value=property_value)
+                                    test=None,
+                                    value=property_value)
 
         ExistingReference = existing_defs['Reference']
         references = []
@@ -1035,8 +1058,8 @@ class TestMigrator(MigrationFixtures):
         for n in range(num_subtests):
             subtests.append(
                 ExistingSubtest(id="subtest_{}".format(n),
-                    test=test,
-                    references=references[n:n + 2]))
+                                test=test,
+                                references=references[n:n + 2]))
 
         existing_models = []
         existing_models.append(test)
@@ -1093,8 +1116,8 @@ class TestMigrator(MigrationFixtures):
         for n in range(num_subtests):
             migrated_subtests.append(
                 MigratedSubtest(id="subtest_{}".format(n),
-                    test=migrated_test,
-                    references=migrated_references[n:n + 2]))
+                                test=migrated_test,
+                                references=migrated_references[n:n + 2]))
         expected_migrated_models_2.extend(migrated_subtests)
 
         migrator._connect_models(all_models)
@@ -1130,7 +1153,7 @@ class TestMigrator(MigrationFixtures):
         migrate_suffix = '_MIGRATED'
         expected_migrated_filename = os.path.join(tmp_dir, 'model' + migrate_suffix + '.xlsx')
         self.assertEqual(expected_migrated_filename, path_of_migrated_file(tmp_file,
-            migrate_suffix=migrate_suffix))
+                                                                           migrate_suffix=migrate_suffix))
 
     def test_write_migrated_file_exception(self):
         tmp_file = temp_pathname(self, 'model.xlsx')
@@ -1143,7 +1166,7 @@ class TestMigrator(MigrationFixtures):
     def test_migrate_without_changes(self):
         no_change_migrator = self.no_change_migrator
         no_change_migrator.full_migrate(self.example_existing_model_copy,
-            migrated_file=self.example_migrated_model)
+                                        migrated_file=self.example_migrated_model)
         ExistingTest = no_change_migrator.existing_defs['Test']
         models = list(no_change_migrator.existing_defs.values())
         # this compares all Models in self.example_existing_model_copy and self.example_migrated_model
@@ -1153,7 +1176,7 @@ class TestMigrator(MigrationFixtures):
 
         test_suffix = '_MIGRATED_FILE'
         migrated_filename = no_change_migrator.full_migrate(self.example_existing_model_copy,
-            migrate_suffix=test_suffix)
+                                                            migrate_suffix=test_suffix)
         root, _ = os.path.splitext(self.example_existing_model_copy)
         self.assertEqual(migrated_filename, "{}{}.xlsx".format(root, test_suffix))
 
@@ -1173,7 +1196,7 @@ class TestMigrator(MigrationFixtures):
         raw_existing_models = self.inverting_transforms_migrator.read_existing_file(
             self.example_existing_model_copy)
         for raw_existing_model, transformed_migrated_model in zip(raw_existing_models,
-            transformed_migrated_models):
+                                                                  transformed_migrated_models):
             self.assertTrue(raw_existing_model.is_equal(transformed_migrated_model))
 
     def test_write(self):
@@ -1181,7 +1204,7 @@ class TestMigrator(MigrationFixtures):
             self.example_existing_model_copy)
         migrated_file = temp_pathname(self, 'migrated_example_existing_model.xlsx')
         self.inverting_transforms_migrator._write(self.example_existing_model_copy,
-            raw_existing_models, migrated_file=migrated_file)
+                                                  raw_existing_models, migrated_file=migrated_file)
         io_wrapped_models = self.inverting_transforms_migrator.read_existing_file(migrated_file)
         # re-read raw_existing_models because _write changes them
         raw_existing_models = self.inverting_transforms_migrator.read_existing_file(
@@ -1197,7 +1220,7 @@ class TestMigrator(MigrationFixtures):
             revision='example_hash')
         migrated_file = temp_pathname(self, 'migrated_example_existing_model.xlsx')
         self.no_change_migrator._write(self.example_existing_model_copy,
-            raw_existing_models, migrated_file=migrated_file, schema_metadata_model=schema_metadata_model)
+                                       raw_existing_models, migrated_file=migrated_file, schema_metadata_model=schema_metadata_model)
         metadata = utils.read_metadata_from_file(migrated_file)
         self.assertTrue(metadata.schema_repo_metadata.is_equal(schema_metadata_model))
 
@@ -1205,7 +1228,7 @@ class TestMigrator(MigrationFixtures):
         # inverting transforms and no migration changes should not change models
         migrated_file = temp_pathname(self, 'migrated_example_existing_model.xlsx')
         self.inverting_transforms_migrator.full_migrate(self.example_existing_model_copy,
-            migrated_file=migrated_file)
+                                                        migrated_file=migrated_file)
         assert_equal_workbooks(self, self.example_existing_model_copy, migrated_file)
 
     def test_full_migrate(self):
@@ -1216,31 +1239,31 @@ class TestMigrator(MigrationFixtures):
 
         # make existing -> migrated migrator
         existing_2_migrated_migrator = Migrator(self.existing_rt_model_defs_path,
-            self.migrated_rt_model_defs_path,
-            renamed_models=self.existing_2_migrated_renamed_models,
-            renamed_attributes=self.existing_2_migrated_renamed_attributes)
+                                                self.migrated_rt_model_defs_path,
+                                                renamed_models=self.existing_2_migrated_renamed_models,
+                                                renamed_attributes=self.existing_2_migrated_renamed_attributes)
         existing_2_migrated_migrator.prepare()
 
         # make migrated -> existing migrator
         migrated_2_existing_migrator = Migrator(self.migrated_rt_model_defs_path,
-            self.existing_rt_model_defs_path,
-            renamed_models=invert_renaming(self.existing_2_migrated_renamed_models),
-            renamed_attributes=invert_renaming(self.existing_2_migrated_renamed_attributes))
+                                                self.existing_rt_model_defs_path,
+                                                renamed_models=invert_renaming(self.existing_2_migrated_renamed_models),
+                                                renamed_attributes=invert_renaming(self.existing_2_migrated_renamed_attributes))
         migrated_2_existing_migrator.prepare()
 
         # round trip test of model in tsv file
         # this fails if _strptime is not imported in advance
         existing_2_migrated_migrator.full_migrate(self.example_existing_model_tsv,
-            migrated_file=self.existing_2_migrated_migrated_tsv_file)
+                                                  migrated_file=self.existing_2_migrated_migrated_tsv_file)
         migrated_2_existing_migrator.full_migrate(self.existing_2_migrated_migrated_tsv_file,
-            migrated_file=self.round_trip_migrated_tsv_file)
+                                                  migrated_file=self.round_trip_migrated_tsv_file)
         assert_equal_workbooks(self, self.example_existing_model_tsv, self.round_trip_migrated_tsv_file)
 
         # round trip test of model in xlsx file
         tmp_existing_2_migrated_xlsx_file = os.path.join(self.tmp_dir,
-            'existing_2_migrated_xlsx_file.xlsx')
+                                                         'existing_2_migrated_xlsx_file.xlsx')
         existing_2_migrated_migrator.full_migrate(self.example_existing_rt_model_copy,
-            migrated_file=tmp_existing_2_migrated_xlsx_file)
+                                                  migrated_file=tmp_existing_2_migrated_xlsx_file)
         round_trip_migrated_xlsx_file = migrated_2_existing_migrator.full_migrate(
             tmp_existing_2_migrated_xlsx_file)
         assert_equal_workbooks(self, self.example_existing_rt_model_copy, round_trip_migrated_xlsx_file)
@@ -1250,7 +1273,7 @@ class TestMigrator(MigrationFixtures):
         model_copy = model.copy()
         setattr(model_copy, attr_name, default_value)
         self.assertIn("'{}' lack(s) '{}'".format(model_def.__name__, attr_name),
-            self.good_migrator._check_model(model_copy, model_def)[0])
+                      self.good_migrator._check_model(model_copy, model_def)[0])
         return model_copy
 
     def test_check_model_and_models(self):
@@ -1385,7 +1408,7 @@ class TestMigrationSpec(MigrationFixtures):
             file.write(u'migration:\n')
             file.write(u'    obj_defs: [small_migrated_rt.py, small_existing_rt.py]\n')
         with self.assertRaisesRegex(MigratorError,
-            re.escape("disallowed attribute(s) found: {'obj_defs'}")):
+                                    re.escape("disallowed attribute(s) found: {'obj_defs'}")):
             MigrationSpec.load(temp_bad_config_example)
 
     def test_get_migrations_config(self):
@@ -1419,15 +1442,15 @@ class TestMigrationSpec(MigrationFixtures):
         ms = copy.deepcopy(self.migration_spec)
         ms.schema_files = []
         self.assertEqual(ms.validate(),
-            ["a migration spec must contain at least 2 schemas, but it has only 0"])
+                         ["a migration spec must contain at least 2 schemas, but it has only 0"])
 
         for renaming_list in MigrationSpec._CHANGES_LISTS:
             ms = copy.deepcopy(self.migration_spec)
             setattr(ms, renaming_list, [[], []])
             error = ms.validate()[0]
             self.assertRegex(error,
-                r"{} must have 1 mapping for each of the \d migration.+ specified, but it has \d".format(
-                    renaming_list))
+                             r"{} must have 1 mapping for each of the \d migration.+ specified, but it has \d".format(
+                                 renaming_list))
 
         for renaming_list in MigrationSpec._CHANGES_LISTS:
             ms = copy.deepcopy(self.migration_spec)
@@ -1453,7 +1476,7 @@ class TestMigrationSpec(MigrationFixtures):
             [[(1, 'att1'), ('B', 'att2')]],
             [[('A', 2), ('B', 'att2')]],
             [3],
-            ]
+        ]
         for bad_renamed_attributes in bad_renamed_attributes_examples:
             ms = copy.deepcopy(self.migration_spec)
             ms.seq_of_renamed_attributes = [bad_renamed_attributes]
@@ -1470,19 +1493,19 @@ class TestMigrationSpec(MigrationFixtures):
         ms.migrated_files = []
         error = ms.validate()[0]
         self.assertRegex(error,
-            r"existing_files and migrated_files must .+ but they have \d and \d entries, .+")
+                         r"existing_files and migrated_files must .+ but they have \d and \d entries, .+")
 
         ms.migrated_files = ['file_1', 'file_2']
         error = ms.validate()[0]
         self.assertRegex(error,
-            r"existing_files and migrated_files must .+ but they have \d and \d entries, .+")
+                         r"existing_files and migrated_files must .+ but they have \d and \d entries, .+")
 
     def test_normalize_filenames(self):
         self.assertEqual(MigrationSpec._normalize_filenames([]), [])
         self.assertEqual(MigrationSpec._normalize_filenames([self.existing_defs_path]), [self.existing_defs_path])
         self.assertEqual(
             MigrationSpec._normalize_filenames([os.path.basename(self.existing_defs_path)],
-                absolute_file=self.existing_defs_path), [self.existing_defs_path])
+                                               absolute_file=self.existing_defs_path), [self.existing_defs_path])
 
     def test_standardize(self):
         ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'])
@@ -1522,7 +1545,7 @@ class TestMigrationSpec(MigrationFixtures):
         self.assertEqual(os.path.dirname(ms.migrated_files[0]), migrations_config_file_dir)
 
         ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'],
-            final_schema_branch='ex_branch', final_schema_url='ex_url', final_schema_hash='ex_hash')
+                           final_schema_branch='ex_branch', final_schema_url='ex_url', final_schema_hash='ex_hash')
         ms.standardize()
         self.assertEqual(ms.final_schema_git_metadata.branch, 'ex_branch')
 
@@ -1535,13 +1558,13 @@ class TestMigrationSpec(MigrationFixtures):
             branch='example_branch',
             revision='example_hash')
         ms = MigrationSpec('name', schema_files=['f1.py', 'f2.py'],
-            final_schema_git_metadata=schema_metadata_model)
+                           final_schema_git_metadata=schema_metadata_model)
         ms.standardize()
         self.assertEqual(ms.final_schema_git_metadata.url, 'example_url')
 
     def test_expected_migrated_files(self):
         self.assertEqual(self.migration_spec.expected_migrated_files(),
-            [Migrator.path_of_migrated_file(self.migration_spec.existing_files[0])])
+                         [Migrator.path_of_migrated_file(self.migration_spec.existing_files[0])])
         ms = copy.deepcopy(self.migration_spec)
         tmp_file = temp_pathname(self, 'model_new.xlsx')
         ms.migrated_files = [tmp_file]
@@ -1567,20 +1590,20 @@ class TestMigrationController(MigrationFixtures):
     def test_migrate_over_schema_sequence(self):
         # round-trip test: existing -> migrated -> migrated -> existing
         schema_files = [self.existing_rt_model_defs_path, self.migrated_rt_model_defs_path,
-            self.migrated_rt_model_defs_path, self.existing_rt_model_defs_path]
+                        self.migrated_rt_model_defs_path, self.existing_rt_model_defs_path]
         migrated_2_existing_renamed_models = invert_renaming(self.existing_2_migrated_renamed_models)
         migrated_2_existing_renamed_attributes = invert_renaming(self.existing_2_migrated_renamed_attributes)
         seq_of_renamed_models = [self.existing_2_migrated_renamed_models, [], migrated_2_existing_renamed_models]
         seq_of_renamed_attributes = [self.existing_2_migrated_renamed_attributes, [],
-            migrated_2_existing_renamed_attributes]
+                                     migrated_2_existing_renamed_attributes]
 
         migrated_filename = temp_pathname(self, 'example_existing_model_rt_migrated.xlsx')
         migration_spec = MigrationSpec('name',
-            existing_files=[self.example_existing_rt_model_copy],
-            schema_files=schema_files,
-            seq_of_renamed_models=seq_of_renamed_models,
-            seq_of_renamed_attributes=seq_of_renamed_attributes,
-            migrated_files=[migrated_filename])
+                                       existing_files=[self.example_existing_rt_model_copy],
+                                       schema_files=schema_files,
+                                       seq_of_renamed_models=seq_of_renamed_models,
+                                       seq_of_renamed_attributes=seq_of_renamed_attributes,
+                                       migrated_files=[migrated_filename])
         migration_spec.prepare()
         migrated_filenames = MigrationController.migrate_over_schema_sequence(migration_spec)
         assert_equal_workbooks(self, self.example_existing_rt_model_copy, migrated_filenames[0])
@@ -1592,12 +1615,12 @@ class TestMigrationController(MigrationFixtures):
             branch='example_branch',
             revision='0123456789012345678901234567890123456789')
         migration_spec = MigrationSpec('name',
-            existing_files=[self.example_existing_rt_model_copy],
-            schema_files=schema_files,
-            seq_of_renamed_models=seq_of_renamed_models,
-            seq_of_renamed_attributes=seq_of_renamed_attributes,
-            migrated_files=[migrated_filename],
-            final_schema_git_metadata=schema_metadata_model)
+                                       existing_files=[self.example_existing_rt_model_copy],
+                                       schema_files=schema_files,
+                                       seq_of_renamed_models=seq_of_renamed_models,
+                                       seq_of_renamed_attributes=seq_of_renamed_attributes,
+                                       migrated_files=[migrated_filename],
+                                       final_schema_git_metadata=schema_metadata_model)
         migration_spec.prepare()
         migrated_filenames = MigrationController.migrate_over_schema_sequence(migration_spec)
         assert_equal_workbooks(self, self.example_existing_rt_model_copy, migrated_filenames[0])
@@ -1611,7 +1634,7 @@ class TestMigrationController(MigrationFixtures):
 
         self.migration_spec.prepare()
         with self.assertWarnsRegex(UserWarning,
-            r"\d+ instance\(s\) of existing model '\S+' lack\(s\) '\S+' non-default value"):
+                                   r"\d+ instance\(s\) of existing model '\S+' lack\(s\) '\S+' non-default value"):
             MigrationController.migrate_over_schema_sequence(self.migration_spec)
 
     def put_tmp_migrated_file_in_migration_spec(self, migration_spec, name):
@@ -1655,9 +1678,9 @@ class TestMigrationController(MigrationFixtures):
                 self.files_to_delete.add(expected_migrated_file)
 
         out_file = temp_pathname(self, "profile_out.out")
-        locals = {'self':self, 'MigrationController':MigrationController}
+        locals = {'self': self, 'MigrationController': MigrationController}
         cProfile.runctx('results = MigrationController.migrate_from_config(self.migration_spec_cfg_file)', {},
-            locals, filename=out_file)
+                        locals, filename=out_file)
         profile = pstats.Stats(out_file)
         print("Profile for 'MigrationController.migrate_from_config(self.migration_spec_cfg_file)'")
         profile.strip_dirs().sort_stats('cumulative').print_stats(20)
@@ -1685,7 +1708,7 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.migration_test_repo_known_hash = '820a5d1ac8b660b9bdf609b6b71be8b5fdbf8bd3'
         cls.git_migration_test_repo = GitRepo(cls.migration_test_repo_url)
         cls.clean_schema_changes_file = SchemaChanges.find_file(cls.git_migration_test_repo,
-            cls.migration_test_repo_known_hash)
+                                                                cls.migration_test_repo_known_hash)
         git_migration_test_repo_copy = cls.git_migration_test_repo.copy()
         tag_for_commit_of_last_schema_changes = 'COMMIT_OF_LAST_SCHEMA_CHANGES'
         git_migration_test_repo_copy.repo.git.checkout(tag_for_commit_of_last_schema_changes, detach=True)
@@ -1746,7 +1769,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
         files = SchemaChanges.all_schema_changes_files(self.test_repo.migrations_dir())
         self.assertEqual(len(files), 6)
         an_expected_file = os.path.join(self.test_repo.migrations_dir(),
-            'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
+                                        'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
         self.assertTrue(an_expected_file in files)
 
         with self.assertRaisesRegex(MigratorError, r"no schema changes files in '\S+'"):
@@ -1763,7 +1786,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
     def test_find_file(self):
         schema_changes_file = SchemaChanges.find_file(self.test_repo, self.known_hash_ba1f9d3)
         self.assertEqual(os.path.basename(schema_changes_file),
-            'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
+                         'schema_changes_2019-02-13-14-05-42_ba1f9d3.yaml')
 
         with self.assertRaisesRegex(MigratorError, r"no schema changes file in '.+' for hash \S+"):
             SchemaChanges.find_file(self.test_repo, 'not_a_hash_not_a_hash_not_a_hash_not_a_h')
@@ -1772,15 +1795,15 @@ class TestSchemaChanges(AutoMigrationFixtures):
         time.sleep(2)
         self.schema_changes.make_template()
         with self.assertRaisesRegex(MigratorError,
-            r"multiple schema changes files in '.+' for hash \S+"):
+                                    r"multiple schema changes files in '.+' for hash \S+"):
             SchemaChanges.find_file(self.test_repo, self.schema_changes.get_hash())
 
         with self.assertRaisesRegex(MigratorError,
-            r"hash prefix in schema changes filename '.+' inconsistent with hash in file: '\S+'"):
+                                    r"hash prefix in schema changes filename '.+' inconsistent with hash in file: '\S+'"):
             SchemaChanges.find_file(self.test_repo, 'a'*40)
 
         with self.assertRaisesRegex(MigratorError,
-            "the hash in '.+', which is '.+', isn't the hash of a commit"):
+                                    "the hash in '.+', which is '.+', isn't the hash of a commit"):
             SchemaChanges.find_file(self.test_repo, 'abcdefabcdefabcdefabcdefabcdefabcdefabcd')
 
     def test_generate_filename(self):
@@ -1843,7 +1866,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
             SchemaChanges.make_template_command('no such dir')
 
         with self.assertRaisesRegex(MigratorError,
-            "commit_or_hash '.+' cannot be converted into a commit"):
+                                    "commit_or_hash '.+' cannot be converted into a commit"):
             SchemaChanges.make_template_command(self.git_migration_test_repo.repo_dir, 'no such commit')
 
     @unittest.skip('Fixture must be updated due to changes to obj_tables')
@@ -1857,7 +1880,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
 
         schema_changes.transformations_file = 'no_transformations_wrapper.py'
         with self.assertRaisesRegex(MigratorError,
-            r"schema changes file '.+' must define a MigrationWrapper instance called 'transformations'"):
+                                    r"schema changes file '.+' must define a MigrationWrapper instance called 'transformations'"):
             schema_changes.load_transformations()
 
     def test_load(self):
@@ -1881,45 +1904,45 @@ class TestSchemaChanges(AutoMigrationFixtures):
             with open(bad_yaml, "w") as f:
                 f.write("unbalanced brackets: ][")
             with self.assertRaisesRegex(MigratorError,
-                r"could not parse YAML schema changes file: '\S+':"):
+                                        r"could not parse YAML schema changes file: '\S+':"):
                 SchemaChanges.load(bad_yaml)
 
             with open(bad_yaml, "w") as f:
                 f.write("wrong_attr: []")
             with self.assertRaisesRegex(MigratorError,
-                r"schema changes file '.+' must have a dict with these attributes:"):
+                                        r"schema changes file '.+' must have a dict with these attributes:"):
                 SchemaChanges.load(bad_yaml)
 
         pathname = self.empty_schema_changes.make_template()
         with self.assertRaisesRegex(MigratorError,
-            r"schema changes file '.+' is empty \(an unmodified template\)"):
+                                    r"schema changes file '.+' is empty \(an unmodified template\)"):
             SchemaChanges.load(pathname)
 
     def test_validate(self):
         schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
-            'good_schema_changes_2019-03.yaml')
+                                           'good_schema_changes_2019-03.yaml')
         self.assertFalse(SchemaChanges.validate(SchemaChanges.load(schema_changes_file)))
 
         schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
-            'bad_types_schema_changes_2019-03.yaml')
+                                           'bad_types_schema_changes_2019-03.yaml')
         schema_changes_kwargs = SchemaChanges.load(schema_changes_file)
         errors = SchemaChanges.validate(schema_changes_kwargs)
         self.assertTrue(any([re.search('commit_hash must be a str', e) for e in errors]))
         self.assertTrue(any([re.search('transformations_file must be a str', e) for e in errors]))
         self.assertTrue(any([re.search("renamed_models .* a list of pairs of strings, but is '.*'$", e)
-            for e in errors]))
+                             for e in errors]))
         self.assertTrue(
             any([re.search('renamed_models .*list of pairs of strings, .* examining it raises', e)
-                for e in errors]))
+                 for e in errors]))
         self.assertTrue(
             any([re.search("renamed_attributes.*list of pairs of pairs of strings, but is '.*'$", e)
-                for e in errors]))
+                 for e in errors]))
         self.assertTrue(
             any([re.search("renamed_attributes.*list of.*but.*'.*',.*examining it raises.*error$", e)
-                for e in errors]))
+                 for e in errors]))
 
         schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
-            'short_hash_schema_changes_2019-03.yaml')
+                                           'short_hash_schema_changes_2019-03.yaml')
         schema_changes_kwargs = SchemaChanges.load(schema_changes_file)
         errors = SchemaChanges.validate(schema_changes_kwargs)
         self.assertRegex(errors[0], "commit_hash is '.*', which isn't the right length for a git hash")
@@ -1934,7 +1957,7 @@ class TestSchemaChanges(AutoMigrationFixtures):
                 self.assertEqual(getattr(schema_changes, attr), self.test_data[attr])
 
         schema_changes_file = os.path.join(self.fixtures_path, 'schema_changes',
-            'bad_types_schema_changes_2019-03.yaml')
+                                           'bad_types_schema_changes_2019-03.yaml')
         with self.assertRaises(MigratorError):
             SchemaChanges.generate_instance(schema_changes_file)
 
@@ -2124,7 +2147,7 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertIsInstance(repo, git.Repo)
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
         repo, dir = self.totally_empty_git_repo.clone_repo_from_url(self.test_repo_url,
-            directory=self.make_tmp_dir())
+                                                                    directory=self.make_tmp_dir())
         self.assertTrue(os.path.isdir(os.path.join(dir, '.git')))
 
         # test branch
@@ -2170,7 +2193,7 @@ class TestGitRepo(AutoMigrationFixtures):
         dirs_cmp = filecmp.dircmp(dir1, dir2, ignore=ignore)
         if dirs_cmp.left_only or dirs_cmp.right_only or dirs_cmp.funny_files:
             return False
-        _, mismatch, errors =  filecmp.cmpfiles(dir1, dir2, dirs_cmp.common_files, shallow=False)
+        _, mismatch, errors = filecmp.cmpfiles(dir1, dir2, dirs_cmp.common_files, shallow=False)
         if mismatch or errors:
             return False
         for common_dir in dirs_cmp.common_dirs:
@@ -2186,7 +2209,7 @@ class TestGitRepo(AutoMigrationFixtures):
         self.assertEqual(repo_copy.repo_url, self.git_migration_test_repo.repo_url)
         self.assertNotEqual(repo_copy.migrations_dir(), self.git_migration_test_repo.migrations_dir())
         self.assertTrue(TestGitRepo.are_dir_trees_equal(self.git_migration_test_repo.repo_dir,
-            repo_copy.repo_dir, ignore=[]))
+                                                        repo_copy.repo_dir, ignore=[]))
 
         repo_copy = self.git_migration_test_repo.copy(tmp_dir=self.make_tmp_dir())
         self.assertEqual(repo_copy.latest_hash(), self.git_migration_test_repo.latest_hash())
@@ -2209,7 +2232,7 @@ class TestGitRepo(AutoMigrationFixtures):
     def test_migrations_dir(self):
         self.assertTrue(os.path.isdir(self.test_repo.migrations_dir()))
         self.assertEqual(os.path.basename(self.test_repo.migrations_dir()),
-            DataSchemaMigration._MIGRATIONS_DIRECTORY)
+                         DataSchemaMigration._MIGRATIONS_DIRECTORY)
 
     def test_fixtures_dir(self):
         self.assertTrue(os.path.isdir(self.test_repo.fixtures_dir()))
@@ -2278,7 +2301,7 @@ class TestGitRepo(AutoMigrationFixtures):
             tags_to_commits[str(tag)] = tag.commit
         commits = tags_to_commits.values()
         expected_commit_edges = [(tags_to_commits[child].hexsha, tags_to_commits[parent].hexsha)
-            for child, parent in expected_child_parent_edges]
+                                 for child, parent in expected_child_parent_edges]
 
         # obtain actual commit edges for the tagged commits
         actual_commit_edges = []
@@ -2315,7 +2338,7 @@ class TestGitRepo(AutoMigrationFixtures):
         # test exception
         git_repo = GitRepo()
         with self.assertRaisesRegex(MigratorError,
-            r"can't get metadata for '\S+' repo; uninitialized attributes:"):
+                                    r"can't get metadata for '\S+' repo; uninitialized attributes:"):
             git_repo.get_metadata(SchemaRepoMetadata)
 
     def test_checkout_commit(self):
@@ -2337,7 +2360,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
         empty_repo = test_github_repo.repo
         origin = empty_repo.remotes.origin
-        ## instructions from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
+        # instructions from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
         # create local branch "master" from remote "master"
         empty_repo.create_head('master', origin.refs.master)
         # set local "master" to track remote "master"
@@ -2375,7 +2398,7 @@ class TestGitRepo(AutoMigrationFixtures):
                 v = sequence[j]
                 if has_path(DAG, v, u):
                     self.fail("{} @ {} precedes {} @ {} in sequence, but DAG "
-                        "has a path {} -> {}".format(u, i, v, j, v, u))
+                              "has a path {} -> {}".format(u, i, v, j, v, u))
 
     # todo: method to convert hash prefix to full hash so we can use short hashes
     # todo: metadata: replace hashes with tags, and lookup hash in repo
@@ -2389,7 +2412,7 @@ class TestGitRepo(AutoMigrationFixtures):
         # map from each commit to the commits above that depend on it
         dependency_map = {
             before_splitting: {clone_1_commit, clone_2_commit, clone_3_commit, clone_2_n_3_merge_commit,
-                clone2_1_2_n_3_merge_commit},
+                               clone2_1_2_n_3_merge_commit},
             clone_1_commit: {clone2_1_2_n_3_merge_commit},
             clone_2_commit: {clone_2_n_3_merge_commit, clone2_1_2_n_3_merge_commit},
             clone_3_commit: {clone_2_n_3_merge_commit, clone2_1_2_n_3_merge_commit},
@@ -2452,38 +2475,38 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
     def setUp(self):
         self.clean_data_schema_migration = DataSchemaMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
-                data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
+                   data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
         self.clean_data_schema_migration.validate()
         self.migration_test_repo_fixtures = self.clean_data_schema_migration.data_git_repo.fixtures_dir()
         self.migration_test_repo_data_file_1 = os.path.join(self.migration_test_repo_fixtures,
-            'data_file_1.xlsx')
+                                                            'data_file_1.xlsx')
         self.migration_test_repo_data_file_1_hash_prefix = '182289c'
         self.buggy_data_schema_migration = DataSchemaMigration(
             **dict(data_repo_location=self.test_repo_url,
-                data_config_file_basename='data_schema_migration_conf-test_repo.yaml'))
+                   data_config_file_basename='data_schema_migration_conf-test_repo.yaml'))
         make_wc_lang_migration_fixtures(self)
 
     def test_make_migration_config_file(self):
         kwargs = dict(files_to_migrate=['../tests/fixtures//file1.xlsx',
                                         '../tests/fixtures//file2.xlsx'],
-            schema_repo_url='https://github.com//KarrLab/migration_test_repo',
-            branch='master',
-            schema_file='../migration_test_repo/core.py',
-        )
+                      schema_repo_url='https://github.com//KarrLab/migration_test_repo',
+                      branch='master',
+                      schema_file='../migration_test_repo/core.py',
+                      )
         path = DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo_2',
-            **kwargs)
+                                                              **kwargs)
         data = yaml.load(open(path, 'r'), Loader=yaml.FullLoader)
         self.assertEqual(kwargs, data)
 
         remove_silently(path)
         path = DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo_2',
-            add_to_repo=False, **kwargs)
+                                                              add_to_repo=False, **kwargs)
         self.assertFalse(self.test_repo.repo.untracked_files)
 
         DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo')
         # test will fail if it takes more than 1 s to run make_migration_config_file
         with self.assertRaisesRegex(MigratorError,
-            "data-schema migration configuration file '.+' already exists"):
+                                    "data-schema migration configuration file '.+' already exists"):
             DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo')
 
     def test_make_migration_config_file_command(self):
@@ -2526,21 +2549,21 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
 
         with self.assertRaisesRegex(MigratorError, "schema_file_url must be URL for python schema"):
             DataSchemaMigration.make_data_schema_migration_conf_file_cmd('',
-                'https://github.com/a/b/c/d/e/core', [])
+                                                                         'https://github.com/a/b/c/d/e/core', [])
 
         with self.assertRaisesRegex(MigratorError, "data_repo_dir is not a directory"):
             DataSchemaMigration.make_data_schema_migration_conf_file_cmd('foo',
-                'https://github.com/a/b/blob/d/e/core.py', [])
+                                                                         'https://github.com/a/b/blob/d/e/core.py', [])
 
         with self.assertRaisesRegex(MigratorError, "cannot find data file"):
             DataSchemaMigration.make_data_schema_migration_conf_file_cmd(test_repo_copy.repo_dir,
-                'https://github.com/a/b/blob/d/e/core.py',
-                ['tests/fixtures/not_a_data_file_1.xlsx'])
+                                                                         'https://github.com/a/b/blob/d/e/core.py',
+                                                                         ['tests/fixtures/not_a_data_file_1.xlsx'])
 
     def test_load_config_file(self):
         # read config file with initialized values
         pathname = os.path.join(self.git_migration_test_repo.migrations_dir(),
-            'data_schema_migration_conf-migration_test_repo.yaml')
+                                'data_schema_migration_conf-migration_test_repo.yaml')
         data_schema_migration_conf = DataSchemaMigration.load_config_file(pathname)
         expected_data_schema_migration_conf = dict(
             files_to_migrate=['../tests/fixtures/data_file_1.xlsx'],
@@ -2559,7 +2582,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         f.write("unbalanced brackets: ][")
         f.close()
         with self.assertRaisesRegex(MigratorError,
-            r"could not parse YAML data-schema migration config file: '\S+'"):
+                                    r"could not parse YAML data-schema migration config file: '\S+'"):
             DataSchemaMigration.load_config_file(bad_yaml)
 
         f = open(bad_yaml, "w")
@@ -2578,13 +2601,13 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         with self.assertRaisesRegex(MigratorError, "invalid data-schema migration config file:"):
             DataSchemaMigration.load_config_file(config_file)
         with self.assertRaisesRegex(MigratorError,
-            "missing DataSchemaMigration._CONFIG_ATTRIBUTES attribute: 'files_to_migrate'"):
+                                    "missing DataSchemaMigration._CONFIG_ATTRIBUTES attribute: 'files_to_migrate'"):
             DataSchemaMigration.load_config_file(config_file)
         remove_silently(config_file)
 
         config_file = DataSchemaMigration.make_migration_config_file(self.test_repo, 'test_schema_repo')
         with self.assertRaisesRegex(MigratorError,
-            "uninitialized DataSchemaMigration._CONFIG_ATTRIBUTES attribute: "):
+                                    "uninitialized DataSchemaMigration._CONFIG_ATTRIBUTES attribute: "):
             DataSchemaMigration.load_config_file(config_file)
         remove_silently(config_file)
 
@@ -2601,11 +2624,11 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         # test branch that isn't 'master'
         data_schema_migration_2 = DataSchemaMigration(
             **dict(data_repo_location=self.test_repo_url,
-                data_config_file_basename='data_schema_migration_conf-test_repo-test_branch.yaml'))
+                   data_config_file_basename='data_schema_migration_conf-test_repo-test_branch.yaml'))
         self.assertEqual(data_schema_migration_2.schema_git_repo.repo.active_branch.name, 'test_branch')
 
         with self.assertRaisesRegex(MigratorError, "initialization of DataSchemaMigration must provide "
-            r"DataSchemaMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
+                                    r"DataSchemaMigration._REQUIRED_ATTRIBUTES (.+) but these are missing: \{'data_config_file_basename'\}"):
             DataSchemaMigration(**dict(data_repo_location=self.migration_test_repo_url))
 
     def test_clean_up(self):
@@ -2623,7 +2646,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         self.assertEqual(expected_files_to_migrate, self.clean_data_schema_migration.migration_config_data[
             'files_to_migrate'])
         self.assertEqual(self.clean_data_schema_migration.migration_config_data['schema_repo_url'],
-            'https://github.com/KarrLab/migration_test_repo')
+                         'https://github.com/KarrLab/migration_test_repo')
         loaded_schema_changes = self.clean_data_schema_migration.loaded_schema_changes
         self.assertEqual(len(loaded_schema_changes), 2)
         for change in loaded_schema_changes:
@@ -2632,24 +2655,24 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         # test errors
         os.rename(  # create an error in all_schema_changes_with_commits()
             os.path.join(self.clean_data_schema_migration.schema_git_repo.migrations_dir(),
-                'schema_changes_2019-03-26-20-16-45_820a5d1.yaml'),
+                         'schema_changes_2019-03-26-20-16-45_820a5d1.yaml'),
             os.path.join(self.clean_data_schema_migration.schema_git_repo.migrations_dir(),
-                'schema_changes_2019-02-13-14-05-42_badhash.yaml'))
+                         'schema_changes_2019-02-13-14-05-42_badhash.yaml'))
         with self.assertRaises(MigratorError):
             self.clean_data_schema_migration.validate()
 
         remove_silently(expected_files_to_migrate[0])   # delete a file to migrate
         with self.assertRaisesRegex(MigratorError,
-            "file to migrate '.+', with full path '.+', doesn't exist"):
+                                    "file to migrate '.+', with full path '.+', doesn't exist"):
             self.clean_data_schema_migration.validate()
 
     def test_get_name(self):
         self.assertIn('data_schema_migration_conf--migration_test_repo--migration_test_repo--',
-            self.clean_data_schema_migration.get_name())
+                      self.clean_data_schema_migration.get_name())
 
         self.clean_data_schema_migration.data_git_repo = None
         with self.assertRaisesRegex(MigratorError,
-            re.escape("To run get_name() data_git_repo and schema_git_repo must be initialized")):
+                                    re.escape("To run get_name() data_git_repo and schema_git_repo must be initialized")):
             self.clean_data_schema_migration.get_name()
 
     def test_get_data_file_git_commit_hash(self):
@@ -2659,7 +2682,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
 
         # test exceptions
         data_schema_migration_w_bad_data_file_1 = DataSchemaMigration(data_repo_location=self.test_repo_url,
-            data_config_file_basename='data_schema_migration_conf-test_repo_bad_git_metadata_model.yaml')
+                                                                      data_config_file_basename='data_schema_migration_conf-test_repo_bad_git_metadata_model.yaml')
         test_repo_fixtures = data_schema_migration_w_bad_data_file_1.data_git_repo.fixtures_dir()
         test_file = os.path.join(test_repo_fixtures, 'bad_data_file.xlsx')
         with self.assertRaisesRegex(MigratorError, "No schema repo commit hash in"):
@@ -2683,7 +2706,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         seq_of_schema_changes = []
         with self.assertRaises(MigratorError):
             self.clean_data_schema_migration.generate_migration_spec(self.migration_test_repo_data_file_1,
-                seq_of_schema_changes)
+                                                                     seq_of_schema_changes)
 
     def test_schema_changes_for_data_file(self):
         schema_changes = self.clean_data_schema_migration.schema_changes_for_data_file(
@@ -2704,18 +2727,18 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         # use io_classes['reader'] to read file
         Reader = io_classes['reader']
         objects = Reader().run(self.migration_test_repo_data_file_1, ignore_attribute_order=True,
-            ignore_sheet_order=True, ignore_extra_sheets=True, include_all_attributes=False, validate=False)
+                               ignore_sheet_order=True, include_all_attributes=False, validate=False)
         # returns None because no models are provided to Reader
         self.assertEqual(objects, None)
 
         io_classes = self.clean_data_schema_migration.import_custom_IO_classes(
-                io_classes_file_basename='just_writer.py')
+            io_classes_file_basename='just_writer.py')
         expected_io_classes = dict(writer=obj_tables.io.Writer)
         self.assertEqual(io_classes, expected_io_classes)
 
         # no custom IO classes file
         self.assertEqual(None,
-            self.clean_data_schema_migration.import_custom_IO_classes(io_classes_file_basename='no file.py'))
+                         self.clean_data_schema_migration.import_custom_IO_classes(io_classes_file_basename='no file.py'))
 
         # test exceptions
         with self.assertRaisesRegex(MigratorError, "not a Python file"):
@@ -2731,14 +2754,14 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         # test importing wc_lang's IO
         wc_lang_data_schema_migration = DataSchemaMigration(
             **dict(data_repo_location=self.test_repo_url,
-            data_config_file_basename='data_schema_migration_conf--test_repo--wc_lang--2019-07-31-12-00-00.yaml'))
+                   data_config_file_basename='data_schema_migration_conf--test_repo--wc_lang--2019-07-31-12-00-00.yaml'))
         wc_lang_io_classes = wc_lang_data_schema_migration.import_custom_IO_classes()
         Reader = wc_lang_io_classes['reader']
         reader_name = Reader.__module__ + '.' + Reader.__qualname__
         expected_reader_name = 'wc_lang.io.Reader'
         self.assertEqual(reader_name, expected_reader_name)
         objects = Reader().run(self.wc_lang_model_copy, ignore_attribute_order=True,
-            ignore_sheet_order=True, ignore_extra_sheets=True, include_all_attributes=False, validate=False)
+                               ignore_sheet_order=True, include_all_attributes=False, validate=False)
         # return dict mapping model classes to instances
         self.assertTrue(isinstance(objects, dict))
 
@@ -2773,7 +2796,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         with TemporaryDirectory() as tmp_dir_name:
             data_schema_migration_from_url = DataSchemaMigration(
                 **dict(data_repo_location=self.migration_test_repo_url,
-                    data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
+                       data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
             migrated_files, temp_dir = data_schema_migration_from_url.automated_migrate(tmp_dir=tmp_dir_name)
             for migrated_file in migrated_files:
                 self.assertTrue(os.path.isfile(migrated_file))
@@ -2783,7 +2806,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         migration_test_repo = self.git_migration_test_repo.copy()
         data_schema_migration_existing_repo = DataSchemaMigration(
             **dict(data_repo_location=migration_test_repo.repo_dir,
-                data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
+                   data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
         migrated_files, _ = data_schema_migration_existing_repo.automated_migrate()
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
@@ -2791,13 +2814,13 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             self.assertEqual(metadata.schema_repo_metadata.url, self.migration_test_repo_url)
             self.assertEqual(metadata.schema_repo_metadata.branch, 'master')
             self.assertEqual(metadata.schema_repo_metadata.revision,
-                self.hash_of_commit_of_last_schema_changes)
+                             self.hash_of_commit_of_last_schema_changes)
 
         # test different data and schema repos: data repo = test_repo, schema repo = migration_test_repo
         test_repo_copy = self.test_repo.copy()
         data_schema_migration_separate_data_n_schema_repos = DataSchemaMigration(
             **dict(data_repo_location=test_repo_copy.repo_dir,
-                data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
+                   data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
         data_schema_migration_separate_data_n_schema_repos.prepare()
         self.round_trip_automated_migrate(data_schema_migration_separate_data_n_schema_repos)
 
@@ -2810,8 +2833,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         test_repo_copy = self.test_repo.copy()
         data_schema_migration_lang_round_trip = DataSchemaMigration(
             **dict(data_repo_location=test_repo_copy.repo_dir,
-                data_config_file_basename=\
-                    'data_schema_migration_conf--test_repo--wc_lang--2019-07-31-10-00-00.yaml'))
+                   data_config_file_basename='data_schema_migration_conf--test_repo--wc_lang--2019-07-31-10-00-00.yaml'))
         data_schema_migration_lang_round_trip.prepare()
 
         # todo: fix when issue #122 in wc_lang is resolved
@@ -2862,10 +2884,10 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             assert_equal_workbooks(self, file_copy, migrated_file)
             metadata = utils.read_metadata_from_file(migrated_file)
             self.assertEqual(metadata.schema_repo_metadata.url,
-                'https://github.com/KarrLab/migration_test_repo')
+                             'https://github.com/KarrLab/migration_test_repo')
             self.assertEqual(metadata.schema_repo_metadata.branch, 'master')
             self.assertEqual(metadata.schema_repo_metadata.revision,
-                self.hash_of_commit_of_last_schema_changes)
+                             self.hash_of_commit_of_last_schema_changes)
         # restore cwd
         os.chdir(cwd)
 
@@ -2913,7 +2935,6 @@ class SchemaRepoMigrate(Migrate):
 @unittest.skipUnless(internet_connected(), "Internet not connected")
 class TestCementControllers(AutoMigrationFixtures):
 
-
     @unittest.skip('Fixture must be updated due to changes to obj_tables')
     def test_make_changes_template(self):
         # create template schema changes file in test_repo
@@ -2937,7 +2958,7 @@ class TestCementControllers(AutoMigrationFixtures):
             argv = ['make-changes-template', '--commit', NO_SUCH_COMMIT]
             with SchemaRepoMigrate(argv=argv) as app:
                 with self.assertRaisesRegex(MigratorError,
-                    "commit_or_hash 'NO_SUCH_COMMIT' cannot be converted into a commit".format(
+                                            "commit_or_hash 'NO_SUCH_COMMIT' cannot be converted into a commit".format(
                         NO_SUCH_COMMIT)):
                     app.run()
 
@@ -2966,16 +2987,16 @@ class TestCementControllers(AutoMigrationFixtures):
             cwd = os.getcwd()
             os.chdir(self.nearly_empty_git_repo.repo_dir)
             argv = ['make-data-schema-migration-config-file',
-                'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
-                str(Path(data_file_path).relative_to(self.nearly_empty_git_repo.repo_dir))]
+                    'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+                    str(Path(data_file_path).relative_to(self.nearly_empty_git_repo.repo_dir))]
             with DataRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
                     self.assertIn('Data-schema migration config file created: ', captured.get_text())
 
             argv = ['make-data-schema-migration-config-file',
-                'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
-                'no_such_file']
+                    'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+                    'no_such_file']
             with DataRepoMigrate(argv=argv) as app:
                 with self.assertRaisesRegex(MigratorError, "cannot find data file: 'no_such_file'"):
                     app.run()
@@ -2996,7 +3017,7 @@ class TestCementControllers(AutoMigrationFixtures):
             cwd = os.getcwd()
             os.chdir(self.git_migration_test_repo.repo_dir)
             argv = ['do-configured-migration',
-                'migrations/data_schema_migration_conf-migration_test_repo.yaml']
+                    'migrations/data_schema_migration_conf-migration_test_repo.yaml']
             with DataRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
@@ -3005,7 +3026,7 @@ class TestCementControllers(AutoMigrationFixtures):
             argv = ['do-configured-migration', 'no_such_file']
             with DataRepoMigrate(argv=argv) as app:
                 with self.assertRaisesRegex(MigratorError,
-                    "could not read data-schema migration config file: '.+'"):
+                                            "could not read data-schema migration config file: '.+'"):
                     app.run()
 
         except Exception as e:
@@ -3024,8 +3045,8 @@ class TestCementControllers(AutoMigrationFixtures):
             cwd = os.getcwd()
             os.chdir(test_repo_copy.repo_dir)
             argv = ['migrate-data',
-                'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
-                'tests/fixtures/data_file_1.xlsx']
+                    'https://github.com/KarrLab/migration_test_repo/blob/master/migration_test_repo/core.py',
+                    'tests/fixtures/data_file_1.xlsx']
             with DataRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
                     app.run()

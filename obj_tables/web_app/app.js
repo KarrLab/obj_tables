@@ -68,7 +68,6 @@ $('#submit').click(function (evt) {
     }
     var schema = schema_files[0];
     data.append('schema', schema);
-    data.append("sbtab", true);
 
     var successFunc = null;
     var errorMsgStart = null;

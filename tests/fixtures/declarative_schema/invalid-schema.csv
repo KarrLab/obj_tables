@@ -1,5 +1,5 @@
-!! TableType='Schema' Description='Table/model and column/attribute definitions' SBtabVersion='2.0',,,,
-!ComponentName,!ComponentType,!IsPartOf,!Format,!Description
+!! TableType='Schema' Description='Table/model and column/attribute definitions' ObjTablesVersion='0.0.8',,,,
+!Name,!Type,!Parent,!Format,!Description
 Parent,Table,,column,Represents a parent
 Id,Column,Parent,slug,Identifier
 Name,Column,Parent,string,Name

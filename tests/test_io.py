@@ -213,7 +213,7 @@ class TestIo(unittest.TestCase):
 
         # test no validation
         wb = read_workbook(filename)
-        wb['Nodes'][4][2] = 'node_0'
+        wb['!Nodes'][4][2] = 'node_0'
         filename2 = os.path.join(self.tmp_dirname, 'test2.xlsx')
         write_workbook(filename2, wb, style={
             MainRoot.Meta.verbose_name: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -330,9 +330,9 @@ class TestIo(unittest.TestCase):
         workbook = reader.run()
 
         # edit heading
-        headings = workbook['Main root'][1]
-        self.assertEqual(headings[0], 'Identifier')
-        workbook['Main root'][1][0] = 'id'
+        headings = workbook['!Main root'][1]
+        self.assertEqual(headings[0], '!Identifier')
+        headings[0] = '!id'
 
         # write workbook
         writer.run(workbook, style={
@@ -350,7 +350,7 @@ class TestIo(unittest.TestCase):
 
         """ test case insensitivity """
         # edit heading
-        workbook['Main root'][1][0] = 'ID'
+        workbook['!Main root'][1][0] = '!ID'
 
         # write workbook
         writer.run(workbook, style={
@@ -423,11 +423,11 @@ class TestIo(unittest.TestCase):
                 (file_type, basename, worksheet, row, column) = obj.get_source('val')
                 self.assertEqual(file_type, ext)
                 self.assertEqual(basename, file)
-                self.assertEqual(worksheet, obj.Meta.verbose_name_plural)
+                self.assertEqual(worksheet, '!' + obj.Meta.verbose_name_plural)
                 self.assertEqual(row, 3)
                 self.assertEqual(column, 'B')
                 self.assertEqual(utils.source_report(obj, 'val'),
-                                 ':'.join([file, obj.Meta.verbose_name_plural, "{}{}".format(column, row)]))
+                                 ':'.join([file, '!' + obj.Meta.verbose_name_plural, "{}{}".format(column, row)]))
 
         transposeds = models[Transposed]
         for obj in transposeds:
@@ -435,11 +435,11 @@ class TestIo(unittest.TestCase):
                 (file_type, basename, worksheet, row, column) = obj.get_source('s')
                 self.assertEqual(file_type, ext)
                 self.assertEqual(basename, file)
-                self.assertEqual(worksheet, obj.Meta.verbose_name)
+                self.assertEqual(worksheet, '!' + obj.Meta.verbose_name)
                 self.assertEqual(row, 2)
                 self.assertEqual(column, 'C')
                 self.assertEqual(utils.source_report(obj, 's'),
-                                 ':'.join([file, obj.Meta.verbose_name, "{}{}".format(column, row)]))
+                                 ':'.join([file, '!' + obj.Meta.verbose_name, "{}{}".format(column, row)]))
 
         file = 'test-locations-*.csv'
         filename = os.path.join(os.path.dirname(__file__), 'fixtures', file)
@@ -472,16 +472,13 @@ class TestIo(unittest.TestCase):
     def test_read_bad_headers(self):
         msgs = [
             "The model cannot be loaded because 'bad-headers.xlsx' contains error(s)",
-            "Empty header field in row 1, col E - delete empty column(s)",
             "Header 'y' in row 1, col F does not match any attribute",
-            "Empty header field in row 3, col A - delete empty row(s)",
         ]
         self.check_reader_errors('bad-headers.xlsx', msgs, [MainRoot, Node, Leaf, OneToManyRow])
 
         msgs = [
             "The model cannot be loaded because 'bad-headers-*.csv' contains error(s)",
             "Header 'x' in row 5, col 1 does not match any attribute",
-            "Empty header field in row 1, col 5 - delete empty column(s)",
         ]
         self.check_reader_errors('bad-headers-*.csv', msgs, [MainRoot, Node, Leaf, OneToManyRow])
 
@@ -502,8 +499,8 @@ class TestIo(unittest.TestCase):
                 attribute_order = ('id', 'float1', 'bool1', )
 
         msgs = ["The model cannot be loaded because 'uncaught-error.xlsx' contains error(s)",
-                "uncaught-error.xlsx:Tests:B5",
-                "uncaught-error.xlsx:Tests:C6",
+                "uncaught-error.xlsx:!Tests:B5",
+                "uncaught-error.xlsx:!Tests:C6",
                 "Value must be an instance of `float`",
                 ]
         self.check_reader_errors('uncaught-error.xlsx', msgs, [MainRoot, Test])
@@ -528,13 +525,13 @@ class TestIo(unittest.TestCase):
             "Leaf\n"
             " +:\n"
             " +'id':''\n"
-            " +invalid-data.xlsx:Leaves:A6\n"
+            " +invalid-data.xlsx:!Leaves:A6\n"
             " +StringAttribute value for primary attribute cannot be empty",
-            "invalid-data.xlsx:'Normal records':B3",
+            "invalid-data.xlsx:'!Normal records':B3",
             "Transposed\n"
             " +t_2:\n"
             " +'val':'x'\n"
-            " +invalid-data.xlsx:Transposed:C2\n"
+            " +invalid-data.xlsx:!Transposed:C2\n"
             " +Value must be at least 2 characters",
         ]
         self.check_reader_errors('invalid-data.xlsx', RE_msgs, [Leaf, NormalRecord, Transposed],
@@ -560,10 +557,10 @@ class TestIo(unittest.TestCase):
                 attribute_order = ('id', 'node', 'val')
 
         RE_msgs = [
-            "reference-errors.xlsx:Nodes:B3\n +Unable to find MainRoot with id='not root'",
-            "reference-errors.xlsx:Leaves:B6\n +Unable to find Node with id='no such node'",
-            "reference-errors.xlsx:Leaves:E7\n +Unable to find OneToManyRow with id='no such row'",
-            "reference-errors.xlsx:'Node friends':B2\n +Unable to find Node with id=no_node",
+            "reference-errors.xlsx:!Nodes:B3\n +Unable to find MainRoot with id='not root'",
+            "reference-errors.xlsx:!Leaves:B6\n +Unable to find Node with id='no such node'",
+            "reference-errors.xlsx:!Leaves:E7\n +Unable to find OneToManyRow with id='no such row'",
+            "reference-errors.xlsx:'!Node friends':B2\n +Unable to find Node with id=no_node",
         ]
         self.check_reader_errors('reference-errors.xlsx', RE_msgs,
                                  [MainRoot, Node, NodeFriend, Leaf, OneToManyRow], use_re=True)
@@ -615,15 +612,19 @@ class TestIo(unittest.TestCase):
         class SimpleModel(core.Model):
             val = core.StringAttribute(min_length=10)
 
+        class ExtraSheet(core.Model):
+            val = core.StringAttribute(min_length=10)
+
         with self.assertRaises(ValueError) as context:
             # raises extra sheet exception
             WorkbookReader().run(filename, models=[SimpleModel])
         self.assertEqual(str(context.exception),
-                         "No matching models for worksheets with TableIDs 'extra sheet' in {}".format(fixture_file))
+                         "No matching models for worksheets with TableIds 'extra sheet' in {}".format(
+            fixture_file))
 
         with self.assertRaises(ValueError) as context:
             # raises extra attribute exception
-            WorkbookReader().run(filename, models=[SimpleModel], ignore_extra_sheets=True)
+            WorkbookReader().run(filename, models=[SimpleModel, ExtraSheet])
         self.assertRegex(str(context.exception),
                          "The model cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
@@ -635,7 +636,7 @@ class TestIo(unittest.TestCase):
 
         with self.assertRaises(ValueError) as context:
             # raises validation exception on 'too short'
-            WorkbookReader().run(filename, models=[SimpleModel], ignore_extra_sheets=True,
+            WorkbookReader().run(filename, models=[SimpleModel, ExtraSheet],
                                  ignore_extra_attributes=True)
         self.assertRegex(str(context.exception),
                          "The model cannot be loaded because 'test_run_options.*' contains error.*")
@@ -643,13 +644,17 @@ class TestIo(unittest.TestCase):
             location = 'A3'
         elif 'csv' in fixture_file:
             location = '3,1'
+        if fixture_file.endswith('.xlsx'):
+            prefix = '!'
+        else:
+            prefix = ''
         self.assertRegex(str(context.exception),
-                         ".*'val':'too short'\n.*test_run_options.*:'Simple models':{}\n.*"
-                         "Value must be at least 10 characters".format(location))
+                         ".*'val':'too short'\n.*test_run_options.*:'{}Simple models':{}\n.*"
+                         "Value must be at least 10 characters".format(prefix, location))
 
         class SimpleModel(core.Model):
             val = core.StringAttribute()
-        model = WorkbookReader().run(filename, models=[SimpleModel], ignore_extra_sheets=True,
+        model = WorkbookReader().run(filename, models=[SimpleModel, ExtraSheet],
                                      ignore_extra_attributes=True)
         self.assertIn('too short', [r.val for r in model[SimpleModel]])
 
@@ -660,69 +665,72 @@ class TestIo(unittest.TestCase):
     def test_read_empty_numeric_cell(self):
         wb = openpyxl.Workbook()
         wb.remove(wb.active)
-        ws = wb.create_sheet('Test models')
-
+        ws = wb.create_sheet('!Test models')
         cell = ws.cell(row=1, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Id'
-
-        cell = ws.cell(row=1, column=2)
-        cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Value'
+        cell.value = "!!ObjTables TableType='Data' ModelId='TestModel'"
 
         cell = ws.cell(row=2, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Model-1'
+        cell.value = '!Id'
 
         cell = ws.cell(row=2, column=2)
-        cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
-        cell.value = 2.
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
+        cell.value = '!Value'
 
         cell = ws.cell(row=3, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Model-2'
+        cell.value = 'Model-1'
 
         cell = ws.cell(row=3, column=2)
         cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
-        cell.value = 3.
+        cell.value = 2.
 
         cell = ws.cell(row=4, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Model-3'
+        cell.value = 'Model-2'
 
         cell = ws.cell(row=4, column=2)
         cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
-        cell.value = None
+        cell.value = 3.
 
         cell = ws.cell(row=5, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Model-4'
+        cell.value = 'Model-3'
 
         cell = ws.cell(row=5, column=2)
-        cell.data_type = openpyxl.cell.cell.TYPE_STRING
+        cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
         cell.value = None
 
         cell = ws.cell(row=6, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Model-5'
+        cell.value = 'Model-4'
 
         cell = ws.cell(row=6, column=2)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = ''
+        cell.value = None
 
         cell = ws.cell(row=7, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Model-6'
+        cell.value = 'Model-5'
 
         cell = ws.cell(row=7, column=2)
-        cell.data_type = openpyxl.cell.cell.TYPE_NULL
-        cell.value = None
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
+        cell.value = ''
 
         cell = ws.cell(row=8, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = 'Model-7'
+        cell.value = 'Model-6'
 
         cell = ws.cell(row=8, column=2)
+        cell.data_type = openpyxl.cell.cell.TYPE_NULL
+        cell.value = None
+
+        cell = ws.cell(row=9, column=1)
+        cell.data_type = openpyxl.cell.cell.TYPE_STRING
+        cell.value = 'Model-7'
+
+        cell = ws.cell(row=9, column=2)
         cell.data_type = openpyxl.cell.cell.TYPE_NUMERIC
         cell.value = 5.
 
@@ -755,8 +763,9 @@ class TestIo(unittest.TestCase):
 
         workbook = Workbook()
 
-        workbook['Test models'] = worksheet = Worksheet()
-        worksheet.append(Row(['Id']))
+        workbook['!Test models'] = worksheet = Worksheet()
+        worksheet.append(Row(["!!ObjTables TableType='Data' ModelId='TestModel'"]))
+        worksheet.append(Row(['!Id']))
         worksheet.append(Row(['A']))
         worksheet.append(Row(['B']))
         worksheet.append(Row(['C']))
@@ -825,7 +834,7 @@ class TestIo(unittest.TestCase):
         # error
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         wb = read_workbook(filename)
-        wb['Nodes'][4][1] = 'a'
+        wb['!Nodes'][4][1] = 'a'
         filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
         write_workbook(filename, wb)
         with self.assertRaisesRegex(ValueError, 'model cannot be loaded'):
@@ -876,8 +885,9 @@ class TestIo(unittest.TestCase):
 
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         wb = Workbook()
-        ws = wb['Nodes'] = Worksheet()
-        ws.append(Row(['Id', 'Name']))
+        ws = wb['!Nodes'] = Worksheet()
+        ws.append(Row(["!!ObjTables TableType='Data' ModelId='Node'"]))
+        ws.append(Row(['!Id', '!Name']))
         ws.append(Row(['a', 'A']))
         ws.append(Row(['b', 'B']))
         ws.append(Row(['', '']))
@@ -917,8 +927,8 @@ class TestIo(unittest.TestCase):
 
         model_metadata = {Node: {
             'TableType': 'Data',
-            'TableID': 'Node',
-            'TableName': 'Nodes',
+            'ModelId': 'Node',
+            'ModelName': 'Nodes',
             'ObjTablesVersion': obj_tables.__version__,
             'attr1': 'val1',
             'attr2': 'val2',
@@ -981,9 +991,9 @@ class TestMetadataModels(unittest.TestCase):
         for obj, obj_read in zip(self.objs, objs_read[1:]):
             self.assertTrue(obj_read.is_equal(obj))
 
-        models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
-        objs_read = reader.run(file_in_repo, models=models_expected, ignore_extra_sheets=True,
-                               ignore_missing_sheets=True)
+        models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata, self.Model1]
+        objs_read = reader.run(file_in_repo, models=models_expected,
+                               ignore_missing_models=True)
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.SchemaRepoMetadata not in obj_types)
 
@@ -992,8 +1002,8 @@ class TestMetadataModels(unittest.TestCase):
                    schema_package='test_repo')
 
         # read data and schema metadata
-        objs_read = reader.run(file_in_repo, models=models_expected, ignore_extra_sheets=True)
-        for obj, model in zip(objs_read, models_expected):
+        objs_read = reader.run(file_in_repo, models=models_expected,)
+        for obj, model in zip(objs_read, models_expected[0:2]):
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
             self.assertEqual(obj.branch, 'master')
@@ -1004,7 +1014,7 @@ class TestMetadataModels(unittest.TestCase):
         csv_path = os.path.join(self.test_data_repo_dir, 'test*.csv')
         writer.run(csv_path, self.objs, models=[self.Model1], data_repo_metadata=True,
                    schema_package='test_repo')
-        objs_read = reader.run(csv_path, models=models_expected, ignore_extra_sheets=True)
+        objs_read = reader.run(csv_path, models=models_expected)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 
@@ -1064,10 +1074,11 @@ class TestMetadataModels(unittest.TestCase):
     def test_drop_metadata_model(self):
         file_with_metadata = os.path.join(os.path.dirname(__file__), 'fixtures', 'metadata',
                                           'both-metadata.xlsx')
-        objs_read = obj_tables.io.Reader().run(file_with_metadata, utils.DataRepoMetadata,
-                                               ignore_extra_sheets=True)
-        self.assertEqual(len(objs_read), 1)
-        self.assertTrue(isinstance(objs_read[0], utils.DataRepoMetadata))
+        objs_read = obj_tables.io.Reader().run(file_with_metadata, models=[
+            utils.DataRepoMetadata, utils.SchemaRepoMetadata, self.Model1],
+            ignore_attribute_order=True, group_objects_by_model=True)
+        self.assertEqual(len(objs_read[utils.DataRepoMetadata]), 1)
+        self.assertTrue(isinstance(objs_read[utils.DataRepoMetadata][0], utils.DataRepoMetadata))
 
     def test_json_writer_make_metadata_objects(self):
 
@@ -1103,6 +1114,9 @@ class TestMetadataModels(unittest.TestCase):
             id = core.SlugAttribute()
             parent = core.ManyToOneAttribute(Parent, related_name='children')
 
+        class UnsupportedType(core.Model):
+            field = core.SlugAttribute()
+
         p = Parent(id='p')
         c_1 = p.children.create(id='c_1')
         c_2 = p.children.create(id='c_2')
@@ -1118,16 +1132,12 @@ class TestMetadataModels(unittest.TestCase):
 
         with open(path, 'rb') as file:
             objs = json.load(file)
-        objs.append({'__type': 'UnsupportedType', 'field': 'data'})
+        objs.append({'__type': 'UnsupportedType', '__id': 3, 'field': 'data'})
         with open(path, 'w') as file:
             json.dump(objs, file)
 
         with self.assertRaisesRegex(ValueError, 'Unsupported type'):
             obj_tables.io.JsonReader().run(path, models=[Parent, Child])
-
-        objs = obj_tables.io.JsonReader().run(path, models=[Parent, Child], ignore_extra_sheets=True)
-        p_b = next(obj for obj in objs if isinstance(obj, Parent))
-        self.assertTrue(p_b.is_equal(p))
 
         # single object
         path = os.path.join(self.tmp_dirname, 'out.json')
@@ -1136,15 +1146,16 @@ class TestMetadataModels(unittest.TestCase):
         p_b = obj_tables.io.JsonReader().run(path, models=[Parent, Child])
         self.assertTrue(p_b.is_equal(p))
 
-        obj = {'__type': 'UnsupportedType', 'field': 'data'}
+        obj = {'__type': 'UnsupportedType', '__id': 0, 'field': 'data'}
         with open(path, 'w') as file:
             json.dump(obj, file)
 
         with self.assertRaisesRegex(ValueError, 'Unsupported type'):
             obj_tables.io.JsonReader().run(path, models=[Parent, Child])
 
-        obj = obj_tables.io.JsonReader().run(path, models=[Parent, Child], ignore_extra_sheets=True)
-        self.assertEqual(obj, None)
+        obj = obj_tables.io.JsonReader().run(path, models=[Parent, Child, UnsupportedType])
+        self.assertNotEqual(obj, None)
+        self.assertEqual(obj.field, 'data')
 
 
 class TestMisc(unittest.TestCase):
@@ -1228,56 +1239,57 @@ class TestMisc(unittest.TestCase):
             writer.run(filename, [parent], models=[Parent3, Child3])
 
     def test_reader_error_if_not_serializable(self):
-        class WriterChildrenAttribute(core.OneToManyAttribute):
+        class ChildrenAttribute(core.OneToManyAttribute):
             def serialize(self, value, encoded=None):
-                return super(WriterChildrenAttribute, self).serialize(value)
+                return super(ChildrenAttribute, self).serialize(value)
 
             def deserialize(self, values, objects, decoded=None):
-                return super(WriterChildrenAttribute, self).deserialize(value, objects)
+                return super(ChildrenAttribute, self).deserialize(value, objects)
 
-        class WriterParent(core.Model):
-            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
-            children = WriterChildrenAttribute('WriterChild', verbose_name='children', related_name='parent')
-
-            class Meta(core.Model.Meta):
-                verbose_name_plural = 'Parents'
-                attribute_order = ('id', 'children')
-
-        class WriterChild(core.Model):
+        class Child(core.Model):
             id = core.StringAttribute(primary=True, verbose_name='Identifier')
 
             class Meta(core.Model.Meta):
                 verbose_name_plural = 'Children'
                 attribute_order = ('id',)
 
-        class ReaderChildrenAttribute(core.OneToManyAttribute):
-            pass
-
-        class ReaderParent(core.Model):
+        class Parent(core.Model):
             id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
-            children = ReaderChildrenAttribute('ReaderChild', verbose_name='children', related_name='parent')
+            children = ChildrenAttribute(Child, verbose_name='children', related_name='parent')
 
             class Meta(core.Model.Meta):
                 verbose_name_plural = 'Parents'
                 attribute_order = ('id', 'children')
 
-        class ReaderChild(core.Model):
+        parent = Parent(id='parent')
+        parent.children.create(id='child_1')
+        parent.children.create(id='child_2')
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        writer = WorkbookWriter()
+        writer.run(filename, [parent], models=[Parent, Child])
+
+        class ChildrenAttribute(core.OneToManyAttribute):
+            pass
+
+        class Child(core.Model):
             id = core.StringAttribute(verbose_name='Identifier')
 
             class Meta(core.Model.Meta):
                 verbose_name_plural = 'Children'
                 attribute_order = ('id',)
 
-        parent = WriterParent(id='parent')
-        parent.children.create(id='child_1')
-        parent.children.create(id='child_2')
+        class Parent(core.Model):
+            id = core.StringAttribute(primary=True, unique=True, verbose_name='Identifier')
+            children = ChildrenAttribute(Child, verbose_name='children', related_name='parent')
 
-        filename = os.path.join(self.dirname, 'test.xlsx')
-        writer = WorkbookWriter()
-        writer.run(filename, [parent], models=[WriterParent, WriterChild])
+            class Meta(core.Model.Meta):
+                verbose_name_plural = 'Parents'
+                attribute_order = ('id', 'children')
 
         with self.assertRaisesRegex(ValueError, 'cannot be serialized'):
-            WorkbookReader().run(filename, models=[ReaderParent, ReaderChild])
+            WorkbookReader().run(filename, models=[Parent, Child],
+                                 ignore_missing_models=True)
 
     def test_read_missing_sheet(self):
         class Node6(core.Model):
@@ -1296,7 +1308,7 @@ class TestMisc(unittest.TestCase):
         writer = WorkbookWriter()
         writer.run(filename, nodes, models=[Node6])
 
-        objects = WorkbookReader().run(filename, models=[Node6, Node7], ignore_missing_sheets=True)
+        objects = WorkbookReader().run(filename, models=[Node6, Node7], ignore_missing_models=True)
         objects[Node6].sort(key=lambda node: node.id)
         for orig_node, copy_node in zip(nodes, objects[Node6]):
             self.assertTrue(orig_node.is_equal(copy_node))
@@ -1337,22 +1349,24 @@ class TestMisc(unittest.TestCase):
         writer.write_sheet(xslx_writer,
                            TestModel,
                            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
-                           headings=[['Column_B', 'Column_C']],
+                           headings=[["!!ObjTables TableType='Data' ModelId='TestModel'"],
+                                     ['!Column_B', '!Column_C']],
                            metadata_headings=[],
                            validation=None)
         xslx_writer.finalize_workbook()
 
         xlsx_reader = get_reader('.xlsx')(filename)
         workbook = xlsx_reader.run()
-        self.assertEqual(list(workbook['Sheet'][0]), ['Column_B', 'Column_C'])
-        self.assertEqual(list(workbook['Sheet'][1]), ['Cell_2_B', 'Cell_2_C'])
-        self.assertEqual(list(workbook['Sheet'][2]), ['Cell_3_B', 'Cell_3_C'])
+        self.assertEqual(list(workbook['!Sheet'][0]), ["!!ObjTables TableType='Data' ModelId='TestModel'", None])
+        self.assertEqual(list(workbook['!Sheet'][1]), ['!Column_B', '!Column_C'])
+        self.assertEqual(list(workbook['!Sheet'][2]), ['Cell_2_B', 'Cell_2_C'])
+        self.assertEqual(list(workbook['!Sheet'][3]), ['Cell_3_B', 'Cell_3_C'])
 
         reader = WorkbookReader()
         xlsx_reader = get_reader('.xlsx')(filename)
         xlsx_reader.initialize_workbook()
         reader._model_metadata = {}
-        data, row_headings, column_headings, _ = reader.read_sheet(TestModel, xlsx_reader, 'Sheet',
+        data, row_headings, column_headings, _ = reader.read_sheet(TestModel, xlsx_reader, '!Sheet',
                                                                    num_row_heading_columns=0,
                                                                    num_column_heading_rows=1)
         self.assertEqual(len(data), 2)
@@ -1360,7 +1374,7 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(list(data[1]), ['Cell_3_B', 'Cell_3_C'])
         self.assertEqual(row_headings, [])
         self.assertEqual(len(column_headings), 1)
-        self.assertEqual(list(column_headings[0]), ['Column_B', 'Column_C'])
+        self.assertEqual(list(column_headings[0]), ['!Column_B', '!Column_C'])
 
     def test_get_model_sheet_name_error(self):
         class Node9(core.Model):
@@ -1370,12 +1384,13 @@ class TestMisc(unittest.TestCase):
                 verbose_name_plural = 'Nodes'
 
         with self.assertRaisesRegex(ValueError, 'matches multiple sheets'):
-            WorkbookReader.get_model_sheet_name(['Nodes', 'nodes'], Node9)
+            WorkbookReader.get_model_sheet_name(['!Nodes', '!nodes'], Node9)
 
     def test_unclean_data(self):
         workbook = Workbook()
-        workbook['Node10'] = worksheet = Worksheet()
-        worksheet.append(Row(['Id', 'Value']))
+        workbook['!Node10'] = worksheet = Worksheet()
+        workbook['!Node10'].append(Row(["!!ObjTables TableType='Data' ModelId='Node10'"]))
+        worksheet.append(Row(['!Id', '!Value']))
         worksheet.append(Row(['A', '1.0']))
         worksheet.append(Row(['B', 'x']))
 
@@ -1471,8 +1486,8 @@ class TestMisc(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'At least one `Model` must be provided'):
             WorkbookWriter().run(filename, None, models=None)
 
-        objs2 = WorkbookReader().run(filename, models=None, ignore_extra_sheets=True)
-        self.assertEqual(objs2, {})
+        with self.assertRaisesRegex(ValueError, 'No matching models'):
+            WorkbookReader().run(filename, models=None)
 
 
 class ReadEmptyCellTestCase(unittest.TestCase):
@@ -1525,8 +1540,9 @@ class ReadEmptyCellTestCase(unittest.TestCase):
                 attribute_order = ('id', 'value_1', 'value_2')
 
         workbook = Workbook()
-        workbook['Test models'] = worksheet = Worksheet()
-        worksheet.append(Row(['Id', 'Value 1', 'Value 2']))
+        workbook['!Test models'] = worksheet = Worksheet()
+        worksheet.append(Row(["!!ObjTables TableType='Data' ModelId='TestModel'"]))
+        worksheet.append(Row(['!Id', '!Value 1', '!Value 2']))
         worksheet.append(Row(['A', None, None]))
         worksheet.append(Row(['B', 1., 3.]))
         worksheet.append(Row(['C', None, None]))
@@ -1706,7 +1722,7 @@ class StrictReadingTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, models=[Model1, Model2])
 
-        result = WorkbookReader().run(filename, models=[Model1, Model2], ignore_missing_sheets=True)
+        result = WorkbookReader().run(filename, models=[Model1, Model2], ignore_missing_models=True)
         self.assertEqual(set(result.keys()), set([Model1, Model2]))
         self.assertEqual(len(result[Model1]), 1)
         self.assertEqual(len(result[Model2]), 0)
@@ -1733,11 +1749,6 @@ class StrictReadingTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             WorkbookReader().run(filename, models=[Model1])
 
-        result = WorkbookReader().run(filename, models=[Model1], ignore_extra_sheets=True)
-        self.assertEqual(set(result.keys()), set([Model1]))
-        self.assertEqual(len(result[Model1]), 1)
-        self.assertTrue(m1.is_equal(result[Model1][0]))
-
     def test_different_sheet_order(self):
         class Model1(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
@@ -1762,7 +1773,7 @@ class StrictReadingTestCase(unittest.TestCase):
         WorkbookReader().run(filename, models=[Model2, Model1], ignore_sheet_order=True)
 
         WorkbookWriter().run(filename, [m1], models=[Model1])
-        WorkbookReader().run(filename, models=[Model1, Model3], ignore_missing_sheets=True)
+        WorkbookReader().run(filename, models=[Model1, Model3], ignore_missing_models=True)
 
     def test_no_header_rows(self):
         class Model(core.Model):
@@ -1777,8 +1788,9 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'Attr']))
+        wb['!Models'] = ws = Worksheet()
+        ws.append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', '!Attr']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
@@ -1786,7 +1798,8 @@ class StrictReadingTestCase(unittest.TestCase):
         self.assertEqual(result, {Model: []})
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
@@ -1795,7 +1808,7 @@ class StrictReadingTestCase(unittest.TestCase):
         wb_reader = WorkbookReader()
         wb_reader._model_metadata = {}
         with self.assertRaisesRegex(ValueError, r'must have 1 header row\(s\)'):
-            wb_reader.read_sheet(Model, reader, 'Models', num_column_heading_rows=1)
+            wb_reader.read_sheet(Model, reader, '!Models', num_column_heading_rows=1)
 
     def test_no_header_cols(self):
         class Model(core.Model):
@@ -1811,16 +1824,18 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id']))
-        ws.append(Row(['Attr']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id']))
+        ws.append(Row(['!Attr']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
@@ -1841,8 +1856,9 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'Attr1', 'Attr2']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', '!Attr1', '!Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -1850,8 +1866,9 @@ class StrictReadingTestCase(unittest.TestCase):
         WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'Attr2']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', '!Attr2']))
         ws.append(Row(['m1', '2']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -1898,9 +1915,10 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row([None, None, None, 'Quantity', 'Quantity', 'Quantity2', 'Quantity2']))
-        ws.append(Row(['Id', 'Attr1', 'Attr2', 'Value', 'Units', 'Value', 'Units']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row([None, None, None, '!Quantity', '!Quantity', '!Quantity2', '!Quantity2']))
+        ws.append(Row(['!Id', '!Attr1', '!Attr2', '!Value', '!Units', '!Value', '!Units']))
         ws.append(Row(['m1', '1', '2', 1.2, 'g', 1.2, 'g']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -1908,9 +1926,10 @@ class StrictReadingTestCase(unittest.TestCase):
         WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row([None, None, 'Quantity2', 'Quantity2']))
-        ws.append(Row(['Id', 'Attr2', 'Value', 'Units']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row([None, None, '!Quantity2', '!Quantity2']))
+        ws.append(Row(['!Id', '!Attr2', '!Value', '!Units']))
         ws.append(Row(['m1', '2', 1.2, 'g']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -1933,8 +1952,9 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'Attr1', 'Attr2']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', '!Attr1', '!Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -1942,8 +1962,9 @@ class StrictReadingTestCase(unittest.TestCase):
         WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'Attr1', 'Attr2', 'Attr3']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', '!Attr1', '!Attr2', '!Attr3']))
         ws.append(Row(['m1', '1', '2', '3']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -1966,8 +1987,9 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'Attr1', 'Attr2']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', '!Attr1', '!Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -1975,17 +1997,18 @@ class StrictReadingTestCase(unittest.TestCase):
         WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'Attr2', 'Attr1']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', '!Attr2', '!Attr1']))
         ws.append(Row(['m1', '2', '1']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaisesRegex(ValueError, (
-            "The columns of worksheet 'Models' must be defined in this order:"
-            "\n      A1: Id"
-            "\n      B1: Attr1"
-            "\n      C1: Attr2"
+            "The columns of worksheet '!Models' must be defined in this order:"
+            "\n      A1: !Id"
+            "\n      B1: !Attr1"
+            "\n      C1: !Attr2"
         )):
             WorkbookReader().run(filename, models=[Model])
         WorkbookReader().run(filename, models=[Model], ignore_attribute_order=True)
@@ -2005,28 +2028,30 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'm1']))
-        ws.append(Row(['Attr1', '1']))
-        ws.append(Row(['Attr2', '2']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', 'm1']))
+        ws.append(Row(['!Attr1', '1']))
+        ws.append(Row(['!Attr2', '2']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row(['Id', 'm1']))
-        ws.append(Row(['Attr2', '2']))
-        ws.append(Row(['Attr1', '1']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(['!Id', 'm1']))
+        ws.append(Row(['!Attr2', '2']))
+        ws.append(Row(['!Attr1', '1']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaisesRegex(ValueError, (
-            "The rows of worksheet 'Models' must be defined in this order:"
-            "\n      A1: Id"
-            "\n      A2: Attr1"
-            "\n      A3: Attr2"
+            "The rows of worksheet '!Models' must be defined in this order:"
+            "\n      A1: !Id"
+            "\n      A2: !Attr1"
+            "\n      A3: !Attr2"
         )):
             WorkbookReader().run(filename, models=[Model])
         WorkbookReader().run(filename, models=[Model], ignore_attribute_order=True)
@@ -2057,9 +2082,10 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row([None, None, None, 'Quantity', 'Quantity']))
-        ws.append(Row(['Id', 'Attr1', 'Attr2', 'Value', 'Units']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row([None, None, None, '!Quantity', '!Quantity']))
+        ws.append(Row(['!Id', '!Attr1', '!Attr2', '!Value', '!Units']))
         ws.append(Row(['m1', '1', '2', 1.1, 's']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -2067,25 +2093,26 @@ class StrictReadingTestCase(unittest.TestCase):
         WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row([None, None, None, 'Quantity', 'Quantity']))
-        ws.append(Row(['Id', 'Attr2', 'Attr1', 'Value', 'Units']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row([None, None, None, '!Quantity', '!Quantity']))
+        ws.append(Row(['!Id', '!Attr2', '!Attr1', '!Value', '!Units']))
         ws.append(Row(['m1', '2', '1', 1.1, 's']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaisesRegex(ValueError, (
-            "The columns of worksheet 'Models' must be defined in this order:"
+            "The columns of worksheet '!Models' must be defined in this order:"
             "\n      A1: "
-            "\n      A2: Id"
+            "\n      A2: !Id"
             "\n      B1: "
-            "\n      B2: Attr1"
+            "\n      B2: !Attr1"
             "\n      C1: "
-            "\n      C2: Attr2"
-            "\n      D1: Quantity"
-            "\n      D2: Value"
-            "\n      E1: Quantity"
-            "\n      E2: Units"
+            "\n      C2: !Attr2"
+            "\n      D1: !Quantity"
+            "\n      D2: !Value"
+            "\n      E1: !Quantity"
+            "\n      E2: !Units"
         )):
             WorkbookReader().run(filename, models=[Model])
         WorkbookReader().run(filename, models=[Model], ignore_attribute_order=True)
@@ -2117,39 +2144,41 @@ class StrictReadingTestCase(unittest.TestCase):
         writer = writer_cls(filename)
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row([None, 'Id', 'm1']))
-        ws.append(Row([None, 'Attr1', '1']))
-        ws.append(Row([None, 'Attr2', '2']))
-        ws.append(Row(['Quantity', 'Value', 1.1]))
-        ws.append(Row(['Quantity', 'Units', 's']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row([None, '!Id', 'm1']))
+        ws.append(Row([None, '!Attr1', '1']))
+        ws.append(Row([None, '!Attr2', '2']))
+        ws.append(Row(['!Quantity', '!Value', 1.1]))
+        ws.append(Row(['!Quantity', '!Units', 's']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         WorkbookReader().run(filename, models=[Model])
 
         wb = Workbook()
-        wb['Models'] = ws = Worksheet()
-        ws.append(Row([None, 'Id', 'm1']))
-        ws.append(Row([None, 'Attr2', '2']))
-        ws.append(Row([None, 'Attr1', '1']))
-        ws.append(Row(['Quantity', 'Value', 1.1]))
-        ws.append(Row(['Quantity', 'Units', 's']))
+        wb['!Models'] = ws = Worksheet()
+        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row([None, '!Id', 'm1']))
+        ws.append(Row([None, '!Attr2', '2']))
+        ws.append(Row([None, '!Attr1', '1']))
+        ws.append(Row(['!Quantity', '!Value', 1.1]))
+        ws.append(Row(['!Quantity', '!Units', 's']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
         with self.assertRaisesRegex(ValueError, (
-            "The rows of worksheet 'Models' must be defined in this order:"
+            "The rows of worksheet '!Models' must be defined in this order:"
             "\n      A1: "
-            "\n      B1: Id"
+            "\n      B1: !Id"
             "\n      A2: "
-            "\n      B2: Attr1"
+            "\n      B2: !Attr1"
             "\n      A3: "
-            "\n      B3: Attr2"
-            "\n      A4: Quantity"
-            "\n      B4: Value"
-            "\n      A5: Quantity"
-            "\n      B5: Units"
+            "\n      B3: !Attr2"
+            "\n      A4: !Quantity"
+            "\n      B4: !Value"
+            "\n      A5: !Quantity"
+            "\n      B5: !Units"
         )):
             WorkbookReader().run(filename, models=[Model])
         WorkbookReader().run(filename, models=[Model], ignore_attribute_order=True)
@@ -2410,13 +2439,13 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][2][1] = ']'
+        wb['!Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
+        with self.assertRaisesRegex(Exception, 'test.xlsx:!Parents:B2'):
             objs2 = obj_tables.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
     def test_one_to_one(self):
@@ -2455,13 +2484,13 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][2][1] = ']'
+        wb['!Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
+        with self.assertRaisesRegex(Exception, 'test.xlsx:!Parents:B2'):
             objs2 = obj_tables.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
     def test_many_to_one(self):
@@ -2500,13 +2529,13 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][2][1] = ']'
+        wb['!Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
+        with self.assertRaisesRegex(Exception, 'test.xlsx:!Parents:B2'):
             objs2 = obj_tables.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
     def test_many_to_many(self):
@@ -2545,13 +2574,13 @@ class InlineJsonTestCase(unittest.TestCase):
 
         # test exception
         wb = read_workbook(path)
-        wb['Parents'][2][1] = ']'
+        wb['!Parents'][2][1] = ']'
         write_workbook(path, wb, style={
             Parent.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             Child.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
             GrandChild.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
-        with self.assertRaisesRegex(Exception, 'test.xlsx:Parents:B2'):
+        with self.assertRaisesRegex(Exception, 'test.xlsx:!Parents:B2'):
             objs2 = obj_tables.io.WorkbookReader().run(path, models=[Parent, GrandChild], ignore_sheet_order=True)
 
 

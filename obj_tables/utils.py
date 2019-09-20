@@ -13,8 +13,8 @@ from itertools import chain
 from pathlib import Path
 from random import shuffle
 from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
-                            InvalidObject, Validator, TableFormat,
-                            SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
+                             InvalidObject, Validator, TableFormat,
+                             SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 from wc_utils.util import git
 import collections
 import importlib
@@ -295,7 +295,7 @@ def read_metadata_from_file(pathname):
     reader = obj_tables.io.Reader.get_reader(pathname)
 
     metadata_instances = reader().run(pathname, [DataRepoMetadata, SchemaRepoMetadata],
-                                      ignore_extra_sheets=True, ignore_missing_sheets=True, group_objects_by_model=True,
+                                      ignore_extra_models=True, ignore_missing_models=True, group_objects_by_model=True,
                                       ignore_attribute_order=True)
     metadata_class_to_attr = {
         DataRepoMetadata: 'data_repo_metadata',
@@ -341,7 +341,7 @@ def add_metadata_to_file(pathname, models, schema_package=None):
     objects = obj_tables.io.Reader().run(str(path), models=models)
     # write file with metadata
     obj_tables.io.Writer().run(str(path), objects, models=models, data_repo_metadata=True,
-                              schema_package=schema_package)
+                               schema_package=schema_package)
     return path
 
 
@@ -397,14 +397,9 @@ def get_attrs():
     return attr_names
 
 
-def init_schema(filename, name=None, out_filename=None, sbtab=False):
+def init_schema(filename, name=None, out_filename=None):
     """ Initialize an `obj_tables` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
-
-    This method supports two formats:
-
-    * `obj_tables`
-    * `SBtab <https://www.sbtab.net>`_
 
     The tabular specification should contain the following columns for each format:
 
@@ -412,7 +407,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         :name: tab_prediction_tools
 
         ===================  ==================  ========
-        `obj_tables`          SBtab               Optional
+        `obj_tables`         SBtab (deprecated)  Optional
         ===================  ==================  ========
         Name                 !Name                       
         Type                 !Type                       
@@ -452,31 +447,19 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             sheet_name))
     ws = wb[sheet_name]
 
-    if sbtab:
-        name_col_name = '!ComponentName'
-        type_col_name = '!ComponentType'
-        parent_col_name = '!IsPartOf'
-        format_col_name = '!Format'
-        verbose_name_col_name = '!VerboseName'
-        verbose_name_plural_col_name = '!VerboseNamePlural'
-        desc_col_name = '!Description'
+    name_col_name = '!Name'
+    type_col_name = '!Type'
+    parent_col_name = '!Parent'
+    format_col_name = '!Format'
+    verbose_name_col_name = '!Verbose name'
+    verbose_name_plural_col_name = '!Verbose name plural'
+    desc_col_name = '!Description'
 
-        class_type = 'Table'
-        attr_type = 'Column'
-    else:
-        name_col_name = '!Name'
-        type_col_name = '!Type'
-        parent_col_name = '!Parent'
-        format_col_name = '!Format'
-        verbose_name_col_name = '!Verbose name'
-        verbose_name_plural_col_name = '!Verbose name plural'
-        desc_col_name = '!Description'
-
-        class_type = 'Model'
-        attr_type = 'Attribute'
+    class_type = 'Model'
+    attr_type = 'Attribute'
 
     rows = ws
-    metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows, sbtab=sbtab)
+    metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows)
     if metadata.get('TableType', None) != SCHEMA_TABLE_TYPE:
         raise ValueError("TableType must be '{}'.".format(SCHEMA_TABLE_TYPE))
 
@@ -503,16 +486,9 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
             if row[parent_col_name]:
                 raise ValueError('Class "{}" cannot have a parent.'.format(cls_name))
 
-            cls['tab_orientation'] = TableFormat[row[format_col_name] or 'row']
-
-            if sbtab:
-                def_verbose_name = '!' + cls_name
-                def_verbose_name_plural = '!' + cls_name
-            else:
-                def_verbose_name = None
-                def_verbose_name_plural = None
-            cls['verbose_name'] = row.get(verbose_name_col_name, def_verbose_name) or def_verbose_name
-            cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, def_verbose_name_plural) or def_verbose_name_plural
+            cls['tab_format'] = TableFormat[row[format_col_name] or 'row']
+            cls['verbose_name'] = row.get(verbose_name_col_name, None) or None
+            cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, None) or None
             cls['desc'] = row.get(desc_col_name, None) or None
 
         elif row[type_col_name] == attr_type:
@@ -524,21 +500,18 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                     'name': cls_name,
                     'attrs': {},
                     'attr_order': [],
-                    'tab_orientation': TableFormat.row,
-                    'verbose_name': '!' + cls_name,
-                    'verbose_name_plural': '!' + cls_name,
+                    'tab_format': TableFormat.row,
+                    'verbose_name': cls_name,
+                    'verbose_name_plural': cls_name,
                     'desc': None,
                 }
 
-            if sbtab:
-                attr_name = row[name_col_name]
-                if not re.match(r'^[a-zA-Z0-9:>]+$', attr_name):
-                    raise ValueError("Attribute names must consist of alphanumeric characters, colons, and forward carets.")
-                attr_name = attr_name.replace('>', '_').replace(':', '_')
-                attr_name = stringcase.snakecase(attr_name)
-                attr_name = attr_name.replace('__', '_')
-            else:
-                attr_name = stringcase.snakecase(row[name_col_name])
+            attr_name = row[name_col_name]
+            if not re.match(r'^[a-zA-Z0-9:>]+$', attr_name):
+                raise ValueError("Attribute names must consist of alphanumeric characters, colons, and forward carets.")
+            attr_name = attr_name.replace('>', '_').replace(':', '_')
+            attr_name = stringcase.snakecase(attr_name)
+            attr_name = attr_name.replace('__', '_')
 
             if attr_name == 'Meta':
                 raise ValueError('"{}" cannot have attribute with name "Meta".'.format(
@@ -551,7 +524,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                 'name': attr_name,
                 'type': row[format_col_name],
                 'desc': row.get(desc_col_name, None),
-                'verbose_name': row.get(verbose_name_col_name, '!' + row[name_col_name])
+                'verbose_name': row.get(verbose_name_col_name, row[name_col_name])
             }
             cls['attr_order'].append(attr_name)
 
@@ -563,7 +536,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
     all_attrs = get_attrs()
     for cls_spec in cls_specs.values():
         meta_attrs = {
-            'table_format': cls_spec['tab_orientation'],
+            'table_format': cls_spec['tab_format'],
             'attribute_order': tuple(cls_spec['attr_order']),
             'description': cls_spec['desc'],
         }
@@ -579,9 +552,6 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
         }
         for attr_spec in cls_spec['attrs'].values():
             attr_type_spec, _, args = attr_spec['type'].partition('(')
-            if sbtab:
-                attr_type_spec_module, sep, attr_type_spec_class = attr_type_spec.rpartition('.')
-                attr_type_spec = attr_type_spec_module + sep + stringcase.capitalcase(attr_type_spec_class)
             attr_type = all_attrs[attr_type_spec]
             attr_spec['python_type'] = attr_type_spec + 'Attribute'
             if args:
@@ -623,22 +593,24 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
                 for attr_name in cls_spec['attr_order']:
                     attr_spec = cls_spec['attrs'][attr_name]
                     file.write('    {} = obj_tables.{}({})\n'.format(attr_spec['name'],
-                                                                    attr_spec['python_type'],
-                                                                    attr_spec['python_args']))
+                                                                     attr_spec['python_type'],
+                                                                     attr_spec['python_args']))
 
                 file.write('\n')
                 file.write('    class Meta(obj_tables.Model.Meta):\n')
                 file.write("        table_format = obj_tables.TableFormat.{}\n".format(
-                    cls_spec['tab_orientation'].name))
+                    cls_spec['tab_format'].name))
                 file.write("        attribute_order = ('{}',)\n".format(
                     "', '".join(cls_spec['attr_order'])
                 ))
-                file.write("        verbose_name = '{}'\n".format(
-                    cls_spec['verbose_name'].replace("'", "\'")
-                ))
-                file.write("        verbose_name_plural = '{}'\n".format(
-                    cls_spec['verbose_name_plural'].replace("'", "\'")
-                ))
+                if cls_spec['verbose_name']:
+                    file.write("        verbose_name = '{}'\n".format(
+                        cls_spec['verbose_name'].replace("'", "\'")
+                    ))
+                if cls_spec['verbose_name_plural']:
+                    file.write("        verbose_name_plural = '{}'\n".format(
+                        cls_spec['verbose_name_plural'].replace("'", "\'")
+                    ))
                 if cls_spec['desc']:
                     file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
 
@@ -646,8 +618,7 @@ def init_schema(filename, name=None, out_filename=None, sbtab=False):
 
 
 def to_pandas(objs, models=None, get_related=True,
-              include_all_attributes=True, validate=True,
-              sbtab=False):
+              include_all_attributes=True, validate=True):
     """ Generate a pandas representation of a collection of objects
 
     Args:
@@ -659,7 +630,6 @@ def to_pandas(objs, models=None, get_related=True,
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
             not explictly included in `Model.Meta.attribute_order`
         validate (:obj:`bool`, optional): if :obj:`True`, validate the data
-        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
     Returns:
         :obj:`dict`: dictionary that maps models (:obj:`Model`) to 
@@ -670,11 +640,10 @@ def to_pandas(objs, models=None, get_related=True,
                               models=models,
                               get_related=get_related,
                               include_all_attributes=include_all_attributes,
-                              validate=validate,
-                              sbtab=sbtab)
+                              validate=validate)
 
 
-def diff_workbooks(filename_1, filename_2, models, model_name, sbtab=False):
+def diff_workbooks(filename_1, filename_2, models, model_name):
     """ Get difference of models in two workbooks
 
     Args:
@@ -682,24 +651,16 @@ def diff_workbooks(filename_1, filename_2, models, model_name, sbtab=False):
         filename_2 (:obj:`str`): path to second workbook
         models (:obj:`list` of :obj:`Model`): schema for objects to compare
         model_name (:obj:`str`): Type of objects to compare
-        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
     Returns:
         :obj:`list` of :obj:`str`: list of differences
     """
-    kwargs = {}
-    if sbtab:
-        kwargs = obj_tables.io.SBTAB_DEFAULT_READER_OPTS
     objs1 = obj_tables.io.Reader().run(filename_1,
-                                      models=models,
-                                      group_objects_by_model=True,
-                                      sbtab=sbtab,
-                                      **kwargs)
+                                       models=models,
+                                       group_objects_by_model=True)
     objs2 = obj_tables.io.Reader().run(filename_2,
-                                      models=models,
-                                      group_objects_by_model=True,
-                                      sbtab=sbtab,
-                                      **kwargs)
+                                       models=models,
+                                       group_objects_by_model=True)
 
     for model in models:
         if model.__name__ == model_name:

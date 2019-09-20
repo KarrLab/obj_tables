@@ -45,15 +45,6 @@ from wc_utils.util import git
 from wc_utils.workbook.core import get_column_letter, Formula
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 
-SBTAB_DEFAULT_READER_OPTS = {
-    'ignore_missing_sheets': True,
-    'ignore_extra_sheets': True,
-    'ignore_sheet_order': True,
-    'ignore_missing_attributes': True,
-    'ignore_extra_attributes': True,
-    'ignore_attribute_order': True,
-}
-
 
 class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     """ Interface for classes which write model objects to file(s)
@@ -69,8 +60,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     def run(self, path, objects, model_metadata=None, models=None,
             get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
-            sbtab=False):
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -98,7 +88,6 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
         pass  # pragma: no cover
 
@@ -165,8 +154,7 @@ class JsonWriter(WriterBase):
 
     def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None,
-            sbtab=False):
+            toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -192,7 +180,6 @@ class JsonWriter(WriterBase):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Raises:
             :obj:`ValueError`: if model names are not unique or output format is not supported
@@ -257,8 +244,7 @@ class WorkbookWriter(WriterBase):
 
     def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
-            sbtab=False):
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
 
@@ -287,7 +273,6 @@ class WorkbookWriter(WriterBase):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -366,7 +351,7 @@ class WorkbookWriter(WriterBase):
         # add table of contents to workbook
         all_models = models + unordered_models
         if toc:
-            self.write_toc(writer, all_models, grouped_objects, sbtab=sbtab)
+            self.write_toc(writer, all_models, grouped_objects)
 
         # add sheets to workbook
         sheet_models = list(filter(lambda model: model.Meta.table_format not in [
@@ -380,35 +365,31 @@ class WorkbookWriter(WriterBase):
 
             self.write_model(writer, model, objects, model_metadata.get(model, {}),
                              sheet_models, include_all_attributes=include_all_attributes, encoded=encoded,
-                             extra_entries=extra_entries, sbtab=sbtab)
+                             extra_entries=extra_entries)
 
         # finalize workbook
         writer.finalize_workbook()
 
-    def write_toc(self, writer, models, grouped_objects, sbtab=False):
+    def write_toc(self, writer, models, grouped_objects):
         """ Write a worksheet with a table of contents
 
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear in the table of contents
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
-        sheet_name = '!' + TOC_SHEET_NAME
-        table_type = TOC_TABLE_TYPE
-        if sbtab:
-            format = 'SBtab'
-            version = '2.0'
-            headings = ['!Table', '!Description', '!NumberOfObjects']
+        if isinstance(writer, wc_utils.workbook.io.ExcelWriter):
+            sheet_name = '!' + TOC_SHEET_NAME
         else:
-            format = 'ObjTables'
-            version = obj_tables.__version__
-            headings = ['!Table', '!Description', '!Number of objects']
+            sheet_name = TOC_SHEET_NAME
+        table_type = TOC_TABLE_TYPE
+        format = 'ObjTables'
+        version = obj_tables.__version__
+        headings = ['!Table', '!Description', '!Number of objects']
 
         now = datetime.now()
         metadata = ["!!{}".format(format),
                     "TableType='{}'".format(table_type),
-                    "TableName='{}'".format('Table of contents'),
                     "Description='Table/model and column/attribute definitions'",
                     "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
             now.year, now.month, now.day, now.hour, now.minute, now.second),
@@ -429,12 +410,8 @@ class WorkbookWriter(WriterBase):
             else:
                 ws_name = model.Meta.verbose_name
             hyperlinks.append(Hyperlink(i_model + 1, 0,
-                                        "internal:'{}'!A1".format(ws_name),
+                                        "internal:'!{}'!A1".format(ws_name),
                                         tip='Click to view {}'.format(ws_name.lower())))
-            if sbtab:
-                ws_display_name = ws_name[1:]
-            else:
-                ws_display_name = ws_name
 
             has_multiple_cells = False
             for attr in model.Meta.attributes.values():
@@ -450,9 +427,9 @@ class WorkbookWriter(WriterBase):
                                          get_column_letter(2 ** 14))
 
             content.append([
-                ws_display_name,
+                ws_name,
                 model.Meta.description,
-                Formula("=COUNTA('{}'!{})".format(ws_name, range),
+                Formula("=COUNTA('!{}'!{})".format(ws_name, range),
                         len(grouped_objects.get(model, []))),
             ])
 
@@ -466,8 +443,8 @@ class WorkbookWriter(WriterBase):
 
         writer.write_worksheet(sheet_name, content, style=style)
 
-    def write_model(self, writer, model, objects, model_metadata, sheet_models, include_all_attributes=True, encoded=None, extra_entries=0,
-                    sbtab=False):
+    def write_model(self, writer, model, objects, model_metadata, sheet_models,
+                    include_all_attributes=True, encoded=None, extra_entries=0):
         """ Write a list of model objects to a file
 
         Args:
@@ -480,13 +457,11 @@ class WorkbookWriter(WriterBase):
                 including those not explictly included in `Model.Meta.attribute_order`
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
             extra_entries (:obj:`int`, optional): additional entries to display
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
         attrs, _, headings, merge_ranges, field_validations, metadata_headings = get_fields(
             model, model_metadata,
             include_all_attributes=include_all_attributes,
-            sheet_models=sheet_models,
-            sbtab=sbtab)
+            sheet_models=sheet_models)
 
         # objects
         model.sort(objects)
@@ -526,10 +501,10 @@ class WorkbookWriter(WriterBase):
                                          fields=field_validations)
 
         self.write_sheet(writer, model, data, headings, metadata_headings, validation,
-                         extra_entries=extra_entries, merge_ranges=merge_ranges, sbtab=sbtab)
+                         extra_entries=extra_entries, merge_ranges=merge_ranges)
 
     def write_sheet(self, writer, model, data, headings, metadata_headings, validation,
-                    extra_entries=0, merge_ranges=None, sbtab=False):
+                    extra_entries=0, merge_ranges=None):
         """ Write data to sheet
 
         Args:
@@ -542,7 +517,6 @@ class WorkbookWriter(WriterBase):
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
             merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
         style = self.create_worksheet_style(model, extra_entries=extra_entries)
         if model.Meta.table_format == TableFormat.row:
@@ -591,6 +565,8 @@ class WorkbookWriter(WriterBase):
         content = metadata_headings + column_headings + data
 
         # write content to worksheet
+        if isinstance(writer, wc_utils.workbook.io.ExcelWriter):
+            sheet_name = '!' + sheet_name
         writer.write_worksheet(sheet_name, content, style=style, validation=validation)
 
     @staticmethod
@@ -629,8 +605,7 @@ class PandasWriter(WorkbookWriter):
         self._data_frames = None
 
     def run(self, objects, models=None, get_related=True,
-            include_all_attributes=True, validate=True,
-            sbtab=False):
+            include_all_attributes=True, validate=True):
         """ Write model instances to a dictionary of :obj:`pandas.DataFrame`
 
         Args:
@@ -642,7 +617,6 @@ class PandasWriter(WorkbookWriter):
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
                 not explictly included in `Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`dict`: dictionary that maps models (:obj:`Model`) to their
@@ -654,12 +628,11 @@ class PandasWriter(WorkbookWriter):
                                       get_related=get_related,
                                       include_all_attributes=include_all_attributes,
                                       validate=validate,
-                                      toc=False,
-                                      sbtab=sbtab)
+                                      toc=False)
         return self._data_frames
 
     def write_sheet(self, writer, model, data, headings, metadata_headings, validation,
-                    extra_entries=0, merge_ranges=None, sbtab=False):
+                    extra_entries=0, merge_ranges=None):
         """ Write data to sheet
 
         Args:
@@ -672,19 +645,15 @@ class PandasWriter(WorkbookWriter):
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
             merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
         if len(headings) == 1:
             columns = []
             for h in headings[0]:
-                if sbtab and h.startswith('!'):
-                    columns.append(h[1:])
-                else:
-                    columns.append(h)
+                columns.append(h[1:])
         else:
             for row in headings:
                 for i_cell, cell in enumerate(row):
-                    if sbtab and isinstance(cell, str) and cell.startswith('!'):
+                    if cell:
                         row[i_cell] = cell[1:]
             columns = pandas.MultiIndex.from_tuples(transpose(headings))
 
@@ -718,8 +687,7 @@ class Writer(WriterBase):
 
     def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None,
-            sbtab=False):
+            toc=True, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -748,15 +716,13 @@ class Writer(WriterBase):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, model_metadata=model_metadata, models=models, get_related=get_related,
                      include_all_attributes=include_all_attributes, validate=validate,
                      title=title, description=description, keywords=keywords,
                      language=language, creator=creator, toc=toc, extra_entries=extra_entries,
-                     data_repo_metadata=data_repo_metadata, schema_package=schema_package,
-                     sbtab=sbtab)
+                     data_repo_metadata=data_repo_metadata, schema_package=schema_package)
 
 
 class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
@@ -777,20 +743,19 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
 
     @abc.abstractmethod
     def run(self, path, models=None,
-            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            group_objects_by_model=False, validate=True,
-            sbtab=False):
+            group_objects_by_model=False, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
                 of object to read or list of types of objects to read
-            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+            ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
@@ -806,7 +771,6 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`dict`: model objects grouped by `Model` class
@@ -818,20 +782,19 @@ class JsonReader(ReaderBase):
     """ Read model objects from a JSON or YAML file """
 
     def run(self, path, models=None,
-            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            group_objects_by_model=False, validate=True,
-            sbtab=False):
+            group_objects_by_model=False, validate=True):
         """ Read model objects from file(s) and, optionally, validate them
 
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type or list
                 of type of objects to read
-            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+            ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
@@ -847,7 +810,6 @@ class JsonReader(ReaderBase):
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`dict`: model objects grouped by `Model` class
@@ -891,7 +853,7 @@ class JsonReader(ReaderBase):
                 obj_type = json_obj.get('__type', None)
                 model = models_by_name.get(obj_type, None)
                 if not model:
-                    if ignore_extra_sheets:
+                    if ignore_extra_models:
                         continue
                     else:
                         raise ValueError('Unsupported type {}'.format(obj_type))
@@ -903,7 +865,7 @@ class JsonReader(ReaderBase):
             model = models_by_name.get(obj_type, None)
             if model:
                 objs = model.from_dict(json_objs)
-            elif ignore_extra_sheets:
+            elif ignore_extra_models:
                 objs = None
             else:
                 raise ValueError('Unsupported type {}'.format(obj_type))
@@ -934,11 +896,10 @@ class WorkbookReader(ReaderBase):
     """ Read model objects from an Excel file or CSV and TSV files """
 
     def run(self, path, models=None,
-            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            group_objects_by_model=True, validate=True,
-            sbtab=False):
+            group_objects_by_model=True, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
@@ -948,9 +909,9 @@ class WorkbookReader(ReaderBase):
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type or list
                 of type of objects to read
-            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+            ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
@@ -966,7 +927,6 @@ class WorkbookReader(ReaderBase):
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`obj`: if `group_objects_by_model` set returns :obj:`dict`: of model objects grouped by `Model` class;
@@ -977,9 +937,9 @@ class WorkbookReader(ReaderBase):
 
                 * Sheets cannot be unambiguously mapped to models
                 * The file(s) indicated by :obj:`path` is missing a sheet for a model and
-                  :obj:`ignore_missing_sheets` is :obj:`False`
+                  :obj:`ignore_missing_models` is :obj:`False`
                 * The file(s) indicated by :obj:`path` contains extra sheets that don't correspond to one
-                  of `models` and :obj:`ignore_extra_sheets` is :obj:`False`
+                  of `models` and :obj:`ignore_extra_models` is :obj:`False`
                 * The worksheets are file(s) indicated by :obj:`path` are not in the canonical order and
                   :obj:`ignore_sheet_order` is :obj:`False`
                 * Some models are not serializable
@@ -1007,36 +967,20 @@ class WorkbookReader(ReaderBase):
 
         model_name_to_sheet_name = collections.OrderedDict()
         sheet_name_to_model_name = collections.OrderedDict()
-        if sbtab:
-            for sheet_name in sheet_names:
-                if sheet_name.startswith('!'):
-                    data = reader.read_worksheet(sheet_name)
-                    metadata, _ = self.read_worksheet_metadata(sheet_name, data, sbtab=sbtab)
-                    if metadata['TableType'] != 'Data':
-                        continue
-                    assert 'TableID' in metadata, 'Metadata for sheet "{}" must define the TableID.'.format(sheet_name)
-                    model_name_to_sheet_name[metadata['TableID']] = sheet_name
-                    sheet_name_to_model_name[sheet_name] = metadata['TableID']
-        else:
-            unordered_sheet_name_to_model_name = {}
-            for model in models:
-                sheet_name = self.get_model_sheet_name(sheet_names, model)
-                if sheet_name:
-                    unordered_sheet_name_to_model_name[sheet_name] = model.__name__
+        for sheet_name in sheet_names:
+            if ext == '.xlsx' and not sheet_name.startswith('!'):
+                continue
 
-            for sheet_name in sheet_names:
-                if sheet_name in unordered_sheet_name_to_model_name:
-                    sheet_name_to_model_name[sheet_name] = unordered_sheet_name_to_model_name[sheet_name]
-                    model_name_to_sheet_name[unordered_sheet_name_to_model_name[sheet_name]] = sheet_name
-                else:
-                    sheet_name_to_model_name[sheet_name] = None
+            data = reader.read_worksheet(sheet_name)
+            metadata, _ = self.read_worksheet_metadata(sheet_name, data)
+            if metadata['TableType'] != 'Data':
+                continue
+            assert 'ModelId' in metadata, 'Metadata for sheet "{}" must define the ModelId.'.format(sheet_name)
+            model_name_to_sheet_name[metadata['ModelId']] = sheet_name
+            sheet_name_to_model_name[sheet_name] = metadata['ModelId']
 
         # drop metadata models unless they're requested
-        if sbtab:
-            ignore_model_names = []
-        else:
-            ignore_model_names = [TOC_SHEET_NAME, SCHEMA_SHEET_NAME]
-
+        ignore_model_names = []
         for metadata_model in (utils.DataRepoMetadata, utils.SchemaRepoMetadata):
             if metadata_model not in models:
                 ignore_model_names.append(metadata_model.Meta.verbose_name)
@@ -1057,11 +1001,8 @@ class WorkbookReader(ReaderBase):
         for sheet_name, model_name in sheet_name_to_model_name.items():
             sheet_name_to_model[sheet_name] = model_name_to_model.get(model_name, None)
 
-        # optionally,
-        # * check every models is defined
-        # * check no extra sheets are defined
-        # * check the models are defined in the canonical order
-        if not ignore_missing_sheets:
+        # optionally, check every models is defined
+        if not ignore_missing_models:
             missing_models = []
             for model in models:
                 if not inspect.isabstract(model) and \
@@ -1073,18 +1014,26 @@ class WorkbookReader(ReaderBase):
                 raise ValueError("Models '{}' must be defined".format(
                     "', '".join(sorted(missing_models))))
 
-        if not ignore_extra_sheets:
+        # optionally, check no extra sheets are defined
+        if not ignore_extra_models:
             extra_sheet_names = []
             for sheet_name, model in sheet_name_to_model.items():
                 if not model:
                     extra_sheet_names.append(sheet_name)
 
-            extra_sheet_names = set(extra_sheet_names) - set(['!' + TOC_SHEET_NAME, '!' + SCHEMA_SHEET_NAME])
+            if ext == '.xlsx':
+                prefix = '!'
+            else:
+                prefix = ''
+            extra_sheet_names = set(extra_sheet_names) - set([prefix + TOC_SHEET_NAME, prefix + SCHEMA_SHEET_NAME])
+            if ext == '.xlsx':
+                extra_sheet_names = [n[1:] for n in extra_sheet_names]
 
             if extra_sheet_names:
-                raise ValueError("No matching models for worksheets with TableIDs '{}' in {}".format(
+                raise ValueError("No matching models for worksheets with TableIds '{}' in {}".format(
                     "', '".join(sorted(extra_sheet_names)), os.path.basename(path)))
 
+        # optionally, check the models are defined in the canonical order
         if ext == '.xlsx' and not ignore_sheet_order:
             expected_model_order = []
             for model in models:
@@ -1117,8 +1066,7 @@ class WorkbookReader(ReaderBase):
                 ignore_extra_attributes=ignore_extra_attributes,
                 ignore_attribute_order=ignore_attribute_order,
                 ignore_empty_rows=ignore_empty_rows,
-                validate=validate,
-                sbtab=sbtab)
+                validate=validate)
             if model_attributes:
                 attributes[model] = model_attributes
             if model_data:
@@ -1190,8 +1138,7 @@ class WorkbookReader(ReaderBase):
     def read_model(self, reader, sheet_name, model, include_all_attributes=True,
                    ignore_missing_attributes=False, ignore_extra_attributes=False,
                    ignore_attribute_order=False, ignore_empty_rows=True,
-                   validate=True,
-                   sbtab=False):
+                   validate=True):
         """ Instantiate a list of objects from data in a table in a file
 
         Args:
@@ -1208,7 +1155,6 @@ class WorkbookReader(ReaderBase):
                 canonical order
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`tuple` of
@@ -1226,17 +1172,15 @@ class WorkbookReader(ReaderBase):
 
         # get worksheet
         exp_attrs, exp_sub_attrs, exp_headings, _, _, _ = get_fields(
-            model, {}, include_all_attributes=include_all_attributes, sbtab=sbtab)
+            model, {}, include_all_attributes=include_all_attributes)
         if model.Meta.table_format == TableFormat.row:
             data, _, headings, top_comments = self.read_sheet(model, reader, sheet_name,
                                                               num_column_heading_rows=len(exp_headings),
-                                                              ignore_empty_rows=ignore_empty_rows,
-                                                              sbtab=sbtab)
+                                                              ignore_empty_rows=ignore_empty_rows)
         else:
             data, headings, _, top_comments = self.read_sheet(model, reader, sheet_name,
                                                               num_row_heading_columns=len(exp_headings),
-                                                              ignore_empty_cols=ignore_empty_rows,
-                                                              sbtab=sbtab)
+                                                              ignore_empty_cols=ignore_empty_rows)
             data = transpose(data)
         if len(exp_headings) == 1:
             group_headings = [None] * len(headings[-1])
@@ -1271,6 +1215,13 @@ class WorkbookReader(ReaderBase):
         good_columns = []
         errors = []
         for idx, (group_heading, attr_heading) in enumerate(zip(group_headings, attr_headings), start=1):
+            if not attr_heading or not attr_heading.startswith('!'):
+                continue
+            if group_heading:
+                group_heading = group_heading[1:]
+            if attr_heading:
+                attr_heading = attr_heading[1:]
+
             group_attr, attr = utils.get_attribute_by_name(model, group_heading, attr_heading, case_insensitive=True)
             if not attr:
                 group_attr, attr = utils.get_attribute_by_name(
@@ -1286,7 +1237,7 @@ class WorkbookReader(ReaderBase):
                 else:
                     errors.append("Header '{}' in row {}, col {} does not match any attribute".format(
                         attr_heading, row, col))
-            if attr is None and sbtab and ignore_extra_attributes:
+            if attr is None and ignore_extra_attributes:
                 if isinstance(attr_heading, str) and attr_heading.startswith('!'):
                     row, col, hdr_entries = self.header_row_col_names(idx, ext, model.Meta.table_format)
                     errors.append("Header '{}' in row {}, col {} does not match any attribute".format(
@@ -1343,6 +1294,13 @@ class WorkbookReader(ReaderBase):
         # save model location in file
         attribute_seq = []
         for group_heading, attr_heading in zip(group_headings, attr_headings):
+            if not attr_heading or not attr_heading.startswith('!'):
+                continue
+            if group_heading:
+                group_heading = group_heading[1:]
+            if attr_heading:
+                attr_heading = attr_heading[1:]
+
             group_attr, attr = utils.get_attribute_by_name(model, group_heading, attr_heading, case_insensitive=True)
             if not attr:
                 group_attr, attr = utils.get_attribute_by_name(
@@ -1355,21 +1313,18 @@ class WorkbookReader(ReaderBase):
                 attribute_seq.append(group_attr.name + '.' + attr.name)
 
         # group comments with objects
-        if sbtab:
-            objs_comments = []
-            obj_comments = top_comments
-            for row in list(data):
-                if row and isinstance(row[0], str) and row[0].startswith('%'):
-                    obj_comments.append(row[0][1:].strip())
-                    data.remove(row)
-                else:
-                    objs_comments.append(obj_comments)
-                    obj_comments = []
-            if obj_comments:
-                assert objs_comments, 'Each comment must be associated with a row.'
-                objs_comments[-1].extend(obj_comments)
-        else:
-            objs_comments = [[]] * len(data)
+        objs_comments = []
+        obj_comments = top_comments
+        for row in list(data):
+            if row and isinstance(row[0], str) and row[0].startswith('%'):
+                obj_comments.append(row[0][1:].strip())
+                data.remove(row)
+            else:
+                objs_comments.append(obj_comments)
+                obj_comments = []
+        if obj_comments:
+            assert objs_comments, 'Each comment must be associated with a row.'
+            objs_comments[-1].extend(obj_comments)
 
         # load the data into objects
         objects = []
@@ -1419,7 +1374,7 @@ class WorkbookReader(ReaderBase):
         return (sub_attrs, data, errors, objects)
 
     def read_sheet(self, model, reader, sheet_name, num_row_heading_columns=0, num_column_heading_rows=0,
-                   ignore_empty_rows=False, ignore_empty_cols=False, sbtab=False):
+                   ignore_empty_rows=False, ignore_empty_cols=False):
         """ Read worksheet or file into a two-dimensional list
 
         Args:
@@ -1430,7 +1385,6 @@ class WorkbookReader(ReaderBase):
             num_column_heading_rows (:obj:`int`, optional): number of rows of column headings
             ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
             ignore_empty_cols (:obj:`bool`, optional): if :obj:`True`, ignore empty columns
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`tuple`:
@@ -1446,13 +1400,10 @@ class WorkbookReader(ReaderBase):
         data = reader.read_worksheet(sheet_name)
 
         # strip out rows with table name and description
-        model_metadata, top_comments = self.read_worksheet_metadata(sheet_name, data, sbtab=sbtab)
+        model_metadata, top_comments = self.read_worksheet_metadata(sheet_name, data)
         self._model_metadata[model] = model_metadata
-        if sbtab:
-            assert model_metadata['TableType'] == 'Data', \
-                "TableType must be '{}'.".format('Data')
-            assert model_metadata['TableID'] == sheet_name[1:], \
-                "TableID must be '{}'.".format(sheet_name[1:])
+        assert model_metadata['TableType'] == 'Data', \
+            "TableType '{}' must be '{}'.".format(model_metadata['TableType'], 'Data')
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1500,34 +1451,28 @@ class WorkbookReader(ReaderBase):
         return (data, row_headings, column_headings, top_comments)
 
     @staticmethod
-    def read_worksheet_metadata(sheet_name, rows, sbtab=False):
+    def read_worksheet_metadata(sheet_name, rows):
         """ Read worksheet metadata
 
         Args:
             sheet_name (:obj:`str`): sheet name
             rows (:obj:`list`): rows
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`tuple`:
 
-                * :obj:`dict` or :obj:`list`: if :obj:`sbtab`, returns a dictionary of properties;
-                  otherwise returns a list of comments
+                * :obj:`dict`: dictionary of properties
                 * :obj:`list` of :obj:`str`: comments
         """
-        if sbtab:
-            format = 'SBtab'
-            version = '2.0'
-        else:
-            format = 'ObjTables'
-            version = obj_tables.__version__
+        format = 'ObjTables'
+        version = obj_tables.__version__
 
         metadata_headings = []
         comments = []
         for row in list(rows):
             if not row or all(cell in ['', None] for cell in row):
                 rows.remove(row)
-            elif sbtab and row and isinstance(row[0], str) and row[0].startswith('%'):
+            elif row and isinstance(row[0], str) and row[0].startswith('%'):
                 comment = row[0][1:].strip()
                 if comment:
                     comments.append(comment)
@@ -1539,9 +1484,8 @@ class WorkbookReader(ReaderBase):
             else:
                 break
 
-        if sbtab:
-            assert len(metadata_headings) == 1, \
-                'Metadata for sheet "{}" must consist of a list of key-value pairs.'.format(sheet_name)
+        assert len(metadata_headings) == 1, \
+            'Metadata for sheet "{}" must consist of a list of key-value pairs.'.format(sheet_name)
 
         metadata = {}
         for metadata_heading in metadata_headings:
@@ -1556,9 +1500,8 @@ class WorkbookReader(ReaderBase):
                     key, sheet_name)
                 metadata[key] = val
 
-        if sbtab:
-            assert metadata.get(format + 'Version') == version, '{}Version for sheet "{}" must be {}'.format(
-                format, sheet_name, version)
+        # assert metadata.get(format + 'Version') == version, '{}Version for sheet "{}" must be {}'.format(
+        #    format, sheet_name, version)
 
         return (metadata, comments)
 
@@ -1685,7 +1628,9 @@ class WorkbookReader(ReaderBase):
         Returns:
             :obj:`set`: set of possible sheet names for a model
         """
-        return set([model.__name__, model.Meta.verbose_name, model.Meta.verbose_name_plural])
+        return set(['!' + model.__name__,
+                    '!' + model.Meta.verbose_name,
+                    '!' + model.Meta.verbose_name_plural])
 
 
 class Reader(ReaderBase):
@@ -1712,20 +1657,19 @@ class Reader(ReaderBase):
             raise ValueError('Invalid export format: {}'.format(ext))
 
     def run(self, path, models=None,
-            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            group_objects_by_model=False, validate=True,
-            sbtab=False):
+            group_objects_by_model=False, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:
             path (:obj:`str`): path to file(s)
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
                 of object to read or list of types of objects to read
-            ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+            ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
@@ -1741,7 +1685,6 @@ class Reader(ReaderBase):
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group decoded objects by their
                 types
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
-            sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
 
         Returns:
             :obj:`obj`: if `group_objects_by_model` is set returns :obj:`dict`: model objects grouped
@@ -1750,8 +1693,8 @@ class Reader(ReaderBase):
         Reader = self.get_reader(path)
         reader = Reader()
         result = reader.run(path, models=models,
-                            ignore_missing_sheets=ignore_missing_sheets,
-                            ignore_extra_sheets=ignore_extra_sheets,
+                            ignore_missing_models=ignore_missing_models,
+                            ignore_extra_models=ignore_extra_models,
                             ignore_sheet_order=ignore_sheet_order,
                             include_all_attributes=include_all_attributes,
                             ignore_missing_attributes=ignore_missing_attributes,
@@ -1759,17 +1702,15 @@ class Reader(ReaderBase):
                             ignore_attribute_order=ignore_attribute_order,
                             ignore_empty_rows=ignore_empty_rows,
                             group_objects_by_model=group_objects_by_model,
-                            validate=validate,
-                            sbtab=sbtab)
+                            validate=validate)
         self._model_metadata = reader._model_metadata
         return result
 
 
 def convert(source, destination, models,
-            ignore_missing_sheets=False, ignore_extra_sheets=False, ignore_sheet_order=False,
+            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
-            ignore_attribute_order=False, ignore_empty_rows=True,
-            sbtab=False):
+            ignore_attribute_order=False, ignore_empty_rows=True):
     """ Convert among comma-separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
     tab-separated (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
 
@@ -1777,9 +1718,9 @@ def convert(source, destination, models,
         source (:obj:`str`): path to source file
         destination (:obj:`str`): path to save converted file
         models (:obj:`list` of :obj:`type`): list of models
-        ignore_missing_sheets (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
+        ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
             file is missing for one or more models
-        ignore_extra_sheets (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+        ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
             other worksheets or files
         ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
             in the canonical order
@@ -1792,15 +1733,14 @@ def convert(source, destination, models,
         ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
             in the canonical order
         ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
-        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
     """
     reader = Reader.get_reader(source)()
     writer = Writer.get_writer(destination)()
 
     kwargs = {}
     if isinstance(reader, WorkbookReader):
-        kwargs['ignore_missing_sheets'] = ignore_missing_sheets
-        kwargs['ignore_extra_sheets'] = ignore_extra_sheets
+        kwargs['ignore_missing_models'] = ignore_missing_models
+        kwargs['ignore_extra_models'] = ignore_extra_models
         kwargs['ignore_sheet_order'] = ignore_sheet_order
         kwargs['include_all_attributes'] = include_all_attributes
         kwargs['ignore_missing_attributes'] = ignore_missing_attributes
@@ -1808,15 +1748,15 @@ def convert(source, destination, models,
         kwargs['ignore_attribute_order'] = ignore_attribute_order
         kwargs['ignore_empty_rows'] = ignore_empty_rows
     objects = reader.run(source, models=models, group_objects_by_model=False,
-                         sbtab=sbtab, **kwargs)
+                         **kwargs)
 
     writer.run(destination, objects, model_metadata=reader._model_metadata,
-               models=models, get_related=False, sbtab=sbtab)
+               models=models, get_related=False)
 
 
 def create_template(path, models, title=None, description=None, keywords=None,
                     version=None, language=None, creator=None, toc=True,
-                    extra_entries=10, sbtab=False):
+                    extra_entries=10):
     """ Create a template for a model
 
     Args:
@@ -1832,17 +1772,14 @@ def create_template(path, models, title=None, description=None, keywords=None,
         creator (:obj:`str`, optional): creator
         toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
         extra_entries (:obj:`int`, optional): additional entries to display
-        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab format
     """
     Writer.get_writer(path)().run(path, [], models=models,
                                   title=title, description=description, keywords=keywords,
                                   version=version, language=language, creator=creator,
-                                  toc=toc, extra_entries=extra_entries,
-                                  sbtab=sbtab)
+                                  toc=toc, extra_entries=extra_entries)
 
 
-def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
-               sbtab=False):
+def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None):
     """ Get the attributes, headings, and validation for a worksheet
 
     Args:
@@ -1852,7 +1789,6 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
             not explictly included in `Model.Meta.attribute_order`
         sheet_models (:obj:`list` of :obj:`Model`, optional): list of models encoded as separate worksheets; used
             to setup Excel validation for related attributes
-        sbtab (:obj:`bool`, optional): if :obj:`True`, use SBtab formatting
 
     Returns:
         :obj:`tuple`:
@@ -1895,20 +1831,15 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
     attrs = get_ordered_attributes(cls, include_all_attributes=include_all_attributes)
 
     # model metadata
-    if sbtab:
-        format = 'SBtab'
-        table_name = cls.Meta.verbose_name[1:]
-        version = '2.0'
-    else:
-        format = 'ObjTables'
-        table_name = cls.Meta.verbose_name_plural
-        version = obj_tables.__version__
+    format = 'ObjTables'
+    table_name = cls.Meta.verbose_name_plural
+    version = obj_tables.__version__
 
     now = datetime.now()
     metadata = dict(metadata)
     metadata['TableType'] = 'Data'
-    metadata['TableID'] = cls.__name__
-    metadata['TableName'] = table_name
+    metadata['ModelId'] = cls.__name__
+    metadata['ModelName'] = table_name
     metadata.pop('Description', None)
     if cls.Meta.description:
         metadata['Description'] = cls.Meta.description
@@ -1916,12 +1847,12 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
         now.year, now.month, now.day, now.hour, now.minute, now.second)
     metadata[format + 'Version'] = version
 
-    keys = ['TableType', 'TableID', 'TableName', 'Date', format + 'Version']
+    keys = ['TableType', 'ModelId', 'ModelName', 'Date', format + 'Version']
     if 'Description' in metadata:
         keys.insert(2, 'Description')
     keys += sorted(set(metadata.keys()) - set(keys))
     metadata_heading_list = ["{}='{}'".format(k, metadata[k].replace("'", "\'")) for k in keys]
-    metadata_heading_list.insert(0, "!!" + format)
+    metadata_heading_list.insert(0, '!!' + format)
     metadata_headings = [[' '.join(metadata_heading_list)]]
 
     # column labels
@@ -1939,15 +1870,15 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None,
             this_sub_attrs = get_ordered_attributes(attr.related_class, include_all_attributes=include_all_attributes)
             sub_attrs.extend([(attr, sub_attr) for sub_attr in this_sub_attrs])
             has_group_headings = True
-            group_headings.extend([attr.verbose_name] * len(this_sub_attrs))
-            attr_headings.extend([sub_attr.verbose_name for sub_attr in this_sub_attrs])
+            group_headings.extend(['!' + attr.verbose_name] * len(this_sub_attrs))
+            attr_headings.extend(['!' + sub_attr.verbose_name for sub_attr in this_sub_attrs])
             merge_ranges.append((i_row, i_col, i_row, i_col + len(this_sub_attrs) - 1))
             i_col += len(this_sub_attrs)
             field_validations.extend([sub_attr.get_excel_validation(sheet_models=sheet_models) for sub_attr in this_sub_attrs])
         else:
             sub_attrs.append((None, attr))
             group_headings.append(None)
-            attr_headings.append(attr.verbose_name)
+            attr_headings.append('!' + attr.verbose_name)
             i_col += 1
             field_validations.append(attr.get_excel_validation(sheet_models=sheet_models))
 

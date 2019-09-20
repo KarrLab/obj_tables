@@ -16,16 +16,14 @@ import unittest
 class ExamplesTestCase(unittest.TestCase):
     def test_web_app_example(self):
         filename = 'examples/parents_children.xlsx'
-        sbtab = True
 
-        schema = utils.init_schema(filename, sbtab=sbtab)
+        schema = utils.init_schema(filename)
         models = list(utils.get_models(schema).values())
 
         io.Reader().run(filename,
                         models=models,
                         group_objects_by_model=False,
-                        sbtab=sbtab,
-                        **io.SBTAB_DEFAULT_READER_OPTS)
+                        ignore_sheet_order=True)
 
         #########################
         # import parents_children
@@ -90,9 +88,10 @@ class ExamplesTestCase(unittest.TestCase):
         import obj_tables.io
 
         filename = 'examples/parents_children.xlsx'
-        objects = obj_tables.io.Reader().run(filename, sbtab=True,
+        objects = obj_tables.io.Reader().run(filename,
                                             models=[parents_children.Parent, parents_children.Child],
-                                            group_objects_by_model=True)
+                                            group_objects_by_model=True,
+                                            ignore_sheet_order=True)
         parents = objects[parents_children.Parent]
         jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')
 
@@ -101,8 +100,7 @@ class ExamplesTestCase(unittest.TestCase):
         objects = [jane_doe, john_doe, mary_roe, richard_roe,
                    jamie_doe, jimie_doe, linda_roe, mike_roe]
         obj_tables.io.Writer().run(filename, objects,
-                                  models=[parents_children.Parent, parents_children.Child],
-                                  sbtab=True)
+                                  models=[parents_children.Parent, parents_children.Child])
 
         #########################
         assert jane_doe.is_equal(jane_doe_2)
