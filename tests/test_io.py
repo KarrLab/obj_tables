@@ -470,7 +470,6 @@ class TestIo(unittest.TestCase):
                                  ':'.join([file, obj.Meta.verbose_name, "{},{}".format(row, column)]))
 
     def test_read_bad_headers(self):
-        '''
         msgs = [
             "The model cannot be loaded because 'bad-headers.xlsx' contains error(s)",
             "Header 'y' in row 1, col F does not match any attribute",
@@ -482,7 +481,6 @@ class TestIo(unittest.TestCase):
             "Header 'x' in row 5, col 1 does not match any attribute",
         ]
         self.check_reader_errors('bad-headers-*.csv', msgs, [MainRoot, Node, Leaf, OneToManyRow])
-        '''
 
         '''
         msgs = [
@@ -501,12 +499,10 @@ class TestIo(unittest.TestCase):
                 attribute_order = ('id', 'root', 'val1', 'val2', )
                 table_format = core.TableFormat.column
 
-        msgs = [
-            "The model cannot be loaded because 'missing-headers.xlsx' contains error(s)",
-            "Header 'y' in row 6, col A does not match any attribute",
-        ]
-        self.check_reader_errors('missing-headers.xlsx', msgs,
-                                 [TransposedNode])
+        filename = os.path.join(os.path.dirname(__file__),
+                                'fixtures', 'missing-headers.xlsx')
+        WorkbookReader().run(filename, models=[TransposedNode],
+                             ignore_extra_attributes=True)
 
     def test_uncaught_data_error(self):
         class Test(core.Model):
@@ -1525,6 +1521,16 @@ class TestMisc(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, 'No matching models'):
             WorkbookReader().run(filename, models=None)
+
+    def test_header_row_col_names(self):
+        self.assertEqual(WorkbookReader.header_row_col_names(
+            3, '.csv', core.TableFormat.row), (1, 3, 'column'))
+        self.assertEqual(WorkbookReader.header_row_col_names(
+            3, '.csv', core.TableFormat.column), (3, 1, 'row'))
+        self.assertEqual(WorkbookReader.header_row_col_names(
+            3, '.xlsx', core.TableFormat.row), (1, 'C', 'column'))
+        self.assertEqual(WorkbookReader.header_row_col_names(
+            3, '.xlsx', core.TableFormat.column), (3, 'A', 'row'))
 
 
 class ReadEmptyCellTestCase(unittest.TestCase):

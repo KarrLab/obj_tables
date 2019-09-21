@@ -1216,6 +1216,7 @@ class WorkbookReader(ReaderBase):
         errors = []
         for idx, (group_heading, attr_heading) in enumerate(zip(group_headings, attr_headings), start=1):
             if not attr_heading or not attr_heading.startswith('!'):
+                good_columns.append(0)
                 continue
             if group_heading:
                 group_heading = group_heading[1:]
@@ -1227,27 +1228,18 @@ class WorkbookReader(ReaderBase):
                 group_attr, attr = utils.get_attribute_by_name(
                     model, group_heading, attr_heading, case_insensitive=True, verbose_name=True)
 
-            if attr is not None:
-                sub_attrs.append((group_attr, attr))
-            if attr is None and not ignore_extra_attributes:
-                row, col, hdr_entries = self.header_row_col_names(idx, ext, model.Meta.table_format)
-                if attr_heading is None or attr_heading == '':
-                    errors.append("Empty header field in row {}, col {} - delete empty {}(s)".format(
-                        row, col, hdr_entries))  # pragma: no cover # unreachable because columns without headers are ignored
+            if attr is None:
+                if ignore_extra_attributes:
+                    good_columns.append(0)
+                    continue
                 else:
-                    errors.append("Header '{}' in row {}, col {} does not match any attribute".format(
-                        attr_heading, row, col))
-            if attr is None and ignore_extra_attributes:
-                if isinstance(attr_heading, str) and attr_heading.startswith('!'):
                     row, col, hdr_entries = self.header_row_col_names(idx, ext, model.Meta.table_format)
                     errors.append("Header '{}' in row {}, col {} does not match any attribute".format(
-                        attr_heading[1:], row, col))
+                        attr_heading, row, col))
+            else:
+                sub_attrs.append((group_attr, attr))
 
-            if ignore_extra_attributes:
-                if attr is None:
-                    good_columns.append(0)
-                else:
-                    good_columns.append(1)
+            good_columns.append(1)
 
         if errors:
             return ([], [], errors, [])
@@ -1339,8 +1331,7 @@ class WorkbookReader(ReaderBase):
             obj.set_source(reader.path, sheet_name, attribute_seq, row_num)
 
             obj_errors = []
-            if ignore_extra_attributes:
-                obj_data = list(compress(obj_data, good_columns))
+            obj_data = list(compress(obj_data, good_columns))
 
             for (group_attr, sub_attr), attr_value in zip(sub_attrs, obj_data):
                 try:
