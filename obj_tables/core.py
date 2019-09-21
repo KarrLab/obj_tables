@@ -3998,18 +3998,20 @@ class IntegerAttribute(NumericAttribute):
     """ Integer attribute
 
     Attributes:
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`int`): default value
         default_cleaned_value (:obj:`int`): value to replace :obj:`None` values with during cleaning
         min (:obj:`int`): minimum value
         max (:obj:`int`): maximum value
     """
 
-    def __init__(self, min=None, max=None, default=None, default_cleaned_value=None,
+    def __init__(self, min=None, max=None, none=False, default=None, default_cleaned_value=None,
                  none_value=None, verbose_name='', description='', primary=False, unique=False):
         """
         Args:
             min (:obj:`int`, optional): minimum value
             max (:obj:`int`, optional): maximum value
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`int`, optional): default value
             default_cleaned_value (:obj:`int`, optional): value to replace :obj:`None` values with during cleaning
             none_value (:obj:`object`, optional): none value
@@ -4038,8 +4040,9 @@ class IntegerAttribute(NumericAttribute):
                                                verbose_name=verbose_name, description=description,
                                                primary=primary, unique=unique, unique_case_insensitive=False)
 
+        self.none = none
         self.min = min
-        self.max = max
+        self.max = max        
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -4074,6 +4077,8 @@ class IntegerAttribute(NumericAttribute):
         """
         errors = []
 
+        if self.none and value is None:
+            pass
         if isinstance(value, integer_types):
             if self.min is not None:
                 if value < self.min:
@@ -4115,6 +4120,8 @@ class IntegerAttribute(NumericAttribute):
         Returns:
             :obj:`float`: simple Python representation of a value of the attribute
         """
+        if value is None:
+            return None
         return float(value)
 
     def from_builtin(self, json):
@@ -4127,6 +4134,8 @@ class IntegerAttribute(NumericAttribute):
         Returns:
             :obj:`int`: decoded value of the attribute
         """
+        if json is None:
+            return None
         return int(json)
 
     def get_excel_validation(self, sheet_models=None):
@@ -4188,12 +4197,13 @@ class IntegerAttribute(NumericAttribute):
 class PositiveIntegerAttribute(IntegerAttribute):
     """ Positive integer attribute """
 
-    def __init__(self, max=None, default=None, default_cleaned_value=None,
+    def __init__(self, max=None, none=False, default=None, default_cleaned_value=None,
                  none_value=None, verbose_name='', description='', primary=False, unique=False):
         """
         Args:
             min (:obj:`int`, optional): minimum value
             max (:obj:`int`, optional): maximum value
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`int`, optional): default value
             default_cleaned_value (:obj:`int`, optional): value to replace :obj:`None` values with during cleaning
             none_value (:obj:`object`, optional): none value
@@ -4203,7 +4213,7 @@ class PositiveIntegerAttribute(IntegerAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(PositiveIntegerAttribute, self).__init__(min=0, max=max,
-                                                       default=default,
+                                                       none=none, default=default,
                                                        default_cleaned_value=default_cleaned_value,
                                                        none_value=none_value,
                                                        verbose_name=verbose_name, description=description,
@@ -4283,19 +4293,21 @@ class StringAttribute(LiteralAttribute):
     """ String attribute
 
     Attributes:
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`        
         default (:obj:`str`): default value
         default_cleaned_value (:obj:`str`): value to replace :obj:`None` values with during cleaning
         min_length (:obj:`int`): minimum length
         max_length (:obj:`int`): maximum length
     """
 
-    def __init__(self, min_length=0, max_length=255, default='', default_cleaned_value='', none_value='',
+    def __init__(self, min_length=0, max_length=255, none=False, default='', default_cleaned_value='', none_value='',
                  verbose_name='', description='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             min_length (:obj:`int`, optional): minimum length
             max_length (:obj:`int`, optional): maximum length
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`        
             default (:obj:`str`, optional): default value
             default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
@@ -4326,6 +4338,7 @@ class StringAttribute(LiteralAttribute):
 
         self.min_length = min_length
         self.max_length = max_length
+        self.none = none
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -4354,7 +4367,9 @@ class StringAttribute(LiteralAttribute):
         """
         errors = []
 
-        if not isinstance(value, string_types):
+        if self.none and value is None:
+            pass
+        elif not isinstance(value, string_types):
             errors.append('Value must be an instance of `str`')
         else:
             if self.min_length and len(value) < self.min_length:
@@ -4473,9 +4488,11 @@ class RegexAttribute(StringAttribute):
     Attributes:
         pattern (:obj:`str`): regular expression pattern
         flags (:obj:`int`): regular expression flags
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`        
     """
 
-    def __init__(self, pattern, flags=0, min_length=0, max_length=None, default='', default_cleaned_value='',
+    def __init__(self, pattern, flags=0, min_length=0, max_length=None, 
+                 none=False, default='', default_cleaned_value='',
                  none_value='', verbose_name='', description='',
                  primary=False, unique=False):
         """
@@ -4484,6 +4501,7 @@ class RegexAttribute(StringAttribute):
             flags (:obj:`int`, optional): regular expression flags
             min_length (:obj:`int`, optional): minimum length
             max_length (:obj:`int`, optional): maximum length
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`str`, optional): default value
             default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
@@ -4494,7 +4512,7 @@ class RegexAttribute(StringAttribute):
 
         unique_case_insensitive = bin(flags)[-2] == '1'
         super(RegexAttribute, self).__init__(min_length=min_length, max_length=max_length,
-                                             default=default, default_cleaned_value=default_cleaned_value, none_value=none_value,
+                                             none=none, default=default, default_cleaned_value=default_cleaned_value, none_value=none_value,
                                              verbose_name=verbose_name, description=description,
                                              primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
         self.pattern = pattern
@@ -4516,7 +4534,8 @@ class RegexAttribute(StringAttribute):
         else:
             errors = []
 
-        if not re.search(self.pattern, value, flags=self.flags):
+        if not ((self.none and value is None) or \
+            (isinstance(value, str) and re.search(self.pattern, value, flags=self.flags))):
             errors.append("Value '{}' does not match pattern: {}".format(
                 value, self.pattern))
 
