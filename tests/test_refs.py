@@ -31,6 +31,9 @@ class RefsAttributeTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             id.from_str("'id3 @ 'ns3'")
 
+        id = refs.Identifier('taxonomy', '9606')
+        self.assertEqual(id.get_url(), 'https://identifiers.org/taxonomy:9606')
+
     def test_IdentifierAttribute(self):
         attr = refs.IdentifierAttribute()
 
@@ -148,6 +151,9 @@ class RefsAttributeTestCase(unittest.TestCase):
 
         attr.get_excel_validation()
 
+        self.assertEqual(refs.DoiAttribute.get_url('doi'),
+                         'https://doi.org/doi')
+
     def test_DoisAttribute(self):
         dois = [
             "10.1016/j.mib.2015.06.004",
@@ -203,6 +209,9 @@ class RefsAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(None), None)
 
         attr.get_excel_validation()
+
+        self.assertEqual(refs.PubMedIdAttribute.get_url('pmid'),
+                         'https://www.ncbi.nlm.nih.gov/pubmed/pmid')
 
     def test_PubMedIdsAttribute(self):
         pmids = [1234, 1235]

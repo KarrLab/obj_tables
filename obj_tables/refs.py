@@ -86,6 +86,14 @@ class Identifier(object):
         self.id = match.group(1)
         return self
 
+    def get_url(self):
+        """ Get the URL for the webpage for the identifier
+
+        Returns:
+            :obj:`str`: URL for the webpage for the identifier
+        """
+        return 'https://identifiers.org/{}:{}'.format(self.namespace, self.id)
+
 
 class IdentifierAttribute(core.LiteralAttribute):
     """ Identifier attribute """
@@ -344,6 +352,15 @@ class DoiAttribute(core.RegexAttribute):
                                            description='Digitial Object Identifier (DOI)',
                                            primary=primary, unique=unique)
 
+    @staticmethod
+    def get_url(doi):
+        """ Get the URL for a DOI
+
+        Args:
+            doi (:obj:`str`): URL for DOI
+        """
+        return 'https://doi.org/' + doi
+
 
 class DoisAttribute(core.LiteralAttribute):
     """ DOIs attribute """
@@ -478,6 +495,15 @@ class PubMedIdAttribute(core.IntegerAttribute):
                                                 verbose_name='PubMed id',
                                                 description='PubMed identifier',
                                                 primary=primary, unique=unique)
+
+    @staticmethod
+    def get_url(pmid):
+        """ Get the URL for a PubMed id
+
+        Args:
+            pmid (:obj:`int`): URL for PubMed id
+        """
+        return 'https://www.ncbi.nlm.nih.gov/pubmed/' + str(pmid)
 
 
 class PubMedIdsAttribute(core.LiteralAttribute):
