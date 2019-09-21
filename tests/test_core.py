@@ -1050,6 +1050,9 @@ class TestCore(unittest.TestCase):
         now = datetime(year=now.year, month=now.month, day=now.day)
         self.assertLess((now - val).total_seconds(), 24 * 60 * 60)
 
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.from_builtin(None), None)
+
     def test_validate_date_attribute(self):
         root = DateRoot()
 
@@ -1179,6 +1182,9 @@ class TestCore(unittest.TestCase):
         now = datetime(year=1900, month=1, day=1, hour=now.hour, minute=now.minute, second=now.second)
         self.assertLess((now - val).total_seconds(), 10)
 
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.from_builtin(None), None)
+
     def test_datetime_attribute(self):
         root = DateRoot()
 
@@ -1249,6 +1255,9 @@ class TestCore(unittest.TestCase):
         val, invalid = attr.clean(None)
         self.assertEqual(invalid, None)
         self.assertLess((datetime.now() - val).total_seconds(), 10.)
+
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.from_builtin(None), None)
 
     def test_related_attribute(self):
         class ConcreteRelatedAttribute(core.RelatedAttribute):

@@ -1233,7 +1233,7 @@ class WorkbookReader(ReaderBase):
                 row, col, hdr_entries = self.header_row_col_names(idx, ext, model.Meta.table_format)
                 if attr_heading is None or attr_heading == '':
                     errors.append("Empty header field in row {}, col {} - delete empty {}(s)".format(
-                        row, col, hdr_entries))
+                        row, col, hdr_entries))  # pragma: no cover # unreachable because columns without headers are ignored
                 else:
                     errors.append("Header '{}' in row {}, col {} does not match any attribute".format(
                         attr_heading, row, col))

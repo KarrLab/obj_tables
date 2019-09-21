@@ -486,9 +486,11 @@ def init_schema(filename, name=None, out_filename=None):
             if row[parent_col_name]:
                 raise ValueError('Class "{}" cannot have a parent.'.format(cls_name))
 
+            def_verbose_name = cls_name
+
             cls['tab_format'] = TableFormat[row[format_col_name] or 'row']
-            cls['verbose_name'] = row.get(verbose_name_col_name, None) or None
-            cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, None) or None
+            cls['verbose_name'] = row.get(verbose_name_col_name, def_verbose_name) or def_verbose_name
+            cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, def_verbose_name) or def_verbose_name
             cls['desc'] = row.get(desc_col_name, None) or None
 
         elif row[type_col_name] == attr_type:

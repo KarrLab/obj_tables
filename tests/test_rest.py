@@ -115,7 +115,7 @@ class RestTestCase(unittest.TestCase):
 
         # invalid workbook        
         wb = wc_utils.workbook.io.read(xl_file_2)
-        wb['!Children2'] = wb.pop('!Children')
+        wb['!Child2'] = wb.pop('!Child')
         wc_utils.workbook.io.write(xl_file_2, wb)
 
         with open(schema_filename, 'rb') as schema_file:
@@ -261,7 +261,7 @@ class RestTestCase(unittest.TestCase):
 
         # invalid workbook
         wb = wc_utils.workbook.io.read(in_workbook_filename)
-        wb['!Children2'] = wb.pop('!Children')
+        wb['!Child2'] = wb.pop('!Child')
         wc_utils.workbook.io.write(in_workbook_filename, wb)
 
         with open(schema_filename, 'rb') as schema_file:
@@ -343,7 +343,7 @@ class RestTestCase(unittest.TestCase):
         # invalid tsv files
         wb_filename_4 = os.path.join(self.tempdir, '*.tsv')
         wb = wc_utils.workbook.io.read(wb_filename)
-        wb['!Children'][4][0] = 'c_0'
+        wb['!Child'][4][0] = 'c_0'
         wc_utils.workbook.io.write(wb_filename_4, wb)
 
         wb_filename_5 = os.path.join(self.tempdir, 'wb2.zip')

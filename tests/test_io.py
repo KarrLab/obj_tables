@@ -470,6 +470,7 @@ class TestIo(unittest.TestCase):
                                  ':'.join([file, obj.Meta.verbose_name, "{},{}".format(row, column)]))
 
     def test_read_bad_headers(self):
+        '''
         msgs = [
             "The model cannot be loaded because 'bad-headers.xlsx' contains error(s)",
             "Header 'y' in row 1, col F does not match any attribute",
@@ -481,6 +482,7 @@ class TestIo(unittest.TestCase):
             "Header 'x' in row 5, col 1 does not match any attribute",
         ]
         self.check_reader_errors('bad-headers-*.csv', msgs, [MainRoot, Node, Leaf, OneToManyRow])
+        '''
 
         '''
         msgs = [
@@ -488,6 +490,23 @@ class TestIo(unittest.TestCase):
             "Duplicate, case insensitive, header fields: 'good val', 'Good val', 'Good VAL'"]
         self.check_reader_errors('duplicate-headers.xlsx', msgs, [Node])
         '''
+
+        class TransposedNode(core.Model):
+            id = core.SlugAttribute(primary=True)
+            root = core.StringAttribute()
+            val1 = core.FloatAttribute()
+            val2 = core.FloatAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'root', 'val1', 'val2', )
+                table_format = core.TableFormat.column
+
+        msgs = [
+            "The model cannot be loaded because 'missing-headers.xlsx' contains error(s)",
+            "Header 'y' in row 6, col A does not match any attribute",
+        ]
+        self.check_reader_errors('missing-headers.xlsx', msgs,
+                                 [TransposedNode])
 
     def test_uncaught_data_error(self):
         class Test(core.Model):
@@ -1153,9 +1172,27 @@ class TestMetadataModels(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unsupported type'):
             obj_tables.io.JsonReader().run(path, models=[Parent, Child])
 
+        obj_tables.io.JsonReader().run(path, models=[Parent, Child],
+                                       ignore_extra_models=True)
+
         obj = obj_tables.io.JsonReader().run(path, models=[Parent, Child, UnsupportedType])
         self.assertNotEqual(obj, None)
         self.assertEqual(obj.field, 'data')
+
+        objs = [{'__type': 'UnsupportedType', '__id': 0, 'field': 'data'}]
+        with open(path, 'w') as file:
+            json.dump(objs, file)
+
+        obj_tables.io.JsonReader().run(path, models=[Parent, Child],
+                                       ignore_extra_models=True)
+
+        with self.assertRaisesRegex(ValueError, 'Unsupported type'):
+            obj_tables.io.JsonReader().run(path, models=[Parent, Child])
+
+        objs2 = obj_tables.io.JsonReader().run(path, models=[Parent, Child, UnsupportedType])
+        self.assertNotEqual(obj, None)
+        self.assertEqual(len(objs2), 1)
+        self.assertEqual(objs2[0].field, 'data')
 
 
 class TestMisc(unittest.TestCase):
@@ -3048,3 +3085,29 @@ class ExcelValidationTestCase(unittest.TestCase):
 
         filename = os.path.join(self.dirname, 'test.xlsx')
         WorkbookWriter().run(filename, objects, models=[TestParent, TestChild1, TestChild2])
+
+    def test_one_to_one_get_excel_validation(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            parent = core.OneToOneAttribute(Parent, min_related=1, related_name='child')
+
+        validation = Child.parent.get_excel_validation()
+        self.assertNotEqual(validation.criterion, None)
+        self.assertEqual(validation.allowed_scalar_value, 1)
+        self.assertEqual(validation.ignore_blank, False)
+
+    def test_many_to_one_get_excel_validation(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            parent = core.ManyToOneAttribute(Parent, min_related=1, related_name='children')
+
+        validation = Child.parent.get_excel_validation()
+        self.assertNotEqual(validation.criterion, None)
+        self.assertEqual(validation.allowed_scalar_value, 1)
+        self.assertEqual(validation.ignore_blank, False)

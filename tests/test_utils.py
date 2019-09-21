@@ -634,7 +634,7 @@ class InitSchemaTestCase(unittest.TestCase):
             models=[schema.Parent, schema.Child])
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Children'][2].append('!Extra')
+        wb['!Child'][2].append('!Extra')
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
@@ -650,7 +650,7 @@ class InitSchemaTestCase(unittest.TestCase):
                 ignore_extra_attributes=False)[schema.Parent][0]
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Children'][2][-1] = '!Extra'
+        wb['!Child'][2][-1] = '!Extra'
         wc_utils.workbook.io.write(filename, wb)
         obj_tables.io.WorkbookReader().run(
             filename,
@@ -686,8 +686,8 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['!Parent'].insert(3, wc_utils.workbook.Row([]))
         wb['!Parent'].insert(3, wc_utils.workbook.Row(['% W']))
         wb['!Parent'][5].append('% Z')
-        wb['!Children'].insert(0, wc_utils.workbook.Row(['% 123']))
-        wb['!Children'].append(wc_utils.workbook.Row(['% 456']))
+        wb['!Child'].insert(0, wc_utils.workbook.Row(['% 123']))
+        wb['!Child'].append(wc_utils.workbook.Row(['% 456']))
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
