@@ -27,6 +27,8 @@
         <div class="large-9 cell">
           <p><i>ObjTables</i> is a toolkit for working with complex data as collections of tables which combines the ease of use and flexibility of Excel with the rigor and power of defined schemas.</p>
 
+          <p><i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> extends <i>ObjTables</i> by adding a variety of useful types for genomics, systems biology, and synthetic biology research.</p>
+
           <p class="before_list"><i>ObjTables</i> makes it easy to
           <ul>
             <li>Use collections of tables (e.g., an Excel workbook) as a interface to view and edit complex datasets that describe relationships and other complex datatypes,</li>
@@ -45,7 +47,7 @@
                 <li><b>Embedded grammars for relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, grammars can be used to encode relationships to multiple instances of multiple models within a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
             </ul>
             </li>
-            <li><b>Numerous data types</b> for scientific research including types for chemoinformatics, genomics, and mathematics.</li>
+            <li><b>Numerous data types</b> for scientific research including types for chemoinformatics, genomics, and mathematics. <i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> adds a variety of useful types for genomics, systems biology, and synthetic biology research.</li>
             <li><b>Software tools for generating Excel workbooks for editing datasets</b> according to schemas. This enables users to use Excel as a graphical user interface for editing datasets. As outlined below, this leverages a variety of features of Excel.</li>
             <li><b>Software tools for parsing and validating datasets</b> according to schemas.</li>
             <li><b>Software tools for manipulating complex datasets</b>, including creating, analyzing, comparing, merging, and migrating datasets.</li>
@@ -375,100 +377,205 @@
         <a name="data-types"></a>
         <div class="large-12 cell">
             <h2>Data types</h2>
-            <p><i>ObjTables</i> supports numerous datatypes and makes it easy to implement additional types. For example, <i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> extends <i>ObjTables</i> by adding a variety of types for genomics, systems biology, and synthetic biology research.</p>
+            <p><i>ObjTables</i> supports numerous datatypes and makes it easy to implement additional types.</p>
+
+            <p><i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> extends <i>ObjTables</i> by adding a variety of useful types for genomics, systems biology, and synthetic biology research.</p>
         </div>
 
-        <div class="large-3 cell">
-          <h3>Strings</h3>
-          <ul>
-              <li>Long string</li>
-              <li>Regular expression string</li>
-              <li>String</li>
-          </ul>
-        </div>
-        <div class="large-3 cell">
-          <h3>Numbers</h3>
-          <ul>
-              <li>Boolean</li>
-              <li>Integer</li>
-              <li>Float</li>
-              <li>Positive integer</li>
-              <li>Positive float</li>
-          </ul>
-        </div>
-        <div class="large-3 cell">
-          <h3>Dates/times</h3>
-          <ul>
-              <li>Date</li>
-              <li>Date/time</li>
-              <li>Time</li>
-          </ul>
-        </div>
-        <div class="large-3 cell">
-          <h3>Internet</h3>
-          <ul>
-            <li>Email</li>
-            <li>URL</li>
-          </ul>
-        </div>
-        <div class="large-3 cell">
-          <h3>Enumerations</h3>
-          <ul>
-            <li>Enumeration</li>
-          </ul>
-        </div>
-        <div class="large-3 cell">
-          <h3>Relationships</h3>
-          <ul>
-            <li>One-to-one</li>
-            <li>One-to-many</li>
-            <li>Many-to-one</li>
-            <li>Many-to-many</li>
-          </ul>
-        </div>
+        <div class="large-12 cell">
+          <table>
+            <thead class="data-type-title">
+              <tr>
+                <th>Format</th>
+                <th>Excel type</th>
+                <th>Python type</th>
+              </tr>
+            </thead>
 
-        <div class="large-3 cell">
-          <h3>Chemistry (<i>SBtab</i>)</h3>
-          <ul>
-            <li>Chemical formula</li>
-            <li>Chemical structure (SMILES, BpForms <a href="https://www.bpforms.org"><i class="fi-link"></i></a>, BcForms <a href="https://www.bcforms.org"><i class="fi-link"></i></a>) </li>
-          </ul>
-        </div>
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Strings</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>LongString</td><td>Text</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="2">Long string</td><td></td></tr>
 
-        <div class="large-3 cell">
-          <h3>Genomics (<i>SBtab</i>)</h3>
-          <ul>
-            <li>DNA, RNA, and protein sequences (Biopython <a href="https://biopython.org/"><i class="fi-link"></i></a>)</li>
-            <li>Feature location (Biopython <a href="https://biopython.org/"><i class="fi-link"></i></a>)</li>
-            <li>Frequency position matrix (Biopython <a href="https://biopython.org/"><i class="fi-link"></i></a>)</li>
-          </ul>
-        </div>
+              <tr><td>String</td><td>Text</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="2">Short string</td><td></td></tr>
 
-        <div class="large-3 cell">
-          <h3>Informatics (<i>SBtab</i>)</h3>
-          <ul>
-            <li>Ontology term (Pronto <a href="https://pronto.readthedocs.io"><i class="fi-link"></i></a>)</li>
-          </ul>
-        </div>
+              <tr><td>Regex</td><td>Text</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="2">String that matches a regular expression</td><td></td></tr>
+            </tbody>
 
-        <div class="large-3 cell">
-          <h3>Mathematics (<i>SBtab</i>)</h3>
-          <ul>
-            <li>Array (NumPy <a href="https://numpy.org"><i class="fi-link"></i></a>)</li>
-            <li>Matrix (NumPy <a href="https://numpy.org"><i class="fi-link"></i></a>)</li>
-            <li>Python expressions</li>
-            <li>Symbolic expression (SymPy <a href="https://www.sympy.org"><i class="fi-link"></i></a>)</li>
-            <li>Symbolic symbos (SymPy <a href="https://www.sympy.org"><i class="fi-link"></i></a>)</li>
-          </ul>
-        </div>
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Numbers</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>Boolean</td><td>Boolean</td><td><tt>bool</tt></td></tr>
+              <tr><td colspan="2">Boolean</td><td></td></tr>
 
-        <div class="large-3 cell">
-          <h3>Physics (<i>SBtab</i>)</h3>
-          <ul>
-            <li>Units (Pint <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a>)</li>
-          </ul>
-        </div>
+              <tr><td>Float</td><td>Number</td><td><tt>float</tt></td></tr>
+              <tr><td colspan="2">Float</td><td></td></tr>
 
+              <tr><td>Integer</td><td>Number</td><td><tt>int</tt></td></tr>
+              <tr><td colspan="2">Integer</td><td></td></tr>
+
+              <tr><td>PositiveFloat</td><td>Number</td><td><tt>float</tt></td></tr>
+              <tr><td colspan="2">Positive float</td><td></td></tr>
+
+              <tr><td>PositiveInteger</td><td>Number</td><td><tt>int</tt></td></tr>
+              <tr><td colspan="2">Positive integer</td><td></td></tr>
+            </tbody>
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Enumerations</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>Enum</td><td>String</td><td><tt>enum.Enum</tt></td></tr>
+              <tr><td colspan="2">Enumeration</td><td></td></tr>
+            </tbody>
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Dates &amp; times</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>Date</td><td>String</td><td><tt>datetime.date</tt></td></tr>
+              <tr><td colspan="2">Date</td><td></td></tr>
+
+              <tr><td>DateTime</td><td>String</td><td><tt>datetime.datetime</tt></td></tr>
+              <tr><td colspan="2">Date and time</td><td></td></tr>
+
+              <tr><td>Time</td><td>String</td><td><tt>datetime.time</tt></td></tr>
+              <tr><td colspan="2">Time</td><td></td></tr>
+            </tbody>
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Internet</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>Email</td><td>String</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="2">Email address</td><td></td></tr>
+
+              <tr><td>Url</td><td>String</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="2">Uniform resource locater</td><td></td></tr>
+            </tbody>
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Relationships</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>OneToOne</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">One-to-one relationship</td><td></td></tr>
+
+              <tr><td>OneToMany</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">One-to-many relationship</td><td></td></tr>
+
+              <tr><td>ManyToOne</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Many-to-one relationship</td><td></td></tr>
+
+              <tr><td>ManyToMany</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Many-to-many relationship</td><td></td></tr>
+            </tbody>
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Chemistry (SBtab)</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>chem.ChemicalStructure</td><td>String</td><td><tt>wc_utils.utils.chem.Structure <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></tt></td></tr>
+              <tr><td colspan="2">Chemical structure</td><td>(<tt>openbabel.OBMol</tt> <a href="http://openbabel.org/dev-api/classOpenBabel_1_1OBMol.shtml"><i class="fi-link"></i></a>, <tt>bpforms.BpForm</tt> <a href="https://www.bpforms.org"><i class="fi-link"></i></a>, <tt>bcforms.BcForm</tt> <a href="https://www.bcforms.org"><i class="fi-link"></i></a>)</td></tr>
+
+              <tr><td>chem.EmpiricalFormula</td><td>String</td><td><tt>wc_utils.utils.chem.EmpiricalFormula</tt> <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Empirical formula</td><td></td></tr>
+            </tbody>
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Genomics</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>bio.BioDnaSeq</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">DNA sequence</td><td></td></tr>
+
+              <tr><td>bio.BioProteinSeq</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Protein sequence</td><td></td></tr>
+
+              <tr><td>bio.BioRnaSeq</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">RNA sequence</td><td></td></tr>
+
+              <tr><td>bio.BioSeq</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Sequence</td><td></td></tr>
+
+              <tr><td>bio.FeatureLocation</td><td>String</td><td><tt>Bio.SeqFeature.FeatureLocation</tt> <a href="https://biopython.org/DIST/docs/api/Bio.SeqFeature.FeatureLocation-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Sequence</td><td></td></tr>
+
+              <tr><td>bio.FrequencyPositionMatrix</td><td>String</td><td><tt>Bio.motif.matrix.FrequencyPositionMatrix</tt> <a href="https://biopython.org/DIST/docs/api/Bio.motifs.matrix.FrequencyPositionMatrix-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Sequence</td><td></td></tr>
+            </tbody>           
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Informatics</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>ontology.Ontology</td><td>String</td><td><tt>list</tt> of <tt>pronto.Term</tt> <a href="https://pronto.readthedocs.io/en/latest/pronto/pronto.Term.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Terms in an ontology</td><td></td></tr>
+            </tbody>
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Mathematics</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>obj_math.NumpyArray</td><td>String</td><td><tt>numpy.ndarray</tt> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Numerical array or matrix</td><td></td></tr>
+
+              <tr><td>obj_math.SympyExpr</td><td>String</td><td><tt>sympy.Expr</tt> <a href="https://docs.sympy.org/latest/_modules/sympy/core/expr.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Symbolic expression</td><td></td></tr>
+
+              <tr><td>obj_math.SympySymbol</td><td>String</td><td><tt>sympy.Symbol</tt> <a href="https://docs.sympy.org/latest/_modules/sympy/core/symbol.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Symbolic symbol</td><td></td></tr>
+            </tbody>
+
+             <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">References</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>refs.Doi</td><td>String</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="2">Digital Object Identifier</td><td></td></tr>
+
+              <tr><td>refs.Dois</td><td>String</td><td><tt>list</tt> of <tt>str</tt></td></tr>
+              <tr><td colspan="2">List of Digital Object Identifiers</td><td></td></tr>
+
+              <tr><td>refs.Identifier</td><td>String</td><td><tt>obj_tables.refs.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">An identifier in a namespace registered with Identifiers.org</td><td></td></tr>
+
+              <tr><td>refs.Identifiers</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.refs.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">List of identifiers in namespaces registered with Identifiers.org</td><td></td></tr>
+
+              <tr><td>refs.PubMedId</td><td>Number</td><td><tt>int</tt></td></tr>
+              <tr><td colspan="2">PubMed identifier</td><td></td></tr>
+
+              <tr><td>refs.PubMedIds</td><td>String</td><td><tt>list</tt> of <tt>int</tt></td></tr>
+              <tr><td colspan="2">List of PubMed identifiers</td><td></td></tr>
+            </tbody>
+
+            <thead class="data-type-section-head">
+              <tr><th colspan="3"></th></tr>
+              <tr><th colspan="3">Units</th></tr>
+            </thead>
+            <tbody class="data-type-section">
+              <tr><td>units.Unit</td><td>String</td><td><tt>pint.unit._Unit</tt> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Units</td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
        <div class="grid-x grid-padding-x blue">

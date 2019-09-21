@@ -116,3 +116,45 @@ pre {
     font-size: 0.80rem;
     line-height: 120%;
 }
+
+
+thead.data-type-title tr {
+    background-color: rgb(180, 180, 180);
+}
+
+thead.data-type-section-head tr:first-child {
+    background: none;
+}
+thead.data-type-section-head tr:nth-child(2) {
+    background-color: rgb(227, 227, 227);
+}
+
+tbody.data-type-section tr:nth-child(4n+0),
+tbody.data-type-section tr:nth-child(4n+3),
+tbody.data-type-section tr:nth-child(even),
+tbody.data-type-section tr:nth-child(odd) {
+    background: none;
+}
+tbody.data-type-section tr:nth-child(4n+1),
+tbody.data-type-section tr:nth-child(4n+2) {
+    background-color: rgb(241, 241, 241);
+}
+tbody.data-type-section tr:nth-child(4n+1) td,
+tbody.data-type-section tr:nth-child(4n+3) td{
+    padding-bottom: 0px;
+}
+tbody.data-type-section tr:nth-child(4n+0) td,
+tbody.data-type-section tr:nth-child(4n+2) td {
+    padding-top: 0px;
+}
+tbody.data-type-section tr:nth-child(4n+0) td:first-child,
+tbody.data-type-section tr:nth-child(4n+2) td:first-child {
+    font-style: italic;
+}
+tbody.data-type-section tr:nth-child(4n+1) td:first-child,
+tbody.data-type-section tr:nth-child(4n+3) td:first-child {
+    font-family: 'Courier New', 'Courier';
+}
+tbody.data-type-section td tt {
+    background: none;
+}
