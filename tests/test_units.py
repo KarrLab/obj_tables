@@ -133,7 +133,7 @@ class UnitAttributeTestCase(unittest.TestCase):
 
     def test_get_obj_units(self):
         registry = pint.UnitRegistry()
-        
+
         class TestModel(core.Model):
             registry = pint.UnitRegistry()
             str_attr = core.StringAttribute()

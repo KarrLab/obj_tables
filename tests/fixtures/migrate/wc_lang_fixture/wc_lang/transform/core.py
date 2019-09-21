@@ -43,7 +43,7 @@ class Transform(ABC):
 
 
 class CompositeTransform(Transform):
-    """ Transform which is composed of multiple transforms 
+    """ Transform which is composed of multiple transforms
 
     Attributes:
         COMPONENT_TRANSFORMS (:obj:`tuple` of :obj:`Transform`): default transforms

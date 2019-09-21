@@ -594,7 +594,7 @@ class WorkbookWriter(WriterBase):
 
 
 class PandasWriter(WorkbookWriter):
-    """ Write model instances to a dictionary of :obj:`pandas.DataFrame` 
+    """ Write model instances to a dictionary of :obj:`pandas.DataFrame`
 
     Attributes:
         _data_frames (:obj:`dict`): dictionary that maps models (:obj:`Model`)
@@ -1793,25 +1793,25 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None):
     Returns:
         :obj:`tuple`:
 
-            * :obj:`list` of :obj:`Attribute`: Attributes of :obj:`cls` in the order they should be encoded as one or 
-              more columns in a worksheet. Attributes which define \*-to-one relationships to other classes which 
-              are encoded as multiple cells (:obj:`TableFormat.multiple_cells`) will be encoded as multiple 
-              columns. All other attributes will be encoded as a single column. 
+            * :obj:`list` of :obj:`Attribute`: Attributes of :obj:`cls` in the order they should be encoded as one or
+              more columns in a worksheet. Attributes which define \*-to-one relationships to other classes which
+              are encoded as multiple cells (:obj:`TableFormat.multiple_cells`) will be encoded as multiple
+              columns. All other attributes will be encoded as a single column.
 
-              This represents a nested tree of attributes. 
-              For classes which have \*-to-one relationships to other classes which are encoded as multiple cells, the tree 
+              This represents a nested tree of attributes.
+              For classes which have \*-to-one relationships to other classes which are encoded as multiple cells, the tree
               has two levels. For all other classes, the tree only has a single level.
 
-            * :obj:`list` of tuple of :obj:`Attribute`: 
-              Flattened representation of the first return value. This is a list of attributes of 
-              :obj:`cls` and attributes of classes related to :obj:`cls` by \*-to-one relationships that are encoded as multiple cells 
+            * :obj:`list` of tuple of :obj:`Attribute`:
+              Flattened representation of the first return value. This is a list of attributes of
+              :obj:`cls` and attributes of classes related to :obj:`cls` by \*-to-one relationships that are encoded as multiple cells
               (:obj:`TableFormat.multiple_cells`), in the order they are encoded as columns in a worksheet.
 
               Each element of the list is a tuple.
 
-                1. For attributes of :obj:`cls` that represent \*-to-one relationships to classes encoded 
-                   as multiple cells, the first element will be the attribute. This will be used to populate a merged cell in Row 1 of the worksheet 
-                   which represents the heading for the multiple columns that encode the attributes of the related class. For all other attributes, 
+                1. For attributes of :obj:`cls` that represent \*-to-one relationships to classes encoded
+                   as multiple cells, the first element will be the attribute. This will be used to populate a merged cell in Row 1 of the worksheet
+                   which represents the heading for the multiple columns that encode the attributes of the related class. For all other attributes,
                    the first element will be :obj:`None`, and no value will be printed in Row 1.
 
                 2. The second element will be the attribute that should be encoded in the column. For attributes that represent
@@ -1824,7 +1824,7 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None):
             * :obj:`list`: field headings
             * :obj:`list`: list of field headings to merge
             * :obj:`list`: list of field validations
-            * :obj:`list` of :obj:`list` :obj:`str`: model metadata (name and description) 
+            * :obj:`list` of :obj:`list` :obj:`str`: model metadata (name and description)
                 to print at the top of the worksheet
     """
     # attribute order

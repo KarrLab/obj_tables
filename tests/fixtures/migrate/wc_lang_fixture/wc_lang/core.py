@@ -2561,7 +2561,7 @@ class SpeciesType(obj_tables.Model, SbmlModelMixin):
         id (:obj:`str`): unique identifier
         name (:obj:`str`): name
         model (:obj:`Model`): model
-        structure (:obj:`ChemicalStructure`): structure (InChI for metabolites; sequence for DNA, RNA, proteins)        
+        structure (:obj:`ChemicalStructure`): structure (InChI for metabolites; sequence for DNA, RNA, proteins)
         type (:obj:`pronto.term.Term`): type
         identifiers (:obj:`list` of :obj:`Identifier`): identifiers
         conclusions (:obj:`list` of :obj:`Conclusion`): conclusions
@@ -3475,12 +3475,12 @@ class StopCondition(obj_tables.Model):
 
 
 class FluxBounds(obj_tables.Model, SbmlModelMixin):
-    """ Flux bounds 
+    """ Flux bounds
 
     Attributes:
         min (:obj:`float`): minimum flux bound for solving an FBA model; negative for reversible reactions
         max (:obj:`float`): maximum flux bound for solving an FBA model
-        units (:obj:`unit_registry.Unit`): units for the minimum and maximum fluxes    
+        units (:obj:`unit_registry.Unit`): units for the minimum and maximum fluxes
 
     Related attributes:
 
@@ -4825,7 +4825,7 @@ class ObservationEnv(obj_tables.Model, SbmlModelMixin):
 
 
 class Process(obj_tables.Model, SbmlModelMixin):
-    """ A process of an observation or conclusion 
+    """ A process of an observation or conclusion
 
     Attributes:
         name (:obj:`str`): procedure which produced the conclusion
@@ -4872,9 +4872,9 @@ class Observation(obj_tables.Model):
         value (:obj:`str`): value
         std (:obj:`str`): standard error of the value
         units (:obj:`unit_registry.Unit`): units
-        type (:obj:`pronto.term.Term`): type        
+        type (:obj:`pronto.term.Term`): type
         genotype (:obj:`ObservationGenotype`): genotype
-        env (:obj:`ObservationEnv`): environment        
+        env (:obj:`ObservationEnv`): environment
         experiment_type (:obj:`str`): type of experiment (e.g. RNA-seq)
         experiment_design (:obj:`str`): experimental design
         data_generation_process (:obj:`Process`): process used to measure data (e.g. deep sequencing)

@@ -9,7 +9,7 @@ class ChangedTest(Model):  # Model Test renamed to ChangedTest
     revision = StringAttribute(default='0.0')
     # Type of attribute Test.size changed to an integer
     size = IntegerAttribute()
-    # Attribute Test.color removed    
+    # Attribute Test.color removed
 
 # Model Property removed
 

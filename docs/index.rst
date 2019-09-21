@@ -10,7 +10,7 @@ Contents
 .. toctree::
    :maxdepth: 3
    :numbered:
-   
+
    installation.rst
    overview.rst
    migration.rst

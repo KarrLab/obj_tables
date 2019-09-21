@@ -135,7 +135,7 @@ class IdentifierAttribute(core.LiteralAttribute):
             value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other 
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
                 return list of errors as an instance of `core.InvalidAttribute`
         """
         errors = []
@@ -257,7 +257,7 @@ class IdentifiersAttribute(core.LiteralAttribute):
             value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other 
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
                 return list of errors as an instance of `core.InvalidAttribute`
         """
         errors = []
@@ -402,7 +402,7 @@ class DoisAttribute(core.LiteralAttribute):
             value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other 
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
                 return list of errors as an instance of `core.InvalidAttribute`
         """
         errors = []
@@ -555,7 +555,7 @@ class PubMedIdsAttribute(core.LiteralAttribute):
             value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other 
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
                 return list of errors as an instance of `core.InvalidAttribute`
         """
         errors = []

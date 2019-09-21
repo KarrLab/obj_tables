@@ -113,7 +113,7 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertNotEqual(rv.json, [])
 
-        # invalid workbook        
+        # invalid workbook
         wb = wc_utils.workbook.io.read(xl_file_2)
         wb['!Child2'] = wb.pop('!Child')
         wc_utils.workbook.io.write(xl_file_2, wb)
@@ -275,7 +275,7 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 400)
 
         # invalid schema
-        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')        
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
         with open(schema_filename, 'rb') as schema_file:
             with open(in_workbook_filename, 'rb') as in_workbook_file:
                 rv = client.post('/api/normalize/', data={

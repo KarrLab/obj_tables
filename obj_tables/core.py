@@ -155,9 +155,9 @@ class ModelMeta(type):
         return cls
 
     @classmethod
-    def validate_meta(metacls, name, bases, namespace): 
+    def validate_meta(metacls, name, bases, namespace):
         reserved_names = [
-            TOC_SHEET_NAME, 
+            TOC_SHEET_NAME,
             SCHEMA_SHEET_NAME,
             ]
 
@@ -981,7 +981,7 @@ class Model(with_metaclass(ModelMeta, object)):
         _comments (:obj:`list` of :obj:`str`): comments
 
     Class attributes:
-        objects (:obj:`Manager`): a `Manager` that supports searching for `Model` instances        
+        objects (:obj:`Manager`): a `Manager` that supports searching for `Model` instances
     """
 
     class Meta(object):
@@ -1454,8 +1454,8 @@ class Model(with_metaclass(ModelMeta, object)):
         return (attr_name, attr_get_one_filter)
 
     def normalize(self):
-        """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers 
-        into a canonical order because their order has no semantic meaning. Importantly, this canonical form 
+        """ Normalize an object into a canonical form. Specifically, this method sorts the RelatedManagers
+        into a canonical order because their order has no semantic meaning. Importantly, this canonical form
         is reproducible. Thus, this canonical form facilitates reproducible computations on top of :obj:`Model`
         objects.
         """
@@ -3276,7 +3276,7 @@ class LocalAttribute(object):
 
 
 class LiteralAttribute(Attribute):
-    """ Base class for literal attributes (Boolean, enumeration, float, 
+    """ Base class for literal attributes (Boolean, enumeration, float,
     integer, string, etc.)
     """
 
@@ -3317,7 +3317,7 @@ class LiteralAttribute(Attribute):
             value (:obj:`object`): Python representation
 
         Returns:
-            :obj:`bool`, :obj:`float`, :obj:`str`, or :obj:`None`: simple Python 
+            :obj:`bool`, :obj:`float`, :obj:`str`, or :obj:`None`: simple Python
                 representation
         """
         return value
@@ -3329,7 +3329,7 @@ class LiteralAttribute(Attribute):
             value (:obj:`object`): semantically equivalent representation
 
         Returns:
-            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple 
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple
                 of cleaned value and cleaning error
         """
         return self.clean(value)
@@ -3348,7 +3348,7 @@ class LiteralAttribute(Attribute):
         return value
 
     def from_builtin(self, json):
-        """ Decode a simple Python representation (:obj:`dict`, :obj:`list`, :obj:`str`, 
+        """ Decode a simple Python representation (:obj:`dict`, :obj:`list`, :obj:`str`,
         :obj:`float`, :obj:`bool`, :obj:`None`) of a value of the attribute
         that is compatible with JSON and YAML
 
@@ -4042,7 +4042,7 @@ class IntegerAttribute(NumericAttribute):
 
         self.none = none
         self.min = min
-        self.max = max        
+        self.max = max
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -4293,7 +4293,7 @@ class StringAttribute(LiteralAttribute):
     """ String attribute
 
     Attributes:
-        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`        
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
         default (:obj:`str`): default value
         default_cleaned_value (:obj:`str`): value to replace :obj:`None` values with during cleaning
         min_length (:obj:`int`): minimum length
@@ -4307,7 +4307,7 @@ class StringAttribute(LiteralAttribute):
         Args:
             min_length (:obj:`int`, optional): minimum length
             max_length (:obj:`int`, optional): maximum length
-            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`        
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`str`, optional): default value
             default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
@@ -4488,10 +4488,10 @@ class RegexAttribute(StringAttribute):
     Attributes:
         pattern (:obj:`str`): regular expression pattern
         flags (:obj:`int`): regular expression flags
-        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`        
+        none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
-    def __init__(self, pattern, flags=0, min_length=0, max_length=None, 
+    def __init__(self, pattern, flags=0, min_length=0, max_length=None,
                  none=False, default='', default_cleaned_value='',
                  none_value='', verbose_name='', description='',
                  primary=False, unique=False):
@@ -6925,7 +6925,7 @@ class OneToManyAttribute(RelatedAttribute):
 
 
 class ManyToManyAttribute(RelatedAttribute):
-    """ Represents a many-to-many relationship between two types of objects. 
+    """ Represents a many-to-many relationship between two types of objects.
 
     Attributes:
         related_manager (:obj:`type`): related manager

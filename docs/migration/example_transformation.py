@@ -7,7 +7,7 @@ class TransformationExample(MigrationWrapper):
         """ Prepare existing models before migration
 
         Convert `Test.size` values to integers before they are migrated
-        
+
         Args:
             migrator (:obj:`Migrator`:) the `Migrator` calling this method
             existing_models (:obj:`list` of `obj_tables.Model`:) the models

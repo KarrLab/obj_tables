@@ -9,7 +9,7 @@ Consider some data whose structure (also known as its *data model*) is defined b
 For example, the structure of an SQL database is defined by a schema written in
 `SQL's Structured query language <https://en.wikipedia.org/wiki/Data_definition_language#Structured_Query_Language_(SQL)>`_.
 
-When a schema is updated then existing data must be changed so that its structure complies with the updated schema. This is called *data migration*. 
+When a schema is updated then existing data must be changed so that its structure complies with the updated schema. This is called *data migration*.
 Many systems, including database systems and web software frameworks, provide tools that automate data migration
 so that users can avoid the tedious and error-prone manual effort that's usually required when a schema is changed
 and large amounts of data must be migrated.
@@ -141,7 +141,7 @@ Migration migrates a data file across a sequence of sentinel commits.
     Sentinel commits in schema repo commit histories.
     Commits that do not change the schema may be present, but are not involved in migration.
     Each sentinel commit delimits the downstream boundary of a set of commits.
-    In A, the changes in commits **a** and **b** will be applied to data being migrated from 
+    In A, the changes in commits **a** and **b** will be applied to data being migrated from
     sentinel s\ :sub:`1` to sentinel s\ :sub:`2`.
     B illustrates a Git history created by
     branching or concurrent clones, but the commits **a**, **b**, and **d**
@@ -158,7 +158,7 @@ For an example, see :numref:`figure_illegal_schema_changes_and_sentinel_commits_
     :alt: Sentinel commits in a schema repo commit history that cannot be migrated.
 
     Sentinel commits in a schema repo commit history that cannot be migrated.
-    
+
 .. todo: label the constraints more precisely, and write more about figure illegal_schema_changes_and_sentinel_commits_history.png
 
 Configuration files
@@ -233,7 +233,7 @@ The identification is implemented by storing the sentinel commit's hash in the s
 
 The changes between the *existing* and the *changed* schemas are separated into three
 commits, **a**, **b**, and **c**.
-**a** and **b** must both occur before **c**, 
+**a** and **b** must both occur before **c**,
 because **a** and **b** both access *Model* :obj:`Test` whereas
 **c** renames *Model* :obj:`Test` to *Model* :obj:`ChangedTest`.
 Both alternative commit histories both satisfy these constraints.
@@ -247,8 +247,8 @@ converts the floats in attribute :obj:`Test.size` into ints:
   :language: Python
 
 Transformations are subclasses of :obj:`obj_tables.migrate.MigrationWrapper`. `Model` instances can
-be converted before or after migration, or both. 
-The :obj:`prepare_existing_models` method converts models before migration, while 
+be converted before or after migration, or both.
+The :obj:`prepare_existing_models` method converts models before migration, while
 :obj:`modify_migrated_models` converts them after migration. Both methods have the same signature.
 The :obj:`migrator` argument provides an instance of :obj:`obj_tables.migrate.Migrator`, the class
 that performs migration. Its attributes provide information about the migration. E.g., this
@@ -286,11 +286,11 @@ Schema Git metadata in data files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Each data file in the *data repo* must contain a *Model* that documents the version of the *schema repo*
-upon which the file depends. 
+upon which the file depends.
 For migration to work properly this version must be a sentinel commit in the schema repo.
 This Git metadata is stored in a *SchemaRepoMetadata* *Model*
 (which will be in a *Schema repo metadata* worksheet in an Excel file). The metadata specifies the schema's
-version with its URL, branch, and commit hash. 
+version with its URL, branch, and commit hash.
 A migration of the data file will start at the specified commit in the *schema repo*. An example
 Schema repo metadata worksheet in an Excel file is illustrated below:
 
@@ -300,7 +300,7 @@ Schema repo metadata worksheet in an Excel file is illustrated below:
     :alt: Example Schema repo metadata worksheet in an Excel data file
 
     Example Schema repo metadata worksheet in an Excel data file.
-    This schema repo metadata provides the point in the schema's commit history 
+    This schema repo metadata provides the point in the schema's commit history
     at which migration of the data file would start.
 
 Migration migrates a data file from the schema commit identified in the file's schema's Git metadata to
@@ -308,7 +308,7 @@ the last sentinel commit in the *schema repo*.
 
 Topological sort of schema changes
 ------------------------------------
-The migration of a data file 
+The migration of a data file
 modifies data so that its structure is consistent with the schema changes saved in Git commits in the schema repo.
 Because the dependencies between commits cannot be circular, the dependency graph of commits is a
 directed acyclic graph (DAG).
@@ -399,7 +399,7 @@ Schema builders are responsible for these steps.
 #. Test the new schema changes file by migrating a data file that depends (using its schema Git metadata as in :numref:`figure_schema_git_metadata`) on the version of the schema that existed before the changes in step 1
 
 While this approach identifies sentinel commits and creates template schema changes files immediately
-after the schema has been changed, that process can be performed later, as 
+after the schema has been changed, that process can be performed later, as
 
 Migration of data files in a data repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -449,7 +449,7 @@ hash with the :obj:`--commit` option.
 This makes it easy to add a schema changes file that identifies an older commit as a sentinel commit,
 after making other commits downstream from the sentinel.
 
-:obj:`make-changes-template` initializes :obj:`commit_hash` in the template as the 
+:obj:`make-changes-template` initializes :obj:`commit_hash` in the template as the
 sentinel commit's hash.
 The hash's prefix also appears in the file's name.
 The format of the fields :obj:`renamed_models`, :obj:`renamed_attributes`, and

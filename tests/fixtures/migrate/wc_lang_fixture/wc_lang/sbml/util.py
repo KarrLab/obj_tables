@@ -223,7 +223,7 @@ class LibSbmlInterface(object):
 
     @classmethod
     def verify_doc_is_compatible(cls, sbml_doc, level=3, version=2):
-        """ Check the compatibility of an SBML document with a specific level and version, 
+        """ Check the compatibility of an SBML document with a specific level and version,
         and raise an exception if the document is not verify_doc_is_compatible
 
         Args:
@@ -238,7 +238,7 @@ class LibSbmlInterface(object):
 
     @classmethod
     def verify_doc_is_valid_sbml(cls, sbml_doc):
-        """ Check that an SBML document is valid, 
+        """ Check that an SBML document is valid,
         and raise an exception if the document is not valid
 
         Args:
@@ -249,7 +249,7 @@ class LibSbmlInterface(object):
 
     @classmethod
     def verify_doc_is_consistent(cls, sbml_doc, strict_units=True):
-        """ Check that an SBML document is consistent, 
+        """ Check that an SBML document is consistent,
         and raise an exception if the document is not consistent
 
         Args:

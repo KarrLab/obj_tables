@@ -10,7 +10,7 @@ from .core import (Model, Attribute,
                    FloatAttribute, PositiveFloatAttribute,
                    IntegerAttribute, PositiveIntegerAttribute, StringAttribute, LongStringAttribute,
                    RegexAttribute, SlugAttribute, UrlAttribute, EmailAttribute, DateAttribute, TimeAttribute,
-                   DateTimeAttribute, 
+                   DateTimeAttribute,
                    RelatedManager, OneToManyRelatedManager, ManyToOneRelatedManager, ManyToManyRelatedManager,
                    RelatedAttribute, OneToOneAttribute, OneToManyAttribute, ManyToOneAttribute, ManyToManyAttribute,
                    InvalidObjectSet, InvalidModel, InvalidObject, InvalidAttribute, Validator,
@@ -18,7 +18,7 @@ from .core import (Model, Attribute,
                    ModelSource, TableFormat,
                    get_models, get_model, excel_col_name,
                    ModelMerge,
-                   TOC_TABLE_TYPE, TOC_SHEET_NAME, 
+                   TOC_TABLE_TYPE, TOC_SHEET_NAME,
                    SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 from . import abstract
 from . import expression

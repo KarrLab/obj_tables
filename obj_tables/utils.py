@@ -32,7 +32,7 @@ import wc_utils.workbook.io
 def get_schema(path, name=None):
     """ Get a Python schema
 
-    Args:        
+    Args:
         path (:obj:`str`): path to Python schema
         name (:obj:`str`, optional): Python name for schema module
 
@@ -409,23 +409,23 @@ def init_schema(filename, name=None, out_filename=None):
         ===================  ==================  ========
         `obj_tables`         SBtab (deprecated)  Optional
         ===================  ==================  ========
-        Name                 !Name                       
-        Type                 !Type                       
-        Parent               !IsPartOf                   
-        Format               !Format                     
-        Verbose name         !VerboseName        Y       
-        Verbose name plural  !VerboseNamePlural  Y       
-        Description          !Description        Y        
+        Name                 !Name
+        Type                 !Type
+        Parent               !IsPartOf
+        Format               !Format
+        Verbose name         !VerboseName        Y
+        Verbose name plural  !VerboseNamePlural  Y
+        Description          !Description        Y
 
     Args:
-        filename (:obj:`str`): path to 
+        filename (:obj:`str`): path to
         out_filename (:obj:`str`, optional): path to save schema
 
     Returns:
         :obj:`types.ModuleType`: module with classes
 
     Raises:
-        :obj:`ValueError`: if schema specification is not in a supported format or 
+        :obj:`ValueError`: if schema specification is not in a supported format or
             the schema specification is invalid
     """
     from obj_tables.io import WorkbookReader
@@ -634,7 +634,7 @@ def to_pandas(objs, models=None, get_related=True,
         validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
     Returns:
-        :obj:`dict`: dictionary that maps models (:obj:`Model`) to 
+        :obj:`dict`: dictionary that maps models (:obj:`Model`) to
             the instances of each model (:obj:`pandas.DataFrame`)
     """
     from obj_tables.io import PandasWriter
