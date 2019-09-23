@@ -153,7 +153,7 @@ class ExamplesTestCase(unittest.TestCase):
 
         # Validate that documents adhere to the schema
         data_filenames = [
-            'template.xlsx',
+            # 'template.xlsx',
             'hynne/*.tsv',
             'hynne.multi.tsv',
             'lac_operon/*.tsv',
@@ -183,15 +183,14 @@ class ExamplesTestCase(unittest.TestCase):
         ]
         for data_filename in data_filenames:
             full_data_filename = os.path.join('examples', 'sbtab-sbml', data_filename)
-            
-            if action == 'validate':                
+
+            if action == 'validate':
                 with __main__.App(argv=['validate', schema_filename, full_data_filename]) as app:
                     app.run()
 
             if action == 'convert' and not data_filename.endswith('.xlsx'):
                 convert_filename = data_filename \
-                    .replace('.multi.csv', '.xlsx') \
-                    .replace('.multi.tsv', '.xlsx') \
+                    .replace('/*', '') \
                     .replace('.csv', '.xlsx') \
                     .replace('.tsv', '.xlsx')
                 full_convert_filename = os.path.join('examples', 'sbtab-sbml', convert_filename)

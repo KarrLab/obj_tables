@@ -512,22 +512,27 @@ class WorkbookWriter(WriterBase):
                                         tip='Click to view {}'.format(ws_name.lower())))
 
             has_multiple_cells = False
+            n_attrs = len(model.Meta.attribute_order)
             for attr in model.Meta.attributes.values():
                 if isinstance(attr, RelatedAttribute) and \
                         attr.related_class.Meta.table_format == TableFormat.multiple_cells:
                     has_multiple_cells = True
+                    n_attrs += len(attr.related_class.Meta.attribute_order)
                     break
 
             if model.Meta.table_format == TableFormat.row:
-                range = 'A{}:A{}'.format(3 + has_multiple_cells, 2 ** 20)
+                range = "OFFSET('!{}'!A{}, ROW(1:{})-1, 0, 1, {})".format(
+                    ws_name, 3 + has_multiple_cells, 2 ** 20 - 2 - has_multiple_cells, n_attrs)
             else:
-                range = '{}2:{}2'.format(get_column_letter(2 + has_multiple_cells),
-                                         get_column_letter(2 ** 14))
+                range = "OFFSET('!{}'!{}2, 0, COLUMN(A:{})-1, {}, 1)".format(
+                    ws_name, get_column_letter(2 + has_multiple_cells),
+                    get_column_letter(2 ** 14 - 1 - has_multiple_cells), n_attrs)
 
+            count_formula = 'SUM((COUNTBLANK({})<>{})*1)'.format(range, n_attrs)
             content.append([
                 ws_name,
                 model.Meta.description,
-                Formula("=COUNTA('!{}'!{})".format(ws_name, range),
+                Formula('{{={}}}'.format(count_formula),
                         len(grouped_objects.get(model, []))),
             ])
 
