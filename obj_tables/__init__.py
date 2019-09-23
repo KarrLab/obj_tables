@@ -22,6 +22,7 @@ from .core import (Model, Attribute,
                    SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 from . import abstract
 from . import expression
+from . import grammar
 from . import io
 from . import utils
 

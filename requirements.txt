@@ -1,6 +1,7 @@
 biopython
 gitpython
 inflect
+lark
 natsort
 networkx
 numpy
