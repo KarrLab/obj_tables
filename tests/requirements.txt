@@ -1,11 +1,13 @@
 abduct
 attrdict
+bpforms
 configobj
 mock
 natsort
 networkx
 numpy
 objsize
+openbabel
 openpyxl
 psutil
 pygithub
