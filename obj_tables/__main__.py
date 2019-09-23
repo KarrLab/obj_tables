@@ -15,6 +15,13 @@ import os.path
 import sys
 import types
 
+DEFAULT_READER_ARGS = {
+    'ignore_missing_models': True,
+    'ignore_sheet_order': True,
+    'ignore_missing_attributes': True,
+    'ignore_attribute_order': True,
+}
+
 
 class BaseController(cement.Controller):
     """ Base controller for command line application """
@@ -58,7 +65,8 @@ class ConvertController(cement.Controller):
         reader = io.Reader()
         objs = reader.run(args.in_wb_file,
                           models=models,
-                          group_objects_by_model=False)
+                          group_objects_by_model=False,
+                          **DEFAULT_READER_ARGS)
         io.Writer().run(args.out_wb_file, objs, model_metadata=reader._model_metadata,
                         models=models, write_schema=args.write_schema)
         print('Workbook saved to {}'.format(args.out_wb_file))
@@ -178,7 +186,8 @@ class NormalizeController(cement.Controller):
         reader = io.Reader()
         objs = reader.run(args.in_wb_file,
                           models=models,
-                          group_objects_by_model=False)
+                          group_objects_by_model=False,
+                          **DEFAULT_READER_ARGS)
         for obj in objs:
             if isinstance(obj, model):
                 obj.normalize()
@@ -209,7 +218,8 @@ class ValidateController(cement.Controller):
         try:
             io.Reader().run(args.wb_file,
                             models=models,
-                            group_objects_by_model=False)
+                            group_objects_by_model=False,
+                            **DEFAULT_READER_ARGS)
         except ValueError as err:
             raise SystemExit(str(err))
         print('Workbook {} is valid'.format(args.wb_file))

@@ -509,8 +509,12 @@ def init_schema(filename, name=None, out_filename=None):
                 }
 
             attr_name = row[name_col_name]
-            if not re.match(r'^[a-zA-Z0-9:>]+$', attr_name):
-                raise ValueError("Attribute names must consist of alphanumeric characters, colons, and forward carets.")
+            if not re.match(r'^[a-zA-Z0-9_:>\.\- \[\]]+$', attr_name):
+                raise ValueError(("Invalid attribute name '{}'. "
+                                  "Attribute names must consist of alphanumeric "
+                                  "characters, underscores, colons, forward carets, "
+                                  "dots, dashes, square brackets, and spaces.").format(
+                    attr_name))
             attr_name = attr_name.replace('>', '_').replace(':', '_')
             attr_name = stringcase.snakecase(attr_name)
             attr_name = attr_name.replace('__', '_')

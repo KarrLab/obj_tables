@@ -1,0 +1,412 @@
+!!ObjTables TableType='Schema' Description='Table/model and column/attribute definitions' Date='2019-9-13' ObjTablesVersion='0.0.8',,,,
+!Name,!Type,!Parent,!Format,!Description
+Comment,Attribute,Reaction,String,Comment
+ReferenceName,Attribute,Reaction,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Reaction,String,Reference PubMed ID
+ReferenceDOI,Attribute,Reaction,String,Reference DOI
+Description,Attribute,Reaction,String,Description of the row element
+Modifier,Attribute,Reaction,String,Modifier of this reaction
+Name,Attribute,Reaction,String,Entity name
+MiriamAnnotations,Attribute,Reaction,String,Entity ID
+Type,Attribute,Reaction,String,Biochemical type of entity
+Symbol,Attribute,Reaction,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,Reaction,Float,x coordinate for graphical display
+PositionY,Attribute,Reaction,Float,y coordinate for graphical display
+ID,Attribute,Reaction,String,Reaction shortname
+SBML:reaction:id,Attribute,Reaction,String,SBML ID of reaction
+ReactionFormula,Attribute,Reaction,LongString,Reaction formula
+Location,Attribute,Reaction,String,Compartment for localised reaction
+Enzyme,Attribute,Reaction,String,Enzyme catalysing the reaction
+Model,Attribute,Reaction,String,Model(s) in which the reaction is involved
+Pathway,Attribute,Reaction,String,Pathway(s) in which the reaction is involved
+SubreactionOf,Attribute,Reaction,String,Mark as subreaction of a (lumped) reaction
+IsComplete,Attribute,Reaction,Boolean,Reaction formula includes all cofactors etc.
+IsReversible,Attribute,Reaction,Boolean,Reaction should be treated as irreversible
+IsInEquilibrium,Attribute,Reaction,Boolean,Reaction approximately in equilibrium
+IsExchangeReaction,Attribute,Reaction,Boolean,Some reactants are left out
+Flux,Attribute,Reaction,Float,Metabolic flux through the reaction
+IsNonEnzymatic,Attribute,Reaction,Boolean,Non-catalysed reaction
+KineticLaw,Attribute,Reaction,LongString,Kinetic law of the reaction
+KineticLaw:Name,Attribute,Reaction,String,Name of the kinetic law
+KineticLaw:Formula,Attribute,Reaction,String,Rate law formula
+Gene,Attribute,Reaction,String,Name of the gene for the catalysing enzyme
+Gene:Symbol,Attribute,Reaction,String,Name of the gene for the catalysing enzyme
+Operon,Attribute,Reaction,String,Operon for the gene of the catalysing enzyme
+Enzyme:SBML:species:id,Attribute,Reaction,String,SBML ID of enzyme
+Enzyme:SBML:parameter:id,Attribute,Reaction,String,SBML ID of enzyme
+BuildReaction,Attribute,Reaction,Boolean,Include reaction in SBML model
+BuildEnzyme,Attribute,Reaction,Boolean,Include enzyme in SBML model
+BuildEnzymeProduction,Attribute,Reaction,Boolean,Describe enzyme production in SBML model
+SBOTerm,Attribute,Reaction,String,SBO term of the entity
+Identifiers,Attribute,Reaction,String,Annotation of the entity
+Identifiers:kegg.reaction,Attribute,Reaction,String,Annotation of the entity
+Identifiers:obo.sbo,Attribute,Reaction,String,Annotation of the entity
+Identifiers:ec-code,Attribute,Reaction,String,Annotation of the entity
+SBML:fbc:GeneAssociation,Attribute,Reaction,LongString,Gene Association from the FBC package
+SBML:fbc:LowerBound,Attribute,Reaction,String,Reactions Lower Bound of the FBC package
+SBML:fbc:UpperBound,Attribute,Reaction,String,Reactions Upper Bound of the FBC package
+Regulator,Attribute,Reaction,String,
+NameForPlots,Attribute,Reaction,String,
+Comment,Attribute,Compound,String,Comment
+ReferenceName,Attribute,Compound,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Compound,String,Reference PubMed ID
+ReferenceDOI,Attribute,Compound,String,Reference DOI
+Description,Attribute,Compound,String,Description of the row element
+Name,Attribute,Compound,String,Entity name
+MiriamAnnotations,Attribute,Compound,String,Entity ID
+Type,Attribute,Compound,String,Biochemical type of entity
+Symbol,Attribute,Compound,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,Compound,Float,x coordinate for graphical display
+PositionY,Attribute,Compound,Float,y coordinate for graphical display
+ID,Attribute,Compound,String,Compound shortname
+SBML:species:id,Attribute,Compound,String,SBML species ID of the entity
+SBML:speciestype:id,Attribute,Compound,String,SBML speciestype ID of the entity
+InitialValue,Attribute,Compound,Float,Initial amount or concentration
+InitialConcentration,Attribute,Compound,Float,Initial amount or concentration
+Unit,Attribute,Compound,String,Unit for initial value
+Location,Attribute,Compound,String,Compartment for localised entities
+State,Attribute,Compound,String,State of the entity
+CompoundSumFormula,Attribute,Compound,String,Chemical sum formula
+StructureFormula,Attribute,Compound,String,Chemical structure formula
+Charge,Attribute,Compound,Integer,Electrical charge number
+Mass,Attribute,Compound,Float,Molecular mass
+IsConstant,Attribute,Compound,Boolean,Substance with fixed concentrations
+EnzymeRole,Attribute,Compound,String,Enzymatic activity
+RegulatorRole,Attribute,Compound,String,Regulatory activity
+SBOTerm,Attribute,Compound,String,SBO term of the entity
+Identifiers,Attribute,Compound,String,Annotation of the entity
+Identifiers:sbo.kegg,Attribute,Compound,String,Annotation of the entity
+Identifiers:kegg.compound,Attribute,Compound,String,Annotation of the entity
+Identifiers:obo.chebi,Attribute,Compound,String,Annotation of the entity
+SBML:fbc:ChemicalFormula,Attribute,Compound,String,Compounds chemical formula for the FBC package
+SBML:fbc:Charge,Attribute,Compound,Float,Compounds charge for the FBC package
+HasOnlySubstanceUnits,Attribute,Compound,Boolean,
+NameForPlots,Attribute,Compound,String,
+Comment,Attribute,Enzyme,String,Comment
+ReferenceName,Attribute,Enzyme,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Enzyme,String,Reference PubMed ID
+ReferenceDOI,Attribute,Enzyme,String,Reference DOI
+Description,Attribute,Enzyme,String,Description of the row element
+Name,Attribute,Enzyme,String,Entity name
+MiriamAnnotations,Attribute,Enzyme,String,Entity ID
+Type,Attribute,Enzyme,String,Biochemical type of entity
+Symbol,Attribute,Enzyme,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,Enzyme,Float,x coordinate for graphical display
+PositionY,Attribute,Enzyme,Float,y coordinate for graphical display
+ID,Attribute,Enzyme,String,Enzyme shortname
+CatalysedReaction,Attribute,Enzyme,String,Catalysed reaction
+KineticLaw,Attribute,Enzyme,String,Catalysed reaction
+KineticLaw:Name,Attribute,Enzyme,String,Name of the kinetic law
+KineticLaw:Formula,Attribute,Enzyme,String,Rate law formula
+Pathway,Attribute,Enzyme,String,Pathway name (free text)
+Gene,Attribute,Enzyme,String,Gene coding for enzyme (shortname)
+Identifiers,Attribute,Enzyme,String,Annotation of the entity
+Comment,Attribute,Protein,String,Comment
+ReferenceName,Attribute,Protein,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Protein,String,Reference PubMed ID
+ReferenceDOI,Attribute,Protein,String,Reference DOI
+Description,Attribute,Protein,String,Description of the row element
+Name,Attribute,Protein,String,Entity name
+MiriamAnnotations,Attribute,Protein,String,Entity ID
+Type,Attribute,Protein,String,Biochemical type of entity
+Symbol,Attribute,Protein,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,Protein,Float,x coordinate for graphical display
+PositionY,Attribute,Protein,Float,y coordinate for graphical display
+ID,Attribute,Protein,String,Protein shortname
+Gene,Attribute,Protein,String,Gene shortname
+Mass,Attribute,Protein,Float,Protein mass
+Size,Attribute,Protein,Float,Protein size
+Comment,Attribute,Compartment,String,Comment
+ReferenceName,Attribute,Compartment,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Compartment,String,Reference PubMed ID
+ReferenceDOI,Attribute,Compartment,String,Reference DOI
+Description,Attribute,Compartment,String,Description of the row element
+Name,Attribute,Compartment,String,Entity name
+MiriamAnnotations,Attribute,Compartment,String,Entity ID
+Type,Attribute,Compartment,String,Biochemical type of entity
+Symbol,Attribute,Compartment,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,Compartment,Float,x coordinate for graphical display
+PositionY,Attribute,Compartment,Float,y coordinate for graphical display
+ID,Attribute,Compartment,String,Compartment shortname
+SBML:compartment:id,Attribute,Compartment,String,SBML compartment ID
+OuterCompartment,Attribute,Compartment,String,Surrounding compartment (short)
+OuterCompartment:SBML:compartment:id,Attribute,Compartment,String,Surrounding compartment (name)
+Size,Attribute,Compartment,Float,Compartment size
+Unit,Attribute,Compartment,String,Physical unit
+SBOTerm,Attribute,Compartment,String,SBO term of the entity
+Identifiers,Attribute,Compartment,String,Annotation of the entity
+Identifiers:sbo.go,Attribute,Compartment,String,Annotation of the entity
+Comment,Attribute,Quantity,String,Comment
+ReferenceName,Attribute,Quantity,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Quantity,String,Reference PubMed ID
+ReferenceDOI,Attribute,Quantity,String,Reference DOI
+Description,Attribute,Quantity,String,Description of the row element
+Name,Attribute,Quantity,String,Entity name
+MiriamAnnotations,Attribute,Quantity,String,Entity ID
+Type,Attribute,Quantity,String,Biochemical type of entity
+Symbol,Attribute,Quantity,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,Quantity,Float,x coordinate for graphical display
+PositionY,Attribute,Quantity,Float,y coordinate for graphical display
+ID,Attribute,Quantity,String,Quantity shortname
+Quantity,Attribute,Quantity,String,Quantity name
+Reference,Attribute,Quantity,String,Reference name
+QuantityName,Attribute,Quantity,String,Quantity (name)
+QuantityType,Attribute,Quantity,String,Quantity type (e.g. from SBO)
+Value,Attribute,Quantity,Float,Simple value
+Mean,Attribute,Quantity,Float,Algebraic mean
+Std,Attribute,Quantity,Float,Standard deviation (positive)
+Min,Attribute,Quantity,Float,Lower bound
+Max,Attribute,Quantity,Float,Upper bound
+Median,Attribute,Quantity,Float,Median
+GeometricMean,Attribute,Quantity,Float,Geometric mean
+Sign,Attribute,Quantity,"Enum(['+', '-', '0'], default='0')",Sign
+ProbDist,Attribute,Quantity,String,Probability distribution
+SBML:parameter:id,Attribute,Quantity,String,Parameter ID in SBML file
+Unit,Attribute,Quantity,String,Physical unit
+Scale,Attribute,Quantity,String,Scale (e.g. logarithm)
+Time,Attribute,Quantity,Float,Time value
+TimePoint,Attribute,Quantity,String,Time point name or identifier
+Condition,Attribute,Quantity,String,experimental condition name (free text)
+pH,Attribute,Quantity,Float,pH value in measurement
+Temperature,Attribute,Quantity,Float,Temperature in measurement
+Location,Attribute,Quantity,String,Compartment (shortname)
+Location:SBML:compartment:id,Attribute,Quantity,String,SBML ID of compartment
+Compound,Attribute,Quantity,String,Related compound (shortname)
+Compound:SBML:species:id,Attribute,Quantity,String,SBML ID of compound
+Reaction,Attribute,Quantity,String,Related reaction (shortname)
+Reaction:SBML:reaction:id,Attribute,Quantity,String,SBML ID of reaction
+Enyzme,Attribute,Quantity,String,Related enzyme (shortname)
+Enyzme:SBML:species:id,Attribute,Quantity,String,SBML ID of enzyme
+Enyzme:SBML:parameter:id,Attribute,Quantity,String,SBML ID of enzyme
+Gene,Attribute,Quantity,String,Related gene
+Organism,Attribute,Quantity,String,Organism
+Provenance,Attribute,Quantity,String,Provenance of the entity
+SBOTerm,Attribute,Quantity,String,SBO term of the entity
+Identifiers,Attribute,Quantity,String,Annotation of the entity
+Identifiers:kegg.reaction,Attribute,Quantity,String,Annotation of the entity
+Identifiers:kegg.compound,Attribute,Quantity,String,Annotation of the entity
+Identifiers:obo.chebi,Attribute,Quantity,String,Annotation of the entity
+Reaction:Identifiers:kegg.reaction,Attribute,Quantity,String,Annotation of the entity
+Compound:Identifiers:kegg.compound,Attribute,Quantity,String,Annotation of the entity
+BiologicalElement,Attribute,Quantity,String,Biological element
+MathematicalType,Attribute,Quantity,String,Mathematical type
+DataGeometricStd,Attribute,Quantity,Float,Data geometric standard error
+PriorMedian,Attribute,Quantity,Float,Prior Median
+PriorStd,Attribute,Quantity,Float,Prior Std
+PriorGeometricStd,Attribute,Quantity,Float,Prior Geometric Std
+LowerBound,Attribute,Quantity,Float,Lower bound
+UpperBound,Attribute,Quantity,Float,Lower bound
+DataStd,Attribute,Quantity,Float,Data Standard Error
+PhysicalType,Attribute,Quantity,String,Physical Type
+Dependence,Attribute,Quantity,String,Dependence
+UseAsPriorInformation,Attribute,Quantity,Boolean,Use as prior information
+SBMLElement,Attribute,Quantity,String,SBML element
+Abbreviation,Attribute,Quantity,String,Abbreviation
+MatrixInfo,Attribute,Quantity,String,Matrix build up information
+SBO:equilibrium_constant,Attribute,Quantity,Float,
+SBO:Identifiers:obo.sbo,Attribute,Quantity,String,
+SBO:concentration,Attribute,Quantity,Float,
+SBO:concentration [mM:Log10]:Median,Attribute,Quantity,Float,
+ValueType,Attribute,Quantity,String,
+Concentration:Min,Attribute,Quantity,Float,
+Concentration:Max,Attribute,Quantity,Float,
+Parameter:SBML:parameter:id,Attribute,Quantity,String,
+Comment,Attribute,Regulator,String,Comment
+ReferenceName,Attribute,Regulator,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Regulator,String,Reference PubMed ID
+ReferenceDOI,Attribute,Regulator,String,Reference DOI
+Description,Attribute,Regulator,String,Description of the row element
+Name,Attribute,Regulator,String,Entity name
+MiriamAnnotations,Attribute,Regulator,String,Entity ID
+Type,Attribute,Regulator,String,Biochemical type of entity
+Symbol,Attribute,Regulator,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,Regulator,Float,x coordinate for graphical display
+PositionY,Attribute,Regulator,Float,y coordinate for graphical display
+ID,Attribute,Regulator,String,Regulator shortname
+State,Attribute,Regulator,String,State of the regulator
+TargetGene,Attribute,Regulator,String,Target gene
+TargetOperon,Attribute,Regulator,String,Target operon
+TargetPromoter,Attribute,Regulator,String,Target promoter
+Identifiers,Attribute,Regulator,String,Annotation of the entity
+Comment,Attribute,Gene,String,Comment
+ReferenceName,Attribute,Gene,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Gene,String,Reference PubMed ID
+ReferenceDOI,Attribute,Gene,String,Reference DOI
+Description,Attribute,Gene,String,Description of the row element
+Name,Attribute,Gene,String,Entity name
+MiriamAnnotations,Attribute,Gene,String,Entity ID
+Type,Attribute,Gene,String,Biochemical type of entity
+Symbol,Attribute,Gene,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,Gene,Float,x coordinate for graphical display
+PositionY,Attribute,Gene,Float,y coordinate for graphical display
+ID,Attribute,Gene,String,Gene shortname
+LocusName,Attribute,Gene,String,Gene locus name
+GeneProduct,Attribute,Gene,String,Gene product shortname
+GeneProduct:SBML:species:id,Attribute,Gene,String,SBML ID of protein
+Operon,Attribute,Gene,String,Operon in which gene is located
+Identifiers,Attribute,Gene,String,Annotation of the entity
+SBML:fbc:ID,Attribute,Gene,String,Unique identifier of the gene in the FBC package
+SBML:fbc:Name,Attribute,Gene,String,Name of the gene in the FBC package
+SBML:fbc:GeneProduct,Attribute,Gene,Boolean,Flag indicating if the gene is an FBC gene product
+SBML:fbc:GeneAssociation,Attribute,Gene,Boolean,Flag indicating if the gene is an FBC gene association
+SBML:fbc:Label,Attribute,Gene,String,Label of the gene in the FBC package
+Comment,Attribute,Relation,String,Comment
+ReferenceName,Attribute,Relation,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,Relation,String,Reference PubMed ID
+ReferenceDOI,Attribute,Relation,String,Reference DOI
+Description,Attribute,Relation,String,Description of the row element
+ID,Attribute,Relation,String,Type of quantitative relation
+From,Attribute,Relation,String,Element at beginning of arrow
+To,Attribute,Relation,String,Element at arrowhead
+IsSymmetric,Attribute,Relation,Boolean,Flag indicating non-symmetric relations
+Value:QuantityType,Attribute,Relation,Float,Numerical value assigned to the relation
+ComponentName,Attribute,Definition,String,"Name of component (table, column, attribute to be defined)"
+ComponentType,Attribute,Definition,String,Type of component
+IsPartOf,Attribute,Definition,String,Name of parent component
+Format,Attribute,Definition,String,Format
+Description,Attribute,Definition,String,Free text description of component
+Comment,Attribute,QuantityMatrix,String,Comment
+ReferenceName,Attribute,QuantityMatrix,String,"Reference title, authors, etc. (as free text)"
+ReferencePubMed,Attribute,QuantityMatrix,String,Reference PubMed ID
+ReferenceDOI,Attribute,QuantityMatrix,String,Reference DOI
+Description,Attribute,QuantityMatrix,String,Description of the row element
+Name,Attribute,QuantityMatrix,String,Entity name
+MiriamAnnotations,Attribute,QuantityMatrix,String,Entity ID
+Type,Attribute,QuantityMatrix,String,Biochemical type of entity
+Symbol,Attribute,QuantityMatrix,String,Short symbol (e.g. gene symbol)
+PositionX,Attribute,QuantityMatrix,Float,x coordinate for graphical display
+PositionY,Attribute,QuantityMatrix,Float,y coordinate for graphical display
+Time,Attribute,QuantityMatrix,Float,Time value
+TimePoint,Attribute,QuantityMatrix,String,Time point name or identifier
+>Table:Column,Attribute,QuantityMatrix,String,Pointer to column in another table
+>Document:Table:Column,Attribute,QuantityMatrix,String,Pointer to column in another document
+ID,Attribute,QuantityMatrix,String,Quantity shortname
+QuantityName,Attribute,QuantityMatrix,String,Quantity (name)
+QuantityType,Attribute,QuantityMatrix,String,Quantity type (e.g. from SBO)
+Value,Attribute,QuantityMatrix,Float,Simple value
+Mean,Attribute,QuantityMatrix,Float,Algebraic mean
+Std,Attribute,QuantityMatrix,Float,Standard deviation (positive)
+Min,Attribute,QuantityMatrix,Float,Lower bound
+Max,Attribute,QuantityMatrix,Float,Upper bound
+Median,Attribute,QuantityMatrix,Float,Median
+GeometricMean,Attribute,QuantityMatrix,Float,Geometric mean
+Sign,Attribute,QuantityMatrix,"Enum(['+', '-', '0'], default='0')",Sign
+ProbDist,Attribute,QuantityMatrix,String,Probability distribution
+SBML:parameter:id,Attribute,QuantityMatrix,String,Parameter ID in SBML file
+Unit,Attribute,QuantityMatrix,String,Physical unit
+Scale,Attribute,QuantityMatrix,String,Scale (e.g. logarithm)
+Compound,Attribute,QuantityMatrix,String,Related compound (shortname)
+Compound:SBML:species:id,Attribute,QuantityMatrix,String,SBML ID of compound
+Reaction,Attribute,QuantityMatrix,String,Related reaction (shortname)
+Reaction:SBML:reaction:id,Attribute,QuantityMatrix,String,SBML ID of reaction
+Enyzme,Attribute,QuantityMatrix,String,Related enzyme (shortname)
+Enyzme:SBML:species:id,Attribute,QuantityMatrix,String,SBML ID of enzyme
+Enyzme:SBML:parameter:id,Attribute,QuantityMatrix,String,SBML ID of enzyme
+Protein,Attribute,QuantityMatrix,String,Related enzyme (shortname)
+Protein:SBML:species:id,Attribute,QuantityMatrix,String,SBML ID of enzyme
+Gene,Attribute,QuantityMatrix,String,Related gene
+Identifiers:obo.chebi,Attribute,QuantityMatrix,String,
+>Concentration:Glucose,Attribute,QuantityMatrix,Float,
+>Concentration:Fructose,Attribute,QuantityMatrix,Float,
+>Sample:t0,Attribute,QuantityMatrix,Float,
+>Sample:t1,Attribute,QuantityMatrix,Float,
+>TP:t0:mean,Attribute,QuantityMatrix,Float,
+>TP:t0:std,Attribute,QuantityMatrix,Float,
+>TP:t1:mean,Attribute,QuantityMatrix,Float,
+>TP:t1:std,Attribute,QuantityMatrix,Float,
+ReactionID,Attribute,StoichiometricMatrix,String,Reaction shortname
+Stoichiometry,Attribute,StoichiometricMatrix,String,Stoichiometric coefficient of the reactant
+Substrate,Attribute,StoichiometricMatrix,String,Substrate of the reaction
+Product,Attribute,StoichiometricMatrix,String,Product of the reaction
+Location,Attribute,StoichiometricMatrix,String,Compartment for localised reaction
+Sample,Attribute,Measurement,String,Measurement value shortname
+Time,Attribute,Measurement,String,Time at which measurement was taken
+Unit,Attribute,Measurement,String,Measurement unit
+ValueType,Attribute,Measurement,String,"Type of value (mean, standard deviation, etc)"
+Description,Attribute,Measurement,String,Description of data value
+QuantityType,Attribute,QuantityInfo,String,QuantityType (e.g. from SBO)
+Symbol,Attribute,QuantityInfo,String,Symbol for the quantity type
+Unit,Attribute,QuantityInfo,String,Unit for the Median value
+Constant,Attribute,QuantityInfo,String,Is this value constant
+Element,Attribute,QuantityInfo,String,A related element
+RelatedElement,Attribute,QuantityInfo,String,A related element
+Scaling,Attribute,QuantityInfo,String,A scaling factor
+Dependence,Attribute,QuantityInfo,String,Is this value dependent on something
+PriorMedian,Attribute,QuantityInfo,Float,Prior median value
+PriorStd,Attribute,QuantityInfo,Float,Prior median standard deviation
+LowerBound,Attribute,QuantityInfo,Float,Lower bound for this quantity type
+UpperBound,Attribute,QuantityInfo,Float,Upper bound for this quantity type
+ErrorStd,Attribute,QuantityInfo,Float,Error of standard deviation
+DataStd,Attribute,QuantityInfo,Float,Error of standard deviation
+SBMLElement,Attribute,QuantityInfo,String,Corresponding SBML element
+SBMLElementType,Attribute,QuantityInfo,String,Corresponding SBML element
+Abbreviation,Attribute,QuantityInfo,String,Abbreviation of quantity type
+ID,Attribute,QuantityInfo,String,Abbreviation of quantity type
+MatrixInfo,Attribute,QuantityInfo,String,Information on the matrix production
+Option,Attribute,PbConfig,String,Which option is addressed
+Value,Attribute,PbConfig,String,What value is the option set to
+UID:Contingency,Attribute,rxnconContingencyList,Integer,ID for contingency
+Target,Attribute,rxnconContingencyList,String,Contingency target
+Contingency,Attribute,rxnconContingencyList,String,Contingency type
+Modifier,Attribute,rxnconContingencyList,String,Target modifier
+Reference:Identifiers:pubmed,Attribute,rxnconContingencyList,String,Pubmed ID
+Quality,Attribute,rxnconContingencyList,String,Contingency quality
+Comment,Attribute,rxnconContingencyList,String,Comment
+InternalComplexID,Attribute,rxnconContingencyList,String,Internal ID for processing
+ID,Attribute,rxnconReactionList,Integer,ID for reaction
+UID:Reaction,Attribute,rxnconReactionList,String,Reaction string
+ComponentA:Name,Attribute,rxnconReactionList,String,Name for Component A
+ComponentA:Domain,Attribute,rxnconReactionList,String,Domain of Component A
+ComponentA:Residue,Attribute,rxnconReactionList,String,Residue of Component A
+Reaction,Attribute,rxnconReactionList,String,Reaction type
+ComponentB:Name,Attribute,rxnconReactionList,String,Name for Component B
+ComponentB:Domain,Attribute,rxnconReactionList,String,Domain of Component B
+ComponentB:Residue,Attribute,rxnconReactionList,String,Residue of Component B
+Quality,Attribute,rxnconReactionList,String,Quality of reaction
+Literature:Identifiers:pubmed,Attribute,rxnconReactionList,String,Pubmed ID
+Comment,Attribute,rxnconReactionList,String,Comment
+ID,Attribute,FbcObjective,String,Unique identifier of objective in FBC package
+Name,Attribute,FbcObjective,String,Name of objective in FBC package
+SBML:fbc:type,Attribute,FbcObjective,String,Type of objective in FBC package
+SBML:fbc:active,Attribute,FbcObjective,Boolean,Flag indicating if the objective is active
+SBML:fbc:objective,Attribute,FbcObjective,String,FBC objective as sum of coefficients times reaction IDs
+SBML:fbc:reaction,Attribute,FbcObjective,String,
+ID,Attribute,Layout,String,Unique identifier of layout package
+Name,Attribute,Layout,String,Name of layout in plugin
+SBML:layout:modelEntity,Attribute,Layout,String,Declares the SBML model entity
+SBML:layout:compartment:id,Attribute,Layout,String,SBML identifier of the compartment
+SBML:layout:reaction:id,Attribute,Layout,String,SBML identifier of the reaction
+SBML:layout:species:id,Attribute,Layout,String,SBML identifier of the species
+SBML:layout:curveSegment,Attribute,Layout,String,"Type of curve segment (Start, End, BasePoints)"
+SBML:layout:X,Attribute,Layout,Float,Coordinate on X axis
+SBML:layout:Y,Attribute,Layout,Float,Coordinate on Y axis
+SBML:layout:width,Attribute,Layout,Float,Width of the element
+SBML:layout:height,Attribute,Layout,Float,Height of the element
+SBML:layout:text,Attribute,Layout,String,Text label of the element
+SBML:layout:speciesRole,Attribute,Layout,String,"Role of the species in the reaction (Reactant, Product)"
+ID,Attribute,ReactionStoichiometry,String,Identifier shortname of the reaction
+Stoichiometry,Attribute,ReactionStoichiometry,String,Stoichiometry of the reaction
+Substrate,Attribute,ReactionStoichiometry,String,Identifier shortname of a substrate
+Product,Attribute,ReactionStoichiometry,String,Identifier shortname of a product
+Location,Attribute,ReactionStoichiometry,String,Compartment in which the reaction occurs
+Reaction,Attribute,ReactionStoichiometry,String,
+RowNumber,Attribute,SparseMatrixOrdered,Integer,Number of row
+ColumnNumber,Attribute,SparseMatrixOrdered,Integer,Number of column
+Value,Attribute,SparseMatrixOrdered,Float,Value
+RowID,Attribute,SparseMatrix,String,Row identifier
+ColumnID,Attribute,SparseMatrix,String,Column identifier
+Value,Attribute,SparseMatrix,Float,Value
+RowID,Attribute,SparseMatrixRow,String,Row identifier
+RowString,Attribute,SparseMatrixRow,String,JSON string describing all elements in the row
+ColumnID,Attribute,SparseMatrixColumn,String,Column identifier
+ColumnString,Attribute,SparseMatrixColumn,String,JSON string describing all elements in the column
+ID,Attribute,Relationship,String,
+From,Attribute,Relationship,String,
+To,Attribute,Relationship,String,
+Value,Attribute,Relationship,Integer,
+IsSymmetric,Attribute,Relationship,Boolean,
+Sign,Attribute,Relationship,"Enum(['+', '-', '0'], default='0')",
+Relation,Attribute,Relationship,String,
+Element,Attribute,Position,String,
+PositionX,Attribute,Position,Float,
+PositionY,Attribute,Position,Float,

@@ -1,0 +1,4 @@
+!!ObjTables ObjTablesVersion='0.0.8' Document='Hynne_2001' TableType='Data' ModelId='Compartment'					
+!ID	!Name	!Size	!SBOTerm	!Unit	!Identifiers:sbo.go
+extracellular	extracellular	1	SBO:0000290	mL	GO:0005615
+cytosol	cytosol	1	SBO:0000290	fL	GO:0005829

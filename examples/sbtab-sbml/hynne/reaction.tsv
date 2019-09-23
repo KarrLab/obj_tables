@@ -1,0 +1,4 @@
+!!ObjTables ObjTablesVersion='0.0.8' Document='Hynne_2001' TableType='Data' ModelId='Reaction'								
+!ID	!Name	!ReactionFormula	!Location	!Modifier	!Identifiers:obo.sbo	!SBOTerm	!IsReversible	!Identifiers:kegg.reaction
+vGlcTrans	vGlcTrans	GlcX <=> Glc	plasmamembrane	G6P	mass action rate law for first order reversible reactions	SBO:0000078	TRUE	
+vHK	vHK	ATP + Glc <=> G6P + ADP	cytosol		Henri-Michaelis-Menten rate law	SBO:0000029	FALSE	R02848
