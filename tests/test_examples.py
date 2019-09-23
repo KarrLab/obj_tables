@@ -153,7 +153,7 @@ class ExamplesTestCase(unittest.TestCase):
 
         # Validate that documents adhere to the schema
         data_filenames = [
-            # 'template.xlsx',
+            'template.xlsx',
             'hynne/*.tsv',
             'hynne.multi.tsv',
             'lac_operon/*.tsv',
