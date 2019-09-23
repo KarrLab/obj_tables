@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ObjTables: a toolkit for parsing and validating tables with relational schemas</title>
+    <title>ObjTables: a toolkit for parsing and validating tabular-formatted datasets with schemas</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-icon-fonts@0.1.1/foundation-icons.css"
         integrity="sha256-CWltC/W+elkkUKhitcztPiSfE3AEpzAvrkmEqB68Lx0="
         crossorigin="anonymous">
@@ -25,7 +25,7 @@
 
       <div class="grid-x grid-padding-x blue">
         <div class="large-9 cell">
-          <p><i>ObjTables</i> is a toolkit for working with complex data as collections of tables which combines the ease of use and flexibility of Excel with the rigor and power of defined schemas.</p>
+          <p><i>ObjTables</i> is a toolkit for working with complex data as collections of tables which combines the ease of use of Excel with the rigor and power of defined schemas.</p>
 
           <p><i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> extends <i>ObjTables</i> by adding a variety of useful types for genomics, systems biology, and synthetic biology research.</p>
 
@@ -55,9 +55,9 @@
 
           <p class="before_list"><i>ObjTables</i> enables users to leverage Excel as a graphical user interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:
           <ul>
-            <li><b>Table of contents:</b> Each Excel-encoded dataset includes a worksheet that describes the contents of each worksheet, displays the number of instances of each model, and provides hyperlinks to the worksheets that encode the instances of each model.</li>
-            <li><b>Formatted model titles:</b> Each worksheet that encodes a model includes a title bar which describes the model. These title bars are formatted, frozen, and protected from editing.</li>
-            <li><b>Formatted attribute headings:</b> Each worksheet that encodes a model includes headings for each column and group of columns. These headings are formatted, auto-filtered, frozen, and protected from editing.</li>
+            <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the models represented by the other tables, displays the number of instances of each model, and provides hyperlinks to the other tables.</li>
+            <li><b>Formatted model titles:</b> Each table includes a title bar which describes the model. The title bars are formatted, frozen, and protected from editing.</li>
+            <li><b>Formatted attribute headings:</b> Each table includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
             <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into its heading.</li>
             <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides select menus for each attribute that encodes an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>
             <li><b>Instant validation:</b> <i>ObjTables</i> uses Excel to validate several properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. <i>ObjTables</i> Python schemas can be used to implement thorough validations.</i>
@@ -175,7 +175,7 @@
             <ul>
               <li>Excel workbook: Each worksheet contains a table which encodes the instances of a model. The names of the worksheets should be <tt>!</tt> followed by the name of a model in the schema (e.g., <tt>!ModelName</tt>).</li>
               <li>Set of CSV or TSV files: Each file contains a table which encodes the instances of a model. The names of the files should follow the pattern <tt>dir/!*.csv</tt> (e.g., <tt>Doc/!ModelName.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
-              <li>Single text file with multiple CSV or TSV formatted tables: Each table within the dataset encodes the instances of a model.</li>
+              <li>Single text file with multiple CSV or TSV formatted tables: Each table encodes the instances of a model.</li>
             </ul>
 
             <h3>Model metdata</h3>
@@ -200,7 +200,7 @@
             <p>Comments about individual model instances can be encoded by inserting rows whose first cell begins with <tt>%</tt>.</p>
 
             <h3>Additional tables, rows, and columns outside the scope of schemas</h3>
-            <p>Excel workbooks can include additional worksheets. Worksheets that are outside the scope of the schema must have names which do not not begin with an <tt>!</tt>.</p>
+            <p>Sets of tables that encode datasets can include additional tables. Tables that are outside the scope of the schema must have names which do not not begin with an <tt>!</tt>.</p>
 
             <p>Tables can include additional columns. Columns that are outside of the scope of the schema must have names which do not begin with an <tt>!</tt>.</p>
 
@@ -304,7 +304,7 @@
             <p>Schemas can either be defined using the tabular format described here or defined using the Python API. The tabular format is easier to use. The Python API enables methods for manipulating data to be encapsulated with schemas. This makes it easy to define custom validations such as for the element balance of a chemical reaction or for the lack of cycles in a network. Furthermore, the software tools can generate Python schemas from tabular-formatted schemas, which is a convenient starting point for further development.</p>
 
             <h3>Tabular format</h3>
-            <p>Tabular-formatted schemas should begin with a single header row which indicates that the dataset is encoded in an ObjTables schema (<tt>!!ObjTables TableType="Schema" ...</tt>).</p>
+            <p>Tabular-formatted schemas should begin with a single header row which indicates that the dataset is encoded in an <i>ObjTables</i> schema (<tt>!!ObjTables TableType="Schema" ...</tt>).</p>
 
             <p>After the header row, the schema file should contain a table with the following columns that defines the models/tables and their attributes/columns. Each row in the table should define a single model or attribute.</p>
 

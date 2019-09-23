@@ -1939,6 +1939,7 @@ class Reader(ReaderBase):
         Raises:
             :obj:`ValueError`: if extension is not supported
         """
+        path = str(path)
         _, ext = splitext(path)
         ext = ext.lower()
         if path.lower().endswith('.multi.csv') or \
