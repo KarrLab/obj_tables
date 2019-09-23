@@ -57,10 +57,10 @@ import wc_utils.workbook.io
 # todo: improve naming: on meaning for Model, clean -> convert, Slug -> id, etc.
 
 DOC_TABLE_TYPE = 'Data'
-TOC_TABLE_TYPE = 'TableOfContents'
-TOC_SHEET_NAME = '_Table of contents'
 SCHEMA_TABLE_TYPE = 'Schema'
 SCHEMA_SHEET_NAME = '_Schema'
+TOC_TABLE_TYPE = 'TableOfContents'
+TOC_SHEET_NAME = '_Table of contents'
 
 
 class ModelMerge(int, Enum):
@@ -159,7 +159,7 @@ class ModelMeta(type):
         reserved_names = [
             TOC_SHEET_NAME,
             SCHEMA_SHEET_NAME,
-            ]
+        ]
 
         if namespace['Meta'].verbose_name in reserved_names:
             raise ValueError('Verbose name for {} cannot be {}, '
@@ -4512,9 +4512,12 @@ class RegexAttribute(StringAttribute):
 
         unique_case_insensitive = bin(flags)[-2] == '1'
         super(RegexAttribute, self).__init__(min_length=min_length, max_length=max_length,
-                                             none=none, default=default, default_cleaned_value=default_cleaned_value, none_value=none_value,
+                                             none=none, default=default,
+                                             default_cleaned_value=default_cleaned_value,
+                                             none_value=none_value,
                                              verbose_name=verbose_name, description=description,
-                                             primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
+                                             primary=primary, unique=unique,
+                                             unique_case_insensitive=unique_case_insensitive)
         self.pattern = pattern
         self.flags = flags
 
@@ -4534,8 +4537,8 @@ class RegexAttribute(StringAttribute):
         else:
             errors = []
 
-        if not ((self.none and value is None) or \
-            (isinstance(value, str) and re.search(self.pattern, value, flags=self.flags))):
+        if not ((self.none and value is None) or
+                (isinstance(value, str) and re.search(self.pattern, value, flags=self.flags))):
             errors.append("Value '{}' does not match pattern: {}".format(
                 value, self.pattern))
 
@@ -4557,9 +4560,9 @@ class SlugAttribute(RegexAttribute):
         """
         if description is None:
             description = ("Enter a unique string identifier that "
-                    "(a) is composed of letters, numbers and underscores; "
-                    "(b) is 63 characters or less; and "
-                    "(c) is not a decimal, hexadecimal, or scientific number")
+                           "(a) is composed of letters, numbers and underscores; "
+                           "(b) is 63 characters or less; and "
+                           "(c) is not a decimal, hexadecimal, or scientific number")
 
         super(SlugAttribute, self).__init__(pattern=(r'^(?!(^|\b)'
                                                      r'(\d+(\.\d*)?(\b|$))'
@@ -5937,10 +5940,12 @@ class OneToOneAttribute(RelatedAttribute):
         super(OneToOneAttribute, self).__init__(related_class, related_name=related_name,
                                                 init_value=None, default=default,
                                                 default_cleaned_value=default_cleaned_value,
-                                                related_init_value=None, related_default=related_default, none_value=none_value,
+                                                related_init_value=None, related_default=related_default,
+                                                none_value=none_value,
                                                 min_related=min_related, max_related=1,
                                                 min_related_rev=min_related_rev, max_related_rev=1,
-                                                verbose_name=verbose_name, description=description, verbose_related_name=verbose_related_name)
+                                                verbose_name=verbose_name, description=description,
+                                                verbose_related_name=verbose_related_name)
 
     def set_value(self, obj, new_value):
         """ Update the values of the related attributes of the attribute

@@ -73,6 +73,11 @@ convert_parser.add_argument('format',
                             default='xlsx',
                             required=False,
                             help='Format to convert workbook')
+convert_parser.add_argument('write-schema',
+                            type=flask_restplus.inputs.boolean,
+                            default=False,
+                            required=False,
+                            help='If true, save schema with file')
 
 
 @api.route("/convert/",
@@ -96,7 +101,8 @@ class Convert(flask_restplus.Resource):
         try:
             _, models = get_schema_models(schema_filename)
             objs, model_metadata = read_workbook(in_wb_filename, models)
-            out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models)
+            out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
+                format, objs, model_metadata, models=models, write_schema=args['write-schema'])
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -187,6 +193,11 @@ gen_template_parser.add_argument('format',
                                  default='xlsx',
                                  required=False,
                                  help='Format for template')
+gen_template_parser.add_argument('write-schema',
+                                 type=flask_restplus.inputs.boolean,
+                                 default=False,
+                                 required=False,
+                                 help='If true, save schema with file')
 
 
 @api.route("/gen-template/",
@@ -213,7 +224,8 @@ class GenTemplate(flask_restplus.Resource):
         finally:
             shutil.rmtree(schema_dir)
 
-        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, [], {}, models=models)
+        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
+            format, [], {}, models=models, write_schema=args['write-schema'])
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -292,6 +304,11 @@ norm_parser.add_argument('format',
                          default='xlsx',
                          required=False,
                          help='Format for normalized workbook')
+norm_parser.add_argument('write-schema',
+                         type=flask_restplus.inputs.boolean,
+                         default=False,
+                         required=False,
+                         help='If true, save schema with file')
 
 
 @api.route("/normalize/",
@@ -333,7 +350,8 @@ class Normalize(flask_restplus.Resource):
             shutil.rmtree(schema_dir)
             shutil.rmtree(in_wb_dir)
 
-        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(format, objs, model_metadata, models=models)
+        out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
+            format, objs, model_metadata, models=models, write_schema=args['write-schema'])
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -478,13 +496,15 @@ def read_workbook(filename, models):
     return result, reader._model_metadata
 
 
-def save_out_workbook(format, objs, model_metadata, models):
+def save_out_workbook(format, objs, model_metadata, models, write_schema=False):
     """
     Args:
         format (:obj:`str`): format (.csv, .tsv, .xlsx)
         objs (:obj:`dict`): dictionary that maps types to instances
         model_metadata (:obj:`dict`): dictionary of model metadata
         models (:obj:`list` of :obj:`core.Model`): models
+        write_schema (:obj:`bool`, optional): if :obj:`True`, write
+            schema with file
 
     Returns:
         :obj:`tuple`:
@@ -499,7 +519,8 @@ def save_out_workbook(format, objs, model_metadata, models):
     else:
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
-    io.Writer().run(temp_filename, objs, model_metadata=model_metadata, models=models)
+    io.Writer().run(temp_filename, objs, model_metadata=model_metadata,
+                    models=models, write_schema=write_schema)
 
     if format in ['csv', 'tsv']:
         filename = os.path.join(dir, 'workbook.{}.zip'.format(format))

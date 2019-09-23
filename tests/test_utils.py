@@ -700,6 +700,63 @@ class InitSchemaTestCase(unittest.TestCase):
         self.assertEqual(p_0_b.children.get_one(id='c_1')._comments, c_1._comments)
         self.assertEqual(p_0_b.children.get_one(id='c_2')._comments, c_2._comments + ['456'])
 
+    def test_write_schema(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name')
+                table_format = core.TableFormat.column
+
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+            parents = core.ManyToManyAttribute(Parent, related_name='children')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', 'parents')
+
+        p_1 = Parent(id='p_1', name='p 1')
+        p_1.children.create(id='c_1', name='c 1')
+        p_1.children.create(id='c_2', name='c 2')
+
+        # to excel
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+
+        obj_tables.io.WorkbookWriter().run(
+            filename,
+            [p_1],
+            models=[Parent, Child],
+            write_schema=True)
+
+        wb = wc_utils.workbook.io.read(filename)
+        self.assertIn('!' + obj_tables.io.SCHEMA_SHEET_NAME, wb)
+
+        p_1_b = obj_tables.io.WorkbookReader().run(
+            filename,
+            models=[Parent, Child],
+            group_objects_by_model=True)[Parent][0]
+        self.assertTrue(p_1_b.is_equal(p_1))
+
+        # to csv
+        filename = os.path.join(self.tmp_dirname, 'test-*.csv')
+
+        obj_tables.io.WorkbookWriter().run(
+            filename,
+            [p_1],
+            models=[Parent, Child],
+            write_schema=True)
+
+        wb = wc_utils.workbook.io.read(filename)
+        self.assertIn(obj_tables.io.SCHEMA_SHEET_NAME, wb)
+
+        p_1_b = obj_tables.io.WorkbookReader().run(
+            filename,
+            models=[Parent, Child],
+            group_objects_by_model=True)[Parent][0]
+        self.assertTrue(p_1_b.is_equal(p_1))
+
 
 class ToPandasTestCase(unittest.TestCase):
     def test(self):

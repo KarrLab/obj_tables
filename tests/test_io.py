@@ -952,6 +952,61 @@ class TestIo(unittest.TestCase):
         self.assertEqual(reader._model_metadata, model_metadata)
 
 
+class MultiSeparatedValuesTestCase(unittest.TestCase):
+    def setUp(self):
+        self.tmp_dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dirname)
+
+    def test(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+            age = core.IntegerAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', 'age')
+
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+            age = core.IntegerAttribute()
+            parents = core.ManyToManyAttribute(Parent, related_name='children')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', 'age', 'parents')
+
+        p_1 = Parent(id='p_1', name='p 1', age=35)
+        p_2 = Parent(id='p_2', name='p 2', age=36)
+        c_1 = Child(id='c_1', name='c 1', age=3)
+        c_2 = Child(id='c_2', name='c 2', age=6)
+        c_3 = Child(id='c_3', name='c 3', age=1)
+        c_4 = Child(id='c_4', name='c 4', age=4)
+        p_1.children = [c_1, c_2, c_3]
+        p_2.children = [c_2, c_3, c_4]
+
+        path = os.path.join(self.tmp_dirname, 'test.multi.csv')
+        obj_tables.io.Writer().run(path, [p_1, p_2], models=[Parent, Child])
+        objs = obj_tables.io.Reader().run(path, models=[Parent, Child],
+                                          group_objects_by_model=True)
+        self.assertEqual(len(objs[Parent]), 2)
+        self.assertTrue(objs[Parent][0].is_equal(p_1))
+        self.assertTrue(objs[Parent][1].is_equal(p_2))
+
+        path = os.path.join(self.tmp_dirname, '*.multi.csv')
+        with self.assertRaisesRegex(ValueError, 'Glob patterns are not supported'):
+            obj_tables.io.Reader().run(path, models=[Parent, Child],
+                                       group_objects_by_model=True)
+
+        path = os.path.join(self.tmp_dirname, 'test.multi.csv')
+        with open(path, 'w'):
+            pass
+        with self.assertRaisesRegex(ValueError, 'must contain at least one table'):
+            obj_tables.io.Reader().run(path, models=[Parent, Child],
+                                       group_objects_by_model=True)
+
+
 class TestMetadataModels(unittest.TestCase):
 
     class Model1(core.Model):
