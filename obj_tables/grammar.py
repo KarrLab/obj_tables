@@ -13,7 +13,7 @@ import abc
 import lark
 
 
-class ManyToManyGrammarAttribute(core.ManyToManyAttribute, metaclass=abc.ABCMeta):
+class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
     """ Many-to-many attribute that can be deserialized wtih a grammar
 
     Attributes:
@@ -28,7 +28,7 @@ class ManyToManyGrammarAttribute(core.ManyToManyAttribute, metaclass=abc.ABCMeta
         Args:
             related_class (:obj:`type`): related class
         """
-        super(ManyToManyGrammarAttribute, self).__init__(related_class, **kwargs)
+        super(ToManyGrammarAttribute, self).__init__(related_class, **kwargs)
         self.parser = lark.Lark(self.GRAMMAR)
 
     @abc.abstractmethod
