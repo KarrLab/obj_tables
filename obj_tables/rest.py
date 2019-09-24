@@ -171,7 +171,8 @@ class Diff(flask_restplus.Resource):
 
         try:
             diffs = utils.diff_workbooks(wb_filename_1, wb_filename_2,
-                                         models, model_name)
+                                         models, model_name,
+                                         **io.DEFAULT_READER_ARGS)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -398,7 +399,8 @@ class Validate(flask_restplus.Resource):
             objs = io.Reader().run(wb_filename,
                                    models=models,
                                    group_objects_by_model=False,
-                                   validate=False)
+                                   validate=False,
+                                   **io.DEFAULT_READER_ARGS)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -492,7 +494,8 @@ def read_workbook(filename, models):
     reader = io.Reader()
     result = reader.run(filename,
                         models=models,
-                        group_objects_by_model=False)
+                        group_objects_by_model=False,
+                        **io.DEFAULT_READER_ARGS)
     return result, reader._model_metadata
 
 

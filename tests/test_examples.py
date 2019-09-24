@@ -197,3 +197,11 @@ class ExamplesTestCase(unittest.TestCase):
                 with __main__.App(argv=['convert', schema_filename, full_data_filename,
                                         full_convert_filename, ]) as app:
                     app.run()
+
+    def test_other_examples(self):
+        filenames = [
+            'examples/transactions.xlsx',
+        ]
+        for filename in filenames:
+            with __main__.App(argv=['validate', filename, filename]) as app:
+                app.run()

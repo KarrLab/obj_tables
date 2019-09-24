@@ -649,7 +649,7 @@ def to_pandas(objs, models=None, get_related=True,
                               validate=validate)
 
 
-def diff_workbooks(filename_1, filename_2, models, model_name):
+def diff_workbooks(filename_1, filename_2, models, model_name, **kwargs):
     """ Get difference of models in two workbooks
 
     Args:
@@ -657,16 +657,19 @@ def diff_workbooks(filename_1, filename_2, models, model_name):
         filename_2 (:obj:`str`): path to second workbook
         models (:obj:`list` of :obj:`Model`): schema for objects to compare
         model_name (:obj:`str`): Type of objects to compare
+        kwargs (:obj:`dict`, optional): additional arguments to :obj:`obj_tables.io.Reader`
 
     Returns:
         :obj:`list` of :obj:`str`: list of differences
     """
     objs1 = obj_tables.io.Reader().run(filename_1,
                                        models=models,
-                                       group_objects_by_model=True)
+                                       group_objects_by_model=True,
+                                       **kwargs)
     objs2 = obj_tables.io.Reader().run(filename_2,
                                        models=models,
-                                       group_objects_by_model=True)
+                                       group_objects_by_model=True,
+                                       **kwargs)
 
     for model in models:
         if model.__name__ == model_name:

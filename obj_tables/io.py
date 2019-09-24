@@ -441,7 +441,7 @@ class WorkbookWriter(WriterBase):
                     attr.name,
                     'Attribute',
                     model.__name__,
-                    attr.__class__.__name__,
+                    attr.__class__.__name__.rpartition('Attribute')[0],
                     None,
                     None,
                     attr.description or None,

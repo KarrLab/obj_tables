@@ -96,7 +96,7 @@ class DiffController(cement.Controller):
         _, models = get_schema_models(args.schema_file)
         try:
             diffs = utils.diff_workbooks(args.wb_file_1, args.wb_file_2,
-                                         models, args.model)
+                                         models, args.model, **DEFAULT_READER_ARGS)
         except ValueError as err:
             raise SystemExit(str(err))
         if diffs:
