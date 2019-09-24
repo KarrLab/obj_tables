@@ -6197,16 +6197,16 @@ class OneToOneAttribute(RelatedAttribute):
                 related_ws = self.related_class.Meta.verbose_name_plural
                 if self.related_class.Meta.primary_attribute:
                     related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                    source = '{}:{}'.format(related_ws, related_col)
-                    validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+                    source = '!{}:{}'.format(related_ws, related_col)
+                    validation.allowed_list_values = "='!{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
                 else:
                     source = related_ws
             else:
                 related_ws = self.related_class.Meta.verbose_name
                 if self.related_class.Meta.primary_attribute:
                     related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1
-                    source = '{}:{}'.format(related_ws, related_row)
-                    validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+                    source = '!{}:{}'.format(related_ws, related_row)
+                    validation.allowed_list_values = "='!{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
                 else:
                     source = related_ws
 
@@ -6542,16 +6542,16 @@ class ManyToOneAttribute(RelatedAttribute):
                 related_ws = self.related_class.Meta.verbose_name_plural
                 if self.related_class.Meta.primary_attribute:
                     related_col = get_column_letter(self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1)
-                    source = '{}:{}'.format(related_ws, related_col)
-                    validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
+                    source = '!{}:{}'.format(related_ws, related_col)
+                    validation.allowed_list_values = "='!{}'!${}${}:${}${}".format(related_ws, related_col, 2, related_col, 2**20)
                 else:
                     source = related_ws
             else:
                 related_ws = self.related_class.Meta.verbose_name
                 if self.related_class.Meta.primary_attribute:
                     related_row = self.related_class.get_attr_index(self.related_class.Meta.primary_attribute) + 1
-                    source = '{}:{}'.format(related_ws, related_row)
-                    validation.allowed_list_values = "='{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
+                    source = '!{}:{}'.format(related_ws, related_row)
+                    validation.allowed_list_values = "='!{}'!${}${}:${}${}".format(related_ws, 'B', related_row, 'XFD', related_row)
                 else:
                     source = related_ws
 
