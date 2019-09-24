@@ -8,11 +8,12 @@
 
 from obj_tables import core
 from obj_tables import io
-from obj_tables import grammar
+import obj_tables.grammar
 import os.path
 import shutil
 import tempfile
 import unittest
+import wc_utils.workbook.io
 
 
 class GrammarTestCase(unittest.TestCase):
@@ -26,16 +27,18 @@ class GrammarTestCase(unittest.TestCase):
         class Parent(core.Model):
             id = core.SlugAttribute()
             name = core.StringAttribute()
+            age = core.IntegerAttribute()
 
             class Meta(core.Model.Meta):
                 table_format = core.TableFormat.cell
 
-        class OneToManyParentGrammarAttribute(grammar.ToManyGrammarAttribute, core.OneToManyAttribute):
-            GRAMMAR = '''
+        class OneToManyParentGrammarAttribute(obj_tables.grammar.ToManyGrammarAttribute, core.OneToManyAttribute):
+            grammar = '''
                     ?start: parent ("; " parent)*
-                    parent: PARENT_ID ": " PARENT_NAME
-                    PARENT_ID: /[a-zA-Z0-9_]+/
-                    PARENT_NAME: /[a-zA-Z0-9_\- ]+/
+                    parent: PARENT__ID ": " PARENT__NAME " (" PARENT__AGE ")"
+                    PARENT__ID: /[a-zA-Z0-9_]+/
+                    PARENT__NAME: /[a-zA-Z0-9_\-][a-zA-Z0-9_\- ]*[a-zA-Z0-9_\-]/
+                    PARENT__AGE: /[0-9]+/
                     '''
 
             def serialize(self, values, encoded=None):
@@ -50,22 +53,21 @@ class GrammarTestCase(unittest.TestCase):
                 """
                 serialized_value = []
                 for parent in values:
-                    serialized_value.append('{}: {}'.format(parent.id, parent.name))
+                    serialized_value.append('{}: {} ({})'.format(
+                        parent.id, parent.name, parent.age))
 
                 return '; '.join(serialized_value)
 
-            class Transformer(grammar.Transformer):
+            class Transformer(obj_tables.grammar.ToManyGrammarTransformer):
                 """ Transforms parse trees into a list of instances of :obj:`core.Model` """
-                @grammar.v_args(inline=True)
+                @obj_tables.grammar.v_args(inline=True)
                 def parent(self, *args):
                     kwargs = {}
                     for arg in args:
-                        if arg.type == 'PARENT_ID':
-                            kwargs['id'] = arg.value
-                        elif arg.type == 'PARENT_NAME':
-                            kwargs['name'] = arg.value
+                        cls_name, _, attr_name = arg.type.partition('__')
+                        kwargs[attr_name.lower()] = arg.value
 
-                    return self.get_or_create(Parent, kwargs['id'], **kwargs)
+                    return self.get_or_create_model_obj(Parent, **kwargs)
 
         class Child(core.Model):
             id = core.SlugAttribute()
@@ -77,10 +79,10 @@ class GrammarTestCase(unittest.TestCase):
 
         c_1 = Child(id='c_1', name='c 1')
         c_2 = Child(id='c_2', name='c 2')
-        p_11 = Parent(id='p_11', name='p 11')
-        p_12 = Parent(id='p_12', name='p 12')
-        p_21 = Parent(id='p_21', name='p 21')
-        p_22 = Parent(id='p_22', name='p 22')
+        p_11 = Parent(id='p_11', name='p 11', age=11)
+        p_12 = Parent(id='p_12', name='p 12', age=12)
+        p_21 = Parent(id='p_21', name='p 21', age=21)
+        p_22 = Parent(id='p_22', name='p 22', age=22)
         c_1.parents = [p_11, p_12]
         c_2.parents = [p_21, p_22]
         objects = {
@@ -107,16 +109,18 @@ class GrammarTestCase(unittest.TestCase):
         class Parent(core.Model):
             id = core.SlugAttribute()
             name = core.StringAttribute()
+            age = core.IntegerAttribute()
 
             class Meta(core.Model.Meta):
                 table_format = core.TableFormat.cell
 
-        class ManyToManyParentGrammarAttribute(grammar.ToManyGrammarAttribute, core.ManyToManyAttribute):
-            GRAMMAR = '''
+        class ManyToManyParentGrammarAttribute(obj_tables.grammar.ToManyGrammarAttribute, core.ManyToManyAttribute):
+            grammar = '''
                     ?start: parent ("; " parent)*
-                    parent: PARENT_ID ": " PARENT_NAME
-                    PARENT_ID: /[a-zA-Z0-9_]+/
-                    PARENT_NAME: /[a-zA-Z0-9_\- ]+/
+                    parent: PARENT__ID ": " PARENT__NAME " (" PARENT__AGE ")"
+                    PARENT__ID: /[a-zA-Z0-9_]+/
+                    PARENT__NAME: /[a-zA-Z0-9_\-][a-zA-Z0-9_\- ]*[a-zA-Z0-9_\-]/
+                    PARENT__AGE: /[a-z0-9]+/
                     '''
 
             def serialize(self, values, encoded=None):
@@ -131,22 +135,10 @@ class GrammarTestCase(unittest.TestCase):
                 """
                 serialized_value = []
                 for parent in values:
-                    serialized_value.append('{}: {}'.format(parent.id, parent.name))
+                    serialized_value.append('{}: {} ({})'.format(
+                        parent.id, parent.name, parent.age))
 
                 return '; '.join(serialized_value)
-
-            class Transformer(grammar.Transformer):
-                """ Transforms parse trees into a list of instances of :obj:`core.Model` """
-                @grammar.v_args(inline=True)
-                def parent(self, *args):
-                    kwargs = {}
-                    for arg in args:
-                        if arg.type == 'PARENT_ID':
-                            kwargs['id'] = arg.value
-                        elif arg.type == 'PARENT_NAME':
-                            kwargs['name'] = arg.value
-
-                    return self.get_or_create(Parent, kwargs['id'], **kwargs)
 
         class Child(core.Model):
             id = core.SlugAttribute()
@@ -158,9 +150,9 @@ class GrammarTestCase(unittest.TestCase):
 
         c_1 = Child(id='c_1', name='c 1')
         c_2 = Child(id='c_2', name='c 2')
-        p_1 = Parent(id='p_1', name='p 1')
-        p_2 = Parent(id='p_2', name='p 2')
-        p_12 = Parent(id='p_12', name='p 12')
+        p_1 = Parent(id='p_1', name='p 1', age=1)
+        p_2 = Parent(id='p_2', name='p 2', age=2)
+        p_12 = Parent(id='p_12', name='p 12', age=12)
         c_1.parents = [p_1, p_12]
         c_2.parents = [p_2, p_12]
         objects = {
@@ -182,3 +174,11 @@ class GrammarTestCase(unittest.TestCase):
         children_b = sorted(objects_b[Child], key=lambda child: child.id)
         for child, child_b in zip(children, children_b):
             self.assertTrue(child_b.is_equal(child))
+
+        # test parsing error
+        wb = wc_utils.workbook.io.read(filename)
+        wb['!Children'][2][2] = 'old_parent: old name (old)'
+        filename2 = os.path.join(self.dirname, 'test2.xlsx')
+        wc_utils.workbook.io.write(filename2, wb)
+        with self.assertRaisesRegex(ValueError, 'Unable to clean'):
+            objects_b = io.WorkbookReader().run(filename2, models=[Child, Parent], group_objects_by_model=True)

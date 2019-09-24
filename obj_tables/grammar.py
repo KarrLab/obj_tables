@@ -8,28 +8,37 @@ into Excel cell
 """
 
 from obj_tables import core
+from obj_tables import utils
 from lark import v_args
 import abc
 import lark
+import stringcase
 
 
 class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
     """ Many-to-many attribute that can be deserialized wtih a grammar
 
     Attributes:
-        GRAMMAR (:obj:`str`): grammar
+        grammar (:obj:`str`): grammar
         parser (:obj:`lark.Lark`): parser
+
+    Class attributes:
+        grammar (:obj:`str`): grammar
         Transformer (:obj:`type`): subclass of :obj:`Transformer` which transforms
             parse trees into a list of instances of :obj:`core.Model`
     """
+    grammar = None
+    Transformer = None
 
-    def __init__(self, related_class, **kwargs):
+    def __init__(self, related_class, grammar=None, **kwargs):
         """
         Args:
             related_class (:obj:`type`): related class
+            grammar (:obj:`str`, optional): grammar
         """
         super(ToManyGrammarAttribute, self).__init__(related_class, **kwargs)
-        self.parser = lark.Lark(self.GRAMMAR)
+        self.grammar = grammar or self.grammar
+        self.parser = lark.Lark(self.grammar)
 
     @abc.abstractmethod
     def serialize(self, values, encoded=None):
@@ -42,7 +51,7 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
         Returns:
             :obj:`str`: simple Python representation
         """
-        pass
+        pass  # pragma: no cover
 
     def deserialize(self, values, objects, decoded=None):
         """ Deserialize value
@@ -56,6 +65,7 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
             :obj:`tuple` of `object`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
         tree = self.parser.parse(values)
+        self.Transformer = self.Transformer or self.gen_transformer(self.related_class)
         transformer = self.Transformer(objects)
         try:
             result = transformer.transform(tree)
@@ -63,8 +73,33 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
         except lark.exceptions.LarkError as err:
             return (None, core.InvalidAttribute(self, [str(err)]))
 
+    @classmethod
+    def gen_transformer(cls, model):
+        """ Generate transformer for model
 
-class Transformer(lark.Transformer):
+        Args:
+            model (:obj:`type`): model
+
+        Returns:
+            :obj:`type`: transformer
+        """
+        related_models = utils.get_related_models(model, include_root_model=True)
+        methods = {}
+        for model in related_models:
+            @lark.v_args(inline=True)
+            def func(self, *args, model=model):
+                kwargs = {}
+                for arg in args:
+                    cls_name, _, attr_name = arg.type.partition('__')
+                    assert cls_name.lower() == stringcase.snakecase(model.__name__)
+                    kwargs[attr_name.lower()] = arg.value
+                return self.get_or_create_model_obj(model, **kwargs)
+
+            methods[stringcase.snakecase(model.__name__)] = func
+        return type('Transformer', (ToManyGrammarTransformer, ), methods)
+
+
+class ToManyGrammarTransformer(lark.Transformer):
     """ Transforms parse trees into a list of instances of :obj:`core.Model`
 
     Attributes:
@@ -92,18 +127,30 @@ class Transformer(lark.Transformer):
         """
         return args
 
-    def get_or_create(self, cls, serialized_val, **kwargs):
+    def get_or_create_model_obj(self, model, serialized_val=None, _clean=True,
+                                **kwargs):
         """ Get a instance of a model with serialized value :obj:`serialized_val`, or
         create an instance if there is no such instance
 
         Args:
-            cls (:obj:`type`): type of model instance to get or create
-            serialized_val (:obj:`str`): serialized value of instance of model
-            kwargs (:obj:`dict`): arguments to constructor of model for instance
+            model (:obj:`type`): type of model instance to get or create
+            serialized_val (:obj:`str`, optional): serialized value of instance of model
+            _clean (:obj:`bool`, optional): if :obj:`True`, clean values
+            kwargs (:obj:`dict`, optional): arguments to constructor of model for instance
         """
-        if cls not in self.objects:
-            self.objects[cls] = {}
-        obj = self.objects[cls].get(serialized_val, None)
+        if model not in self.objects:
+            self.objects[model] = {}
+
+        if serialized_val is None:
+            serialized_val = kwargs[model.Meta.primary_attribute.name]
+
+        obj = self.objects[model].get(serialized_val, None)
         if obj is None:
-            obj = self.objects[cls][serialized_val] = cls(**kwargs)
+            obj = self.objects[model][serialized_val] = model(**kwargs)
+            if _clean:
+                err = obj.clean()
+            if err is not None:
+                raise ValueError('Unable to clean {}: {}'.format(
+                    model.__name__, str(err)))
+
         return obj
