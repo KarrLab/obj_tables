@@ -5040,7 +5040,8 @@ class DateTimeAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `datetime`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of `object`, `InvalidAttribute` if `value` is invalid, or
+            :obj:`tuple` of `datetime`, `None` with cleaned value otherwise
         """
         if value in (None, ''):
             return (self.get_default_cleaned_value(), None)
@@ -5087,7 +5088,8 @@ class DateTimeAttribute(LiteralAttribute):
             value (:obj:`datetime`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`None` or `InvalidAttribute`: `None` if attribute is valid, otherwise return list of
+            errors as an instance of `InvalidAttribute`
         """
         errors = []
 
@@ -5100,7 +5102,7 @@ class DateTimeAttribute(LiteralAttribute):
             if value.microsecond != 0:
                 errors.append('Microsecond must be 0')
         else:
-            errors.append('Value must be an instance of `date`')
+            errors.append('Value must be an instance of `datetime`')
 
         if errors:
             return InvalidAttribute(self, errors)
