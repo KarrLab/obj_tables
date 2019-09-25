@@ -4,8 +4,14 @@ Installation
 Prerequisites
 --------------------------
 
+* Git -- facilitate revisioning of schemas and datasets
 * Python
 * Pip
+
+Optional prerequisites
+--------------------------
+
+* Graphviz -- required to generate UML diagrams
 
 Latest release From PyPI
 ---------------------------
