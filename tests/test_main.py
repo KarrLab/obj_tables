@@ -204,3 +204,10 @@ class TestCli(unittest.TestCase):
         with self.assertRaises(SystemExit):
             with __main__.App(argv=['validate', csv_file, xl_file_2]) as app:
                 app.run()
+
+    def test_viz_schema(self):
+        csv_file = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
+        img_file = os.path.join(self.tempdir, 'uml.svg')
+        with __main__.App(argv=['viz-schema', csv_file, img_file]) as app:
+            app.run()
+        self.assertTrue(os.path.isfile(img_file))

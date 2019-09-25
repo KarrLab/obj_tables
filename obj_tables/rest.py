@@ -416,6 +416,72 @@ class Validate(flask_restplus.Resource):
         return err_msg
 
 
+""" Visualize schema """
+viz_parser = api.parser()
+viz_parser.add_argument('schema', location='files',
+                             type=FileStorage,
+                             required=True,
+                             help='Schema file (.csv, .tsv, .xlsx)')
+viz_parser.add_argument('format',
+                            type=flask_restplus.inputs.regex(r'^(gif|jpg|pdf|png|svg)$'),
+                            default='svg',
+                            required=False,
+                            help='Format for UML diagram')
+
+@api.route("/viz-schema/")
+@api.expect(viz_parser,
+            doc={'description': 'Generate a UML diagram for a schema'})
+class VizSchema(flask_restplus.Resource):
+    """ Generate a UML diagram for a schema """
+
+    def post(self):
+        """ Generate a UML diagram for a schema
+        """
+        """
+        Returns:
+            :obj:`str`: errors
+        """
+        args = viz_parser.parse_args()
+        schema_dir, schema_filename = save_schema(args['schema'])
+
+        try:
+            schema = utils.init_schema(schema_filename)
+        except Exception as err:
+            flask_restplus.abort(400, str(err))
+        finally:
+            shutil.rmtree(schema_dir)
+
+        format = args['format']
+        img_dir = tempfile.mkdtemp()
+        img_file = os.path.join(img_dir, 'schema.' + format)
+        try:
+            utils.viz_schema(schema, img_file)
+        except Exception as err:
+            shutil.rmtree(img_dir)
+            flask_restplus.abort(400, str(err))            
+
+        @flask.after_this_request
+        def remove_out_file(response):
+            shutil.rmtree(img_dir)
+            return response
+
+        if format == 'gif':
+            mimetype = 'image/gif'
+        elif format == 'jpg':
+            mimetype = 'image/jpeg'
+        elif format == 'pdf':
+            mimetype = 'application/pdf'
+        elif format == 'png':
+            mimetype = 'image/png'
+        elif format == 'svg':
+            mimetype = 'image/svg+xml'
+
+        return flask.send_file(img_file,
+                               attachment_filename=os.path.basename(img_file),
+                               mimetype=mimetype,
+                               as_attachment=True)
+
+
 def save_schema(file_storage):
     """ Save schema to a temporary directory
 

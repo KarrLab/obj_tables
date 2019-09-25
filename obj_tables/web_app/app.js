@@ -8,6 +8,7 @@ function changeMethod(evt){
             $('#label_workbook').show()
             $('#label_workbook-2').hide()
             $('#label_format').show()
+            $('#label_viz_format').hide()
             break;
 
         case 'diff':
@@ -15,6 +16,7 @@ function changeMethod(evt){
             $('#label_workbook').show()
             $('#label_workbook-2').show()
             $('#label_format').hide()
+            $('#label_viz_format').hide()
             break;
 
         case 'gen-template':
@@ -22,6 +24,7 @@ function changeMethod(evt){
             $('#label_workbook').hide()
             $('#label_workbook-2').hide()
             $('#label_format').show()
+            $('#label_viz_format').hide()
             break;
 
         case 'init-schema':
@@ -29,6 +32,7 @@ function changeMethod(evt){
             $('#label_workbook').hide()
             $('#label_workbook-2').hide()
             $('#label_format').hide()
+            $('#label_viz_format').hide()
             break;
 
         case 'normalize':
@@ -36,6 +40,7 @@ function changeMethod(evt){
             $('#label_workbook').show()
             $('#label_workbook-2').hide()
             $('#label_format').show()
+            $('#label_viz_format').hide()
             break;
 
         case 'validate':
@@ -43,6 +48,15 @@ function changeMethod(evt){
             $('#label_workbook').show()
             $('#label_workbook-2').hide()
             $('#label_format').hide()
+            $('#label_viz_format').hide()
+            break;
+
+        case 'viz-schema':
+            $('#label_model').hide()
+            $('#label_workbook').hide()
+            $('#label_workbook-2').hide()
+            $('#label_format').hide()
+            $('#label_viz_format').show()
             break;
     }
 }
@@ -60,6 +74,7 @@ $('#submit').click(function (evt) {
     var workbook_files = $('#workbook')[0].files;
     var workbook_2_files = $('#workbook-2')[0].files;
     var format = $('#format').val();
+    var viz_format = $('#viz_format').val();
 
     var data = new FormData();
     if (schema_files == 0) {
@@ -175,6 +190,15 @@ $('#submit').click(function (evt) {
             };
             errorMsgStart = 'The dataset could not be validated.';
             downloadResult = false;
+            break;
+
+        case 'viz-schema':
+            data.append('format', viz_format);
+            downloadResult = true;
+            successFunc = function(request) {
+                setResults('A UML diagram was generated.');
+            };
+            errorMsgStart = 'Unable to generate a UML diagram for the schema.'
             break;
     }
 

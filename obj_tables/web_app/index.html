@@ -126,6 +126,7 @@
                 <option value="init-schema">Initialize Python schema: generate a Python module that implements a tabular-formatted schema</option>
                 <option value="normalize">Normalize: pretty format a dataset according to a schema</option>
                 <option value="validate" selected>Validate: check that a dataset adheres to a schema and report any errors</option>
+                <option value="viz-schema" selected>Visualize: generate a UML diagram for a schema</option>
               </select>
             </label>
 
@@ -150,6 +151,16 @@
                 <option value="xlsx" selected>Excel workbook</option>
                 <option value="csv">Zip archive of comma-separated tables</option>
                 <option value="tsv">Zip archive of tab-separated tables</option>
+              </select>
+            </label>
+
+            <label id="label_viz_format">Select an output format
+              <select id="viz_format" name="viz_format">                
+                <option value="gif">GIF</option>
+                <option value="jpg">JPEG</option>
+                <option value="pdf">PDF</option>
+                <option value="png">PNG</option>
+                <option value="svg" selected>SVG</option>
               </select>
             </label>
 

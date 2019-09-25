@@ -392,6 +392,19 @@ class RestTestCase(unittest.TestCase):
                 })
         self.assertEqual(rv.status_code, 400)
 
+    def test_viz_schema(self):
+        client = rest.app.test_client()
+
+        schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
+
+        with open(schema_filename, 'rb') as schema_file:
+            rv = client.post('/api/viz-schema/', data={
+                'schema': (schema_file, os.path.basename(schema_filename)),
+                'format': 'svg',
+            })
+        self.assertEqual(rv.status_code, 200)
+        self.assertTrue(rv.data.decode().startswith('<?xml '))
+
     def test_get_model(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema = utils.init_schema(schema_filename)

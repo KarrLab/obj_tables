@@ -225,6 +225,29 @@ class ValidateController(cement.Controller):
         print('Workbook {} is valid'.format(args.wb_file))
 
 
+class VizSchemaController(cement.Controller):
+    """ Generate a UML diagram for a schema """
+    class Meta:
+        label = 'viz-schema'
+        description = 'Generate a UML diagram for a schema'
+        help = 'Generate a UML diagram for a schema'
+        stacked_on = 'base'
+        stacked_type = 'nested'
+        arguments = [
+            (['schema_file'], dict(type=str,
+                                   help='Path to the schema (.py) or a declarative description of the schema (.csv, .tsv, .xlsx)')),
+            (['img_file'], dict(type=str,
+                                help='Path to save a UML diagram of the schema (.gif, .jpg, .pdf, .png, .svg)')),
+        ]
+
+    @cement.ex(hide=True)
+    def _default(self):
+        args = self.app.pargs
+        schema = utils.init_schema(args.schema_file)
+        utils.viz_schema(schema, args.img_file)
+        print('UML diagram saved to {}'.format(args.img_file))
+
+
 class App(cement.App):
     """ Command line application """
     class Meta:
@@ -232,6 +255,7 @@ class App(cement.App):
         base_controller = 'base'
         handlers = [
             BaseController,
+            VizSchemaController,
             ValidateController,
             NormalizeController,
             InitSchemaController,
