@@ -10,6 +10,7 @@ into Excel cell
 from obj_tables import core
 from obj_tables import utils
 from lark import v_args
+from wc_utils.util.list import det_dedupe
 import abc
 import lark
 import stringcase
@@ -24,10 +25,12 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
 
     Class attributes:
         grammar (:obj:`str`): grammar
+        grammar_path (:obj:`str`): path to grammar
         Transformer (:obj:`type`): subclass of :obj:`Transformer` which transforms
             parse trees into a list of instances of :obj:`core.Model`
     """
     grammar = None
+    grammar_path = None
     Transformer = None
 
     def __init__(self, related_class, grammar=None, **kwargs):
@@ -37,8 +40,18 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
             grammar (:obj:`str`, optional): grammar
         """
         super(ToManyGrammarAttribute, self).__init__(related_class, **kwargs)
-        self.grammar = grammar or self.grammar
-        self.parser = lark.Lark(self.grammar)
+
+        if grammar is None:
+            if self.grammar:
+                grammar = self.grammar
+            elif self.grammar_path:
+                with open(self.grammar_path, 'r') as file:
+                    grammar = file.read()
+            else:
+                raise ValueError('A grammar or path to a grammar must be defined')
+
+        self.grammar = grammar
+        self.parser = lark.Lark(grammar)
 
     @abc.abstractmethod
     def serialize(self, values, encoded=None):
@@ -64,10 +77,13 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
         Returns:
             :obj:`tuple` of `object`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
-        tree = self.parser.parse(values)
-        self.Transformer = self.Transformer or self.gen_transformer(self.related_class)
-        transformer = self.Transformer(objects)
+        if values in [None, '']:
+            return ([], None)
+
         try:
+            tree = self.parser.parse(values)
+            self.Transformer = self.Transformer or self.gen_transformer(self.related_class)
+            transformer = self.Transformer(objects)
             result = transformer.transform(tree)
             return (result, None)
         except lark.exceptions.LarkError as err:
@@ -91,8 +107,8 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
                 kwargs = {}
                 for arg in args:
                     cls_name, _, attr_name = arg.type.partition('__')
-                    assert cls_name.lower() == stringcase.snakecase(model.__name__)
-                    kwargs[attr_name.lower()] = arg.value
+                    if cls_name.lower() == stringcase.snakecase(model.__name__):
+                        kwargs[attr_name.lower()] = arg.value
                 return self.get_or_create_model_obj(model, **kwargs)
 
             methods[stringcase.snakecase(model.__name__)] = func
@@ -125,32 +141,57 @@ class ToManyGrammarTransformer(lark.Transformer):
         Returns:
             :obj:`list` of :obj:`core.Model`: related model instances
         """
-        return args
+        return det_dedupe(arg for arg in args if not isinstance(arg, lark.lexer.Token))
 
-    def get_or_create_model_obj(self, model, serialized_val=None, _clean=True,
+    def get_or_create_model_obj(self, model, _serialized_val=None, _clean=True,
                                 **kwargs):
-        """ Get a instance of a model with serialized value :obj:`serialized_val`, or
+        """ Get a instance of a model with serialized value :obj:`_serialized_val`, or
         create an instance if there is no such instance
 
         Args:
             model (:obj:`type`): type of model instance to get or create
-            serialized_val (:obj:`str`, optional): serialized value of instance of model
+            _serialized_val (:obj:`str`, optional): serialized value of instance of model
             _clean (:obj:`bool`, optional): if :obj:`True`, clean values
             kwargs (:obj:`dict`, optional): arguments to constructor of model for instance
         """
         if model not in self.objects:
             self.objects[model] = {}
 
-        if serialized_val is None:
-            serialized_val = kwargs[model.Meta.primary_attribute.name]
+        new_obj = None
+        if _serialized_val is None:
+            if model.Meta.primary_attribute:
+                _serialized_val = kwargs[model.Meta.primary_attribute.name]
+            else:
+                if not kwargs:
+                    raise ValueError('Insufficient information to make new instance')
+                new_obj = self._make_obj(model, _clean=_clean, **kwargs)
+                _serialized_val = new_obj.serialize()
 
-        obj = self.objects[model].get(serialized_val, None)
+        obj = self.objects[model].get(_serialized_val, None)
         if obj is None:
-            obj = self.objects[model][serialized_val] = model(**kwargs)
-            if _clean:
-                err = obj.clean()
-            if err is not None:
-                raise ValueError('Unable to clean {}: {}'.format(
-                    model.__name__, str(err)))
+            if new_obj is None:
+                if not kwargs:
+                    raise ValueError('Insufficient information to make new instance')
+                obj = self._make_obj(model, _clean=_clean, **kwargs)
+            else:
+                obj = new_obj
+            self.objects[model][_serialized_val] = obj
 
+        return obj
+
+    @staticmethod
+    def _make_obj(model, _clean=True, **kwargs):
+        """ Make an instance of a model
+
+        Args:
+            model (:obj:`type`): type of model to instantiate
+            _clean (:obj:`bool`): if :obj:`True`, clean the instance of :obj:`model`
+            kwargs (:obj:`dict`, optional): arguments to constructor of :obj:`model`
+        """
+        obj = model(**kwargs)
+        if _clean:
+            err = obj.clean()
+        if err is not None:
+            raise ValueError('Unable to clean {}: {}'.format(
+                model.__name__, str(err)))
         return obj

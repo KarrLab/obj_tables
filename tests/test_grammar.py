@@ -32,25 +32,20 @@ class GrammarTestCase(unittest.TestCase):
             class Meta(core.Model.Meta):
                 table_format = core.TableFormat.cell
 
-        class OneToManyParentGrammarAttribute(obj_tables.grammar.ToManyGrammarAttribute, core.OneToManyAttribute):
-            grammar = '''
+        grammar_filename = os.path.join(self.dirname, 'grammar.lark')
+        with open(grammar_filename, 'w') as file:
+            file.write('''
                     ?start: parent ("; " parent)*
                     parent: PARENT__ID ": " PARENT__NAME " (" PARENT__AGE ")"
                     PARENT__ID: /[a-zA-Z0-9_]+/
                     PARENT__NAME: /[a-zA-Z0-9_\-][a-zA-Z0-9_\- ]*[a-zA-Z0-9_\-]/
                     PARENT__AGE: /[0-9]+/
-                    '''
+                    ''')
+
+        class OneToManyParentGrammarAttribute(obj_tables.grammar.ToManyGrammarAttribute, core.OneToManyAttribute):
+            grammar_path = grammar_filename
 
             def serialize(self, values, encoded=None):
-                """ Serialize related object
-
-                Args:
-                    values (:obj:`list` of :obj:`Model`): Python representation
-                    encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
-
-                Returns:
-                    :obj:`str`: simple Python representation
-                """
                 serialized_value = []
                 for parent in values:
                     serialized_value.append('{}: {} ({})'.format(
@@ -59,7 +54,6 @@ class GrammarTestCase(unittest.TestCase):
                 return '; '.join(serialized_value)
 
             class Transformer(obj_tables.grammar.ToManyGrammarTransformer):
-                """ Transforms parse trees into a list of instances of :obj:`core.Model` """
                 @obj_tables.grammar.v_args(inline=True)
                 def parent(self, *args):
                     kwargs = {}
@@ -105,6 +99,27 @@ class GrammarTestCase(unittest.TestCase):
         for child, child_b in zip(children, children_b):
             self.assertTrue(child_b.is_equal(child))
 
+        # test deserialization
+        self.assertEqual(Child.parents.deserialize(None, {}), ([], None))
+        self.assertEqual(Child.parents.deserialize('', {}), ([], None))
+
+        # test Transformer.get_or_create_model_obj
+        class NoPrimary(core.Model):
+            name = core.StringAttribute()
+
+            def serialize(self):
+                return self.name
+
+        Child.parents.Transformer({}).get_or_create_model_obj(NoPrimary,
+                                                              name='new')
+
+        with self.assertRaisesRegex(ValueError, 'Insufficient information to make new instance'):
+            Child.parents.Transformer({}).get_or_create_model_obj(NoPrimary)
+
+        with self.assertRaisesRegex(ValueError, 'Insufficient information to make new instance'):
+            Child.parents.Transformer({}).get_or_create_model_obj(Child,
+                                                                  _serialized_val='c_new')
+
     def test_many_to_many(self):
         class Parent(core.Model):
             id = core.SlugAttribute()
@@ -124,15 +139,6 @@ class GrammarTestCase(unittest.TestCase):
                     '''
 
             def serialize(self, values, encoded=None):
-                """ Serialize related object
-
-                Args:
-                    values (:obj:`list` of :obj:`Model`): Python representation
-                    encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
-
-                Returns:
-                    :obj:`str`: simple Python representation
-                """
                 serialized_value = []
                 for parent in values:
                     serialized_value.append('{}: {} ({})'.format(
@@ -182,3 +188,14 @@ class GrammarTestCase(unittest.TestCase):
         wc_utils.workbook.io.write(filename2, wb)
         with self.assertRaisesRegex(ValueError, 'Unable to clean'):
             objects_b = io.WorkbookReader().run(filename2, models=[Child, Parent], group_objects_by_model=True)
+
+    def test_no_grammar(self):
+        class OneToManyParentGrammarAttribute(obj_tables.grammar.ToManyGrammarAttribute, core.OneToManyAttribute):
+            def serialize(self, values, encoded=None):
+                pass
+
+            class Transformer(obj_tables.grammar.ToManyGrammarTransformer):
+                pass
+
+        with self.assertRaisesRegex(ValueError, 'grammar must be defined'):
+            parents = OneToManyParentGrammarAttribute('Parent', related_name='child')
