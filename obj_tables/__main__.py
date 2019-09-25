@@ -237,7 +237,7 @@ class VizSchemaController(cement.Controller):
             (['schema_file'], dict(type=str,
                                    help='Path to the schema (.py) or a declarative description of the schema (.csv, .tsv, .xlsx)')),
             (['img_file'], dict(type=str,
-                                help='Path to save a UML diagram of the schema (.gif, .jpg, .pdf, .png, .svg)')),
+                                help='Path to save a UML diagram of the schema (.pdf, .png, .svg)')),
         ]
 
     @cement.ex(hide=True)

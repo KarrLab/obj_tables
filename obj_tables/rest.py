@@ -423,7 +423,7 @@ viz_parser.add_argument('schema', location='files',
                              required=True,
                              help='Schema file (.csv, .tsv, .xlsx)')
 viz_parser.add_argument('format',
-                            type=flask_restplus.inputs.regex(r'^(gif|jpg|pdf|png|svg)$'),
+                            type=flask_restplus.inputs.regex(r'^(pdf|png|svg)$'),
                             default='svg',
                             required=False,
                             help='Format for UML diagram')
@@ -465,11 +465,7 @@ class VizSchema(flask_restplus.Resource):
             shutil.rmtree(img_dir)
             return response
 
-        if format == 'gif':
-            mimetype = 'image/gif'
-        elif format == 'jpg':
-            mimetype = 'image/jpeg'
-        elif format == 'pdf':
+        if format == 'pdf':
             mimetype = 'application/pdf'
         elif format == 'png':
             mimetype = 'image/png'
