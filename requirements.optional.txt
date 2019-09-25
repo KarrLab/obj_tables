@@ -4,4 +4,4 @@ flask_cors
 flask_restplus
 
 [schema_viz]
-graphviz
+graphviz >= 0.13
