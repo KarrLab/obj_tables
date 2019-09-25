@@ -830,3 +830,17 @@ class ToPandasTestCase(unittest.TestCase):
             ['p_0', '', 'c_0', ''],
             ['p_1', '', 'c_1', ''],
         ])
+
+
+class VizSchemaTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dirname)
+
+    def test(self):
+        schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv')
+        filename = os.path.join(self.dirname, 'test.svg')
+        utils.viz_schema(schema, filename)
+        self.assertTrue(os.path.isfile(filename))

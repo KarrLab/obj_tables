@@ -2,3 +2,6 @@
 flask
 flask_cors
 flask_restplus
+
+[schema_viz]
+graphviz
