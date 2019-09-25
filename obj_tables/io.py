@@ -123,7 +123,8 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             try:
                 data_repo_metadata_obj = utils.DataRepoMetadata()
                 unsuitable_changes = utils.set_git_repo_metadata_from_path(data_repo_metadata_obj,
-                                                                           git.RepoMetadataCollectionType.DATA_REPO, path=path)
+                                                                           git.RepoMetadataCollectionType.DATA_REPO,
+                                                                           path=path)
                 metadata_objects.append(data_repo_metadata_obj)
                 if unsuitable_changes:
                     warn("Git repo metadata for data repo was obtained; "
@@ -158,10 +159,9 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
 class JsonWriter(WriterBase):
     """ Write model objects to a JSON or YAML file """
 
-    def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True, validate=True,
-            title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_schema=False, write_toc=False,
-            extra_entries=0, data_repo_metadata=False, schema_package=None):
+    def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True,
+        validate=True, title=None, description=None, keywords=None, version=None, language=None, creator=None,
+        write_schema=False, write_toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:

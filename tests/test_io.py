@@ -7,6 +7,7 @@
 :License: MIT
 """
 
+from importlib import util
 from os.path import splitext
 from obj_tables import core, utils, chem, ontology, units
 from obj_tables.io import WorkbookReader, WorkbookWriter, convert, create_template, IoWarning
@@ -1013,6 +1014,10 @@ class TestMetadataModels(unittest.TestCase):
         id = core.SlugAttribute()
 
     def setUp(self):
+        # this TestCase fails if 'test_repo' is on sys.path
+        if util.find_spec('test_repo') is not None:
+            self.fail("the 'TestMetadataModels' test will fail if 'test_repo' is installed")
+
         self.objs = [
             self.Model1(id='model1_0'),
             self.Model1(id='model1_1'),
