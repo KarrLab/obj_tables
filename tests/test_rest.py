@@ -116,6 +116,7 @@ class RestTestCase(unittest.TestCase):
         # invalid workbook
         wb = wc_utils.workbook.io.read(xl_file_2)
         wb['!Child2'] = wb.pop('!Child')
+        wb['!Child2'][0][0] = wb['!Child2'][0][0].replace("'Child'", "'Child2'")
         wc_utils.workbook.io.write(xl_file_2, wb)
 
         with open(schema_filename, 'rb') as schema_file:
@@ -262,6 +263,7 @@ class RestTestCase(unittest.TestCase):
         # invalid workbook
         wb = wc_utils.workbook.io.read(in_workbook_filename)
         wb['!Child2'] = wb.pop('!Child')
+        wb['!Child2'][0][0] = wb['!Child2'][0][0].replace("'Child'", "'Child2'")
         wc_utils.workbook.io.write(in_workbook_filename, wb)
 
         with open(schema_filename, 'rb') as schema_file:

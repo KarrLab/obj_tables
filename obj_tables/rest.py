@@ -9,7 +9,7 @@
 from . import core
 from . import io
 from . import utils
-from .__main__ import get_schema_models
+from .__main__ import get_schema_models, DEFAULT_READER_ARGS
 from wc_utils.util.string import indent_forest
 from werkzeug.datastructures import FileStorage
 import flask
@@ -172,7 +172,7 @@ class Diff(flask_restplus.Resource):
         try:
             diffs = utils.diff_workbooks(wb_filename_1, wb_filename_2,
                                          models, model_name,
-                                         **io.DEFAULT_READER_ARGS)
+                                         **DEFAULT_READER_ARGS)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -400,7 +400,7 @@ class Validate(flask_restplus.Resource):
                                    models=models,
                                    group_objects_by_model=False,
                                    validate=False,
-                                   **io.DEFAULT_READER_ARGS)
+                                   **DEFAULT_READER_ARGS)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -495,7 +495,7 @@ def read_workbook(filename, models):
     result = reader.run(filename,
                         models=models,
                         group_objects_by_model=False,
-                        **io.DEFAULT_READER_ARGS)
+                        **DEFAULT_READER_ARGS)
     return result, reader._model_metadata
 
 
