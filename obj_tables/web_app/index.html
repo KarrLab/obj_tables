@@ -126,6 +126,7 @@
                 <option value="init-schema">Initialize Python schema: generate a Python module that implements a tabular-formatted schema</option>
                 <option value="normalize">Normalize: pretty format a dataset according to a schema</option>
                 <option value="validate" selected>Validate: check that a dataset adheres to a schema and report any errors</option>
+                <option value="viz-schema">Visualize: generate a UML diagram for a schema</option>
               </select>
             </label>
 
@@ -150,6 +151,16 @@
                 <option value="xlsx" selected>Excel workbook</option>
                 <option value="csv">Zip archive of comma-separated tables</option>
                 <option value="tsv">Zip archive of tab-separated tables</option>
+              </select>
+            </label>
+
+            <label id="label_viz_format">Select an output format
+              <select id="viz_format" name="viz_format">                
+                <option value="gif">GIF</option>
+                <option value="jpg">JPEG</option>
+                <option value="pdf">PDF</option>
+                <option value="png">PNG</option>
+                <option value="svg" selected>SVG</option>
               </select>
             </label>
 
@@ -592,6 +603,7 @@
             <li>Use a schema to compare the semantic meaning of two datasets.</li>
             <li>Use a schema to convert a dataset to an alternate format.</li>
             <li>Use a schema to convert a dataset to a dictionary of pandas <a href="https://pandas.pydata.org"><i class="fi-link"></i></a> data frames.</li>
+            <li>Generating UML diagrams of schemas.</li>
           </ul>
         </div>
       </div>
@@ -788,7 +800,7 @@ obj_tables.io.Writer().run(filename, objects,
             <li>Arthur Goldberg <a href="https://www.mountsinai.org/profiles/arthur-p-goldberg"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/arthurgoldberg/"><i class="fi-social-linkedin"></i></a></li>
             <li>Jonathan Karr <a href="https://www.karrlab.org/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/jonrkarr/"><i class="fi-social-linkedin"></i></a></li>
             <li>Wolfram Liebermeister <a href="https://www.metabolic-economics.de/liebermeister/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/wolfram-liebermeister-28264226/"><i class="fi-social-linkedin"></i></a></li>
-            <li>Timo Lubitz <a href="https://www.timolubitz.de/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/timo-lubitz-7a443117a/"><i class="fi-social-linkedin"></i></a></li>
+            <li>Bilal Shaikh <a href="https://www.bshaikh.com"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/bilalshaikh42/"><i class="fi-social-linkedin"></i></a></li>
           </ul>
         </div>
         <div class="large-4 cell">

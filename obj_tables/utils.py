@@ -12,8 +12,9 @@ from datetime import datetime
 from itertools import chain
 from pathlib import Path
 from random import shuffle
-from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute, InvalidObjectSet,
-                             InvalidObject, Validator, TableFormat,
+from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute,
+                             OneToOneAttribute, OneToManyAttribute, ManyToOneAttribute, ManyToManyAttribute,
+                             InvalidObjectSet, InvalidObject, Validator, TableFormat,
                              SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 from wc_utils.util import git
 import collections
@@ -703,3 +704,96 @@ def diff_workbooks(filename_1, filename_2, models, model_name, **kwargs):
             len(obj_diffs), '\n  '.join(obj_diffs)))
 
     return diffs
+
+
+def viz_schema(module, filename):
+    """ Visualize a schema
+
+    Args:
+        models (:obj:`types.ModuleType`): module with models
+        filename (:obj:`str`): path to save visualization of schema
+    """
+    import graphviz
+
+    models = get_models(module)
+    dot = graphviz.Digraph(comment='Schema', graph_attr={'rankdir': 'LR'})
+
+    for model in models.values():
+        labels = [f'<TR><TD BGCOLOR="#FF8A5B" COLSPAN="2"><FONT POINT-SIZE="18"><B>{model.__name__}</B></FONT></TD></TR>']
+
+        attr_names = get_attr_order(model)
+
+        for i_attr, attr_name in enumerate(attr_names):
+            attr = model.Meta.attributes[attr_name]
+
+            if isinstance(attr, RelatedAttribute):
+                related_model = attr.related_class
+                i_related_attr = len(related_model.Meta.attributes) + \
+                    sorted(related_model.Meta.related_attributes.keys()).index(attr.related_name)
+
+                if isinstance(attr, OneToOneAttribute):
+                    attr_type = related_model.__name__
+                    headlabel = '1'
+                    taillabel = '1'
+                elif isinstance(attr, OneToManyAttribute):
+                    attr_type = f'<I>list of </I> {related_model.__name__}'
+                    headlabel = '1'
+                    taillabel = 'N'
+                elif isinstance(attr, ManyToOneAttribute):
+                    attr_type = related_model.__name__
+                    headlabel = 'N'
+                    taillabel = '1'
+                elif isinstance(attr, ManyToManyAttribute):
+                    attr_type = f'<I>list of </I> {related_model.__name__}'
+                    headlabel = 'N'
+                    taillabel = 'N'
+
+                dot.edge(f'{model.__name__}:{i_attr}',
+                         f'{related_model.__name__}:{i_related_attr}',
+                         headlabel=headlabel,
+                         taillabel=taillabel)
+            else:
+                attr_type = attr.__class__.__name__.rpartition('Attribute')[0]
+
+            i_row = i_attr
+            if i_row % 2 == 1:
+                bg = '#EBFFFF'
+            else:
+                bg = '#BFFFFF'
+            labels.append(f'<TR><TD BGCOLOR="{bg}"><B>{attr_name}</B></TD><TD PORT="{i_row}" BGCOLOR="{bg}">{attr_type}</TD></TR>')
+
+        for i_attr, attr_name in enumerate(sorted(model.Meta.related_attributes.keys())):
+            attr = model.Meta.related_attributes[attr_name]
+            if isinstance(attr, (OneToOneAttribute, OneToManyAttribute)):
+                attr_type = attr.primary_class.__name__
+            else:
+                attr_type = f'<I>list of </I> {attr.primary_class.__name__}'
+            i_row = i_attr + len(attr_names)
+            if i_row % 2 == 1:
+                bg = '#EBFFFF'
+            else:
+                bg = '#BFFFFF'
+            labels.append(f'<TR><TD PORT="{i_row}" BGCOLOR="{bg}"><B>{attr_name}</B></TD><TD BGCOLOR="{bg}">{attr_type}</TD></TR>')
+
+        dot.node(model.__name__,
+                 label='<<TABLE CELLPADDING="4" CELLSPACING="0" BORDER="0" CELLBORDER="1">' +
+                 ''.join(labels) +
+                 '</TABLE>>',
+                 shape="none", margin="0.0,0.055")
+
+    root, ext = os.path.splitext(filename)
+    dot.render(root, format=ext[1:], cleanup=True)
+
+
+def get_attr_order(model):
+    """ Get the names of attributes in the order they should appear in ER diagrams
+
+    Args:
+        model (:obj:`type`): model
+
+    Returns:
+        :obj:`list` of :obj:`str`: names of attributes in the order they should appear in ER diagrams
+    """
+    attrs = list(model.Meta.attribute_order)
+    attrs += sorted(set(model.Meta.attributes.keys()) - set(attrs))
+    return attrs
