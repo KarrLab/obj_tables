@@ -9,7 +9,6 @@ into Excel cell
 
 from obj_tables import core
 from obj_tables import utils
-from lark import v_args
 from wc_utils.util.list import det_dedupe
 import abc
 import lark

@@ -8,6 +8,7 @@
 
 from obj_tables import core
 from obj_tables import io
+import lark
 import obj_tables.grammar
 import os.path
 import shutil
@@ -54,7 +55,7 @@ class GrammarTestCase(unittest.TestCase):
                 return '; '.join(serialized_value)
 
             class Transformer(obj_tables.grammar.ToManyGrammarTransformer):
-                @obj_tables.grammar.v_args(inline=True)
+                @lark.v_args(inline=True)
                 def parent(self, *args):
                     kwargs = {}
                     for arg in args:
