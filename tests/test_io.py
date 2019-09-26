@@ -974,6 +974,47 @@ class TestIo(unittest.TestCase):
         objs = obj_tables.io.Reader().run(filename, models=[Node])
         self.assertEqual(len(objs), 3)
 
+    def test_extra_spaces_in_col_headings(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', )
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        wb = Workbook()
+        ws = wb['!Nodes'] = Worksheet()
+        ws.append(Row(["!!ObjTables TableType='Data' ModelId='Node'"]))
+        ws.append(Row(['!Id ', '!Name  ']))
+        ws.append(Row(['a', 'A']))
+        ws.append(Row(['b', 'B']))
+        ws.append(Row(['', '']))
+        ws.append(Row(['d', 'D']))
+        write_workbook(filename, wb)
+
+        objs = obj_tables.io.Reader().run(filename, models=[Node])
+        self.assertEqual(len(objs), 3)
+
+        class NodeTranspose(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', )
+                table_format = core.TableFormat.column
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        wb = Workbook()
+        ws = wb['!NodeTranspose'] = Worksheet()
+        ws.append(Row(["!!ObjTables TableType='Data' ModelId='NodeTranspose'"]))
+        ws.append(Row(['!Id ', 'a', 'b', '', 'd']))
+        ws.append(Row(['!Name  ', 'A', 'B', '', 'D']))
+        write_workbook(filename, wb)
+
+        objs = obj_tables.io.Reader().run(filename, models=[NodeTranspose])
+        self.assertEqual(len(objs), 3)
+
 
 class MultiSeparatedValuesTestCase(unittest.TestCase):
     def setUp(self):

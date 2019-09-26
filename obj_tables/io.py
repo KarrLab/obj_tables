@@ -1595,7 +1595,12 @@ class WorkbookReader(ReaderBase):
         # separate header rows
         column_headings = []
         for i_row in range(num_column_heading_rows):
-            column_headings.append(data.pop(0))
+            column_heading = data.pop(0)
+            for i_cell, cell in enumerate(column_heading):
+                if isinstance(cell, str):
+                    cell = cell.strip()
+                    column_heading[i_cell] = cell
+            column_headings.append(column_heading)
 
         # separate header columns
         row_headings = []
@@ -1603,7 +1608,10 @@ class WorkbookReader(ReaderBase):
             row_heading = []
             row_headings.append(row_heading)
             for row in data:
-                row_heading.append(row.pop(0))
+                cell = row.pop(0)
+                if isinstance(cell, str):
+                    cell = cell.strip()
+                row_heading.append(cell)
 
             for column_heading in column_headings:
                 column_heading.pop(0)  # pragma: no cover # unreachable because row_headings and column_headings cannot both be non-empty
