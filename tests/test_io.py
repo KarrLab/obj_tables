@@ -952,6 +952,28 @@ class TestIo(unittest.TestCase):
         reader._model_metadata[Node].pop('Date')
         self.assertEqual(reader._model_metadata, model_metadata)
 
+    def test_single_and_double_quote_metadata(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', )
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        wb = Workbook()
+        ws = wb['!Nodes'] = Worksheet()
+        ws.append(Row(["!!ObjTables TableType='Data' ModelId=\"Node\""]))
+        ws.append(Row(['!Id', '!Name']))
+        ws.append(Row(['a', 'A']))
+        ws.append(Row(['b', 'B']))
+        ws.append(Row(['', '']))
+        ws.append(Row(['d', 'D']))
+        write_workbook(filename, wb)
+
+        objs = obj_tables.io.Reader().run(filename, models=[Node])
+        self.assertEqual(len(objs), 3)
+
 
 class MultiSeparatedValuesTestCase(unittest.TestCase):
     def setUp(self):

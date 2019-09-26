@@ -160,8 +160,8 @@ class JsonWriter(WriterBase):
     """ Write model objects to a JSON or YAML file """
 
     def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True,
-        validate=True, title=None, description=None, keywords=None, version=None, language=None, creator=None,
-        write_schema=False, write_toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None):
+            validate=True, title=None, description=None, keywords=None, version=None, language=None, creator=None,
+            write_schema=False, write_toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -1080,7 +1080,7 @@ class JsonReader(ReaderBase):
 class WorkbookReader(ReaderBase):
     """ Read model objects from an Excel file or CSV and TSV files """
 
-    TABLE_HEAD_PATTERN = r"^!!ObjTables( +(.*?)='((?:[^'\\]|\\.)*)')* *$"
+    TABLE_HEAD_PATTERN = r"^!!ObjTables( +(.*?)=('((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\"))* *$"
 
     def run(self, path, models=None,
             ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
@@ -1687,10 +1687,12 @@ class WorkbookReader(ReaderBase):
             :obj:`dict`: dictionary of table metadata
         """
         format = 'ObjTables'
-        results = re.findall(r" +(.*?)='((?:[^'\\]|\\.)*)'",
+        results = re.findall(r" +(.*?)=('((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\")",
                              heading[len(format) + 2:])
+        print(results[0])
         metadata = {}
-        for key, val in results:
+        for key, val, _, _ in results:
+            val = val[1:-1]
             assert key not in metadata, '"{}" metadata for sheet "{}" cannot be repeated.'.format(
                 key, sheet_name)
             metadata[key] = val
