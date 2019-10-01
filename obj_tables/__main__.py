@@ -55,7 +55,7 @@ class ConvertController(cement.Controller):
             (['out_wb_file'], dict(type=str,
                                    help='Path to save the workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['--write-schema'], dict(action='store_true', default=False,
-                                      help='If set, save schema with file')),
+                                      help='If set, save a copy of the schema within the outputted workbook')),
         ]
 
     @cement.ex(hide=True)
@@ -140,7 +140,7 @@ class GenTemplateController(cement.Controller):
             (['template_file'], dict(type=str,
                                      help='Path to save the template (.csv, .tsv, .xlsx)')),
             (['--write-schema'], dict(action='store_true', default=False,
-                                      help='If set, save schema with file')),
+                                      help='If set, save a copy of the schema within the template')),
         ]
 
     @cement.ex(hide=True)
@@ -170,7 +170,7 @@ class NormalizeController(cement.Controller):
             (['out_wb_file'], dict(type=str,
                                    help='Path to save the normalized workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['--write-schema'], dict(action='store_true', default=False,
-                                      help='If set, save schema with file')),
+                                      help='If set, save a copy of the schema within the normalized workbook')),
         ]
 
     @cement.ex(hide=True)
