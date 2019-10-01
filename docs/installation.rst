@@ -24,3 +24,7 @@ Latest revision from GitHub
 Run the following command to install the latest version from GitHub::
 
     pip install git+https://github.com/KarrLab/obj_tables.git#egg=obj_tables
+
+To install the dependencies required to visualize schemas and execute the REST API, install `obj_tables` with the `all` option::
+
+    pip install git+https://github.com/KarrLab/obj_tables.git#egg=obj_tables[all]

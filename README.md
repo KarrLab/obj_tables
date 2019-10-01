@@ -11,31 +11,19 @@
 This module allows developers to define standalone (separate from databases) schemas using a syntax similar to Django.
 The `io` module provides methods to serialize and deserialize schema objects to/from Excel, csv, and tsv file(s).
 
-## Installation
-* Latest release from PyPI
-  ```
-  pip install obj_tables
-  ```
-
-* Latest revision from GitHub
-  ```
-  pip install git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
-  pip install git+https://github.com/KarrLab/obj_tables.git#egg=obj_tables
-  ```
-
-## Example usage
-
-## Documentation
-Please see the [documentation](http://docs.karrlab.org/obj_tables).
+## Installation, example usage, and documentation
+Please see the [documentation](https://docs.karrlab.org/obj_tables) and [tutorials](https://sandbox.karrlab.org).
 
 ## License
 The software is released under the [MIT license](LICENSE).
 
 ## Development team
-This package was developed by the [Karr Lab](http://www.karrlab.org) at the Icahn School of Medicine at Mount Sinai in New York, USA.
+This package was developed by the [Karr Lab](https://www.karrlab.org) at the Icahn School of Medicine at Mount Sinai in New York, USA.
 
 * Jonathan Karr
 * Arthur Goldberg
+* Wolfram Liebermeister
+* Bilal Shaikh
 
 ## Questions and comments
-Please contact the [Karr Lab](http://www.karrlab.org) with any questions or comments.
+Please contact the [Karr Lab](mailto:info@karrlab.org) with any questions or comments.
