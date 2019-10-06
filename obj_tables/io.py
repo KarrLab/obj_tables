@@ -1697,7 +1697,6 @@ class WorkbookReader(ReaderBase):
         format = 'ObjTables'
         results = re.findall(r" +(.*?)=('((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\")",
                              heading[len(format) + 2:])
-        print(results[0])
         metadata = {}
         for key, val, _, _ in results:
             val = val[1:-1]

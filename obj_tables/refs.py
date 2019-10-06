@@ -412,7 +412,6 @@ class DoisAttribute(core.LiteralAttribute):
 
         for v in value:
             if not re.match(self.PATTERN, v, re.IGNORECASE):
-                print(v)
                 errors.append('Value must be a list of DOIs')
                 break
 
