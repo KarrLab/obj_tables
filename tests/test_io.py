@@ -1058,11 +1058,6 @@ class MultiSeparatedValuesTestCase(unittest.TestCase):
         self.assertTrue(objs[Parent][0].is_equal(p_1))
         self.assertTrue(objs[Parent][1].is_equal(p_2))
 
-        path = os.path.join(self.tmp_dirname, '*.multi.csv')
-        with self.assertRaisesRegex(ValueError, 'Glob patterns are not supported'):
-            obj_tables.io.Reader().run(path, models=[Parent, Child],
-                                       group_objects_by_model=True)
-
         path = os.path.join(self.tmp_dirname, 'test.multi.csv')
         with open(path, 'w'):
             pass
@@ -2752,8 +2747,8 @@ class InlineJsonTestCase(unittest.TestCase):
 
 class UtilsTestCase(unittest.TestCase):
     def test_get_writer(self):
-        self.assertEqual(obj_tables.io.Writer.get_writer('test.csv'), obj_tables.io.WorkbookWriter)
-        self.assertEqual(obj_tables.io.Writer.get_writer('test.tsv'), obj_tables.io.WorkbookWriter)
+        self.assertEqual(obj_tables.io.Writer.get_writer('test-*.csv'), obj_tables.io.WorkbookWriter)
+        self.assertEqual(obj_tables.io.Writer.get_writer('test-*.tsv'), obj_tables.io.WorkbookWriter)
         self.assertEqual(obj_tables.io.Writer.get_writer('test.xlsx'), obj_tables.io.WorkbookWriter)
         self.assertEqual(obj_tables.io.Writer.get_writer('test.json'), obj_tables.io.JsonWriter)
         self.assertEqual(obj_tables.io.Writer.get_writer('test.yaml'), obj_tables.io.JsonWriter)
@@ -2763,8 +2758,8 @@ class UtilsTestCase(unittest.TestCase):
             obj_tables.io.Writer.get_writer('test.abc')
 
     def test_get_reader(self):
-        self.assertEqual(obj_tables.io.Reader.get_reader('test.csv'), obj_tables.io.WorkbookReader)
-        self.assertEqual(obj_tables.io.Reader.get_reader('test.tsv'), obj_tables.io.WorkbookReader)
+        self.assertEqual(obj_tables.io.Reader.get_reader('test-*.csv'), obj_tables.io.WorkbookReader)
+        self.assertEqual(obj_tables.io.Reader.get_reader('test-*.tsv'), obj_tables.io.WorkbookReader)
         self.assertEqual(obj_tables.io.Reader.get_reader('test.xlsx'), obj_tables.io.WorkbookReader)
         self.assertEqual(obj_tables.io.Reader.get_reader('test.json'), obj_tables.io.JsonReader)
         self.assertEqual(obj_tables.io.Reader.get_reader('test.yaml'), obj_tables.io.JsonReader)

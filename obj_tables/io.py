@@ -856,8 +856,7 @@ class Writer(WriterBase):
         """
         _, ext = splitext(path)
         ext = ext.lower()
-        if path.lower().endswith('.multi.csv') or \
-                path.lower().endswith('.multi.tsv'):
+        if ext in ['.csv', '.tsv'] and '*' not in path:
             return MultiSeparatedValuesWriter
         elif ext in ['.csv', '.tsv', '.xlsx']:
             return WorkbookWriter
@@ -1876,9 +1875,6 @@ class MultiSeparatedValuesReader(ReaderBase):
         Raises:
             :obj:`ValueError`: if :obj:`path` contains a glob pattern
         """
-        if '*' in path:
-            raise ValueError('Glob patterns are not supported')
-
         tmp_dirname = tempfile.mkdtemp()
 
         _, ext = splitext(path)
@@ -1956,8 +1952,7 @@ class Reader(ReaderBase):
         path = str(path)
         _, ext = splitext(path)
         ext = ext.lower()
-        if path.lower().endswith('.multi.csv') or \
-                path.lower().endswith('.multi.tsv'):
+        if ext in ['.csv', '.tsv'] and '*' not in path:
             return MultiSeparatedValuesReader
         elif ext in ['.csv', '.tsv', '.xlsx']:
             return WorkbookReader
