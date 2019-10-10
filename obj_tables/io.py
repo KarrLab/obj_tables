@@ -64,7 +64,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
     def run(self, path, objects, model_metadata=None, models=None,
             get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_schema=False, write_toc=True,
+            write_toc=True, write_schema=False,
             extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
@@ -85,8 +85,8 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
-            write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
+            write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; a warning will be generated if the repo repo is not
@@ -161,7 +161,7 @@ class JsonWriter(WriterBase):
 
     def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True,
             validate=True, title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_schema=False, write_toc=False, extra_entries=0, data_repo_metadata=False, schema_package=None):
+            write_toc=False, write_schema=False, extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -179,9 +179,9 @@ class JsonWriter(WriterBase):
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
-            creator (:obj:`str`, optional): creator
-            write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
+            creator (:obj:`str`, optional): creator            
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
+            write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
@@ -252,7 +252,7 @@ class WorkbookWriter(WriterBase):
 
     def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_schema=False, write_toc=True,
+            write_toc=True, write_schema=False,
             extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
@@ -274,9 +274,9 @@ class WorkbookWriter(WriterBase):
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
-            creator (:obj:`str`, optional): creator
-            write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
+            creator (:obj:`str`, optional): creator            
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
+            write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             extra_entries (:obj:`int`, optional): additional entries to display
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
@@ -731,7 +731,7 @@ class PandasWriter(WorkbookWriter):
                                       get_related=get_related,
                                       include_all_attributes=include_all_attributes,
                                       validate=validate,
-                                      write_schema=False, write_toc=False)
+                                      write_toc=False, write_schema=False)
         return self._data_frames
 
     def write_sheet(self, writer, model, data, headings, metadata_headings, validation,
@@ -770,7 +770,7 @@ class MultiSeparatedValuesWriter(WriterBase):
 
     def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_schema=False, write_toc=True,
+            write_toc=True, write_schema=False,
             extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write model objects to a single text file which contains multiple
         comma or tab-separated tables.
@@ -822,7 +822,7 @@ class MultiSeparatedValuesWriter(WriterBase):
                              keywords=keywords,
                              version=version,
                              language=language, creator=creator,
-                             write_schema=write_schema, write_toc=write_toc,
+                             write_toc=write_toc, write_schema=write_schema,
                              extra_entries=extra_entries,
                              data_repo_metadata=data_repo_metadata,
                              schema_package=schema_package)
@@ -868,7 +868,7 @@ class Writer(WriterBase):
 
     def run(self, path, objects, model_metadata=None, models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_schema=False, write_toc=True,
+            write_toc=True, write_schema=False,
             extra_entries=0, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
@@ -905,7 +905,7 @@ class Writer(WriterBase):
                      include_all_attributes=include_all_attributes, validate=validate,
                      title=title, description=description, keywords=keywords,
                      language=language, creator=creator,
-                     write_schema=write_schema, write_toc=write_toc,
+                     write_toc=write_toc, write_schema=write_schema,
                      extra_entries=extra_entries,
                      data_repo_metadata=data_repo_metadata, schema_package=schema_package)
 
@@ -2066,7 +2066,7 @@ def convert(source, destination, models,
 
 def create_template(path, models, title=None, description=None, keywords=None,
                     version=None, language=None, creator=None,
-                    write_schema=False, write_toc=True,
+                    write_toc=True, write_schema=False,
                     extra_entries=10):
     """ Create a template for a model
 
@@ -2088,7 +2088,7 @@ def create_template(path, models, title=None, description=None, keywords=None,
     Writer.get_writer(path)().run(path, [], models=models,
                                   title=title, description=description, keywords=keywords,
                                   version=version, language=language, creator=creator,
-                                  write_schema=write_schema, write_toc=write_toc,
+                                  write_toc=write_toc, write_schema=write_schema,
                                   extra_entries=extra_entries)
 
 

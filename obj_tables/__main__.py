@@ -54,6 +54,8 @@ class ConvertController(cement.Controller):
                                   help='Path to the workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['out_wb_file'], dict(type=str,
                                    help='Path to save the workbook (.csv, .json, .tsv, .xlsx, .yml)')),
+            (['--write-toc'], dict(action='store_true', default=False,
+                                      help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the outputted workbook')),
         ]
@@ -68,7 +70,7 @@ class ConvertController(cement.Controller):
                           group_objects_by_model=False,
                           **DEFAULT_READER_ARGS)
         io.Writer().run(args.out_wb_file, objs, model_metadata=reader._model_metadata,
-                        models=models, write_schema=args.write_schema)
+                        models=models, write_toc=args.write_toc, write_schema=args.write_schema)
         print('Workbook saved to {}'.format(args.out_wb_file))
 
 
@@ -139,6 +141,8 @@ class GenTemplateController(cement.Controller):
                                    help='Path to the schema (.py) or declarative description of the schema (.csv, .tsv, .xlsx)')),
             (['template_file'], dict(type=str,
                                      help='Path to save the template (.csv, .tsv, .xlsx)')),
+            (['--write-toc'], dict(action='store_true', default=False,
+                                      help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the template')),
         ]
@@ -148,7 +152,8 @@ class GenTemplateController(cement.Controller):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file)
         io.Writer().run(args.template_file, [], models=models,
-                        write_schema=args.write_schema, extra_entries=10)
+                        write_toc=args.write_toc, write_schema=args.write_schema, 
+                        extra_entries=10)
         print('Template saved to {}'.format(args.template_file))
 
 
@@ -169,6 +174,8 @@ class NormalizeController(cement.Controller):
                                   help='Path to the workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['out_wb_file'], dict(type=str,
                                    help='Path to save the normalized workbook (.csv, .json, .tsv, .xlsx, .yml)')),
+            (['--write-toc'], dict(action='store_true', default=False,
+                                      help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the normalized workbook')),
         ]
@@ -192,7 +199,7 @@ class NormalizeController(cement.Controller):
             if isinstance(obj, model):
                 obj.normalize()
         io.Writer().run(args.out_wb_file, objs, model_metadata=reader._model_metadata,
-                        models=models, write_schema=args.write_schema)
+                        models=models, write_toc=args.write_toc, write_schema=args.write_schema)
         print('Normalized workbook saved to {}'.format(args.out_wb_file))
 
 
