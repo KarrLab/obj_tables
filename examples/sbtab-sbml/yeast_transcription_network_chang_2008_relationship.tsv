@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='Relationship' Description='YeastTranscriptionalRegulation'		
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Relationship' Description='YeastTranscriptionalRegulation'		
 !From	!To	!Relation
 ABF1	YAL041W	Binds
 ABF1	YAL042W	Binds

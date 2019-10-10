@@ -1,4 +1,4 @@
-!!ObjTables TableType='Data' ModelId='MainRoot',
+!!ObjTables Type='Data' Id='MainRoot',
 !Id,root
 !Name,€
 ,

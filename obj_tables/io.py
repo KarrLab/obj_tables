@@ -400,7 +400,7 @@ class WorkbookWriter(WriterBase):
         version = obj_tables.__version__
         now = datetime.now()
         metadata = ["!!{}".format(format),
-                    "TableType='{}'".format(table_type),
+                    "Type='{}'".format(table_type),
                     "Description='Table/model and column/attribute definitions'",
                     "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
             now.year, now.month, now.day, now.hour, now.minute, now.second),
@@ -481,7 +481,7 @@ class WorkbookWriter(WriterBase):
 
         now = datetime.now()
         metadata = ["!!{}".format(format),
-                    "TableType='{}'".format(table_type),
+                    "Type='{}'".format(table_type),
                     "Description='Table of contents'",
                     "Date='{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'".format(
             now.year, now.month, now.day, now.hour, now.minute, now.second),
@@ -1160,11 +1160,11 @@ class WorkbookReader(ReaderBase):
 
             data = reader.read_worksheet(sheet_name)
             metadata, _ = self.read_worksheet_metadata(sheet_name, data)
-            if metadata['TableType'] != DOC_TABLE_TYPE:
+            if metadata['Type'] != DOC_TABLE_TYPE:
                 continue
-            assert 'ModelId' in metadata, 'Metadata for sheet "{}" must define the ModelId.'.format(sheet_name)
-            model_name_to_sheet_name[metadata['ModelId']] = sheet_name
-            sheet_name_to_model_name[sheet_name] = metadata['ModelId']
+            assert 'Id' in metadata, 'Metadata for sheet "{}" must define the Id.'.format(sheet_name)
+            model_name_to_sheet_name[metadata['Id']] = sheet_name
+            sheet_name_to_model_name[sheet_name] = metadata['Id']
 
         # drop metadata models unless they're requested
         ignore_model_names = []
@@ -1580,8 +1580,8 @@ class WorkbookReader(ReaderBase):
         # strip out rows with table name and description
         model_metadata, top_comments = self.read_worksheet_metadata(sheet_name, data)
         self._model_metadata[model] = model_metadata
-        assert model_metadata['TableType'] == DOC_TABLE_TYPE, \
-            "TableType '{}' must be '{}'.".format(model_metadata['TableType'], DOC_TABLE_TYPE)
+        assert model_metadata['Type'] == DOC_TABLE_TYPE, \
+            "Type '{}' must be '{}'.".format(model_metadata['Type'], DOC_TABLE_TYPE)
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1930,8 +1930,8 @@ class MultiSeparatedValuesReader(ReaderBase):
             dirname (:obj:`str`): directory to save model
             ext (:obj:`str`): extension
         """
-        if metadata['TableType'] == DOC_TABLE_TYPE:
-            tmp_path = os.path.join(dirname, metadata['ModelId'] + ext)
+        if metadata['Type'] == DOC_TABLE_TYPE:
+            tmp_path = os.path.join(dirname, metadata['Id'] + ext)
             wc_utils.workbook.io.write(tmp_path, {'': data})
 
 
@@ -2145,9 +2145,9 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None):
 
     now = datetime.now()
     metadata = dict(metadata)
-    metadata['TableType'] = DOC_TABLE_TYPE
-    metadata['ModelId'] = cls.__name__
-    metadata['ModelName'] = table_name
+    metadata['Type'] = DOC_TABLE_TYPE
+    metadata['Id'] = cls.__name__
+    metadata['Name'] = table_name
     metadata.pop('Description', None)
     if cls.Meta.description:
         metadata['Description'] = cls.Meta.description
@@ -2155,7 +2155,7 @@ def get_fields(cls, metadata, include_all_attributes=True, sheet_models=None):
         now.year, now.month, now.day, now.hour, now.minute, now.second)
     metadata[format + 'Version'] = version
 
-    keys = ['TableType', 'ModelId', 'ModelName', 'Date', format + 'Version']
+    keys = ['Type', 'Id', 'Name', 'Date', format + 'Version']
     if 'Description' in metadata:
         keys.insert(2, 'Description')
     keys += sorted(set(metadata.keys()) - set(keys))

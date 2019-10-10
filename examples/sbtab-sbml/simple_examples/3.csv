@@ -1,21 +1,21 @@
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='Compound' Description='Ex 8 - Compound',,,,,
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Compound' Description='Ex 8 - Compound',,,,,
 !ID,!Identifiers:obo.chebi,!Identifiers:kegg.compound,,,
 water,CHEBI:15377,C00001,,,
 ATP,CHEBI:15422,C00002,,,
 phosphate,CHEBI:18367,...,,,
 ,,,,,
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='Reaction' Description='Ex 10 - Glycolysis',,,,,
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Reaction' Description='Ex 10 - Glycolysis',,,,,
 !ID,!Name,!ReactionFormula,,,
 glycolysis,Glycolysis,Glc + 2 ATP + 4 ADP + 2 Pi + 2 NAD <=> 2 Pyr + 4 ATP + 2 ADP + NADH,,,
 ,,,,,
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='Quantity' Description='Ex 12 - Quantity',,,,,
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Quantity' Description='Ex 12 - Quantity',,,,,
 !ID,!QuantityType,!Identifiers:kegg.reaction,!Identifiers:kegg.compound,!Value,!Unit
 keq R1,equilibrium constant,R01061,C00003,0.0984,dimensionless
 kmc R1 C1,Michaelis constant,R01061,C00111,0.96,mM
 kic R1 C1,inhibition constant,R01070,C00118,0.13,mM
 con C1,concentration,,,203,mM
 ,,,,,
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='QuantityMatrix' Description='Ex 17 - Metabolomics',,,,,
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='QuantityMatrix' Description='Ex 17 - Metabolomics',,,,,
 !ID,!Time,!>Concentration:Glucose,!>Concentration:Fructose,,
 T0,0,1.1,1.4,,
 T1,0.5,1.2,0.9,,

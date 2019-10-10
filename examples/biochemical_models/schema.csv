@@ -1,15 +1,15 @@
-!!ObjTables TableType='Schema' TableName='Table/model and column/attribute definitions' Date='2019-09-13 00:00:00' ObjTablesVersion='0.0.8',,,,
+!!ObjTables Type='Schema' TableName='Table/model and column/attribute definitions' Date='2019-09-13 00:00:00' ObjTablesVersion='0.0.8',,,,
 !Name,!Type,!Parent,!Format,!Description
-Model,Model,,column,Model
+Model,Class,,column,Model
 Id,Attribute,Model,Slug,Identifier
 Name,Attribute,Model,String,Name
-Compound,Model,,row,Compound
+Compound,Class,,row,Compound
 Model,Attribute,Compound,"ManyToOne('Model', related_name='compounds')",
 Id,Attribute,Compound,Slug,Identifier
 Name,Attribute,Compound,String,Name
 Identifiers,Attribute,Compound,String,
 IsConstant,Attribute,Compound,Boolean,
-Reaction,Model,,row,Reaction
+Reaction,Class,,row,Reaction
 Model,Attribute,Reaction,"ManyToOne('Model', related_name='reactions')",
 Id,Attribute,Reaction,Slug,Identifier
 Name,Attribute,Reaction,String,Name

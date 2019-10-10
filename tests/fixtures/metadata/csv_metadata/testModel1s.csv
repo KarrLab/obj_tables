@@ -1,4 +1,4 @@
-!!ObjTables TableType='Data' ModelId='Model1'
+!!ObjTables Type='Data' Id='Model1'
 !Id
 model1_0
 model1_1

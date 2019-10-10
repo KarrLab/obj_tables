@@ -1,16 +1,16 @@
-!! TableType='Schema' Description='Table/model and column/attribute definitions' ObjTablesVersion='0.0.8',,,,
+!! Type='Schema' Description='Table/model and column/attribute definitions' ObjTablesVersion='0.0.8',,,,
 !Name,!Type,!Parent,!Format,!Description
-Parent,Table,,column,Represents a parent
-Id,Column,Parent,slug,Identifier
-Name,Column,Parent,string,Name
-Id,Column,Child,slug,Identifier
-Name,Column,Child,string,Name
-Parents,Column,Child,"manyToMany('Parent', related_name='children')",Parents
-Formula,Column,Child,chem.EmpiricalFormula,Empirical formula
-Size,Column,Child,"enum(['small', 'medium', 'large'], default='small', default_cleaned_value='small')",Size
-Quantity,Column,Child,"manyToOne('Quantity', related_name='children')",
-Child,Table,,row,Represents a child
-Quantity,Table,,multiple_cells,Represents a quantity
-Id,Column,Quantity,slug,Identifier
-Value,Column,Quantity,string,Value
-Units,Column,Quantity,string,Units
+Parent,Class,,column,Represents a parent
+Id,Attrribute,Parent,slug,Identifier
+Name,Attrribute,Parent,string,Name
+Id,Attrribute,Child,slug,Identifier
+Name,Attrribute,Child,string,Name
+Parents,Attrribute,Child,"manyToMany('Parent', related_name='children')",Parents
+Formula,Attrribute,Child,chem.EmpiricalFormula,Empirical formula
+Size,Attrribute,Child,"enum(['small', 'medium', 'large'], default='small', default_cleaned_value='small')",Size
+Quantity,Attrribute,Child,"manyToOne('Quantity', related_name='children')",
+Child,Class,,row,Represents a child
+Quantity,Class,,multiple_cells,Represents a quantity
+Id,Attrribute,Quantity,slug,Identifier
+Value,Attrribute,Quantity,string,Value
+Units,Attrribute,Quantity,string,Units

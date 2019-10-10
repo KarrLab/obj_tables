@@ -1,4 +1,4 @@
-!!ObjTables TableType='Data' ModelId='Leaf',,,,,
+!!ObjTables Type='Data' Id='Leaf',,,,,
 !Id,!Nodes,!Val1,!Val2,!Onetomany rows,!Onetomany inlines
 leaf_0_0,node_0,7,8,"row_0_0, row_0_1","inline_0_0, inline_0_1"
 leaf_0_1,node_0,9,10,"row_1_0, row_1_1","inline_1_0, inline_1_1"

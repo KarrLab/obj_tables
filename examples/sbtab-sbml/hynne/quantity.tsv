@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='Hynne_2001' TableType='Data' ModelId='Quantity'								
+!!ObjTables ObjTablesVersion='0.0.8' Document='Hynne_2001' Type='Data' Id='Quantity'								
 !ID	!Name	!Compound	!Reaction	!Location	!Value	!Unit	!SBOTerm	!QuantityType
 Sp1		GlcX		extracellular	6.7	mM	SBO:0000196	concentration
 Sp2		Glc		cytosol	0.573074	mM	SBO:0000196	concentration

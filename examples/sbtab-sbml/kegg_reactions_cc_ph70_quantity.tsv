@@ -1,4 +1,4 @@
-"!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='Quantity' Description='transformed standard Gibbs free energies of reaction, dG0_prime' Unit='kJ/mol' pH='7.0' Temperature='298.15' TemperatureUnit='kelvin' IonicStrength='0.1' IonicStrengthUnit='mM'"				
+"!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Quantity' Description='transformed standard Gibbs free energies of reaction, dG0_prime' Unit='kJ/mol' pH='7.0' Temperature='298.15' TemperatureUnit='kelvin' IonicStrength='0.1' IonicStrengthUnit='mM'"				
 !QuantityType	!Identifiers:kegg.reaction	!Mean	!Std	!Comment
 standard Gibbs energy of reaction	R00002	-766.9	47.4	
 standard Gibbs energy of reaction	R00004	-15.8	0.4	

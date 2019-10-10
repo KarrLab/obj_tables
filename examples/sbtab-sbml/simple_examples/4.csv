@@ -1,9 +1,9 @@
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='Compound' Description='Ex 9 - Miriam annotation',,,,,
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Compound' Description='Ex 9 - Miriam annotation',,,,,
 !ID,!MiriamAnnotations,,,,
 water,"[["""",""urn:miriam:obo.chebi:CHEBI%3A15377""],["""",""urn:miriam:kegg.compound:C00001""]]",,,,
 ATP,"[[""bqbiol:hasPart"",""urn:miriam:obo.chebi:CHEBI%3A18367""]]",,,,
 ,,,,,
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='Quantity' Description='Ex 13 - Quantity',,,,,
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Quantity' Description='Ex 13 - Quantity',,,,,
 !ID,!SBO:Identifiers:obo.sbo,!Reaction,!Compound,!Value,!Unit
 kcrf R1,SBO:0000320,R1,C1,200,1/s
 keq R1,SBO:0000281,R1,C2,0.0984,dimensionless
@@ -11,7 +11,7 @@ kmc R1 C1,SBO:0000027,R1,C3,0.96,mM
 kic R1 C2,SBO:0000261,R1,,0.13,mM
 con C3,SBO:0000196,,,203,mM
 ,,,,,
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='QuantityMatrix' Description='Ex 19 - Metabolomics',,,,,
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='QuantityMatrix' Description='Ex 19 - Metabolomics',,,,,
 !ID,!Identifiers:obo.chebi,t = 0 s,t = 0.5 s,,
 Glucose,CHEBI:17234,1.1,1.2,,
 Fructose,CHEBI:15824,1.4,0.9,,

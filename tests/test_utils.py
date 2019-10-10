@@ -481,9 +481,9 @@ class InitSchemaTestCase(unittest.TestCase):
 
         wb = wc_utils.workbook.io.read(schema_xl)
         wb['!' + core.SCHEMA_SHEET_NAME][0][0] = wb['!' + core.SCHEMA_SHEET_NAME][0][0].replace(
-            "TableType='{}'".format(core.SCHEMA_TABLE_TYPE), "ModelId='{}'".format('my' + core.SCHEMA_TABLE_TYPE))
+            "Type='{}'".format(core.SCHEMA_TABLE_TYPE), "Id='{}'".format('my' + core.SCHEMA_TABLE_TYPE))
         wc_utils.workbook.io.write(schema_xl_2, wb)
-        with self.assertRaisesRegex(ValueError, 'TableType must be'):
+        with self.assertRaisesRegex(ValueError, 'Type must be'):
             utils.init_schema(schema_xl_2,
                               out_filename=out_filename)
 
@@ -544,7 +544,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
         filename = os.path.join(self.tmp_dirname, 'schema.csv')
         ws_metadata = ['!!ObjTables',
-                       "TableType='{}'".format(core.SCHEMA_TABLE_TYPE),
+                       "Type='{}'".format(core.SCHEMA_TABLE_TYPE),
                        "Description='Schema'",
                        "ObjTablesVersion='{}'".format(obj_tables.__version__),
                        ]
@@ -560,7 +560,7 @@ class InitSchemaTestCase(unittest.TestCase):
         with open(filename, 'w') as file:
             file.write('{}\n'.format(' '.join(ws_metadata)))
             file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Cls1', 'Model', 'Doc', 'column', ''])))
+            file.write('{}\n'.format(','.join(['Cls1', 'Class', 'Doc', 'column', ''])))
         with self.assertRaisesRegex(ValueError, 'cannot have a parent'):
             utils.init_schema(filename)
 
@@ -597,11 +597,11 @@ class InitSchemaTestCase(unittest.TestCase):
         wb = wc_utils.workbook.io.read(filename)
         wb['Extra'] = wc_utils.workbook.Worksheet()
         wb['Extra'].append(wc_utils.workbook.Row([
-            "!!ObjTables TableType='Data' ModelId='Extra' ObjTablesVersion='{}'".format(
+            "!!ObjTables Type='Data' Id='Extra' ObjTablesVersion='{}'".format(
                 obj_tables.__version__)]))
         wb['!' + core.SCHEMA_SHEET_NAME] = wc_utils.workbook.Worksheet()
         wb['!' + core.SCHEMA_SHEET_NAME].append(wc_utils.workbook.Row([
-            "!!ObjTables TableType='{}' ObjTablesVersion='{}'".format(
+            "!!ObjTables Type='{}' ObjTablesVersion='{}'".format(
                 core.SCHEMA_TABLE_TYPE, obj_tables.__version__)]))
         wc_utils.workbook.io.write(filename, wb)
 

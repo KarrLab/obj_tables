@@ -1,4 +1,4 @@
-!!ObjTables TableType='Data' ModelId='OneToManyRow'
+!!ObjTables Type='Data' Id='OneToManyRow'
 !Id
 row_0_0
 row_0_1

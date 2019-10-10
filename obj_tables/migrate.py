@@ -1183,7 +1183,7 @@ class Migrator(object):
     def _migrate_expression(self, existing_analyzed_expr):
         """ Migrate a model instance's `ParsedExpression.expression`
 
-        The ParsedExpression syntax supports model type names in a ModelName.model_id notation.
+        The ParsedExpression syntax supports model type names in a Name.model_id notation.
         If a model type name changes then these must be migrated.
 
         Args:

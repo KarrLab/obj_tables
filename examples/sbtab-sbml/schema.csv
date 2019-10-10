@@ -1,4 +1,4 @@
-!!ObjTables TableType='Schema' Description='Table/model and column/attribute definitions' Date='2019-9-13' ObjTablesVersion='0.0.8',,,,
+!!ObjTables Type='Schema' Description='Table/model and column/attribute definitions' Date='2019-9-13' ObjTablesVersion='0.0.8',,,,
 !Name,!Type,!Parent,!Format,!Description
 Comment,Attribute,Reaction,String,Comment
 ReferenceName,Attribute,Reaction,String,"Reference title, authors, etc. (as free text)"

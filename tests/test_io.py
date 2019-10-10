@@ -684,7 +684,7 @@ class TestIo(unittest.TestCase):
         ws = wb.create_sheet('!Test models')
         cell = ws.cell(row=1, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
-        cell.value = "!!ObjTables TableType='Data' ModelId='TestModel'"
+        cell.value = "!!ObjTables Type='Data' Id='TestModel'"
 
         cell = ws.cell(row=2, column=1)
         cell.data_type = openpyxl.cell.cell.TYPE_STRING
@@ -780,7 +780,7 @@ class TestIo(unittest.TestCase):
         workbook = Workbook()
 
         workbook['!Test models'] = worksheet = Worksheet()
-        worksheet.append(Row(["!!ObjTables TableType='Data' ModelId='TestModel'"]))
+        worksheet.append(Row(["!!ObjTables Type='Data' Id='TestModel'"]))
         worksheet.append(Row(['!Id']))
         worksheet.append(Row(['A']))
         worksheet.append(Row(['B']))
@@ -902,7 +902,7 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         wb = Workbook()
         ws = wb['!Nodes'] = Worksheet()
-        ws.append(Row(["!!ObjTables TableType='Data' ModelId='Node'"]))
+        ws.append(Row(["!!ObjTables Type='Data' Id='Node'"]))
         ws.append(Row(['!Id', '!Name']))
         ws.append(Row(['a', 'A']))
         ws.append(Row(['b', 'B']))
@@ -942,9 +942,9 @@ class TestIo(unittest.TestCase):
             self.assertTrue(obj2.is_equal(obj))
 
         model_metadata = {Node: {
-            'TableType': 'Data',
-            'ModelId': 'Node',
-            'ModelName': 'Nodes',
+            'Type': 'Data',
+            'Id': 'Node',
+            'Name': 'Nodes',
             'ObjTablesVersion': obj_tables.__version__,
             'attr1': 'val1',
             'attr2': 'val2',
@@ -963,7 +963,7 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         wb = Workbook()
         ws = wb['!Nodes'] = Worksheet()
-        ws.append(Row(["!!ObjTables TableType='Data' ModelId=\"Node\""]))
+        ws.append(Row(["!!ObjTables Type='Data' Id=\"Node\""]))
         ws.append(Row(['!Id', '!Name']))
         ws.append(Row(['a', 'A']))
         ws.append(Row(['b', 'B']))
@@ -985,7 +985,7 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         wb = Workbook()
         ws = wb['!Nodes'] = Worksheet()
-        ws.append(Row(["!!ObjTables TableType='Data' ModelId='Node'"]))
+        ws.append(Row(["!!ObjTables Type='Data' Id='Node'"]))
         ws.append(Row(['!Id ', '!Name  ']))
         ws.append(Row(['a', 'A']))
         ws.append(Row(['b', 'B']))
@@ -1007,7 +1007,7 @@ class TestIo(unittest.TestCase):
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
         wb = Workbook()
         ws = wb['!NodeTranspose'] = Worksheet()
-        ws.append(Row(["!!ObjTables TableType='Data' ModelId='NodeTranspose'"]))
+        ws.append(Row(["!!ObjTables Type='Data' Id='NodeTranspose'"]))
         ws.append(Row(['!Id ', 'a', 'b', '', 'd']))
         ws.append(Row(['!Name  ', 'A', 'B', '', 'D']))
         write_workbook(filename, wb)
@@ -1500,7 +1500,7 @@ class TestMisc(unittest.TestCase):
         writer.write_sheet(xslx_writer,
                            TestModel,
                            data=[['Cell_2_B', 'Cell_2_C'], ['Cell_3_B', 'Cell_3_C']],
-                           headings=[["!!ObjTables TableType='Data' ModelId='TestModel'"],
+                           headings=[["!!ObjTables Type='Data' Id='TestModel'"],
                                      ['!Column_B', '!Column_C']],
                            metadata_headings=[],
                            validation=None)
@@ -1508,7 +1508,7 @@ class TestMisc(unittest.TestCase):
 
         xlsx_reader = get_reader('.xlsx')(filename)
         workbook = xlsx_reader.run()
-        self.assertEqual(list(workbook['!Sheet'][0]), ["!!ObjTables TableType='Data' ModelId='TestModel'", None])
+        self.assertEqual(list(workbook['!Sheet'][0]), ["!!ObjTables Type='Data' Id='TestModel'", None])
         self.assertEqual(list(workbook['!Sheet'][1]), ['!Column_B', '!Column_C'])
         self.assertEqual(list(workbook['!Sheet'][2]), ['Cell_2_B', 'Cell_2_C'])
         self.assertEqual(list(workbook['!Sheet'][3]), ['Cell_3_B', 'Cell_3_C'])
@@ -1540,7 +1540,7 @@ class TestMisc(unittest.TestCase):
     def test_unclean_data(self):
         workbook = Workbook()
         workbook['!Node10'] = worksheet = Worksheet()
-        workbook['!Node10'].append(Row(["!!ObjTables TableType='Data' ModelId='Node10'"]))
+        workbook['!Node10'].append(Row(["!!ObjTables Type='Data' Id='Node10'"]))
         worksheet.append(Row(['!Id', '!Value']))
         worksheet.append(Row(['A', '1.0']))
         worksheet.append(Row(['B', 'x']))
@@ -1702,7 +1702,7 @@ class ReadEmptyCellTestCase(unittest.TestCase):
 
         workbook = Workbook()
         workbook['!Test models'] = worksheet = Worksheet()
-        worksheet.append(Row(["!!ObjTables TableType='Data' ModelId='TestModel'"]))
+        worksheet.append(Row(["!!ObjTables Type='Data' Id='TestModel'"]))
         worksheet.append(Row(['!Id', '!Value 1', '!Value 2']))
         worksheet.append(Row(['A', None, None]))
         worksheet.append(Row(['B', 1., 3.]))
@@ -1950,7 +1950,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        ws.append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        ws.append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', '!Attr']))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
@@ -1960,7 +1960,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
@@ -1986,7 +1986,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id']))
         ws.append(Row(['!Attr']))
         writer.run(wb, style={
@@ -1996,7 +1996,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         writer.run(wb, style={
             Model.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
@@ -2018,7 +2018,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', '!Attr1', '!Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb, style={
@@ -2028,7 +2028,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', '!Attr2']))
         ws.append(Row(['m1', '2']))
         writer.run(wb, style={
@@ -2077,7 +2077,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row([None, None, None, '!Quantity', '!Quantity', '!Quantity2', '!Quantity2']))
         ws.append(Row(['!Id', '!Attr1', '!Attr2', '!Value', '!Units', '!Value', '!Units']))
         ws.append(Row(['m1', '1', '2', 1.2, 'g', 1.2, 'g']))
@@ -2088,7 +2088,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row([None, None, '!Quantity2', '!Quantity2']))
         ws.append(Row(['!Id', '!Attr2', '!Value', '!Units']))
         ws.append(Row(['m1', '2', 1.2, 'g']))
@@ -2114,7 +2114,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', '!Attr1', '!Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb, style={
@@ -2124,7 +2124,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', '!Attr1', '!Attr2', '!Attr3']))
         ws.append(Row(['m1', '1', '2', '3']))
         writer.run(wb, style={
@@ -2149,7 +2149,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', '!Attr1', '!Attr2']))
         ws.append(Row(['m1', '1', '2']))
         writer.run(wb, style={
@@ -2159,7 +2159,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', '!Attr2', '!Attr1']))
         ws.append(Row(['m1', '2', '1']))
         writer.run(wb, style={
@@ -2190,7 +2190,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', 'm1']))
         ws.append(Row(['!Attr1', '1']))
         ws.append(Row(['!Attr2', '2']))
@@ -2201,7 +2201,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row(['!Id', 'm1']))
         ws.append(Row(['!Attr2', '2']))
         ws.append(Row(['!Attr1', '1']))
@@ -2244,7 +2244,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row([None, None, None, '!Quantity', '!Quantity']))
         ws.append(Row(['!Id', '!Attr1', '!Attr2', '!Value', '!Units']))
         ws.append(Row(['m1', '1', '2', 1.1, 's']))
@@ -2255,7 +2255,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row([None, None, None, '!Quantity', '!Quantity']))
         ws.append(Row(['!Id', '!Attr2', '!Attr1', '!Value', '!Units']))
         ws.append(Row(['m1', '2', '1', 1.1, 's']))
@@ -2306,7 +2306,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row([None, '!Id', 'm1']))
         ws.append(Row([None, '!Attr1', '1']))
         ws.append(Row([None, '!Attr2', '2']))
@@ -2319,7 +2319,7 @@ class StrictReadingTestCase(unittest.TestCase):
 
         wb = Workbook()
         wb['!Models'] = ws = Worksheet()
-        wb['!Models'].append(Row(["!!ObjTables TableType='Data' ModelId='Model'"]))
+        wb['!Models'].append(Row(["!!ObjTables Type='Data' Id='Model'"]))
         ws.append(Row([None, '!Id', 'm1']))
         ws.append(Row([None, '!Attr2', '2']))
         ws.append(Row([None, '!Attr1', '1']))

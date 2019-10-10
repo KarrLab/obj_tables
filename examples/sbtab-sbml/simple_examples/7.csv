@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' TableType='Data' ModelId='Quantity' Description='Ex 15 - Quantity',,,,
+!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Quantity' Description='Ex 15 - Quantity',,,,
 !ID,!Compound,!Condition,!SBO:concentration,!Unit
 con C1 wt,C1,wildtype,0.2,mM
 con C2 wt,C2,wildtype,1,mM

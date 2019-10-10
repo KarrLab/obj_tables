@@ -456,13 +456,13 @@ def init_schema(filename, name=None, out_filename=None):
     verbose_name_plural_col_name = '!Verbose name plural'
     desc_col_name = '!Description'
 
-    class_type = 'Model'
+    class_type = 'Class'
     attr_type = 'Attribute'
 
     rows = ws
     metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows)
-    if metadata.get('TableType', None) != SCHEMA_TABLE_TYPE:
-        raise ValueError("TableType must be '{}'.".format(SCHEMA_TABLE_TYPE))
+    if metadata.get('Type', None) != SCHEMA_TABLE_TYPE:
+        raise ValueError("Type must be '{}'.".format(SCHEMA_TABLE_TYPE))
 
     header_row = rows[0]
     rows = rows[1:]

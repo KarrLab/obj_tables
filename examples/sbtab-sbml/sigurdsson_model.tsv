@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' TableType='Data' ModelId='Compartment'										
+!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' Type='Data' Id='Compartment'										
 !ID	!Name	!Size	!Unit	!SBOTerm						
 c	cytosol	nan								
 e	extracellular	nan								
@@ -10,7 +10,7 @@ p	periplasm	nan
 r	Endoplasmic reticulum	nan								
 x	Glyoxysome	nan								
 										
-!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' TableType='Data' ModelId='Compound'										
+!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' Type='Data' Id='Compound'										
 !ID	!Name	!Location	!Charge	!IsConstant	!SBOTerm	!InitialConcentration	!hasOnlySubstanceUnits	!SBML:fbc:chemicalFormula	!SBML:fbc:charge	
 M_10fthf_c	10fthf_c	c	0	FALSE		nan	FALSE		0	
 M_10fthf5glu_c	10fthf5glu_c	c	0	FALSE		nan	FALSE		0	
@@ -2788,7 +2788,7 @@ M_urate_x	urate_x	x	0	FALSE		nan	FALSE		0
 M_xan_x	xan_x	x	0	FALSE		nan	FALSE		0	
 M_thr__L_m	thr__L_m	m	0	FALSE		nan	FALSE		0	
 										
-!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' TableType='Data' ModelId='Reaction'										
+!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' Type='Data' Id='Reaction'										
 !ID	!Name	!ReactionFormula	!Location	!Regulator	!KineticLaw	!SBOTerm	!IsReversible	!SBML:fbc:GeneAssociation	!SBML:fbc:LowerBound	!SBML:fbc:UpperBound
 R_DM_13__cis__oretn_n	DM_13__cis__oretn_n	M_13__cis__oretn_n <=> 					FALSE		cobra_0_bound	cobra_0_bound
 R_DM_13__cis__retn_n	DM_13__cis__retn_n	M_13__cis__retn_n <=> 					FALSE		cobra_0_bound	cobra_0_bound
@@ -6516,7 +6516,7 @@ R_R03184_PLUS_R00647	R03184_PLUS_R00647	M_gullac_c + M_o2_c <=> M_ascb__L_c + M_
 R_R01465m	R01465m	M_nad_m + M_thr__L_m <=> M_2aobut_m + M_h_m + M_nadh_m					TRUE		cobra_default_lb	cobra_default_ub
 R_thr_mt	thr_mt	M_thr__L_c <=> M_thr__L_m					TRUE		cobra_default_lb	cobra_default_ub
 										
-!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' TableType='Data' ModelId='Quantity'										
+!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' Type='Data' Id='Quantity'										
 !ID	!Parameter:SBML:parameter:id	!Value	!Unit	!Type						
 cobra_default_lb	cobra_default_lb	-100000	mmol_per_gDW_per_hr	global parameter						
 cobra_default_ub	cobra_default_ub	100000	mmol_per_gDW_per_hr	global parameter						
@@ -6556,11 +6556,11 @@ R_EX_val__L_e_lower_bound	R_EX_val__L_e_lower_bound	-1	mmol_per_gDW_per_hr	globa
 R_sink_pre_prot_LPAREN_er_RPAREN__lower_bound	R_sink_pre_prot_LPAREN_er_RPAREN__lower_bound	-1	mmol_per_gDW_per_hr	global parameter						
 R_biomass_mm_1_no_glygln_upper_bound	R_biomass_mm_1_no_glygln_upper_bound	1000	mmol_per_gDW_per_hr	global parameter						
 										
-!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' TableType='Data' ModelId='FbcObjective' Description='FBC objective'										
+!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' Type='Data' Id='FbcObjective' Description='FBC objective'										
 !ID	!Name	!SBML:fbc:type	!SBML:fbc:active	!SBML:fbc:objective	!SBML:fbc:reaction					
 obj		maximize	TRUE	1	R_biomass_mm_1_no_glygln					
 										
-!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' TableType='Data' ModelId='Gene' Description='FBC gene'										
+!!ObjTables ObjTablesVersion='0.0.8' Document='MODEL1507180055' Type='Data' Id='Gene' Description='FBC gene'										
 !ID	!SBML:fbc:ID	!SBML:fbc:Name	!SBML:fbc:GeneProduct	!SBML:fbc:Label						
 G_100039108	G_100039108	100039108	TRUE	100039108						
 G_100041375	G_100041375	100041375	TRUE	100041375						

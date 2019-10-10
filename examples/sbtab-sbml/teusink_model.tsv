@@ -1,9 +1,9 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' TableType='Data' ModelId='Compartment'																
+!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' Type='Data' Id='Compartment'																
 !ID	!Size															
 extracellular	1															
 cytosol	1															
 																
-!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' TableType='Data' ModelId='Compound'																
+!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' Type='Data' Id='Compound'																
 !ID	!Name	!Location	!Charge	!IsConstant	!InitialConcentration	!hasOnlySubstanceUnits	!Identifiers:kegg.compound									
 GLCi	Glucose in Cytosol	cytosol	0	FALSE	0.1	FALSE	C00293									
 G6P	Glucose 6 Phosphate	cytosol	0	FALSE	2.5	FALSE	C00668									
@@ -32,7 +32,7 @@ AMP	AMP concentration	cytosol	0	FALSE	0	FALSE	C00020
 SUM_P	sum of AXP conc	cytosol	0	TRUE	4.1	FALSE	C00002									
 F26BP	"F2,6P"	cytosol	0	TRUE	0	FALSE	C00665									
 																
-!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' TableType='Data' ModelId='Reaction'																
+!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' Type='Data' Id='Reaction'																
 !ID	!Name	!ReactionFormula	!Regulator	!KineticLaw	!IsReversible	!Identifiers:ec-code										
 vGLK	Hexokinase	GLCi + P <=> G6P	ATP|ADP	cytosol * VmGLK / (KmGLKGLCi * KmGLKATP) * (GLCi * ATP - G6P * ADP / KeqGLK) / ((1 + GLCi / KmGLKGLCi + G6P / KmGLKG6P) * (1 + ATP / KmGLKATP + ADP / KmGLKADP))	TRUE	2.7.1.2										
 vPGI	Glucose-6-phosphate isomerase	G6P <=> F6P		cytosol * VmPGI_2 / KmPGIG6P_2 * (G6P - F6P / KeqPGI_2) / (1 + G6P / KmPGIG6P_2 + F6P / KmPGIF6P_2)	TRUE	5.3.1.9										
@@ -52,7 +52,7 @@ vADH	Alcohol dehydrogenase	ACE + NADH <=> NAD + ETOH		#NAME?	TRUE	1.1.1.2
 vG3PDH	Glycerol 3-phosphate dehydrogenase	TRIO + NADH <=> NAD + GLY		cytosol * VmG3PDH / (KmG3PDHDHAP * KmG3PDHNADH) * (1 / (1 + KeqTPI) * TRIO * NADH - GLY * NAD / KeqG3PDH) / ((1 + 1 / (1 + KeqTPI) * TRIO / KmG3PDHDHAP + GLY / KmG3PDHGLY) * (1 + NADH / KmG3PDHNADH + NAD / KmG3PDHNAD))	FALSE	1.1.1.8										
 vATP	ATPase activity	P <=>	ATP	cytosol * KATPASE * ATP	TRUE	3.6.1.3										
 																
-!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' TableType='Data' ModelId='PbConfig' Description='Parameter balancing configuration file'																
+!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' Type='Data' Id='PbConfig' Description='Parameter balancing configuration file'																
 !Option	!Value															
 use_pseudo_values	TRUE															
 ph	7															
@@ -66,7 +66,7 @@ default_activation	complete
 model_name	outputname															
 boundary_values	ignore															
 																
-!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' TableType='Data' ModelId='Quantity' Description='Parameter prior'																
+!!ObjTables ObjTablesVersion='0.0.8' Document='BIOMD0000000064' Type='Data' Id='Quantity' Description='Parameter prior'																
 !QuantityType	!Unit	!BiologicalElement	!MathematicalType	!PriorMedian	!PriorStd	!PriorGeometricStd	!LowerBound	!UpperBound	!DataStd	!Symbol	!PhysicalType	!Dependence	!UseAsPriorInformation	!SBMLElement	!Abbreviation	!MatrixInfo
 standard chemical potential	kJ/mol	Species	Additive	-880	1500		-3000	2000	10	mu0	Thermodynamic	Basic	1	Global parameter 	scp	"[I_species, 0, 0, 0, 0, 0, 0, 0]"
 catalytic rate constant geometric mean	1/s	Reaction	Multiplicative	10		100	0.0000001	10000	100	KV	Kinetic	Basic	1	Local parameter	kcrg	"[0, I_reaction, 0, 0, 0, 0, 0, 0]"
