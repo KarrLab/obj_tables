@@ -215,14 +215,14 @@
             <p>Optionally, a class can be encoded into a transposed table in which the columns represent instances of the class and the rows represent attributes of the class. This feature is useful for models which are intended to only have a single instance. Models can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
 
             <h3>Comments</h3>
-            <p>Comments about individual class instances can be encoded by inserting rows whose first cell begins with <tt>%</tt>.</p>
+            <p>Comments about individual class instances can be encoded by inserting rows whose first cell begins with <tt>%/</tt> and ends with <tt>/%</tt>.</p>
 
             <h3>Additional tables, rows, and columns outside the scope of schemas</h3>
             <p>Sets of tables that encode datasets can include additional tables. Tables that are outside the scope of the schema must have names which do not not begin with an <tt>!</tt>.</p>
 
             <p>Tables can include additional columns. Columns that are outside of the scope of the schema must have names which do not begin with an <tt>!</tt>.</p>
 
-            <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
+            <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%/</tt> and end with <tt>/%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
 
             <h3>Example</h3>
             <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame class enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame class also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>

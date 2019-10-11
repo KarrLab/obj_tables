@@ -606,7 +606,7 @@ class WorkbookWriter(WriterBase):
         for obj in objects:
             # comments
             for comment in obj._comments:
-                data.append(['% ' + comment])
+                data.append(['%/ ' + comment + ' /%'])
 
             # properties
             obj_data = []
@@ -1557,8 +1557,10 @@ class WorkbookReader(ReaderBase):
         objs_comments = []
         obj_comments = top_comments
         for row in list(data):
-            if row and isinstance(row[0], str) and row[0].startswith('%'):
-                obj_comments.append(row[0][1:].strip())
+            if row and isinstance(row[0], str) and \
+                    row[0].startswith('%/') and row[0].endswith('/%') and \
+                    not any(row[1:]):
+                obj_comments.append(row[0][2:-2].strip())
                 data.remove(row)
             else:
                 objs_comments.append(obj_comments)
@@ -1723,8 +1725,10 @@ class WorkbookReader(ReaderBase):
         for row in list(rows):
             if not row or all(cell in ['', None] for cell in row):
                 rows.remove(row)
-            elif row and isinstance(row[0], str) and row[0].startswith('%'):
-                comment = row[0][1:].strip()
+            elif row and isinstance(row[0], str) and \
+                    row[0].startswith('%/') and row[0].endswith('/%') and \
+                    not any(row[1:]):
+                comment = row[0][2:-2].strip()
                 if comment:
                     comments.append(comment)
                 rows.remove(row)

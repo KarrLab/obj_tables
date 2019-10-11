@@ -681,13 +681,13 @@ class InitSchemaTestCase(unittest.TestCase):
             models=[schema.Parent, schema.Child])
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!!Parent'].insert(0, wc_utils.workbook.Row(['% V']))
+        wb['!!Parent'].insert(0, wc_utils.workbook.Row(['%/ V /%']))
         wb['!!Parent'].insert(0, wc_utils.workbook.Row([]))
         wb['!!Parent'].insert(3, wc_utils.workbook.Row([]))
-        wb['!!Parent'].insert(3, wc_utils.workbook.Row(['% W']))
-        wb['!!Parent'][5].append('% Z')
-        wb['!!Child'].insert(0, wc_utils.workbook.Row(['% 123']))
-        wb['!!Child'].append(wc_utils.workbook.Row(['% 456']))
+        wb['!!Parent'].insert(3, wc_utils.workbook.Row(['%/ W /%']))
+        wb['!!Parent'][5].append('%/ Z /%')
+        wb['!!Child'].insert(0, wc_utils.workbook.Row(['%/ 123 /%']))
+        wb['!!Child'].append(wc_utils.workbook.Row(['%/ 456 /%']))
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
