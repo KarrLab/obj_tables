@@ -1846,10 +1846,10 @@ class Model(with_metaclass(ModelMeta, object)):
                         difference['attributes'][attr_name] = 'Length: {} != Length: {}'.format(
                             len(val), len(other_val))
                     else:
-                        serial_vals = sorted(((v.serialize(), v)
+                        serial_vals = sorted(((v.serialize() or '', v)
                                               for v in val), key=lambda x: x[0])
                         serial_other_vals = sorted(
-                            ((v.serialize(), v) for v in other_val), key=lambda x: x[0])
+                            ((v.serialize() or '', v) for v in other_val), key=lambda x: x[0])
 
                         i_val = 0
                         oi_val = 0
@@ -2530,12 +2530,14 @@ class Model(with_metaclass(ModelMeta, object)):
         """ Exit context """
         pass
 
-    def to_dict(self, encode_primary_objects=True, max_depth=float('inf'), encoded=None):
+    @staticmethod
+    def to_dict( object, encode_primary_objects=True, max_depth=float('inf'), encoded=None):
         """ Encode an object using a simple Python representation (dict, list, str, float, bool, None) that is
         compatible with JSON and YAML. Use `__id` keys to avoid infinite recursion by encoding each object once and referring
         to objects by their __id for each repeated reference.
 
         Args:
+            object (:obj:`Model` of :obj:`list` of :obj:`Model`): model instances or list of model instances
             encode_primary_objects (:obj:`bool`, optional): if :obj:`True`, encode primary classes otherwise just encode their IDs
             max_depth (:obj:`int`, optional): maximum depth to serialize
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
@@ -2545,10 +2547,21 @@ class Model(with_metaclass(ModelMeta, object)):
         """
         if encoded is None:
             encoded = {}
-
-        json = {}
+        
         to_encode = queue.Queue()
-        to_encode.put((self, json, 0))
+
+        if isinstance(object, (list, tuple)):
+            json = []
+            for obj in object:
+                json_obj = {}
+                json.append(json_obj)
+                to_encode.put((obj, json_obj, 0))
+        elif object is not None:
+            json = {}
+            to_encode.put((object, json, 0))
+        else:
+            json = None
+
         while not to_encode.empty():
             obj, json_obj, depth = to_encode.get()
 
@@ -2588,8 +2601,8 @@ class Model(with_metaclass(ModelMeta, object)):
 
         return json
 
-    @classmethod
-    def from_dict(cls, json, decode_primary_objects=True, primary_objects=None, decoded=None):
+    @staticmethod
+    def from_dict(json, models, decode_primary_objects=True, primary_objects=None, decoded=None, ignore_extra_models=False):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of an object that
         is compatible with JSON and YAML, including references to objects through `__id` keys.
 
@@ -2599,28 +2612,67 @@ class Model(with_metaclass(ModelMeta, object)):
                 just look up objects by their IDs
             primary_objects (:obj:`list`, optional): list of instances of primary classes (i.e. non-line classes)
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+                other worksheets or files
 
         Returns:
             :obj:`Model`: decoded object
         """
+        models = set(models)
+        models_by_name = {model.__name__: model for model in models}
+        if len(list(models_by_name.keys())) < len(models):
+            raise ValueError('Model names must be unique to decode objects')
+
         if primary_objects is None:
             primary_objects = []
 
         if decoded is None:
             decoded = {}
+        to_decode = []
 
-        obj = decoded.get(json['__id'], None)
-        if obj is not None:
-            return obj
+        if isinstance(json, dict):
+            obj_type = json.get('__type', None)
+            model = models_by_name.get(obj_type, None)
+            if not model:
+                if not ignore_extra_models:
+                    raise ValueError('Unsupported type {}'.format(obj_type))
+                obj = None
+            else:
+                obj = decoded.get(json['__id'], None)
+                if obj is None:
+                    obj = model()
+                    decoded[json['__id']] = obj
+                    to_decode.append((json, obj))
+        elif isinstance(json, list):
+            obj = []
+            for sub_json in json:
+                obj_type = sub_json.get('__type', None)
+                model = models_by_name.get(obj_type, None)
+                if not model:
+                    if ignore_extra_models:
+                        continue
+                    else:
+                        raise ValueError('Unsupported type {}'.format(obj_type))
 
-        obj = cls()
-        decoded[json['__id']] = obj
-        to_decode = [(json, obj)]
+                sub_obj = decoded.get(sub_json['__id'], None)
+                if sub_obj is None:
+                    sub_obj = model()
+                    decoded[sub_json['__id']] = sub_obj
+                    to_decode.append((sub_json, sub_obj))
+
+                obj.append(sub_obj)
+        else:
+            obj = None
+            to_decode = []
+
         while to_decode:
             sub_json, sub_obj = to_decode.pop()
             sub_cls = sub_obj.__class__
 
             for attr_name, attr in chain(sub_cls.Meta.attributes.items(), sub_cls.Meta.related_attributes.items()):
+                if attr_name not in sub_json:
+                    continue
+
                 attr_json = sub_json[attr_name]
                 if isinstance(attr, RelatedAttribute):
                     if attr_name in sub_cls.Meta.attributes:
@@ -2635,11 +2687,9 @@ class Model(with_metaclass(ModelMeta, object)):
                         attr_val = []
                         for sub_attr_json in attr_json:
                             if decode_primary_objects or other_cls.Meta.table_format == TableFormat.cell:
-                                sub_sub_obj = decoded.get(sub_attr_json['__id'], None)
-                                if sub_sub_obj is None:
-                                    sub_sub_obj = other_cls()
-                                    decoded[sub_attr_json['__id']] = sub_sub_obj
-                                    to_decode.append((sub_attr_json, sub_sub_obj))
+                                sub_sub_obj = decoded.get(sub_attr_json['__id'], other_cls())
+                                decoded[sub_attr_json['__id']] = sub_sub_obj
+                                to_decode.append((sub_attr_json, sub_sub_obj))
                             else:
                                 primary_attr = sub_attr_json[other_cls.Meta.primary_attribute.name]
                                 sub_sub_obj = primary_objects[other_cls][primary_attr]
@@ -2647,11 +2697,9 @@ class Model(with_metaclass(ModelMeta, object)):
 
                     else:
                         if decode_primary_objects or other_cls.Meta.table_format == TableFormat.cell:
-                            attr_val = decoded.get(attr_json['__id'], None)
-                            if attr_val is None:
-                                attr_val = other_cls()
-                                decoded[attr_json['__id']] = attr_val
-                                to_decode.append((attr_json, attr_val))
+                            attr_val = decoded.get(attr_json['__id'], other_cls())
+                            decoded[attr_json['__id']] = attr_val
+                            to_decode.append((attr_json, attr_val))
                         else:
                             primary_attr = attr_json[other_cls.Meta.primary_attribute.name]
                             attr_val = primary_objects[other_cls][primary_attr]
@@ -6092,7 +6140,7 @@ class OneToOneAttribute(RelatedAttribute):
             :obj:`str`: simple Python representation
         """
         if self.related_class.Meta.table_format == TableFormat.cell:
-            return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
+            return json.dumps(value.to_dict(value, encode_primary_objects=False, encoded=encoded),
                               indent=8)
 
         else:
@@ -6118,7 +6166,7 @@ class OneToOneAttribute(RelatedAttribute):
 
         if self.related_class.Meta.table_format == TableFormat.cell:
             try:
-                obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
+                obj = self.related_class.from_dict(json.loads(value), [self.related_class], decode_primary_objects=False,
                                                    primary_objects=objects, decoded=decoded)
                 error = None
             except Exception as exception:
@@ -6444,7 +6492,7 @@ class ManyToOneAttribute(RelatedAttribute):
             :obj:`str`: simple Python representation
         """
         if self.related_class.Meta.table_format == TableFormat.cell:
-            return json.dumps(value.to_dict(encode_primary_objects=False, encoded=encoded),
+            return json.dumps(value.to_dict(value, encode_primary_objects=False, encoded=encoded),
                               indent=8)
 
         else:
@@ -6470,7 +6518,7 @@ class ManyToOneAttribute(RelatedAttribute):
 
         if self.related_class.Meta.table_format == TableFormat.cell:
             try:
-                obj = self.related_class.from_dict(json.loads(value), decode_primary_objects=False,
+                obj = self.related_class.from_dict(json.loads(value), [self.related_class], decode_primary_objects=False,
                                                    primary_objects=objects, decoded=decoded)
                 error = None
             except Exception as exception:
@@ -6782,7 +6830,7 @@ class OneToManyAttribute(RelatedAttribute):
             :obj:`str`: simple Python representation
         """
         if self.related_class.Meta.table_format == TableFormat.cell:
-            return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
+            return json.dumps([v.to_dict(v, encode_primary_objects=False, encoded=encoded) for v in value],
                               indent=8)
 
         else:
@@ -6813,7 +6861,7 @@ class OneToManyAttribute(RelatedAttribute):
             try:
                 objs = []
                 for v in json.loads(values):
-                    objs.append(self.related_class.from_dict(v, decode_primary_objects=False,
+                    objs.append(self.related_class.from_dict(v, [self.related_class], decode_primary_objects=False,
                                                              primary_objects=objects, decoded=decoded))
                 error = None
             except Exception as exception:
@@ -7137,7 +7185,7 @@ class ManyToManyAttribute(RelatedAttribute):
             :obj:`str`: simple Python representation
         """
         if self.related_class.Meta.table_format == TableFormat.cell:
-            return json.dumps([v.to_dict(encode_primary_objects=False, encoded=encoded) for v in value],
+            return json.dumps([v.to_dict(v, encode_primary_objects=False, encoded=encoded) for v in value],
                               indent=8)
 
         else:
@@ -7168,7 +7216,7 @@ class ManyToManyAttribute(RelatedAttribute):
             try:
                 objs = []
                 for v in json.loads(values):
-                    objs.append(self.related_class.from_dict(v, decode_primary_objects=False,
+                    objs.append(self.related_class.from_dict(v, [self.related_class], decode_primary_objects=False,
                                                              primary_objects=objects, decoded=decoded))
                 error = None
             except Exception as exception:

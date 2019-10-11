@@ -220,16 +220,10 @@ class JsonWriter(WriterBase):
             objects = metadata_objects + objects
 
         # convert object(s) (and their relatives) to Python dicts and lists
-        if objects is None:
-            json_objects = None
-        elif isinstance(objects, (list, tuple)):
-            json_objects = []
-            encoded = {}
+        if isinstance(objects, (list, tuple)):
             for obj in objects:
-                json_objects.append(obj.to_dict(encoded=encoded))
                 models.append(obj.__class__)
-        else:
-            json_objects = objects.to_dict()
+        elif objects is not None:
             models.append(objects.__class__)
 
         # check that model names are unique so that objects will be decodable
@@ -237,6 +231,9 @@ class JsonWriter(WriterBase):
         models_by_name = {model.__name__: model for model in models}
         if len(list(models_by_name.keys())) < len(models):
             raise ValueError('Model names must be unique to decode objects')
+
+        # encode to json
+        json_objects = Model.to_dict(objects)
 
         # save plain Python object to JSON or YAML
         _, ext = splitext(path)
@@ -1078,39 +1075,9 @@ class JsonReader(ReaderBase):
             else:
                 raise ValueError('Unsupported format {}'.format(ext))
 
-        # check that model names are unique so that objects can be decoded
-        models = set(models)
-        models_by_name = {model.__name__: model for model in models}
-        if len(list(models_by_name.keys())) < len(models):
-            raise ValueError('Model names must be unique to decode objects')
-
-        # cast the object(s) to their type
-        if json_objs is None:
-            objs = None
-
-        elif isinstance(json_objs, list):
-            objs = []
-            decoded = {}
-            for json_obj in json_objs:
-                obj_type = json_obj.get('__type', None)
-                model = models_by_name.get(obj_type, None)
-                if not model:
-                    if ignore_extra_models:
-                        continue
-                    else:
-                        raise ValueError('Unsupported type {}'.format(obj_type))
-                objs.append(model.from_dict(json_obj, decoded=decoded))
+        objs = Model.from_dict(json_objs, models, ignore_extra_models=ignore_extra_models)
+        if isinstance(json_objs, list):
             objs = det_dedupe(objs)
-
-        else:
-            obj_type = json_objs.get('__type', None)
-            model = models_by_name.get(obj_type, None)
-            if model:
-                objs = model.from_dict(json_objs)
-            elif ignore_extra_models:
-                objs = None
-            else:
-                raise ValueError('Unsupported type {}'.format(obj_type))
 
         # validate
         if objs and validate:

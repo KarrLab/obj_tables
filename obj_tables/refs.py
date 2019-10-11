@@ -132,7 +132,7 @@ class IdentifierAttribute(core.LiteralAttribute):
 
         Args:
             obj (:obj:`Model`): class being validated
-            value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
+            value (:obj:`Identifier`): value of attribute to validate
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
@@ -151,7 +151,7 @@ class IdentifierAttribute(core.LiteralAttribute):
         """ Serialize string
 
         Args:
-            value (:obj:`list` of :obj:`int`): Python representation
+            value (:obj:`Identifier`): value of attribute to validate
 
         Returns:
             :obj:`str`: simple Python representation
@@ -165,7 +165,7 @@ class IdentifierAttribute(core.LiteralAttribute):
         that is compatible with JSON and YAML
 
         Args:
-            value (:obj:`list` of :obj:`int`): value of the attribute
+            value (:obj:`Identifier`): value of attribute to validate
 
         Returns:
             :obj:`list` of :obj:`int`: simple Python representation of a value of the attribute
@@ -182,7 +182,7 @@ class IdentifierAttribute(core.LiteralAttribute):
             json (:obj:`list` of :obj:`int`): simple Python representation of a value of the attribute
 
         Returns:
-            :obj:`list` of :obj:`int`: decoded value of the attribute
+            :obj:`Identifier`: value of attribute to validate
         """
         if json:
             return Identifier().from_dict(json)

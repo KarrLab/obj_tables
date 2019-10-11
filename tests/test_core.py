@@ -4781,7 +4781,7 @@ class JsonTestCase(unittest.TestCase):
             float_attr = core.FloatAttribute()
             str_attr = core.StringAttribute()
         model = TestModel(bool_attr=False, float_attr=-1.2, str_attr='uvw')
-        self.assertEqual(model.to_dict(), {
+        self.assertEqual(model.to_dict(model), {
             '__type': 'TestModel',
             '__id': 0,
             'bool_attr': False,
@@ -4794,7 +4794,7 @@ class JsonTestCase(unittest.TestCase):
             'bool_attr': False,
             'float_attr': -1.2,
             'str_attr': 'uvw',
-        })))
+        }, [TestModel])))
 
     def test_invalid_attr_name(self):
         with self.assertRaisesRegex(ValueError, 'Attribute cannot have reserved name `__type`'):
@@ -4818,7 +4818,7 @@ class JsonTestCase(unittest.TestCase):
         p.children.create(id='c0')
         p.children.create(id='c1')
 
-        self.assertEqual(p.to_dict(), {
+        self.assertEqual(p.to_dict(p), {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
@@ -4836,7 +4836,7 @@ class JsonTestCase(unittest.TestCase):
                 {'__type': 'Child', '__id': 1, 'id': 'c0', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
                 {'__type': 'Child', '__id': 2, 'id': 'c1', 'parent': {'__type': 'Parent', '__id': 0, 'id': 'p'}},
             ],
-        })
+        }, [Parent])
 
         self.assertTrue(p.is_equal(p2))
 
@@ -4858,9 +4858,9 @@ class JsonTestCase(unittest.TestCase):
         p0 = c.parents.create(id='p0')
         p1 = c.parents.create(id='p1')
 
-        self.assertTrue(c.is_equal(c.from_dict(c.to_dict())))
-        self.assertTrue(p0.is_equal(p0.from_dict(p0.to_dict())))
-        self.assertTrue(p1.is_equal(p1.from_dict(p1.to_dict())))
+        self.assertTrue(c.is_equal(c.from_dict(c.to_dict(c), [Child])))
+        self.assertTrue(p0.is_equal(p0.from_dict(p0.to_dict(p0), [Parent])))
+        self.assertTrue(p1.is_equal(p1.from_dict(p1.to_dict(p1), [Parent])))
 
     def test_one_to_one_attr(self):
         class Parent(core.Model):
@@ -4871,16 +4871,16 @@ class JsonTestCase(unittest.TestCase):
             parent = core.OneToOneAttribute(Parent, related_name='child')
 
         p = Parent(id='p')
-        self.assertTrue(p.is_equal(p.from_dict(p.to_dict())))
+        self.assertTrue(p.is_equal(p.from_dict(p.to_dict(p), [Parent])))
 
         c = Child(id='c')
-        self.assertTrue(c.is_equal(c.from_dict(c.to_dict())))
+        self.assertTrue(c.is_equal(c.from_dict(c.to_dict(c), [Child])))
 
     def test_already_decoded(self):
         class Model(core.Model):
             id = core.StringAttribute(primary=True, unique=True)
         model = Model(id='m')
-        self.assertEqual(model.from_dict(model.to_dict(), decoded={0: 'already decoded'}), 'already decoded')
+        self.assertEqual(model.from_dict(model.to_dict(model), [Model], decoded={0: 'already decoded'}), 'already decoded')
 
     def test_max_depth(self):
         class Parent(core.Model):
@@ -4894,13 +4894,13 @@ class JsonTestCase(unittest.TestCase):
         c0 = p.children.create(id='c0')
         c1 = p.children.create(id='c1')
 
-        self.assertEqual(p.to_dict(max_depth=-1), {
+        self.assertEqual(p.to_dict(p, max_depth=-1), {
             '__type': 'Parent',
             '__id': 0,
             'id': 'p',
         })
 
-        p_dict = p.to_dict(max_depth=0)
+        p_dict = p.to_dict(p, max_depth=0)
         p_dict['children'].sort(key=lambda c: c['id'])
         self.assertEqual(p_dict, {
             '__type': 'Parent',
@@ -4912,7 +4912,7 @@ class JsonTestCase(unittest.TestCase):
             ],
         })
 
-        p_dict = p.to_dict(max_depth=1)
+        p_dict = p.to_dict(p, max_depth=1)
         p_dict['children'].sort(key=lambda c: c['id'])
         self.assertEqual(p_dict, {
             '__type': 'Parent',

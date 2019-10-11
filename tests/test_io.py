@@ -2354,7 +2354,7 @@ class JsonTestCase(unittest.TestCase):
         self.dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.dirname)
+        shutil.rmtree(self.dirname)    
 
     def test_write_read(self):
         class AA(core.Model):
@@ -2490,6 +2490,7 @@ class JsonTestCase(unittest.TestCase):
 
         # convert xlsx --> json
         convert(filename_1_xlsx, filename_2_json, models=models)
+        convert(filename_1_xlsx, filename_2_json.replace('.json', '.yml'), models=models)
 
         objects2 = obj_tables.io.Reader.get_reader(filename_2_json)().run(filename_2_json, models=models,
                                                                           group_objects_by_model=True)
