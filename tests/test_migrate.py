@@ -241,8 +241,8 @@ def assert_differing_workbooks(test_case, existing_model_file, migrated_model_fi
 
 
 def remove_workbook_metadata(workbook):
-    metadata_sheet_names = ['!' + TOC_SHEET_NAME, '!' + SCHEMA_SHEET_NAME,
-                            '!Data repo metadata', '!Schema repo metadata']
+    metadata_sheet_names = ['!!' + TOC_SHEET_NAME, '!!' + SCHEMA_SHEET_NAME,
+                            '!!Data repo metadata', '!!Schema repo metadata']
     for metadata_sheet_name in metadata_sheet_names:
         if metadata_sheet_name in workbook:
             workbook.pop(metadata_sheet_name)

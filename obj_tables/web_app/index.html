@@ -55,8 +55,8 @@
 
           <p class="before_list"><i>ObjTables</i> enables users to leverage Excel as a graphical user interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:
           <ul>
-            <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the models represented by the other tables, displays the number of instances of each model, and provides hyperlinks to the other tables.</li>
-            <li><b>Formatted model titles:</b> Each table includes a title bar which describes the model. The title bars are formatted, frozen, and protected from editing.</li>
+            <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the models represented by the other tables, displays the number of instances of each class, and provides hyperlinks to the other tables.</li>
+            <li><b>Formatted class titles:</b> Each table includes a title bar which describes the class. The title bars are formatted, frozen, and protected from editing.</li>
             <li><b>Formatted attribute headings:</b> Each table includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
             <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into its heading.</li>
             <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides select menus for each attribute that encodes an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>
@@ -68,7 +68,7 @@
           <ul>
             <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively (e.g. <tt>string(min_length=8)</tt>). More complex validations can be defined using a Python schema or by implementing custom types of attributes.</li>
             <li><b>Instance validation:</b> Users can implement custom instance-level validations by creating a Python module which implements a schema and implementing the <tt>validate</tt> methods of the classes.</li>
-            <li><b>Model-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules which implement schemas can also capture tuples of attributes which must be unique across all instances of a model. See the documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information.</li>
+            <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules which implement schemas can also capture tuples of attributes which must be unique across all instances of a class. See the documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information.</li>
           </ul>
 
           <p class="before_list"><i>ObjTables</i> provides four user interfaces to the software tools:
@@ -134,7 +134,7 @@
               <input type="file" id="schema" name="schema" accept=".csv,.tsv,.xlsx" />
             </label>
 
-            <label id="label_model">Enter the name of a model to difference or normalize
+            <label id="label_model">Enter the name of a class to difference or normalize
               <input type="text" id="model" name="model" />
             </label>
 
@@ -186,18 +186,23 @@
             <h3>File formats</h3>
             <p class="before_list"><i>ObjTables</i> supports three formats for collections of tables, or datasets:</p>
             <ul>
-              <li>Excel workbook: Each worksheet contains a table which encodes the instances of a model. The names of the worksheets should be <tt>!</tt> followed by the name of a model in the schema (e.g., <tt>!Name</tt>).</li>
-              <li>Set of CSV or TSV files: Each file contains a table which encodes the instances of a model. The names of the files should follow the pattern <tt>dir/!*.csv</tt> (e.g., <tt>Doc/!Name.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
-              <li>Single text file with multiple CSV or TSV formatted tables: Each table encodes the instances of a model.</li>
+              <li>Excel workbook: Each worksheet contains a table which encodes the instances of a class. The names of the worksheets should be <tt>!</tt> followed by the name of a class in the schema (e.g., <tt>!Name</tt>).</li>
+              <li>Set of CSV or TSV files: Each file contains a table which encodes the instances of a class. The names of the files should follow the pattern <tt>dir/!*.csv</tt> (e.g., <tt>Doc/!Name.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
+              <li>Single text file with multiple CSV or TSV formatted tables: Each table encodes the instances of a class.</li>
             </ul>
 
-            <h3>Model metdata</h3>
-            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the model which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='&lt;model_name&gt;'</tt>).</p>
+            <h3>Document metdata</h3>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='&lt;model_name&gt;'</tt>).</p>
 
-            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='model_id' Name='Model name' Description='Model description'</tt>).</p>
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='model_id' Name='Class name' Description='Class description'</tt>).</p>
 
-            <h3>Model instances (rows) and attributes (columns)</h3>
-            <p>The attributes of each model are represented by the columns of its table, each instance of each model is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
+            <h3>Class metdata</h3>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='&lt;model_name&gt;'</tt>).</p>
+
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='model_id' Name='Class name' Description='Class description'</tt>).</p>
+
+            <h3>Class instances (rows) and attributes (columns)</h3>
+            <p>The attributes of each class are represented by the columns of its table, each instance of each class is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
 
             <h3>Encoding multiple models in a single table</h3>
             <p class="before_list">To help users encode complex relationships into a minimal number of tables, relationships between models can be encoded into groups of columns and individual cells.</p>
@@ -207,10 +212,10 @@
             </ul>
 
             <h3>Encoding models into transposed tables</h3>
-            <p>Optionally, a model can be encoded into a transposed table in which the columns represent instances of the model and the rows represent attributes of the model. This feature is useful for models which are intended to only have a single instance. Models can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
+            <p>Optionally, a class can be encoded into a transposed table in which the columns represent instances of the class and the rows represent attributes of the class. This feature is useful for models which are intended to only have a single instance. Models can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
 
             <h3>Comments</h3>
-            <p>Comments about individual model instances can be encoded by inserting rows whose first cell begins with <tt>%</tt>.</p>
+            <p>Comments about individual class instances can be encoded by inserting rows whose first cell begins with <tt>%</tt>.</p>
 
             <h3>Additional tables, rows, and columns outside the scope of schemas</h3>
             <p>Sets of tables that encode datasets can include additional tables. Tables that are outside the scope of the schema must have names which do not not begin with an <tt>!</tt>.</p>
@@ -220,10 +225,13 @@
             <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
 
             <h3>Example</h3>
-            <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame model enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame model also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>
+            <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame class enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame class also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>
 
             <table>
               <thead>
+                <tr>
+                  <th colspan="2">!!!ObjTables ObjTablesVersion='0.0.8'</th>
+                </tr>
                 <tr>
                   <th colspan="2">!!ObjTables Type='Data' Id='Parent' ObjTablesVersion='0.0.8'</th>
                 </tr>
@@ -317,7 +325,7 @@
             <h3>Tabular format</h3>
             <p>Tabular-formatted schemas should begin with a single header row which indicates that the dataset is encoded in an <i>ObjTables</i> schema (<tt>!!ObjTables Type="Schema" ...</tt>).</p>
 
-            <p>After the header row, the schema file should contain a table with the following columns that defines the models/tables and their attributes/columns. Each row in the table should define a single model or attribute.</p>
+            <p>After the header row, the schema file should contain a table with the following columns that defines the models/tables and their attributes/columns. Each row in the table should define a single class or attribute.</p>
 
             <p>Tabular-formatted schemas can be saved in comma-separated (.csv), tab-separated (.tsv), or Excel (.xlsx) format.</p>
 
@@ -328,16 +336,16 @@
               <li><b><tt>!Parent</tt></b>:
                 <ul>
                   <li>Models: Not applicable</li>
-                  <li>Atttributes: Name of the model that the attribute belongs to</li>
+                  <li>Atttributes: Name of the class that the attribute belongs to</li>
                 </ul></li>
               <li><b><tt>!Format</tt></b>:
                 <ul>
                   <li>Tables:
                     <ul>
-                      <li><tt>row</tt>: Encode the instances of the model as rows</li>
-                      <li><tt>column</tt>: Encode the instances of the model as columns (i.e. transposed table)</li>
-                      <li><tt>multiple_cells</tt>: Encode the instances of the model within a group of columns in the tables of the one-to-many and one-to-one related models</li>
-                      <li><tt>cell</tt>: Encode the instances of the model within columns of the related models, optionally, using a grammar</li>
+                      <li><tt>row</tt>: Encode the instances of the class as rows</li>
+                      <li><tt>column</tt>: Encode the instances of the class as columns (i.e. transposed table)</li>
+                      <li><tt>multiple_cells</tt>: Encode the instances of the class within a group of columns in the tables of the one-to-many and one-to-one related models</li>
+                      <li><tt>cell</tt>: Encode the instances of the class within columns of the related models, optionally, using a grammar</li>
                     </ul>
                   </li>
                   <li>Columns: One of the data types listed below (e.g., <tt>String</tt>, <tt>Float</tt>). Arguments for the data types can be description in parenthesis (e.g., <tt>String(min_length=5)</tt>. The arguments enable users to customize how data types function and are validated. See the documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about the types and their arguments.</li>
@@ -352,7 +360,7 @@
             <table>
               <thead>
                 <tr>
-                  <th colspan="5">!!ObjTables Type='Schema' Description='Table/model and column/attribute definitions' ObjTablesVersion='0.0.8'</th>
+                  <th colspan="5">!!ObjTables Type='Schema' Description='Table/model/class and column/attribute/property definitions' ObjTablesVersion='0.0.8'</th>
                 </tr>
                 <tr>
                   <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Description</th>

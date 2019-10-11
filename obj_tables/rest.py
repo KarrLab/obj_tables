@@ -105,9 +105,9 @@ class Convert(flask_restplus.Resource):
 
         try:
             _, models = get_schema_models(schema_filename)
-            objs, model_metadata = read_workbook(in_wb_filename, models)
+            objs, doc_metadata, model_metadata = read_workbook(in_wb_filename, models)
             out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
-                format, objs, model_metadata, models=models,
+                format, objs, doc_metadata, model_metadata, models=models,
                 write_toc=args['write-toc'],
                 write_schema=args['write-schema'])
         except Exception as err:
@@ -238,7 +238,7 @@ class GenTemplate(flask_restplus.Resource):
             shutil.rmtree(schema_dir)
 
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
-            format, [], {}, models=models,
+            format, [], {}, {}, models=models,
             write_toc=args['write-toc'],
             write_schema=args['write-schema'])
 
@@ -360,7 +360,7 @@ class Normalize(flask_restplus.Resource):
         model = get_model(models, model_name)
 
         try:
-            objs, model_metadata = read_workbook(in_wb_filename, models)
+            objs, doc_metadata, model_metadata = read_workbook(in_wb_filename, models)
             for obj in objs:
                 if isinstance(obj, model):
                     obj.normalize()
@@ -371,7 +371,7 @@ class Normalize(flask_restplus.Resource):
             shutil.rmtree(in_wb_dir)
 
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
-            format, objs, model_metadata, models=models,
+            format, objs, doc_metadata, model_metadata, models=models,
             write_toc=args['write-toc'],
             write_schema=args['write-schema'])
 
@@ -580,15 +580,16 @@ def read_workbook(filename, models):
                         models=models,
                         group_objects_by_model=False,
                         **DEFAULT_READER_ARGS)
-    return result, reader._model_metadata
+    return result, reader._doc_metadata, reader._model_metadata
 
 
-def save_out_workbook(format, objs, model_metadata, models,
+def save_out_workbook(format, objs, doc_metadata, model_metadata, models,
                       write_toc=False, write_schema=False):
     """
     Args:
         format (:obj:`str`): format (.csv, .tsv, .xlsx)
         objs (:obj:`dict`): dictionary that maps types to instances
+        doc_metadata (:obj:`dict`): dictionary of document metadata
         model_metadata (:obj:`dict`): dictionary of model metadata
         models (:obj:`list` of :obj:`core.Model`): models
         write_toc (:obj:`bool`, optional): if :obj:`True`, write
@@ -609,7 +610,7 @@ def save_out_workbook(format, objs, model_metadata, models,
     else:
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
-    io.Writer().run(temp_filename, objs, model_metadata=model_metadata,
+    io.Writer().run(temp_filename, objs, doc_metadata=doc_metadata, model_metadata=model_metadata,
                     models=models, write_toc=write_toc, write_schema=write_schema)
 
     if format in ['csv', 'tsv']:

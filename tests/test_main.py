@@ -199,7 +199,7 @@ class TestCli(unittest.TestCase):
 
         xl_file_2 = os.path.join(self.tempdir, 'file2.xlsx')
         wb = wc_utils.workbook.io.read(xl_file_1)
-        wb['!Child'][4][0] = 'c_0'
+        wb['!!Child'][4][0] = 'c_0'
         wc_utils.workbook.io.write(xl_file_2, wb)
         with self.assertRaises(SystemExit):
             with __main__.App(argv=['validate', csv_file, xl_file_2]) as app:

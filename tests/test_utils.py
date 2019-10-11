@@ -270,7 +270,7 @@ class TestMetadata(unittest.TestCase):
         self.github_test_data_repo.delete_test_repo()
 
         # remove self.test_schema_repo_dir from sys.path
-        for idx in range(len(sys.path)-1, -1, -1):
+        for idx in range(len(sys.path) - 1, -1, -1):
             if sys.path[idx] == self.test_schema_repo_dir:
                 del sys.path[idx]
 
@@ -431,7 +431,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_xl = os.path.join(self.tmp_dirname, 'schema.xlsx')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['!' + core.SCHEMA_SHEET_NAME] = wb.pop('')
+        wb['!!' + core.SCHEMA_SHEET_NAME] = wb.pop('')
         wc_utils.workbook.io.write(schema_xl, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -473,14 +473,14 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_xl_2 = os.path.join(self.tmp_dirname, 'schema-invalid.xlsx')
 
         wb = wc_utils.workbook.io.read(schema_xl)
-        wb[core.SCHEMA_SHEET_NAME] = wb.pop('!' + core.SCHEMA_SHEET_NAME)
+        wb[core.SCHEMA_SHEET_NAME] = wb.pop('!!' + core.SCHEMA_SHEET_NAME)
         wc_utils.workbook.io.write(schema_xl_2, wb)
         with self.assertRaisesRegex(ValueError, 'must contain a sheet'):
             utils.init_schema(schema_xl_2,
                               out_filename=out_filename)
 
         wb = wc_utils.workbook.io.read(schema_xl)
-        wb['!' + core.SCHEMA_SHEET_NAME][0][0] = wb['!' + core.SCHEMA_SHEET_NAME][0][0].replace(
+        wb['!!' + core.SCHEMA_SHEET_NAME][0][0] = wb['!!' + core.SCHEMA_SHEET_NAME][0][0].replace(
             "Type='{}'".format(core.SCHEMA_TABLE_TYPE), "Id='{}'".format('my' + core.SCHEMA_TABLE_TYPE))
         wc_utils.workbook.io.write(schema_xl_2, wb)
         with self.assertRaisesRegex(ValueError, 'Type must be'):
@@ -488,7 +488,7 @@ class InitSchemaTestCase(unittest.TestCase):
                               out_filename=out_filename)
 
         wb = wc_utils.workbook.io.read(schema_xl)
-        wb['!' + core.SCHEMA_SHEET_NAME][3][0] = wb['!' + core.SCHEMA_SHEET_NAME][3][0] + '?'
+        wb['!!' + core.SCHEMA_SHEET_NAME][3][0] = wb['!!' + core.SCHEMA_SHEET_NAME][3][0] + '?'
         wc_utils.workbook.io.write(schema_xl_2, wb)
         with self.assertRaisesRegex(ValueError, 'names must consist of'):
             utils.init_schema(schema_xl_2,
@@ -500,7 +500,7 @@ class InitSchemaTestCase(unittest.TestCase):
         schema_csv_wb = os.path.join(self.tmp_dirname, 'schema-*.csv')
 
         wb = wc_utils.workbook.io.read(schema_csv)
-        wb['!' + core.SCHEMA_SHEET_NAME] = wb.pop('')
+        wb['!!' + core.SCHEMA_SHEET_NAME] = wb.pop('')
         wc_utils.workbook.io.write(schema_csv_wb, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
@@ -599,8 +599,8 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['Extra'].append(wc_utils.workbook.Row([
             "!!ObjTables Type='Data' Id='Extra' ObjTablesVersion='{}'".format(
                 obj_tables.__version__)]))
-        wb['!' + core.SCHEMA_SHEET_NAME] = wc_utils.workbook.Worksheet()
-        wb['!' + core.SCHEMA_SHEET_NAME].append(wc_utils.workbook.Row([
+        wb['!!' + core.SCHEMA_SHEET_NAME] = wc_utils.workbook.Worksheet()
+        wb['!!' + core.SCHEMA_SHEET_NAME].append(wc_utils.workbook.Row([
             "!!ObjTables Type='{}' ObjTablesVersion='{}'".format(
                 core.SCHEMA_TABLE_TYPE, obj_tables.__version__)]))
         wc_utils.workbook.io.write(filename, wb)
@@ -611,7 +611,7 @@ class InitSchemaTestCase(unittest.TestCase):
         self.assertTrue(p_0_b.is_equal(p_0))
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Extra'] = wb.pop('Extra')
+        wb['!!Extra'] = wb.pop('Extra')
         wc_utils.workbook.io.write(filename, wb)
         with self.assertRaisesRegex(ValueError, 'No matching models'):
             obj_tables.io.WorkbookReader().run(
@@ -634,7 +634,7 @@ class InitSchemaTestCase(unittest.TestCase):
             models=[schema.Parent, schema.Child])
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Child'][2].append('!Extra')
+        wb['!!Child'][2].append('!Extra')
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
@@ -650,7 +650,7 @@ class InitSchemaTestCase(unittest.TestCase):
                 ignore_extra_attributes=False)[schema.Parent][0]
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Child'][2][-1] = '!Extra'
+        wb['!!Child'][2][-1] = '!Extra'
         wc_utils.workbook.io.write(filename, wb)
         obj_tables.io.WorkbookReader().run(
             filename,
@@ -681,13 +681,13 @@ class InitSchemaTestCase(unittest.TestCase):
             models=[schema.Parent, schema.Child])
 
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Parent'].insert(0, wc_utils.workbook.Row(['% V']))
-        wb['!Parent'].insert(0, wc_utils.workbook.Row([]))
-        wb['!Parent'].insert(3, wc_utils.workbook.Row([]))
-        wb['!Parent'].insert(3, wc_utils.workbook.Row(['% W']))
-        wb['!Parent'][5].append('% Z')
-        wb['!Child'].insert(0, wc_utils.workbook.Row(['% 123']))
-        wb['!Child'].append(wc_utils.workbook.Row(['% 456']))
+        wb['!!Parent'].insert(0, wc_utils.workbook.Row(['% V']))
+        wb['!!Parent'].insert(0, wc_utils.workbook.Row([]))
+        wb['!!Parent'].insert(3, wc_utils.workbook.Row([]))
+        wb['!!Parent'].insert(3, wc_utils.workbook.Row(['% W']))
+        wb['!!Parent'][5].append('% Z')
+        wb['!!Child'].insert(0, wc_utils.workbook.Row(['% 123']))
+        wb['!!Child'].append(wc_utils.workbook.Row(['% 456']))
         wc_utils.workbook.io.write(filename, wb)
 
         p_0_b = obj_tables.io.WorkbookReader().run(
@@ -731,7 +731,7 @@ class InitSchemaTestCase(unittest.TestCase):
             write_schema=True)
 
         wb = wc_utils.workbook.io.read(filename)
-        self.assertIn('!' + obj_tables.io.SCHEMA_SHEET_NAME, wb)
+        self.assertIn('!!' + obj_tables.io.SCHEMA_SHEET_NAME, wb)
 
         p_1_b = obj_tables.io.WorkbookReader().run(
             filename,
@@ -841,6 +841,11 @@ class VizSchemaTestCase(unittest.TestCase):
 
     def test(self):
         schema = utils.init_schema('tests/fixtures/declarative_schema/schema.csv')
+        filename = os.path.join(self.dirname, 'test.svg')
+        utils.viz_schema(schema, filename)
+        self.assertTrue(os.path.isfile(filename))
+
+        schema = utils.init_schema('tests/fixtures/declarative_schema/viz_schema.csv')
         filename = os.path.join(self.dirname, 'test.svg')
         utils.viz_schema(schema, filename)
         self.assertTrue(os.path.isfile(filename))

@@ -184,7 +184,7 @@ class GrammarTestCase(unittest.TestCase):
 
         # test parsing error
         wb = wc_utils.workbook.io.read(filename)
-        wb['!Children'][2][2] = 'old_parent: old name (old)'
+        wb['!!Children'][2][2] = 'old_parent: old name (old)'
         filename2 = os.path.join(self.dirname, 'test2.xlsx')
         wc_utils.workbook.io.write(filename2, wb)
         with self.assertRaisesRegex(ValueError, 'Unable to clean'):

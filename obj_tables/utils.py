@@ -433,10 +433,10 @@ def init_schema(filename, name=None, out_filename=None):
 
     base, ext = os.path.splitext(filename)
     if ext in ['.xlsx']:
-        sheet_name = '!' + SCHEMA_SHEET_NAME
+        sheet_name = '!!' + SCHEMA_SHEET_NAME
     elif ext in ['.csv', '.tsv']:
         if '*' in filename:
-            sheet_name = '!' + SCHEMA_SHEET_NAME
+            sheet_name = '!!' + SCHEMA_SHEET_NAME
         else:
             sheet_name = ''
     else:
@@ -460,8 +460,8 @@ def init_schema(filename, name=None, out_filename=None):
     attr_type = 'Attribute'
 
     rows = ws
-    metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows)
-    if metadata.get('Type', None) != SCHEMA_TABLE_TYPE:
+    _, model_metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows)
+    if model_metadata.get('Type', None) != SCHEMA_TABLE_TYPE:
         raise ValueError("Type must be '{}'.".format(SCHEMA_TABLE_TYPE))
 
     header_row = rows[0]

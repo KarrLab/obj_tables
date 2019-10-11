@@ -11,6 +11,7 @@ from obj_tables import io
 from obj_tables import rest
 from obj_tables import utils
 import glob
+import mock
 import obj_tables
 import os
 import shutil
@@ -115,8 +116,8 @@ class RestTestCase(unittest.TestCase):
 
         # invalid workbook
         wb = wc_utils.workbook.io.read(xl_file_2)
-        wb['!Child2'] = wb.pop('!Child')
-        wb['!Child2'][0][0] = wb['!Child2'][0][0].replace("'Child'", "'Child2'")
+        wb['!!Child2'] = wb.pop('!!Child')
+        wb['!!Child2'][0][0] = wb['!!Child2'][0][0].replace("'Child'", "'Child2'")
         wc_utils.workbook.io.write(xl_file_2, wb)
 
         with open(schema_filename, 'rb') as schema_file:
@@ -262,8 +263,8 @@ class RestTestCase(unittest.TestCase):
 
         # invalid workbook
         wb = wc_utils.workbook.io.read(in_workbook_filename)
-        wb['!Child2'] = wb.pop('!Child')
-        wb['!Child2'][0][0] = wb['!Child2'][0][0].replace("'Child'", "'Child2'")
+        wb['!!Child2'] = wb.pop('!!Child')
+        wb['!!Child2'][0][0] = wb['!!Child2'][0][0].replace("'Child'", "'Child2'")
         wc_utils.workbook.io.write(in_workbook_filename, wb)
 
         with open(schema_filename, 'rb') as schema_file:
@@ -345,7 +346,7 @@ class RestTestCase(unittest.TestCase):
         # invalid tsv files
         wb_filename_4 = os.path.join(self.tempdir, '*.tsv')
         wb = wc_utils.workbook.io.read(wb_filename)
-        wb['!Child'][4][0] = 'c_0'
+        wb['!!Child'][4][0] = 'c_0'
         wc_utils.workbook.io.write(wb_filename_4, wb)
 
         wb_filename_5 = os.path.join(self.tempdir, 'wb2.zip')
@@ -404,6 +405,38 @@ class RestTestCase(unittest.TestCase):
             })
         self.assertEqual(rv.status_code, 200)
         self.assertTrue(rv.data.decode().startswith('<?xml '))
+
+        with open(schema_filename, 'rb') as schema_file:
+            rv = client.post('/api/viz-schema/', data={
+                'schema': (schema_file, os.path.basename(schema_filename)),
+                'format': 'pdf',
+            })
+        self.assertEqual(rv.status_code, 200)
+
+        with open(schema_filename, 'rb') as schema_file:
+            rv = client.post('/api/viz-schema/', data={
+                'schema': (schema_file, os.path.basename(schema_filename)),
+                'format': 'png',
+            })
+        self.assertEqual(rv.status_code, 200)
+
+        # invalid schema
+        invalid_schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
+        with open(invalid_schema_filename, 'rb') as schema_file:
+            rv = client.post('/api/viz-schema/', data={
+                'schema': (schema_file, os.path.basename(invalid_schema_filename)),
+                'format': 'svg',
+            })
+        self.assertEqual(rv.status_code, 400)
+
+        # viz error
+        with open(schema_filename, 'rb') as schema_file:
+            with mock.patch('obj_tables.utils.viz_schema', side_effect=Exception('Mock')):
+                rv = client.post('/api/viz-schema/', data={
+                    'schema': (schema_file, os.path.basename(schema_filename)),
+                    'format': 'svg',
+                })
+        self.assertEqual(rv.status_code, 400)
 
     def test_get_model(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')

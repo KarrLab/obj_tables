@@ -1,0 +1,16 @@
+!!ObjTables Type='Schema' Description='Table/model and column/attribute definitions' ObjTablesVersion='0.0.8',,,,
+!Name,!Type,!Parent,!Format,!Description
+Parent,Class,,column,Represents a parent
+Id,Attribute,Parent,Slug,Identifier
+Name,Attribute,Parent,String,Name
+Id,Attribute,Child,Slug,Identifier
+Name,Attribute,Child,String,Name
+Parent,Attribute,Child,"OneToOne('Parent', related_name='child')",Parents
+Formula,Attribute,Child,chem.EmpiricalFormula,Empirical formula
+Size,Attribute,Child,"Enum(['small', 'medium', 'large'], default='small', default_cleaned_value='small')",Size
+Quantities,Attribute,Child,"OneToMany('Quantity', related_name='child')",
+Child,Class,,row,Represents a child
+Quantity,Class,,multiple_cells,Represents a quantity
+Id,Attribute,Quantity,Slug,Identifier
+Value,Attribute,Quantity,String,Value
+Units,Attribute,Quantity,String,Units

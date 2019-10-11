@@ -69,7 +69,9 @@ class ConvertController(cement.Controller):
                           models=models,
                           group_objects_by_model=False,
                           **DEFAULT_READER_ARGS)
-        io.Writer().run(args.out_wb_file, objs, model_metadata=reader._model_metadata,
+        io.Writer().run(args.out_wb_file, objs, 
+                        doc_metadata=reader._doc_metadata,
+                        model_metadata=reader._model_metadata,
                         models=models, write_toc=args.write_toc, write_schema=args.write_schema)
         print('Workbook saved to {}'.format(args.out_wb_file))
 
@@ -198,7 +200,9 @@ class NormalizeController(cement.Controller):
         for obj in objs:
             if isinstance(obj, model):
                 obj.normalize()
-        io.Writer().run(args.out_wb_file, objs, model_metadata=reader._model_metadata,
+        io.Writer().run(args.out_wb_file, objs, 
+                        doc_metadata=reader._doc_metadata,
+                        model_metadata=reader._model_metadata,
                         models=models, write_toc=args.write_toc, write_schema=args.write_schema)
         print('Normalized workbook saved to {}'.format(args.out_wb_file))
 
