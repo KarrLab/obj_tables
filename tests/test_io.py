@@ -186,7 +186,7 @@ class TestIo(unittest.TestCase):
         for sheet in copy.keys():
             # because dates will be different
             copy[sheet][0][0] = original[sheet][0][0]
-            if copy[sheet][0][0].startswith('!!!ObjTables'):                
+            if copy[sheet][0][0].startswith('!!!ObjTables'):
                 copy[sheet][1][0] = original[sheet][1][0]
         self.assertEqual(copy, original)
 
@@ -475,13 +475,13 @@ class TestIo(unittest.TestCase):
 
     def test_read_bad_headers(self):
         msgs = [
-            "The model cannot be loaded because 'bad-headers.xlsx' contains error(s)",
+            "The data cannot be loaded because 'bad-headers.xlsx' contains error(s)",
             "Header 'y' in row 1, col F does not match any attribute",
         ]
         self.check_reader_errors('bad-headers.xlsx', msgs, [MainRoot, Node, Leaf, OneToManyRow])
 
         msgs = [
-            "The model cannot be loaded because 'bad-headers-*.csv' contains error(s)",
+            "The data cannot be loaded because 'bad-headers-*.csv' contains error(s)",
             "Header 'x' in row 5, col 1 does not match any attribute",
         ]
         self.check_reader_errors('bad-headers-*.csv', msgs, [MainRoot, Node, Leaf, OneToManyRow])
@@ -517,7 +517,7 @@ class TestIo(unittest.TestCase):
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'float1', 'bool1', )
 
-        msgs = ["The model cannot be loaded because 'uncaught-error.xlsx' contains error(s)",
+        msgs = ["The data cannot be loaded because 'uncaught-error.xlsx' contains error(s)",
                 "uncaught-error.xlsx:!!Tests:B5",
                 "uncaught-error.xlsx:!!Tests:C6",
                 "Value must be an instance of `float`",
@@ -557,7 +557,7 @@ class TestIo(unittest.TestCase):
                                  use_re=True)
 
         RE_msgs = [
-            r"The model cannot be loaded because 'invalid-data-\*.csv' contains error",
+            r"The data cannot be loaded because 'invalid-data-\*.csv' contains error",
             r"Leaf *\n +:\n +'id':''\n +invalid-data-\*.csv:Leaves:6,1\n +StringAttribute value for "
             r"primary attribute cannot be empty",
             r"Transposed\n +t_2:\n +'val':'x'\n +invalid-data-\*.csv:Transposed:2,3\n +Value must be at "
@@ -586,7 +586,7 @@ class TestIo(unittest.TestCase):
 
     def test_duplicate_primaries(self):
         RE_msgs = [
-            "The model cannot be loaded because it fails to validate",
+            "The data cannot be loaded because it fails to validate",
             "Node:\n +'id':\n +id values must be unique, but these values are repeated: node_2",
             "MainRoot:\n +'id':\n +id values must be unique, but these values are repeated: 'root 2'",
         ]
@@ -645,7 +645,7 @@ class TestIo(unittest.TestCase):
             # raises extra attribute exception
             WorkbookReader().run(filename, models=[SimpleModel, ExtraSheet])
         self.assertRegex(str(context.exception),
-                         "The model cannot be loaded because 'test_run_options.*' contains error.*")
+                         "The data cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
             col = 'B'
         elif 'csv' in fixture_file:
@@ -658,7 +658,7 @@ class TestIo(unittest.TestCase):
             WorkbookReader().run(filename, models=[SimpleModel, ExtraSheet],
                                  ignore_extra_attributes=True)
         self.assertRegex(str(context.exception),
-                         "The model cannot be loaded because 'test_run_options.*' contains error.*")
+                         "The data cannot be loaded because 'test_run_options.*' contains error.*")
         if 'xlsx' in fixture_file:
             location = 'A3'
         elif 'csv' in fixture_file:
@@ -795,7 +795,7 @@ class TestIo(unittest.TestCase):
             TestModel.Meta.verbose_name_plural: WorksheetStyle(extra_rows=0, extra_columns=0),
         })
 
-        with self.assertRaisesRegex(ValueError, 'The model cannot be loaded'):
+        with self.assertRaisesRegex(ValueError, 'cannot be loaded'):
             WorkbookReader().run(filename, models=[TestModel])
 
     def test_table_format_multiple_cells(self):
@@ -856,7 +856,7 @@ class TestIo(unittest.TestCase):
         wb['!!Nodes'][4][1] = 'a'
         filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
         write_workbook(filename, wb)
-        with self.assertRaisesRegex(ValueError, 'model cannot be loaded'):
+        with self.assertRaisesRegex(ValueError, 'cannot be loaded'):
             WorkbookReader().run(filename, models=[Node, Unit])
 
         # column orientation
@@ -884,13 +884,13 @@ class TestIo(unittest.TestCase):
 
         path = os.path.join(self.tmp_dirname, 'test.xlsx')
         obj_tables.io.Writer().run(path, objs, models=[Model1, Model2])
-        objs_2 = obj_tables.io.Reader().run(path, models=[Model1, Model2])
+        objs_2 = obj_tables.io.Reader().run(path, models=[Model1, Model2], group_objects_by_model=False)
         for obj, obj_2 in zip(objs, objs_2):
             self.assertTrue(obj_2.is_equal(obj))
 
         path = os.path.join(self.tmp_dirname, 'test*.csv')
         obj_tables.io.Writer().run(path, objs, models=[Model1, Model2])
-        objs_2 = obj_tables.io.Reader().run(path, models=[Model1, Model2])
+        objs_2 = obj_tables.io.Reader().run(path, models=[Model1, Model2], group_objects_by_model=False)
         for obj, obj_2 in zip(objs, objs_2):
             self.assertTrue(obj_2.is_equal(obj))
 
@@ -913,7 +913,7 @@ class TestIo(unittest.TestCase):
         ws.append(Row(['d', 'D']))
         write_workbook(filename, wb)
 
-        objs = obj_tables.io.Reader().run(filename, models=[Node])
+        objs = obj_tables.io.Reader().run(filename, models=[Node], group_objects_by_model=False)
         self.assertEqual(len(objs), 3)
 
         with self.assertRaisesRegex(ValueError, r'contains error\(s\)'):
@@ -940,7 +940,7 @@ class TestIo(unittest.TestCase):
         writer.run(filename, objs, model_metadata=model_metadata, models=[Node])
 
         reader = obj_tables.io.Reader()
-        objs2 = reader.run(filename, models=[Node])
+        objs2 = reader.run(filename, models=[Node], group_objects_by_model=False)
         for obj, obj2 in zip(objs, objs2):
             self.assertTrue(obj2.is_equal(obj))
 
@@ -974,7 +974,7 @@ class TestIo(unittest.TestCase):
         ws.append(Row(['d', 'D']))
         write_workbook(filename, wb)
 
-        objs = obj_tables.io.Reader().run(filename, models=[Node])
+        objs = obj_tables.io.Reader().run(filename, models=[Node], group_objects_by_model=False)
         self.assertEqual(len(objs), 3)
 
     def test_extra_spaces_in_col_headings(self):
@@ -996,7 +996,7 @@ class TestIo(unittest.TestCase):
         ws.append(Row(['d', 'D']))
         write_workbook(filename, wb)
 
-        objs = obj_tables.io.Reader().run(filename, models=[Node])
+        objs = obj_tables.io.Reader().run(filename, models=[Node], group_objects_by_model=False)
         self.assertEqual(len(objs), 3)
 
         class NodeTranspose(core.Model):
@@ -1015,7 +1015,7 @@ class TestIo(unittest.TestCase):
         ws.append(Row(['!Name  ', 'A', 'B', '', 'D']))
         write_workbook(filename, wb)
 
-        objs = obj_tables.io.Reader().run(filename, models=[NodeTranspose])
+        objs = obj_tables.io.Reader().run(filename, models=[NodeTranspose], group_objects_by_model=False)
         self.assertEqual(len(objs), 3)
 
 
@@ -1119,7 +1119,7 @@ class TestMetadataModels(unittest.TestCase):
         # read data repo metadata
         file_in_repo = os.path.join(self.test_data_repo_dir, 'test.xlsx')
         writer.run(file_in_repo, self.objs, models=[self.Model1], data_repo_metadata=True)
-        objs_read = reader.run(file_in_repo, models=[utils.DataRepoMetadata, self.Model1])
+        objs_read = reader.run(file_in_repo, models=[utils.DataRepoMetadata, self.Model1], group_objects_by_model=False)
         data_repo_metadata = objs_read[0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
         self.assertEqual(data_repo_metadata.branch, 'master')
@@ -1130,7 +1130,7 @@ class TestMetadataModels(unittest.TestCase):
 
         models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata, self.Model1]
         objs_read = reader.run(file_in_repo, models=models_expected,
-                               ignore_missing_models=True)
+                               ignore_missing_models=True, group_objects_by_model=False)
         obj_types = [o.__class__ for o in objs_read]
         self.assertTrue(utils.SchemaRepoMetadata not in obj_types)
 
@@ -1139,7 +1139,7 @@ class TestMetadataModels(unittest.TestCase):
                    schema_package='test_repo')
 
         # read data and schema metadata
-        objs_read = reader.run(file_in_repo, models=models_expected,)
+        objs_read = reader.run(file_in_repo, models=models_expected, group_objects_by_model=False)
         for obj, model in zip(objs_read, models_expected[0:2]):
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
@@ -1151,7 +1151,7 @@ class TestMetadataModels(unittest.TestCase):
         csv_path = os.path.join(self.test_data_repo_dir, 'test*.csv')
         writer.run(csv_path, self.objs, models=[self.Model1], data_repo_metadata=True,
                    schema_package='test_repo')
-        objs_read = reader.run(csv_path, models=models_expected)
+        objs_read = reader.run(csv_path, models=models_expected, group_objects_by_model=False)
         for obj, model in zip(objs_read, models_expected):
             self.assertTrue(isinstance(obj, model))
 
@@ -1223,12 +1223,12 @@ class TestMetadataModels(unittest.TestCase):
         path_1 = os.path.join(self.test_data_repo_dir, 'out.json')
         obj_tables.io.JsonWriter().run(path_1, self.objs, models=[self.Model1], data_repo_metadata=True)
         objs_read = obj_tables.io.JsonReader().run(path_1, models=[utils.DataRepoMetadata, self.Model1])
-        data_repo_metadata = objs_read[0]
+        data_repo_metadata = objs_read[utils.DataRepoMetadata][0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
         self.assertEqual(data_repo_metadata.branch, 'master')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
         self.assertEqual(len(data_repo_metadata.revision), 40)
-        for obj, obj_read in zip(self.objs, objs_read[1:]):
+        for obj, obj_read in zip(self.objs, objs_read[self.Model1]):
             self.assertTrue(obj_read.is_equal(obj))
 
         # test data and schema repo metadata in obj_tables file
@@ -1236,12 +1236,25 @@ class TestMetadataModels(unittest.TestCase):
                                        schema_package='test_repo')
         metadata_models_expected = [utils.DataRepoMetadata, utils.SchemaRepoMetadata]
         objs_read = obj_tables.io.JsonReader().run(path_1, models=metadata_models_expected + [self.Model1])
-        for obj, model in zip(objs_read, metadata_models_expected):
+        for model in metadata_models_expected:
+            obj = objs_read[model][0]
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
             self.assertEqual(obj.branch, 'master')
             self.assertTrue(isinstance(obj.revision, str))
             self.assertEqual(len(obj.revision), 40)
+
+        # write one object
+        path_1 = os.path.join(self.test_data_repo_dir, 'out.json')
+        obj_tables.io.JsonWriter().run(path_1, self.objs[0], models=[self.Model1], data_repo_metadata=True)
+        objs_read = obj_tables.io.JsonReader().run(path_1, models=[utils.DataRepoMetadata, self.Model1])
+        data_repo_metadata = objs_read[utils.DataRepoMetadata][0]
+        self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
+        self.assertEqual(data_repo_metadata.branch, 'master')
+        self.assertTrue(isinstance(data_repo_metadata.revision, str))
+        self.assertEqual(len(data_repo_metadata.revision), 40)
+        for obj, obj_read in zip(self.objs, objs_read[self.Model1]):
+            self.assertTrue(obj_read.is_equal(obj))
 
     def test_json_read_extra_worksheets(self):
         class Parent(core.Model):
@@ -1263,13 +1276,13 @@ class TestMetadataModels(unittest.TestCase):
         path = os.path.join(self.tmp_dirname, 'out.json')
         obj_tables.io.JsonWriter().run(path, objs, models=[Parent, Child])
 
-        objs = obj_tables.io.JsonReader().run(path, models=[Parent, Child])
+        objs = obj_tables.io.JsonReader().run(path, models=[Parent, Child], group_objects_by_model=False)
         p_b = next(obj for obj in objs if isinstance(obj, Parent))
         self.assertTrue(p_b.is_equal(p))
 
         with open(path, 'rb') as file:
             objs = json.load(file)
-        objs.append({'__type': 'UnsupportedType', '__id': 3, 'field': 'data'})
+        objs['Parent'].append({'__type': 'UnsupportedType', '__id': 3, 'field': 'data'})
         with open(path, 'w') as file:
             json.dump(objs, file)
 
@@ -1280,7 +1293,7 @@ class TestMetadataModels(unittest.TestCase):
         path = os.path.join(self.tmp_dirname, 'out.json')
         obj_tables.io.JsonWriter().run(path, p, models=[Parent, Child])
 
-        p_b = obj_tables.io.JsonReader().run(path, models=[Parent, Child])
+        p_b = obj_tables.io.JsonReader().run(path, models=[Parent, Child])[Parent][0]
         self.assertTrue(p_b.is_equal(p))
 
         obj = {'__type': 'UnsupportedType', '__id': 0, 'field': 'data'}
@@ -1293,7 +1306,7 @@ class TestMetadataModels(unittest.TestCase):
         obj_tables.io.JsonReader().run(path, models=[Parent, Child],
                                        ignore_extra_models=True)
 
-        obj = obj_tables.io.JsonReader().run(path, models=[Parent, Child, UnsupportedType])
+        obj = obj_tables.io.JsonReader().run(path, models=[Parent, Child, UnsupportedType])[UnsupportedType][0]
         self.assertNotEqual(obj, None)
         self.assertEqual(obj.field, 'data')
 
@@ -1307,7 +1320,7 @@ class TestMetadataModels(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unsupported type'):
             obj_tables.io.JsonReader().run(path, models=[Parent, Child])
 
-        objs2 = obj_tables.io.JsonReader().run(path, models=[Parent, Child, UnsupportedType])
+        objs2 = obj_tables.io.JsonReader().run(path, models=[Parent, Child, UnsupportedType])[UnsupportedType]
         self.assertNotEqual(obj, None)
         self.assertEqual(len(objs2), 1)
         self.assertEqual(objs2[0].field, 'data')
@@ -2354,7 +2367,8 @@ class JsonTestCase(unittest.TestCase):
         self.dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.dirname)    
+        # shutil.rmtree(self.dirname)
+        print(self.dirname)
 
     def test_write_read(self):
         class AA(core.Model):
@@ -2387,48 +2401,51 @@ class JsonTestCase(unittest.TestCase):
 
         path = os.path.join(self.dirname, 'out.json')
         obj_tables.io.JsonWriter().run(path, aa_0)
-        aa_0_2 = obj_tables.io.JsonReader().run(path, models=[AA])
+        result = obj_tables.io.JsonReader().run(path, models=[AA])
+        aa_0_2 = result[AA][0]
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
         obj_tables.io.JsonWriter().run(path, [aa_0, aa_1], models=AA)
-        aas = obj_tables.io.JsonReader().run(path, models=[AA])
+        aas = obj_tables.io.JsonReader().run(path, models=[AA])[AA]
         aas.sort(key=lambda aa: aa.id)
-        self.assertEqual(len(aas), 2)
+        self.assertEqual(len(aas), 3)
         self.assertTrue(aa_0.is_equal(aas[0]))
         self.assertTrue(aa_1.is_equal(aas[1]))
+        self.assertTrue(aa_2.is_equal(aas[2]))
 
         with open(path, 'r') as file:
             objs = json.load(file)
-        objs[0]['val'] = -1
+        objs['AA'][0]['val'] = -1
         with open(path, 'w') as file:
             json.dump(objs, file)
         with self.assertRaisesRegex(ValueError, 'fails to validate'):
             obj_tables.io.JsonReader().run(path, models=[AA])
 
         obj_tables.io.JsonWriter().run(path, aa_0, models=AA)
-        aa_0_2 = obj_tables.io.JsonReader().run(path, models=AA)
+        aa_0_2 = obj_tables.io.JsonReader().run(path, models=AA)[AA][0]
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
         obj_tables.io.JsonWriter().run(path, aa_0)
-        aa_0_2 = obj_tables.io.JsonReader().run(path, models=AA)
+        aa_0_2 = obj_tables.io.JsonReader().run(path, models=AA)[AA][0]
         self.assertTrue(aa_0.is_equal(aa_0_2))
         aa_0_2 = obj_tables.io.JsonReader().run(path, models=AA, group_objects_by_model=True)
-        self.assertEqual(list(aa_0_2.keys()), [AA])
-        self.assertEqual(len(aa_0_2[AA]), 1)
+        self.assertEqual(list(aa_0_2.keys()), [AA, BB, CC])
+        self.assertEqual(len(aa_0_2[AA]), 3)
         self.assertTrue(aa_0.is_equal(aa_0_2[AA][0]))
 
-        obj_tables.io.JsonWriter().run(path, None)
-        self.assertEqual(obj_tables.io.JsonReader().run(path), None)
+        obj_tables.io.JsonWriter().run(path, [])
+        self.assertEqual(obj_tables.io.JsonReader().run(path), {})
         self.assertEqual(obj_tables.io.JsonReader().run(path, models=AA, group_objects_by_model=True), {})
+        self.assertEqual(obj_tables.io.JsonReader().run(path, models=AA, group_objects_by_model=False), [])
 
         path = os.path.join(self.dirname, 'out.yml')
         obj_tables.io.JsonWriter().run(path, aa_0)
-        aa_0_2 = obj_tables.io.JsonReader().run(path, models=[AA])
+        aa_0_2 = obj_tables.io.JsonReader().run(path, models=[AA])[AA][0]
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
         path = os.path.join(self.dirname, 'out.yml')
         obj_tables.io.Writer().run(path, aa_0)
-        aa_0_2 = obj_tables.io.Reader().run(path, models=[AA])
+        aa_0_2 = obj_tables.io.Reader().run(path, models=[AA])[AA][0]
         self.assertTrue(aa_0.is_equal(aa_0_2))
 
         path = os.path.join(self.dirname, 'out.yml')
@@ -2446,9 +2463,9 @@ class JsonTestCase(unittest.TestCase):
         class AA(core.Model):
             id = core.StringAttribute()
         path = os.path.join(self.dirname, 'out.yml')
-        with self.assertRaisesRegex(ValueError, 'Model names must be unique to decode objects'):
+        with self.assertRaisesRegex(ValueError, 'Model names must be unique'):
             obj_tables.io.JsonWriter().run(path, aa_0, models=[AA, old_AA])
-        with self.assertRaisesRegex(ValueError, 'Model names must be unique to decode objects'):
+        with self.assertRaisesRegex(ValueError, 'Model names must be unique'):
             obj_tables.io.JsonReader().run(path, models=[AA, old_AA])
 
     def test_convert(self):
@@ -2496,6 +2513,7 @@ class JsonTestCase(unittest.TestCase):
                                                                           group_objects_by_model=True)
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
+        print(root.difference(root2))
         self.assertTrue(root.is_equal(root2))
 
         # convert json --> xlsx
@@ -2517,6 +2535,56 @@ class JsonTestCase(unittest.TestCase):
             writer = obj_tables.io.JsonWriter()
             filename = os.path.join(self.dirname, 'test.json')
             writer.run(filename, [node], models=[Node])
+
+    def test_to_from_dict(self):
+        vals = [None, 'a', True, 1, 1.2, {}, [],
+                [{'a': []}],
+                [{'z': [None, 'a', False, 1, 1.2]}, 'c'],
+                ]
+        for val in vals:
+            self.assertEqual(core.Model.to_dict(val), val)
+            self.assertEqual(core.Model.from_dict(val, []), val)
+            self.assertEqual(core.Model.from_dict(core.Model.to_dict(val), []), val)
+
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+        node = Node(id='x', name='X')
+        node_json_1 = {'__id': 0, '__type': 'Node', 'id': 'x', 'name': 'X'}
+        node_json_2 = {'__id': 0, '__type': 'Node', 'id': 'x'}
+
+        data = [{'z': [None, node]}, 'c', node]
+        node_dict = core.Model.to_dict(data, models=[Node])
+        exp = [{'z': [None, node_json_2]}, 'c', node_json_1]
+        self.assertEqual(node_dict, exp)
+
+        data2 = core.Model.from_dict(core.Model.to_dict(data, models=[Node]), [Node])
+        node2 = data2[-1]
+        self.assertEqual(data2, [{'z': [None, node2]}, 'c', node2])
+
+        data = [{'z': [None, node]}, 'c', node, node]
+        node_dict = core.Model.to_dict(data, models=[Node])
+        exp = [{'z': [None, node_json_2]}, 'c', node_json_1, node_json_2]
+        self.assertEqual(node_dict, exp)
+
+        data2 = core.Model.from_dict(core.Model.to_dict(data, models=[Node]), [Node])
+        node2 = data2[-1]
+        self.assertEqual(data2, [{'z': [None, node2]}, 'c', node2, node2])
+
+        data2 = core.Model.from_dict(core.Model.to_dict(data, models=[Node]), [Node], output_format='list')
+        self.assertEqual(len(data2), 1)
+        self.assertTrue(data2[0].is_equal(node))
+
+        data2 = core.Model.from_dict(core.Model.to_dict(data, models=[Node]), [Node], output_format='dict')
+        self.assertEqual(len(data2), 1)
+        self.assertEqual(len(data2[Node]), 1)
+        self.assertTrue(data2[Node][0].is_equal(node))
+
+        with self.assertRaisesRegex(ValueError, 'cannot be encoded'):
+            core.Model.to_dict(set())
+
+        with self.assertRaisesRegex(ValueError, 'Output format must be'):
+            core.Model.from_dict(core.Model.to_dict(data, models=[Node]), [Node], output_format='tuple')
 
 
 class InlineJsonTestCase(unittest.TestCase):

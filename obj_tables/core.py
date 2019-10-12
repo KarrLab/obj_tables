@@ -1159,13 +1159,13 @@ class Model(with_metaclass(ModelMeta, object)):
         for attr_name, attr in attrs_to_search.items():
             value = getattr(self, attr_name)
             if (include is None or (value in include or
-                                    (include_nan and
+                                    (include_nan
+                                     and (isinstance(value, numbers.Number)
+                                      and math.isnan(value))))) and \
+               (exclude is None or (value not in exclude
+                                    and (not exclude_nan or not
                                      (isinstance(value, numbers.Number) and
-                                      math.isnan(value))))) and \
-               (exclude is None or (value not in exclude and
-                                    (not exclude_nan or not
-                                     (isinstance(value, numbers.Number) and
-                                      math.isnan(value))))):
+                                          math.isnan(value))))):
                 matching_attrs[attr_name] = attr
         return matching_attrs
 
@@ -2531,78 +2531,107 @@ class Model(with_metaclass(ModelMeta, object)):
         pass
 
     @staticmethod
-    def to_dict( object, encode_primary_objects=True, max_depth=float('inf'), encoded=None):
-        """ Encode an object using a simple Python representation (dict, list, str, float, bool, None) that is
-        compatible with JSON and YAML. Use `__id` keys to avoid infinite recursion by encoding each object once and referring
-        to objects by their __id for each repeated reference.
+    def to_dict(object, models=None, encode_primary_objects=True, encoded=None):
+        """ Encode a instance of :obj:`Model` or a collection of instances of :obj:`Model` using a simple Python representation
+        (dict, list, str, float, bool, None) that is compatible with JSON and YAML. Use `__id` keys to avoid infinite recursion
+        by encoding each object once and referring to objects by their __id for each repeated reference.
 
         Args:
-            object (:obj:`Model` of :obj:`list` of :obj:`Model`): model instances or list of model instances
+            object (:obj:`object`): instance of :obj:`Model` or a collection (:obj:`dict`, :obj:`list`, :obj:`tuple`, or nested
+                combination of :obj:`dict`, :obj:`list`, and :obj:`tuple`) of instances of :obj:`Model`
             encode_primary_objects (:obj:`bool`, optional): if :obj:`True`, encode primary classes otherwise just encode their IDs
-            max_depth (:obj:`int`, optional): maximum depth to serialize
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
 
         Returns:
             :obj:`dict`: simple Python representation of the object
         """
+        if models:
+            models = set(models)
+        else:
+            models = set()
+
         if encoded is None:
             encoded = {}
-        
+
         to_encode = queue.Queue()
 
-        if isinstance(object, (list, tuple)):
-            json = []
-            for obj in object:
-                json_obj = {}
-                json.append(json_obj)
-                to_encode.put((obj, json_obj, 0))
-        elif object is not None:
-            json = {}
-            to_encode.put((object, json, 0))
-        else:
-            json = None
+        def add_to_encoding_queue(object, encoded=encoded, to_encode=to_encode):
+            if isinstance(object, Model):
+                cls = object.__class__
+                encoded_json = encoded.get(object, None)
+                if encoded_json:
+                    json = {
+                        '__id': encoded_json['__id'],
+                    }
+                else:
+                    json = {
+                        '__id': len(encoded),
+                    }
+                    encoded[object] = json
+                    to_encode.put((object, json))
+                json['__type'] = cls.__name__
+                if cls.Meta.primary_attribute:
+                    json[cls.Meta.primary_attribute.name] = object.get_primary_attribute()
+            elif isinstance(object, (list, tuple)):
+                json = []
+                to_encode.put((object, json))
+            elif isinstance(object, collections.OrderedDict):
+                json = collections.OrderedDict()
+                to_encode.put((object, json))
+            elif isinstance(object, dict):
+                json = {}
+                to_encode.put((object, json))
+            elif isinstance(object, (type(None), str, bool, int, float)):
+                json = object
+            else:
+                raise ValueError('Instance of {} cannot be encoded'.format(object.__class__.__name__))
+            return json
+
+        return_val = add_to_encoding_queue(object)
 
         while not to_encode.empty():
-            obj, json_obj, depth = to_encode.get()
+            obj, json_obj = to_encode.get()
 
-            cls = obj.__class__
-            json_obj['__type'] = cls.__name__
-            if cls.Meta.primary_attribute:
-                json_obj[cls.Meta.primary_attribute.name] = obj.get_primary_attribute()
+            if isinstance(obj, Model):
+                cls = obj.__class__
+                models.add(cls)
 
-            json_id = encoded.get(obj, None)
-            if json_id is not None:
-                json_obj['__id'] = json_id
-            else:
-                json_id = len(encoded)
-                json_obj['__id'] = json_id
-                encoded[obj] = json_id
-
-                if depth <= max_depth:
-
-                    if encode_primary_objects or cls.Meta.table_format == TableFormat.cell:
-                        for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
-                            val = getattr(obj, attr_name)
-                            if isinstance(attr, RelatedAttribute):
-                                if val is None:
-                                    json_val = None
-                                elif isinstance(val, list):
-                                    json_val = []
-                                    for v in val:
-                                        json_v = {}
-                                        to_encode.put((v, json_v, depth + 1))
-                                        json_val.append(json_v)
-                                else:
-                                    json_val = {}
-                                    to_encode.put((val, json_val, depth + 1))
+                if encode_primary_objects or cls.Meta.table_format == TableFormat.cell:
+                    for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
+                        val = getattr(obj, attr_name)
+                        if isinstance(attr, RelatedAttribute):
+                            if val is None:
+                                json_val = None
+                            elif isinstance(val, list):
+                                json_val = []
+                                for v in val:
+                                    json_val.append(add_to_encoding_queue(v))
                             else:
-                                json_val = attr.to_builtin(val)
-                            json_obj[attr_name] = json_val
+                                json_val = add_to_encoding_queue(val)
+                        else:
+                            json_val = attr.to_builtin(val)
+                        json_obj[attr_name] = json_val
 
-        return json
+            elif isinstance(obj, (list, tuple)):
+                for sub_obj in obj:
+                    json_obj.append(add_to_encoding_queue(sub_obj))
+
+            elif isinstance(obj, dict):
+                for key, val in obj.items():
+                    json_obj[add_to_encoding_queue(key)] = add_to_encoding_queue(val)
+
+            else:  # pragma no cover
+                # unreachable because only instances of Model, list, tuple, and dict can be added to the encoding queue
+                pass
+
+        if len(models) > len(set([model.__name__ for model in models])):
+            raise ValueError('Model names must be unique to encode objects')
+
+        return return_val
 
     @staticmethod
-    def from_dict(json, models, decode_primary_objects=True, primary_objects=None, decoded=None, ignore_extra_models=False):
+    def from_dict(json, models, decode_primary_objects=True, primary_objects=None, decoded=None, ignore_extra_models=False,
+                  validate=False, output_format=None):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of an object that
         is compatible with JSON and YAML, including references to objects through `__id` keys.
 
@@ -2614,11 +2643,19 @@ class Model(with_metaclass(ModelMeta, object)):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
             ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
                 other worksheets or files
+            validate (:obj:`bool`, optional): if :obj:`True`, validate the data
+            output_format (:obj:`str`, optional): desired structure of the return value
+
+                * `None`: Return the data with the same structure as :obj:`json`. Do not reshape the data.
+                * `list`: List of instances of :obj:`Model`.
+                * `dict`: Dictionary that maps subclasses of :obj:`Model` to the instances of each subclass.
 
         Returns:
             :obj:`Model`: decoded object
         """
         models = set(models)
+        for model in list(models):
+            models.update(set(get_related_models(model)))
         models_by_name = {model.__name__: model for model in models}
         if len(list(models_by_name.keys())) < len(models):
             raise ValueError('Model names must be unique to decode objects')
@@ -2630,85 +2667,104 @@ class Model(with_metaclass(ModelMeta, object)):
             decoded = {}
         to_decode = []
 
-        if isinstance(json, dict):
-            obj_type = json.get('__type', None)
-            model = models_by_name.get(obj_type, None)
-            if not model:
-                if not ignore_extra_models:
-                    raise ValueError('Unsupported type {}'.format(obj_type))
-                obj = None
-            else:
-                obj = decoded.get(json['__id'], None)
-                if obj is None:
-                    obj = model()
-                    decoded[json['__id']] = obj
-                    to_decode.append((json, obj))
-        elif isinstance(json, list):
-            obj = []
-            for sub_json in json:
-                obj_type = sub_json.get('__type', None)
+        def add_to_decoding_queue(json, models_by_name=models_by_name, decoded=decoded, to_decode=to_decode):
+            if isinstance(json, dict) and '__type' in json and (not ignore_extra_models or (json['__type'] in models_by_name)):
+                obj_type = json.get('__type')
                 model = models_by_name.get(obj_type, None)
                 if not model:
-                    if ignore_extra_models:
-                        continue
-                    else:
-                        raise ValueError('Unsupported type {}'.format(obj_type))
+                    raise ValueError('Unsupported type {}'.format(obj_type))
+                else:
+                    obj = decoded.get(json['__id'], None)
+                    if obj is None:
+                        obj = model()
+                        decoded[json['__id']] = obj
+                    to_decode.append((json, obj))
+            elif isinstance(json, list):
+                obj = []
+                to_decode.append((json, obj))
+            elif isinstance(json, dict):
+                obj = {}
+                to_decode.append((json, obj))
+            else:
+                obj = json
 
-                sub_obj = decoded.get(sub_json['__id'], None)
-                if sub_obj is None:
-                    sub_obj = model()
-                    decoded[sub_json['__id']] = sub_obj
-                    to_decode.append((sub_json, sub_obj))
+            return obj
 
-                obj.append(sub_obj)
-        else:
-            obj = None
-            to_decode = []
+        return_val = add_to_decoding_queue(json)
 
         while to_decode:
-            sub_json, sub_obj = to_decode.pop()
-            sub_cls = sub_obj.__class__
+            obj_json, obj = to_decode.pop()
+            if isinstance(obj, Model):
+                cls = obj.__class__
 
-            for attr_name, attr in chain(sub_cls.Meta.attributes.items(), sub_cls.Meta.related_attributes.items()):
-                if attr_name not in sub_json:
-                    continue
+                for attr_name, attr in chain(cls.Meta.attributes.items(), cls.Meta.related_attributes.items()):
+                    if attr_name not in obj_json:
+                        continue
 
-                attr_json = sub_json[attr_name]
-                if isinstance(attr, RelatedAttribute):
-                    if attr_name in sub_cls.Meta.attributes:
-                        other_cls = attr.related_class
-                    else:
-                        other_cls = attr.primary_class
-
-                    if attr_json is None:
-                        attr_val = None
-
-                    elif isinstance(attr_json, list):
-                        attr_val = []
-                        for sub_attr_json in attr_json:
-                            if decode_primary_objects or other_cls.Meta.table_format == TableFormat.cell:
-                                sub_sub_obj = decoded.get(sub_attr_json['__id'], other_cls())
-                                decoded[sub_attr_json['__id']] = sub_sub_obj
-                                to_decode.append((sub_attr_json, sub_sub_obj))
-                            else:
-                                primary_attr = sub_attr_json[other_cls.Meta.primary_attribute.name]
-                                sub_sub_obj = primary_objects[other_cls][primary_attr]
-                            attr_val.append(sub_sub_obj)
-
-                    else:
-                        if decode_primary_objects or other_cls.Meta.table_format == TableFormat.cell:
-                            attr_val = decoded.get(attr_json['__id'], other_cls())
-                            decoded[attr_json['__id']] = attr_val
-                            to_decode.append((attr_json, attr_val))
+                    attr_json = obj_json[attr_name]
+                    if isinstance(attr, RelatedAttribute):
+                        if attr_name in cls.Meta.attributes:
+                            other_cls = attr.related_class
                         else:
-                            primary_attr = attr_json[other_cls.Meta.primary_attribute.name]
-                            attr_val = primary_objects[other_cls][primary_attr]
+                            other_cls = attr.primary_class
 
-                else:
-                    attr_val = attr.from_builtin(attr_json)
-                setattr(sub_obj, attr_name, attr_val)
+                        if attr_json is None:
+                            attr_val = None
 
-        return obj
+                        elif isinstance(attr_json, list):
+                            attr_val = []
+                            for sub_attr_json in attr_json:
+                                if decode_primary_objects or other_cls.Meta.table_format == TableFormat.cell:
+                                    sub_obj = add_to_decoding_queue(sub_attr_json)
+                                else:
+                                    primary_attr = sub_attr_json[other_cls.Meta.primary_attribute.name]
+                                    sub_obj = primary_objects[other_cls][primary_attr]
+                                attr_val.append(sub_obj)
+
+                        else:
+                            if decode_primary_objects or other_cls.Meta.table_format == TableFormat.cell:
+                                attr_val = add_to_decoding_queue(attr_json)
+                            else:
+                                primary_attr = attr_json[other_cls.Meta.primary_attribute.name]
+                                attr_val = primary_objects[other_cls][primary_attr]
+
+                    else:
+                        attr_val = attr.from_builtin(attr_json)
+                    setattr(obj, attr_name, attr_val)
+
+            elif isinstance(obj, list):
+                for sub_json in obj_json:
+                    obj.append(add_to_decoding_queue(sub_json))
+
+            elif isinstance(obj, dict):
+                for key, val in obj_json.items():
+                    obj[add_to_decoding_queue(key)] = add_to_decoding_queue(val)
+
+            else:  # pragma no cover
+                # unreachable because only instances of Model, list, tuple, and dict can be added to the encoding queue
+                pass
+
+        # validate
+        if validate:
+            errors = Validator().validate(decoded.values())
+            if errors:
+                raise ValueError(
+                    indent_forest(['The data cannot be loaded because it fails to validate:', [errors]]))
+
+        # format output
+        if output_format == 'list':
+            return_val = list(decoded.values())
+        elif output_format == 'dict':
+            return_val = {}
+            for obj in decoded.values():
+                if obj.__class__ not in return_val:
+                    return_val[obj.__class__] = []
+                return_val[obj.__class__].append(obj)
+        elif output_format is not None:
+            raise ValueError('Output format must be `None`, `list`, or `dict`')
+
+        # return data
+        return return_val
 
     def has_attr_vals(self, __type=None, **kwargs):
         """ Check if the type and values of the attributes of an object match a set of conditions
@@ -4205,7 +4261,7 @@ class IntegerAttribute(NumericAttribute):
             if self.max is None or isnan(self.max):
                 validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['between']
                 validation.minimum_scalar_value = -2**15
-                validation.maximum_scalar_value = 2**15-1
+                validation.maximum_scalar_value = 2**15 - 1
             else:
                 validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['<=']
                 validation.allowed_scalar_value = self.max or 1e-100
@@ -6651,7 +6707,7 @@ class OneToManyAttribute(RelatedAttribute):
         related_manager (:obj:`type`): related manager
     """
 
-    def __init__(self, related_class, related_name='',  default=list(), default_cleaned_value=list(),
+    def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
                  related_default=None, none_value=list,
                  min_related=0, max_related=float('inf'), min_related_rev=0,
                  verbose_name='', verbose_related_name='', description='',
@@ -7689,4 +7745,6 @@ class SchemaWarning(ObjTablesWarning):
     """ Schema warning """
     pass
 
+
 from . import expression
+from .utils import get_related_models

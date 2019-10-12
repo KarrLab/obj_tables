@@ -69,7 +69,7 @@ class ConvertController(cement.Controller):
                           models=models,
                           group_objects_by_model=False,
                           **DEFAULT_READER_ARGS)
-        io.Writer().run(args.out_wb_file, objs, 
+        io.Writer().run(args.out_wb_file, objs,
                         doc_metadata=reader._doc_metadata,
                         model_metadata=reader._model_metadata,
                         models=models, write_toc=args.write_toc, write_schema=args.write_schema)
@@ -154,7 +154,7 @@ class GenTemplateController(cement.Controller):
         args = self.app.pargs
         _, models = get_schema_models(args.schema_file)
         io.Writer().run(args.template_file, [], models=models,
-                        write_toc=args.write_toc, write_schema=args.write_schema, 
+                        write_toc=args.write_toc, write_schema=args.write_schema,
                         extra_entries=10)
         print('Template saved to {}'.format(args.template_file))
 
@@ -200,7 +200,7 @@ class NormalizeController(cement.Controller):
         for obj in objs:
             if isinstance(obj, model):
                 obj.normalize()
-        io.Writer().run(args.out_wb_file, objs, 
+        io.Writer().run(args.out_wb_file, objs,
                         doc_metadata=reader._doc_metadata,
                         model_metadata=reader._model_metadata,
                         models=models, write_toc=args.write_toc, write_schema=args.write_schema)

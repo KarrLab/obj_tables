@@ -65,14 +65,14 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, data_repo_metadata=False, schema_package=None):
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
                 be saved to header row (e.g., `!!ObjTables ...`)
@@ -90,6 +90,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             extra_entries (:obj:`int`, optional): additional entries to display
+            group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; a warning will be generated if the repo repo is not
                 current with origin, except for the file
@@ -163,13 +164,14 @@ class JsonWriter(WriterBase):
 
     def run(self, path, objects, doc_metadata=None, model_metadata=None, models=None, get_related=True, include_all_attributes=True,
             validate=True, title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_toc=False, write_schema=False, extra_entries=0, data_repo_metadata=False, schema_package=None):
+            write_toc=False, write_schema=False, extra_entries=0, group_objects_by_model=True,
+            data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
                 be saved to header row (e.g., `!!ObjTables ...`)
@@ -183,10 +185,11 @@ class JsonWriter(WriterBase):
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
-            creator (:obj:`str`, optional): creator            
+            creator (:obj:`str`, optional): creator
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             extra_entries (:obj:`int`, optional): additional entries to display
+            group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
@@ -217,23 +220,28 @@ class JsonWriter(WriterBase):
         metadata_objects = self.make_metadata_objects(data_repo_metadata, path, schema_package)
         if metadata_objects:
             # put metadata instances at start of objects
+            if isinstance(objects, Model):
+                objects = [objects]
             objects = metadata_objects + objects
 
-        # convert object(s) (and their relatives) to Python dicts and lists
-        if isinstance(objects, (list, tuple)):
-            for obj in objects:
-                models.append(obj.__class__)
-        elif objects is not None:
-            models.append(objects.__class__)
+        # group objects by type
+        if group_objects_by_model:
+            all_models = set(models)
+            if isinstance(objects, Model):
+                objects = [objects]
 
-        # check that model names are unique so that objects will be decodable
-        models = set(models)
-        models_by_name = {model.__name__: model for model in models}
-        if len(list(models_by_name.keys())) < len(models):
-            raise ValueError('Model names must be unique to decode objects')
+            grouped_objects = {}
+            for obj in objects:
+                all_models.add(obj.__class__)
+                if obj.__class__.__name__ not in grouped_objects:
+                    grouped_objects[obj.__class__.__name__] = []
+                grouped_objects[obj.__class__.__name__].append(obj)
+
+            all_models = models + sorted(all_models - set(models), key=lambda model: model.__name__)
+            objects = collections.OrderedDict((model.__name__, grouped_objects.get(model.__name__, [])) for model in all_models)
 
         # encode to json
-        json_objects = Model.to_dict(objects)
+        json_objects = Model.to_dict(objects, models)
 
         # save plain Python object to JSON or YAML
         _, ext = splitext(path)
@@ -255,14 +263,14 @@ class WorkbookWriter(WriterBase):
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, data_repo_metadata=False, schema_package=None):
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): `model` instance or list of `model` instances
-            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
                 be saved to header row (e.g., `!!ObjTables ...`)
@@ -278,10 +286,11 @@ class WorkbookWriter(WriterBase):
             keywords (:obj:`str`, optional): keywords
             version (:obj:`str`, optional): version
             language (:obj:`str`, optional): language
-            creator (:obj:`str`, optional): creator            
+            creator (:obj:`str`, optional): creator
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             extra_entries (:obj:`int`, optional): additional entries to display
+            group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
@@ -397,7 +406,7 @@ class WorkbookWriter(WriterBase):
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear in the table of contents
-            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
         """
         if isinstance(writer, wc_utils.workbook.io.ExcelWriter):
@@ -486,7 +495,7 @@ class WorkbookWriter(WriterBase):
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear in the table of contents
-            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             grouped_objects (:obj:`dict`): dictionary which maps models
                 to lists of instances of each model
@@ -582,7 +591,7 @@ class WorkbookWriter(WriterBase):
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             model (:obj:`type`): model
             objects (:obj:`list` of :obj:`Model`): list of instances of `model`
-            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             model_metadata (:obj:`dict`): dictionary of model metadata
             sheet_models (:obj:`list` of :obj:`Model`): models encoded as separate sheets
@@ -802,14 +811,14 @@ class MultiSeparatedValuesWriter(WriterBase):
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, data_repo_metadata=False, schema_package=None):
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None):
         """ Write model objects to a single text file which contains multiple
         comma or tab-separated tables.
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): `model` instance or list of `model` instances
-            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
                 be saved to header row (e.g., `!!ObjTables ...`)
@@ -829,6 +838,7 @@ class MultiSeparatedValuesWriter(WriterBase):
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
+            group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
@@ -917,14 +927,14 @@ class Writer(WriterBase):
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, data_repo_metadata=False, schema_package=None):
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
         Args:
             path (:obj:`str`): path to write file(s)
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
-            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+            doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             model_metadata (:obj:`dict`): dictionary that maps models to dictionary with their metadata to
                 be saved to header row (e.g., `!!ObjTables ...`)
@@ -944,6 +954,7 @@ class Writer(WriterBase):
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
+            group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
@@ -958,6 +969,7 @@ class Writer(WriterBase):
                      language=language, creator=creator,
                      write_toc=write_toc, write_schema=write_schema,
                      extra_entries=extra_entries,
+                     group_objects_by_model=group_objects_by_model,
                      data_repo_metadata=data_repo_metadata, schema_package=schema_package)
 
 
@@ -965,7 +977,7 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
     """ Interface for classes which write model objects to file(s)
 
     Attributes:
-        _doc_metadata (:obj:`dict`): dictionary of document metadata read from header row 
+        _doc_metadata (:obj:`dict`): dictionary of document metadata read from header row
                 (e.g., `!!!ObjTables ...`)
         _model_metadata (:obj:`dict`): dictionary which maps models (:obj:`Model`) to dictionaries of
             metadata read from a document (e.g., `!!ObjTables Date='...' ...`)
@@ -985,7 +997,7 @@ class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
             ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            group_objects_by_model=False, validate=True):
+            group_objects_by_model=True, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:
@@ -1024,7 +1036,7 @@ class JsonReader(ReaderBase):
             ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            group_objects_by_model=False, validate=True):
+            group_objects_by_model=True, validate=True):
         """ Read model objects from file(s) and, optionally, validate them
 
         Args:
@@ -1075,30 +1087,13 @@ class JsonReader(ReaderBase):
             else:
                 raise ValueError('Unsupported format {}'.format(ext))
 
-        objs = Model.from_dict(json_objs, models, ignore_extra_models=ignore_extra_models)
-        if isinstance(json_objs, list):
-            objs = det_dedupe(objs)
-
-        # validate
-        if objs and validate:
-            if isinstance(objs, list):
-                to_validate = objs
-            else:
-                to_validate = [objs]
-            errors = Validator().validate(to_validate)
-            if errors:
-                raise ValueError(
-                    indent_forest(['The model cannot be loaded because it fails to validate:', [errors]]))
-
-        # group objects by model
         if group_objects_by_model:
-            if objs is None:
-                objs = []
-            elif not isinstance(objs, list):
-                objs = [objs]
-            return dict_by_class(objs)
+            output_format = 'dict'
         else:
-            return objs
+            output_format = 'list'
+
+        return Model.from_dict(json_objs, models, ignore_extra_models=ignore_extra_models, validate=validate,
+                               output_format=output_format)
 
 
 class WorkbookReader(ReaderBase):
@@ -1292,7 +1287,7 @@ class WorkbookReader(ReaderBase):
                 objects[model] = model_objects
 
         if errors:
-            forest = ["The model cannot be loaded because '{}' contains error(s):".format(basename(path))]
+            forest = ["The data cannot be loaded because '{}' contains error(s):".format(basename(path))]
             for model, model_errors in errors.items():
                 forest.append([quote(model.__name__)])
                 forest.append([model_errors])
@@ -1312,7 +1307,7 @@ class WorkbookReader(ReaderBase):
                 errors[model] = model_errors
 
         if errors:
-            forest = ["The model cannot be loaded because '{}' contains error(s):".format(basename(path))]
+            forest = ["The data cannot be loaded because '{}' contains error(s):".format(basename(path))]
             for model, model_errors in errors.items():
                 forest.append([quote(model.__name__)])
                 forest.append([model_errors])
@@ -1339,7 +1334,7 @@ class WorkbookReader(ReaderBase):
             errors = Validator().validate(all_objects)
             if errors:
                 raise ValueError(
-                    indent_forest(['The model cannot be loaded because it fails to validate:', [errors]]))
+                    indent_forest(['The data cannot be loaded because it fails to validate:', [errors]]))
 
         # return
         if group_objects_by_model:
@@ -2048,7 +2043,7 @@ class Reader(ReaderBase):
             ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
-            group_objects_by_model=False, validate=True):
+            group_objects_by_model=True, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
         Args:
@@ -2147,7 +2142,7 @@ def convert(source, destination, models,
 def create_template(path, models, title=None, description=None, keywords=None,
                     version=None, language=None, creator=None,
                     write_toc=True, write_schema=False,
-                    extra_entries=10):
+                    extra_entries=10, group_objects_by_model=True):
     """ Create a template for a model
 
     Args:
@@ -2164,12 +2159,13 @@ def create_template(path, models, title=None, description=None, keywords=None,
         write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
         write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
         extra_entries (:obj:`int`, optional): additional entries to display
+        group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
     """
     Writer.get_writer(path)().run(path, [], models=models,
                                   title=title, description=description, keywords=keywords,
                                   version=version, language=language, creator=creator,
                                   write_toc=write_toc, write_schema=write_schema,
-                                  extra_entries=extra_entries)
+                                  extra_entries=extra_entries, group_objects_by_model=group_objects_by_model)
 
 
 def get_fields(cls, doc_metadata, model_metadata, include_all_attributes=True, sheet_models=None):
@@ -2177,7 +2173,7 @@ def get_fields(cls, doc_metadata, model_metadata, include_all_attributes=True, s
 
     Args:
         cls (:obj:`type`): Model type (subclass of :obj:`Model`)
-        doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row 
+        doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
             (e.g., `!!!ObjTables ...`)
         model_metadata (:obj:`dict`): dictionary of model metadata
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those

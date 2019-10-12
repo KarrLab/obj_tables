@@ -1217,7 +1217,7 @@ class TestCore(unittest.TestCase):
         root.clean()
         self.assertEqual(root.validate(), None)
 
-        root.datetime = 1.-1e-10
+        root.datetime = 1. - 1e-10
         root.clean()
         self.assertEqual(root.validate(), None)
 
@@ -2930,7 +2930,7 @@ class TestCore(unittest.TestCase):
                   for i in range(NUM)]
 
         # the lines in root3_tree are all in node3_tree
-        default_depth_plus_3 = core.Model.DEFAULT_MAX_DEPTH+3
+        default_depth_plus_3 = core.Model.DEFAULT_MAX_DEPTH + 3
         root3_tree = root3s[0].pformat(max_depth=default_depth_plus_3)
         node3_tree = node3s[0].pformat(max_depth=default_depth_plus_3)
         for root3_line in root3_tree.split('\n'):
@@ -2974,8 +2974,8 @@ class TestCore(unittest.TestCase):
             '    gparent_0 != gparent_1'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
-                         g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n'
+                         + g[0].difference(g[1]) + '\n\n' + msg)
 
         g[1].val = 'gparent_1'
         c[4].val = 'child_3_0'
@@ -2993,8 +2993,8 @@ class TestCore(unittest.TestCase):
             '                child_0_0 != child_3_0'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
-                         g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n'
+                         + g[0].difference(g[1]) + '\n\n' + msg)
 
         g[1].val = 'gparent_0'
         c[4].val = 'child_3_0'
@@ -3010,8 +3010,8 @@ class TestCore(unittest.TestCase):
             '                child_0_0 != child_3_0'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
-                         g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n'
+                         + g[0].difference(g[1]) + '\n\n' + msg)
 
         g[1].val = 'gparent_0'
         c[4].val = 'child_3_0'
@@ -3032,8 +3032,8 @@ class TestCore(unittest.TestCase):
             '                child_0_1 != child_3_1'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
-                         g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n'
+                         + g[0].difference(g[1]) + '\n\n' + msg)
 
         g[1].val = 'gparent_0'
         c[4].val = 'child_3_0'
@@ -3050,8 +3050,8 @@ class TestCore(unittest.TestCase):
             '          No matching element c_0_1'
         )
         self.assertFalse(g[1].is_equal(g[0]))
-        self.assertEqual(g[0].difference(g[1]), msg, '\n\n' +
-                         g[0].difference(g[1]) + '\n\n' + msg)
+        self.assertEqual(g[0].difference(g[1]), msg, '\n\n'
+                         + g[0].difference(g[1]) + '\n\n' + msg)
 
     def test_difference_2(self):
         class TestModel(core.Model):
@@ -3144,20 +3144,20 @@ class TestCore(unittest.TestCase):
         obj = Grandparent(id='gp')
         err = core.InvalidObject(obj, attr_errs)
         print("{}:\n".format(obj.id) +
-              "  '{}':\n".format(attrs[0].name) +
-              "    {}\n".format(msgs[0]) +
-              "    {}\n".format(msgs[1].replace("\n", "\n    ")) +
-              "  '{}':\n".format(attrs[1].name) +
-              "    {}\n".format(msgs[2]) +
-              "    {}".format(msgs[3]))
+              "  '{}':\n".format(attrs[0].name)
+              + "    {}\n".format(msgs[0])
+              + "    {}\n".format(msgs[1].replace("\n", "\n    "))
+              + "  '{}':\n".format(attrs[1].name)
+              + "    {}\n".format(msgs[2])
+              + "    {}".format(msgs[3]))
         self.assertEqual(str(err), (
-            "{}:\n".format(obj.id) +
-            "  '{}':\n".format(attrs[0].name) +
-            "    {}\n".format(msgs[0]) +
-            "    {}\n".format(msgs[1].replace("\n", "\n    ")) +
-            "  '{}':\n".format(attrs[1].name) +
-            "    {}\n".format(msgs[2]) +
-            "    {}".format(msgs[3])
+            "{}:\n".format(obj.id)
+            + "  '{}':\n".format(attrs[0].name)
+            + "    {}\n".format(msgs[0])
+            + "    {}\n".format(msgs[1].replace("\n", "\n    "))
+            + "  '{}':\n".format(attrs[1].name)
+            + "    {}\n".format(msgs[2])
+            + "    {}".format(msgs[3])
         ))
 
     def test_invalid_model_str(self):
@@ -3174,12 +3174,12 @@ class TestCore(unittest.TestCase):
         ]
         err = core.InvalidModel(Grandparent, attr_errs)
         self.assertEqual(str(err), (
-            "'{}':\n".format(attrs[0].name) +
-            "  {}\n".format(msgs[0]) +
-            "  {}\n".format(msgs[1].replace("\n", "\n  ")) +
-            "'{}':\n".format(attrs[1].name) +
-            "  {}\n".format(msgs[2]) +
-            "  {}".format(msgs[3])
+            "'{}':\n".format(attrs[0].name)
+            + "  {}\n".format(msgs[0])
+            + "  {}\n".format(msgs[1].replace("\n", "\n  "))
+            + "'{}':\n".format(attrs[1].name)
+            + "  {}\n".format(msgs[2])
+            + "  {}".format(msgs[3])
         ))
 
     def test_invalid_object_set_exception(self):
@@ -3205,48 +3205,48 @@ class TestCore(unittest.TestCase):
                                     mod_err_gp, mod_err_p])
 
         self.assertEqual(str(err), (
-            '{}:\n'.format(Grandparent.__name__) +
-            "  '{}':\n".format(attr.name) +
-            '    {}\n'.format(msg.replace('\n', '\n    ')) +
-            '    {}\n'.format(msg.replace('\n', '\n    ')) +
-            "  '{}':\n".format(attr.name) +
-            '    {}\n'.format(msg.replace('\n', '\n    ')) +
-            '    {}\n'.format(msg.replace('\n', '\n    ')) +
-            '  \n' +
-            '    {}:\n'.format(attr.name) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '    {}:\n'.format(attr.name) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '  \n' +
-            '    {}:\n'.format(attr.name) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '    {}:\n'.format(attr.name) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '{}:\n'.format(Parent.__name__) +
-            "  '{}':\n".format(attr.name) +
-            '    {}\n'.format(msg.replace('\n', '\n    ')) +
-            '    {}\n'.format(msg.replace('\n', '\n    ')) +
-            "  '{}':\n".format(attr.name) +
-            '    {}\n'.format(msg.replace('\n', '\n    ')) +
-            '    {}\n'.format(msg.replace('\n', '\n    ')) +
-            '  \n' +
-            '    {}:\n'.format(attr.name) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '    {}:\n'.format(attr.name) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '  \n' +
-            '    {}:\n'.format(attr.name) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '    {}:\n'.format(attr.name) +
-            '      {}\n'.format(msg.replace('\n', '\n      ')) +
-            '      {}'.format(msg.replace('\n', '\n      '))
+            '{}:\n'.format(Grandparent.__name__)
+            + "  '{}':\n".format(attr.name)
+            + '    {}\n'.format(msg.replace('\n', '\n    '))
+            + '    {}\n'.format(msg.replace('\n', '\n    '))
+            + "  '{}':\n".format(attr.name)
+            + '    {}\n'.format(msg.replace('\n', '\n    '))
+            + '    {}\n'.format(msg.replace('\n', '\n    '))
+            + '  \n'
+            + '    {}:\n'.format(attr.name)
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '    {}:\n'.format(attr.name)
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '  \n'
+            + '    {}:\n'.format(attr.name)
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '    {}:\n'.format(attr.name)
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '{}:\n'.format(Parent.__name__)
+            + "  '{}':\n".format(attr.name)
+            + '    {}\n'.format(msg.replace('\n', '\n    '))
+            + '    {}\n'.format(msg.replace('\n', '\n    '))
+            + "  '{}':\n".format(attr.name)
+            + '    {}\n'.format(msg.replace('\n', '\n    '))
+            + '    {}\n'.format(msg.replace('\n', '\n    '))
+            + '  \n'
+            + '    {}:\n'.format(attr.name)
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '    {}:\n'.format(attr.name)
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '  \n'
+            + '    {}:\n'.format(attr.name)
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '    {}:\n'.format(attr.name)
+            + '      {}\n'.format(msg.replace('\n', '\n      '))
+            + '      {}'.format(msg.replace('\n', '\n      '))
         ))
 
     def test_excel_col_name(self):
@@ -3344,7 +3344,7 @@ class TestCore(unittest.TestCase):
         # test all()
         self.assertEqual(0, len(set(mgr1.all())))
         FIRST = 12
-        t1s = [Example1(int_attr=i+FIRST) for i in range(4)]
+        t1s = [Example1(int_attr=i + FIRST) for i in range(4)]
         mgr1.insert_all_new()
         self.assertEqual(set(t1s), set(mgr1.all()))
 
@@ -3368,7 +3368,7 @@ class TestCore(unittest.TestCase):
         # test _insert_new()
         letters = 'ABC'
         test_attrs = zip(letters, range(len(letters)))
-        more_t1s = [Example1(str_attr=s, int_attr=i, int_attr2=i+1)
+        more_t1s = [Example1(str_attr=s, int_attr=i, int_attr2=i + 1)
                     for s, i in test_attrs]
         mgr1._insert_new(more_t1s[0])
 
@@ -3422,7 +3422,7 @@ class TestCore(unittest.TestCase):
         s = len(mgr1._new_instances)
         tmp = None
         gc.collect()
-        self.assertEqual(s-1, len(mgr1._new_instances))
+        self.assertEqual(s - 1, len(mgr1._new_instances))
 
         unused_val = 1234243
         tmp = Example1(int_attr2=unused_val)
@@ -3442,13 +3442,13 @@ class TestCore(unittest.TestCase):
         n = 3
         del l[n:]
         gc.collect()
-        self.assertEqual(make-n, mgr0._gc_weaksets())
+        self.assertEqual(make - n, mgr0._gc_weaksets())
 
         # test _run_gc_weaksets()
-        l2 = [Example0(int_attr=unused_val+1)]
+        l2 = [Example0(int_attr=unused_val + 1)]
         mgr0._insert_new(l2[0])
         mgr0.num_ops_since_gc = 0
-        for i in range(core.Manager.GC_PERIOD-1):
+        for i in range(core.Manager.GC_PERIOD - 1):
             self.assertEqual(0, mgr0._run_gc_weaksets())
         del l2[:]
         gc.collect()
@@ -3477,10 +3477,10 @@ class TestCore(unittest.TestCase):
         # test insert_all_new
         mgr1.reset()
         n = 5
-        t1s = [Example1(int_attr=i, int_attr2=i+1) for i in range(n)]
+        t1s = [Example1(int_attr=i, int_attr2=i + 1) for i in range(n)]
         mgr1.insert_all_new()
         for i in range(n):
-            self.assertEqual(t1s[i], mgr1.get_one(int_attr=i, int_attr2=i+1))
+            self.assertEqual(t1s[i], mgr1.get_one(int_attr=i, int_attr2=i + 1))
 
         # test upsert and upsert_all
         mgr1.reset()
@@ -3493,13 +3493,13 @@ class TestCore(unittest.TestCase):
         self.assertEqual(None, mgr1.get(str_attr='x'))
         self.assertIn(t1, mgr1.get(str_attr='y'))
         n = 5
-        t1s = [Example1(int_attr=i, int_attr2=i+1) for i in range(n)]
+        t1s = [Example1(int_attr=i, int_attr2=i + 1) for i in range(n)]
         mgr1.insert_all_new()
         for t1 in t1s:
             t1.int_attr += 1
         mgr1.upsert_all()
         for i in range(n):
-            self.assertEqual(t1s[i], mgr1.get_one(int_attr=i+1, int_attr2=i+1))
+            self.assertEqual(t1s[i], mgr1.get_one(int_attr=i + 1, int_attr2=i + 1))
 
         # test index on related objects
         mgr1.reset()
@@ -4894,25 +4894,7 @@ class JsonTestCase(unittest.TestCase):
         c0 = p.children.create(id='c0')
         c1 = p.children.create(id='c1')
 
-        self.assertEqual(p.to_dict(p, max_depth=-1), {
-            '__type': 'Parent',
-            '__id': 0,
-            'id': 'p',
-        })
-
-        p_dict = p.to_dict(p, max_depth=0)
-        p_dict['children'].sort(key=lambda c: c['id'])
-        self.assertEqual(p_dict, {
-            '__type': 'Parent',
-            '__id': 0,
-            'id': 'p',
-            'children': [
-                {'__type': 'Child', '__id': 1, 'id': 'c0'},
-                {'__type': 'Child', '__id': 2, 'id': 'c1'},
-            ],
-        })
-
-        p_dict = p.to_dict(p, max_depth=1)
+        p_dict = p.to_dict(p)
         p_dict['children'].sort(key=lambda c: c['id'])
         self.assertEqual(p_dict, {
             '__type': 'Parent',
@@ -5008,7 +4990,7 @@ class TestCaching(unittest.TestCase):
             big_model = BigModel(
                 id='big_model_{}'.format(iteration),
                 # make data array containing obj_data_size bytes
-                data=np.zeros(int(obj_data_size/2), dtype=np.dtype(np.int16)),
+                data=np.zeros(int(obj_data_size / 2), dtype=np.dtype(np.int16)),
                 # todo: connect to neighbors, with desired network properties
                 neighbors=[]
             )

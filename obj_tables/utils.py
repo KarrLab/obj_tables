@@ -339,7 +339,7 @@ def add_metadata_to_file(pathname, models, schema_package=None):
     """
     # read file
     path = Path(pathname).resolve()
-    objects = obj_tables.io.Reader().run(str(path), models=models)
+    objects = obj_tables.io.Reader().run(str(path), models=models, group_objects_by_model=False)
     # write file with metadata
     obj_tables.io.Writer().run(str(path), objects, models=models, data_repo_metadata=True,
                                schema_package=schema_package)
