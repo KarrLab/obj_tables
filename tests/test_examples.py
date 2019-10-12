@@ -7,14 +7,27 @@
 """
 
 from obj_tables import __main__
+from obj_tables import core
 from obj_tables import io
 from obj_tables import utils
 import obj_tables
 import os
+import shutil
+import sys
+import tempfile
 import unittest
+
+sys.path.insert(0, 'examples')
+import decode_json
 
 
 class ExamplesTestCase(unittest.TestCase):
+    def setUp(self):
+        self.dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.dirname)
+
     def test_web_app_example(self):
         filename = 'examples/parents_children.xlsx'
 
@@ -205,3 +218,63 @@ class ExamplesTestCase(unittest.TestCase):
         for filename in filenames:
             with __main__.App(argv=['validate', filename, filename]) as app:
                 app.run()
+
+    def test_decode_json(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+            parents = core.ManyToManyAttribute(Parent, related_name='children')
+
+        p1 = Parent(id='p1', name='P1')
+        p2 = Parent(id='p2', name='P2')
+        c1 = Child(id='c1', name='C1', parents=[p1, p2])
+        c2 = Child(id='c2', name='C2', parents=[p1])
+        c3 = Child(id='c3', name='C3', parents=[p2])
+
+        filename = os.path.join(self.dirname, 'test.json')
+        io.JsonWriter().run(filename, [p1, p2, c1, c2, c3], validate=False)
+
+        decoded = decode_json.from_json(filename)
+
+        p1_b = {'__type': 'Parent', 'id': 'p1', 'name': 'P1'}
+        p2_b = {'__type': 'Parent', 'id': 'p2', 'name': 'P2'}
+        c1_b = {'__type': 'Child', 'id': 'c1', 'name': 'C1'}
+        c2_b = {'__type': 'Child', 'id': 'c2', 'name': 'C2'}
+        c3_b = {'__type': 'Child', 'id': 'c3', 'name': 'C3'}
+        p1_b['children'] = [c1_b, c2_b]
+        p2_b['children'] = [c1_b, c3_b]
+        c1_b['parents'] = [p1_b, p2_b]
+        c2_b['parents'] = [p1_b]
+        c3_b['parents'] = [p2_b]
+
+        self.assertEqual(sorted(decoded.keys()), ['Child', 'Parent'])
+        self.assertEqual(len(decoded['Parent']), 2)
+        self.assertEqual(len(decoded['Child']), 3)
+        parents_b = sorted(decoded['Parent'], key=lambda p: p['id'])
+        children_b = sorted(decoded['Child'], key=lambda c: c['id'])
+        for i_parent, parent in enumerate(parents_b):
+            self.assertEqual(sorted(parent.keys()), ['__type', 'children', 'id', 'name'])
+            self.assertEqual(parent['__type'], 'Parent')
+            self.assertEqual(parent['id'], 'p' + str(i_parent + 1))
+            self.assertEqual(parent['name'], 'P' + str(i_parent + 1))
+        for i_child, child in enumerate(children_b):
+            self.assertEqual(sorted(child.keys()), ['__type', 'id', 'name', 'parents'])
+            self.assertEqual(child['__type'], 'Child')
+            self.assertEqual(child['id'], 'c' + str(i_child + 1))
+            self.assertEqual(child['name'], 'C' + str(i_child + 1))
+
+        self.assertEqual(sorted(parents_b[0]['children'], key=lambda c: c['id']), [children_b[0], children_b[1]])
+        self.assertEqual(sorted(parents_b[1]['children'], key=lambda c: c['id']), [children_b[0], children_b[2]])
+        self.assertEqual(sorted(children_b[0]['parents'], key=lambda p: p['id']), [parents_b[0], parents_b[1]])
+        self.assertEqual(sorted(children_b[1]['parents'], key=lambda p: p['id']), [parents_b[0]])
+        self.assertEqual(sorted(children_b[2]['parents'], key=lambda p: p['id']), [parents_b[1]])
+
+        self.assertEqual(parents_b[0]['children'], [children_b[0], children_b[1]])
+        self.assertEqual(parents_b[1]['children'], [children_b[0], children_b[2]])
+        self.assertEqual(children_b[0]['parents'], [parents_b[0], parents_b[1]])
+        self.assertEqual(children_b[1]['parents'], [parents_b[0]])
+        self.assertEqual(children_b[2]['parents'], [parents_b[1]])
