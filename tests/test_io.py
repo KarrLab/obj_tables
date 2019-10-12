@@ -2367,8 +2367,7 @@ class JsonTestCase(unittest.TestCase):
         self.dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        # shutil.rmtree(self.dirname)
-        print(self.dirname)
+        shutil.rmtree(self.dirname)
 
     def test_write_read(self):
         class AA(core.Model):
@@ -2513,7 +2512,6 @@ class JsonTestCase(unittest.TestCase):
                                                                           group_objects_by_model=True)
         self.assertEqual(len(objects2[MainRoot]), 1)
         root2 = objects2[MainRoot][0]
-        print(root.difference(root2))
         self.assertTrue(root.is_equal(root2))
 
         # convert json --> xlsx
