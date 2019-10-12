@@ -2664,7 +2664,7 @@ class Model(with_metaclass(ModelMeta, object)):
             decoded = {}
         to_decode = []
 
-        def add_to_decoding_queue(json, models_by_name=models_by_name, decoded=decoded, to_decode=to_decode):
+        def add_to_decoding_queue(json, models_by_name=models_by_name, decoded=decoded, to_decode=to_decode, ignore_extra_models=ignore_extra_models):
             if isinstance(json, dict) and '__type' in json and (not ignore_extra_models or (json['__type'] in models_by_name)):
                 obj_type = json.get('__type')
                 model = models_by_name.get(obj_type, None)
