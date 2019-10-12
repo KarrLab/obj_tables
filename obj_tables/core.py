@@ -2575,10 +2575,7 @@ class Model(with_metaclass(ModelMeta, object)):
             elif isinstance(object, (list, tuple)):
                 json = []
                 to_encode.put((object, json))
-            elif isinstance(object, collections.OrderedDict):
-                json = collections.OrderedDict()
-                to_encode.put((object, json))
-            elif isinstance(object, dict):
+            elif isinstance(object, (dict, collections.OrderedDict)):
                 json = {}
                 to_encode.put((object, json))
             elif isinstance(object, (type(None), str, bool, int, float)):
