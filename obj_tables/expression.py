@@ -486,7 +486,7 @@ class Expression(object):
         # check expression is linear
         if model_obj.Meta.expression_is_linear and not model_obj._parsed_expression.is_linear:
             attr = model_cls.Meta.attributes['expression']
-            attr_err = InvalidAttribute(attr, ['Expression must be linear'])
+            attr_err = InvalidAttribute(attr, ['Expression must be linear in species counts'])
             return InvalidObject(model_obj, [attr_err])
 
         # return `None` to indicate valid object
@@ -649,7 +649,7 @@ class ParsedExpression(object):
         Args:
             model_cls (:obj:`type`): the :obj:`Model` which has an expression
             attr (:obj:`str`): the attribute name of the expression in `model_cls`
-            expression (:obj:`str`): the expression defined in the obj_tables :obj:`Model`
+            expression (:obj:`obj`): the expression defined in the obj_tables :obj:`Model`
             objs (:obj:`dict`): dictionary of model objects (instances of :obj:`Model`) organized
                 by their type
 
@@ -686,6 +686,11 @@ class ParsedExpression(object):
         self._objs = objs
         self.model_cls = model_cls
         self.attr = attr
+        if isinstance(expression, int) or isinstance(expression, float):
+            expression = str(expression)
+        if not isinstance(expression, str):
+            raise ParsedExpressionError(f"Expression '{expression}' in {model_cls.__name__} must be "
+                                        "string, float or integer")
         # strip leading and trailing whitespace from expression, which would create a bad token error
         self.expression = expression.strip()
 

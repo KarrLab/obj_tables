@@ -394,6 +394,14 @@ class ParsedExpressionTestCase(unittest.TestCase):
         parsed_expr = ParsedExpression(SubFunctionExpression, 'attr', ' ' + expr + ' ', {})
         self.assertEqual(expr, parsed_expr.expression)
 
+        # test integer and float expressions
+        expr = 3
+        parsed_expr = ParsedExpression(SubFunctionExpression, 'attr', expr, {})
+        self.assertEqual(str(expr), parsed_expr.expression)
+        expr = 0.5
+        parsed_expr = ParsedExpression(SubFunctionExpression, 'attr', expr, {})
+        self.assertEqual(str(expr), parsed_expr.expression)
+
         with self.assertRaisesRegex(ParsedExpressionError, 'is not a subclass of Model'):
             ParsedExpression(int, 'attr', expr, {})
 
@@ -402,6 +410,10 @@ class ParsedExpressionTestCase(unittest.TestCase):
 
         with self.assertRaisesRegex(ParsedExpressionError, "creates a Python syntax error"):
             ParsedExpression(SubFunctionExpression, 'attr', '3(', {})
+
+        with self.assertRaisesRegex(ParsedExpressionError,
+                                    "Expression '.*' in .* must be string, float or integer"):
+            ParsedExpression(SubFunctionExpression, 'attr', list(), {})
 
         class TestModelExpression(Model):
             class Meta(Model.Meta):

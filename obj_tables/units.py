@@ -163,7 +163,7 @@ class UnitAttribute(core.LiteralAttribute):
                     except pint.DimensionalityError:
                         pass
                 if not valid:
-                    error = 'Value must be in `choices`'
+                    error = f"Value must be in `choices`: {set([str(c) for c in self.choices])}"
 
         if error:
             return core.InvalidAttribute(self, [error])
