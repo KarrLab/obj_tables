@@ -636,7 +636,7 @@ class ParsedExpression(object):
         'COMMA',  # for function arguments
         'DOUBLESTAR', 'MINUS', 'PLUS', 'SLASH', 'STAR',  # mathematical operators
         'LPAR', 'RPAR',  # for mathematical grouping
-        'EQUAL', 'GREATER', 'GREATEREQUAL', 'LESS', 'LESSEQUAL', 'NOTEQUAL',  # comparison operators
+        'EQEQUAL', 'GREATER', 'GREATEREQUAL', 'LESS', 'LESSEQUAL', 'NOTEQUAL',  # comparison operators
     )
     LEGAL_TOKENS = set()
     for legal_token_name in LEGAL_TOKENS_NAMES:
