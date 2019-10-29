@@ -6083,7 +6083,12 @@ class OneToOneAttribute(RelatedAttribute):
             old_related = getattr(new_value, self.related_name)
             old_related_cls = old_related.__class__
             new_cls = new_value.__class__
-            raise ValueError("Attribute '{}:{}' of '{}:{}' must be `None`".format(
+            raise ValueError(("Attribute '{}:{}' of '{}:{}' cannot be set because it is not `None`. "
+                              "The values of one-to-one attributes cannot be directly changed to other non-`None` values because "
+                              "this would opaquely change the reverse relationship of the related object. "
+                              "To change the value of this attribute to another non-`None` value, first set the value of the attribute "
+                              "to `None`."
+                              ).format(
                 old_related_cls.__name__, old_related.serialize(),
                 new_cls.__name__, new_value.serialize()))
 
@@ -6115,9 +6120,25 @@ class OneToOneAttribute(RelatedAttribute):
         cur_value = getattr(obj, self.related_name)
         if cur_value is new_value:
             return new_value
+        if cur_value and new_value is not None:
+            raise ValueError(("Attribute '{}:{}' of '{}:{}' cannot be set because it is not `None`. "
+                              "The values of one-to-one attributes cannot be directly changed to other non-`None` values because "
+                              "this would opaquely change the reverse relationship of the related object. "
+                              "To change the value of this attribute to another non-`None` value, first set the value of the attribute "
+                              "to `None`."
+                              ).format(
+                self.related_name, cur_value.serialize(),
+                obj.__class__.__name__, obj.serialize()))
 
         if new_value and getattr(new_value, self.name):
-            raise ValueError('Attribute of `new_value` must be `None`')
+            raise ValueError(("Attribute '{}:{}' of '{}:{}' cannot be set because it is not `None`. "
+                              "The values of one-to-one attributes cannot be directly changed to other non-`None` values because "
+                              "this would opaquely change the reverse relationship of the related object. "
+                              "To change the value of this attribute to another non-`None` value, first set the value of the attribute "
+                              "to `None`."
+                              ).format(
+                self.name, getattr(new_value, self.name).serialize(),
+                new_value.__class__.__name__, new_value.serialize()))
 
         if cur_value:
             cur_value.__setattr__(self.name, None, propagate=False)
