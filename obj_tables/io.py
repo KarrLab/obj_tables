@@ -65,7 +65,8 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None):
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
+            protected=True):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -97,6 +98,7 @@ class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         pass  # pragma: no cover
 
@@ -165,7 +167,7 @@ class JsonWriter(WriterBase):
     def run(self, path, objects, doc_metadata=None, model_metadata=None, models=None, get_related=True, include_all_attributes=True,
             validate=True, title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=False, write_schema=False, extra_entries=0, group_objects_by_model=True,
-            data_repo_metadata=False, schema_package=None):
+            data_repo_metadata=False, schema_package=None, protected=False):
         """ Write a list of model classes to a JSON or YAML file
 
         Args:
@@ -195,6 +197,7 @@ class JsonWriter(WriterBase):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
 
         Raises:
             :obj:`ValueError`: if model names are not unique or output format is not supported
@@ -263,7 +266,8 @@ class WorkbookWriter(WriterBase):
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None):
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None, 
+            protected=True):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
 
@@ -296,6 +300,7 @@ class WorkbookWriter(WriterBase):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -375,10 +380,10 @@ class WorkbookWriter(WriterBase):
         # add table of contents to workbook
         all_models = models + unordered_models
         if write_toc:
-            self.write_toc(writer, all_models, doc_metadata, grouped_objects, write_schema=write_schema)
+            self.write_toc(writer, all_models, doc_metadata, grouped_objects, write_schema=write_schema, protected=protected)
             doc_metadata = None
         if write_schema:
-            self.write_schema(writer, all_models, doc_metadata)
+            self.write_schema(writer, all_models, doc_metadata, protected=protected)
             doc_metadata = None
 
         # add sheets to workbook
@@ -393,13 +398,13 @@ class WorkbookWriter(WriterBase):
 
             self.write_model(writer, model, objects, doc_metadata, model_metadata.get(model, {}),
                              sheet_models, include_all_attributes=include_all_attributes, encoded=encoded,
-                             extra_entries=extra_entries)
+                             extra_entries=extra_entries, protected=protected)
             doc_metadata = None
 
         # finalize workbook
         writer.finalize_workbook()
 
-    def write_schema(self, writer, models, doc_metadata):
+    def write_schema(self, writer, models, doc_metadata, protected=True):
         """ Write a worksheet with a schema
 
         Args:
@@ -408,6 +413,7 @@ class WorkbookWriter(WriterBase):
                 appear in the table of contents
             doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         if isinstance(writer, wc_utils.workbook.io.ExcelWriter):
             sheet_name = '!!' + SCHEMA_SHEET_NAME
@@ -486,9 +492,9 @@ class WorkbookWriter(WriterBase):
             hyperlinks=hyperlinks,
         )
 
-        writer.write_worksheet(sheet_name, content, style=style)
+        writer.write_worksheet(sheet_name, content, style=style, protected=protected)
 
-    def write_toc(self, writer, models, doc_metadata, grouped_objects, write_schema=False):
+    def write_toc(self, writer, models, doc_metadata, grouped_objects, write_schema=False, protected=True):
         """ Write a worksheet with a table of contents
 
         Args:
@@ -500,6 +506,7 @@ class WorkbookWriter(WriterBase):
             grouped_objects (:obj:`dict`): dictionary which maps models
                 to lists of instances of each model
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional row for worksheet with schema
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         if isinstance(writer, wc_utils.workbook.io.ExcelWriter):
             sheet_name = '!!' + TOC_SHEET_NAME
@@ -581,10 +588,10 @@ class WorkbookWriter(WriterBase):
             hyperlinks=hyperlinks,
         )
 
-        writer.write_worksheet(sheet_name, content, style=style)
+        writer.write_worksheet(sheet_name, content, style=style, protected=protected)
 
     def write_model(self, writer, model, objects, doc_metadata, model_metadata, sheet_models,
-                    include_all_attributes=True, encoded=None, extra_entries=0):
+                    include_all_attributes=True, encoded=None, extra_entries=0, protected=True):
         """ Write a list of model objects to a file
 
         Args:
@@ -599,6 +606,7 @@ class WorkbookWriter(WriterBase):
                 including those not explictly included in `Model.Meta.attribute_order`
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
             extra_entries (:obj:`int`, optional): additional entries to display
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         attrs, _, headings, merge_ranges, field_validations, metadata_headings = get_fields(
             model, doc_metadata, model_metadata,
@@ -643,10 +651,10 @@ class WorkbookWriter(WriterBase):
                                          fields=field_validations)
 
         self.write_sheet(writer, model, data, headings, metadata_headings, validation,
-                         extra_entries=extra_entries, merge_ranges=merge_ranges)
+                         extra_entries=extra_entries, merge_ranges=merge_ranges, protected=protected)
 
     def write_sheet(self, writer, model, data, headings, metadata_headings, validation,
-                    extra_entries=0, merge_ranges=None):
+                    extra_entries=0, merge_ranges=None, protected=True):
         """ Write data to sheet
 
         Args:
@@ -659,6 +667,7 @@ class WorkbookWriter(WriterBase):
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
             merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         style = self.create_worksheet_style(model, extra_entries=extra_entries)
         if model.Meta.table_format == TableFormat.row:
@@ -709,7 +718,7 @@ class WorkbookWriter(WriterBase):
         # write content to worksheet
         if isinstance(writer, wc_utils.workbook.io.ExcelWriter):
             sheet_name = '!!' + sheet_name
-        writer.write_worksheet(sheet_name, content, style=style, validation=validation)
+        writer.write_worksheet(sheet_name, content, style=style, validation=validation, protected=protected)
 
     @staticmethod
     def create_worksheet_style(model, extra_entries=0):
@@ -747,7 +756,8 @@ class PandasWriter(WorkbookWriter):
         self._data_frames = None
 
     def run(self, objects, models=None, get_related=True,
-            include_all_attributes=True, validate=True):
+            include_all_attributes=True, validate=True, 
+            protected=False):
         """ Write model instances to a dictionary of :obj:`pandas.DataFrame`
 
         Args:
@@ -759,6 +769,7 @@ class PandasWriter(WorkbookWriter):
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
                 not explictly included in `Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
 
         Returns:
             :obj:`dict`: dictionary that maps models (:obj:`Model`) to their
@@ -770,11 +781,12 @@ class PandasWriter(WorkbookWriter):
                                       get_related=get_related,
                                       include_all_attributes=include_all_attributes,
                                       validate=validate,
-                                      write_toc=False, write_schema=False)
+                                      write_toc=False, write_schema=False,
+                                      protected=protected)
         return self._data_frames
 
     def write_sheet(self, writer, model, data, headings, metadata_headings, validation,
-                    extra_entries=0, merge_ranges=None):
+                    extra_entries=0, merge_ranges=None, protected=False):
         """ Write data to sheet
 
         Args:
@@ -787,6 +799,7 @@ class PandasWriter(WorkbookWriter):
             validation (:obj:`WorksheetValidation`): validation
             extra_entries (:obj:`int`, optional): additional entries to display
             merge_ranges (:obj:`list` of :obj:`tuple`): list of ranges of cells to merge
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         if len(headings) == 1:
             columns = []
@@ -811,7 +824,8 @@ class MultiSeparatedValuesWriter(WriterBase):
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None):
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
+            protected=False):
         """ Write model objects to a single text file which contains multiple
         comma or tab-separated tables.
 
@@ -844,6 +858,7 @@ class MultiSeparatedValuesWriter(WriterBase):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
 
         Raises:
             :obj:`ValueError`: if no model is provided or a class cannot be serialized
@@ -869,7 +884,8 @@ class MultiSeparatedValuesWriter(WriterBase):
                              write_toc=write_toc, write_schema=write_schema,
                              extra_entries=extra_entries,
                              data_repo_metadata=data_repo_metadata,
-                             schema_package=schema_package)
+                             schema_package=schema_package,
+                             protected=protected)
 
         with open(path, 'w') as out_file:
             all_tmp_paths = list(glob.glob(tmp_paths))
@@ -927,7 +943,8 @@ class Writer(WriterBase):
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None):
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
+            protected=True):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
@@ -960,6 +977,7 @@ class Writer(WriterBase):
             schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
+            protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         Writer = self.get_writer(path)
         Writer().run(path, objects, doc_metadata=doc_metadata, model_metadata=model_metadata,
@@ -970,7 +988,8 @@ class Writer(WriterBase):
                      write_toc=write_toc, write_schema=write_schema,
                      extra_entries=extra_entries,
                      group_objects_by_model=group_objects_by_model,
-                     data_repo_metadata=data_repo_metadata, schema_package=schema_package)
+                     data_repo_metadata=data_repo_metadata, schema_package=schema_package,
+                     protected=protected)
 
 
 class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
@@ -2094,7 +2113,7 @@ class Reader(ReaderBase):
 def convert(source, destination, models,
             ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
-            ignore_attribute_order=False, ignore_empty_rows=True):
+            ignore_attribute_order=False, ignore_empty_rows=True, protected=True):
     """ Convert among comma-separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
     tab-separated (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
 
@@ -2117,6 +2136,7 @@ def convert(source, destination, models,
         ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
             in the canonical order
         ignore_empty_rows (:obj:`bool`, optional): if :obj:`True`, ignore empty rows
+        protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
     """
     reader = Reader.get_reader(source)()
     writer = Writer.get_writer(destination)()
@@ -2136,13 +2156,13 @@ def convert(source, destination, models,
 
     writer.run(destination, objects,
                doc_metadata=reader._doc_metadata, model_metadata=reader._model_metadata,
-               models=models, get_related=False)
+               models=models, get_related=False, protected=protected)
 
 
 def create_template(path, models, title=None, description=None, keywords=None,
                     version=None, language=None, creator=None,
                     write_toc=True, write_schema=False,
-                    extra_entries=10, group_objects_by_model=True):
+                    extra_entries=10, group_objects_by_model=True, protected=True):
     """ Create a template for a model
 
     Args:
@@ -2160,12 +2180,14 @@ def create_template(path, models, title=None, description=None, keywords=None,
         write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
         extra_entries (:obj:`int`, optional): additional entries to display
         group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
+        protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
     """
     Writer.get_writer(path)().run(path, [], models=models,
                                   title=title, description=description, keywords=keywords,
                                   version=version, language=language, creator=creator,
                                   write_toc=write_toc, write_schema=write_schema,
-                                  extra_entries=extra_entries, group_objects_by_model=group_objects_by_model)
+                                  extra_entries=extra_entries, group_objects_by_model=group_objects_by_model,
+                                  protected=protected)
 
 
 def get_fields(cls, doc_metadata, model_metadata, include_all_attributes=True, sheet_models=None):

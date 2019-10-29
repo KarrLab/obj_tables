@@ -83,6 +83,11 @@ convert_parser.add_argument('write-schema',
                             default=False,
                             required=False,
                             help='If true, save schema with file')
+convert_parser.add_argument('protected',
+                            type=flask_restplus.inputs.boolean,
+                            default=True,
+                            required=False,
+                            help='If true, protect the table headings in the file from editing')
 
 
 @api.route("/convert/",
@@ -109,7 +114,8 @@ class Convert(flask_restplus.Resource):
             out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
                 format, objs, doc_metadata, model_metadata, models=models,
                 write_toc=args['write-toc'],
-                write_schema=args['write-schema'])
+                write_schema=args['write-schema'],
+                protected=args['protected'])
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -211,6 +217,11 @@ gen_template_parser.add_argument('write-schema',
                                  default=False,
                                  required=False,
                                  help='If true, save schema with file')
+gen_template_parser.add_argument('protected',
+                            type=flask_restplus.inputs.boolean,
+                            default=True,
+                            required=False,
+                            help='If true, protect the table headings in the file from editing')
 
 
 @api.route("/gen-template/",
@@ -240,7 +251,8 @@ class GenTemplate(flask_restplus.Resource):
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
             format, [], {}, {}, models=models,
             write_toc=args['write-toc'],
-            write_schema=args['write-schema'])
+            write_schema=args['write-schema'],
+            protected=args['protected'])
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -329,6 +341,11 @@ norm_parser.add_argument('write-schema',
                          default=False,
                          required=False,
                          help='If true, save schema with file')
+norm_parser.add_argument('protected',
+                            type=flask_restplus.inputs.boolean,
+                            default=True,
+                            required=False,
+                            help='If true, protect the table headings in the file from editing')
 
 
 @api.route("/normalize/",
@@ -373,7 +390,8 @@ class Normalize(flask_restplus.Resource):
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
             format, objs, doc_metadata, model_metadata, models=models,
             write_toc=args['write-toc'],
-            write_schema=args['write-schema'])
+            write_schema=args['write-schema'],
+            protected=args['protected'])
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -584,7 +602,7 @@ def read_workbook(filename, models):
 
 
 def save_out_workbook(format, objs, doc_metadata, model_metadata, models,
-                      write_toc=False, write_schema=False):
+                      write_toc=False, write_schema=False, protected=True):
     """
     Args:
         format (:obj:`str`): format (.csv, .tsv, .xlsx)
@@ -596,6 +614,7 @@ def save_out_workbook(format, objs, doc_metadata, model_metadata, models,
             a table of contents with the file
         write_schema (:obj:`bool`, optional): if :obj:`True`, write
             schema with file
+        protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
 
     Returns:
         :obj:`tuple`:
@@ -611,7 +630,7 @@ def save_out_workbook(format, objs, doc_metadata, model_metadata, models,
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
     io.Writer().run(temp_filename, objs, doc_metadata=doc_metadata, model_metadata=model_metadata,
-                    models=models, write_toc=write_toc, write_schema=write_schema)
+                    models=models, write_toc=write_toc, write_schema=write_schema, protected=protected)
 
     if format in ['csv', 'tsv']:
         filename = os.path.join(dir, 'workbook.{}.zip'.format(format))

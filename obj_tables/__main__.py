@@ -58,6 +58,8 @@ class ConvertController(cement.Controller):
                                       help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the outputted workbook')),
+            (['--unprotected'], dict(action='store_true', default=False,
+                                      help='If set, do not protect the outputted workbook')),
         ]
 
     @cement.ex(hide=True)
@@ -72,7 +74,8 @@ class ConvertController(cement.Controller):
         io.Writer().run(args.out_wb_file, objs,
                         doc_metadata=reader._doc_metadata,
                         model_metadata=reader._model_metadata,
-                        models=models, write_toc=args.write_toc, write_schema=args.write_schema)
+                        models=models, write_toc=args.write_toc, write_schema=args.write_schema,
+                        protected=(not args.unprotected))
         print('Workbook saved to {}'.format(args.out_wb_file))
 
 
@@ -147,6 +150,8 @@ class GenTemplateController(cement.Controller):
                                       help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the template')),
+            (['--unprotected'], dict(action='store_true', default=False,
+                                      help='If set, do not protect the outputted workbook')),
         ]
 
     @cement.ex(hide=True)
@@ -155,7 +160,7 @@ class GenTemplateController(cement.Controller):
         _, models = get_schema_models(args.schema_file)
         io.Writer().run(args.template_file, [], models=models,
                         write_toc=args.write_toc, write_schema=args.write_schema,
-                        extra_entries=10)
+                        extra_entries=10, protected=(not args.unprotected))
         print('Template saved to {}'.format(args.template_file))
 
 
@@ -180,6 +185,8 @@ class NormalizeController(cement.Controller):
                                       help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the normalized workbook')),
+            (['--unprotected'], dict(action='store_true', default=False,
+                                      help='If set, do not protect the outputted workbook')),
         ]
 
     @cement.ex(hide=True)
@@ -203,7 +210,8 @@ class NormalizeController(cement.Controller):
         io.Writer().run(args.out_wb_file, objs,
                         doc_metadata=reader._doc_metadata,
                         model_metadata=reader._model_metadata,
-                        models=models, write_toc=args.write_toc, write_schema=args.write_schema)
+                        models=models, write_toc=args.write_toc, write_schema=args.write_schema,
+                        protected=(not args.unprotected))
         print('Normalized workbook saved to {}'.format(args.out_wb_file))
 
 
