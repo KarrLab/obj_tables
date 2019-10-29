@@ -380,16 +380,17 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
         # return None
         return None
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ManyToManyAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(ManyToManyAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         related_class = Species
         related_ws = related_class.Meta.verbose_name_plural
@@ -460,16 +461,17 @@ class EvidenceManyToManyAttribute(ManyToManyAttribute):
             return (None, InvalidAttribute(self, errors))
         return (objs, None)
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ManyToManyAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(ManyToManyAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.ignore_blank = False
 
@@ -555,16 +557,17 @@ class IdentifierOneToManyAttribute(OneToManyAttribute):
         else:
             return (det_dedupe(identifiers), None)
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(OneToManyAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(OneToManyAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.ignore_blank = True
         input_message = ['Enter a comma-separated list of identifiers in external namespaces.']
@@ -642,16 +645,17 @@ class IdentifierManyToManyAttribute(ManyToManyAttribute):
         else:
             return (det_dedupe(identifiers), None)
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ManyToManyAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(ManyToManyAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.ignore_blank = True
         input_message = ['Enter a comma-separated list of identifiers in external namespaces.']

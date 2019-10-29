@@ -378,25 +378,29 @@ class WorkbookWriter(WriterBase):
         writer.initialize_workbook()
 
         # add table of contents to workbook
-        all_models = models + unordered_models
+        all_models = models + unordered_models        
         if write_toc:
             self.write_toc(writer, all_models, doc_metadata, grouped_objects, write_schema=write_schema, protected=protected)
-            doc_metadata = None
+            doc_metadata = None            
         if write_schema:
             self.write_schema(writer, all_models, doc_metadata, protected=protected)
-            doc_metadata = None
+            doc_metadata = None            
 
         # add sheets to workbook
         sheet_models = list(filter(lambda model: model.Meta.table_format not in [
             TableFormat.cell, TableFormat.multiple_cells], all_models))
         encoded = {}
+        if doc_metadata is not None:
+            doc_metadata_model = sheet_models[0]
+        else:
+            doc_metadata_model = None
         for model in sheet_models:
             if model in grouped_objects:
                 objects = grouped_objects[model]
             else:
                 objects = []
 
-            self.write_model(writer, model, objects, doc_metadata, model_metadata.get(model, {}),
+            self.write_model(writer, model, objects, doc_metadata, doc_metadata_model, model_metadata.get(model, {}),
                              sheet_models, include_all_attributes=include_all_attributes, encoded=encoded,
                              extra_entries=extra_entries, protected=protected)
             doc_metadata = None
@@ -590,7 +594,7 @@ class WorkbookWriter(WriterBase):
 
         writer.write_worksheet(sheet_name, content, style=style, protected=protected)
 
-    def write_model(self, writer, model, objects, doc_metadata, model_metadata, sheet_models,
+    def write_model(self, writer, model, objects, doc_metadata, doc_metadata_model, model_metadata, sheet_models,
                     include_all_attributes=True, encoded=None, extra_entries=0, protected=True):
         """ Write a list of model objects to a file
 
@@ -600,6 +604,7 @@ class WorkbookWriter(WriterBase):
             objects (:obj:`list` of :obj:`Model`): list of instances of `model`
             doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
             model_metadata (:obj:`dict`): dictionary of model metadata
             sheet_models (:obj:`list` of :obj:`Model`): models encoded as separate sheets
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
@@ -609,7 +614,7 @@ class WorkbookWriter(WriterBase):
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         attrs, _, headings, merge_ranges, field_validations, metadata_headings = get_fields(
-            model, doc_metadata, model_metadata,
+            model, doc_metadata, doc_metadata_model, model_metadata,
             include_all_attributes=include_all_attributes,
             sheet_models=sheet_models)
 
@@ -1401,7 +1406,7 @@ class WorkbookReader(ReaderBase):
 
         # get worksheet
         exp_attrs, exp_sub_attrs, exp_headings, _, _, _ = get_fields(
-            model, {}, {}, include_all_attributes=include_all_attributes)
+            model, {}, None, {}, include_all_attributes=include_all_attributes)
         if model.Meta.table_format == TableFormat.row:
             data, _, headings, top_comments = self.read_sheet(model, reader, sheet_name,
                                                               num_column_heading_rows=len(exp_headings),
@@ -2190,13 +2195,14 @@ def create_template(path, models, title=None, description=None, keywords=None,
                                   protected=protected)
 
 
-def get_fields(cls, doc_metadata, model_metadata, include_all_attributes=True, sheet_models=None):
+def get_fields(cls, doc_metadata, doc_metadata_model, model_metadata, include_all_attributes=True, sheet_models=None):
     """ Get the attributes, headings, and validation for a worksheet
 
     Args:
         cls (:obj:`type`): Model type (subclass of :obj:`Model`)
         doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
             (e.g., `!!!ObjTables ...`)
+        doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
         model_metadata (:obj:`dict`): dictionary of model metadata
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
             not explictly included in `Model.Meta.attribute_order`
@@ -2292,13 +2298,13 @@ def get_fields(cls, doc_metadata, model_metadata, include_all_attributes=True, s
             attr_headings.extend(['!' + sub_attr.verbose_name for sub_attr in this_sub_attrs])
             merge_ranges.append((i_row, i_col, i_row, i_col + len(this_sub_attrs) - 1))
             i_col += len(this_sub_attrs)
-            field_validations.extend([sub_attr.get_excel_validation(sheet_models=sheet_models) for sub_attr in this_sub_attrs])
+            field_validations.extend([sub_attr.get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model) for sub_attr in this_sub_attrs])
         else:
             sub_attrs.append((None, attr))
             group_headings.append(None)
             attr_headings.append('!' + attr.verbose_name)
             i_col += 1
-            field_validations.append(attr.get_excel_validation(sheet_models=sheet_models))
+            field_validations.append(attr.get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model))
 
     header_map = collections.defaultdict(list)
     for group_heading, attr_heading in zip(group_headings, attr_headings):

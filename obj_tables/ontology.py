@@ -53,15 +53,15 @@ class OntologyAttribute(core.LiteralAttribute):
                 if not isinstance(term, pronto.term.Term) or term not in ontology:
                     raise ValueError('element {} of `terms` must be in `ontology`'.format(term))
         if default is not None and \
-                (not isinstance(default, pronto.term.Term) or
-                    default not in ontology or
-                    (isinstance(terms, list) and default not in terms)):
+                (not isinstance(default, pronto.term.Term)
+                    or default not in ontology
+                    or (isinstance(terms, list) and default not in terms)):
             raise ValueError(
                 '`default` must be `None` or in `terms`')
         if default_cleaned_value is not None and \
-                (not isinstance(default_cleaned_value, pronto.term.Term) or
-                    default_cleaned_value not in ontology or
-                    (isinstance(terms, list) and default_cleaned_value not in terms)):
+                (not isinstance(default_cleaned_value, pronto.term.Term)
+                    or default_cleaned_value not in ontology
+                    or (isinstance(terms, list) and default_cleaned_value not in terms)):
             raise ValueError(
                 '`default_cleaned_value` must be `None` or in `terms`')
 
@@ -227,13 +227,18 @@ class OntologyAttribute(core.LiteralAttribute):
         else:
             return None
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(OntologyAttribute, self).get_excel_validation()
+        validation = super(OntologyAttribute, self).get_excel_validation(sheet_models=sheet_models,
+                                                                         doc_metadata_model=doc_metadata_model)
 
         if self.terms is not None:
             allowed_values = [self.serialize(term) for term in self.terms]

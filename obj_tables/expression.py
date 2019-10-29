@@ -16,7 +16,7 @@ import types
 from enum import Enum
 from io import BytesIO
 from obj_tables.core import (Model, RelatedAttribute, OneToOneAttribute, ManyToOneAttribute,
-                            InvalidObject, InvalidAttribute)
+                             InvalidObject, InvalidAttribute)
 from wc_utils.util.misc import DFSMAcceptor
 
 
@@ -89,16 +89,18 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
             return self.related_class.deserialize(value, objects)
         return (None, None)
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(OneToOneAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(OneToOneAttribute, self).get_excel_validation(sheet_models=sheet_models,
+                                                                         doc_metadata_model=doc_metadata_model)
 
         if self.related_class.Meta.expression_is_linear:
             type = 'linear '
@@ -166,16 +168,18 @@ class ExpressionManyToOneAttribute(ManyToOneAttribute):
             return self.related_class.deserialize(value, objects)
         return (None, None)
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ManyToOneAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(ManyToOneAttribute, self).get_excel_validation(sheet_models=sheet_models,
+                                                                          doc_metadata_model=doc_metadata_model)
 
         if self.related_class.Meta.expression_is_linear:
             type = 'linear '
@@ -750,11 +754,11 @@ class ParsedExpression(object):
         Args:
             idx (:obj:`int`): index of the token in `self._py_tokens`
         """
-        if len(self._py_tokens)-1 <= idx:
+        if len(self._py_tokens) - 1 <= idx:
             return 0
         # get distance between the next token's start column and end column of the token at idx
         # assumes that an expression uses only one line
-        return self._py_tokens[idx+1].start[1] - self._py_tokens[idx].end[1]
+        return self._py_tokens[idx + 1].start[1] - self._py_tokens[idx].end[1]
 
     def recreate_whitespace(self, expr):
         """ Insert the whitespace in this object's `expression` into an expression with the same token count
@@ -836,7 +840,7 @@ class ParsedExpression(object):
                 return False
 
         match_val = ''
-        for tok in self._py_tokens[idx:idx+len(token_pattern)]:
+        for tok in self._py_tokens[idx:idx + len(token_pattern)]:
             if tok.type == token.NAME and tok.string.startswith('__digit__'):
                 match_val += tok.string[9:]
             else:
@@ -865,7 +869,7 @@ class ParsedExpression(object):
         disambig_model_match = self._match_tokens(self.MODEL_TYPE_DISAMBIG_PATTERN, idx)
         if disambig_model_match:
             disambig_model_type = self._py_tokens[idx].string
-            possible_model_id = self._py_tokens[idx+2].string
+            possible_model_id = self._py_tokens[idx + 2].string
             if case_fold_match:
                 possible_model_id = possible_model_id.casefold()
 
@@ -884,7 +888,7 @@ class ParsedExpression(object):
                     possible_model_id, disambig_model_type)
 
             return LexMatch([ObjTablesToken(ObjTablesTokenCodes.obj_id, disambig_model_match, model_type,
-                                           possible_model_id, self._objs[model_type][possible_model_id])],
+                                            possible_model_id, self._objs[model_type][possible_model_id])],
                             len(self.MODEL_TYPE_DISAMBIG_PATTERN))
 
         # no match
@@ -956,7 +960,7 @@ class ParsedExpression(object):
                 right_case_match_string = match.match_string.casefold()
             return LexMatch(
                 [ObjTablesToken(ObjTablesTokenCodes.obj_id, match.match_string, match.model_type, right_case_match_string,
-                               self._objs[match.model_type][right_case_match_string])],
+                                self._objs[match.model_type][right_case_match_string])],
                 len(match.token_pattern))
 
     def _get_func_call_id(self, idx, case_fold_match='unused'):
@@ -1308,7 +1312,7 @@ class ParsedExpression(object):
         rv.append("model_cls: {}".format(self.model_cls.__name__))
         rv.append("expression: '{}'".format(self.expression))
         rv.append("attr: {}".format(self.attr))
-        rv.append("py_tokens: {}".format("'"+"', '".join([t.string for t in self._py_tokens])+"'"))
+        rv.append("py_tokens: {}".format("'" + "', '".join([t.string for t in self._py_tokens]) + "'"))
         rv.append("related_objects: {}".format(self.related_objects))
         rv.append("errors: {}".format(self.errors))
         rv.append("obj_tables_tokens: {}".format(self._obj_tables_tokens))

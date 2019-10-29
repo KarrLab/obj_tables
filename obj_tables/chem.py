@@ -129,16 +129,18 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
             return chem.EmpiricalFormula(json)
         return None
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(EmpiricalFormulaAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(EmpiricalFormulaAttribute, self).get_excel_validation(sheet_models=sheet_models,
+                                                                                 doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 
@@ -284,16 +286,18 @@ class ChemicalStructureAttribute(core.LongStringAttribute):
             return json
         return None
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ChemicalStructureAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(ChemicalStructureAttribute, self).get_excel_validation(sheet_models=sheet_models,
+                                                                                  doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 

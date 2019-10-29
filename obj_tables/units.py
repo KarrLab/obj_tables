@@ -213,16 +213,18 @@ class UnitAttribute(core.LiteralAttribute):
         else:
             return None
 
-    def get_excel_validation(self, sheet_models=None):
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
 
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(UnitAttribute, self).get_excel_validation(sheet_models=sheet_models)
+        validation = super(UnitAttribute, self).get_excel_validation(sheet_models=sheet_models,
+                                                                     doc_metadata_model=doc_metadata_model)
 
         if self.choices is not None:
             allowed_values = [str(choice) for choice in self.choices]
