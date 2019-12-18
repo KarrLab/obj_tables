@@ -559,7 +559,12 @@ def save_in_workbook(file_storage):
     dir = tempfile.mkdtemp()
 
     if os.path.splitext(file_storage.filename)[1] == '.zip':
-        with zipfile.ZipFile(file_storage.stream) as zip_file:
+        zip_file_dir = tempfile.mkdtemp()
+        zip_filename = os.path.join(zip_file_dir, 'tmp.zip')
+        file_storage.save(zip_filename)
+        file_storage.close()
+
+        with zipfile.ZipFile(zip_filename, 'r') as zip_file:
             has_csv = False
             has_tsv = False
             for f in zip_file.infolist():
@@ -572,6 +577,8 @@ def save_in_workbook(file_storage):
             else:
                 filename = os.path.join(dir, '*.tsv')
             zip_file.extractall(dir)
+
+        shutil.rmtree(zip_file_dir)
     else:
         filename = os.path.join(dir, file_storage.filename)
         file_storage.save(filename)
