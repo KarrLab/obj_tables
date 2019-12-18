@@ -8,7 +8,7 @@ networkx
 numpy
 objsize
 openbabel
-openpyxl
+openpyxl <= 3.0.1
 psutil
 pygithub
 pytest
