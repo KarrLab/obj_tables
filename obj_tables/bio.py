@@ -436,11 +436,7 @@ class FrequencyPositionMatrixAttribute(core.LiteralAttribute):
             return ''
 
         dict_value = {
-            '_alphabet': {
-                'type': value.alphabet.__class__.__name__,
-                'letters': value.alphabet.letters,
-                'size': value.alphabet.size,
-            },
+            '_alphabet': value.alphabet,
         }
         for letter, counts in value.items():
             dict_value[letter] = counts
@@ -461,9 +457,7 @@ class FrequencyPositionMatrixAttribute(core.LiteralAttribute):
             try:
                 dict_value = json.loads(value)
 
-                alphabet = getattr(Bio.Alphabet, dict_value['_alphabet']['type'])()
-                alphabet.size = dict_value['_alphabet']['size']
-                alphabet.letters = dict_value['_alphabet']['letters']
+                alphabet = dict_value['_alphabet']
                 dict_value.pop('_alphabet')
 
                 return (Bio.motifs.matrix.FrequencyPositionMatrix(alphabet, dict_value), None)
@@ -486,11 +480,7 @@ class FrequencyPositionMatrixAttribute(core.LiteralAttribute):
             return None
         else:
             json = {
-                '_alphabet': {
-                    'type': value.alphabet.__class__.__name__,
-                    'letters': value.alphabet.letters,
-                    'size': value.alphabet.size,
-                },
+                '_alphabet': value.alphabet,
             }
             for letter, counts in value.items():
                 json[letter] = counts
@@ -510,8 +500,6 @@ class FrequencyPositionMatrixAttribute(core.LiteralAttribute):
             return None
         else:
             json = copy.copy(json)
-            alphabet = getattr(Bio.Alphabet, json['_alphabet']['type'])()
-            alphabet.size = json['_alphabet']['size']
-            alphabet.letters = json['_alphabet']['letters']
+            alphabet = json['_alphabet']
             json.pop('_alphabet')
             return Bio.motifs.matrix.FrequencyPositionMatrix(alphabet, json)

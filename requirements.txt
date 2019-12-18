@@ -1,4 +1,4 @@
-biopython
+biopython >= 1.75
 gitpython
 inflect
 lark_parser

@@ -321,9 +321,7 @@ class BioAttributeTestCase(unittest.TestCase):
     def test_FrequencyPositionMatrixAttribute(self):
         attr = obj_tables.bio.FrequencyPositionMatrixAttribute()
 
-        alphabet = Bio.Alphabet.DNAAlphabet()
-        alphabet.letters = 'ACGT'
-        alphabet.size = 4
+        alphabet = 'ACGT'
         letter_counts = {
             'A': [1, 2, 3],
             'C': [4, 5, 6],
@@ -341,7 +339,7 @@ class BioAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.deserialize(attr.serialize(None)), (None, None))
 
         self.assertEqual(attr.deserialize(attr.serialize(mat)), (mat, None))
-        self.assertEqual(attr.deserialize(attr.serialize(mat))[0].alphabet.letters, 'ACGT')
+        self.assertEqual(attr.deserialize(attr.serialize(mat))[0].alphabet, 'ACGT')
         self.assertEqual(sorted(attr.deserialize(attr.serialize(mat))[0].keys()), ['A', 'C', 'G', 'T'])
         self.assertEqual(attr.deserialize(attr.serialize(mat))[0]['A'], letter_counts['A'])
         self.assertEqual(attr.deserialize(attr.serialize(mat))[0]['C'], letter_counts['C'])
@@ -357,11 +355,7 @@ class BioAttributeTestCase(unittest.TestCase):
             'C': letter_counts['C'],
             'G': letter_counts['G'],
             'T': letter_counts['T'],
-            '_alphabet': {
-                'type': 'DNAAlphabet',
-                'letters': 'ACGT',
-                'size': 4,
-            },
+            '_alphabet': 'ACGT',
         }
         self.assertEqual(attr.to_builtin(None), None)
         self.assertEqual(attr.to_builtin(mat), mat2)
