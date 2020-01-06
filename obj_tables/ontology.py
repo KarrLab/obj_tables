@@ -8,6 +8,7 @@
 
 from . import core
 import pronto
+import types
 import wc_utils.workbook.io
 import wc_utils.util.ontology
 
@@ -18,21 +19,22 @@ class OntologyAttribute(core.LiteralAttribute):
     Attributes:
         ontology (:obj:`pronto.Ontology`): ontology
         namespace (:obj:`str`): prefix in term ids
-        terms (:obj:`list` of :obj:`pronto.term.Term`): list of allowed terms. If :obj:`None`, all terms are allowed.
+        terms (:obj:`list` of :obj:`pronto.Term`): list of allowed terms. If :obj:`None`, all terms are allowed.
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
-    def __init__(self, ontology, namespace=None, terms=None, none=True, default=None, default_cleaned_value=None, none_value=None,
+    def __init__(self, ontology, namespace=None, namespace_sep=':', terms=None, none=True, default=None, default_cleaned_value=None, none_value=None,
                  verbose_name='', description='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             ontology (:obj:`pronto.Ontology`): ontology
             namespace (:obj:`str`, optional): prefix in term ids
-            terms (:obj:`list` of :obj:`pronto.term.Term`, optional): list of allowed terms. If :obj:`None`, all terms are allowed.
+            namespace_sep (:obj:`str`, optional): namespace separator
+            terms (:obj:`list` of :obj:`pronto.Term`, optional): list of allowed terms. If :obj:`None`, all terms are allowed.
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
-            default (:obj:`pronto.term.Term`, optional): default value
-            default_cleaned_value (:obj:`pronto.term.Term`, optional): value to replace
+            default (:obj:`pronto.Term`, optional): default value
+            default_cleaned_value (:obj:`pronto.Term`, optional): value to replace
                 :obj:`None` values with during cleaning
             none_value (:obj:`object`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
@@ -48,19 +50,24 @@ class OntologyAttribute(core.LiteralAttribute):
         """
         if not isinstance(ontology, pronto.Ontology):
             raise ValueError('`ontology` must be an instance of `pronto.Ontology`')
+        if isinstance(terms, types.GeneratorType):
+            terms = list(terms)
         if isinstance(terms, list):
             for term in terms:
-                if not isinstance(term, pronto.term.Term) or term not in ontology:
+                if not isinstance(term, pronto.Term) or term not in ontology.terms():
                     raise ValueError('element {} of `terms` must be in `ontology`'.format(term))
+
+        print(terms)
+
         if default is not None and \
-                (not isinstance(default, pronto.term.Term)
-                    or default not in ontology
+                (not isinstance(default, pronto.Term)
+                    or default not in ontology.terms()
                     or (isinstance(terms, list) and default not in terms)):
             raise ValueError(
                 '`default` must be `None` or in `terms`')
         if default_cleaned_value is not None and \
-                (not isinstance(default_cleaned_value, pronto.term.Term)
-                    or default_cleaned_value not in ontology
+                (not isinstance(default_cleaned_value, pronto.Term)
+                    or default_cleaned_value not in ontology.terms()
                     or (isinstance(terms, list) and default_cleaned_value not in terms)):
             raise ValueError(
                 '`default_cleaned_value` must be `None` or in `terms`')
@@ -72,6 +79,7 @@ class OntologyAttribute(core.LiteralAttribute):
 
         self.ontology = ontology
         self.namespace = namespace
+        self.namespace_sep = namespace_sep
         self.terms = terms
         self.none = none
 
@@ -111,7 +119,7 @@ class OntologyAttribute(core.LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`pronto.term.Term` or :obj:`None`: cleaned value
+            :obj:`pronto.Term` or :obj:`None`: cleaned value
             :obj:`core.InvalidAttribute` or :obj:`None`: cleaning error
         """
         error = None
@@ -123,15 +131,15 @@ class OntologyAttribute(core.LiteralAttribute):
             value = value.partition('!')[0].strip()
 
             if value and self.namespace:
-                value = self.namespace + ':' + value
+                value = self.namespace + self.namespace_sep + value
 
             str_value = value
             value = self.ontology.get(value, str_value)
             if isinstance(value, str):
                 error = 'Value "{}" is not in `ontology`'.format(value)
 
-        elif isinstance(value, pronto.term.Term):
-            if value not in self.ontology:
+        elif isinstance(value, pronto.Term):
+            if value not in self.ontology.terms():
                 error = "Value '{}' must be in `ontology`".format(value)
 
         if value and isinstance(self.terms, list) and value not in self.terms:
@@ -147,7 +155,7 @@ class OntologyAttribute(core.LiteralAttribute):
 
         Args:
             obj (:obj:`Model`): object being validated
-            value (:obj:`pronto.term.Term`): value of attribute to validate
+            value (:obj:`pronto.Term`): value of attribute to validate
 
         Returns:
             :obj:`core.InvalidAttribute` or :obj:`None`: :obj:`None` if attribute is valid, other return list of
@@ -159,7 +167,7 @@ class OntologyAttribute(core.LiteralAttribute):
             else:
                 return None
 
-        if not isinstance(value, pronto.term.Term) or value not in self.ontology:
+        if not isinstance(value, pronto.Term) or value not in self.ontology.terms():
             return core.InvalidAttribute(self, ["Value '{}' must be in `ontology`".format(value)])
 
         if isinstance(self.terms, list) and value not in self.terms:
@@ -183,14 +191,14 @@ class OntologyAttribute(core.LiteralAttribute):
         """ Serialize ontology instance
 
         Args:
-            value (:obj:`pronto.term.Term`): Python representation
+            value (:obj:`pronto.Term`): Python representation
 
         Returns:
             :obj:`str`: simple Python representation
         """
         if value:
             if self.namespace:
-                if value.id.startswith(self.namespace + ':'):
+                if value.id.startswith(self.namespace + self.namespace_sep):
                     return value.id[len(self.namespace) + 1:]
                 else:
                     raise ValueError('Id {} must begin with namespace'.format(value.id))
@@ -203,7 +211,7 @@ class OntologyAttribute(core.LiteralAttribute):
         that is compatible with JSON and YAML
 
         Args:
-            value (:obj:`pronto.term.Term`): value of the attribute
+            value (:obj:`pronto.Term`): value of the attribute
 
         Returns:
             :obj:`str`: simple Python representation of a value of the attribute
@@ -220,7 +228,7 @@ class OntologyAttribute(core.LiteralAttribute):
             json (:obj:`str`): simple Python representation of a value of the attribute
 
         Returns:
-            :obj:`pronto.term.Term`: decoded value of the attribute
+            :obj:`pronto.Term`: decoded value of the attribute
         """
         if json:
             return self.ontology[json]

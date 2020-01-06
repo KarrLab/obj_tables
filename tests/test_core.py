@@ -4620,11 +4620,11 @@ class TestCore(unittest.TestCase):
         path_6 = (('children', {'id2': 'test_1_2'}), ('children', {
             'id': 'test_1_2_1'}), 'parent', 'parent', 'id')
 
-        onto = pronto.Ontology('tests/fixtures/SBO.obo')
+        onto = pronto.Ontology('tests/fixtures/SBO.owl')
         path_7 = (('children', {'id2': 'test_1_2'}), ('children', {
-            'id': onto['SBO:0000000']}), 'parent', 'parent', 'id')
+            'id': onto['SBO_0000000']}), 'parent', 'parent', 'id')
         path_8 = (('children', {'id2': 'test_1_2'}), ('children', {
-            'id': onto['SBO:0000001']}), 'parent', 'parent', 'id')
+            'id': onto['SBO_0000001']}), 'parent', 'parent', 'id')
 
         self.assertTrue(test_1.are_attr_paths_equal(path_1, path_1))
         self.assertFalse(test_1.are_attr_paths_equal(path_1, path_2))

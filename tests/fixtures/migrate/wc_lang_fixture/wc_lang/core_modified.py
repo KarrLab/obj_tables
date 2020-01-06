@@ -1443,7 +1443,7 @@ class Submodel(obj_tables.Model, SbmlModelMixin):
         id (:obj:`str`): unique identifier
         name (:obj:`str`): name
         model (:obj:`Model`): model
-        framework (:obj:`pronto.term.Term`): modeling framework (e.g. dynamic flux balance analysis)
+        framework (:obj:`pronto.Term`): modeling framework (e.g. dynamic flux balance analysis)
         identifiers (:obj:`list` of :obj:`Identifier`): identifiers
         conclusions (:obj:`list` of :obj:`Conclusion`): conclusions
         comments (:obj:`str`): comments
@@ -1462,7 +1462,7 @@ class Submodel(obj_tables.Model, SbmlModelMixin):
     model = ManyToOneAttribute(Model, related_name='submodels', related_manager=SubmodelsToModelRelatedManager)
     framework = OntologyAttribute(onto,
                                   namespace='WC',
-                                  terms=onto['WC:modeling_framework'].rchildren(),
+                                  terms=onto['WC:modeling_framework'].subclasses(),
                                   default=onto['WC:stochastic_simulation_algorithm'],
                                   none=False)
     identifiers = IdentifierManyToManyAttribute(related_name='submodels')
@@ -2056,7 +2056,7 @@ class InitVolume(obj_tables.Model, SbmlModelMixin):
     """
     distribution = OntologyAttribute(onto,
                                      namespace='WC',
-                                     terms=onto['WC:random_distribution'].rchildren(),
+                                     terms=onto['WC:random_distribution'].subclasses(),
                                      default=onto['WC:normal_distribution'])
     mean = FloatAttribute(min=0)
     std = FloatAttribute(min=0, verbose_name='Standard deviation')
@@ -2101,7 +2101,7 @@ class Ph(obj_tables.Model, SbmlModelMixin):
     """
     distribution = OntologyAttribute(onto,
                                      namespace='WC',
-                                     terms=onto['WC:random_distribution'].rchildren(),
+                                     terms=onto['WC:random_distribution'].subclasses(),
                                      default=onto['WC:normal_distribution'])
     mean = FloatAttribute()
     std = FloatAttribute(min=0, verbose_name='Standard deviation')
@@ -2138,9 +2138,9 @@ class Compartment(obj_tables.Model, SbmlModelMixin):
         id (:obj:`str`): unique identifier
         name (:obj:`str`): name
         model (:obj:`Model`): model
-        biological_type (:obj:`pronto.term.Term`): biological type
-        physical_type (:obj:`pronto.term.Term`): physical type
-        geometry (:obj:`pronto.term.Term`): geometry
+        biological_type (:obj:`pronto.Term`): biological type
+        physical_type (:obj:`pronto.Term`): physical type
+        geometry (:obj:`pronto.Term`): geometry
         parent_compartment (:obj:`Compartment`): parent compartment
         mass_units (:obj:`unit_registry.Unit`): mass units
         init_volume (:obj:`InitVolume`): initial volume
@@ -2165,17 +2165,17 @@ class Compartment(obj_tables.Model, SbmlModelMixin):
     model = ManyToOneAttribute(Model, related_name='compartments')
     biological_type = OntologyAttribute(onto,
                                         namespace='WC',
-                                        terms=onto['WC:biological_compartment'].rchildren(),
+                                        terms=onto['WC:biological_compartment'].subclasses(),
                                         default=onto['WC:cellular_compartment'],
                                         none=True)
     physical_type = OntologyAttribute(onto,
                                       namespace='WC',
-                                      terms=onto['WC:physical_compartment'].rchildren(),
+                                      terms=onto['WC:physical_compartment'].subclasses(),
                                       default=onto['WC:fluid_compartment'],
                                       none=True)
     geometry = OntologyAttribute(onto,
                                  namespace='WC',
-                                 terms=onto['WC:geometric_compartment'].rchildren(),
+                                 terms=onto['WC:geometric_compartment'].subclasses(),
                                  default=onto['WC:3D_compartment'],
                                  none=True)
     parent_compartment = ManyToOneAttribute('Compartment', related_name='sub_compartments')
@@ -2566,7 +2566,7 @@ class SpeciesType(obj_tables.Model, SbmlModelMixin):
         name (:obj:`str`): name
         model (:obj:`Model`): model
         structure (:obj:`ChemicalStructure`): structure (InChI for metabolites; sequence for DNA, RNA, proteins)
-        type (:obj:`pronto.term.Term`): type
+        type (:obj:`pronto.Term`): type
         identifiers (:obj:`list` of :obj:`Identifier`): identifiers
         conclusions (:obj:`list` of :obj:`Conclusion`): conclusions
         comments (:obj:`str`): comments
@@ -2582,7 +2582,7 @@ class SpeciesType(obj_tables.Model, SbmlModelMixin):
     structure = ManyToOneAttribute(ChemicalStructure, related_name='species_types')
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:species_type'].rchildren(),
+                             terms=onto['WC:species_type'].subclasses(),
                              default=onto['WC:metabolite'],
                              none=True)
     identifiers = IdentifierManyToManyAttribute(related_name='species_types', verbose_related_name='species types')
@@ -2905,7 +2905,7 @@ class DistributionInitConcentration(obj_tables.Model, SbmlModelMixin):
         name (:obj:`str`): name
         model (:obj:`Model`): model
         species (:obj:`Species`): species
-        distribution (:obj:`pronto.term.Term`): distribution
+        distribution (:obj:`pronto.Term`): distribution
         mean (:obj:`float`): mean concentration in a population of single cells at the
             beginning of each cell cycle
         std (:obj:`float`): standard deviation of the concentration in a population of
@@ -2924,7 +2924,7 @@ class DistributionInitConcentration(obj_tables.Model, SbmlModelMixin):
                                 verbose_related_name='Initial species concentration')
     distribution = OntologyAttribute(onto,
                                      namespace='WC',
-                                     terms=onto['WC:random_distribution'].rchildren(),
+                                     terms=onto['WC:random_distribution'].subclasses(),
                                      default=onto['WC:normal_distribution'])
     mean = FloatAttribute(min=0)
     std = FloatAttribute(min=0, verbose_name='Standard deviation')
@@ -3603,7 +3603,7 @@ class Reaction(obj_tables.Model, SbmlModelMixin):
 
         for_rl = self.rate_laws.get_one(direction=RateLawDirection.forward)
         rev_rl = self.rate_laws.get_one(direction=RateLawDirection.backward)
-        if self.submodel and isinstance(self.submodel.framework, pronto.term.Term) and self.submodel.framework.id in [
+        if self.submodel and isinstance(self.submodel.framework, pronto.Term) and self.submodel.framework.id in [
             'WC:ordinary_differential_equations',
             'WC:stochastic_simulation_algorithm',
         ]:
@@ -4123,7 +4123,7 @@ class RateLaw(obj_tables.Model, SbmlModelMixin):
         model (:obj:`Model`): model
         reaction (:obj:`Reaction`): reaction
         direction (:obj:`RateLawDirection`): direction
-        type (:obj:`pronto.term.Term`): type
+        type (:obj:`pronto.Term`): type
         expression (:obj:`RateLawExpression`): expression
         units (:obj:`unit_registry.Unit`): units
         identifiers (:obj:`list` of :obj:`Identifier`): identifiers
@@ -4138,7 +4138,7 @@ class RateLaw(obj_tables.Model, SbmlModelMixin):
     direction = EnumAttribute(RateLawDirection, default=RateLawDirection.forward)
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:rate_law'].rchildren(),
+                             terms=onto['WC:rate_law'].subclasses(),
                              default=None, none=True)
     expression = ExpressionManyToOneAttribute(RateLawExpression, min_related=1, min_related_rev=1, related_name='rate_laws')
     units = UnitAttribute(unit_registry,
@@ -4612,7 +4612,7 @@ class ParameterRenamed(obj_tables.Model, SbmlModelMixin):
         id (:obj:`str`): unique identifier per model/submodel
         name (:obj:`str`): name
         model (:obj:`Model`): model
-        type (:obj:`pronto.term.Term`): parameter type
+        type (:obj:`pronto.Term`): parameter type
         value (:obj:`float`): value
         std (:obj:`float`): standard error of the value
         units (:obj:`unit_registry.Unit`): units of the value and standard error
@@ -4634,7 +4634,7 @@ class ParameterRenamed(obj_tables.Model, SbmlModelMixin):
     model = ManyToOneAttribute(Model, related_name='parameters')
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:parameter'].rchildren(),
+                             terms=onto['WC:parameter'].subclasses(),
                              default=None, none=True)
     value = FloatAttribute()
     std = FloatAttribute(min=0, verbose_name='Standard error')
@@ -4876,7 +4876,7 @@ class Observation(obj_tables.Model):
         value (:obj:`str`): value
         std (:obj:`str`): standard error of the value
         units (:obj:`unit_registry.Unit`): units
-        type (:obj:`pronto.term.Term`): type
+        type (:obj:`pronto.Term`): type
         genotype (:obj:`ObservationGenotype`): genotype
         env (:obj:`ObservationEnv`): environment
         experiment_type (:obj:`str`): type of experiment (e.g. RNA-seq)
@@ -4900,7 +4900,7 @@ class Observation(obj_tables.Model):
     units = UnitAttribute(unit_registry, none=True)
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:observation'].rchildren(),
+                             terms=onto['WC:observation'].subclasses(),
                              default=None, none=True)
     genotype = ManyToOneAttribute(ObservationGenotype, related_name='genotype_observations')
     env = ManyToOneAttribute(ObservationEnv, related_name='env_observations', verbose_name='Environment')
@@ -4993,7 +4993,7 @@ class Evidence(obj_tables.Model):
     observation = ManyToOneAttribute(Observation, related_name='evidence')
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:evidence'].rchildren(),
+                             terms=onto['WC:evidence'].subclasses(),
                              default=None, none=True)
     strength = FloatAttribute()
     quality = FloatAttribute()
@@ -5116,7 +5116,7 @@ class Conclusion(obj_tables.Model):
         value (:obj:`str`): value
         std (:obj:`str`): standard error of the value
         units (:obj:`unit_registry.Unit`): units
-        type (:obj:`pronto.term.Term`): type
+        type (:obj:`pronto.Term`): type
         process (:obj:`Process`): procedure which produced the conclusion
         identifiers (:obj:`list` of :obj:`Identifier`): identifiers
         evidence (:obj:`list` of :obj:`Evidence`): evidence that supports/refutes the conclusion
@@ -5154,7 +5154,7 @@ class Conclusion(obj_tables.Model):
     units = UnitAttribute(unit_registry, none=True)
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:conclusion'].rchildren(),
+                             terms=onto['WC:conclusion'].subclasses(),
                              default=None, none=True)
     process = ManyToOneAttribute(Process, related_name='conclusions')
     identifiers = IdentifierManyToManyAttribute(related_name='conclusions')
@@ -5190,7 +5190,7 @@ class Reference(obj_tables.Model):
         author (:obj:`str`): author(s)
         editor (:obj:`str`): editor(s)
         year (:obj:`int`): year
-        type (:obj:`proto.term.Term`): type
+        type (:obj:`pronto.Term`): type
         publication (:obj:`str`): publication title
         publisher (:obj:`str`): publisher
         series (:obj:`str`): series
@@ -5233,7 +5233,7 @@ class Reference(obj_tables.Model):
     year = PositiveIntegerAttribute()
     type = OntologyAttribute(onto,
                              namespace='WC',
-                             terms=onto['WC:reference'].rchildren(),
+                             terms=onto['WC:reference'].subclasses(),
                              default=None, none=True)
     publication = StringAttribute()
     publisher = StringAttribute()
@@ -5346,14 +5346,14 @@ class Change(obj_tables.Model, SbmlModelMixin):
         id (:obj:`str`): unique identifier
         name (:obj:`str`): full name
         model (:obj:`Model`): model
-        type (:obj:`pronto.term.Term`): type
+        type (:obj:`pronto.Term`): type
         target (:obj:`str`): target
         target_submodel (:obj:`Submodel`): target submodel
-        target_type (:obj:`pronto.term.Term`): target type
+        target_type (:obj:`pronto.Term`): target type
         reason (:obj:`str`): reason
-        reason_type (:obj:`pronto.term.Term`): type of reason
+        reason_type (:obj:`pronto.Term`): type of reason
         intention (:obj:`str`): intention
-        intention_type (:obj:`pronto.term.Term`): type of intention
+        intention_type (:obj:`pronto.Term`): type of intention
         identifiers (::obj:`list` of :obj:`Identifier`): identifiers
         conclusions (:obj:`list` of :obj:`Conclusion`): conclusions
         comments (:obj:`str`): comments
@@ -5366,17 +5366,17 @@ class Change(obj_tables.Model, SbmlModelMixin):
     model = ManyToOneAttribute(Model, related_name='changes')
 
     type = OntologyAttribute(onto, namespace='WC',
-                             terms=onto['WC:change'].rchildren())
+                             terms=onto['WC:change'].subclasses())
     target = LongStringAttribute()
     target_submodel = ManyToOneAttribute(Submodel, related_name='changes')
     target_type = OntologyAttribute(onto, namespace='WC',
-                                    terms=onto['WC:target_provenance'].rchildren())
+                                    terms=onto['WC:target_provenance'].subclasses())
     reason = LongStringAttribute()
     reason_type = OntologyAttribute(onto, namespace='WC',
-                                    terms=onto['WC:reason_provenance'].rchildren())
+                                    terms=onto['WC:reason_provenance'].subclasses())
     intention = LongStringAttribute()
     intention_type = OntologyAttribute(onto, namespace='WC',
-                                       terms=onto['WC:intention_provenance'].rchildren())
+                                       terms=onto['WC:intention_provenance'].subclasses())
     identifiers = IdentifierManyToManyAttribute(related_name='changes')
     evidence = EvidenceManyToManyAttribute('Evidence', related_name='changes')
     conclusions = ManyToManyAttribute('Conclusion', related_name='changes')

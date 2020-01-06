@@ -2991,7 +2991,7 @@ class ExcelValidationTestCase(unittest.TestCase):
                 attribute_order = ('id',)
                 table_format = core.TableFormat.column
 
-        sbo_ontotology = pronto.Ontology('tests/fixtures/SBO.obo')
+        sbo_ontotology = pronto.Ontology('tests/fixtures/SBO.owl')
         unit_registry = pint.UnitRegistry()
 
         class Parameter1(core.Model):
@@ -3099,19 +3099,23 @@ class ExcelValidationTestCase(unittest.TestCase):
             formula_attr = chem.EmpiricalFormulaAttribute(unique=True)
             onto_attr_1 = ontology.OntologyAttribute(sbo_ontotology,
                                                      namespace='SBO',
-                                                     terms=sbo_ontotology['SBO:0000474'].rchildren(),
-                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'])
+                                                     namespace_sep='_',
+                                                     terms=sbo_ontotology['SBO_0000474'].subclasses(),
+                                                     default_cleaned_value=sbo_ontotology['SBO_0000474'])
             onto_attr_2 = ontology.OntologyAttribute(sbo_ontotology,
                                                      namespace='SBO',
-                                                     terms=sbo_ontotology['SBO:0000474'].rchildren(),
-                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'],
+                                                     namespace_sep='_',
+                                                     terms=sbo_ontotology['SBO_0000474'].subclasses(),
+                                                     default_cleaned_value=sbo_ontotology['SBO_0000474'],
                                                      unique=True, none=False)
             onto_attr_3 = ontology.OntologyAttribute(sbo_ontotology,
                                                      namespace='SBO',
-                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'])
+                                                     namespace_sep='_',
+                                                     default_cleaned_value=sbo_ontotology['SBO_0000475'])
             onto_attr_4 = ontology.OntologyAttribute(sbo_ontotology,
                                                      namespace='SBO',
-                                                     default_cleaned_value=sbo_ontotology['SBO:0000475'],
+                                                     namespace_sep='_',
+                                                     default_cleaned_value=sbo_ontotology['SBO_0000475'],
                                                      unique=True, none=False)
             units_attr_1 = units.UnitAttribute(unit_registry, choices=(
                 unit_registry.parse_units('g'),
@@ -3164,8 +3168,8 @@ class ExcelValidationTestCase(unittest.TestCase):
                        time_attr=datetime.time(11, 0, 0),
                        date_time_attr=datetime.datetime(2001, 1, 1, 11, 0, 0),
                        formula_attr=wc_utils.util.chem.EmpiricalFormula('H2O'),
-                       onto_attr_2=sbo_ontotology['SBO:0000475'],
-                       onto_attr_4=sbo_ontotology['SBO:0000475'],
+                       onto_attr_2=sbo_ontotology['SBO_0000475'],
+                       onto_attr_4=sbo_ontotology['SBO_0000475'],
                        units_attr_2=unit_registry.parse_units('g'),
                        units_attr_4=unit_registry.parse_units('g')),
             TestParent(id='parent_b',
@@ -3179,8 +3183,8 @@ class ExcelValidationTestCase(unittest.TestCase):
                        time_attr=datetime.time(12, 0, 0),
                        date_time_attr=datetime.datetime(2001, 1, 2, 12, 0, 0),
                        formula_attr=wc_utils.util.chem.EmpiricalFormula('CO2'),
-                       onto_attr_2=sbo_ontotology['SBO:0000487'],
-                       onto_attr_4=sbo_ontotology['SBO:0000487'],
+                       onto_attr_2=sbo_ontotology['SBO_0000487'],
+                       onto_attr_4=sbo_ontotology['SBO_0000487'],
                        units_attr_2=unit_registry.parse_units('l'),
                        units_attr_4=unit_registry.parse_units('l')),
             TestChild1(id='child_1_a'),
