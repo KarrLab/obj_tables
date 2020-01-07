@@ -57,8 +57,6 @@ class OntologyAttribute(core.LiteralAttribute):
                 if not isinstance(term, pronto.Term) or term not in ontology.terms():
                     raise ValueError('element {} of `terms` must be in `ontology`'.format(term))
 
-        print(terms)
-
         if default is not None and \
                 (not isinstance(default, pronto.Term)
                     or default not in ontology.terms()
