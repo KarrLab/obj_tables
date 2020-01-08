@@ -6,7 +6,7 @@ natsort
 networkx
 numpy
 pandas
-pint >= 0.9
+pint >= 0.10
 pronto >= 1
 python_dateutil
 pyyaml >= 5.1
