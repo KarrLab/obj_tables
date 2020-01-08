@@ -1,3 +1,6 @@
 # Karr Lab
 git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils
 git+https://github.com/KarrLab/wc_onto.git#egg=wc_onto
+
+# Karr Lab - for tests
+git+https://github.com/KarrLab/bpforms.git#egg=bpforms
