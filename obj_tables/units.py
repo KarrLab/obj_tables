@@ -113,7 +113,7 @@ class UnitAttribute(core.LiteralAttribute):
         elif isinstance(value, str):
             try:
                 value = self.registry.parse_units(value)
-            except pint.UndefinedUnitError:
+            except (pint.UndefinedUnitError, TypeError):
                 error = core.InvalidAttribute(self, ['Invalid unit {}'.format(value)])
         else:
             error = core.InvalidAttribute(self, ['Invalid unit {}'.format(value)])
