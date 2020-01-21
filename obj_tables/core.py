@@ -4671,7 +4671,7 @@ class SlugAttribute(RegexAttribute):
         if description is None:
             description = ("Enter a unique string identifier that "
                            "(a) is composed of letters, numbers and underscores; "
-                           "(b) is 63 characters or less; and "
+                           "(b) is 90 characters or less; and "
                            "(c) is not a decimal, hexadecimal, or scientific number")
 
         super(SlugAttribute, self).__init__(pattern=(r'^(?!(^|\b)'
@@ -4682,7 +4682,7 @@ class SlugAttribute(RegexAttribute):
                                                      r')'
                                                      r'[a-z0-9_]+$'),
                                             flags=re.I,
-                                            min_length=1, max_length=63,
+                                            min_length=1, max_length=90,
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique)
 
