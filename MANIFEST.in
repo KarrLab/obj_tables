@@ -1,9 +1,6 @@
 # description
 include README.rst
 
-# version
-include obj_tables/VERSION
-
 # license
 include LICENSE
 
