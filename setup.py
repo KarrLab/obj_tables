@@ -16,7 +16,6 @@ name = 'obj_tables'
 dirname = os.path.dirname(__file__)
 package_data = {
     name: [
-        'VERSION',
         'web_app/app.css',
         'web_app/app.js',
         'web_app/index.html',
