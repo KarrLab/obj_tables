@@ -76,8 +76,7 @@ import token
 import wc_lang.config.core
 import warnings
 
-with open(pkg_resources.resource_filename('wc_lang', 'VERSION'), 'r') as file:
-    wc_lang_version = file.read().strip()
+from wc_lang._version import __version__ as wc_lang_version
 
 # wc_lang generates obj_tables SchemaWarning warnings because some Models lack primary attributes.
 # These models include :obj:`RateLaw`, :obj:`SpeciesCoefficient`, :obj:`RateLawExpression`, and :obj:`Species`.
