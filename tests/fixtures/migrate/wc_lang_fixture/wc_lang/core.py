@@ -38,19 +38,19 @@ from enum import Enum, EnumMeta
 from math import ceil, floor, exp, log, log10, isinf, isnan
 from natsort import natsorted, ns
 from obj_tables import (BooleanAttribute, EnumAttribute,
-                       FloatAttribute,
-                       IntegerAttribute, PositiveIntegerAttribute,
-                       RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
-                       UrlAttribute, EmailAttribute, DateTimeAttribute,
-                       OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-                       ManyToOneRelatedManager,
-                       InvalidObject, InvalidAttribute, TableFormat)
-from obj_tables.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
-                                  ExpressionStaticTermMeta, ExpressionDynamicTermMeta,
-                                  ExpressionExpressionTermMeta, Expression,
-                                  ParsedExpression, ParsedExpressionError)
-from obj_tables.ontology import OntologyAttribute
-from obj_tables.units import UnitAttribute
+                        FloatAttribute,
+                        IntegerAttribute, PositiveIntegerAttribute,
+                        RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
+                        UrlAttribute, EmailAttribute, DateTimeAttribute,
+                        OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
+                        ManyToOneRelatedManager,
+                        InvalidObject, InvalidAttribute, TableFormat)
+from obj_tables.math.expression import (OneToOneExpressionAttribute, ManyToOneExpressionAttribute,
+                                        ExpressionStaticTermMeta, ExpressionDynamicTermMeta,
+                                        ExpressionExpressionTermMeta, Expression,
+                                        ParsedExpression, ParsedExpressionError)
+from obj_tables.sci.onto import OntoTermAttribute
+from obj_tables.sci.units import UnitAttribute
 from wc_lang.sbml.util import SbmlModelMixin, SbmlAssignmentRuleMixin, LibSbmlInterface
 from wc_utils.util.chem import EmpiricalFormula, OpenBabelUtils
 from wc_utils.util.enumerate import CaseInsensitiveEnum, CaseInsensitiveEnumMeta
@@ -390,7 +390,7 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         validation = super(ManyToManyAttribute, self).get_excel_validation(sheet_models=sheet_models,
-            doc_metadata_model=doc_metadata_model)
+                                                                           doc_metadata_model=doc_metadata_model)
 
         related_class = Species
         related_ws = related_class.Meta.verbose_name_plural
@@ -1460,7 +1460,7 @@ class Submodel(obj_tables.Model, SbmlModelMixin):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='submodels', related_manager=SubmodelsToModelRelatedManager)
-    framework = OntologyAttribute(onto,
+    framework = OntoTermAttribute(onto,
                                   namespace='WC',
                                   terms=onto['WC:modeling_framework'].subclasses(),
                                   default=onto['WC:stochastic_simulation_algorithm'],
@@ -1825,7 +1825,7 @@ class DfbaObjective(obj_tables.Model, SbmlModelMixin):
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='dfba_objs', verbose_related_name='dFBA objectives')
     submodel = OneToOneAttribute(Submodel, related_name='dfba_obj', min_related=1, verbose_related_name='dFBA objective')
-    expression = ExpressionOneToOneAttribute(DfbaObjectiveExpression, related_name='dfba_obj',
+    expression = OneToOneExpressionAttribute(DfbaObjectiveExpression, related_name='dfba_obj',
                                              min_related=1, min_related_rev=1, verbose_related_name='dFBA objective')
     units = UnitAttribute(unit_registry,
                           choices=(unit_registry.parse_units('dimensionless'),),
@@ -2054,7 +2054,7 @@ class InitVolume(obj_tables.Model, SbmlModelMixin):
 
         * compartments (:obj:`list` of :obj:`Compartment`): compartment
     """
-    distribution = OntologyAttribute(onto,
+    distribution = OntoTermAttribute(onto,
                                      namespace='WC',
                                      terms=onto['WC:random_distribution'].subclasses(),
                                      default=onto['WC:normal_distribution'])
@@ -2099,7 +2099,7 @@ class Ph(obj_tables.Model, SbmlModelMixin):
 
         * compartments (:obj:`list` of :obj:`Compartment`): compartment
     """
-    distribution = OntologyAttribute(onto,
+    distribution = OntoTermAttribute(onto,
                                      namespace='WC',
                                      terms=onto['WC:random_distribution'].subclasses(),
                                      default=onto['WC:normal_distribution'])
@@ -2163,17 +2163,17 @@ class Compartment(obj_tables.Model, SbmlModelMixin):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='compartments')
-    biological_type = OntologyAttribute(onto,
+    biological_type = OntoTermAttribute(onto,
                                         namespace='WC',
                                         terms=onto['WC:biological_compartment'].subclasses(),
                                         default=onto['WC:cellular_compartment'],
                                         none=True)
-    physical_type = OntologyAttribute(onto,
+    physical_type = OntoTermAttribute(onto,
                                       namespace='WC',
                                       terms=onto['WC:physical_compartment'].subclasses(),
                                       default=onto['WC:fluid_compartment'],
                                       none=True)
-    geometry = OntologyAttribute(onto,
+    geometry = OntoTermAttribute(onto,
                                  namespace='WC',
                                  terms=onto['WC:geometric_compartment'].subclasses(),
                                  default=onto['WC:3D_compartment'],
@@ -2580,7 +2580,7 @@ class SpeciesType(obj_tables.Model, SbmlModelMixin):
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='species_types')
     structure = ManyToOneAttribute(ChemicalStructure, related_name='species_types')
-    type = OntologyAttribute(onto,
+    type = OntoTermAttribute(onto,
                              namespace='WC',
                              terms=onto['WC:species_type'].subclasses(),
                              default=onto['WC:metabolite'],
@@ -2922,7 +2922,7 @@ class DistributionInitConcentration(obj_tables.Model, SbmlModelMixin):
                                verbose_related_name='Initial species concentrations')
     species = OneToOneAttribute(Species, min_related=1, related_name='distribution_init_concentration',
                                 verbose_related_name='Initial species concentration')
-    distribution = OntologyAttribute(onto,
+    distribution = OntoTermAttribute(onto,
                                      namespace='WC',
                                      terms=onto['WC:random_distribution'].subclasses(),
                                      default=onto['WC:normal_distribution'])
@@ -3105,7 +3105,7 @@ class Observable(obj_tables.Model, SbmlAssignmentRuleMixin):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='observables')
-    expression = ExpressionOneToOneAttribute(ObservableExpression, related_name='observable',
+    expression = OneToOneExpressionAttribute(ObservableExpression, related_name='observable',
                                              min_related=1, min_related_rev=1)
     units = UnitAttribute(unit_registry,
                           choices=(unit_registry.parse_units('molecule'),),
@@ -3239,7 +3239,7 @@ class Function(obj_tables.Model, SbmlAssignmentRuleMixin):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='functions')
-    expression = ExpressionOneToOneAttribute(FunctionExpression, related_name='function',
+    expression = OneToOneExpressionAttribute(FunctionExpression, related_name='function',
                                              min_related=1, min_related_rev=1)
     units = UnitAttribute(unit_registry)
     identifiers = IdentifierManyToManyAttribute(related_name='functions')
@@ -3412,7 +3412,7 @@ class StopCondition(obj_tables.Model):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='stop_conditions')
-    expression = ExpressionOneToOneAttribute(StopConditionExpression, related_name='stop_condition',
+    expression = OneToOneExpressionAttribute(StopConditionExpression, related_name='stop_condition',
                                              min_related=1, min_related_rev=1)
     units = UnitAttribute(unit_registry,
                           choices=(unit_registry.parse_units('dimensionless'),),
@@ -4136,11 +4136,11 @@ class RateLaw(obj_tables.Model, SbmlModelMixin):
     model = ManyToOneAttribute(Model, related_name='rate_laws')
     reaction = ManyToOneAttribute(Reaction, related_name='rate_laws')
     direction = EnumAttribute(RateLawDirection, default=RateLawDirection.forward)
-    type = OntologyAttribute(onto,
+    type = OntoTermAttribute(onto,
                              namespace='WC',
                              terms=onto['WC:rate_law'].subclasses(),
                              default=None, none=True)
-    expression = ExpressionManyToOneAttribute(RateLawExpression, min_related=1, min_related_rev=1, related_name='rate_laws')
+    expression = ManyToOneExpressionAttribute(RateLawExpression, min_related=1, min_related_rev=1, related_name='rate_laws')
     units = UnitAttribute(unit_registry,
                           choices=(unit_registry.parse_units('s^-1'),),
                           default=unit_registry.parse_units('s^-1'))
@@ -4632,7 +4632,7 @@ class Parameter(obj_tables.Model, SbmlModelMixin):
     id = SlugAttribute()
     name = StringAttribute()
     model = ManyToOneAttribute(Model, related_name='parameters')
-    type = OntologyAttribute(onto,
+    type = OntoTermAttribute(onto,
                              namespace='WC',
                              terms=onto['WC:parameter'].subclasses(),
                              default=None, none=True)
@@ -4898,7 +4898,7 @@ class Observation(obj_tables.Model):
     value = StringAttribute()
     std = StringAttribute(verbose_name='Standard error')
     units = UnitAttribute(unit_registry, none=True)
-    type = OntologyAttribute(onto,
+    type = OntoTermAttribute(onto,
                              namespace='WC',
                              terms=onto['WC:observation'].subclasses(),
                              default=None, none=True)
@@ -4991,7 +4991,7 @@ class Evidence(obj_tables.Model):
         * changes (:obj:`list` of :obj:`Change`): changes
     """
     observation = ManyToOneAttribute(Observation, related_name='evidence')
-    type = OntologyAttribute(onto,
+    type = OntoTermAttribute(onto,
                              namespace='WC',
                              terms=onto['WC:evidence'].subclasses(),
                              default=None, none=True)
@@ -5152,7 +5152,7 @@ class Conclusion(obj_tables.Model):
     value = StringAttribute()
     std = StringAttribute(verbose_name='Standard error')
     units = UnitAttribute(unit_registry, none=True)
-    type = OntologyAttribute(onto,
+    type = OntoTermAttribute(onto,
                              namespace='WC',
                              terms=onto['WC:conclusion'].subclasses(),
                              default=None, none=True)
@@ -5231,7 +5231,7 @@ class Reference(obj_tables.Model):
     author = StringAttribute()
     editor = StringAttribute()
     year = PositiveIntegerAttribute()
-    type = OntologyAttribute(onto,
+    type = OntoTermAttribute(onto,
                              namespace='WC',
                              terms=onto['WC:reference'].subclasses(),
                              default=None, none=True)
@@ -5365,17 +5365,17 @@ class Change(obj_tables.Model, SbmlModelMixin):
     name = StringAttribute(min_length=1)
     model = ManyToOneAttribute(Model, related_name='changes')
 
-    type = OntologyAttribute(onto, namespace='WC',
+    type = OntoTermAttribute(onto, namespace='WC',
                              terms=onto['WC:change'].subclasses())
     target = LongStringAttribute()
     target_submodel = ManyToOneAttribute(Submodel, related_name='changes')
-    target_type = OntologyAttribute(onto, namespace='WC',
+    target_type = OntoTermAttribute(onto, namespace='WC',
                                     terms=onto['WC:target_provenance'].subclasses())
     reason = LongStringAttribute()
-    reason_type = OntologyAttribute(onto, namespace='WC',
+    reason_type = OntoTermAttribute(onto, namespace='WC',
                                     terms=onto['WC:reason_provenance'].subclasses())
     intention = LongStringAttribute()
-    intention_type = OntologyAttribute(onto, namespace='WC',
+    intention_type = OntoTermAttribute(onto, namespace='WC',
                                        terms=onto['WC:intention_provenance'].subclasses())
     identifiers = IdentifierManyToManyAttribute(related_name='changes')
     evidence = EvidenceManyToManyAttribute('Evidence', related_name='changes')

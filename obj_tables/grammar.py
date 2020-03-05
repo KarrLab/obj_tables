@@ -14,6 +14,11 @@ import abc
 import lark
 import stringcase
 
+__all__ = [
+    'ToManyGrammarAttribute',
+    'ToManyGrammarTransformer',
+]
+
 
 class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
     """ Many-to-many attribute that can be deserialized wtih a grammar

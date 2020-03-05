@@ -7,7 +7,7 @@
 """
 
 from obj_tables import core
-from obj_tables import refs
+from obj_tables.sci import refs
 import json
 import unittest
 

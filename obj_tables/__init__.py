@@ -19,16 +19,4 @@ from .core import (Model, Attribute,
                    ModelMerge,
                    TOC_TABLE_TYPE, TOC_SHEET_NAME,
                    SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
-from . import abstract
-from . import expression
-from . import grammar
-from . import io
-from . import utils
-
-# domain-specific attributes
-from . import bio
-from . import chem
-from . import obj_math
-from . import ontology
-from . import refs
-from . import units
+from .grammar import ToManyGrammarAttribute, ToManyGrammarTransformer

@@ -35,7 +35,7 @@ import warnings
 import yaml
 
 from obj_tables import TableFormat, RelatedAttribute, get_models, utils
-from obj_tables.expression import ParsedExpression, ObjTablesTokenCodes
+from obj_tables.math.expression import ParsedExpression, ObjTablesTokenCodes
 from obj_tables.io import WorkbookReader, Reader, Writer
 from obj_tables.utils import SchemaRepoMetadata
 from wc_utils.config.core import AltResourceName
@@ -1167,9 +1167,9 @@ class Migrator(object):
                     copy_val = val
                 elif isinstance(val, (string_types, bool, integer_types, float, Enum, )):
                     copy_val = val
-                elif isinstance(attr, obj_tables.ontology.OntologyAttribute):
+                elif isinstance(attr, obj_tables.sci.onto.OntoTermAttribute):
                     # pronto does not properly implement deepcopy
-                    # temporarily share refs to OntologyAttribute between existing and migrated models
+                    # temporarily share refs to OntoTermAttribute between existing and migrated models
                     copy_val = val
                 else:
                     copy_val = copy.deepcopy(val)

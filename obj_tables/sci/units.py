@@ -6,12 +6,16 @@
 :License: MIT
 """
 
-from . import core
+from .. import core
 from wc_utils.util.list import det_dedupe
 from wc_utils.util.units import are_units_equivalent
 import itertools
 import pint
 import wc_utils.workbook.io
+
+__all__ = [
+    'UnitAttribute',
+]
 
 
 class UnitAttribute(core.LiteralAttribute):

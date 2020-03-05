@@ -9,8 +9,12 @@
 
 from importlib import util
 from os.path import splitext
-from obj_tables import core, utils, chem, ontology, units
+from obj_tables import core
+from obj_tables import utils
+from obj_tables import chem
 from obj_tables.io import WorkbookReader, WorkbookWriter, convert, create_template, IoWarning
+from obj_tables.sci import onto
+from obj_tables.sci import units
 from pathlib import Path
 from wc_utils.workbook.io import (Workbook, Worksheet, Row, WorkbookStyle, WorksheetStyle,
                                   read as read_workbook, write as write_workbook, get_reader, get_writer)
@@ -22,7 +26,7 @@ import math
 import mock
 import obj_tables
 import obj_tables.io
-import obj_tables.expression
+import obj_tables.math.expression
 import openpyxl
 import os
 import pint
@@ -2999,7 +3003,7 @@ class ExcelValidationTestCase(unittest.TestCase):
             value = core.FloatAttribute()
             units = units.UnitAttribute(unit_registry)
 
-            class Meta(core.Model.Meta, obj_tables.expression.ExpressionStaticTermMeta):
+            class Meta(core.Model.Meta, obj_tables.math.expression.ExpressionStaticTermMeta):
                 expression_term_value = 'value'
                 expression_term_units = 'units'
 
@@ -3008,55 +3012,55 @@ class ExcelValidationTestCase(unittest.TestCase):
             value = core.FloatAttribute()
             units = units.UnitAttribute(unit_registry)
 
-            class Meta(core.Model.Meta, obj_tables.expression.ExpressionStaticTermMeta):
+            class Meta(core.Model.Meta, obj_tables.math.expression.ExpressionStaticTermMeta):
                 expression_term_value = 'value'
                 expression_term_units = 'units'
 
-        class TestParentExpression1(core.Model, obj_tables.expression.Expression):
+        class TestParentExpression1(core.Model, obj_tables.math.expression.Expression):
             expression = core.StringAttribute()
 
-            class Meta(core.Model.Meta, obj_tables.expression.Expression.Meta):
+            class Meta(core.Model.Meta, obj_tables.math.expression.Expression.Meta):
                 expression_term_models = ()
                 expression_unit_registry = unit_registry
 
-            def serialize(self): return obj_tables.expression.Expression.serialize(self)
+            def serialize(self): return obj_tables.math.expression.Expression.serialize(self)
 
             @classmethod
-            def deserialize(cls, value, objects): return obj_tables.expression.Expression.deserialize(cls, value, objects)
+            def deserialize(cls, value, objects): return obj_tables.math.expression.Expression.deserialize(cls, value, objects)
 
-            def validate(self): return obj_tables.expression.Expression.validate(self, self.parent_sub_function)
+            def validate(self): return obj_tables.math.expression.Expression.validate(self, self.parent_sub_function)
 
-        class TestParentExpression2(core.Model, obj_tables.expression.Expression):
+        class TestParentExpression2(core.Model, obj_tables.math.expression.Expression):
             expression = core.StringAttribute()
             parameters_1 = core.ManyToManyAttribute(Parameter1, related_name='test_parent_expressions_2')
 
-            class Meta(core.Model.Meta, obj_tables.expression.Expression.Meta):
+            class Meta(core.Model.Meta, obj_tables.math.expression.Expression.Meta):
                 expression_term_models = ('Parameter1',)
                 expression_unit_registry = unit_registry
 
-            def serialize(self): return obj_tables.expression.Expression.serialize(self)
+            def serialize(self): return obj_tables.math.expression.Expression.serialize(self)
 
             @classmethod
-            def deserialize(cls, value, objects): return obj_tables.expression.Expression.deserialize(cls, value, objects)
+            def deserialize(cls, value, objects): return obj_tables.math.expression.Expression.deserialize(cls, value, objects)
 
-            def validate(self): return obj_tables.expression.Expression.validate(self, self.parent_sub_function)
+            def validate(self): return obj_tables.math.expression.Expression.validate(self, self.parent_sub_function)
 
-        class TestParentExpression3(core.Model, obj_tables.expression.Expression):
+        class TestParentExpression3(core.Model, obj_tables.math.expression.Expression):
             expression = core.StringAttribute()
             parameters_1 = core.ManyToManyAttribute(Parameter1, related_name='test_parent_expressions_3')
             parameters_2 = core.ManyToManyAttribute(Parameter2, related_name='test_parent_expressions_3')
 
-            class Meta(core.Model.Meta, obj_tables.expression.Expression.Meta):
+            class Meta(core.Model.Meta, obj_tables.math.expression.Expression.Meta):
                 expression_term_models = ('Parameter1', 'Parameter2')
                 expression_unit_registry = unit_registry
                 expression_is_linear = True
 
-            def serialize(self): return obj_tables.expression.Expression.serialize(self)
+            def serialize(self): return obj_tables.math.expression.Expression.serialize(self)
 
             @classmethod
-            def deserialize(cls, value, objects): return obj_tables.expression.Expression.deserialize(cls, value, objects)
+            def deserialize(cls, value, objects): return obj_tables.math.expression.Expression.deserialize(cls, value, objects)
 
-            def validate(self): return obj_tables.expression.Expression.validate(self, self.parent_sub_function)
+            def validate(self): return obj_tables.math.expression.Expression.validate(self, self.parent_sub_function)
 
         class TestParent(core.Model):
             id = core.SlugAttribute(unique=True, primary=True)
@@ -3097,22 +3101,22 @@ class ExcelValidationTestCase(unittest.TestCase):
             many_to_many_attr_2 = core.ManyToManyAttribute(TestChild2, related_name='parents_4',
                                                            min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_4')])
             formula_attr = chem.EmpiricalFormulaAttribute(unique=True)
-            onto_attr_1 = ontology.OntologyAttribute(sbo_ontotology,
+            onto_attr_1 = onto.OntoTermAttribute(sbo_ontotology,
                                                      namespace='SBO',
                                                      namespace_sep='_',
                                                      terms=sbo_ontotology['SBO_0000474'].subclasses(),
                                                      default_cleaned_value=sbo_ontotology['SBO_0000474'])
-            onto_attr_2 = ontology.OntologyAttribute(sbo_ontotology,
+            onto_attr_2 = onto.OntoTermAttribute(sbo_ontotology,
                                                      namespace='SBO',
                                                      namespace_sep='_',
                                                      terms=sbo_ontotology['SBO_0000474'].subclasses(),
                                                      default_cleaned_value=sbo_ontotology['SBO_0000474'],
                                                      unique=True, none=False)
-            onto_attr_3 = ontology.OntologyAttribute(sbo_ontotology,
+            onto_attr_3 = onto.OntoTermAttribute(sbo_ontotology,
                                                      namespace='SBO',
                                                      namespace_sep='_',
                                                      default_cleaned_value=sbo_ontotology['SBO_0000475'])
-            onto_attr_4 = ontology.OntologyAttribute(sbo_ontotology,
+            onto_attr_4 = onto.OntoTermAttribute(sbo_ontotology,
                                                      namespace='SBO',
                                                      namespace_sep='_',
                                                      default_cleaned_value=sbo_ontotology['SBO_0000475'],
@@ -3128,12 +3132,12 @@ class ExcelValidationTestCase(unittest.TestCase):
             units_attr_3 = units.UnitAttribute(unit_registry, default_cleaned_value=unit_registry.parse_units('g'))
             units_attr_4 = units.UnitAttribute(
                 unit_registry, default_cleaned_value=unit_registry.parse_units('g'), unique=True, none=False)
-            expression_attr_1 = obj_tables.expression.ExpressionOneToOneAttribute(TestParentExpression1, related_name='test_parent')
-            expression_attr_2 = obj_tables.expression.ExpressionOneToOneAttribute(TestParentExpression2, related_name='test_parent')
-            expression_attr_3 = obj_tables.expression.ExpressionOneToOneAttribute(TestParentExpression3, related_name='test_parent')
-            expression_attr_4 = obj_tables.expression.ExpressionManyToOneAttribute(TestParentExpression1, related_name='test_parents')
-            expression_attr_5 = obj_tables.expression.ExpressionManyToOneAttribute(TestParentExpression2, related_name='test_parents')
-            expression_attr_6 = obj_tables.expression.ExpressionManyToOneAttribute(TestParentExpression3, related_name='test_parents')
+            expression_attr_1 = obj_tables.math.expression.OneToOneExpressionAttribute(TestParentExpression1, related_name='test_parent')
+            expression_attr_2 = obj_tables.math.expression.OneToOneExpressionAttribute(TestParentExpression2, related_name='test_parent')
+            expression_attr_3 = obj_tables.math.expression.OneToOneExpressionAttribute(TestParentExpression3, related_name='test_parent')
+            expression_attr_4 = obj_tables.math.expression.ManyToOneExpressionAttribute(TestParentExpression1, related_name='test_parents')
+            expression_attr_5 = obj_tables.math.expression.ManyToOneExpressionAttribute(TestParentExpression2, related_name='test_parents')
+            expression_attr_6 = obj_tables.math.expression.ManyToOneExpressionAttribute(TestParentExpression3, related_name='test_parents')
 
             class Meta(core.Model.Meta):
                 attribute_order = ('id', 'enum_attr_1', 'enum_attr_2',

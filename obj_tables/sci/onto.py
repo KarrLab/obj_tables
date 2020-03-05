@@ -6,14 +6,18 @@
 :License: MIT
 """
 
-from . import core
+from .. import core
 import pronto
 import types
 import wc_utils.workbook.io
 import wc_utils.util.ontology
 
+__all__ = [
+    'OntoTermAttribute',
+]
 
-class OntologyAttribute(core.LiteralAttribute):
+
+class OntoTermAttribute(core.LiteralAttribute):
     """ Ontology attribute
 
     Attributes:
@@ -70,7 +74,7 @@ class OntologyAttribute(core.LiteralAttribute):
             raise ValueError(
                 '`default_cleaned_value` must be `None` or in `terms`')
 
-        super(OntologyAttribute, self).__init__(default=default,
+        super(OntoTermAttribute, self).__init__(default=default,
                                                 default_cleaned_value=default_cleaned_value, none_value=none_value,
                                                 verbose_name=verbose_name, description=description,
                                                 primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
@@ -243,7 +247,7 @@ class OntologyAttribute(core.LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(OntologyAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(OntoTermAttribute, self).get_excel_validation(sheet_models=sheet_models,
                                                                          doc_metadata_model=doc_metadata_model)
 
         if self.terms is not None:

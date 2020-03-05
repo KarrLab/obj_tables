@@ -13,4 +13,3 @@ import unittest
 class ApiTestCase(unittest.TestCase):
     def test(self):
         self.assertIsInstance(obj_tables.Model, type)
-        self.assertIsInstance(obj_tables.abstract, types.ModuleType)

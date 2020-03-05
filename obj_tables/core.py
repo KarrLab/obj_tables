@@ -7803,5 +7803,5 @@ class SchemaWarning(ObjTablesWarning):
     pass
 
 
-from . import expression
+from .math import expression
 from .utils import get_related_models

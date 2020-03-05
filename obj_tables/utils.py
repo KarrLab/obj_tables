@@ -22,6 +22,7 @@ import importlib
 import obj_tables.io
 import os.path
 import pandas
+import pkgutil
 import random
 import re
 import string
@@ -373,13 +374,16 @@ def get_attrs():
     Returns:
         :obj:`dict`: dictionary which maps the name of each attribute to its instance
     """
-    attr_names = {}
+    modules_to_explore = [obj_tables]
     attrs = set()
-    seen = set()
-    to_see = [(obj_tables, [])]
-    while to_see:
-        module, module_path = to_see.pop()
-        seen.add(module)
+    attr_names = {}
+
+    while modules_to_explore:
+        module = modules_to_explore.pop()
+        if hasattr(module, '__path__'):
+            submodule_infos = pkgutil.iter_modules(module.__path__)
+            modules_to_explore.extend(importlib.import_module(module.__name__ + '.' + module_info.name) for module_info in submodule_infos)
+
         for attr_name in dir(module):
             attr = getattr(module, attr_name)
             if isinstance(attr, type) and issubclass(attr, Attribute) and \
@@ -388,12 +392,8 @@ def get_attrs():
                 assert attr_name.endswith('Attribute')
                 attrs.add(attr)
                 short_attr_name, _, _ = attr_name.rpartition('Attribute')
-                attr_names['.'.join(module_path + [short_attr_name])] = attr
-            elif not isinstance(attr, dict) and \
-                    isinstance(attr, types.ModuleType) and \
-                    attr.__package__ == 'obj_tables' and \
-                    attr not in seen:
-                to_see.append((attr, module_path + [attr_name]))
+                attr_full_name = (module.__name__ + '.' + short_attr_name).replace(obj_tables.__name__ + '.', '')
+                attr_names[attr_full_name] = attr
 
     return attr_names
 

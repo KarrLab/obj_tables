@@ -6,9 +6,14 @@
 :License: MIT
 """
 
-from . import core
+from .. import core
 from wc_utils.util import chem
 import wc_utils.workbook.io
+
+__all__ = [
+    'EmpiricalFormulaAttribute',
+    'ChemicalStructureAttribute',
+]
 
 
 class EmpiricalFormulaAttribute(core.LiteralAttribute):

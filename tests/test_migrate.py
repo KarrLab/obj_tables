@@ -44,15 +44,16 @@ from obj_tables.migrate import (MigratorError, MigrateWarning, SchemaModule, Mig
                                 MigrationSpec, SchemaChanges, DataSchemaMigration, GitRepo, VirtualEnvUtil,
                                 CementControllers, data_repo_migration_controllers, schema_repo_migration_controllers, MigrationWrapper)
 import obj_tables
+import obj_tables.math.numeric
 from obj_tables import (BooleanAttribute, EnumAttribute, FloatAttribute, IntegerAttribute,
                         PositiveIntegerAttribute, RegexAttribute, SlugAttribute, StringAttribute, LongStringAttribute,
                         UrlAttribute, OneToOneAttribute, ManyToOneAttribute, ManyToManyAttribute, OneToManyAttribute,
-                        RelatedAttribute, TableFormat, migrate, obj_math, get_models)
+                        RelatedAttribute, TableFormat, migrate, get_models)
 from obj_tables import utils
 from wc_utils.workbook.io import read as read_workbook
 from wc_utils.util.files import remove_silently
 from wc_utils.util.misc import internet_connected
-from obj_tables.expression import Expression
+from obj_tables.math.expression import Expression
 from obj_tables.io import TOC_SHEET_NAME, SCHEMA_SHEET_NAME, Reader, Writer
 from obj_tables.utils import SchemaRepoMetadata
 from wc_utils.util.git import GitHubRepoForTests
@@ -116,7 +117,7 @@ def make_migrators_in_memory(test_case):
         id = SlugAttribute()
         attr_a = StringAttribute()
         unmigrated_attr = StringAttribute()
-        extra_attr_1 = obj_math.NumpyArrayAttribute()
+        extra_attr_1 = obj_tables.math.numeric.ArrayAttribute()
         other_attr = StringAttribute()
     test_case.TestExisting = TestExisting
 
@@ -141,7 +142,7 @@ def make_migrators_in_memory(test_case):
         id = SlugAttribute()
         attr_b = IntegerAttribute()
         migrated_attr = BooleanAttribute()
-        extra_attr_2 = obj_math.NumpyArrayAttribute()
+        extra_attr_2 = obj_tables.math.numeric.ArrayAttribute()
         other_attr = StringAttribute(unique=True)
 
     class TestMigrated2(obj_tables.Model):
@@ -192,7 +193,7 @@ def make_migrators_in_memory(test_case):
         id = SlugAttribute()
         attr_a = StringAttribute()  # renamed to attr_b
         unmigrated_attr = StringAttribute()
-        np_array = obj_math.NumpyArrayAttribute()
+        np_array = obj_tables.math.numeric.ArrayAttribute()
         related = OneToOneAttribute(GoodRelatedCls, related_name='test')
     test_case.GoodExisting = GoodExisting
 
@@ -204,7 +205,7 @@ def make_migrators_in_memory(test_case):
     class GoodMigrated(obj_tables.Model):
         id = SlugAttribute()
         attr_b = StringAttribute()
-        np_array = obj_math.NumpyArrayAttribute()
+        np_array = obj_tables.math.numeric.ArrayAttribute()
         related = OneToOneAttribute(RelatedObj, related_name='test_2')
     test_case.GoodMigrated = GoodMigrated
 

@@ -7,16 +7,16 @@
 """
 
 from obj_tables.core import (Model, SlugAttribute, FloatAttribute, StringAttribute,
-                            ManyToOneAttribute, ManyToManyAttribute,
-                            InvalidObject, InvalidAttribute)
-from obj_tables.expression import (ExpressionOneToOneAttribute, ExpressionManyToOneAttribute,
-                                  ExpressionStaticTermMeta, ExpressionDynamicTermMeta,
-                                  ExpressionExpressionTermMeta,
-                                  ObjTablesTokenCodes, ObjTablesToken, LexMatch,
-                                  Expression, ParsedExpression,
-                                  ParsedExpressionValidator, LinearParsedExpressionValidator,
-                                  ParsedExpressionError)
-from obj_tables.units import UnitAttribute
+                             ManyToOneAttribute, ManyToManyAttribute,
+                             InvalidObject, InvalidAttribute)
+from obj_tables.math.expression import (OneToOneExpressionAttribute, ManyToOneExpressionAttribute,
+                                        ExpressionStaticTermMeta, ExpressionDynamicTermMeta,
+                                        ExpressionExpressionTermMeta,
+                                        ObjTablesTokenCodes, ObjTablesToken, LexMatch,
+                                        Expression, ParsedExpression,
+                                        ParsedExpressionValidator, LinearParsedExpressionValidator,
+                                        ParsedExpressionError)
+from obj_tables.sci.units import UnitAttribute
 from wc_utils.util.units import unit_registry
 import mock
 import re
@@ -73,7 +73,7 @@ class SubFunctionExpression(Model, Expression):
 class SubFunction(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='sub_functions')
-    expression = ExpressionOneToOneAttribute(SubFunctionExpression, related_name='parent_sub_function')
+    expression = OneToOneExpressionAttribute(SubFunctionExpression, related_name='parent_sub_function')
     units = UnitAttribute(unit_registry)
 
     class Meta(Model.Meta, ExpressionExpressionTermMeta):
@@ -103,7 +103,7 @@ class BooleanSubFunctionExpression(Model, Expression):
 class BooleanSubFunction(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='boolean_sub_functions')
-    expression = ExpressionOneToOneAttribute(BooleanSubFunctionExpression, related_name='boolean_sub_function')
+    expression = OneToOneExpressionAttribute(BooleanSubFunctionExpression, related_name='boolean_sub_function')
     units = UnitAttribute(unit_registry, choices=(unit_registry.parse_units('dimensionless'),),
                           default=unit_registry.parse_units('dimensionless'))
 
@@ -135,7 +135,7 @@ class LinearSubFunctionExpression(Model, Expression):
 class LinearSubFunction(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='linear_sub_functions')
-    expression = ExpressionManyToOneAttribute(LinearSubFunctionExpression, related_name='linear_sub_function')
+    expression = ManyToOneExpressionAttribute(LinearSubFunctionExpression, related_name='linear_sub_function')
     units = UnitAttribute(unit_registry)
 
     class Meta(Model.Meta, ExpressionExpressionTermMeta):
@@ -169,7 +169,7 @@ class FunctionExpression(Model, Expression):
 class Function(Model):
     id = SlugAttribute()
     model = ManyToOneAttribute(BaseModel, related_name='functions')
-    expression = ExpressionOneToOneAttribute(FunctionExpression, related_name='function')
+    expression = OneToOneExpressionAttribute(FunctionExpression, related_name='function')
     units = UnitAttribute(unit_registry)
 
     class Meta(Model.Meta, ExpressionExpressionTermMeta):
@@ -530,7 +530,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
         self.assertEqual(obj_tables_token,
                          # note: obj_tables_token.model is cheating
                          ObjTablesToken(ObjTablesTokenCodes.obj_id, expr, disambig_type,
-                                       id, obj_tables_token.model))
+                                        id, obj_tables_token.model))
 
     def test_disambiguated_id(self):
         self.do_disambiguated_id_error_test(
@@ -595,8 +595,8 @@ class ParsedExpressionTestCase(unittest.TestCase):
         self.assertEqual(obj_tables_token,
                          # note: obj_tables_token.model is cheating
                          ObjTablesToken(ObjTablesTokenCodes.obj_id, expected_token_string,
-                                       expected_related_type,
-                                       expected_id, obj_tables_token.model))
+                                        expected_related_type,
+                                        expected_id, obj_tables_token.model))
 
     def test_related_object_id_matches(self):
         objects = {
@@ -728,7 +728,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
         }
         expected_wc_tokens = \
             [ObjTablesToken(ObjTablesTokenCodes.obj_id, expr, SubFunction,
-                           expr, sub_func)]
+                            expr, sub_func)]
         expected_related_objs = self.extract_from_objects(objs, [(SubFunction, expr)])
         self.do_tokenize_id_test(expr, expected_wc_tokens, expected_related_objs, test_objects=objs)
 
@@ -736,12 +736,12 @@ class ParsedExpressionTestCase(unittest.TestCase):
         expr = 'Parameter.duped_id + 2*SubFunction.duped_id'
         expected_wc_tokens = [
             ObjTablesToken(ObjTablesTokenCodes.obj_id, 'Parameter.duped_id', Parameter, 'duped_id',
-                          objs[Parameter]['duped_id']),
+                           objs[Parameter]['duped_id']),
             ObjTablesToken(ObjTablesTokenCodes.op, '+'),
             ObjTablesToken(ObjTablesTokenCodes.number, '2'),
             ObjTablesToken(ObjTablesTokenCodes.op, '*'),
             ObjTablesToken(ObjTablesTokenCodes.obj_id, 'SubFunction.duped_id', SubFunction, 'duped_id',
-                          objs[SubFunction]['duped_id']),
+                           objs[SubFunction]['duped_id']),
         ]
         expected_related_objs = self.extract_from_objects(objs, [(Parameter, 'duped_id'),
                                                                  (SubFunction, 'duped_id')])
@@ -757,10 +757,10 @@ class ParsedExpressionTestCase(unittest.TestCase):
             ObjTablesToken(ObjTablesTokenCodes.op, ')'),
             ObjTablesToken(ObjTablesTokenCodes.op, '+'),
             ObjTablesToken(ObjTablesTokenCodes.obj_id, 'func_1', SubFunction, 'func_1',
-                          objs[SubFunction]['func_1']),
+                           objs[SubFunction]['func_1']),
             ObjTablesToken(ObjTablesTokenCodes.op, '-'),
             ObjTablesToken(ObjTablesTokenCodes.obj_id, 'SubFunction.Function', SubFunction, 'Function',
-                          objs[SubFunction]['Function'])
+                           objs[SubFunction]['Function'])
         ]
         expected_related_objs = self.extract_from_objects(objs,
                                                           [(SubFunction, 'func_1'), (SubFunction, 'Function')])
@@ -774,10 +774,10 @@ class ParsedExpressionTestCase(unittest.TestCase):
         }
         expected_wc_tokens = [
             ObjTablesToken(ObjTablesTokenCodes.obj_id, 'TEST_ID', SubFunction, 'test_id',
-                          objs[SubFunction]['test_id']),
+                           objs[SubFunction]['test_id']),
             ObjTablesToken(ObjTablesTokenCodes.op, '-'),
             ObjTablesToken(ObjTablesTokenCodes.obj_id, 'SubFunction.DUPED_ID', SubFunction, 'duped_id',
-                          objs[SubFunction]['duped_id']),
+                           objs[SubFunction]['duped_id']),
         ]
         expected_related_objs = self.extract_from_objects(objs, [(SubFunction, 'duped_id'),
                                                                  (SubFunction, 'test_id')])
@@ -793,7 +793,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
         expr = 'SubFunction.test_id'
         expected_wc_tokens = [
             ObjTablesToken(ObjTablesTokenCodes.obj_id, expr, SubFunction, 'test_id',
-                          test_objects[SubFunction]['test_id'])
+                           test_objects[SubFunction]['test_id'])
         ]
         expected_related_objs = self.extract_from_objects(test_objects, [(SubFunction, 'test_id')])
         self.do_tokenize_id_test(expr, expected_wc_tokens, expected_related_objs,
@@ -807,7 +807,7 @@ class ParsedExpressionTestCase(unittest.TestCase):
         expr = 'LinearSubFunction.fun_2'
         expected_wc_tokens = [
             ObjTablesToken(ObjTablesTokenCodes.obj_id, expr, LinearSubFunction, 'fun_2',
-                          test_objects[LinearSubFunction]['fun_2'])
+                           test_objects[LinearSubFunction]['fun_2'])
         ]
         expected_related_objs = self.extract_from_objects(test_objects, [(LinearSubFunction, 'fun_2')])
         self.do_tokenize_id_test(expr, expected_wc_tokens, expected_related_objs,

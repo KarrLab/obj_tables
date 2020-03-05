@@ -19,6 +19,11 @@ from obj_tables.core import (Model, RelatedAttribute, OneToOneAttribute, ManyToO
                              InvalidObject, InvalidAttribute)
 from wc_utils.util.misc import DFSMAcceptor
 
+__all__ = [
+    'OneToOneExpressionAttribute',
+    'ManyToOneExpressionAttribute',
+]
+
 
 class ObjTablesTokenCodes(int, Enum):
     """ ObjTablesToken codes used in parsed expressions """
@@ -56,7 +61,7 @@ LexMatch.obj_tables_tokens.__doc__ = "List of ObjTablesToken's created"
 LexMatch.num_py_tokens.__doc__ = 'Number of Python tokens consumed'
 
 
-class ExpressionOneToOneAttribute(OneToOneAttribute):
+class OneToOneExpressionAttribute(OneToOneAttribute):
     """ Expression one-to-one attribute """
 
     def serialize(self, expression, encoded=None):
@@ -135,7 +140,7 @@ class ExpressionOneToOneAttribute(OneToOneAttribute):
         return validation
 
 
-class ExpressionManyToOneAttribute(ManyToOneAttribute):
+class ManyToOneExpressionAttribute(ManyToOneAttribute):
     """ Expression many-to-one attribute """
 
     def serialize(self, expression, encoded=None):

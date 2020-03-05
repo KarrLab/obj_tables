@@ -7,7 +7,7 @@
 """
 
 from obj_tables import core
-from obj_tables import units
+from obj_tables.sci import units
 from wc_utils.util.units import unit_registry
 import pint
 import unittest

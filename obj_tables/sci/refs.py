@@ -6,9 +6,19 @@
 :License: MIT
 """
 
-from . import core
+from .. import core
 import re
 import wc_utils.workbook.io
+
+__all__ = [
+    'Identifier',
+    'IdentifierAttribute',
+    'IdentifiersAttribute',
+    'DoiAttribute',
+    'DoisAttribute',
+    'PubMedIdAttribute',
+    'PubMedIdsAttribute',
+]
 
 
 class Identifier(object):

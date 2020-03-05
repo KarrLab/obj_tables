@@ -4944,7 +4944,7 @@ class BigModel(core.Model):
     # include an id to make this cacheable
     # used in TestCaching.perf_no_caching
     id = core.SlugAttribute()
-    data = obj_tables.obj_math.NumpyArrayAttribute()
+    data = obj_tables.math.numeric.ArrayAttribute()
     neighbors = core.ManyToManyAttribute('BigModel', related_name='neighbors')
 
 

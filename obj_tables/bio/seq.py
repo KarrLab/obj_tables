@@ -6,7 +6,7 @@
 :License: MIT
 """
 
-from . import core
+from obj_tables import core
 import Bio
 import Bio.Alphabet
 import Bio.motifs.matrix
@@ -16,8 +16,17 @@ import copy
 import json
 import six
 
+__all__ = [
+    'FeatureLocAttribute', 
+    'SeqAttribute',
+    'DnaSeqAttribute',
+    'RnaSeqAttribute',
+    'ProteinSeqAttribute',
+    'FreqPosMatrixAttribute'
+    ]
 
-class FeatureLocationAttribute(core.LiteralAttribute):
+
+class FeatureLocAttribute(core.LiteralAttribute):
     """ Bio.SeqFeature.FeatureLocation attribute
 
     Attributes:
@@ -38,7 +47,7 @@ class FeatureLocationAttribute(core.LiteralAttribute):
         if default is not None and not isinstance(default, Bio.SeqFeature.FeatureLocation):
             raise ValueError('`default` must be a `Bio.SeqFeature.FeatureLocation` or `None`')
 
-        super(FeatureLocationAttribute, self).__init__(default=default, none_value=none_value,
+        super(FeatureLocAttribute, self).__init__(default=default, none_value=none_value,
                                                        verbose_name=verbose_name,
                                                        description=description,
                                                        primary=primary, unique=unique)
@@ -68,7 +77,7 @@ class FeatureLocationAttribute(core.LiteralAttribute):
         else:
             value = None
             error = core.InvalidAttribute(self, [
-                ('FeatureLocationAttribute must be None, an empty string, '
+                ('FeatureLocAttribute must be None, an empty string, '
                  'a comma-separated string representation of a tuple, a tuple, a list, '
                  'or a Bio.SeqFeature.FeatureLocation')
             ])
@@ -110,7 +119,7 @@ class FeatureLocationAttribute(core.LiteralAttribute):
         str_values = []
         for v in values:
             str_values.append(self.serialize(v))
-        return super(FeatureLocationAttribute, self).validate_unique(objects, str_values)
+        return super(FeatureLocAttribute, self).validate_unique(objects, str_values)
 
     def serialize(self, value):
         """ Serialize string
@@ -157,7 +166,7 @@ class FeatureLocationAttribute(core.LiteralAttribute):
             return Bio.SeqFeature.FeatureLocation(json['start'], json['end'], json['strand'])
 
 
-class BioSeqAttribute(core.LiteralAttribute):
+class SeqAttribute(core.LiteralAttribute):
     """ Bio.Seq.Seq attribute
 
     Attributes:
@@ -187,7 +196,7 @@ class BioSeqAttribute(core.LiteralAttribute):
         if not isinstance(max_length, (six.integer_types, float)) or max_length < min_length:
             raise ValueError('`max_length` must be an integer greater than or equal to `min_length`')
 
-        super(BioSeqAttribute, self).__init__(default=default, none_value=none_value,
+        super(SeqAttribute, self).__init__(default=default, none_value=none_value,
                                               verbose_name=verbose_name,
                                               description=description,
                                               primary=primary, unique=unique)
@@ -266,7 +275,7 @@ class BioSeqAttribute(core.LiteralAttribute):
         str_values = []
         for v in values:
             str_values.append(self.serialize(v))
-        return super(BioSeqAttribute, self).validate_unique(objects, str_values)
+        return super(SeqAttribute, self).validate_unique(objects, str_values)
 
     def serialize(self, value):
         """ Serialize string
@@ -332,7 +341,7 @@ class BioSeqAttribute(core.LiteralAttribute):
             return Bio.Seq.Seq(json['seq'], alphabet)
 
 
-class BioDnaSeqAttribute(BioSeqAttribute):
+class DnaSeqAttribute(SeqAttribute):
     """ Bio.Seq.Seq attribute with Bio.Alphabet.DNAAlphabet """
 
     def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
@@ -348,14 +357,14 @@ class BioDnaSeqAttribute(BioSeqAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
-        super(BioDnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
+        super(DnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
                                                  none_value=none_value, verbose_name=verbose_name,
                                                  description=description,
                                                  primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.DNAAlphabet()
 
 
-class BioProteinSeqAttribute(BioSeqAttribute):
+class ProteinSeqAttribute(SeqAttribute):
     """ Bio.Seq.Seq attribute with Bio.Alphabet.ProteinAlphabet """
 
     def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
@@ -371,14 +380,14 @@ class BioProteinSeqAttribute(BioSeqAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
-        super(BioProteinSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
+        super(ProteinSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
                                                      none_value=none_value, verbose_name=verbose_name,
                                                      description=description,
                                                      primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.ProteinAlphabet()
 
 
-class BioRnaSeqAttribute(BioSeqAttribute):
+class RnaSeqAttribute(SeqAttribute):
     """ Bio.Seq.Seq attribute with Bio.Alphabet.RNAAlphabet """
 
     def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
@@ -394,18 +403,18 @@ class BioRnaSeqAttribute(BioSeqAttribute):
             primary (:obj:`bool`, optional): indicate if attribute is primary attribute
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
-        super(BioRnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
+        super(RnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
                                                  none_value=none_value, verbose_name=verbose_name,
                                                  description=description,
                                                  primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.RNAAlphabet()
 
 
-class FrequencyPositionMatrixAttribute(core.LiteralAttribute):
+class FreqPosMatrixAttribute(core.LiteralAttribute):
     """ Bio.motif.matrix.FrequencyPositionMatrix attribute """
 
     def __init__(self, verbose_name='', description=''):
-        super(FrequencyPositionMatrixAttribute, self).__init__(
+        super(FreqPosMatrixAttribute, self).__init__(
             default=None, verbose_name=verbose_name,
             description=description)
 
