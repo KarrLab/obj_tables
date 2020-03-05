@@ -88,11 +88,14 @@
             <h3>Table of contents</h3>
             <ul>
               <li><a href="#app">Web app</a></li>
-              <li><a href="#table-format">Formats for tables</a></li>
-              <li><a href="#schema-format">Format for schemas</a></li>
-              <li><a href="#data-types">Data types</a></li>
+              <li><a href="#format">Tabular format for complex datasets</a>
+                <ul>
+                  <li><a href="#schema-format">Format for schemas</a></li>
+                  <li><a href="#data-types">Data types</a></li>
+                  <li><a href="#table-format">Format for tables</a></li>
+                </ul>
+              </li>
               <li><a href="#tools">Software tools</a>
-              <li><a href="#interfaces">User interfaces</a>
                 <ul>
                   <li><a href="#app">Web app</a></li>
                   <li><a href="#rest">REST API</a></li>
@@ -178,145 +181,9 @@
 
       </div>
 
-      <div class="grid-x grid-padding-x orange">
-        <a name="table-format"></a>
-        <div class="large-12 cell">
-            <h2>Tabular format datasets</h2>
-
-            <h3>File formats</h3>
-            <p class="before_list"><i>ObjTables</i> supports three formats for collections of tables, or datasets:</p>
-            <ul>
-              <li>Excel workbook: Each worksheet contains a table which encodes the instances of a class. The names of the worksheets should be <tt>!</tt> followed by the name of a class in the schema (e.g., <tt>!Name</tt>).</li>
-              <li>Set of CSV or TSV files: Each file contains a table which encodes the instances of a class. The names of the files should follow the pattern <tt>dir/!*.csv</tt> (e.g., <tt>Doc/!Name.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
-              <li>Single text file with multiple CSV or TSV formatted tables: Each table encodes the instances of a class.</li>
-            </ul>
-
-            <h3>Document metdata</h3>
-            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='&lt;model_name&gt;'</tt>).</p>
-
-            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='model_id' Name='Class name' Description='Class description'</tt>).</p>
-
-            <h3>Class metdata</h3>
-            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='&lt;model_name&gt;'</tt>).</p>
-
-            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='model_id' Name='Class name' Description='Class description'</tt>).</p>
-
-            <h3>Class instances (rows) and attributes (columns)</h3>
-            <p>The attributes of each class are represented by the columns of its table, each instance of each class is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
-
-            <h3>Encoding multiple models in a single table</h3>
-            <p class="before_list">To help users encode complex relationships into a minimal number of tables, relationships between models can be encoded into groups of columns and individual cells.</p>
-            <ul>
-              <li><b>Encoding *-to-one related data into groups of columns:</b> *-to-one relationships to other instances of models can be encoded into a series of consecutive columns by setting the formats of the related models to <tt>multiple_cells</tt> in the schema. When this feature is used, tables must include an additional row of column headings which indicates the groups of columns.</li>
-              <li><b>Encoding *-to-many related data into individual columns:</b> *-to-many relationships to other instance of models can be encoded into a single column by setting the formats of the related models to <tt>cell</tt> and defining a grammar for serializing and deserializing the related instances to/from strings which can be written to and read from individual cells. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
-            </ul>
-
-            <h3>Encoding models into transposed tables</h3>
-            <p>Optionally, a class can be encoded into a transposed table in which the columns represent instances of the class and the rows represent attributes of the class. This feature is useful for models which are intended to only have a single instance. Models can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
-
-            <h3>Comments</h3>
-            <p>Comments about individual class instances can be encoded by inserting rows whose first cell begins with <tt>%/</tt> and ends with <tt>/%</tt>.</p>
-
-            <h3>Additional tables, rows, and columns outside the scope of schemas</h3>
-            <p>Sets of tables that encode datasets can include additional tables. Tables that are outside the scope of the schema must have names which do not not begin with an <tt>!</tt>.</p>
-
-            <p>Tables can include additional columns. Columns that are outside of the scope of the schema must have names which do not begin with an <tt>!</tt>.</p>
-
-            <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%/</tt> and end with <tt>/%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
-
-            <h3>Example</h3>
-            <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame class enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame class also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>
-
-            <table>
-              <thead>
-                <tr>
-                  <th colspan="2">!!!ObjTables ObjTablesVersion='0.0.8'</th>
-                </tr>
-                <tr>
-                  <th colspan="2">!!ObjTables Type='Data' Id='Parent' ObjTablesVersion='0.0.8'</th>
-                </tr>
-                <tr>
-                  <th>!Id</th>
-                  <th>!Name</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>jane_doe</td><td>Jane Doe</td></tr>
-                <tr><td>john_doe</td><td>John Doe</td></tr>
-                <tr><td>mary_roe</td><td>Mary Roe</td></tr>
-                <tr><td>richard_roe</td><td>Richard Roe</td></tr>
-              </tbody>
-            </table>
-
-            <table>
-              <thead>
-                <tr>
-                  <th colspan="7">!!ObjTables Type='Data' Id='Child' ObjTablesVersion='0.0.8'</th>
-                </tr>
-                <tr>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th></th>
-                  <th colspan="3" style="text-align: center;">!FavoriteVideoGame</th>
-                </tr>
-                <tr>
-                  <th>!Id</th>
-                  <th>!Name</th>
-                  <th>!Gender</th>
-                  <th>!Parents</th>
-                  <th>!Name</th>
-                  <th>!Publisher</th>
-                  <th>!Year</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>jamie_doe</td>
-                  <td>Jamie Doe</td>
-                  <td>female</td>
-                  <td>jane_doe, john_doe</td>
-                  <td>Legend of Zelda</td>
-                  <td>Nintendo</td>
-                  <td>1986</td>
-                </tr>
-                <tr>
-                  <td>jimie_doe</td>
-                  <td>Jimie Doe</td>
-                  <td>male</td>
-                  <td>jane_doe, john_doe</td>
-                  <td>Super Mario Brothers</td>
-                  <td>Nintendo</td>
-                  <td>1985</td>
-                </tr>
-                <tr>
-                  <td>linda_roe</td>
-                  <td>Linda Roe</td>
-                  <td>female</td>
-                  <td>mary_roe, richard_roe</td>
-                  <td>Sonic the Hedgehog</td>
-                  <td>Sega</td>
-                  <td>1991</td>
-                </tr>
-                <tr>
-                  <td>mike_roe</td>
-                  <td>Michael Roe</td>
-                  <td>male</td>
-                  <td>mary_roe, richard_roe</td>
-                  <td>SimCity</td>
-                  <td>Electronic Arts</td>
-                  <td>1989</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <p>Excel and Python files for this example are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-social-github"></i></a>. Numerous additional examples are also available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-social-github"></i></a>.</p>
-        </div>
-      </div>
-
-      <div class="grid-x grid-padding-x blue">
+      <a name="format"></a>
+      <div class="grid-x grid-padding-x orange">        
         <a name="schema-format"></a>
-        <a name="subunit-composition"></a>
         <div class="large-12 cell">
             <h2>Formats for schemas</h2>
 
@@ -392,7 +259,7 @@
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x orange">
+      <div class="grid-x grid-padding-x blue">
         <a name="data-types"></a>
         <div class="large-12 cell">
             <h2>Data types</h2>
@@ -597,11 +464,152 @@
         </div>
       </div>
 
+      <div class="grid-x grid-padding-x orange">
+        <a name="table-format"></a>
+        <div class="large-12 cell">
+            <h2>Tabular format datasets</h2>
+
+            <h3>File formats</h3>
+            <p class="before_list"><i>ObjTables</i> supports three formats for collections of tables, or datasets:</p>
+            <ul>
+              <li>Excel workbook: Each worksheet contains a table which encodes the instances of a class. The names of the worksheets should be <tt>!</tt> followed by the name of a class in the schema (e.g., <tt>!Name</tt>).</li>
+              <li>Set of CSV or TSV files: Each file contains a table which encodes the instances of a class. The names of the files should follow the pattern <tt>dir/!*.csv</tt> (e.g., <tt>Doc/!Name.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
+              <li>Single text file with multiple CSV or TSV formatted tables: Each table encodes the instances of a class.</li>
+            </ul>
+
+            <h3>Document metdata</h3>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='&lt;model_name&gt;'</tt>).</p>
+
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='model_id' Name='Class name' Description='Class description'</tt>).</p>
+
+            <h3>Class metdata</h3>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='&lt;model_name&gt;'</tt>).</p>
+
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables ObjTablesVersion='0.0.8' Id='model_id' Name='Class name' Description='Class description'</tt>).</p>
+
+            <h3>Class instances (rows) and attributes (columns)</h3>
+            <p>The attributes of each class are represented by the columns of its table, each instance of each class is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
+
+            <h3>Encoding multiple models in a single table</h3>
+            <p class="before_list">To help users encode complex relationships into a minimal number of tables, relationships between models can be encoded into groups of columns and individual cells.</p>
+            <ul>
+              <li><b>Encoding *-to-one related data into groups of columns:</b> *-to-one relationships to other instances of models can be encoded into a series of consecutive columns by setting the formats of the related models to <tt>multiple_cells</tt> in the schema. When this feature is used, tables must include an additional row of column headings which indicates the groups of columns.</li>
+              <li><b>Encoding *-to-many related data into individual columns:</b> *-to-many relationships to other instance of models can be encoded into a single column by setting the formats of the related models to <tt>cell</tt> and defining a grammar for serializing and deserializing the related instances to/from strings which can be written to and read from individual cells. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+            </ul>
+
+            <h3>Encoding models into transposed tables</h3>
+            <p>Optionally, a class can be encoded into a transposed table in which the columns represent instances of the class and the rows represent attributes of the class. This feature is useful for models which are intended to only have a single instance. Models can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
+
+            <h3>Comments</h3>
+            <p>Comments about individual class instances can be encoded by inserting rows whose first cell begins with <tt>%/</tt> and ends with <tt>/%</tt>.</p>
+
+            <h3>Additional tables, rows, and columns outside the scope of schemas</h3>
+            <p>Sets of tables that encode datasets can include additional tables. Tables that are outside the scope of the schema must have names which do not not begin with an <tt>!</tt>.</p>
+
+            <p>Tables can include additional columns. Columns that are outside of the scope of the schema must have names which do not begin with an <tt>!</tt>.</p>
+
+            <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%/</tt> and end with <tt>/%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
+
+            <h3>Example</h3>
+            <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame class enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame class also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>
+
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="2">!!!ObjTables ObjTablesVersion='0.0.8'</th>
+                </tr>
+                <tr>
+                  <th colspan="2">!!ObjTables Type='Data' Id='Parent' ObjTablesVersion='0.0.8'</th>
+                </tr>
+                <tr>
+                  <th>!Id</th>
+                  <th>!Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>jane_doe</td><td>Jane Doe</td></tr>
+                <tr><td>john_doe</td><td>John Doe</td></tr>
+                <tr><td>mary_roe</td><td>Mary Roe</td></tr>
+                <tr><td>richard_roe</td><td>Richard Roe</td></tr>
+              </tbody>
+            </table>
+
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="7">!!ObjTables Type='Data' Id='Child' ObjTablesVersion='0.0.8'</th>
+                </tr>
+                <tr>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th colspan="3" style="text-align: center;">!FavoriteVideoGame</th>
+                </tr>
+                <tr>
+                  <th>!Id</th>
+                  <th>!Name</th>
+                  <th>!Gender</th>
+                  <th>!Parents</th>
+                  <th>!Name</th>
+                  <th>!Publisher</th>
+                  <th>!Year</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>jamie_doe</td>
+                  <td>Jamie Doe</td>
+                  <td>female</td>
+                  <td>jane_doe, john_doe</td>
+                  <td>Legend of Zelda</td>
+                  <td>Nintendo</td>
+                  <td>1986</td>
+                </tr>
+                <tr>
+                  <td>jimie_doe</td>
+                  <td>Jimie Doe</td>
+                  <td>male</td>
+                  <td>jane_doe, john_doe</td>
+                  <td>Super Mario Brothers</td>
+                  <td>Nintendo</td>
+                  <td>1985</td>
+                </tr>
+                <tr>
+                  <td>linda_roe</td>
+                  <td>Linda Roe</td>
+                  <td>female</td>
+                  <td>mary_roe, richard_roe</td>
+                  <td>Sonic the Hedgehog</td>
+                  <td>Sega</td>
+                  <td>1991</td>
+                </tr>
+                <tr>
+                  <td>mike_roe</td>
+                  <td>Michael Roe</td>
+                  <td>male</td>
+                  <td>mary_roe, richard_roe</td>
+                  <td>SimCity</td>
+                  <td>Electronic Arts</td>
+                  <td>1989</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p>Excel and Python files for this example are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-social-github"></i></a>.</p>
+
+            <p>Numerous additional examples are also available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-social-github"></i></a>.</p>
+            <ul>
+              <li></li>
+            </ul>
+        </div>
+      </div>
+
        <div class="grid-x grid-padding-x blue">
         <a name="tools"></a>
         <div class="large-12 cell">
           <h2>Software tools</h2>
-          <p class="before_list"><i>ObjTables</i> includes a variety of methods for working with schemas and datasets:</p>
+          <p class="before_list"><i>ObjTables</i> provides a variety of tools for working with schemas and datasets:</p>
           <ul>
             <li>Generate a Python module that implements a tabular-formatted schema.</li>
             <li>Generate a template Excel, CSV, or TSV file(s) for a schema.</li>
@@ -615,15 +623,9 @@
             <li>Use a schema to convert a dataset to a dictionary of pandas <a href="https://pandas.pydata.org"><i class="fi-link"></i></a> data frames.</li>
             <li>Generating UML diagrams of schemas.</li>
           </ul>
+          <p class="before_list">These tools are available through the user interfaces described below.</p>
         </div>
-      </div>
 
-      <div class="grid-x grid-padding-x orange">
-        <a name="interfaces"></a>
-        <div class="large-12 cell">
-          <h2>User interfaces</h2>
-          <p class="before_list"><i>ObjTables</i> includes four user interfaces to the software tools described above.</p>
-        </div>
         <div class="large-4 cell">
           <h3>Web app</h3>
           A web app is available above <a href="#app"><i class="fi-arrow-up"></i></a>.
@@ -728,7 +730,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue">
+      <div class="grid-x grid-padding-x orange">
         <a name="other-resources"></a>
         <div class="large-12 cell">
           <h2>Resources for working with <i>ObjTables</i></h2>
@@ -740,7 +742,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x orange">
+      <div class="grid-x grid-padding-x blue">
         <a name="help"></a>
         <div class="large-12 cell">
           <h2>Tutorials, documentation, and help</h2>
@@ -775,17 +777,17 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue">
+      <div class="grid-x grid-padding-x orange">
         <a name="contribute"></a>
         <div class="large-12 cell">
           <h2>Contributing to <i>ObjTables</i></h2>
         </div>
         <div class="large-12 cell" style="margin-top: 1rem; padding-top: 0.2rem;">
-          To contribute to the software, please submit a Git pull request <a href="https://github.com/karrlab/obj_tables/pulls"><i class="fi-social-github"></i></a>.
+          To contribute to the software, please submit a GitHub pull request <a href="https://github.com/karrlab/obj_tables/pulls"><i class="fi-social-github"></i></a> or contact us by email <a href="mailto:info@karrlab.org"><i class="fi-mail"></i></a>.
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x orange">
+      <div class="grid-x grid-padding-x blue">
         <a name="about"></a>
         <div class="large-12 cell">
           <h2>About <i>ObjTables</i></h2>
