@@ -28,7 +28,7 @@ class ExamplesTestCase(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.dirname)
 
-    def test_web_app_example(self):
+    def test_web_example(self):
         filename = 'examples/parents_children.xlsx'
 
         schema = utils.init_schema(filename)

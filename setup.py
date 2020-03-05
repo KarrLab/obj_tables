@@ -13,9 +13,9 @@ name = 'obj_tables'
 dirname = os.path.dirname(__file__)
 package_data = {
     name: [
-        'web_app/app.css',
-        'web_app/app.js',
-        'web_app/index.html',
+        'web/app.css',
+        'web/app.js',
+        'web/index.html',
     ],
 }
 

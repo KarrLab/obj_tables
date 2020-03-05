@@ -11,6 +11,6 @@ include requirements.txt
 include README.rst
 
 # web app
-include obj_tables/web_app/app.css
-include obj_tables/web_app/app.js
-include obj_tables/web_app/index.html
+include obj_tables/web/app.css
+include obj_tables/web/app.js
+include obj_tables/web/index.html

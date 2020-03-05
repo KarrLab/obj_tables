@@ -26,9 +26,9 @@ pip install -e obj_tables/[all]
 # Save passenger config to /home/objtables/objtables.org/passenger_wsgi.py
 
 # Setup static directory
-ln -s ../obj_tables/obj_tables/web_app/app.css public/app.css
-ln -s ../obj_tables/obj_tables/web_app/app.js public/app.js
-ln -s ../obj_tables/obj_tables/web_app/index.html public/index.html
+ln -s ../obj_tables/obj_tables/web/app.css public/app.css
+ln -s ../obj_tables/obj_tables/web/app.js public/app.js
+ln -s ../obj_tables/obj_tables/web/index.html public/index.html
 
 # make temporary directory for triggering the webserver to restart
 mkdir tmp
