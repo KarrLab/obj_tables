@@ -16,3 +16,4 @@ pyyaml >= 5.1
 six
 stringcase
 wc_onto
+wc_utils[git]
