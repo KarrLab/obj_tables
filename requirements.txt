@@ -15,5 +15,6 @@ setuptools
 six
 stringcase
 sympy
+uncertainties
 validate_email
 weakreflist
