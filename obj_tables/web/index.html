@@ -27,8 +27,6 @@
         <div class="large-9 cell">
           <p><i>ObjTables</i> is a toolkit for working with complex data as collections of tables which combines the ease of use of Excel with the rigor and power of defined schemas.</p>
 
-          <p><i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> extends <i>ObjTables</i> by adding a variety of useful types for genomics, systems biology, and synthetic biology research.</p>
-
           <p class="before_list"><i>ObjTables</i> makes it easy to
           <ul>
             <li>Use collections of tables (e.g., an Excel workbook) as a interface to view and edit complex datasets that describe relationships and other complex datatypes,</li>
@@ -47,7 +45,7 @@
                 <li><b>Embedded grammars for relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, grammars can be used to encode relationships to multiple instances of multiple models within a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
             </ul>
             </li>
-            <li><b>Numerous data types</b> for scientific research including types for chemoinformatics, genomics, and mathematics. <i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> adds a variety of useful types for genomics, systems biology, and synthetic biology research.</li>
+            <li><b>Numerous data types</b> for scientific research including types for chemoinformatics, genomics, and mathematics.</li>
             <li><b>Software tools for generating Excel workbooks for editing datasets</b> according to schemas. This enables users to use Excel as a graphical user interface for editing datasets. As outlined below, this leverages a variety of features of Excel.</li>
             <li><b>Software tools for parsing and validating datasets</b> according to schemas.</li>
             <li><b>Software tools for manipulating complex datasets</b>, including creating, analyzing, comparing, merging, and migrating datasets.</li>
@@ -264,8 +262,16 @@
         <div class="large-12 cell">
             <h2>Data types</h2>
             <p><i>ObjTables</i> supports numerous datatypes, and it is easy to implement additional types.</p>
-
-            <p><i>SBtab</i> <a href="https://www.sbtab.net"><i class="fi-link"></i></a> extends <i>ObjTables</i> by adding a variety of useful types for genomics, systems biology, and synthetic biology research.</p>
+            <p class="before_list">This includes powerful datatypes from several scientific packages:</p>
+            <ul>
+              <li>BioPython <a href="https://biopython.org/"><i class="fi-link"></i></a>: sequence informations</li>
+              <li>lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>: grammars for describing complex relationships</li>
+              <li>numpy <a href="https://docs.scipy.org/doc/numpy/"><i class="fi-link"></i></a>: numeric arrays</li>
+              <li>pandas <a href="https://pandas.pydata.org"><i class="fi-link"></i></a>: data tables</li>
+              <li>pint <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a>: units</li>
+              <li>sympy <a href="https://docs.sympy.org"><i class="fi-link"></i></a>: symbolic math</li>
+              <li>uncertainties <a href="https://uncertainties-python-package.readthedocs.io"><i class="fi-link"></i></a>: values and their uncertainty</li>
+            </ul>
         </div>
 
         <div class="large-12 cell">
@@ -373,6 +379,15 @@
               <tr><th colspan="3">Science</th></tr>
             </thead>
             <tbody class="data-type-section">
+              <tr><td>sci.Unit</td><td>String</td><td><tt>pint.unit._Unit</tt> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Units</td><td></td></tr>
+
+              <tr><td>sci.Quantity</td><td>String</td><td><tt>pint.quantity._Quantity</tt> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Magnitude and units</td><td></td></tr>
+
+              <tr><td>sci.UncertainFloat</td><td>String</td><td><tt>uncertainties.core.Variable</tt> <a href="https://uncertainties-python-package.readthedocs.io/"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="2">Float and its uncertainty</td><td></td></tr>
+
               <tr><td>sci.Doi</td><td>String</td><td><tt>str</tt></td></tr>
               <tr><td colspan="2">Digital Object Identifier</td><td></td></tr>
 
@@ -393,12 +408,6 @@
 
               <tr><td>sci.PubMedIds</td><td>String</td><td><tt>list</tt> of <tt>int</tt></td></tr>
               <tr><td colspan="2">List of PubMed identifiers</td><td></td></tr>
-
-              <tr><td>sci.UncertainFloat</td><td>String</td><td><tt>uncertainties.core.Variable</tt> <a href="https://uncertainties-python-package.readthedocs.io/"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Float and its uncertainty</td><td></td></tr>
-
-              <tr><td>sci.Unit</td><td>String</td><td><tt>pint.unit._Unit</tt> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Units</td><td></td></tr>
             </tbody>
 
             <thead class="data-type-section-head">
