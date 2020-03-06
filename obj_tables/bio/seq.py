@@ -14,7 +14,6 @@ import Bio.Seq
 import Bio.SeqFeature
 import copy
 import json
-import six
 
 __all__ = [
     'FeatureLocAttribute', 
@@ -64,7 +63,7 @@ class FeatureLocAttribute(core.LiteralAttribute):
         if value is None or value == '':
             value = None
             error = None
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             start, end, strand = map(int, value.split(','))
             value = Bio.SeqFeature.FeatureLocation(start, end, strand)
             error = None
@@ -191,9 +190,9 @@ class SeqAttribute(core.LiteralAttribute):
         """
         if default is not None and not isinstance(default, Bio.Seq.Seq):
             raise ValueError('`default` must be a `Bio.Seq.Seq` or `None`')
-        if not isinstance(min_length, (six.integer_types, float)) or min_length < 0:
+        if not isinstance(min_length, (int, float)) or min_length < 0:
             raise ValueError('`min_length` must be a non-negative integer')
-        if not isinstance(max_length, (six.integer_types, float)) or max_length < min_length:
+        if not isinstance(max_length, (int, float)) or max_length < min_length:
             raise ValueError('`max_length` must be an integer greater than or equal to `min_length`')
 
         super(SeqAttribute, self).__init__(default=default, none_value=none_value,

@@ -6,11 +6,9 @@
 :License: MIT
 """
 
-from __future__ import absolute_import
 from abc import abstractmethod
 import abc
 import obj_tables.core
-import six
 
 
 class AbstractModelMeta(obj_tables.core.ModelMeta, abc.ABCMeta):
@@ -18,6 +16,6 @@ class AbstractModelMeta(obj_tables.core.ModelMeta, abc.ABCMeta):
     pass
 
 
-class AbstractModel(six.with_metaclass(AbstractModelMeta, obj_tables.core.Model)):
+class AbstractModel(obj_tables.core.Model, metaclass=AbstractModelMeta):
     """ Abstract model base class """
     pass

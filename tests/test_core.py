@@ -10,27 +10,26 @@
 from contextlib import contextmanager
 from datetime import date, time, datetime
 from obj_tables import core
-import obj_tables
 import abduct
 import attrdict
-import enum
-import gc
 import collections
 import copy
+import enum
+import gc
+import io
 import itertools
 import math
+import numpy as np
+import obj_tables
+import objsize
+import os
 import pronto
+import psutil
 import pytest
 import re
 import resource
-import six
 import sys
 import unittest
-import psutil
-import numpy as np
-import gc
-import os
-import objsize
 
 
 class Order(enum.Enum):
@@ -3406,7 +3405,7 @@ class TestCore(unittest.TestCase):
         self.assertIn("get_one(): 2 Example1 instances with".format(len(mgr1.get(str_attr='A'))),
                       str(context.exception))
 
-        output = six.StringIO()
+        output = io.StringIO()
         mgr1._dump_index_dicts(file=output)
         content = output.getvalue()
         for s in ["Dicts", "indexed attr tuple:", "Reverse dicts for", "model at"]:

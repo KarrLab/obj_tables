@@ -18,14 +18,12 @@ which can then be referenced to deserialize the related attribute.
 :License: MIT
 """
 
-from __future__ import print_function
 from datetime import date, time, datetime
 from enum import Enum
 from itertools import chain
 from math import floor, isnan
 from natsort import natsort_keygen, natsorted, ns
 from operator import attrgetter, methodcaller
-from six import integer_types, string_types, with_metaclass
 from stringcase import sentencecase
 from os.path import basename, dirname, splitext
 from weakref import WeakSet, WeakKeyDictionary
@@ -46,7 +44,6 @@ import numbers
 import pronto
 import queue
 import re
-import six
 import sys
 import validate_email
 import warnings
@@ -233,7 +230,7 @@ class ModelMeta(type):
         for model in get_subclasses(Model):
             for attr in model.Meta.attributes.values():
                 if isinstance(attr, RelatedAttribute):
-                    if isinstance(attr.related_class, string_types):
+                    if isinstance(attr.related_class, str):
                         related_class_name = attr.related_class
                         if '.' not in related_class_name:
                             related_class_name = model.__module__ + '.' + related_class_name
@@ -304,7 +301,7 @@ class ModelMeta(type):
             if isinstance(attr, RelatedAttribute):
 
                 # deserialize related class references by class name
-                if isinstance(attr.related_class, string_types):
+                if isinstance(attr.related_class, str):
                     related_class_name = attr.related_class
                     if '.' not in related_class_name:
                         related_class_name = namespace.get(
@@ -409,7 +406,7 @@ class ModelMeta(type):
             if isinstance(attr, RelatedAttribute):
 
                 # deserialize related class references by class name
-                if isinstance(attr.related_class, string_types):
+                if isinstance(attr.related_class, str):
                     related_class_name = attr.related_class
                     if '.' not in related_class_name:
                         related_class_name = model_cls.__module__ + '.' + related_class_name
@@ -642,7 +639,7 @@ class Manager(object):
         Raises:
             :obj:`ValueError`: the `values` is not an iterable or is a string
         """
-        if isinstance(values, string_types):
+        if isinstance(values, str):
             raise ValueError(
                 "_get_hashable_values does not take a string: '{}'".format(values))
         if not isinstance(values, collections.Iterable):
@@ -687,7 +684,7 @@ class Manager(object):
                 is not a valid attribute name
         """
         self._check_model(model_obj, '_get_attribute_types')
-        if isinstance(attr_names, string_types):
+        if isinstance(attr_names, str):
             raise ValueError(
                 "_get_attribute_types(): attr_names cannot be a string: '{}'".format(attr_names))
         if not isinstance(attr_names, collections.Iterable):
@@ -973,7 +970,7 @@ class TableFormat(Enum):
     multiple_cells = 4
 
 
-class Model(with_metaclass(ModelMeta, object)):
+class Model(object, metaclass=ModelMeta):
     """ Base object model
 
     Attributes:
@@ -2349,7 +2346,7 @@ class Model(with_metaclass(ModelMeta, object)):
             elif isinstance(attr, Attribute):
                 if val is None:
                     attrs.append((name, val))
-                elif isinstance(val, (string_types, bool, integer_types, float, Enum)):
+                elif isinstance(val, (str, bool, int, float, Enum)):
                     attrs.append((name, str(val)))
                 elif hasattr(attr, 'serialize'):
                     attrs.append((name, attr.serialize(val)))
@@ -3062,7 +3059,7 @@ class ModelSource(object):
         self.row = row
 
 
-class Attribute(six.with_metaclass(abc.ABCMeta, object)):
+class Attribute(object, metaclass=abc.ABCMeta):
     """ Model attribute
 
     Attributes:
@@ -3216,7 +3213,7 @@ class Attribute(six.with_metaclass(abc.ABCMeta, object)):
         rep_vals = set()
 
         for val in values:
-            if self.unique_case_insensitive and isinstance(val, string_types):
+            if self.unique_case_insensitive and isinstance(val, str):
                 val = val.lower()
             if val in unq_vals:
                 rep_vals.add(val)
@@ -3408,7 +3405,7 @@ class LiteralAttribute(Attribute):
         """
         if value is None:
             return None
-        elif isinstance(value, (string_types, bool, integer_types, float, Enum, )):
+        elif isinstance(value, (str, bool, int, float, Enum, )):
             return value
         else:
             return copy.deepcopy(value)
@@ -3551,14 +3548,14 @@ class EnumAttribute(LiteralAttribute):
         """
         error = None
 
-        if value and isinstance(value, string_types):
+        if value and isinstance(value, str):
             try:
                 value = self.enum_class[value]
             except KeyError:
                 error = 'Value "{}" is not convertible to an instance of {} which contains {}'.format(
                     value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))
 
-        elif isinstance(value, (integer_types, float)):
+        elif isinstance(value, (int, float)):
             try:
                 value = self.enum_class(value)
             except ValueError:
@@ -3722,7 +3719,7 @@ class BooleanAttribute(LiteralAttribute):
         """
         if value is None:
             value = self.get_default_cleaned_value()
-        elif isinstance(value, string_types):
+        elif isinstance(value, str):
             if value == '':
                 value = None
             elif value in ['true', 'True', 'TRUE', '1']:
@@ -3873,7 +3870,7 @@ class FloatAttribute(NumericAttribute):
         Returns:
             :obj:`tuple` of `float`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
-        if value is None or (isinstance(value, string_types) and value == ''):
+        if value is None or (isinstance(value, str) and value == ''):
             value = self.get_default_cleaned_value()
 
         try:
@@ -4161,7 +4158,7 @@ class IntegerAttribute(NumericAttribute):
             :obj:`tuple` of `int`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
         """
 
-        if value is None or (isinstance(value, string_types) and value == ''):
+        if value is None or (isinstance(value, str) and value == ''):
             return (self.get_default_cleaned_value(), None, )
 
         try:
@@ -4186,7 +4183,7 @@ class IntegerAttribute(NumericAttribute):
 
         if self.none and value is None:
             pass
-        if isinstance(value, integer_types):
+        if isinstance(value, int):
             if self.min is not None:
                 if value < self.min:
                     errors.append(
@@ -4430,13 +4427,13 @@ class StringAttribute(LiteralAttribute):
                 `default` is not a string, or `default_cleaned_value` is not a string
         """
 
-        if not isinstance(min_length, integer_types) or min_length < 0:
+        if not isinstance(min_length, int) or min_length < 0:
             raise ValueError('`min_length` must be a non-negative integer')
-        if (max_length is not None) and (not isinstance(max_length, integer_types) or max_length < min_length):
+        if (max_length is not None) and (not isinstance(max_length, int) or max_length < min_length):
             raise ValueError('`max_length` must be at least `min_length` or `None`')
-        if default is not None and not isinstance(default, string_types):
+        if default is not None and not isinstance(default, str):
             raise ValueError('`default` must be a string')
-        if default_cleaned_value is not None and not isinstance(default_cleaned_value, string_types):
+        if default_cleaned_value is not None and not isinstance(default_cleaned_value, str):
             raise ValueError('`default_cleaned_value` must be a string')
 
         super(StringAttribute, self).__init__(default=default,
@@ -4460,7 +4457,7 @@ class StringAttribute(LiteralAttribute):
         """
         if value is None:
             value = self.get_default_cleaned_value()
-        elif not isinstance(value, string_types):
+        elif not isinstance(value, str):
             value = str(value)
         return (value, None)
 
@@ -4478,7 +4475,7 @@ class StringAttribute(LiteralAttribute):
 
         if self.none and value is None:
             pass
-        elif not isinstance(value, string_types):
+        elif not isinstance(value, str):
             errors.append('Value must be an instance of `str`')
         else:
             if self.min_length and len(value) < self.min_length:
@@ -4805,7 +4802,7 @@ class DateAttribute(LiteralAttribute):
         if isinstance(value, date):
             return (value, None)
 
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             try:
                 datetime_value = dateutil.parser.parse(value)
                 if datetime_value.hour == 0 and \
@@ -4982,7 +4979,7 @@ class TimeAttribute(LiteralAttribute):
         if isinstance(value, time):
             return (value, None)
 
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             if re.match(r'^\d{1,2}:\d{1,2}(:\d{1,2})*$', value):
                 try:
                     datetime_value = dateutil.parser.parse(value)
@@ -5164,7 +5161,7 @@ class DateTimeAttribute(LiteralAttribute):
         if isinstance(value, date):
             return (datetime.combine(value, time(0, 0, 0, 0)), None)
 
-        if isinstance(value, string_types):
+        if isinstance(value, str):
             try:
                 return (dateutil.parser.parse(value), None)
             except ValueError:

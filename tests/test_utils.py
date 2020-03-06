@@ -6,7 +6,6 @@
 :Copyright: 2016, Karr Lab
 :License: MIT
 """
-from six import string_types
 import git
 import numpy.testing
 import obj_tables
@@ -148,7 +147,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(errors_by_model[Root]), 1)
         self.assertEqual(len(errors_by_model[Node]), 2)
 
-        self.assertIsInstance(str(errors), string_types)
+        self.assertIsInstance(str(errors), str)
 
     def test_get_related_errors_no_related(self):
         class LoneNode(core.Model):

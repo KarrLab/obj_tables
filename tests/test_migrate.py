@@ -3103,8 +3103,6 @@ class TestVirtualEnvUtil(unittest.TestCase):
         # todo: check that the package has the right version (esp. if hash specified) & can be used
 
     def test_install_from_pip_spec(self):
-        # test PyPI package
-        self.run_and_check_install('six', 'six')
         # test PyPI package with version
         self.run_and_check_install('django==1.4', 'django')
         # test WC egg

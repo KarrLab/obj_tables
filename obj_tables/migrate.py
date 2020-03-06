@@ -13,7 +13,6 @@ from modulefinder import ModuleFinder
 from networkx.algorithms.dag import topological_sort, ancestors
 from pathlib import Path, PurePath
 from pprint import pprint, pformat
-from six import integer_types, string_types
 from urllib.parse import urlparse
 from warnings import warn
 import argparse
@@ -1166,7 +1165,7 @@ class Migrator(object):
             if not isinstance(attr, obj_tables.RelatedAttribute):
                 if val is None:
                     copy_val = val
-                elif isinstance(val, (string_types, bool, integer_types, float, Enum, )):
+                elif isinstance(val, (str, bool, int, float, Enum, )):
                     copy_val = val
                 elif isinstance(attr, obj_tables.sci.onto.OntoTermAttribute):
                     # pronto does not properly implement deepcopy

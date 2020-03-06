@@ -12,7 +12,6 @@ python_dateutil
 pyyaml >= 5.1
 scipy
 setuptools
-six
 stringcase
 sympy
 uncertainties

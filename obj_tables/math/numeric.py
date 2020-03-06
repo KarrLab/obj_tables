@@ -7,12 +7,13 @@
 """
 
 from .. import core
-import numpy
 import json
-import six
+import numpy
+import pandas
 
 __all__ = [
     'ArrayAttribute',
+    # 'TableAttribute',
 ]
 
 
@@ -40,9 +41,9 @@ class ArrayAttribute(core.LiteralAttribute):
         """
         if default is not None and not isinstance(default, numpy.ndarray):
             raise ValueError('`default` must be a `numpy.array` or `None`')
-        if not isinstance(min_length, (six.integer_types, float)) or min_length < 0:
+        if not isinstance(min_length, (int, float)) or min_length < 0:
             raise ValueError('`min_length` must be a non-negative integer')
-        if not isinstance(max_length, (six.integer_types, float)) or max_length < min_length:
+        if not isinstance(max_length, (int, float)) or max_length < min_length:
             raise ValueError('`max_length` must be an integer greater than or equal to `min_length`')
 
         super(ArrayAttribute, self).__init__(default=default, none_value=none_value,
@@ -69,10 +70,10 @@ class ArrayAttribute(core.LiteralAttribute):
         if value is None:
             value = None
             error = None
-        elif isinstance(value, six.string_types) and value == '':
+        elif isinstance(value, str) and value == '':
             value = None
             error = None
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             try:
                 value = numpy.array(json.loads(value), dtype)
                 error = None

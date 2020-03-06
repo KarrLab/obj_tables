@@ -25,7 +25,6 @@ import os
 import pandas
 import re
 import shutil
-import six
 import stringcase
 import tempfile
 import wc_utils.workbook.io
@@ -50,7 +49,7 @@ from wc_utils.workbook.core import get_column_letter, Formula
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 
 
-class WriterBase(six.with_metaclass(abc.ABCMeta, object)):
+class WriterBase(object, metaclass=abc.ABCMeta):
     """ Interface for classes which write model objects to file(s)
 
     Attributes:
@@ -997,7 +996,7 @@ class Writer(WriterBase):
                      protected=protected)
 
 
-class ReaderBase(six.with_metaclass(abc.ABCMeta, object)):
+class ReaderBase(object, metaclass=abc.ABCMeta):
     """ Interface for classes which write model objects to file(s)
 
     Attributes:
