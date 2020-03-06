@@ -21,7 +21,7 @@ __all__ = [
 
 
 class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
-    """ Many-to-many attribute that can be deserialized wtih a grammar
+    """ *-to-many attribute that can be deserialized with a grammar
 
     Attributes:
         grammar (:obj:`str`): grammar
