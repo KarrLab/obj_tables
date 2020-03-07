@@ -16,13 +16,13 @@ import copy
 import json
 
 __all__ = [
-    'FeatureLocAttribute', 
+    'FeatureLocAttribute',
     'SeqAttribute',
     'DnaSeqAttribute',
     'RnaSeqAttribute',
     'ProteinSeqAttribute',
     'FreqPosMatrixAttribute'
-    ]
+]
 
 
 class FeatureLocAttribute(core.LiteralAttribute):
@@ -47,9 +47,9 @@ class FeatureLocAttribute(core.LiteralAttribute):
             raise ValueError('`default` must be a `Bio.SeqFeature.FeatureLocation` or `None`')
 
         super(FeatureLocAttribute, self).__init__(default=default, none_value=none_value,
-                                                       verbose_name=verbose_name,
-                                                       description=description,
-                                                       primary=primary, unique=unique)
+                                                  verbose_name=verbose_name,
+                                                  description=description,
+                                                  primary=primary, unique=unique)
 
     def deserialize(self, value):
         """ Deserialize value
@@ -196,9 +196,9 @@ class SeqAttribute(core.LiteralAttribute):
             raise ValueError('`max_length` must be an integer greater than or equal to `min_length`')
 
         super(SeqAttribute, self).__init__(default=default, none_value=none_value,
-                                              verbose_name=verbose_name,
-                                              description=description,
-                                              primary=primary, unique=unique)
+                                           verbose_name=verbose_name,
+                                           description=description,
+                                           primary=primary, unique=unique)
 
         self.alphabet = None
         self.min_length = min_length
@@ -357,9 +357,9 @@ class DnaSeqAttribute(SeqAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(DnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
-                                                 none_value=none_value, verbose_name=verbose_name,
-                                                 description=description,
-                                                 primary=primary, unique=unique)
+                                              none_value=none_value, verbose_name=verbose_name,
+                                              description=description,
+                                              primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.DNAAlphabet()
 
 
@@ -380,9 +380,9 @@ class ProteinSeqAttribute(SeqAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(ProteinSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
-                                                     none_value=none_value, verbose_name=verbose_name,
-                                                     description=description,
-                                                     primary=primary, unique=unique)
+                                                  none_value=none_value, verbose_name=verbose_name,
+                                                  description=description,
+                                                  primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.ProteinAlphabet()
 
 
@@ -403,9 +403,9 @@ class RnaSeqAttribute(SeqAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(RnaSeqAttribute, self).__init__(min_length=min_length, max_length=max_length, default=default,
-                                                 none_value=none_value, verbose_name=verbose_name,
-                                                 description=description,
-                                                 primary=primary, unique=unique)
+                                              none_value=none_value, verbose_name=verbose_name,
+                                              description=description,
+                                              primary=primary, unique=unique)
         self.alphabet = Bio.Alphabet.RNAAlphabet()
 
 

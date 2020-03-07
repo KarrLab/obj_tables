@@ -93,7 +93,7 @@ class UncertainFloatAttribute(core.LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of :obj:`str`, :obj:`core.InvalidAttribute` or :obj:`None`: 
+            :obj:`tuple` of :obj:`str`, :obj:`core.InvalidAttribute` or :obj:`None`:
                 tuple of cleaned value and cleaning error
         """
         error = None

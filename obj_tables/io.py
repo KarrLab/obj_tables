@@ -265,7 +265,7 @@ class WorkbookWriter(WriterBase):
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             write_toc=True, write_schema=False,
-            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None, 
+            extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
             protected=True):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
@@ -377,13 +377,13 @@ class WorkbookWriter(WriterBase):
         writer.initialize_workbook()
 
         # add table of contents to workbook
-        all_models = models + unordered_models        
+        all_models = models + unordered_models
         if write_toc:
             self.write_toc(writer, all_models, doc_metadata, grouped_objects, write_schema=write_schema, protected=protected)
-            doc_metadata = None            
+            doc_metadata = None
         if write_schema:
             self.write_schema(writer, all_models, doc_metadata, protected=protected)
-            doc_metadata = None            
+            doc_metadata = None
 
         # add sheets to workbook
         sheet_models = list(filter(lambda model: model.Meta.table_format not in [
@@ -760,7 +760,7 @@ class PandasWriter(WorkbookWriter):
         self._data_frames = None
 
     def run(self, objects, models=None, get_related=True,
-            include_all_attributes=True, validate=True, 
+            include_all_attributes=True, validate=True,
             protected=False):
         """ Write model instances to a dictionary of :obj:`pandas.DataFrame`
 
@@ -2297,7 +2297,8 @@ def get_fields(cls, doc_metadata, doc_metadata_model, model_metadata, include_al
             attr_headings.extend(['!' + sub_attr.verbose_name for sub_attr in this_sub_attrs])
             merge_ranges.append((i_row, i_col, i_row, i_col + len(this_sub_attrs) - 1))
             i_col += len(this_sub_attrs)
-            field_validations.extend([sub_attr.get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model) for sub_attr in this_sub_attrs])
+            field_validations.extend([sub_attr.get_excel_validation(sheet_models=sheet_models,
+                                                                    doc_metadata_model=doc_metadata_model) for sub_attr in this_sub_attrs])
         else:
             sub_attrs.append((None, attr))
             group_headings.append(None)
