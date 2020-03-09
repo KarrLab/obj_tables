@@ -2630,8 +2630,7 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(set(reader._model_metadata.keys()),
             set([Node.__name__]))
         self.assertEqual(set(reader._model_metadata[Node.__name__].keys()),
-            set(['objTablesVersion', 'date', 'attr3', 'attr4']))
-        self.assertEqual(reader._model_metadata[Node.__name__]['objTablesVersion'], obj_tables.__version__)
+            set(['attr3', 'attr4']))
         self.assertEqual(reader._model_metadata[Node.__name__]['attr3'], 'val3')
         self.assertEqual(reader._model_metadata[Node.__name__]['attr4'], 'val4')
 
