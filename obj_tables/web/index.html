@@ -225,7 +225,7 @@
             <table>
               <thead>
                 <tr>
-                  <th colspan="5">!!ObjTables type='Schema' description='Table/model/class and column/attribute/property definitions' objTablesVersion='0.0.8'</th>
+                  <th colspan="5">!!ObjTables type='Schema' description='Table/model/class and column/attribute/property definitions' objTablesVersion='0.0.8' tableFormat='row'</th>
                 </tr>
                 <tr>
                   <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Description</th>
@@ -466,14 +466,14 @@
             </ul>
 
             <h3>Document metdata</h3>
-            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' id='&lt;model_name&gt;'</tt>).</p>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='&lt;model_name&gt;'</tt>).</p>
 
-            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' id='model_id' name='Class name' description='Class description'</tt>).</p>
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='model_id' name='Class name' description='Class description'</tt>).</p>
 
             <h3>Class metdata</h3>
-            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' id='&lt;model_name&gt;'</tt>).</p>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='&lt;model_name&gt;'</tt>).</p>
 
-            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' id='model_id' name='Class name' description='Class description'</tt>).</p>
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='model_id' name='Class name' description='Class description'</tt>).</p>
 
             <h3>Class instances (rows) and attributes (columns)</h3>
             <p>The attributes of each class are represented by the columns of its table, each instance of each class is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
@@ -504,10 +504,10 @@
             <table>
               <thead>
                 <tr>
-                  <th colspan="2">!!!ObjTables objTablesVersion='0.0.8'</th>
+                  <th colspan="2">!!!ObjTables objTablesVersion='0.0.8' tableFormat='row'</th>
                 </tr>
                 <tr>
-                  <th colspan="2">!!ObjTables type='Data' id='Parent' objTablesVersion='0.0.8'</th>
+                  <th colspan="2">!!ObjTables type='Data' tableFormat='row' id='Parent' objTablesVersion='0.0.8'</th>
                 </tr>
                 <tr>
                   <th>!Id</th>
@@ -525,7 +525,7 @@
             <table>
               <thead>
                 <tr>
-                  <th colspan="7">!!ObjTables type='Data' id='Child' objTablesVersion='0.0.8'</th>
+                  <th colspan="7">!!ObjTables type='Data' id='Child' objTablesVersion='0.0.8' tableFormat='row'</th>
                 </tr>
                 <tr>
                   <th></th>

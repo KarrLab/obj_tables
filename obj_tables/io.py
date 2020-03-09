@@ -267,6 +267,8 @@ class JsonWriter(WriterBase):
 
             if 'type' in model_attrs:
                 model_attrs.pop('type')
+            if 'tableFormat' in model_attrs:
+                model_attrs.pop('tableFormat')
             model_attrs['id'] = model.__name__
             model_attrs['name'] = model.Meta.verbose_name_plural
             if model.Meta.description:
@@ -469,6 +471,7 @@ class WorkbookWriter(WriterBase):
 
         model_metadata_strs = ["!!{}".format(format),
                                "type='{}'".format(table_type),
+                               "tableFormat='row'",
                                "description='Table/model and column/attribute definitions'",
                                f"date='{date}'",
                                "{}Version='{}'".format(l_case_format, version),
@@ -562,6 +565,7 @@ class WorkbookWriter(WriterBase):
 
         model_metadata_strs = ["!!{}".format(format),
                                "type='{}'".format(table_type),
+                               "tableFormat='row'",
                                "description='Table of contents'",
                                f"date='{date}'",
                                "{}Version='{}'".format(l_case_format, version),
@@ -1548,9 +1552,9 @@ class WorkbookReader(ReaderBase):
             canonical_sub_attrs = list(filter(lambda sub_attr: sub_attr in sub_attrs, exp_sub_attrs))
             if sub_attrs != canonical_sub_attrs:
                 if model.Meta.table_format == TableFormat.row:
-                    orientation = 'columns'
+                    table_format = 'columns'
                 else:
-                    orientation = 'rows'
+                    table_format = 'rows'
 
                 if len(exp_headings) == 1:
                     if model.Meta.table_format == TableFormat.row:
@@ -1566,7 +1570,7 @@ class WorkbookReader(ReaderBase):
                                 for i, (g, a) in enumerate(zip(exp_headings[0], exp_headings[1]))]
 
                 error = "The {} of worksheet '{}' must be defined in this order:\n  {}".format(
-                    orientation, sheet_name, '\n  '.join(msgs))
+                    table_format, sheet_name, '\n  '.join(msgs))
                 return ([], [], [error], [])
 
         # save model location in file
@@ -1685,6 +1689,8 @@ class WorkbookReader(ReaderBase):
         self._model_metadata[model] = model_metadata
         assert model_metadata['type'] == DOC_TABLE_TYPE, \
             "Type '{}' must be '{}'.".format(model_metadata['type'], DOC_TABLE_TYPE)
+        assert 'tableFormat' not in model_metadata or model_metadata['tableFormat'] == model.Meta.table_format.name, \
+            "Table format must be undefined or '{}', not '{}'.".format(model.Meta.table_format.name, model_metadata['tableFormat'])
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -1916,7 +1922,7 @@ class WorkbookReader(ReaderBase):
         Args:
             index (:obj:`int`): index in header sequence
             file_ext (:obj:`str`): extension for model file
-            orientation (:obj:`TableFormat`): orientation of the stored table
+            table_format (:obj:`TableFormat`): orientation of the stored table
 
         Returns:
             :obj:`tuple` of row, column, header_entries
@@ -2314,6 +2320,7 @@ def get_fields(cls, doc_metadata, doc_metadata_model, model_metadata, include_al
     now = datetime.now()
     model_metadata = dict(model_metadata)
     model_metadata['type'] = DOC_TABLE_TYPE
+    model_metadata['tableFormat'] = cls.Meta.table_format.name
     model_metadata['id'] = cls.__name__
     model_metadata['name'] = cls.Meta.verbose_name_plural
     model_metadata.pop('description', None)
