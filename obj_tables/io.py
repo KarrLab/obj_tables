@@ -265,6 +265,8 @@ class JsonWriter(WriterBase):
         for model in all_models:
             model_attrs = json_objects['_modelMetadata'][model.__name__] = copy.copy(model_metadata.get(model, {}))
 
+            if 'type' in model_attrs:
+                model_attrs.pop('type')
             model_attrs['id'] = model.__name__
             model_attrs['name'] = model.Meta.verbose_name_plural
             if model.Meta.description:
