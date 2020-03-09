@@ -251,7 +251,7 @@ class ExamplesTestCase(unittest.TestCase):
         c2_b['parents'] = [p1_b]
         c3_b['parents'] = [p2_b]
 
-        self.assertEqual(sorted(decoded.keys()), ['Child', 'Parent', "_documentMetadata", "_tableMetadata"])
+        self.assertEqual(sorted(decoded.keys()), ['Child', 'Parent', "_documentMetadata", "_modelMetadata"])
         self.assertEqual(len(decoded['Parent']), 2)
         self.assertEqual(len(decoded['Child']), 3)
         parents_b = sorted(decoded['Parent'], key=lambda p: p['id'])

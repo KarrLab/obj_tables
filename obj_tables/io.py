@@ -261,9 +261,9 @@ class JsonWriter(WriterBase):
         json_objects['_documentMetadata'][l_case_format + 'Version'] = version
         json_objects['_documentMetadata']['date'] = date
 
-        json_objects['_tableMetadata'] = {}
+        json_objects['_modelMetadata'] = {}
         for model in all_models:
-            model_attrs = json_objects['_tableMetadata'][model.__name__] = copy.copy(model_metadata.get(model, {}))
+            model_attrs = json_objects['_modelMetadata'][model.__name__] = copy.copy(model_metadata.get(model, {}))
             if l_case_format + 'Version' in model_attrs:
                 model_attrs.pop(l_case_format + 'Version')
             if 'date' in model_attrs:
@@ -1136,22 +1136,32 @@ class JsonReader(ReaderBase):
             else:
                 raise ValueError('Unsupported format {}'.format(ext))
 
-        # read the metadata
-        if isinstance(json_objs, dict):
-            self._doc_metadata = json_objs.get('_documentMetadata', {})
-            self._model_metadata = json_objs.get('_tableMetadata', {})
-        else:
-            self._doc_metadata = {}
-            self._model_metadata = {}
-
         # read the objects
         if group_objects_by_model:
             output_format = 'dict'
         else:
             output_format = 'list'
 
-        return Model.from_dict(json_objs, models, ignore_extra_models=ignore_extra_models, validate=validate,
+        objs = Model.from_dict(json_objs, models, ignore_extra_models=ignore_extra_models, validate=validate,
                                output_format=output_format)
+
+        # read the metadata
+        self._doc_metadata = {}
+        self._model_metadata = {}
+        if isinstance(json_objs, dict):
+            self._doc_metadata = json_objs.get('_documentMetadata', {})
+
+            all_models = set(models)
+            for model in list(all_models):
+                all_models.update(set(utils.get_related_models(model)))
+            model_names = {model.__name__: model for model in all_models}
+            self._model_metadata = {}
+            for model_name, model_metadata in json_objs.get('_modelMetadata', {}).items():
+                model = model_names[model_name]
+                self._model_metadata[model] = model_metadata
+
+        # return the objects
+        return objs
 
 
 class WorkbookReader(ReaderBase):

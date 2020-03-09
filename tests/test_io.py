@@ -2371,7 +2371,8 @@ class JsonTestCase(unittest.TestCase):
         self.dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.dirname)
+        # shutil.rmtree(self.dirname)
+        print(self.dirname)
 
     def test_write_read(self):
         class AA(core.Model):
@@ -2588,6 +2589,28 @@ class JsonTestCase(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Output format must be'):
             core.Model.from_dict(core.Model.to_dict(data, models=set([Node])), [Node], output_format='tuple')
 
+    @staticmethod
+    def gen_doc_metadata():
+        format_l_case = 'objTables'
+        return {
+            format_l_case + 'Version': '10000.0.0',
+            'date': '2000-01-01 01:01:01',
+            'attr1': 'val1',
+            'attr2': 'val2',
+        }
+
+    @staticmethod
+    def gen_model_metadata(Node):
+        format_l_case = 'objTables'
+        return {
+            Node: {
+                format_l_case + 'Version': '10000.0.0',
+                'date': '2000-01-01 01:01:01',
+                'attr3': 'val3',
+                'attr4': 'val4',
+            }
+        }
+
     def test_metadata(self):
         class Node(core.Model):
             id = core.SlugAttribute()
@@ -2598,41 +2621,80 @@ class JsonTestCase(unittest.TestCase):
         ]
 
         path = os.path.join(self.dirname, 'test.json')
-        format_l_case = 'objTables'
-        def gen_doc_metadata():
-            return {                
-                format_l_case + 'Version': '10000.0.0',
-                'date': '2000-01-01 01:01:01',
-                'attr1': 'val1',
-                'attr2': 'val2',
-            }
-        def gen_model_metadata():
-            return {
-                Node: {
-                    format_l_case + 'Version': '10000.0.0',
-                    'date': '2000-01-01 01:01:01',
-                    'attr3': 'val3',
-                    'attr4': 'val4',
-                }
-            }
         writer = obj_tables.io.JsonWriter()
-        writer.run(path, objs, doc_metadata=gen_doc_metadata(), model_metadata=gen_model_metadata(), models=[Node])
+        writer.run(path, objs, doc_metadata=self.gen_doc_metadata(), model_metadata=self.gen_model_metadata(Node), models=[Node])
 
         reader = obj_tables.io.JsonReader()
         _ = reader.run(path, models=[Node])
-        
+
         self.assertEqual(set(reader._doc_metadata.keys()),
-            set(['objTablesVersion', 'date', 'attr1', 'attr2']))
+                         set(['objTablesVersion', 'date', 'attr1', 'attr2']))
         self.assertEqual(reader._doc_metadata['objTablesVersion'], obj_tables.__version__)
         self.assertEqual(reader._doc_metadata['attr1'], 'val1')
         self.assertEqual(reader._doc_metadata['attr2'], 'val2')
 
         self.assertEqual(set(reader._model_metadata.keys()),
-            set([Node.__name__]))
-        self.assertEqual(set(reader._model_metadata[Node.__name__].keys()),
-            set(['attr3', 'attr4']))
-        self.assertEqual(reader._model_metadata[Node.__name__]['attr3'], 'val3')
-        self.assertEqual(reader._model_metadata[Node.__name__]['attr4'], 'val4')
+                         set([Node]))
+        self.assertEqual(set(reader._model_metadata[Node].keys()),
+                         set(['attr3', 'attr4']))
+        self.assertEqual(reader._model_metadata[Node]['attr3'], 'val3')
+        self.assertEqual(reader._model_metadata[Node]['attr4'], 'val4')
+
+    def test_convert_metadata_to_xlsx(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+        objs = [
+            Node(id='node_1', name='node 1'),
+            Node(id='node_2', name='node 2'),
+        ]
+
+        json_path = os.path.join(self.dirname, 'test.json')
+        xlsx_path = os.path.join(self.dirname, 'test.xlsx')
+
+        # write to JSON
+        writer = obj_tables.io.JsonWriter()
+        writer.run(json_path, objs, doc_metadata=self.gen_doc_metadata(), model_metadata=self.gen_model_metadata(Node), models=[Node])
+
+        # convert to XLSX
+        convert(json_path, xlsx_path, models=[Node])
+
+        # read from XLSX
+        reader = obj_tables.io.WorkbookReader()
+        _ = reader.run(xlsx_path, models=[Node])
+        self.assertEqual(reader._doc_metadata['objTablesVersion'], obj_tables.__version__)
+        self.assertEqual(reader._doc_metadata['attr1'], 'val1')
+        self.assertEqual(reader._doc_metadata['attr2'], 'val2')
+        self.assertEqual(reader._model_metadata[Node]['attr3'], 'val3')
+        self.assertEqual(reader._model_metadata[Node]['attr4'], 'val4')
+
+    def test_convert_metadata_from_xlsx(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+        objs = [
+            Node(id='node_1', name='node 1'),
+            Node(id='node_2', name='node 2'),
+        ]
+
+        xlsx_path = os.path.join(self.dirname, 'test.xlsx')
+        json_path = os.path.join(self.dirname, 'test.json')
+
+        # write to XLSX
+        writer = obj_tables.io.WorkbookWriter()
+        writer.run(xlsx_path, objs, doc_metadata=self.gen_doc_metadata(), model_metadata=self.gen_model_metadata(Node), models=[Node])
+
+        # convert to JSON
+        convert(xlsx_path, json_path, models=[Node])
+
+        # read from XLSX
+        reader = obj_tables.io.JsonReader()
+        _ = reader.run(json_path, models=[Node])
+        self.assertEqual(reader._doc_metadata['objTablesVersion'], obj_tables.__version__)
+        self.assertEqual(reader._doc_metadata['attr1'], 'val1')
+        self.assertEqual(reader._doc_metadata['attr2'], 'val2')
+        self.assertEqual(reader._model_metadata[Node]['attr3'], 'val3')
+        self.assertEqual(reader._model_metadata[Node]['attr4'], 'val4')
 
 
 class InlineJsonTestCase(unittest.TestCase):
@@ -3148,25 +3210,25 @@ class ExcelValidationTestCase(unittest.TestCase):
                                                            min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_4')])
             formula_attr = chem.EmpiricalFormulaAttribute(unique=True)
             onto_attr_1 = onto.OntoTermAttribute(sbo_ontotology,
-                                                     namespace='SBO',
-                                                     namespace_sep='_',
-                                                     terms=sbo_ontotology['SBO_0000474'].subclasses(),
-                                                     default_cleaned_value=sbo_ontotology['SBO_0000474'])
+                                                 namespace='SBO',
+                                                 namespace_sep='_',
+                                                 terms=sbo_ontotology['SBO_0000474'].subclasses(),
+                                                 default_cleaned_value=sbo_ontotology['SBO_0000474'])
             onto_attr_2 = onto.OntoTermAttribute(sbo_ontotology,
-                                                     namespace='SBO',
-                                                     namespace_sep='_',
-                                                     terms=sbo_ontotology['SBO_0000474'].subclasses(),
-                                                     default_cleaned_value=sbo_ontotology['SBO_0000474'],
-                                                     unique=True, none=False)
+                                                 namespace='SBO',
+                                                 namespace_sep='_',
+                                                 terms=sbo_ontotology['SBO_0000474'].subclasses(),
+                                                 default_cleaned_value=sbo_ontotology['SBO_0000474'],
+                                                 unique=True, none=False)
             onto_attr_3 = onto.OntoTermAttribute(sbo_ontotology,
-                                                     namespace='SBO',
-                                                     namespace_sep='_',
-                                                     default_cleaned_value=sbo_ontotology['SBO_0000475'])
+                                                 namespace='SBO',
+                                                 namespace_sep='_',
+                                                 default_cleaned_value=sbo_ontotology['SBO_0000475'])
             onto_attr_4 = onto.OntoTermAttribute(sbo_ontotology,
-                                                     namespace='SBO',
-                                                     namespace_sep='_',
-                                                     default_cleaned_value=sbo_ontotology['SBO_0000475'],
-                                                     unique=True, none=False)
+                                                 namespace='SBO',
+                                                 namespace_sep='_',
+                                                 default_cleaned_value=sbo_ontotology['SBO_0000475'],
+                                                 unique=True, none=False)
             units_attr_1 = units.UnitAttribute(unit_registry, choices=(
                 unit_registry.parse_units('g'),
                 unit_registry.parse_units('l'),
