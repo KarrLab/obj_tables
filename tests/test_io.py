@@ -2371,8 +2371,7 @@ class JsonTestCase(unittest.TestCase):
         self.dirname = tempfile.mkdtemp()
 
     def tearDown(self):
-        # shutil.rmtree(self.dirname)
-        print(self.dirname)
+        shutil.rmtree(self.dirname)
 
     def test_write_read(self):
         class AA(core.Model):
@@ -2615,6 +2614,10 @@ class JsonTestCase(unittest.TestCase):
         class Node(core.Model):
             id = core.SlugAttribute()
             name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                description = 'Description of Node model'
+
         objs = [
             Node(id='node_1', name='node 1'),
             Node(id='node_2', name='node 2'),
@@ -2636,7 +2639,10 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(set(reader._model_metadata.keys()),
                          set([Node]))
         self.assertEqual(set(reader._model_metadata[Node].keys()),
-                         set(['attr3', 'attr4']))
+                         set(['id', 'name', 'description', 'attr3', 'attr4']))
+        self.assertEqual(reader._model_metadata[Node]['id'], 'Node')
+        self.assertEqual(reader._model_metadata[Node]['name'], 'Nodes')
+        self.assertEqual(reader._model_metadata[Node]['description'], 'Description of Node model')
         self.assertEqual(reader._model_metadata[Node]['attr3'], 'val3')
         self.assertEqual(reader._model_metadata[Node]['attr4'], 'val4')
 
@@ -2644,6 +2650,9 @@ class JsonTestCase(unittest.TestCase):
         class Node(core.Model):
             id = core.SlugAttribute()
             name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                description = 'Description of Node model'
         objs = [
             Node(id='node_1', name='node 1'),
             Node(id='node_2', name='node 2'),
@@ -2665,6 +2674,9 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(reader._doc_metadata['objTablesVersion'], obj_tables.__version__)
         self.assertEqual(reader._doc_metadata['attr1'], 'val1')
         self.assertEqual(reader._doc_metadata['attr2'], 'val2')
+        self.assertEqual(reader._model_metadata[Node]['id'], 'Node')
+        self.assertEqual(reader._model_metadata[Node]['name'], 'Nodes')
+        self.assertEqual(reader._model_metadata[Node]['description'], 'Description of Node model')
         self.assertEqual(reader._model_metadata[Node]['attr3'], 'val3')
         self.assertEqual(reader._model_metadata[Node]['attr4'], 'val4')
 
@@ -2672,6 +2684,9 @@ class JsonTestCase(unittest.TestCase):
         class Node(core.Model):
             id = core.SlugAttribute()
             name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                description = 'Description of Node model'
         objs = [
             Node(id='node_1', name='node 1'),
             Node(id='node_2', name='node 2'),
@@ -2693,6 +2708,9 @@ class JsonTestCase(unittest.TestCase):
         self.assertEqual(reader._doc_metadata['objTablesVersion'], obj_tables.__version__)
         self.assertEqual(reader._doc_metadata['attr1'], 'val1')
         self.assertEqual(reader._doc_metadata['attr2'], 'val2')
+        self.assertEqual(reader._model_metadata[Node]['id'], 'Node')
+        self.assertEqual(reader._model_metadata[Node]['name'], 'Nodes')
+        self.assertEqual(reader._model_metadata[Node]['description'], 'Description of Node model')
         self.assertEqual(reader._model_metadata[Node]['attr3'], 'val3')
         self.assertEqual(reader._model_metadata[Node]['attr4'], 'val4')
 

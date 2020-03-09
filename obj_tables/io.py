@@ -264,6 +264,11 @@ class JsonWriter(WriterBase):
         json_objects['_modelMetadata'] = {}
         for model in all_models:
             model_attrs = json_objects['_modelMetadata'][model.__name__] = copy.copy(model_metadata.get(model, {}))
+
+            model_attrs['id'] = model.__name__
+            model_attrs['name'] = model.Meta.verbose_name_plural
+            if model.Meta.description:
+                model_attrs['description'] = model.Meta.description
             if l_case_format + 'Version' in model_attrs:
                 model_attrs.pop(l_case_format + 'Version')
             if 'date' in model_attrs:
