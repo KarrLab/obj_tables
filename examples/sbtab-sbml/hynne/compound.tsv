@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='Hynne_2001' Type='Data' Id='Compound'							
+!!ObjTables objTablesVersion='0.0.8' document='Hynne_2001' type='Data' id='Compound'							
 !ID	!Name	!Location	!Charge	!IsConstant	!SBOTerm	!Unit	!Identifiers:sbo.kegg
 GlcX	GlcX	extracellular	0	FALSE	SBO:0000299	mM	C00031
 Glc	Glc	cytosol	0	FALSE	SBO:0000299	mM	C00031

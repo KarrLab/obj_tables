@@ -1,10 +1,10 @@
-!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Quantity' Description='Ex 13 - Quantity',,,
+!!ObjTables objTablesVersion='0.0.8' type='Data' id='Quantity' description='Ex 13 - Quantity',,,
 !ID,!Reaction,!SBO:equilibrium_constant,!Unit
 keq R1,R1,0.0984,dimensionless
 keq R2,R2,10,dimensionless
 keq R3,R3,100,dimensionless
 ,,,
-!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='QuantityMatrix' Description='Ex 20 - Metabolomics',,,
+!!ObjTables objTablesVersion='0.0.8' type='Data' id='QuantityMatrix' description='Ex 20 - Metabolomics',,,
 !ID,!Identifiers:obo.chebi,!>Sample:t0,!>Sample:t1
 Glucose,CHEBI:17234,1.1,1.2
 Fructose,CHEBI:15824,1.4,0.9

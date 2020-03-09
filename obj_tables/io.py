@@ -201,6 +201,9 @@ class JsonWriter(WriterBase):
         Raises:
             :obj:`ValueError`: if model names are not unique or output format is not supported
         """
+        doc_metadata = doc_metadata or {}
+        model_metadata = model_metadata or {}
+
         if models is None:
             models = self.MODELS
         if isinstance(models, (list, tuple)):
@@ -243,7 +246,28 @@ class JsonWriter(WriterBase):
             objects = collections.OrderedDict((model.__name__, grouped_objects.get(model.__name__, [])) for model in all_models)
 
         # encode to json
-        json_objects = Model.to_dict(objects, models)
+        all_models = set(models)
+        json_objects = Model.to_dict(objects, all_models)
+
+        # add model metadata to JSON
+        format = 'ObjTables'
+        l_case_format = 'objTables'
+        version = obj_tables.__version__
+        now = datetime.now()
+        date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
+            now.year, now.month, now.day, now.hour, now.minute, now.second)
+
+        json_objects['_documentMetadata'] = copy.copy(doc_metadata)
+        json_objects['_documentMetadata'][l_case_format + 'Version'] = version
+        json_objects['_documentMetadata']['date'] = date
+
+        json_objects['_tableMetadata'] = {}
+        for model in all_models:
+            model_attrs = json_objects['_tableMetadata'][model.__name__] = copy.copy(model_metadata.get(model, {}))
+            if l_case_format + 'Version' in model_attrs:
+                model_attrs.pop(l_case_format + 'Version')
+            if 'date' in model_attrs:
+                model_attrs.pop('date')
 
         # save plain Python object to JSON or YAML
         _, ext = splitext(path)
@@ -424,6 +448,7 @@ class WorkbookWriter(WriterBase):
             sheet_name = SCHEMA_SHEET_NAME
 
         format = 'ObjTables'
+        l_case_format = 'objTables'
         table_type = SCHEMA_TABLE_TYPE
         version = obj_tables.__version__
         now = datetime.now()
@@ -436,10 +461,10 @@ class WorkbookWriter(WriterBase):
             content.append([format_doc_metadata(doc_metadata, date=date)])
 
         model_metadata_strs = ["!!{}".format(format),
-                               "Type='{}'".format(table_type),
-                               "Description='Table/model and column/attribute definitions'",
-                               f"Date='{date}'",
-                               "{}Version='{}'".format(format, version),
+                               "type='{}'".format(table_type),
+                               "description='Table/model and column/attribute definitions'",
+                               f"date='{date}'",
+                               "{}Version='{}'".format(l_case_format, version),
                                ]
         content.append([' '.join(model_metadata_strs)])
 
@@ -517,6 +542,7 @@ class WorkbookWriter(WriterBase):
             sheet_name = TOC_SHEET_NAME
         table_type = TOC_TABLE_TYPE
         format = 'ObjTables'
+        l_case_format = 'objTables'
         version = obj_tables.__version__
         now = datetime.now()
         date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
@@ -528,10 +554,10 @@ class WorkbookWriter(WriterBase):
             content.append([format_doc_metadata(doc_metadata, date=date)])
 
         model_metadata_strs = ["!!{}".format(format),
-                               "Type='{}'".format(table_type),
-                               "Description='Table of contents'",
-                               f"Date='{date}'",
-                               "{}Version='{}'".format(format, version),
+                               "type='{}'".format(table_type),
+                               "description='Table of contents'",
+                               f"date='{date}'",
+                               "{}Version='{}'".format(l_case_format, version),
                                ]
         content.append([' '.join(model_metadata_strs)])
 
@@ -1003,7 +1029,7 @@ class ReaderBase(object, metaclass=abc.ABCMeta):
         _doc_metadata (:obj:`dict`): dictionary of document metadata read from header row
                 (e.g., `!!!ObjTables ...`)
         _model_metadata (:obj:`dict`): dictionary which maps models (:obj:`Model`) to dictionaries of
-            metadata read from a document (e.g., `!!ObjTables Date='...' ...`)
+            metadata read from a document (e.g., `!!ObjTables date='...' ...`)
 
         MODELS (:obj:`tuple` of :obj:`type`): default types of models to export and the order in which
             to export them
@@ -1098,7 +1124,7 @@ class JsonReader(ReaderBase):
         if not isinstance(models, (list, tuple)):
             models = [models]
 
-        # read the object into standard Python objects (lists, dicts)
+        # read the JSON into standard Python objects (ints, floats, strings, lists, dicts, etc.)
         _, ext = splitext(path)
         ext = ext.lower()
         with open(path, 'r') as file:
@@ -1110,6 +1136,15 @@ class JsonReader(ReaderBase):
             else:
                 raise ValueError('Unsupported format {}'.format(ext))
 
+        # read the metadata
+        if isinstance(json_objs, dict):
+            self._doc_metadata = json_objs.get('_documentMetadata', {})
+            self._model_metadata = json_objs.get('_tableMetadata', {})
+        else:
+            self._doc_metadata = {}
+            self._model_metadata = {}
+
+        # read the objects
         if group_objects_by_model:
             output_format = 'dict'
         else:
@@ -1206,11 +1241,11 @@ class WorkbookReader(ReaderBase):
             data = reader.read_worksheet(sheet_name)
             doc_metadata, model_metadata, _ = self.read_worksheet_metadata(sheet_name, data)
             self.merge_doc_metadata(doc_metadata)
-            if model_metadata['Type'] != DOC_TABLE_TYPE:
+            if model_metadata['type'] != DOC_TABLE_TYPE:
                 continue
-            assert 'Id' in model_metadata, 'Metadata for sheet "{}" must define the Id.'.format(sheet_name)
-            model_name_to_sheet_name[model_metadata['Id']] = sheet_name
-            sheet_name_to_model_name[sheet_name] = model_metadata['Id']
+            assert 'id' in model_metadata, 'Metadata for sheet "{}" must define the id.'.format(sheet_name)
+            model_name_to_sheet_name[model_metadata['id']] = sheet_name
+            sheet_name_to_model_name[sheet_name] = model_metadata['id']
 
         # drop metadata models unless they're requested
         ignore_model_names = []
@@ -1631,8 +1666,8 @@ class WorkbookReader(ReaderBase):
         self.merge_doc_metadata(doc_metadata)
 
         self._model_metadata[model] = model_metadata
-        assert model_metadata['Type'] == DOC_TABLE_TYPE, \
-            "Type '{}' must be '{}'.".format(model_metadata['Type'], DOC_TABLE_TYPE)
+        assert model_metadata['type'] == DOC_TABLE_TYPE, \
+            "Type '{}' must be '{}'.".format(model_metadata['type'], DOC_TABLE_TYPE)
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
@@ -2031,8 +2066,8 @@ class MultiSeparatedValuesReader(ReaderBase):
             dirname (:obj:`str`): directory to save model
             ext (:obj:`str`): extension
         """
-        if metadata['Type'] == DOC_TABLE_TYPE:
-            tmp_path = os.path.join(dirname, metadata['Id'] + ext)
+        if metadata['type'] == DOC_TABLE_TYPE:
+            tmp_path = os.path.join(dirname, metadata['id'] + ext)
             wc_utils.workbook.io.write(tmp_path, {'': data})
 
 
@@ -2250,6 +2285,7 @@ def get_fields(cls, doc_metadata, doc_metadata_model, model_metadata, include_al
 
     # headings
     format = 'ObjTables'
+    l_case_format = 'objTables'
     version = obj_tables.__version__
     metadata_headings = []
 
@@ -2260,19 +2296,19 @@ def get_fields(cls, doc_metadata, doc_metadata_model, model_metadata, include_al
     # model metadata
     now = datetime.now()
     model_metadata = dict(model_metadata)
-    model_metadata['Type'] = DOC_TABLE_TYPE
-    model_metadata['Id'] = cls.__name__
-    model_metadata['Name'] = cls.Meta.verbose_name_plural
-    model_metadata.pop('Description', None)
+    model_metadata['type'] = DOC_TABLE_TYPE
+    model_metadata['id'] = cls.__name__
+    model_metadata['name'] = cls.Meta.verbose_name_plural
+    model_metadata.pop('description', None)
     if cls.Meta.description:
-        model_metadata['Description'] = cls.Meta.description
-    model_metadata['Date'] = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
+        model_metadata['description'] = cls.Meta.description
+    model_metadata['date'] = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
         now.year, now.month, now.day, now.hour, now.minute, now.second)
-    model_metadata[format + 'Version'] = version
+    model_metadata[l_case_format + 'Version'] = version
 
-    keys = ['Type', 'Id', 'Name', 'Date', format + 'Version']
-    if 'Description' in model_metadata:
-        keys.insert(2, 'Description')
+    keys = ['type', 'id', 'name', 'date', l_case_format + 'Version']
+    if 'description' in model_metadata:
+        keys.insert(2, 'description')
     keys += sorted(set(model_metadata.keys()) - set(keys))
     model_metadata_heading_list = ["{}='{}'".format(k, model_metadata[k].replace("'", "\'")) for k in keys]
     model_metadata_heading_list.insert(0, '!!' + format)
@@ -2375,6 +2411,7 @@ def format_doc_metadata(metadata, date=None):
         :obj:`str`: string of key-value pairs of document metadata
     """
     format = 'ObjTables'
+    l_case_format = 'objTables'
     version = obj_tables.__version__
     if date is None:
         now = datetime.now()
@@ -2382,12 +2419,12 @@ def format_doc_metadata(metadata, date=None):
             now.year, now.month, now.day, now.hour, now.minute, now.second)
 
     metadata = dict(metadata)
-    metadata.pop(f"{format}Version", None)
-    metadata.pop(f"Date", None)
+    metadata.pop(f"{l_case_format}Version", None)
+    metadata.pop(f"date", None)
 
     metadata_strs = [f"!!!{format}",
-                     f"{format}Version='{version}'",
-                     f"Date='{date}'"]
+                     f"{l_case_format}Version='{version}'",
+                     f"date='{date}'"]
     metadata_strs += ["{}='{}'".format(k, v.replace("'", "\'")) for k, v in metadata.items()]
 
     return ' '.join(metadata_strs)

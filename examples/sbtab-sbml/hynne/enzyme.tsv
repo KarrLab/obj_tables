@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='Hynne_2001' Type='Data' Id='Enzyme'				
+!!ObjTables objTablesVersion='0.0.8' document='Hynne_2001' type='Data' id='Enzyme'				
 !ID	!Name	!CatalysedReaction	!KineticLaw	!Gene
 HK1	Hxk1p	vHK	Henri-Michaelis-Menten rate law	HXK1
 HK2	Hxk2p	vHK	Henri-Michaelis-Menten rate law	HXK2

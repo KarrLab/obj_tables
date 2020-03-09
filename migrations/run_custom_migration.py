@@ -10,8 +10,8 @@ import glob
 import sys
 
 sys.path.insert(0, 'migrations')
-import migration_2019_10_10
+import migration_2020_03_09 as migration
 
 for filename in glob.glob('**/*.xlsx', recursive=True):
     print('Migrating {}'.format(filename))
-    migration_2019_10_10.transform(filename)
+    migration.transform(filename)

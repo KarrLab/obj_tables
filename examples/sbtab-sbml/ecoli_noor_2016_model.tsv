@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='E. coli central carbon metabolism - unbalanced kinetic data' Type='Data' Id='Reaction'								
+!!ObjTables objTablesVersion='0.0.8' document='E. coli central carbon metabolism - unbalanced kinetic data' type='Data' id='Reaction'								
 !ID	!ReactionFormula	!Identifiers:kegg.reaction	!IsReversible	!Gene	!NameForPlots			
 PTS_RPTSsy	D_Glucose + Phosphoenolpyruvate <=> Pyruvate + D_Glucose_6_phosphate	RPTSsy	TRUE	PTS	pts			
 PGI_R02740	D_Glucose_6_phosphate <=> D_Fructose_6_phosphate	R02740	TRUE	PGI	pgi			
@@ -31,7 +31,7 @@ FUM_R01082	Fumarate <=> _S__Malate	R01082	TRUE	FUM	fum
 MDH_R00342	_S__Malate + NADplus <=> NADH + Oxaloacetate	R00342	TRUE	MDH	mdh			
 PPC_R00345	Orthophosphate + Oxaloacetate <=> CO2 + Phosphoenolpyruvate	R00345	TRUE	PPC	ppc			
 %								
-!!ObjTables ObjTablesVersion='0.0.8' Document='E. coli central carbon metabolism - unbalanced kinetic data' Type='Data' Id='Compound'								
+!!ObjTables objTablesVersion='0.0.8' document='E. coli central carbon metabolism - unbalanced kinetic data' type='Data' id='Compound'								
 !ID	!Name	!Identifiers:kegg.compound	!IsConstant	!NameForPlots				
 _S__Malate	(S)-Malate	C00149	FALSE	(S)-Malate				
 Acetyl_CoA	Acetyl-CoA	C00024	FALSE	Acetyl-CoA				
@@ -74,9 +74,9 @@ _2_Phospho_D_glycerate	2-Phospho-D-glycerate	C00631	FALSE	2-Phospho-D-glycerate
 Succinate	Succinate	C00042	FALSE	Succinate				
 Sedoheptulose_7_phosphate	Sedoheptulose 7-phosphate	C05382	FALSE	Sedoheptulose 7-phosphate				
 %								
-!!ObjTables ObjTablesVersion='0.0.8' Document='E. coli central carbon metabolism - unbalanced kinetic data' Type='Data' Id='Quantity' Description='Parameter'								
+!!ObjTables objTablesVersion='0.0.8' document='E. coli central carbon metabolism - unbalanced kinetic data' type='Data' id='Quantity' description='Parameter'								
 %								
-!!ObjTables ObjTablesVersion='0.0.8' Document='E. coli central carbon metabolism - unbalanced kinetic data' Type='Data' Id='Position' Description='Layout'								
+!!ObjTables objTablesVersion='0.0.8' document='E. coli central carbon metabolism - unbalanced kinetic data' type='Data' id='Position' description='Layout'								
 !Element	!PositionX	!PositionY						
 _S__Malate	0.32772	0.095058						
 Acetyl_CoA	0.359426	0.22902						
@@ -219,7 +219,7 @@ FUM_R01082	0.340351	0.035483
 MDH_R00342	0.33416	0.140744						
 PPC_R00345	0.40095304	0.50690003						
 %								
-!!ObjTables ObjTablesVersion='0.0.8' Document='E. coli central carbon metabolism - unbalanced kinetic data' Type='Data' Id='Quantity'								
+!!ObjTables objTablesVersion='0.0.8' document='E. coli central carbon metabolism - unbalanced kinetic data' type='Data' id='Quantity'								
 !QuantityType	!Compound	!Compound:Identifiers:kegg.compound	!Concentration:Min	!Concentration:Max	!Reaction	!Reaction:Identifiers:kegg.reaction	!Value	!Unit
 equilibrium constant					PTS_RPTSsy	RPTSsy	57262184	dimensionless
 equilibrium constant					PGI_R02740	R02740	0.36350845	dimensionless

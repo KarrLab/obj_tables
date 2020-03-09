@@ -1,9 +1,9 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='ecoli_wortel_2018' Date='2019-01-04' Type='Data' Id='Compartment'							
+!!ObjTables objTablesVersion='0.0.8' document='ecoli_wortel_2018' date='2019-01-04' type='Data' id='Compartment'							
 !ID	!Name	!Size	!Unit	!SBOTerm			
 Cell	Cell	1					
 external	external	1					
 							
-!!ObjTables ObjTablesVersion='0.0.8' Document='ecoli_wortel_2018' Date='2019-01-04' Type='Data' Id='Compound'							
+!!ObjTables objTablesVersion='0.0.8' document='ecoli_wortel_2018' date='2019-01-04' type='Data' id='Compound'							
 !ID	!Name	!Location	!IsConstant	!SBOTerm	!InitialConcentration	!hasOnlySubstanceUnits	
 ACETATE	acetate	Cell	FALSE		0	FALSE	
 ACETATE_ext	extracellular acetate	external	FALSE		0	FALSE	
@@ -57,7 +57,7 @@ SUCC_CoA	succinyl-coenzyme A	Cell	FALSE		0	FALSE
 SUCC_ext	extracellular succinate	external	FALSE		0	FALSE	
 XYL_5_P	xylulose-5-phosphate	Cell	FALSE		0	FALSE	
 							
-!!ObjTables ObjTablesVersion='0.0.8' Document='ecoli_wortel_2018' Date='2019-01-04' Type='Data' Id='Reaction'							
+!!ObjTables objTablesVersion='0.0.8' document='ecoli_wortel_2018' date='2019-01-04' type='Data' id='Reaction'							
 !ID	!Name	!ReactionFormula	!Location	!Regulator	!KineticLaw	!SBOTerm	!IsReversible
 R54ra	R54ra	ACETYL_CoA + NADH <=> ACALD + NAD + CoASH					TRUE
 R54rb	R54rb	ACALD + NADH <=> ETOH + NAD					TRUE

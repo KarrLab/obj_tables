@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Quantity' Description='Ex 21 - Timepoint',,
+!!ObjTables objTablesVersion='0.0.8' type='Data' id='Quantity' description='Ex 21 - Timepoint',,
 !ID,!Time,!Unit
 t0,0,s
 t1,0.5,s

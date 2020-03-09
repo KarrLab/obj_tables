@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='Boolean_example' Type='Data' Id='Relationship'					
+!!ObjTables objTablesVersion='0.0.8' document='Boolean_example' type='Data' id='Relationship'					
 !ID	!From	!To	!Value	!IsSymmetric	!Sign
 R1	A	B	1	FALSE	+
 R2	B	C	1	FALSE	+

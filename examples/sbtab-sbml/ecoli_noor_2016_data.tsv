@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Document='E. coli central carbon metabolism - unbalanced kinetic data' Type='Data' Id='Quantity' Description='Parameter'							
+!!ObjTables objTablesVersion='0.0.8' document='E. coli central carbon metabolism - unbalanced kinetic data' type='Data' id='Quantity' description='Parameter'							
 !QuantityType	!Reaction:SBML:reaction:id	!Compound:SBML:species:id	!Mean	!Std	!Unit	!Reaction:Identifiers:kegg.reaction	!Compound:Identifiers:kegg.compound
 equilibrium constant	PTS_RPTSsy		57262184	57262184	dimensionless	RPTSsy	
 equilibrium constant	PGI_R02740		0.36350845	0.36350845	dimensionless	R02740	
@@ -28,8 +28,8 @@ equilibrium constant	KGD_R08549		92567323	92567323	dimensionless	R08549
 equilibrium constant	SCS_R00405		0.58290232	0.58290232	dimensionless	R00405	
 equilibrium constant	SDH_R02164		6026.7589	6026.7589	dimensionless	R02164	
 equilibrium constant	FUM_R01082		4.0148279	4.0148279	dimensionless	R01082	
-equilibrium constant	MDH_R00342		1.94098E-05	1.94098E-05	dimensionless	R00342	
-equilibrium constant	PPC_R00345		3.7191E-07	3.7191E-07	dimensionless	R00345	
+equilibrium constant	MDH_R00342		1.94E-05	1.94E-05	dimensionless	R00342	
+equilibrium constant	PPC_R00345		3.72E-07	3.72E-07	dimensionless	R00345	
 catalytic rate constant geometric mean	PTS_RPTSsy		nan	nan	1/s	RPTSsy	
 catalytic rate constant geometric mean	PGI_R02740		nan	nan	1/s	R02740	
 catalytic rate constant geometric mean	PFK_R04779		nan	nan	1/s	R04779	

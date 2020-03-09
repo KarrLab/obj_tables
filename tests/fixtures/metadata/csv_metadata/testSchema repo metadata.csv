@@ -1,4 +1,4 @@
-!!ObjTables Type='Data' Id='SchemaRepoMetadata',
+!!ObjTables type='Data' id='SchemaRepoMetadata',
 !Branch,master
 !Revision,feb697e6e90f06da7a0aecb873ad8e235053a97f
 !Url,https://github.com/KarrLab/test_repo

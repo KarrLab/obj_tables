@@ -460,7 +460,7 @@ def init_schema(filename, name=None, out_filename=None):
 
     rows = ws
     _, model_metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows)
-    if model_metadata.get('Type', None) != SCHEMA_TABLE_TYPE:
+    if model_metadata.get('type', None) != SCHEMA_TABLE_TYPE:
         raise ValueError("Type must be '{}'.".format(SCHEMA_TABLE_TYPE))
 
     header_row = rows[0]

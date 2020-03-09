@@ -1,4 +1,4 @@
-!!ObjTables Type='Data' Id='Subtest'		
+!!ObjTables type='Data' id='Subtest'		
 !Id	!Test	!References
 subtest_1	Mpn_Karr_2016	id_01
 subtest_2	Mpn_Karr_2016	id_01

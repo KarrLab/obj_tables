@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Quantity' Version='0.1' Level='1.0'  Description='Jiang Data'									
+!!ObjTables objTablesVersion='0.0.8' type='Data' id='Quantity' version='0.1' level='1.0' description='Jiang Data'									
 !QuantityType	!Reaction:SBML:reaction:id	!Compound:SBML:species:id	!Mean	!Std	!Unit	!Organism	!Reaction:Identifiers:kegg.reaction	!Compound:Identifiers:kegg.compound	!Reference
 concentration of enzyme	v4	nan	169000	nan	molecules/cell	Saccharomyces cerevisiae	R01061	nan	yeastGFP
 concentration of enzyme	v4	nan	120000	nan	molecules/cell	Saccharomyces cerevisiae	R01061	nan	yeastGFP

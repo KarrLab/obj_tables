@@ -1,4 +1,4 @@
-!!ObjTables ObjTablesVersion='0.0.8' Type='Data' Id='Quantity'								
+!!ObjTables objTablesVersion='0.0.8' type='Data' id='Quantity'								
 !QuantityType	!Reaction:SBML:reaction:id	!Compound:SBML:species:id	!Mean	!Std	!Unit	!Min	!Max	!Description
 Michaelis constant	R1	GLU_ext	0.12	0.141421	mM			
 Michaelis constant	R10a	GLU_6_P	0.4085	0.559386	mM			
@@ -153,7 +153,7 @@ equilibrium constant	R15r		57.1984		dimensionless
 equilibrium constant	R23r		0.0459076		dimensionless			
 equilibrium constant	R26r		0.448339		dimensionless			
 equilibrium constant	R28r		4.02687		dimensionless			
-equilibrium constant	R29r		6.07602E-06		dimensionless			
+equilibrium constant	R29r		6.08E-06		dimensionless			
 equilibrium constant	R53r		52000.6		dimensionless			
 equilibrium constant	R54ra		0.00083365		dimensionless			
 equilibrium constant	R54rb		4993.03		dimensionless			

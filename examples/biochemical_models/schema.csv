@@ -1,4 +1,4 @@
-!!ObjTables Type='Schema' TableName='Table/model and column/attribute definitions' Date='2019-09-13 00:00:00' ObjTablesVersion='0.0.8',,,,
+!!ObjTables type='Schema' name='Table/model and column/attribute definitions' date='2019-09-13 00:00:00' objTablesVersion='0.0.8',,,,
 !Name,!Type,!Parent,!Format,!Description
 Model,Class,,column,Model
 Id,Attribute,Model,Slug,Identifier

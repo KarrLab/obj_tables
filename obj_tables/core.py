@@ -2536,15 +2536,14 @@ class Model(object, metaclass=ModelMeta):
         Args:
             object (:obj:`object`): instance of :obj:`Model` or a collection (:obj:`dict`, :obj:`list`, :obj:`tuple`, or nested
                 combination of :obj:`dict`, :obj:`list`, and :obj:`tuple`) of instances of :obj:`Model`
+            models (:obj:`str`, optional): list of models to encode into JSON
             encode_primary_objects (:obj:`bool`, optional): if :obj:`True`, encode primary classes otherwise just encode their IDs
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
 
         Returns:
             :obj:`dict`: simple Python representation of the object
         """
-        if models:
-            models = set(models)
-        else:
+        if models is None:
             models = set()
 
         if encoded is None:
@@ -2581,6 +2580,7 @@ class Model(object, metaclass=ModelMeta):
                 raise ValueError('Instance of {} cannot be encoded'.format(object.__class__.__name__))
             return json
 
+        # encode objects into JSON
         return_val = add_to_encoding_queue(object)
 
         while not to_encode.empty():
@@ -2618,9 +2618,11 @@ class Model(object, metaclass=ModelMeta):
                 # unreachable because only instances of Model, list, tuple, and dict can be added to the encoding queue
                 pass
 
+        # check that it will be possible to decode the data out of JSON
         if len(models) > len(set([model.__name__ for model in models])):
             raise ValueError('Model names must be unique to encode objects')
 
+        # return JSON-encoded data
         return return_val
 
     @staticmethod

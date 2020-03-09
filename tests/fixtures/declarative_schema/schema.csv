@@ -1,4 +1,4 @@
-!!ObjTables Type='Schema' Description='Table/model and column/attribute definitions' ObjTablesVersion='0.0.8',,,,
+!!ObjTables type='Schema' description='Table/model and column/attribute definitions' objTablesVersion='0.0.8',,,,
 !Name,!Type,!Parent,!Format,!Description
 Parent,Class,,column,Represents a parent
 Id,Attribute,Parent,Slug,Identifier
