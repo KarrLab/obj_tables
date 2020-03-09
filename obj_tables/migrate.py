@@ -17,7 +17,7 @@ from urllib.parse import urlparse
 from warnings import warn
 import argparse
 import cement
-import collections
+import collections.abc
 import copy
 import datetime
 import git
@@ -298,7 +298,7 @@ class SchemaModule(object):
                 print_file(self.get_path())
 
             if mod_patterns:
-                if not isinstance(mod_patterns, collections.Iterable) or isinstance(mod_patterns, str):
+                if not isinstance(mod_patterns, collections.abc.Iterable) or isinstance(mod_patterns, str):
                     raise MigratorError(
                         "mod_patterns must be an iterator that's not a string; but it is a(n) '{}'".format(
                         type(mod_patterns).__name__))

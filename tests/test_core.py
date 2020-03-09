@@ -7,12 +7,10 @@
 :License: MIT
 """
 
-from contextlib import contextmanager
 from datetime import date, time, datetime
 from obj_tables import core
 import abduct
 import attrdict
-import collections
 import copy
 import enum
 import gc

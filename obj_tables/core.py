@@ -35,6 +35,7 @@ from wc_utils.util.types import get_subclasses, get_superclasses
 from wc_utils.workbook.core import get_column_letter
 import abc
 import collections
+import collections.abc
 import copy
 import dateutil.parser
 import inflect
@@ -642,7 +643,7 @@ class Manager(object):
         if isinstance(values, str):
             raise ValueError(
                 "_get_hashable_values does not take a string: '{}'".format(values))
-        if not isinstance(values, collections.Iterable):
+        if not isinstance(values, collections.abc.Iterable):
             raise ValueError(
                 "_get_hashable_values takes an iterable, not: '{}'".format(values))
         hashable_values = []
@@ -687,7 +688,7 @@ class Manager(object):
         if isinstance(attr_names, str):
             raise ValueError(
                 "_get_attribute_types(): attr_names cannot be a string: '{}'".format(attr_names))
-        if not isinstance(attr_names, collections.Iterable):
+        if not isinstance(attr_names, collections.abc.Iterable):
             raise ValueError(
                 "_get_attribute_types(): attr_names must be an iterable, not: '{}'".format(attr_names))
         cls = self.cls
