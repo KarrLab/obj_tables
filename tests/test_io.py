@@ -609,8 +609,8 @@ class TestIo(unittest.TestCase):
 
         WorkbookWriter().run(filename_xls1, [self.root], models=models)
 
-        convert(filename_xls1, filename_csv, models)
-        convert(filename_csv, filename_xls2, models)
+        convert(filename_xls1, filename_csv, None, models)
+        convert(filename_csv, filename_xls2, None, models)
 
         objects2 = WorkbookReader().run(filename_csv, models=models)
         self.assertTrue(self.root.is_equal(objects2[MainRoot][0]))
@@ -620,7 +620,7 @@ class TestIo(unittest.TestCase):
 
     def test_create_template(self):
         filename = os.path.join(self.tmp_dirname, 'test3.xlsx')
-        create_template(filename, [MainRoot, Node, Leaf])
+        create_template(filename, schema_name=None, models=[MainRoot, Node, Leaf])
         objects = WorkbookReader().run(filename, models=[MainRoot, Node, Leaf])
         self.assertEqual(objects, {
             MainRoot: [],
@@ -2510,8 +2510,8 @@ class JsonTestCase(unittest.TestCase):
         obj_tables.io.Writer.get_writer(filename_1_xlsx)().run(filename_1_xlsx, [root], models=models)
 
         # convert xlsx --> json
-        convert(filename_1_xlsx, filename_2_json, models=models)
-        convert(filename_1_xlsx, filename_2_json.replace('.json', '.yml'), models=models)
+        convert(filename_1_xlsx, filename_2_json, schema_name=None, models=models)
+        convert(filename_1_xlsx, filename_2_json.replace('.json', '.yml'), schema_name=None, models=models)
 
         objects2 = obj_tables.io.Reader.get_reader(filename_2_json)().run(filename_2_json, models=models,
                                                                           group_objects_by_model=True)
@@ -2520,7 +2520,7 @@ class JsonTestCase(unittest.TestCase):
         self.assertTrue(root.is_equal(root2))
 
         # convert json --> xlsx
-        convert(filename_2_json, filename_3_xlsx, models=models)
+        convert(filename_2_json, filename_3_xlsx, schema_name=None, models=models)
 
         objects2 = obj_tables.io.Reader.get_reader(filename_3_xlsx)().run(filename_3_xlsx, models=models,
                                                                           group_objects_by_model=True)
@@ -2667,7 +2667,7 @@ class JsonTestCase(unittest.TestCase):
         writer.run(json_path, objs, doc_metadata=self.gen_doc_metadata(), model_metadata=self.gen_model_metadata(Node), models=[Node])
 
         # convert to XLSX
-        convert(json_path, xlsx_path, models=[Node])
+        convert(json_path, xlsx_path, schema_name=None, models=[Node])
 
         # read from XLSX
         reader = obj_tables.io.WorkbookReader()
@@ -2698,17 +2698,20 @@ class JsonTestCase(unittest.TestCase):
 
         # write to XLSX
         writer = obj_tables.io.WorkbookWriter()
-        writer.run(xlsx_path, objs, doc_metadata=self.gen_doc_metadata(), model_metadata=self.gen_model_metadata(Node), models=[Node])
+        writer.run(xlsx_path, objs, schema_name='test', doc_metadata=self.gen_doc_metadata(),
+                   model_metadata=self.gen_model_metadata(Node), models=[Node])
 
         # convert to JSON
-        convert(xlsx_path, json_path, models=[Node])
+        convert(xlsx_path, json_path, schema_name='test', models=[Node])
 
         # read from XLSX
         reader = obj_tables.io.JsonReader()
         _ = reader.run(json_path, models=[Node])
         self.assertEqual(reader._doc_metadata['objTablesVersion'], obj_tables.__version__)
+        self.assertEqual(reader._doc_metadata['schema'], 'test')
         self.assertEqual(reader._doc_metadata['attr1'], 'val1')
         self.assertEqual(reader._doc_metadata['attr2'], 'val2')
+        self.assertNotIn('schema', reader._model_metadata[Node])
         self.assertEqual(reader._model_metadata[Node]['id'], 'Node')
         self.assertEqual(reader._model_metadata[Node]['name'], 'Nodes')
         self.assertEqual(reader._model_metadata[Node]['description'], 'Description of Node model')
@@ -3528,3 +3531,43 @@ class DocMetadataTestCase(unittest.TestCase):
         self.assertIn("abc='123'", wb['!!Parents'][0][0])
         self.assertTrue(wb['!!Parents'][0][0].startswith('!!!ObjTables'))
         self.assertTrue(wb['!!Children'][0][0].startswith('!!ObjTables'))
+
+    def test_schema_name(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+        objs = [
+            Node(id='node_1', name='node 1'),
+            Node(id='node_2', name='node 2')
+        ]
+
+        filename = os.path.join(self.dirname, 'test.xlsx')
+        schema_name = 'test_schema'
+
+        writer = WorkbookWriter()
+        reader = WorkbookReader()
+
+        # save without schema name
+        writer.run(filename, objs, models=[Node])
+
+        objs2 = reader.run(filename, models=[Node])
+        self.assertNotIn('schema', reader._doc_metadata)
+        self.assertNotIn('schema', reader._model_metadata[Node])
+
+        reader.run(filename, schema_name=schema_name, models=[Node])
+        self.assertNotIn('schema', reader._doc_metadata)
+        self.assertNotIn('schema', reader._model_metadata[Node])
+
+        # save with schema name
+        writer.run(filename, objs, schema_name=schema_name, models=[Node])
+
+        objs2 = reader.run(filename, models=[Node])
+        self.assertEqual(reader._doc_metadata['schema'], schema_name)
+        self.assertEqual(reader._model_metadata[Node]['schema'], schema_name)
+
+        objs2 = reader.run(filename, schema_name=schema_name, models=[Node])
+        self.assertEqual(reader._doc_metadata['schema'], schema_name)
+        self.assertEqual(reader._model_metadata[Node]['schema'], schema_name)
+
+        with self.assertRaisesRegex(AssertionError, 'Schema must be'):
+            reader.run(filename, schema_name=schema_name + 'diff', models=[Node])

@@ -109,10 +109,10 @@ class Convert(flask_restplus.Resource):
         format = args['format']
 
         try:
-            _, models = get_schema_models(schema_filename)
-            objs, doc_metadata, model_metadata = read_workbook(in_wb_filename, models)
+            schema_name, schema, models = get_schema_models(schema_filename)
+            objs, doc_metadata, model_metadata = read_workbook(in_wb_filename, models, schema_name=schema_name)
             out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
-                format, objs, doc_metadata, model_metadata, models=models,
+                format, objs, schema_name, doc_metadata, model_metadata, models=models,
                 write_toc=args['write-toc'],
                 write_schema=args['write-schema'],
                 protected=args['protected'])
@@ -173,7 +173,7 @@ class Diff(flask_restplus.Resource):
         wb_dir_2, wb_filename_2 = save_in_workbook(args['workbook-2'])
 
         try:
-            _, models = get_schema_models(schema_filename)
+            schema_name, schema, models = get_schema_models(schema_filename)
         except Exception as err:
             shutil.rmtree(schema_dir)
             shutil.rmtree(wb_dir_1)
@@ -185,6 +185,7 @@ class Diff(flask_restplus.Resource):
         try:
             diffs = utils.diff_workbooks(wb_filename_1, wb_filename_2,
                                          models, model_name,
+                                         schema_name=schema_name,
                                          **DEFAULT_READER_ARGS)
         except Exception as err:
             flask_restplus.abort(400, str(err))
@@ -218,10 +219,10 @@ gen_template_parser.add_argument('write-schema',
                                  required=False,
                                  help='If true, save schema with file')
 gen_template_parser.add_argument('protected',
-                            type=flask_restplus.inputs.boolean,
-                            default=True,
-                            required=False,
-                            help='If true, protect the table headings in the file from editing')
+                                 type=flask_restplus.inputs.boolean,
+                                 default=True,
+                                 required=False,
+                                 help='If true, protect the table headings in the file from editing')
 
 
 @api.route("/gen-template/",
@@ -242,14 +243,14 @@ class GenTemplate(flask_restplus.Resource):
         format = args['format']
 
         try:
-            _, models = get_schema_models(schema_filename)
+            schema_name, schema, models = get_schema_models(schema_filename)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
             shutil.rmtree(schema_dir)
 
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
-            format, [], {}, {}, models=models,
+            format, [], schema_name, {}, {}, models=models,
             write_toc=args['write-toc'],
             write_schema=args['write-schema'],
             protected=args['protected'])
@@ -342,10 +343,10 @@ norm_parser.add_argument('write-schema',
                          required=False,
                          help='If true, save schema with file')
 norm_parser.add_argument('protected',
-                            type=flask_restplus.inputs.boolean,
-                            default=True,
-                            required=False,
-                            help='If true, protect the table headings in the file from editing')
+                         type=flask_restplus.inputs.boolean,
+                         default=True,
+                         required=False,
+                         help='If true, protect the table headings in the file from editing')
 
 
 @api.route("/normalize/",
@@ -368,7 +369,7 @@ class Normalize(flask_restplus.Resource):
         format = args['format']
 
         try:
-            _, models = get_schema_models(schema_filename)
+            schema_name, schema, models = get_schema_models(schema_filename)
         except Exception as err:
             shutil.rmtree(schema_dir)
             shutil.rmtree(in_wb_dir)
@@ -377,7 +378,7 @@ class Normalize(flask_restplus.Resource):
         model = get_model(models, model_name)
 
         try:
-            objs, doc_metadata, model_metadata = read_workbook(in_wb_filename, models)
+            objs, doc_metadata, model_metadata = read_workbook(in_wb_filename, models, schema_name=schema_name)
             for obj in objs:
                 if isinstance(obj, model):
                     obj.normalize()
@@ -388,7 +389,7 @@ class Normalize(flask_restplus.Resource):
             shutil.rmtree(in_wb_dir)
 
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
-            format, objs, doc_metadata, model_metadata, models=models,
+            format, objs, schema_name, doc_metadata, model_metadata, models=models,
             write_toc=args['write-toc'],
             write_schema=args['write-schema'],
             protected=args['protected'])
@@ -434,8 +435,9 @@ class Validate(flask_restplus.Resource):
         wb_dir, wb_filename = save_in_workbook(args['workbook'])
 
         try:
-            _, models = get_schema_models(schema_filename)
+            schema_name, schema, models = get_schema_models(schema_filename)
             objs = io.Reader().run(wb_filename,
+                                   schema_name=schema_name,
                                    models=models,
                                    group_objects_by_model=False,
                                    validate=False,
@@ -485,7 +487,7 @@ class VizSchema(flask_restplus.Resource):
         schema_dir, schema_filename = save_schema(args['schema'])
 
         try:
-            schema = utils.init_schema(schema_filename)
+            schema, _ = utils.init_schema(schema_filename)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -587,12 +589,13 @@ def save_in_workbook(file_storage):
     return (dir, filename)
 
 
-def read_workbook(filename, models):
+def read_workbook(filename, models, schema_name=None):
     """ Read a workbook
 
     Args:
-        filename (:obj:`str`): path to workbook
+        filename (:obj:`str`): path to workbook        
         models (:obj:`list` of :obj:`core.Model`): models
+        schema_name (:obj:str`, optional): schema name
 
     Returns:
         :obj:`tuple`:
@@ -602,18 +605,20 @@ def read_workbook(filename, models):
     """
     reader = io.Reader()
     result = reader.run(filename,
+                        schema_name=schema_name,
                         models=models,
                         group_objects_by_model=False,
                         **DEFAULT_READER_ARGS)
     return result, reader._doc_metadata, reader._model_metadata
 
 
-def save_out_workbook(format, objs, doc_metadata, model_metadata, models,
+def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, models,
                       write_toc=False, write_schema=False, protected=True):
     """
     Args:
         format (:obj:`str`): format (.csv, .tsv, .xlsx)
         objs (:obj:`dict`): dictionary that maps types to instances
+        schema_name (:obj:`str`): schema name
         doc_metadata (:obj:`dict`): dictionary of document metadata
         model_metadata (:obj:`dict`): dictionary of model metadata
         models (:obj:`list` of :obj:`core.Model`): models
@@ -636,7 +641,7 @@ def save_out_workbook(format, objs, doc_metadata, model_metadata, models,
     else:
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
-    io.Writer().run(temp_filename, objs, doc_metadata=doc_metadata, model_metadata=model_metadata,
+    io.Writer().run(temp_filename, objs, schema_name=schema_name, doc_metadata=doc_metadata, model_metadata=model_metadata,
                     models=models, write_toc=write_toc, write_schema=write_schema, protected=protected)
 
     if format in ['csv', 'tsv']:

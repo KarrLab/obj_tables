@@ -55,23 +55,25 @@ class ConvertController(cement.Controller):
             (['out_wb_file'], dict(type=str,
                                    help='Path to save the workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['--write-toc'], dict(action='store_true', default=False,
-                                      help='If set, write a table of contents with the outputted workbook')),
+                                   help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the outputted workbook')),
             (['--unprotected'], dict(action='store_true', default=False,
-                                      help='If set, do not protect the outputted workbook')),
+                                     help='If set, do not protect the outputted workbook')),
         ]
 
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
-        _, models = get_schema_models(args.schema_file)
+        schema_name, schema, models = get_schema_models(args.schema_file)
         reader = io.Reader()
         objs = reader.run(args.in_wb_file,
+                          schema_name=schema_name,
                           models=models,
                           group_objects_by_model=False,
                           **DEFAULT_READER_ARGS)
         io.Writer().run(args.out_wb_file, objs,
+                        schema_name=schema_name,
                         doc_metadata=reader._doc_metadata,
                         model_metadata=reader._model_metadata,
                         models=models, write_toc=args.write_toc, write_schema=args.write_schema,
@@ -100,10 +102,11 @@ class DiffController(cement.Controller):
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
-        _, models = get_schema_models(args.schema_file)
+        schema_name, schema, models = get_schema_models(args.schema_file)
         try:
             diffs = utils.diff_workbooks(args.wb_file_1, args.wb_file_2,
-                                         models, args.model, **DEFAULT_READER_ARGS)
+                                         models, args.model,
+                                         schema_name=schema_name, **DEFAULT_READER_ARGS)
         except ValueError as err:
             raise SystemExit(str(err))
         if diffs:
@@ -147,18 +150,18 @@ class GenTemplateController(cement.Controller):
             (['template_file'], dict(type=str,
                                      help='Path to save the template (.csv, .tsv, .xlsx)')),
             (['--write-toc'], dict(action='store_true', default=False,
-                                      help='If set, write a table of contents with the outputted workbook')),
+                                   help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the template')),
             (['--unprotected'], dict(action='store_true', default=False,
-                                      help='If set, do not protect the outputted workbook')),
+                                     help='If set, do not protect the outputted workbook')),
         ]
 
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
-        _, models = get_schema_models(args.schema_file)
-        io.Writer().run(args.template_file, [], models=models,
+        schema_name, schema, models = get_schema_models(args.schema_file)
+        io.Writer().run(args.template_file, [], schema_name=schema_name, models=models,
                         write_toc=args.write_toc, write_schema=args.write_schema,
                         extra_entries=10, protected=(not args.unprotected))
         print('Template saved to {}'.format(args.template_file))
@@ -182,17 +185,17 @@ class NormalizeController(cement.Controller):
             (['out_wb_file'], dict(type=str,
                                    help='Path to save the normalized workbook (.csv, .json, .tsv, .xlsx, .yml)')),
             (['--write-toc'], dict(action='store_true', default=False,
-                                      help='If set, write a table of contents with the outputted workbook')),
+                                   help='If set, write a table of contents with the outputted workbook')),
             (['--write-schema'], dict(action='store_true', default=False,
                                       help='If set, save a copy of the schema within the normalized workbook')),
             (['--unprotected'], dict(action='store_true', default=False,
-                                      help='If set, do not protect the outputted workbook')),
+                                     help='If set, do not protect the outputted workbook')),
         ]
 
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
-        _, models = get_schema_models(args.schema_file)
+        schema_name, schema, models = get_schema_models(args.schema_file)
         for model in models:
             if model.__name__ == args.model:
                 break
@@ -201,6 +204,7 @@ class NormalizeController(cement.Controller):
 
         reader = io.Reader()
         objs = reader.run(args.in_wb_file,
+                          schema_name=schema_name,
                           models=models,
                           group_objects_by_model=False,
                           **DEFAULT_READER_ARGS)
@@ -208,6 +212,7 @@ class NormalizeController(cement.Controller):
             if isinstance(obj, model):
                 obj.normalize()
         io.Writer().run(args.out_wb_file, objs,
+                        schema_name=schema_name,
                         doc_metadata=reader._doc_metadata,
                         model_metadata=reader._model_metadata,
                         models=models, write_toc=args.write_toc, write_schema=args.write_schema,
@@ -233,9 +238,10 @@ class ValidateController(cement.Controller):
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
-        _, models = get_schema_models(args.schema_file)
+        schema_name, schema, models = get_schema_models(args.schema_file)
         try:
             io.Reader().run(args.wb_file,
+                            schema_name=schema_name,
                             models=models,
                             group_objects_by_model=False,
                             **DEFAULT_READER_ARGS)
@@ -262,7 +268,7 @@ class VizSchemaController(cement.Controller):
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
-        schema = utils.init_schema(args.schema_file)
+        schema, _ = utils.init_schema(args.schema_file)
         utils.viz_schema(schema, args.img_file)
         print('UML diagram saved to {}'.format(args.img_file))
 
@@ -296,15 +302,15 @@ def get_schema_models(filename):
         filename (:obj:`str`): path to schema or declarative representation of the schema
 
     Returns:
-        :obj:`tuple`:
-
-            * :obj:`types.ModuleType`: schema module
-            * :obj:`list` of :obj:`core.Model`: models
+        * :obj:`str`: schema name
+        * :obj:`types.ModuleType`: schema module
+        * :obj:`list` of :obj:`core.Model`: models
     """
     _, ext = os.path.splitext(filename)
     if ext == '.py':
         schema = utils.get_schema(filename)
+        schema_name = schema.__name__
     else:
-        schema = utils.init_schema(filename)
+        schema, schema_name = utils.init_schema(filename)
     models = list(utils.get_models(schema).values())
-    return (schema, models)
+    return (schema_name, schema, models)

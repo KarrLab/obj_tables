@@ -295,7 +295,7 @@ def read_metadata_from_file(pathname):
     """
     reader = obj_tables.io.Reader.get_reader(pathname)
 
-    metadata_instances = reader().run(pathname, [DataRepoMetadata, SchemaRepoMetadata],
+    metadata_instances = reader().run(pathname, models=[DataRepoMetadata, SchemaRepoMetadata],
                                       ignore_extra_models=True, ignore_missing_models=True,
                                       group_objects_by_model=True, ignore_attribute_order=True)
     metadata_class_to_attr = {
@@ -397,7 +397,7 @@ def get_attrs():
     return attr_names
 
 
-def init_schema(filename, name=None, out_filename=None):
+def init_schema(filename, out_filename=None):
     """ Initialize an `obj_tables` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
 
@@ -423,6 +423,7 @@ def init_schema(filename, name=None, out_filename=None):
 
     Returns:
         :obj:`types.ModuleType`: module with classes
+        :obj:`str`: schema name
 
     Raises:
         :obj:`ValueError`: if schema specification is not in a supported format or
@@ -459,7 +460,15 @@ def init_schema(filename, name=None, out_filename=None):
     attr_type = 'Attribute'
 
     rows = ws
-    _, model_metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows)
+    doc_metadata, model_metadata, _ = WorkbookReader.read_worksheet_metadata(sheet_name, rows)
+
+    doc_schema_name = doc_metadata.get('schema', None)
+    schema_schema_name = model_metadata.get('name', None)
+    assert not doc_schema_name or not schema_schema_name or doc_schema_name == schema_schema_name, \
+        "Schema names must be None or equal"
+    schema_name = doc_schema_name or schema_schema_name
+    module_name = schema_name or rand_schema_name()
+
     if model_metadata.get('type', None) != SCHEMA_TABLE_TYPE:
         raise ValueError("Type must be '{}'.".format(SCHEMA_TABLE_TYPE))
 
@@ -537,7 +546,6 @@ def init_schema(filename, name=None, out_filename=None):
         else:
             raise ValueError('Type "{}" is not supported.'.format(row[type_col_name]))
 
-    module_name = name or rand_schema_name()
     module = type(module_name, (types.ModuleType, ), {})
     all_attrs = get_attrs()
     for cls_spec in cls_specs.values():
@@ -620,7 +628,7 @@ def init_schema(filename, name=None, out_filename=None):
                 if cls_spec['desc']:
                     file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
 
-    return module
+    return (module, schema_name)
 
 
 def to_pandas(objs, models=None, get_related=True,
@@ -649,24 +657,27 @@ def to_pandas(objs, models=None, get_related=True,
                               validate=validate)
 
 
-def diff_workbooks(filename_1, filename_2, models, model_name, **kwargs):
+def diff_workbooks(filename_1, filename_2, models, model_name, schema_name=None, **kwargs):
     """ Get difference of models in two workbooks
 
     Args:
         filename_1 (:obj:`str`): path to first workbook
-        filename_2 (:obj:`str`): path to second workbook
+        filename_2 (:obj:`str`): path to second workbook        
         models (:obj:`list` of :obj:`Model`): schema for objects to compare
         model_name (:obj:`str`): Type of objects to compare
+        schema_name (:obj:`str`, optional): name of the schema
         kwargs (:obj:`dict`, optional): additional arguments to :obj:`obj_tables.io.Reader`
 
     Returns:
         :obj:`list` of :obj:`str`: list of differences
     """
     objs1 = obj_tables.io.Reader().run(filename_1,
+                                       schema_name=schema_name,
                                        models=models,
                                        group_objects_by_model=True,
                                        **kwargs)
     objs2 = obj_tables.io.Reader().run(filename_2,
+                                       schema_name=schema_name,
                                        models=models,
                                        group_objects_by_model=True,
                                        **kwargs)

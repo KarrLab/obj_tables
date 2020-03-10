@@ -34,7 +34,7 @@ class RestTestCase(unittest.TestCase):
 
     def test_convert(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
-        schema = utils.init_schema(schema_filename)
+        schema, _ = utils.init_schema(schema_filename)
         models = list(utils.get_models(schema).values())
 
         workbook_filename_1 = os.path.join(self.tempdir, 'file1.xlsx')
@@ -73,7 +73,7 @@ class RestTestCase(unittest.TestCase):
 
     def test_diff(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
-        schema = utils.init_schema(schema_filename)
+        schema, _ = utils.init_schema(schema_filename)
         models = list(utils.get_models(schema).values())
 
         xl_file_1 = os.path.join(self.tempdir, 'file1.xlsx')
@@ -146,7 +146,7 @@ class RestTestCase(unittest.TestCase):
 
     def test_gen_template(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
-        schema = utils.init_schema(schema_filename)
+        schema, _ = utils.init_schema(schema_filename)
         models = list(utils.get_models(schema).values())
 
         client = rest.app.test_client()
@@ -214,7 +214,7 @@ class RestTestCase(unittest.TestCase):
 
     def test_normalize(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
-        schema = utils.init_schema(schema_filename)
+        schema, _ = utils.init_schema(schema_filename)
         models = list(utils.get_models(schema).values())
 
         in_workbook_filename = os.path.join(self.tempdir, 'file1.xlsx')
@@ -293,7 +293,7 @@ class RestTestCase(unittest.TestCase):
         client = rest.app.test_client()
 
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
-        schema = utils.init_schema(schema_filename)
+        schema, _ = utils.init_schema(schema_filename)
         models = list(utils.get_models(schema).values())
 
         # valid Excel file
@@ -440,7 +440,7 @@ class RestTestCase(unittest.TestCase):
 
     def test_get_model(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
-        schema = utils.init_schema(schema_filename)
+        schema, _ = utils.init_schema(schema_filename)
         models = list(utils.get_models(schema).values())
 
         with self.assertRaises(werkzeug.exceptions.BadRequest):
