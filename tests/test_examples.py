@@ -131,7 +131,8 @@ class ExamplesTestCase(unittest.TestCase):
             app.run()
 
         template_filename = 'examples/biochemical_models/template.xlsx'
-        with __main__.App(argv=['gen-template', schema_filename, template_filename, '--write-schema']) as app:
+        with __main__.App(argv=['gen-template', schema_filename, template_filename, 
+                                '--write-schema']) as app:
             app.run()
 
         data_filename = 'examples/biochemical_models/data.xlsx'

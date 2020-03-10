@@ -948,6 +948,9 @@ class MultiSeparatedValuesWriter(WriterBase):
                              protected=protected)
 
         with open(path, 'w') as out_file:
+            out_file.write(format_doc_metadata(schema_name, doc_metadata or {}))
+            out_file.write("\n")
+
             all_tmp_paths = list(glob.glob(tmp_paths))
             sorted_tmp_paths = [
                 os.path.join(tmp_dirname, TOC_SHEET_NAME + ext),
@@ -965,7 +968,9 @@ class MultiSeparatedValuesWriter(WriterBase):
 
             for i_path, tmp_path in enumerate(sorted_tmp_paths):
                 with open(tmp_path, 'r') as in_file:
-                    out_file.write(in_file.read())
+                    for line in in_file:
+                        if not line.startswith('!!!'):
+                            out_file.write(line)
                 if i_path < len(all_tmp_paths) - 1:
                     out_file.write('\n')
 

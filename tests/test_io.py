@@ -1067,6 +1067,15 @@ class MultiSeparatedValuesTestCase(unittest.TestCase):
         self.assertTrue(objs[Parent][0].is_equal(p_1))
         self.assertTrue(objs[Parent][1].is_equal(p_2))
 
+        with open(path, 'r') as file:
+            i_line = 0
+            for line in file:
+                i_line += 1
+                if i_line == 1:
+                    self.assertTrue(line.startswith('!!!ObjTables '))
+                else:
+                    self.assertFalse(line.startswith('!!!'))
+
         path = os.path.join(self.tmp_dirname, 'test.multi.csv')
         with open(path, 'w'):
             pass
