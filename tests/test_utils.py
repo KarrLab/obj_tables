@@ -341,7 +341,6 @@ class TestMetadata(unittest.TestCase):
         # self.test_data_repo.index.add([pathname])
 
         metadata_path = utils.add_metadata_to_file(pathname, [Model1], schema_package='test_repo')
-        print('\n\n')
         data_file_metadata = utils.read_metadata_from_file(metadata_path)
         self.assertTrue(isinstance(data_file_metadata.data_repo_metadata, DataRepoMetadata))
         self.assertTrue(isinstance(data_file_metadata.schema_repo_metadata, SchemaRepoMetadata))

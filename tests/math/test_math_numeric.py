@@ -115,7 +115,6 @@ class TableAttributeTestCase(unittest.TestCase):
         self.assertNotEqual(attr.validate(None, []), None)
 
         attr = obj_tables.math.numeric.TableAttribute(default=pandas.DataFrame({'a': [1, 2]}))
-        print(attr.validate(None, pandas.DataFrame({'a': [1, 2]}).astype(numpy.int64)))
         self.assertEqual(attr.validate(None, pandas.DataFrame({'a': [1, 2]}).astype(numpy.int64)), None)
         self.assertNotEqual(attr.validate(None, pandas.DataFrame({'a': [1., 2.]})), None)
 
@@ -148,8 +147,6 @@ class TableAttributeTestCase(unittest.TestCase):
         value = pandas.DataFrame({'a': [1, 2], 'b': [3, 4]})
         deserialized_value, error = attr.deserialize(attr.serialize(value))
         self.assertEqual(error, None)
-        print(value.index)
-        print(deserialized_value.index)
         self.assertTrue(deserialized_value.equals(value))
         self.assertEqual(deserialized_value.values.dtype.type, numpy.int64)
 
