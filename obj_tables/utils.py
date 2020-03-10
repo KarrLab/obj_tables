@@ -641,10 +641,10 @@ def init_schema(filename, out_filename=None):
             attr.description = attr_spec['desc']
             attrs[attr_spec['name']] = attr
 
-        if cls_spec['super_class']:
-            super_class = getattr(module, cls_spec['super_class'])
-        else:
+        if cls_spec['super_class'] is None or cls_spec['super_class'] == 'obj_tables.Model':
             super_class = Model
+        else:
+            super_class = getattr(module, cls_spec['super_class'])
 
         cls = type(cls_spec['name'], (super_class, ), attrs)
         setattr(module, cls_spec['name'], cls)
