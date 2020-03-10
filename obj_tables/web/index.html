@@ -86,7 +86,7 @@
             <h3>Table of contents</h3>
             <ul>
               <li><a href="#app">Web app</a></li>
-              <li><a href="#format">Tabular format for complex datasets</a>
+              <li><a href="#format">Tabular format for datasets</a>
                 <ul>
                   <li><a href="#schema-format">Format for schemas</a></li>
                   <li><a href="#data-types">Data types</a></li>
@@ -196,27 +196,33 @@
 
             <p class="before_list">The table should contain the following columns:</p>
             <ul>
-              <li><b><tt>!Name</tt></b>: Name of the component</li>
-              <li><b><tt>!Type</tt></b>: Type of the component (<tt>Class</tt> or <tt>Attribute</tt>)</li>
+              <li><b><tt>!Name</tt></b>: Name of the component.
+                <ul>
+                  <li>Models: A string that begins with a letter or underscore, and consists of letters, numbers, and underscores.</li>
+                  <li>Attributes: A string that begins with a letter or underscore, and consists of letters, numbers, underscores, colons, forward carets, dots, dashes, square brackets, and spaces.</li>
+                </ul></li>
+              <li><b><tt>!Type</tt></b>: Type of the component (<tt>Class</tt> or <tt>Attribute</tt>).</li>
               <li><b><tt>!Parent</tt></b>:
                 <ul>
-                  <li>Models: Not applicable</li>
-                  <li>Atttributes: Name of the class that the attribute belongs to</li>
+                  <li>Models: Name of the parent class. Because this is implemented using Python class inheritance, this must specify an acyclic inheritance graph.</li>
+                  <li>Attributes: Name of the class that the attribute belongs to.</li>
                 </ul></li>
               <li><b><tt>!Format</tt></b>:
                 <ul>
-                  <li>Tables:
+                  <li>Models:
                     <ul>
-                      <li><tt>row</tt>: Encode the instances of the class as rows</li>
-                      <li><tt>column</tt>: Encode the instances of the class as columns (i.e. transposed table)</li>
-                      <li><tt>multiple_cells</tt>: Encode the instances of the class within a group of columns in the tables of the one-to-many and one-to-one related models</li>
-                      <li><tt>cell</tt>: Encode the instances of the class within columns of the related models, optionally, using a grammar</li>
+                      <li><tt>row</tt>: Encode the instances of the class as rows.</li>
+                      <li><tt>column</tt>: Encode the instances of the class as columns (i.e. transposed table).</li>
+                      <li><tt>multiple_cells</tt>: Encode the instances of the class within a group of columns in the tables of the one-to-many and one-to-one related models.</li>
+                      <li><tt>cell</tt>: Encode the instances of the class within columns of the related models, optionally, using a grammar. See the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about working with grammars.</li>
                     </ul>
                   </li>
-                  <li>Columns: One of the data types listed below (e.g., <tt>String</tt>, <tt>Float</tt>). Arguments for the data types can be description in parenthesis (e.g., <tt>String(min_length=5)</tt>. The arguments enable users to customize how data types function and are validated. See the documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about the types and their arguments.</li>
+                  <li>Attributes: One of the data types listed below (e.g., <tt>String</tt>, <tt>Float</tt>). Arguments for the data types can be description in parenthesis (e.g., <tt>String(min_length=5)</tt>. The arguments enable users to customize how data types function and are validated. See the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about the types and their arguments.</li>
                 </ul>
               </li>
-              <li>(Optional) <b><tt>!Description</tt></b>: Description of the component</li>
+              <li><b><tt>!Verbose name</tt></b> (Optional): Verbose name of the component.</li>
+              <li><b><tt>!Verbose name plural</tt></b> (Optional): Plural verbose name of the component.</li>
+              <li><b><tt>!Description</tt></b> (Optional): Description of the component.</li>
             </ul>
 
             <h3>Example</h3>
@@ -725,7 +731,8 @@ obj_tables.io.Writer().run(filename, objects,
           <p class="before_list">Below are several resources which can be helpful for working with <i>ObjTables</i>.</p>
           <ul>
             <li>Microsoft Excel <a href="https://products.office.com/en-us/excel"><i class="fi-link"></i></a></li>
-            <li>WPS Office <a href="https://www.wps.com"><i class="fi-link"></i></a>: Free editor for Linux, Mac, and Windows</li>
+            <li>Python <a href="https://python.org/"><i class="fi-link"></i></a></li>
+            <li>WPS Office <a href="https://www.wps.com"><i class="fi-link"></i></a>: Free editor for Linux, Mac, and Windows</li>            
           </ul>
         </div>
       </div>

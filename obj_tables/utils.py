@@ -18,6 +18,7 @@ from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute
 from wc_utils.util import git
 import collections
 import importlib
+import networkx
 import obj_tables.io
 import os.path
 import pandas
@@ -401,21 +402,36 @@ def init_schema(filename, out_filename=None):
     """ Initialize an `obj_tables` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
 
-    The tabular specification should contain the following columns for each format:
+    Schemas (classes and attributes) should be defined using the following tabular format. 
+    Classes and their attributes can be defined in any order.
 
-    .. table:: Computational prediction tools that can generate data which can be used to build, calibrate, and validate WC models.
-        :name: tab_prediction_tools
+    .. table:: Format for specifying classes.
+        :name: class_tabular_schema
 
-        ===================  ==================  ========
-        `obj_tables`         SBtab (deprecated)  Optional
-        ===================  ==================  ========
-        Name                 !Name
-        Type                 !Type
-        Parent               !IsPartOf
-        Format               !Format
-        Verbose name         !VerboseName        Y
-        Verbose name plural  !VerboseNamePlural  Y
-        Description          !Description        Y
+        =====================================  =========================  =========================================  ========
+        Python                                 Tabular column             Tabular column values                      Optional
+        =====================================  =========================  =========================================  ========
+        Class name                             !Name                      Valid Python name
+        Class                                  !Type                      `Class`
+        Superclass                             !Parent                    Empty or the name of another class
+        `obj_tables.Meta.table_format`         !Format                    `row`, `column`, `multiple_cells`, `cell`
+        `obj_tables.Meta.verbose_name`         !Verbose name              String                                     Y
+        `obj_tables.Meta.verbose_name_plural`  !Verbose name plural       String                                     Y
+        `obj_tables.Meta.description`          !Description                                                          Y
+
+    .. table:: Format for specifying attributes of classes.
+        :name: attribute_tabular_schema
+
+        ======================================================  ====================  ==========================================  ========
+        Python                                                  Tabular column        Tabular column values                       Optional
+        ======================================================  ====================  ==========================================  ========
+        Name of instance of subclass of `obj_tables.Attribute`  !Name                 a-z, A-Z, 0-9, _, :, >, ., -, [, ], or ' '
+        `obj_tables.Attribute`                                  !Type                 `Attribute`
+        Parent class                                            !Parent               Name of the parent class
+        Subclass of `obj_tables.Attribute`                      !Format               `Boolean`, `Float`, `String`, etc.
+        `obj_tables.Attribute.verbose_name`                     !Verbose name         String                                      Y
+        `obj_tables.Attribute.verbose_name_plural`              !Verbose name plural  String                                      Y
+        `obj_tables.Attribute.description`                      !Description          String                                      Y
 
     Args:
         filename (:obj:`str`): path to
@@ -426,8 +442,10 @@ def init_schema(filename, out_filename=None):
         :obj:`str`: schema name
 
     Raises:
-        :obj:`ValueError`: if schema specification is not in a supported format or
-            the schema specification is invalid
+        :obj:`ValueError`: if schema specification is not in a supported format, 
+            an Excel schema file does not contain a worksheet with the name `!!_Schema` which specifies the schema,
+            the class inheritance structure is cyclic,
+            or the schema specification is invalid (e.g., a class is defined multiple defined)
     """
     from obj_tables.io import WorkbookReader
 
@@ -472,6 +490,7 @@ def init_schema(filename, out_filename=None):
     if model_metadata.get('type', None) != SCHEMA_TABLE_TYPE:
         raise ValueError("Type must be '{}'.".format(SCHEMA_TABLE_TYPE))
 
+    # parse model specifications
     header_row = rows[0]
     rows = rows[1:]
 
@@ -485,15 +504,26 @@ def init_schema(filename, out_filename=None):
             cls_name = row[name_col_name]
             if cls_name in cls_specs:
                 cls = cls_specs[cls_name]
+                if cls['explictly_defined']:
+                    raise ValueError('Class "{}" can only be defined once.'.format(
+                        cls_name))
+                cls['explictly_defined'] = True
             else:
                 cls = cls_specs[cls_name] = {
+                    'super_class': None,
                     'name': cls_name,
                     'attrs': {},
                     'attr_order': [],
+                    'explictly_defined': True,
                 }
+                if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', cls_name):
+                    raise ValueError(("Invalid class name '{}'. "
+                                      "Class names must start with a letter or underscore, "
+                                      "and consist of letters, numbers, and underscores.").format(
+                        cls_name))
 
             if row[parent_col_name]:
-                raise ValueError('Class "{}" cannot have a parent.'.format(cls_name))
+                cls['super_class'] = row[parent_col_name]
 
             def_verbose_name = cls_name
 
@@ -508,6 +538,8 @@ def init_schema(filename, out_filename=None):
                 cls = cls_specs[cls_name]
             else:
                 cls = cls_specs[cls_name] = {
+                    'explictly_defined': False,
+                    'super_class': None,
                     'name': cls_name,
                     'attrs': {},
                     'attr_order': [],
@@ -516,11 +548,17 @@ def init_schema(filename, out_filename=None):
                     'verbose_name_plural': cls_name,
                     'desc': None,
                 }
+                if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', cls_name):
+                    raise ValueError(("Invalid class name '{}'. "
+                                      "Class names must start with a letter or underscore, "
+                                      "and consist of letters, numbers, and underscores.").format(
+                        cls_name))
 
             attr_name = row[name_col_name]
-            if not re.match(r'^[a-zA-Z0-9_:>\.\- \[\]]+$', attr_name):
+            if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_:>\.\- \[\]]*$', attr_name):
                 raise ValueError(("Invalid attribute name '{}'. "
-                                  "Attribute names must consist of alphanumeric "
+                                  "Attribute names must start with a letter or underscore, "
+                                  "and consist of alphanumeric "
                                   "characters, underscores, colons, forward carets, "
                                   "dots, dashes, square brackets, and spaces.").format(
                     attr_name))
@@ -546,9 +584,31 @@ def init_schema(filename, out_filename=None):
         else:
             raise ValueError('Type "{}" is not supported.'.format(row[type_col_name]))
 
+    # check that the inheritance graph is valid (i.e. acyclic)
+    inheritance_graph = networkx.DiGraph()
+    sub_classes = {'obj_tables.Model': []}
+    for cls_name, cls_spec in cls_specs.items():
+        if cls_spec['super_class']:
+            inheritance_graph.add_edge(cls_spec['super_class'], cls_name)
+            if cls_spec['super_class'] not in sub_classes:
+                sub_classes[cls_spec['super_class']] = []
+            sub_classes[cls_spec['super_class']].append(cls_name)
+        else:
+            inheritance_graph.add_edge('obj_tables.Model', cls_name)
+            sub_classes['obj_tables.Model'].append(cls_name)
+    if list(networkx.simple_cycles(inheritance_graph)):
+        raise ValueError('The model inheritance graph must be acyclic.')
+
+    # create classes
     module = type(module_name, (types.ModuleType, ), {})
+
     all_attrs = get_attrs()
-    for cls_spec in cls_specs.values():
+    classes_to_construct = list(sub_classes['obj_tables.Model'])
+    while classes_to_construct:
+        cls_name = classes_to_construct.pop()
+        cls_spec = cls_specs[cls_name]
+        classes_to_construct.extend(sub_classes.get(cls_name, []))
+
         meta_attrs = {
             'table_format': cls_spec['tab_format'],
             'attribute_order': tuple(cls_spec['attr_order']),
@@ -581,14 +641,22 @@ def init_schema(filename, out_filename=None):
             attr.description = attr_spec['desc']
             attrs[attr_spec['name']] = attr
 
-        cls = type(cls_spec['name'], (Model, ), attrs)
+        if cls_spec['super_class']:
+            super_class = getattr(module, cls_spec['super_class'])
+        else:
+            super_class = Model
+
+        cls = type(cls_spec['name'], (super_class, ), attrs)
         setattr(module, cls_spec['name'], cls)
 
+    # optionally, generate a Python file
     if out_filename:
         with open(out_filename, 'w') as file:
+            # print documentation
             file.write('# Schema automatically generated at {:%Y-%m-%d %H:%M:%S}\n\n'.format(
                 datetime.now()))
 
+            # print import statements
             imported_modules = set(['obj_tables'])
             for cls_spec in cls_specs.values():
                 for attr_spec in cls_spec['attrs'].values():
@@ -598,10 +666,28 @@ def init_schema(filename, out_filename=None):
             for imported_module in imported_modules:
                 file.write('import {}\n'.format(imported_module))
 
-            for cls_spec in cls_specs.values():
+            # print definition of * import behavior
+            file.write('\n')
+            file.write('\n')
+            file.write('__all__ = [\n')
+            file.write(''.join("    '{}'\n".format(cls_name) for cls_name in sorted(cls_specs.keys())))
+            file.write(']\n')
+
+            # print class definitions
+            classes_to_define = list(sub_classes['obj_tables.Model'])
+            while classes_to_define:
+                cls_name = classes_to_define.pop()
+                cls_spec = cls_specs[cls_name]
+                classes_to_define.extend(sub_classes.get(cls_name, []))
+
+                if cls_spec['super_class']:
+                    super_class = cls_spec['super_class']
+                else:
+                    super_class = 'obj_tables.Model'
+
                 file.write('\n')
                 file.write('\n')
-                file.write('class {}(obj_tables.Model):\n'.format(cls_spec['name']))
+                file.write('class {}({}):\n'.format(cls_spec['name'], super_class))
                 if cls_spec['desc']:
                     file.write('    """ {} """\n\n'.format(cls_spec['desc']))
                 for attr_name in cls_spec['attr_order']:
@@ -628,6 +714,7 @@ def init_schema(filename, out_filename=None):
                 if cls_spec['desc']:
                     file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
 
+    # return the created module and its name
     return (module, schema_name)
 
 

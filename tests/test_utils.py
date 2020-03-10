@@ -7,6 +7,7 @@
 :License: MIT
 """
 import git
+import numpy.random
 import numpy.testing
 import obj_tables
 import obj_tables.io
@@ -20,6 +21,7 @@ import wc_utils.workbook.io
 from obj_tables import core, utils
 from obj_tables.utils import DataRepoMetadata, SchemaRepoMetadata
 from wc_utils.util.git import GitHubRepoForTests, RepoMetadataCollectionType
+from wc_utils.util.types import get_subclasses
 
 
 class Root(core.Model):
@@ -489,7 +491,7 @@ class InitSchemaTestCase(unittest.TestCase):
         wb = wc_utils.workbook.io.read(schema_xl)
         wb['!!' + core.SCHEMA_SHEET_NAME][3][0] = wb['!!' + core.SCHEMA_SHEET_NAME][3][0] + '?'
         wc_utils.workbook.io.write(schema_xl_2, wb)
-        with self.assertRaisesRegex(ValueError, 'names must consist of'):
+        with self.assertRaisesRegex(ValueError, 'names must start with'):
             utils.init_schema(schema_xl_2,
                               out_filename=out_filename)
 
@@ -537,6 +539,91 @@ class InitSchemaTestCase(unittest.TestCase):
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
+    def test_init_schema_with_inheritance(self):
+        csv_filename = os.path.join(self.tmp_dirname, 'schema.csv')
+        py_filename = os.path.join(self.tmp_dirname, 'schema.py')
+
+        ws_metadata = ['!!ObjTables',
+                       "type='{}'".format(core.SCHEMA_TABLE_TYPE),
+                       "description='Schema'",
+                       "objTablesVersion='{}'".format(obj_tables.__version__),
+                       ]
+        col_headings = [
+            '!Name',
+            '!Type',
+            '!Parent',
+            '!Format',
+            '!Description',
+        ]
+
+        rows = [
+            '{}\n'.format(','.join(['ClsA1', 'Class', '', 'row', ''])),
+            '{}\n'.format(','.join(['id_a1', 'Attribute', 'ClsA1', 'String', 'Id-a1'])),
+
+            '{}\n'.format(','.join(['ClsA2', 'Class', 'ClsA1', 'row', ''])),
+            '{}\n'.format(','.join(['id_a2', 'Attribute', 'ClsA2', 'String', 'Id-a2'])),
+
+            '{}\n'.format(','.join(['ClsA30', 'Class', 'ClsA2', 'row', ''])),
+            '{}\n'.format(','.join(['id_a30', 'Attribute', 'ClsA30', 'String', 'Id-a30'])),
+
+            '{}\n'.format(','.join(['ClsA31', 'Class', 'ClsA2', 'row', ''])),
+            '{}\n'.format(','.join(['id_a31', 'Attribute', 'ClsA31', 'String', 'Id-a31'])),
+
+            '{}\n'.format(','.join(['ClsB1', 'Class', '', 'row', ''])),
+            '{}\n'.format(','.join(['id_b1', 'Attribute', 'ClsB1', 'String', 'Id-b1'])),
+
+            '{}\n'.format(','.join(['ClsB2', 'Class', 'ClsB1', 'row', ''])),
+            '{}\n'.format(','.join(['id_b2', 'Attribute', 'ClsB2', 'String', 'Id-b2'])),
+
+            '{}\n'.format(','.join(['ClsB30', 'Class', 'ClsB2', 'row', ''])),
+            '{}\n'.format(','.join(['id_b30', 'Attribute', 'ClsB30', 'String', 'Id-b30'])),
+
+            '{}\n'.format(','.join(['ClsB31', 'Class', 'ClsB2', 'row', ''])),
+            '{}\n'.format(','.join(['id_b31', 'Attribute', 'ClsB31', 'String', 'Id-b31'])),
+        ]
+
+        with open(csv_filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write(''.join(rows))
+
+        schema, _ = utils.init_schema(csv_filename, out_filename=py_filename)
+        b31 = schema.ClsB31(id_b1='l1', id_b2='l2', id_b31='l3')
+        self.assertEqual(b31.id_b1, 'l1')
+        self.assertEqual(b31.id_b2, 'l2')
+        self.assertEqual(b31.id_b31, 'l3')
+        self.assertIsInstance(b31, schema.ClsB31)
+        self.assertIsInstance(b31, schema.ClsB2)
+        self.assertIsInstance(b31, schema.ClsB1)
+        self.assertIsInstance(b31, obj_tables.Model)
+        self.assertNotIsInstance(b31, schema.ClsA31)
+
+        self.assertEqual(set(get_subclasses(schema.ClsA1)), set([schema.ClsA2, schema.ClsA30, schema.ClsA31]))
+        self.assertEqual(set(get_subclasses(schema.ClsA2)), set([schema.ClsA30, schema.ClsA31]))
+        self.assertEqual(set(get_subclasses(schema.ClsA30)), set())
+
+        # check that Python file generated correctly
+        schema = utils.get_schema(py_filename)
+        b31 = schema.ClsB31(id_b1='l1', id_b2='l2', id_b31='l3')
+        self.assertEqual(b31.id_b1, 'l1')
+        self.assertEqual(b31.id_b2, 'l2')
+        self.assertEqual(b31.id_b31, 'l3')
+        self.assertEqual(set(get_subclasses(schema.ClsA1)), set([schema.ClsA2, schema.ClsA30, schema.ClsA31]))
+
+        # check that definition works with random order of rows
+        with open(csv_filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
+            file.write('{}\n'.format(','.join(col_headings)))
+            for i_row in numpy.random.permutation(len(rows)):
+                file.write(rows[i_row])
+
+        schema, _ = utils.init_schema(csv_filename)
+        b31 = schema.ClsB31(id_b1='l1', id_b2='l2', id_b31='l3')
+        self.assertEqual(b31.id_b1, 'l1')
+        self.assertEqual(b31.id_b2, 'l2')
+        self.assertEqual(b31.id_b31, 'l3')
+        self.assertEqual(set(get_subclasses(schema.ClsA1)), set([schema.ClsA2, schema.ClsA30, schema.ClsA31]))
+
     def test_init_schema_errors(self):
         with self.assertRaisesRegex(ValueError, 'format is not supported'):
             utils.init_schema(os.path.join(self.tmp_dirname, 'schema.txt'))
@@ -559,8 +646,9 @@ class InitSchemaTestCase(unittest.TestCase):
         with open(filename, 'w') as file:
             file.write('{}\n'.format(' '.join(ws_metadata)))
             file.write('{}\n'.format(','.join(col_headings)))
-            file.write('{}\n'.format(','.join(['Cls1', 'Class', 'Doc', 'column', ''])))
-        with self.assertRaisesRegex(ValueError, 'cannot have a parent'):
+            file.write('{}\n'.format(','.join(['Cls1', 'Class', 'Cls2', 'column', ''])))
+            file.write('{}\n'.format(','.join(['Cls2', 'Class', 'Cls1', 'column', ''])))
+        with self.assertRaisesRegex(ValueError, 'must be acyclic'):
             utils.init_schema(filename)
 
         with open(filename, 'w') as file:
@@ -568,6 +656,28 @@ class InitSchemaTestCase(unittest.TestCase):
             file.write('{}\n'.format(','.join(col_headings)))
             file.write('{}\n'.format(','.join(['Attr1', 'Attribute', 'Cls1', 'String', 'attr1'])))
             file.write('{}\n'.format(','.join(['Attr1', 'Attribute', 'Cls1', 'String', 'attr2'])))
+        with self.assertRaisesRegex(ValueError, 'can only be defined once'):
+            utils.init_schema(filename)
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['1Cls', 'Class', '', 'row', ''])))
+        with self.assertRaisesRegex(ValueError, 'must start'):
+            utils.init_schema(filename)
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Attr1', 'Attribute', '1Cls', 'String', 'attr2'])))
+        with self.assertRaisesRegex(ValueError, 'must start'):
+            utils.init_schema(filename)
+
+        with open(filename, 'w') as file:
+            file.write('{}\n'.format(' '.join(ws_metadata)))
+            file.write('{}\n'.format(','.join(col_headings)))
+            file.write('{}\n'.format(','.join(['Cls1', 'Class', '', 'row', ''])))
+            file.write('{}\n'.format(','.join(['Cls1', 'Class', '', 'row', ''])))
         with self.assertRaisesRegex(ValueError, 'can only be defined once'):
             utils.init_schema(filename)
 
