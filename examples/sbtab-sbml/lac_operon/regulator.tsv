@@ -1,3 +1,0 @@
-!!ObjTables objTablesVersion='0.0.8' document='lac_Operon' type='Data' id='Regulator'				
-!ID	!State	!TargetOperon	!TargetPromoter	!Description
-lac1	inactive	lac	lacP	Repressor

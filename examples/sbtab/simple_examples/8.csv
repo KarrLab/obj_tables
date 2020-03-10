@@ -1,0 +1,4 @@
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='Quantity' description='Ex 18 - Measurement',,,
+!ID,!Identifiers:obo.chebi,!QuantityType,!Unit
+Glucose,CHEBI:17234,concentration,mM
+Fructose,CHEBI:15824,concentration,mM

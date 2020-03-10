@@ -1,0 +1,4 @@
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='Quantity' description='Ex 21 - Timepoint',,
+!ID,!Time,!Unit
+t0,0,s
+t1,0.5,s

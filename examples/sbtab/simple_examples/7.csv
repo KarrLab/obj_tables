@@ -1,0 +1,8 @@
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='Quantity' description='Ex 15 - Quantity',,,,
+!ID,!Compound,!Condition,!SBO:concentration,!Unit
+con C1 wt,C1,wildtype,0.2,mM
+con C2 wt,C2,wildtype,1,mM
+con C3 wt,C3,wildtype,0.1,mM
+con C1 mu,C1,mutant,0.1,mM
+con C2 mu,C2,mutant,0.5,mM
+con C3 mu,C3,mutant,0.1,mM

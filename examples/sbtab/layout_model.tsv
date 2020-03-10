@@ -1,0 +1,42 @@
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' id='Compartment'										
+!ID	!Name	!Size	!Unit	!SBOTerm						
+Compartment_1	Compartment_1	nan								
+										
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' id='Compound'										
+!ID	!Name	!Location	!IsConstant	!SBOTerm	!InitialConcentration	!hasOnlySubstanceUnits				
+Species_1		Compartment_1	FALSE		nan	FALSE				
+Species_2		Compartment_1	FALSE		nan	FALSE				
+										
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' id='Reaction'										
+!ID	!Name	!ReactionFormula	!Location	!Regulator	!KineticLaw	!SBOTerm	!IsReversible			
+Reaction_1		1 Species_1 <=> 1 Species_2 <=> 					FALSE			
+Reaction_2		1 Species_2 <=> 1 Species_1 <=> 					FALSE			
+										
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' id='Layout' description='SBML Layout'										
+!ID	!Name	!SBML:layout:modelEntity	!SBML:layout:compartment:id	!SBML:layout:reaction:id	!SBML:layout:species:id	!SBML:layout:CurveSegment	!SBML:layout:X	!SBML:layout:Y	!SBML:layout:width	!SBML:layout:height
+Layout_1		LayoutCanvas							400	220
+CompartmentGlyph_1		Compartment	Compartment_1				5	5	390	210
+SpeciesGlyph_1		Species			Species_1		80	26	240	24
+TextGlyph_01		SpeciesText			Species_1		92	26	228	24
+SpeciesGlyph_2		Species			Species_2		80	170	240	24
+TextGlyph_02		SpeciesText			Species_2		92	170	228	24
+ReactionGlyph_1		ReactionCurve		Reaction_1		Start	165	105		
+ReactionGlyph_1		ReactionCurve		Reaction_1		End	165	115		
+SpeciesReferenceGlyph_1		SpeciesReferenceCurve		Reaction_1	SpeciesGlyph_1	Start	165	105		
+SpeciesReferenceGlyph_1		SpeciesReferenceCurve		Reaction_1	SpeciesGlyph_1	End	195	60		
+SpeciesReferenceGlyph_1		SpeciesReferenceCurve		Reaction_1	SpeciesGlyph_1	BasePoint1	165	90		
+SpeciesReferenceGlyph_1		SpeciesReferenceCurve		Reaction_1	SpeciesGlyph_1	BasePoint2	165	90		
+SpeciesReferenceGlyph_2		SpeciesReferenceCurve		Reaction_1	SpeciesGlyph_2	Start	165	115		
+SpeciesReferenceGlyph_2		SpeciesReferenceCurve		Reaction_1	SpeciesGlyph_2	End	195	160		
+SpeciesReferenceGlyph_2		SpeciesReferenceCurve		Reaction_1	SpeciesGlyph_2	BasePoint1	165	130		
+SpeciesReferenceGlyph_2		SpeciesReferenceCurve		Reaction_1	SpeciesGlyph_2	BasePoint2	165	130		
+ReactionGlyph_2		ReactionCurve		Reaction_2		Start	235	105		
+ReactionGlyph_2		ReactionCurve		Reaction_2		End	235	115		
+SpeciesReferenceGlyph_3		SpeciesReferenceCurve		Reaction_2	SpeciesGlyph_2	Start	235	115		
+SpeciesReferenceGlyph_3		SpeciesReferenceCurve		Reaction_2	SpeciesGlyph_2	End	205	160		
+SpeciesReferenceGlyph_3		SpeciesReferenceCurve		Reaction_2	SpeciesGlyph_2	BasePoint1	235	130		
+SpeciesReferenceGlyph_3		SpeciesReferenceCurve		Reaction_2	SpeciesGlyph_2	BasePoint2	235	130		
+SpeciesReferenceGlyph_4		SpeciesReferenceCurve		Reaction_2	SpeciesGlyph_1	Start	235	105		
+SpeciesReferenceGlyph_4		SpeciesReferenceCurve		Reaction_2	SpeciesGlyph_1	End	205	60		
+SpeciesReferenceGlyph_4		SpeciesReferenceCurve		Reaction_2	SpeciesGlyph_1	BasePoint1	235	90		
+SpeciesReferenceGlyph_4		SpeciesReferenceCurve		Reaction_2	SpeciesGlyph_1	BasePoint2	235	90		

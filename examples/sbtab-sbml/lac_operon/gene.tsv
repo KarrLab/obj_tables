@@ -1,5 +1,0 @@
-!!ObjTables objTablesVersion='0.0.8' document='lac_Operon' type='Data' id='Gene'			
-!ID	!LocusName	!GeneProduct	!Operon
-lacZ	b0342	beta-galactosidase	lac
-lacY	b0343	beta-galactoside permease	lac
-lacA	b0344	beta-galactoside transacetylase	lac

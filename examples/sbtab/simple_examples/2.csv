@@ -1,0 +1,23 @@
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='Reaction' description='Ex 3 - Reaction',,,,,
+!ID,!ReactionFormula,!Identifiers:kegg.reaction,!SBML:reaction:id,,
+R1,ATP + F6P <=> ADP + F16P,R00658,r1,,
+R2,F16P + H2O <=> F6P + Pi,R01015,r2,,
+% That's a comment.,,,,,
+,,,,,
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='Compound' description='Ex 4 - Compound',,,,,
+!ID,!Name,!Identifiers:kegg.compound,!SBML:species:id,,
+F6P,Fructose 6-phosphate,C05345,f6p,,
+ATP,ATP,C00002,atp,,
+ADP,ADP,C00008,adp,,
+,,,,,
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='Quantity' description='Ex 6 - Quantity',,,,,
+!ID,!QuantityType,!Reaction:SBML:reaction:id,!Compound:SBML:species:id,!Value,!Unit
+MyData 1,equilibrium constant,r1,atp,156,dimensionless
+MyData 2,Michaelis constant,r1,atp,0.96,mM
+MyData 3,inhibition constant,r1,atp,0.13,mM
+MyData 4,concentration,...,...,1.5,mM
+,,,,,
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='QuantityMatrix' description='Ex 16 - Metabolomics',,,,,
+!Time,Glucose,Fructose,,,
+0,1.1,1.4,,,
+0.5,1.2,0.9,,,
