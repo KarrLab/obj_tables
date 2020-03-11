@@ -7,6 +7,7 @@ objsize
 openpyxl <= 3.0.1
 psutil
 pygithub
+python_libsbml >= 5.16.0
 pytest
 scipy
 wc_onto >= 0.0.2
