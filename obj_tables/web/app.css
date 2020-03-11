@@ -27,20 +27,18 @@ h2, .h2 {
 }
 h3, .h3 {
     font-size: 1.25rem;
-    margin-top: 1.0rem;
+    margin-top: 2.0rem;
     margin-bottom: 0.5em;
     padding: 0.2rem;
     text-align: center;
     font-weight: bold;
 }
-h4, .h4, h5, .h5 {
+h4, .h4 {
     font-size: 1.0rem;
-    margin-top: 1.0rem;
+    margin-top: 1.5rem;
     margin-bottom: 0.2em;
-    text-align: center;
     font-weight: bold;
 }
-
 
 .blue h2{ background: #3bafda;}
 .blue h3{ color: #3bafda; border-bottom: 2px solid #3bafda;}
@@ -50,7 +48,6 @@ h4, .h4, h5, .h5 {
 .purple h3{ color: #da3baf; border-bottom: 2px solid #da3baf; }
 .orange h2{ background: #f6bb42; }
 .orange h3{ color: #f6bb42; border-bottom: 2px solid #f6bb42; }
-.orange h4{ color: #f6bb42;}
 .red h2 { background: #fe174b; }
 .red h3 { color: #fe174b; border-bottom: 2px solid #fe174b; }
 
@@ -93,7 +90,8 @@ pre {
     margin-top: 0.5rem;
     margin-bottom: 0.2rem;
     padding-bottom: 0.2rem;
-    border-color: #333;
+    border-color: #ccc;
+    border-width: 1px;
 }
 .toc a {
     color: #333;
@@ -152,7 +150,9 @@ tbody.data-type-section tr:nth-child(4n+2) td:first-child {
     font-style: italic;
 }
 tbody.data-type-section tr:nth-child(4n+1) td:first-child,
-tbody.data-type-section tr:nth-child(4n+3) td:first-child {
+tbody.data-type-section tr:nth-child(4n+3) td:first-child,
+tbody.data-type-section tr:nth-child(4n+1) td:nth-child(2),
+tbody.data-type-section tr:nth-child(4n+3) td:nth-child(2) {
     font-family: 'Courier New', 'Courier';
 }
 tbody.data-type-section td tt {

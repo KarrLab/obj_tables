@@ -593,7 +593,7 @@ def read_workbook(filename, models, schema_name=None):
     """ Read a workbook
 
     Args:
-        filename (:obj:`str`): path to workbook        
+        filename (:obj:`str`): path to workbook
         models (:obj:`list` of :obj:`core.Model`): models
         schema_name (:obj:str`, optional): schema name
 

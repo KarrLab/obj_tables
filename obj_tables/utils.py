@@ -402,7 +402,7 @@ def init_schema(filename, out_filename=None):
     """ Initialize an `obj_tables` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
 
-    Schemas (classes and attributes) should be defined using the following tabular format. 
+    Schemas (classes and attributes) should be defined using the following tabular format.
     Classes and their attributes can be defined in any order.
 
     .. table:: Format for specifying classes.
@@ -442,7 +442,7 @@ def init_schema(filename, out_filename=None):
         :obj:`str`: schema name
 
     Raises:
-        :obj:`ValueError`: if schema specification is not in a supported format, 
+        :obj:`ValueError`: if schema specification is not in a supported format,
             an Excel schema file does not contain a worksheet with the name `!!_Schema` which specifies the schema,
             the class inheritance structure is cyclic,
             or the schema specification is invalid (e.g., a class is defined multiple defined)
@@ -749,7 +749,7 @@ def diff_workbooks(filename_1, filename_2, models, model_name, schema_name=None,
 
     Args:
         filename_1 (:obj:`str`): path to first workbook
-        filename_2 (:obj:`str`): path to second workbook        
+        filename_2 (:obj:`str`): path to second workbook
         models (:obj:`list` of :obj:`Model`): schema for objects to compare
         model_name (:obj:`str`): Type of objects to compare
         schema_name (:obj:`str`, optional): name of the schema

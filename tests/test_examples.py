@@ -29,8 +29,8 @@ class ExamplesTestCase(unittest.TestCase):
         shutil.rmtree(self.dirname)
 
     def test_web_example(self):
-        xlsx_filename = 'examples/parents_children/schema_and_data.xlsx'
-        py_filename = 'examples/parents_children/schema.py'
+        xlsx_filename = 'examples/children_fav_games/schema_and_data.xlsx'
+        py_filename = 'examples/children_fav_games/schema.py'
 
         schema, _ = utils.init_schema(xlsx_filename, out_filename=py_filename)
         models = list(utils.get_models(schema).values())
@@ -41,51 +41,51 @@ class ExamplesTestCase(unittest.TestCase):
                         ignore_sheet_order=True)
 
         #########################
-        # import parents_children
-        parents_children = schema
+        # import children_fav_games
+        children_fav_games = schema
 
         #########################
         # Create parents
-        jane_doe = parents_children.Parent(id='jane_doe', name='Jane Doe')
-        john_doe = parents_children.Parent(id='john_doe', name='John Doe')
-        mary_roe = parents_children.Parent(id='mary_roe', name='Mary Roe')
-        richard_roe = parents_children.Parent(id='richard_roe', name='Richard Roe')
+        jane_doe = children_fav_games.Parent(id='jane_doe', name='Jane Doe')
+        john_doe = children_fav_games.Parent(id='john_doe', name='John Doe')
+        mary_roe = children_fav_games.Parent(id='mary_roe', name='Mary Roe')
+        richard_roe = children_fav_games.Parent(id='richard_roe', name='Richard Roe')
 
         # Create children
-        jamie_doe = parents_children.Child(id='jamie_doe',
+        jamie_doe = children_fav_games.Child(id='jamie_doe',
                                            name='Jamie Doe',
-                                           gender=parents_children.Child.gender.enum_class.female,
+                                           gender=children_fav_games.Child.gender.enum_class.female,
                                            parents=[jane_doe, john_doe])
-        jamie_doe.favorite_video_game = parents_children.Game(name='Legend of Zelda: Ocarina of Time',
+        jamie_doe.favorite_video_game = children_fav_games.Game(name='Legend of Zelda: Ocarina of Time',
                                                               publisher='Nintendo',
                                                               year=1998)
 
-        jimie_doe = parents_children.Child(id='jimie_doe',
+        jimie_doe = children_fav_games.Child(id='jimie_doe',
                                            name='Jimie Doe',
-                                           gender=parents_children.Child.gender.enum_class.male,
+                                           gender=children_fav_games.Child.gender.enum_class.male,
                                            parents=[jane_doe, john_doe])
-        jimie_doe.favorite_video_game = parents_children.Game(name='Super Mario Brothers',
+        jimie_doe.favorite_video_game = children_fav_games.Game(name='Super Mario Brothers',
                                                               publisher='Nintendo',
                                                               year=1985)
-        linda_roe = parents_children.Child(id='linda_roe',
+        linda_roe = children_fav_games.Child(id='linda_roe',
                                            name='Linda Roe',
-                                           gender=parents_children.Child.gender.enum_class.female,
+                                           gender=children_fav_games.Child.gender.enum_class.female,
                                            parents=[mary_roe, richard_roe])
-        linda_roe.favorite_video_game = parents_children.Game(name='Sonic the Hedgehog',
+        linda_roe.favorite_video_game = children_fav_games.Game(name='Sonic the Hedgehog',
                                                               publisher='Sega',
                                                               year=1991)
-        mike_roe = parents_children.Child(id='mike_roe',
+        mike_roe = children_fav_games.Child(id='mike_roe',
                                           name='Michael Roe',
-                                          gender=parents_children.Child.gender.enum_class.male,
+                                          gender=children_fav_games.Child.gender.enum_class.male,
                                           parents=[mary_roe, richard_roe])
-        mike_roe.favorite_video_game = parents_children.Game(name='SimCity',
+        mike_roe.favorite_video_game = children_fav_games.Game(name='SimCity',
                                                              publisher='Electronic Arts',
                                                              year=1989)
 
         #########################
         mike_roe = mary_roe.children.get_one(id='mike_roe')
         mikes_parents = mike_roe.parents
-        mikes_sisters = mikes_parents[0].children.get(gender=parents_children.Child.gender.enum_class.female)
+        mikes_sisters = mikes_parents[0].children.get(gender=children_fav_games.Child.gender.enum_class.female)
 
         #########################
         jamie_doe.favorite_video_game.name = 'Legend of Zelda'
@@ -102,20 +102,20 @@ class ExamplesTestCase(unittest.TestCase):
         #########################
         import obj_tables.io
 
-        xlsx_filename = 'examples/parents_children/schema_and_data.xlsx'
+        xlsx_filename = 'examples/children_fav_games/schema_and_data.xlsx'
         objects = obj_tables.io.Reader().run(xlsx_filename,
-                                             models=[parents_children.Parent, parents_children.Child],
+                                             models=[children_fav_games.Parent, children_fav_games.Child],
                                              group_objects_by_model=True,
                                              ignore_sheet_order=True)
-        parents = objects[parents_children.Parent]
+        parents = objects[children_fav_games.Parent]
         jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')
 
         #########################
-        xlsx_filename = 'examples/parents_children/copy_of_schema_and_data.xlsx'
+        xlsx_filename = 'examples/children_fav_games/copy_of_schema_and_data.xlsx'
         objects = [jane_doe, john_doe, mary_roe, richard_roe,
                    jamie_doe, jimie_doe, linda_roe, mike_roe]
         obj_tables.io.Writer().run(xlsx_filename, objects,
-                                   models=[parents_children.Parent, parents_children.Child],
+                                   models=[children_fav_games.Parent, children_fav_games.Child],
                                    write_toc=True,
                                    write_schema=True)
 
@@ -134,7 +134,7 @@ class ExamplesTestCase(unittest.TestCase):
             app.run()
 
         template_filename = 'examples/biochemical_models/template.xlsx'
-        with __main__.App(argv=['gen-template', schema_filename, template_filename, 
+        with __main__.App(argv=['gen-template', schema_filename, template_filename,
                                 '--write-schema']) as app:
             app.run()
 
@@ -143,11 +143,15 @@ class ExamplesTestCase(unittest.TestCase):
             app.run()
 
         data_copy_filename = 'examples/biochemical_models/data_copy.xlsx'
-        with __main__.App(argv=['convert', schema_filename, data_filename, data_copy_filename, '--write-schema']) as app:
+        with __main__.App(argv=['convert', schema_filename, data_filename, data_copy_filename,
+            '--write-toc',
+            '--write-schema']) as app:
             app.run()
 
         with __main__.App(argv=['diff', schema_filename, 'Model', data_filename, data_copy_filename]) as app:
             app.run()
+
+        os.remove(data_copy_filename)
 
     def test_sbtab_sbml_validate_examples(self):
         self.do_sbtab_sbml_examples('validate')
@@ -219,12 +223,28 @@ class ExamplesTestCase(unittest.TestCase):
                     app.run()
 
     def test_other_examples(self):
-        filenames = [
-            'examples/transactions.xlsx',
-        ]
-        for filename in filenames:
-            with __main__.App(argv=['validate', filename, filename]) as app:
-                app.run()
+        schema_data_filename = 'examples/transactions/schema_and_data.xlsx'
+        schema_filename_csv = 'examples/transactions/schema.csv'
+        schema_filename_xlsx = 'examples/transactions/schema.xlsx'
+        schema_filename_py = 'examples/transactions/schema.py'
+        data_filename_csv = 'examples/transactions/data.csv'
+        data_filename_xlsx = 'examples/transactions/data.xlsx'
+
+        with __main__.App(argv=['validate', schema_data_filename, schema_data_filename]) as app:
+            app.run()
+        with __main__.App(argv=['validate', schema_filename_csv, schema_data_filename]) as app:
+            app.run()
+        with __main__.App(argv=['validate', schema_filename_xlsx, schema_data_filename]) as app:
+            app.run()
+
+        with __main__.App(argv=['init-schema', schema_data_filename, schema_filename_py]) as app:
+            app.run()
+
+        with __main__.App(argv=['convert', schema_data_filename, schema_data_filename, data_filename_csv]) as app:
+            app.run()
+
+        with __main__.App(argv=['convert', schema_data_filename, schema_data_filename, data_filename_xlsx]) as app:
+            app.run()
 
     def test_decode_json(self):
         class Parent(core.Model):

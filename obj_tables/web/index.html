@@ -41,8 +41,8 @@
           <ul>
             <li><b>Tabular format for describing schemas for datasets encoded as collections of tables.</b> This includes the data type of each column, relationships between rows in tables, and two methods for encoding complex relational information into cells:
               <ul>
-                <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, <i>ObjTables</i> can encode related models into groups of columns. <i>ObjTables</i> uses merged headings to distinguish these columns.</li>
-                <li><b>Embedded grammars for relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, grammars can be used to encode relationships to multiple instances of multiple models within a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+                <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, <i>ObjTables</i> can encode related classes into groups of columns. <i>ObjTables</i> uses merged headings to distinguish these columns.</li>
+                <li><b>Embedded grammars for relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, grammars can be used to encode relationships to multiple instances of multiple classes within a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
             </ul>
             </li>
             <li><b>Numerous data types</b> for scientific research including types for chemoinformatics, genomics, and mathematics.</li>
@@ -53,13 +53,13 @@
 
           <p class="before_list"><i>ObjTables</i> enables users to leverage Excel as a graphical user interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:
           <ul>
-            <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the models represented by the other tables, displays the number of instances of each class, and provides hyperlinks to the other tables.</li>
+            <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the classes represented by the other tables, displays the number of instances of each class, and provides hyperlinks to the other tables.</li>
             <li><b>Formatted class titles:</b> Each table includes a title bar which describes the class. The title bars are formatted, frozen, and protected from editing.</li>
             <li><b>Formatted attribute headings:</b> Each table includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
             <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into its heading.</li>
             <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides select menus for each attribute that encodes an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>
             <li><b>Instant validation:</b> <i>ObjTables</i> uses Excel to validate several properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. <i>ObjTables</i> Python schemas can be used to implement thorough validations.</i>
-            <li><b>Hidden extra rows and columns:</b> To help users focus on the attributes of their models, <i>ObjTables</i> protects and hides all additional rows and columns.</li>
+            <li><b>Hidden extra rows and columns:</b> To help users focus on the attributes of their classes, <i>ObjTables</i> protects and hides all additional rows and columns.</li>
           </ul>
 
           <p class="before_list"><i>ObjTables</i> makes it easy to implement rigorous validations of datasets:
@@ -83,12 +83,12 @@
         </div>
         <div class="large-3 cell">
           <div class="toc">
-            <h3>Table of contents</h3>
+            <h3>Contents</h3>
             <ul>
               <li><a href="#app">Web app</a></li>
               <li><a href="#format">Tabular format for datasets</a>
                 <ul>
-                  <li><a href="#schema-format">Format for schemas</a></li>
+                  <li><a href="#schema-format">Formats for schemas</a></li>
                   <li><a href="#data-types">Data types</a></li>
                   <li><a href="#table-format">Format for tables</a></li>
                 </ul>
@@ -185,36 +185,37 @@
         <div class="large-12 cell">
             <h2>Formats for schemas</h2>
 
-            <p>Schemas can either be defined using the tabular format described here or defined using the Python API. The tabular format is easier to use. The Python API enables methods for manipulating data to be encapsulated with schemas. This makes it easy to define custom validations such as for the element balance of a chemical reaction or for the lack of cycles in a network. Furthermore, the software tools can generate Python schemas from tabular-formatted schemas, which is a convenient starting point for further development.</p>
+            <p>Schemas can either be defined using the tabular format described below or using the <i>ObjTables</i> Python API. The tabular format is easy to use, and requires no programming. The tabular format supports most of the features of <i>ObjTables</i>, including a wide range of data types, relationships, transposed and embedded tables, single inheritance, and basic validation.</p>
+
+            <p>The <i>ObjTables</i> Python API is more flexible than the tabular schema format. In addition to the features of the tabular schema format, the Python API supports abstract class and methods, multiple inheritance, custom data types, custom validation, and custom Excel formatting. The Python API can also be used to encapsulate methods for manipulating data with schemas.</p>
+
+            <p>We recommend that developers begin with the tabular format, and transition to the Python format if more flexibility is needed. When more flexibility is needed, we recommend that developers use the <i>ObjTables</i> software tools to convert tabular-formatted schemas into Python modules. This workflow provides a quick path to developing custom schemas.</p>
 
             <h3>Tabular format</h3>
-            <p>Tabular-formatted schemas should begin with a single header row which indicates that the dataset is encoded in an <i>ObjTables</i> schema (<tt>!!ObjTables type="Schema" ...</tt>).</p>
+            <p>Tabular-formatted schemas should begin with a single header row which indicates that the schema is encoded in <i>ObjTables</i> format (<tt>!!ObjTables type="Schema" ...</tt>).</p>
 
-            <p>After the header row, the schema file should contain a table with the following columns that defines the models/tables and their attributes/columns. Each row in the table should define a single class or attribute.</p>
+            <p class="before_list">After the header row, the schema should contain a table with the columns below that defines the classes/models/tables and their attributes/columns. Each row in the table should define a single class or attribute.</p>
 
-            <p>Tabular-formatted schemas can be saved in comma-separated (.csv), tab-separated (.tsv), or Excel (.xlsx) format.</p>
-
-            <p class="before_list">The table should contain the following columns:</p>
             <ul>
               <li><b><tt>!Name</tt></b>: Name of the component.
                 <ul>
-                  <li>Models: A string that begins with a letter or underscore, and consists of letters, numbers, and underscores.</li>
+                  <li>Classes: A string that begins with a letter or underscore, and consists of letters, numbers, and underscores.</li>
                   <li>Attributes: A string that begins with a letter or underscore, and consists of letters, numbers, underscores, colons, forward carets, dots, dashes, square brackets, and spaces.</li>
                 </ul></li>
               <li><b><tt>!Type</tt></b>: Type of the component (<tt>Class</tt> or <tt>Attribute</tt>).</li>
               <li><b><tt>!Parent</tt></b>:
                 <ul>
-                  <li>Models: Empty, or the name of the parent class. Because this is implemented using Python class inheritance, this must specify an acyclic inheritance graph.</li>
+                  <li>Classes: Empty, or the name of the parent class. Because this is implemented using Python class inheritance, this must specify an acyclic inheritance graph.</li>
                   <li>Attributes: Name of the class that the attribute belongs to.</li>
                 </ul></li>
               <li><b><tt>!Format</tt></b>:
                 <ul>
-                  <li>Models:
+                  <li>Classes:
                     <ul>
                       <li><tt>row</tt>: Encode the instances of the class as rows.</li>
                       <li><tt>column</tt>: Encode the instances of the class as columns (i.e. transposed table).</li>
-                      <li><tt>multiple_cells</tt>: Encode the instances of the class within a group of columns in the tables of the one-to-many and one-to-one related models.</li>
-                      <li><tt>cell</tt>: Encode the instances of the class within columns of the related models, optionally, using a grammar. See the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about working with grammars.</li>
+                      <li><tt>multiple_cells</tt>: Encode the instances of the class within a group of columns in the tables of the one-to-many and one-to-one related classes.</li>
+                      <li><tt>cell</tt>: Encode the instances of the class within columns of the related classes, optionally, using a grammar. See the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about working with grammars.</li>
                     </ul>
                   </li>
                   <li>Attributes: One of the data types listed below (e.g., <tt>String</tt>, <tt>Float</tt>). Arguments for the data types can be description in parenthesis (e.g., <tt>String(min_length=5)</tt>. The arguments enable users to customize how data types function and are validated. See the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about the types and their arguments.</li>
@@ -225,41 +226,127 @@
               <li><b><tt>!Description</tt></b> (Optional): Description of the component.</li>
             </ul>
 
-            <h3>Example</h3>
-            <p>The following example illustrates a schema for encoding three models of parents, children, and their favorite video games into two tables of parents and children, with the favorite games of the children embedded into a group of columns within the children table.</p>
+            <p>Tabular-formatted schemas can be saved in comma-separated (.csv), tab-separated (.tsv), or Excel (.xlsx) format.</p>
+
+            <h4>Example: Children, their parents, and their favorite video games</h4>
+            <p>The following example illustrates a schema for encoding three classes of parents, children, and their favorite video games into two tables of parents and children, with the favorite games of the children embedded into a group of columns within the children table. The example is available in Excel format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/children_fav_games/schema_and_data.xlsx"><i class="fi-link"></i></a>.</p>
 
             <table>
               <thead>
                 <tr>
-                  <th colspan="5">!!ObjTables type='Schema' description='Table/model/class and column/attribute/property definitions' objTablesVersion='0.0.8' tableFormat='row'</th>
+                  <th colspan="5">!!ObjTables type='Schema' name='fav_video_games' description='Class/model/table and attribute/property/column definitions' objTablesVersion='0.0.8' tableFormat='row'</th>
                 </tr>
                 <tr>
                   <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Description</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Parent</td><td>Class</td><td></td><td>column</td><td>Represents a parent</td></tr>
-                <tr><td>Id</td><td>Attribute</td><td>Parent</td><td>String(unique=True, primary=True)</td><td>Identifier</td></tr>
-                <tr><td>Name</td><td>Attribute</td><td>Parent</td><td>String</td><td></td></tr>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
                 <tr><td>Child</td><td>Class</td><td></td><td>row</td><td>Represents a child</td></tr>
-                <tr><td>Id</td><td>Attribute</td><td>Child</td><td>String(unique=True, primary=True)</td><td>Identifier</td></tr>
-                <tr><td>Name</td><td>Attribute</td><td>Child</td><td>String</td><td></td></tr>
-                <tr><td>Gender</td><td>Attribute</td><td>Child</td><td>Enum(['female', 'male'])</td><td></td></tr>
-                <tr><td>Parents</td><td>Attribute</td><td>Child</td><td>ManyToMany('Parent', related_name='children')</td><td></td></tr>
-                <tr><td>FavoriteVideoGame</td><td>Attribute</td><td>Child</td><td>ManyToOne('Game', related_name='children')</td><td></td></tr>
+                <tr><td>id</td><td>Attribute</td><td>Child</td><td>String(unique=True, primary=True)</td><td>Identifier</td></tr>
+                <tr><td>name</td><td>Attribute</td><td>Child</td><td>String</td><td></td></tr>
+                <tr><td>gender</td><td>Attribute</td><td>Child</td><td>Enum(['female', 'male'])</td><td></td></tr>
+                <tr><td>parents</td><td>Attribute</td><td>Child</td><td>ManyToMany('Parent', related_name='children')</td><td></td></tr>
+                <tr><td>favorite_video_game</td><td>Attribute</td><td>Child</td><td>ManyToOne('Game', related_name='children')</td><td></td></tr>                
+              </tbody>
+
+              <tbody>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+                <tr><td>Parent</td><td>Class</td><td></td><td>column</td><td>Represents a parent</td></tr>
+                <tr><td>id</td><td>Attribute</td><td>Parent</td><td>String(unique=True, primary=True)</td><td>Identifier</td></tr>
+                <tr><td>name</td><td>Attribute</td><td>Parent</td><td>String</td><td></td></tr>
+              </tbody>
+
+              <tbody>
+                <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
                 <tr><td>Game</td><td>Class</td><td></td><td>multiple_cells</td><td>Represents a video game</td></tr>
-                <tr><td>Name</td><td>Attribute</td><td>Game</td><td>String(unique=True, primary=True)</td><td></td></tr>
-                <tr><td>Publisher</td><td>Attribute</td><td>Game</td><td>String</td><td></td></tr>
-                <tr><td>Year</td><td>Attribute</td><td>Game</td><td>Integer</td><td></td></tr>
+                <tr><td>name</td><td>Attribute</td><td>Game</td><td>String(unique=True, primary=True)</td><td></td></tr>
+                <tr><td>publisher</td><td>Attribute</td><td>Game</td><td>String</td><td></td></tr>
+                <tr><td>year</td><td>Attribute</td><td>Game</td><td>Integer</td><td></td></tr>
               </tbody>
             </table>
 
-          <p>Excel and Python files for the example are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-social-github"></i></a>. Numerous additional examples are also available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-social-github"></i></a>.</p>
+          <h4>Additional examples</h4>
+          <p class="before_list">Additional examples are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>:</p>
+          <ul>
+            <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/transactions/schema.csv"><i class="fi-link"></i></a></li>
+            <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_models/schema.csv"><i class="fi-link"></i></a></li>
+            <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.csv"><i class="fi-link"></i></a></li>
+          </ul>
 
-          <p>Additional examples are available at <a href="https://www.sbtab.net/">SBtab.net</a>.</p>
+          <h3>Python API</h3>
+          <p>Schemas can also be implemented using the <i>ObjTables</i> Python API.</p>
+          <ul>
+            <li>Each class should be implemented as a subclass of <tt>obj_tables.Model</tt>.</li>
+            <li>Each attribute of each class should be implemented as a class attribute whose value is an instance of a subclass of <tt>obj_tables.Attribute</tt>. Numerous subclasses of <tt>obj_tables.Attribute</tt> which support a wide range of data types are available. Please see below and the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information, including about the arguments of the constructors of these classes.
+              <ul>
+                <li>Each relationship between two classes should be implemented using the <tt>obj_tables.OneToOneAttribute</tt>, <tt>obj_tables.OneToManyAttribute</tt>, <tt>obj_tables.ManyToOneAttribute</tt>, or <tt>obj_tables.ManyToManyAttribute</tt> subclass.</li>
+              </ul>
+            </li>
+            <li>The meta information about each class, such as is verbose name, should be implemented as a class attribute with the name <tt>Meta</tt> that is a subclass of <tt>obj_tables.Model.Meta</tt>. This class can have the following class attributes:
+              <ul>
+                <li><tt>unique_together</tt>: Tuple of tuples of the names of attributes whose values must be unique.</li>
+                <li><tt>verbose_name</tt>: Verbose name of the class.</li>
+                <li><tt>verbose_name_plural</tt>: Plural verbose name of the class.</li>
+                <li><tt>description</tt>: Description of the class.</li>
+                <li><tt>table_format</tt>: Indicates how the class should be formatted: <tt>obj_tables.TableFormat.row</tt> (normal table), <tt>obj_tables.TableFormat.column</tt> (transposed table), <tt>obj_tables.TableFormat.multiple_cells</tt> (inline as a set of columns/rows within another table of another class), or <tt>obj_tables.TableFormat.cell</tt> (inline encoded into a column or row of another table of another class).</li>
+                <li><tt>attribute_order</tt>: List of the names of the class attributes in the order they should be printed in tables.</li>
+                <li><tt>ordering</tt>: Defines the default sorting behavior of instances of the class. This should be a list of strings of the names of attributes, in the order in which the values of the attributes should be sorted, optionally with the prefix "-" to indicate that instances should be sorted in reverse order of the values of the attribute.</li>
+                <li><tt>frozen_columns</tt>: Number of columns to freeze when the class is printed to an Excel worksheet.</li>
+                <li><tt>merge</tt>: Indicates how semantically-equivalent instances of the class should be merged when two datasets are merged: <tt>obj_tables.ModelMerge.join</tt> (concatenate their *-to-many relationships) or <tt>obj_tables.ModelMerge.append</tt> (throw an error if datasets contain semantically equivalent instances).</li>
+              </ul>
+            </li>
+          </ul>
 
-          <h3>Python format</h3>
-          <p>Schemas can also be implemented as Python modules. The software can convert tabular-formatted schemas into Python modules. The Python module format provides more flexibility than the tabular format. For example, Python-formatted schemas can encapsulate methods into schemas, which can be used to implement custom validations.</p>
+          <p>Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information.</p>
+
+          <h4>Example: Children, their parents, and their favorite video games</h4>
+          <p>The following example illustrates a schema for encoding three classes of parents, children, and their favorite video games into two tables of parents and children, with the favorite games of the children embedded into a group of columns within the children table. The example is available in Python format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/children_fav_games/schema.py"><i class="fi-link"></i></a>.</p>
+
+          <pre><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables</span>
+
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Child</span>(obj_tables<span style="color: #666666">.</span>Model):
+    <span style="color: #008000">id</span> <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+    name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+    gender <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>EnumAttribute([<span style="color: #BA2121">&#39;female&#39;</span>, <span style="color: #BA2121">&#39;male&#39;</span>], verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+    parents <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>ManyToManyAttribute(<span style="color: #BA2121">&#39;Parent&#39;</span>, related_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;children&#39;</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+    favorite_video_game <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>ManyToOneAttribute(<span style="color: #BA2121">&#39;Game&#39;</span>, related_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;children&#39;</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+
+    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
+        table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>row
+        attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;id&#39;</span>, <span style="color: #BA2121">&#39;name&#39;</span>, <span style="color: #BA2121">&#39;gender&#39;</span>, <span style="color: #BA2121">&#39;parents&#39;</span>, <span style="color: #BA2121">&#39;favorite_video_game&#39;</span>,)
+        verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Child&#39;</span>
+        verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Child&#39;</span>
+
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Parent</span>(obj_tables<span style="color: #666666">.</span>Model):
+    <span style="color: #008000">id</span> <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+    name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+
+    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
+        table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>column
+        attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;id&#39;</span>, <span style="color: #BA2121">&#39;name&#39;</span>,)
+        verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Parent&#39;</span>
+        verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Parent&#39;</span>
+
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Game</span>(obj_tables<span style="color: #666666">.</span>Model):
+    name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+    publisher <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+    year <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>IntegerAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;None&#39;</span>)
+
+    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
+        table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>multiple_cells
+        attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;name&#39;</span>, <span style="color: #BA2121">&#39;publisher&#39;</span>, <span style="color: #BA2121">&#39;year&#39;</span>,)
+        verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Game&#39;</span>
+        verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Game&#39;</span>
+</pre>
+
+          <h4>Additional examples</h4>
+          <p class="before_list">Additional examples are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>:</p>
+          <ul>
+            <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/transactions/schema.py"><i class="fi-link"></i></a></li>
+            <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_models/schema.py"><i class="fi-link"></i></a></li>
+            <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.py"><i class="fi-link"></i></a></li>
+          </ul>
         </div>
       </div>
 
@@ -285,174 +372,175 @@
             <thead class="data-type-title">
               <tr>
                 <th>Format</th>
+                <th>Python class</th>
                 <th>Excel type</th>
                 <th>Python type</th>
               </tr>
             </thead>
 
             <thead class="data-type-section-head">
-              <tr><th colspan="3"></th></tr>
-              <tr><th colspan="3">Basic data types</th></tr>
+              <tr><th colspan="4"></th></tr>
+              <tr><th colspan="4">Basic data types</th></tr>
             </thead>
             <tbody class="data-type-section">
-              <tr><td>Boolean</td><td>Boolean</td><td><tt>bool</tt></td></tr>
-              <tr><td colspan="2">Boolean</td><td></td></tr>
+              <tr><td>Boolean</td><td>obj_tables.BooleanAttribute</td><td>Boolean</td><td><tt>bool</tt></td></tr>
+              <tr><td colspan="4">Boolean</td></tr>
 
-              <tr><td>Enum</td><td>String</td><td><tt>enum.Enum</tt></td></tr>
-              <tr><td colspan="2">Enumeration</td><td></td></tr>
+              <tr><td>Enum</td><td>obj_tables.EnumAttribute</td><td>String</td><td><tt>enum.Enum</tt></td></tr>
+              <tr><td colspan="4">Enumeration</td></tr>
 
-              <tr><td>Integer</td><td>Number</td><td><tt>int</tt></td></tr>
-              <tr><td colspan="2">Integer</td><td></td></tr>
+              <tr><td>Integer</td><td>obj_tables.IntegerAttribute</td><td>Number</td><td><tt>int</tt></td></tr>
+              <tr><td colspan="4">Integer</td></tr>
 
-              <tr><td>PositiveInteger</td><td>Number</td><td><tt>int</tt></td></tr>
-              <tr><td colspan="2">Positive integer</td><td></td></tr>
+              <tr><td>PositiveInteger</td><td>obj_tables.PositiveIntegerAttribute</td><td>Number</td><td><tt>int</tt></td></tr>
+              <tr><td colspan="4">Positive integer</td></tr>
 
-              <tr><td>Float</td><td>Number</td><td><tt>float</tt></td></tr>
-              <tr><td colspan="2">Float</td><td></td></tr>
+              <tr><td>Float</td><td>obj_tables.FloatAttribute</td><td>Number</td><td><tt>float</tt></td></tr>
+              <tr><td colspan="4">Float</td></tr>
 
-              <tr><td>PositiveFloat</td><td>Number</td><td><tt>float</tt></td></tr>
-              <tr><td colspan="2">Positive float</td><td></td></tr>
+              <tr><td>PositiveFloat</td><td>obj_tables.PositiveFloatAttribute</td><td>Number</td><td><tt>float</tt></td></tr>
+              <tr><td colspan="4">Positive float</td></tr>
 
-              <tr><td>String</td><td>Text</td><td><tt>str</tt></td></tr>
-              <tr><td colspan="2">Short string</td><td></td></tr>
+              <tr><td>String</td><td>obj_tables.StringAttribute</td><td>Text</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="4">Short string</td></tr>
 
-              <tr><td>LongString</td><td>Text</td><td><tt>str</tt></td></tr>
-              <tr><td colspan="2">Long string</td><td></td></tr>
+              <tr><td>LongString</td><td>obj_tables.LongStringAttribute</td><td>Text</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="4">Long string</td></tr>
 
-              <tr><td>Regex</td><td>Text</td><td><tt>str</tt></td></tr>
-              <tr><td colspan="2">String that matches a regular expression</td><td></td></tr>
+              <tr><td>Regex</td><td>obj_tables.RegexAttribute</td><td>Text</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="4">String that matches a regular expression</td></tr>
 
-              <tr><td>Email</td><td>String</td><td><tt>str</tt></td></tr>
-              <tr><td colspan="2">Email address</td><td></td></tr>
+              <tr><td>Email</td><td>obj_tables.EmailAttribute</td><td>String</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="4">Email address</td></tr>
 
-              <tr><td>Url</td><td>String</td><td><tt>str</tt></td></tr>
-              <tr><td colspan="2">Uniform resource locater (URL)</td><td></td></tr>
+              <tr><td>Url</td><td>obj_tables.UrlAttribute</td><td>String</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="4">Uniform resource locater (URL)</td></tr>
 
-              <tr><td>Date</td><td>String</td><td><tt>datetime.date</tt></td></tr>
-              <tr><td colspan="2">Date</td><td></td></tr>
+              <tr><td>Date</td><td>obj_tables.DateAttribute</td><td>String</td><td><tt>datetime.date</tt></td></tr>
+              <tr><td colspan="4">Date</td></tr>
 
-              <tr><td>DateTime</td><td>String</td><td><tt>datetime.datetime</tt></td></tr>
-              <tr><td colspan="2">Date and time</td><td></td></tr>
+              <tr><td>DateTime</td><td>obj_tables.DateTimeAttribute</td><td>String</td><td><tt>datetime.datetime</tt></td></tr>
+              <tr><td colspan="4">Date and time</td></tr>
 
-              <tr><td>Time</td><td>String</td><td><tt>datetime.time</tt></td></tr>
-              <tr><td colspan="2">Time</td><td></td></tr>
+              <tr><td>Time</td><td>obj_tables.TimeAttribute</td><td>String</td><td><tt>datetime.time</tt></td></tr>
+              <tr><td colspan="4">Time</td></tr>
             </tbody>
 
             <thead class="data-type-section-head">
-              <tr><th colspan="3"></th></tr>
-              <tr><th colspan="3">Relationships</th></tr>
+              <tr><th colspan="4"></th></tr>
+              <tr><th colspan="4">Relationships</th></tr>
             </thead>
             <tbody class="data-type-section">
-              <tr><td>OneToOne</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">One-to-one relationship</td><td></td></tr>
+              <tr><td>OneToOne</td><td>obj_tables.OneToOneAttribute</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">One-to-one relationship</td></tr>
 
-              <tr><td>OneToMany</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">One-to-many relationship</td><td></td></tr>
+              <tr><td>OneToMany</td><td>obj_tables.OneToManyAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">One-to-many relationship</td></tr>
 
-              <tr><td>ManyToOne</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Many-to-one relationship</td><td></td></tr>
+              <tr><td>ManyToOne</td><td>obj_tables.ManyToOneAttribute</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Many-to-one relationship</td></tr>
 
-              <tr><td>ManyToMany</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Many-to-many relationship</td><td></td></tr>
+              <tr><td>ManyToMany</td><td>obj_tables.ManyToManyAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Many-to-many relationship</td></tr>
 
-              <tr><td>ToManyGrammar</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">*-to-many relationship serialized/deserialized using a custom grammar</td><td></td></tr>
+              <tr><td>ToManyGrammar</td><td>obj_tables.grammar.ToManyGrammarAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">*-to-many relationship serialized/deserialized using a custom grammar</td></tr>
             </tbody>
 
             <thead class="data-type-section-head">
-              <tr><th colspan="3"></th></tr>
-              <tr><th colspan="3">Mathematics</th></tr>
+              <tr><th colspan="4"></th></tr>
+              <tr><th colspan="4">Mathematics</th></tr>
             </thead>
             <tbody class="data-type-section">
-              <tr><td>math.Array</td><td>String</td><td><tt>numpy.ndarray</tt> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Numerical array or matrix</td><td></td></tr>
+              <tr><td>math.Array</td><td>obj_tables.math.ArrayAttribute</td><td>String</td><td><tt>numpy.ndarray</tt> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Numerical array or matrix</td></tr>
 
-              <tr><td>math.Table</td><td>String</td><td><tt>pandas.DataFrame</tt> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Data table, optionally with row and column labels</td><td></td></tr>
+              <tr><td>math.Table</td><td>obj_tables.math.TableAttribute</td><td>String</td><td><tt>pandas.DataFrame</tt> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Data table, optionally with row and column labels</td></tr>
 
-              <tr><td>math.ManyToOneExpression</td><td>String</td><td><tt>numpy.ndarray</tt> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Numerical array or matrix</td><td></td></tr>
+              <tr><td>math.ManyToOneExpression</td><td>obj_tables.math.ManyToOneExpressionAttribute</td><td>String</td><td><tt>numpy.ndarray</tt> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Numerical array or matrix</td></tr>
 
-              <tr><td>math.OneToOneExpression</td><td>String</td><td><tt>numpy.ndarray</tt> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Numerical array or matrix</td><td></td></tr>
+              <tr><td>math.OneToOneExpression</td><td>obj_tables.math.OneToOneExpressionAttribute</td><td>String</td><td><tt>numpy.ndarray</tt> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Numerical array or matrix</td></tr>
 
-              <tr><td>math.SymbolicExpr</td><td>String</td><td><tt>sympy.Expr</tt> <a href="https://docs.sympy.org/latest/_modules/sympy/core/expr.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Symbolic expression</td><td></td></tr>
+              <tr><td>math.SymbolicExpr</td><td>obj_tables.math.SymbolicExprAttribute</td><td>String</td><td><tt>sympy.Expr</tt> <a href="https://docs.sympy.org/latest/_modules/sympy/core/expr.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Symbolic expression</td></tr>
 
-              <tr><td>math.SymbolicSymbol</td><td>String</td><td><tt>sympy.Symbol</tt> <a href="https://docs.sympy.org/latest/_modules/sympy/core/symbol.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Symbolic symbol</td><td></td></tr>
+              <tr><td>math.SymbolicSymbol</td><td>obj_tables.math.SymbolicSymbolAttribute</td><td>String</td><td><tt>sympy.Symbol</tt> <a href="https://docs.sympy.org/latest/_modules/sympy/core/symbol.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Symbolic symbol</td></tr>
             </tbody>
 
             <thead class="data-type-section-head">
-              <tr><th colspan="3"></th></tr>
-              <tr><th colspan="3">Science</th></tr>
+              <tr><th colspan="4"></th></tr>
+              <tr><th colspan="4">Science</th></tr>
             </thead>
             <tbody class="data-type-section">
-              <tr><td>sci.Unit</td><td>String</td><td><tt>pint.unit._Unit</tt> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Units</td><td></td></tr>
+              <tr><td>sci.Unit</td><td>obj_tables.sci.UnitAttribute</td><td>String</td><td><tt>pint.unit._Unit</tt> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Units</td></tr>
 
-              <tr><td>sci.Quantity</td><td>String</td><td><tt>pint.quantity._Quantity</tt> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Magnitude and units</td><td></td></tr>
+              <tr><td>sci.Quantity</td><td>obj_tables.sci.QuantityAttribute</td><td>String</td><td><tt>pint.quantity._Quantity</tt> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Magnitude and units</td></tr>
 
-              <tr><td>sci.UncertainFloat</td><td>String</td><td><tt>uncertainties.core.Variable</tt> <a href="https://uncertainties-python-package.readthedocs.io/"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Float and its uncertainty</td><td></td></tr>
+              <tr><td>sci.UncertainFloat</td><td>obj_tables.sci.UncertainFloatAttribute</td><td>String</td><td><tt>uncertainties.core.Variable</tt> <a href="https://uncertainties-python-package.readthedocs.io/"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Float and its uncertainty</td></tr>
 
-              <tr><td>sci.Doi</td><td>String</td><td><tt>str</tt></td></tr>
-              <tr><td colspan="2">Digital Object Identifier</td><td></td></tr>
+              <tr><td>sci.Doi</td><td>obj_tables.sci.DoiAttribute</td><td>String</td><td><tt>str</tt></td></tr>
+              <tr><td colspan="4">Digital Object Identifier</td></tr>
 
-              <tr><td>sci.Dois</td><td>String</td><td><tt>list</tt> of <tt>str</tt></td></tr>
-              <tr><td colspan="2">List of Digital Object Identifiers</td><td></td></tr>
+              <tr><td>sci.Dois</td><td>obj_tables.sci.DoisAttribute</td><td>String</td><td><tt>list</tt> of <tt>str</tt></td></tr>
+              <tr><td colspan="4">List of Digital Object Identifiers</td></tr>
 
-              <tr><td>sci.Identifier</td><td>String</td><td><tt>obj_tables.sci.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">An identifier in a namespace registered with Identifiers.org</td><td></td></tr>
+              <tr><td>sci.Identifier</td><td>obj_tables.sci.IdentifierAttribute</td><td>String</td><td><tt>obj_tables.sci.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">An identifier in a namespace registered with Identifiers.org</td></tr>
 
-              <tr><td>sci.Identifiers</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.sci.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">List of identifiers in namespaces registered with Identifiers.org</td><td></td></tr>
+              <tr><td>sci.Identifiers</td><td>obj_tables.sci.IdentifiersAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.sci.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">List of identifiers in namespaces registered with Identifiers.org</td></tr>
 
-              <tr><td>sci.OntoTerm</td><td>String</td><td><tt>pronto.Term</tt> <a href="https://pronto.readthedocs.io/en/latest/pronto/pronto.Term.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Term in an ontology</td><td></td></tr>
+              <tr><td>sci.OntoTerm</td><td>obj_tables.sci.OntoTermAttribute</td><td>String</td><td><tt>pronto.Term</tt> <a href="https://pronto.readthedocs.io/en/latest/pronto/pronto.Term.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Term in an ontology</td></tr>
 
-              <tr><td>sci.PubMedId</td><td>Number</td><td><tt>int</tt></td></tr>
-              <tr><td colspan="2">PubMed identifier</td><td></td></tr>
+              <tr><td>sci.PubMedId</td><td>obj_tables.sci.PubMedIdAttribute</td><td>Number</td><td><tt>int</tt></td></tr>
+              <tr><td colspan="4">PubMed identifier</td></tr>
 
-              <tr><td>sci.PubMedIds</td><td>String</td><td><tt>list</tt> of <tt>int</tt></td></tr>
-              <tr><td colspan="2">List of PubMed identifiers</td><td></td></tr>
+              <tr><td>sci.PubMedIds</td><td>obj_tables.sci.PubMedIdsAttribute</td><td>String</td><td><tt>list</tt> of <tt>int</tt></td></tr>
+              <tr><td colspan="4">List of PubMed identifiers</td></tr>
             </tbody>
 
             <thead class="data-type-section-head">
-              <tr><th colspan="3"></th></tr>
-              <tr><th colspan="3">Chemistry</th></tr>
+              <tr><th colspan="4"></th></tr>
+              <tr><th colspan="4">Chemistry</th></tr>
             </thead>
             <tbody class="data-type-section">
-              <tr><td>chem.ChemicalStructure</td><td>String</td><td><tt>wc_utils.utils.chem.Structure <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></tt></td></tr>
-              <tr><td colspan="2">Chemical structure</td><td>(<tt>openbabel.OBMol</tt> <a href="http://openbabel.org/dev-api/classOpenBabel_1_1OBMol.shtml"><i class="fi-link"></i></a>, <tt>bpforms.BpForm</tt> <a href="https://www.bpforms.org"><i class="fi-link"></i></a>, <tt>bcforms.BcForm</tt> <a href="https://www.bcforms.org"><i class="fi-link"></i></a>)</td></tr>
+              <tr><td>chem.ChemicalStructure</td><td>obj_tables.chem.ChemicalStructureAttribute</td><td>String</td><td><tt>wc_utils.utils.chem.Structure <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></tt></td></tr>
+              <tr><td colspan="3">Chemical structure</td><td>(<tt>openbabel.OBMol</tt> <a href="http://openbabel.org/dev-api/classOpenBabel_1_1OBMol.shtml"><i class="fi-link"></i></a>, <tt>bpforms.BpForm</tt> <a href="https://www.bpforms.org"><i class="fi-link"></i></a>, <tt>bcforms.BcForm</tt> <a href="https://www.bcforms.org"><i class="fi-link"></i></a>)</td></tr>
 
-              <tr><td>chem.EmpiricalFormula</td><td>String</td><td><tt>wc_utils.utils.chem.EmpiricalFormula</tt> <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Empirical formula</td><td></td></tr>
+              <tr><td>chem.EmpiricalFormula</td><td>obj_tables.chem.EmpiricalFormulaAttribute</td><td>String</td><td><tt>wc_utils.utils.chem.EmpiricalFormula</tt> <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Empirical formula</td></tr>
             </tbody>
 
             <thead class="data-type-section-head">
-              <tr><th colspan="3"></th></tr>
-              <tr><th colspan="3">Biology</th></tr>
+              <tr><th colspan="4"></th></tr>
+              <tr><th colspan="4">Biology</th></tr>
             </thead>
             <tbody class="data-type-section">
-              <tr><td>bio.DnaSeq</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">DNA sequence</td><td></td></tr>
+              <tr><td>bio.DnaSeq</td><td>obj_tables.bio.DnaSeqAttribute</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">DNA sequence</td></tr>
 
-              <tr><td>bio.ProteinSeq</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Protein sequence</td><td></td></tr>
+              <tr><td>bio.ProteinSeq</td><td>obj_tables.bio.ProteinSeqAttribute</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Protein sequence</td></tr>
 
-              <tr><td>bio.RnaSeq</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">RNA sequence</td><td></td></tr>
+              <tr><td>bio.RnaSeq</td><td>obj_tables.bio.RnaSeqAttribute</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">RNA sequence</td></tr>
 
-              <tr><td>bio.Seq</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Sequence</td><td></td></tr>
+              <tr><td>bio.Seq</td><td>obj_tables.bio.SeqAttribute</td><td>String</td><td><tt>Bio.Seq.Seq</tt> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Sequence</td></tr>
 
-              <tr><td>bio.FeatureLoc</td><td>String</td><td><tt>Bio.SeqFeature.FeatureLocation</tt> <a href="https://biopython.org/DIST/docs/api/Bio.SeqFeature.FeatureLocation-class.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Location of a sequence feature</td><td></td></tr>
+              <tr><td>bio.FeatureLoc</td><td>obj_tables.bio.FeatureLocAttribute</td><td>String</td><td><tt>Bio.SeqFeature.FeatureLocation</tt> <a href="https://biopython.org/DIST/docs/api/Bio.SeqFeature.FeatureLocation-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Location of a sequence feature</td></tr>
 
-              <tr><td>bio.FreqPosMatrix</td><td>String</td><td><tt>Bio.motif.matrix.FrequencyPositionMatrix</tt> <a href="https://biopython.org/DIST/docs/api/Bio.motifs.matrix.FrequencyPositionMatrix-class.html"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="2">Frequency position matrix</td><td></td></tr>
+              <tr><td>bio.FreqPosMatrix</td><td>obj_tables.bio.FreqPosMatrixAttribute</td><td>String</td><td><tt>Bio.motif.matrix.FrequencyPositionMatrix</tt> <a href="https://biopython.org/DIST/docs/api/Bio.motifs.matrix.FrequencyPositionMatrix-class.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">Frequency position matrix</td></tr>
             </tbody>
           </table>
         </div>
@@ -472,27 +560,27 @@
             </ul>
 
             <h3>Document metdata</h3>
-            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='&lt;model_name&gt;'</tt>).</p>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='&lt;class_name&gt;'</tt>).</p>
 
-            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='model_id' name='Class name' description='Class description'</tt>).</p>
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='class_id' name='Class name' description='Class description'</tt>).</p>
 
             <h3>Class metdata</h3>
-            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='&lt;model_name&gt;'</tt>).</p>
+            <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='&lt;class_name&gt;'</tt>).</p>
 
-            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='model_id' name='Class name' description='Class description'</tt>).</p>
+            <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='class_id' name='Class name' description='Class description'</tt>).</p>
 
             <h3>Class instances (rows) and attributes (columns)</h3>
             <p>The attributes of each class are represented by the columns of its table, each instance of each class is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
 
-            <h3>Encoding multiple models in a single table</h3>
-            <p class="before_list">To help users encode complex relationships into a minimal number of tables, relationships between models can be encoded into groups of columns and individual cells.</p>
+            <h3>Encoding multiple classes in a single table</h3>
+            <p class="before_list">To help users encode complex relationships into a minimal number of tables, relationships between classes can be encoded into groups of columns and individual cells.</p>
             <ul>
-              <li><b>Encoding *-to-one related data into groups of columns:</b> *-to-one relationships to other instances of models can be encoded into a series of consecutive columns by setting the formats of the related models to <tt>multiple_cells</tt> in the schema. When this feature is used, tables must include an additional row of column headings which indicates the groups of columns.</li>
-              <li><b>Encoding *-to-many related data into individual columns:</b> *-to-many relationships to other instance of models can be encoded into a single column by setting the formats of the related models to <tt>cell</tt> and defining a grammar for serializing and deserializing the related instances to/from strings which can be written to and read from individual cells. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+              <li><b>Encoding *-to-one related data into groups of columns:</b> *-to-one relationships to other instances of classes can be encoded into a series of consecutive columns by setting the formats of the related classes to <tt>multiple_cells</tt> in the schema. When this feature is used, tables must include an additional row of column headings which indicates the groups of columns.</li>
+              <li><b>Encoding *-to-many related data into individual columns:</b> *-to-many relationships to other instance of classes can be encoded into a single column by setting the formats of the related classes to <tt>cell</tt> and defining a grammar for serializing and deserializing the related instances to/from strings which can be written to and read from individual cells. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
             </ul>
 
-            <h3>Encoding models into transposed tables</h3>
-            <p>Optionally, a class can be encoded into a transposed table in which the columns represent instances of the class and the rows represent attributes of the class. This feature is useful for models which are intended to only have a single instance. Models can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
+            <h3>Encoding classes into transposed tables</h3>
+            <p>Optionally, a class can be encoded into a transposed table in which the columns represent instances of the class and the rows represent attributes of the class. This feature is useful for classes which are intended to only have a single instance. Classes can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
 
             <h3>Comments</h3>
             <p>Comments about individual class instances can be encoded by inserting rows whose first cell begins with <tt>%/</tt> and ends with <tt>/%</tt>.</p>
@@ -504,7 +592,7 @@
 
             <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%/</tt> and end with <tt>/%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
 
-            <h3>Example</h3>
+            <h3>Examples</h3>
             <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame class enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame class also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>
 
             <table>
@@ -644,50 +732,50 @@
           <p>The following example illustrates to programmatically create, manipulate, analyze, and export the same dataset of parents and children described above.</p>
 
           <h4>Importing Python modules which implement schemas</h4>
-          <pre>import parents_children</pre>
+          <pre>import children_fav_games</pre>
 
           <h4>Creating datasets</h4>
           <pre><b># Create parents</b>
-jane_doe = parents_children.Parent(id='jane_doe', name='Jane Doe')
-john_doe = parents_children.Parent(id='john_doe', name='John Doe')
-mary_roe = parents_children.Parent(id='mary_roe', name='Mary Roe')
-richard_roe = parents_children.Parent(id='richard_roe', name='Richard Roe')
+jane_doe = children_fav_games.Parent(id='jane_doe', name='Jane Doe')
+john_doe = children_fav_games.Parent(id='john_doe', name='John Doe')
+mary_roe = children_fav_games.Parent(id='mary_roe', name='Mary Roe')
+richard_roe = children_fav_games.Parent(id='richard_roe', name='Richard Roe')
 
 <b># Create children</b>
-jamie_doe = parents_children.Child(id='jamie_doe',
+jamie_doe = children_fav_games.Child(id='jamie_doe',
                                    name='Jamie Doe',
-                                   gender=parents_children.Child.gender.enum_class.female,
+                                   gender=children_fav_games.Child.gender.enum_class.female,
                                    parents=[jane_doe, john_doe])
-jamie_doe.favorite_video_game = parents_children.Game(name='Legend of Zelda: Ocarina of Time',
+jamie_doe.favorite_video_game = children_fav_games.Game(name='Legend of Zelda: Ocarina of Time',
                                                       publisher='Nintendo',
                                                       year=1998)
 
-jimie_doe = parents_children.Child(id='jimie_doe',
+jimie_doe = children_fav_games.Child(id='jimie_doe',
                                    name='Jimie Doe',
-                                   gender=parents_children.Child.gender.enum_class.male,
+                                   gender=children_fav_games.Child.gender.enum_class.male,
                                    parents=[jane_doe, john_doe])
-jimie_doe.favorite_video_game = parents_children.Game(name='Super Mario Brothers',
+jimie_doe.favorite_video_game = children_fav_games.Game(name='Super Mario Brothers',
                                                       publisher='Nintendo',
                                                       year=1985)
-linda_roe = parents_children.Child(id='linda_roe',
+linda_roe = children_fav_games.Child(id='linda_roe',
                                    name='Linda Roe',
-                                   gender=parents_children.Child.gender.enum_class.female,
+                                   gender=children_fav_games.Child.gender.enum_class.female,
                                    parents=[mary_roe, richard_roe])
-linda_roe.favorite_video_game = parents_children.Game(name='Sonic the Hedgehog',
+linda_roe.favorite_video_game = children_fav_games.Game(name='Sonic the Hedgehog',
                                                       publisher='Sega',
                                                       year=1991)
-mike_roe = parents_children.Child(id='mike_roe',
+mike_roe = children_fav_games.Child(id='mike_roe',
                                   name='Michael Roe',
-                                  gender=parents_children.Child.gender.enum_class.male,
+                                  gender=children_fav_games.Child.gender.enum_class.male,
                                   parents=[mary_roe, richard_roe])
-mike_roe.favorite_video_game = parents_children.Game(name='SimCity',
+mike_roe.favorite_video_game = children_fav_games.Game(name='SimCity',
                                                      publisher='Electronic Arts',
                                                      year=1989)</pre>
 
           <h4>Querying datasets</h4>
           <pre>mike_roe = mary_roe.children.get_one(id='mike_roe')
 mikes_parents = mike_roe.parents
-mikes_sisters = mikes_parents[0].children.get(gender=parents_children.Child.gender.enum_class.female)</pre>
+mikes_sisters = mikes_parents[0].children.get(gender=children_fav_games.Child.gender.enum_class.female)</pre>
 
           <h4>Editing datasets</h4>
           <pre>jamie_doe.favorite_video_game.name = 'Legend of Zelda'
@@ -704,19 +792,19 @@ assert errors is None</pre>
           <h4>Parsing data from files</h4>
           <pre>import obj_tables.io
 
-filename = 'examples/parents_children.xlsx'
+filename = 'examples/children_fav_games.xlsx'
 objects = obj_tables.io.Reader().run(filename,
-                                    models=[parents_children.Parent, parents_children.Child],
+                                    models=[children_fav_games.Parent, children_fav_games.Child],
                                     group_objects_by_model=True)
-parents = objects[parents_children.Parent]
+parents = objects[children_fav_games.Parent]
 jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')</pre>
 
           <h4>Exporting datasets to files</h4>
-          <pre>filename = 'examples/parents_children_copy.xlsx'
+          <pre>filename = 'examples/children_fav_games_copy.xlsx'
 objects = [jane_doe, john_doe, mary_roe, richard_roe,
            jamie_doe, jimie_doe, linda_roe, mike_roe]
 obj_tables.io.Writer().run(filename, objects,
-                          models=[parents_children.Parent, parents_children.Child])</pre>
+                          models=[children_fav_games.Parent, children_fav_games.Child])</pre>
 
           <h4>Analyzing datasets</h4>
           <pre>assert jane_doe.is_equal(jane_doe_2)</pre>

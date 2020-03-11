@@ -504,7 +504,7 @@ class WorkbookWriter(WriterBase):
         for model in all_models:
             model_attr_defs.append([
                 model.__name__,
-                'Model',
+                'Class',
                 None,
                 model.Meta.table_format.name,
                 model.Meta.verbose_name or None,
