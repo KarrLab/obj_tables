@@ -266,7 +266,7 @@ class IdentifiersAttribute(core.LiteralAttribute):
 
         Args:
             obj (:obj:`Model`): class being validated
-            value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
+            value (:obj:`list` of :obj:`Identifier`): value of attribute to validate
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
@@ -413,7 +413,7 @@ class DoisAttribute(core.LiteralAttribute):
 
         Args:
             obj (:obj:`Model`): class being validated
-            value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
+            value (:obj:`list` of :obj:`str`): value of attribute to validate
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
@@ -567,7 +567,7 @@ class PubMedIdsAttribute(core.LiteralAttribute):
 
         Args:
             obj (:obj:`Model`): class being validated
-            value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
+            value (:obj:`list` of :obj:`Identifier`): value of attribute to validate
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other

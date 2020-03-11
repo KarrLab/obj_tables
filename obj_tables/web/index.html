@@ -23,35 +23,44 @@
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue">
+      <div class="grid-x grid-padding-x blue" id="overview">
         <div class="large-9 cell">
-          <p><i>ObjTables</i> is a toolkit for working with complex data as collections of tables which combines the ease of use of Excel with the rigor and power of defined schemas.</p>
+          <p><i>ObjTables</i> is a toolkit for using schemas to models collections of tables that represent complex datasets, combining the ease of use of Excel with the rigor and power of schemas.</p>
 
-          <p class="before_list"><i>ObjTables</i> makes it easy to
+          <p class="before_list"><i>ObjTables</i> makes it easy to</p>
           <ul>
-            <li>Use collections of tables (e.g., an Excel workbook) as a interface to view and edit complex datasets that describe relationships and other complex datatypes,</li>
+            <li>Use collections of tables (e.g., an Excel workbook) as a interface for viewing and editing complex datasets that consist of multiple related objects that have multiple attributes</li>
+            <li>Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables,</li>
             <li>Use embedded tables and grammars to encode relational information into columns and groups of columns of tables,</li>
             <li>Define schemas for collections of tables,</li>
-            <li>Use these schema to validate collections of tables and parse them into Python data structures for analysis,</li>
-            <li>Conduct operations on complex datasets such as comparing and merging datasets, and</li>
+            <li>Use schemas to parse collections of tables into Python data structures for further analysis,</li>
+            <li>Use schemas to validate the syntax and semantics of collections of tables,</li>
+            <li>Conduct operations on complex datasets, such as comparing and merging datasets, and</li>
             <li>Edit schemas and migrate datasets to new versions of schemas.</li>
           </ul>
 
-          <p class="before_list">The <i>ObjTables</i> toolkit includes five components:
+          <p class="before_list">The <i>ObjTables</i> toolkit includes five components:</p>
           <ul>
-            <li><b>Tabular format for describing schemas for datasets encoded as collections of tables.</b> This includes the data type of each column, relationships between rows in tables, and two methods for encoding complex relational information into cells:
+            <li><b>Tabular format for collections of tables.</b> This includes syntax for declaring which cells represent the names of tables and columns, declaring which entries represent metadata such as date that a table was updated, and declaring which entries represent comments.</li>
+            <li><b>Tabular format for describing schemas for collections of tables.</b> This captures the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cells. This supports three modes of encoding relationships into cells in tables.
               <ul>
-                <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, <i>ObjTables</i> can encode related classes into groups of columns. <i>ObjTables</i> uses merged headings to distinguish these columns.</li>
-                <li><b>Embedded grammars for relationships:</b> To help users encode complex relationships into a minimal number of tables, optionally, grammars can be used to encode relationships to multiple instances of multiple classes within a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+                <li><b>Columns for relationships among objects represented by entries in tables:</b> Relationships from one (primary) object to other (related) objects can be captured by (a) incorporating a column that represents a unique <i>key</i> for each related object into the table that represents the related objects and (b) encoding the keys for the related objects as a comma-separated list into a column in the table that represents the primary objects.</li>
+                <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex datasets into a minimal number of tables, <i>ObjTables</i> can also encode instances of related classes into groups of columns. <i>ObjTables</i> uses merged headings to distinguish these columns.</li>
+                <li><b>Embedded grammars for relationships:</b> To help users encode complex datasets into a minimal number of tables, grammars can be used to encode instances of related classes into a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
             </ul>
             </li>
-            <li><b>Numerous data types</b> for scientific research including types for chemoinformatics, genomics, and mathematics.</li>
-            <li><b>Software tools for generating Excel workbooks for editing datasets</b> according to schemas. This enables users to use Excel as a graphical user interface for editing datasets. As outlined below, this leverages a variety of features of Excel.</li>
-            <li><b>Software tools for parsing and validating datasets</b> according to schemas.</li>
-            <li><b>Software tools for manipulating complex datasets</b>, including creating, analyzing, comparing, merging, and migrating datasets.</li>
+            <li><b>Python API for defining schemas:</b> For more flexibility, the Python API can be used to incorporate custom data types into schemas, utilize multiple inheritance, and define custom validation procedures.</li>
+            <li><b>Numerous data types</b> including types for mathematics, science, chemoinformatics, and genomics.</li>
+            <li><b>Software tools for parsing, validating, and manipulating datasets</b> according to schemas. This includes tools for
+              <ul>
+                <li>Pretty printing datasets as Excel workbooks. This enables users to use Excel as a graphical user interface for quickly browsing and editing datasets as described below.</li>
+                <li>Creating templates for datasets.</li>
+                <li>Analyzing, comparing, merging, revisioning, and datasets.</li>
+                <li>Migrating datasets between versions of their schemas.</li>
+              </ul></li>
           </ul>
 
-          <p class="before_list"><i>ObjTables</i> enables users to leverage Excel as a graphical user interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:
+          <p class="before_list"><i>ObjTables</i> enables users to leverage Excel as a graphical user interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:</p>
           <ul>
             <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the classes represented by the other tables, displays the number of instances of each class, and provides hyperlinks to the other tables.</li>
             <li><b>Formatted class titles:</b> Each table includes a title bar which describes the class. The title bars are formatted, frozen, and protected from editing.</li>
@@ -62,14 +71,14 @@
             <li><b>Hidden extra rows and columns:</b> To help users focus on the attributes of their classes, <i>ObjTables</i> protects and hides all additional rows and columns.</li>
           </ul>
 
-          <p class="before_list"><i>ObjTables</i> makes it easy to implement rigorous validations of datasets:
+          <p class="before_list"><i>ObjTables</i> supports multiple levels of validation of datasets:</p>
           <ul>
             <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively (e.g. <tt>string(min_length=8)</tt>). More complex validations can be defined using a Python schema or by implementing custom types of attributes.</li>
             <li><b>Instance validation:</b> Users can implement custom instance-level validations by creating a Python module which implements a schema and implementing the <tt>validate</tt> methods of the classes.</li>
             <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules which implement schemas can also capture tuples of attributes which must be unique across all instances of a class. See the documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information.</li>
           </ul>
 
-          <p class="before_list"><i>ObjTables</i> provides four user interfaces to the software tools:
+          <p class="before_list"><i>ObjTables</i> provides four user interfaces to the software tools:</p>
           <ul>
             <li><b>Web app</b> below <a href="#app"><i class="fi-arrow-down"></i></a>: The web app enables users to use <i>ObjTables</i> without having to install any software.</li>
             <li><b>REST API</b> <a href="api/"><i class="fi-link"></i></a>: The REST API enables users to use <i>ObjTables</i> programmatically without having to install any software.</li>
@@ -77,16 +86,15 @@
             <li><b>Python library</b> <a href="https://pypi.python.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The Python library enables users to extend <i>ObjTables</i> with custom attributes and validation and use <i>ObjTables</i> to analyze complex datasets.</li>
           </ul>
 
-          <p><i>ObjTables</i> is available open-source <a href="https://github.com/KarrLab/obj_tables"><i class="fi-social-github"></i></a> under the MIT license <a href="https://github.com/KarrLab/obj_tables/blob/master/LICENSE"><i class="fi-link"></i></a>.</p>
-
           <p><i>ObjTables</i> was developed to implement languages for describing whole-cell computational models <a href="https://www.wholecell.org"><i class="fi-link"></i></a> and the data needed to build and verify them.</p>
         </div>
         <div class="large-3 cell">
           <div class="toc">
             <h3>Contents</h3>
             <ul>
+              <li><a href="#overview">Overview</a></li>
               <li><a href="#app">Web app</a></li>
-              <li><a href="#format">Tabular format for datasets</a>
+              <li><a href="#schema-format">Tabular format for datasets</a>
                 <ul>
                   <li><a href="#schema-format">Formats for schemas</a></li>
                   <li><a href="#data-types">Data types</a></li>
@@ -110,8 +118,7 @@
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue">
-        <a name="app"></a>
+      <div class="grid-x grid-padding-x blue" id="app">
         <div class="large-12 cell">
           <h2>Web app</h2>
         </div>
@@ -176,12 +183,9 @@
             <textarea id="errors" name="errors" style="height: 12.5rem; margin-top: 1.25rem;" disabled>
             </textarea>
         </div>
-
       </div>
 
-      <a name="format"></a>
-      <div class="grid-x grid-padding-x orange">
-        <a name="schema-format"></a>
+      <div class="grid-x grid-padding-x orange" id="schema-format">
         <div class="large-12 cell">
             <h2>Formats for schemas</h2>
 
@@ -350,8 +354,7 @@
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue">
-        <a name="data-types"></a>
+      <div class="grid-x grid-padding-x blue" id="data-types">
         <div class="large-12 cell">
             <h2>Data types</h2>
             <p><i>ObjTables</i> supports numerous datatypes, and it is easy to implement additional types.</p>
@@ -380,7 +383,7 @@
 
             <thead class="data-type-section-head">
               <tr><th colspan="4"></th></tr>
-              <tr><th colspan="4">Basic data types</th></tr>
+              <tr><th colspan="4">Fundamental data types</th></tr>
             </thead>
             <tbody class="data-type-section">
               <tr><td>Boolean</td><td>obj_tables.BooleanAttribute</td><td>Boolean</td><td><tt>bool</tt></td></tr>
@@ -442,8 +445,13 @@
 
               <tr><td>ManyToMany</td><td>obj_tables.ManyToManyAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">Many-to-many relationship</td></tr>
+            </tbody>
 
-              <tr><td>ToManyGrammar</td><td>obj_tables.grammar.ToManyGrammarAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+            <thead class="data-type-section-head">
+              <tr><th colspan="4"></th></tr>
+              <tr><th colspan="4">Grammars for domain-specific languages for encoding data and relationships into an individual cell in a table</th></tr>
+            </thead>
+              <tr><td>grammar.ToManyGrammar</td><td>obj_tables.grammar.ToManyGrammarAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">*-to-many relationship serialized/deserialized using a custom grammar</td></tr>
             </tbody>
 
@@ -546,8 +554,7 @@
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x orange">
-        <a name="table-format"></a>
+      <div class="grid-x grid-padding-x orange" id="table-format">
         <div class="large-12 cell">
             <h2>Tabular format datasets</h2>
 
@@ -687,8 +694,7 @@
         </div>
       </div>
 
-       <div class="grid-x grid-padding-x blue">
-        <a name="tools"></a>
+       <div class="grid-x grid-padding-x blue" id="tools">
         <div class="large-12 cell">
           <h2>Software tools</h2>
           <p class="before_list"><i>ObjTables</i> provides a variety of tools for working with schemas and datasets:</p>
@@ -712,18 +718,15 @@
           <h3>Web app</h3>
           A web app is available above <a href="#app"><i class="fi-arrow-up"></i></a>.
         </div>
-        <div class="large-4 cell">
-          <a name="rest"></a>
+        <div class="large-4 cell" id="rest">
           <h3>REST API</h3>
           A REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
         </div>
-        <div class="large-4 cell">
-          <a name="cli"></a>
+        <div class="large-4 cell" id="cli">
           <h3>Command line interface</h3>
           A command line interface is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>.
         </div>
-        <div class="large-12 cell">
-          <a name="python"></a>
+        <div class="large-12 cell" id="python">
           <h3>Python library</h3>
           <p>A Python library is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>.</p>
 
@@ -812,8 +815,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x orange">
-        <a name="other-resources"></a>
+      <div class="grid-x grid-padding-x orange" id="other-resources">
         <div class="large-12 cell">
           <h2>Resources for working with <i>ObjTables</i></h2>
           <p class="before_list">Below are several resources which can be helpful for working with <i>ObjTables</i>.</p>
@@ -825,8 +827,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue">
-        <a name="help"></a>
+      <div class="grid-x grid-padding-x blue" id="help">
         <div class="large-12 cell">
           <h2>Tutorials, documentation, and help</h2>
         </div>
@@ -860,8 +861,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x orange">
-        <a name="contribute"></a>
+      <div class="grid-x grid-padding-x orange" id="contribute">
         <div class="large-12 cell">
           <h2>Contributing to <i>ObjTables</i></h2>
         </div>
@@ -870,8 +870,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue">
-        <a name="about"></a>
+      <div class="grid-x grid-padding-x blue" id="about">
         <div class="large-12 cell">
           <h2>About <i>ObjTables</i></h2>
         </div>

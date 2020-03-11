@@ -34,7 +34,6 @@ import warnings
 import yaml
 
 from obj_tables import TableFormat, RelatedAttribute, get_models, utils
-from obj_tables.math.expression import ParsedExpression, ObjTablesTokenCodes
 from obj_tables.io import WorkbookReader, Reader, Writer
 from obj_tables.utils import SchemaRepoMetadata
 from wc_utils.config.core import AltResourceName
@@ -54,6 +53,7 @@ class MigratorError(Exception):
     Attributes:
         message (:obj:`str`): the exception's message
     """
+
     def __init__(self, message=None):
         super().__init__(message)
 
@@ -205,7 +205,7 @@ class SchemaModule(object):
             model.__name__ = SchemaModule._unmunged_model_name(model)
 
     def import_module_for_migration(self, validate=True, required_attrs=None, debug=False,
-        mod_patterns=None, print_code=False):
+                                    mod_patterns=None, print_code=False):
         """ Import a schema from a Python module in a file, which may be in a package
 
         Args:
@@ -269,7 +269,7 @@ class SchemaModule(object):
             for line in open(fn, 'r').readlines():
                 print('\t\t', line, end='')
                 n += 1
-                if max<=n:
+                if max <= n:
                     print('\tExceeded max ({}) lines'.format(max))
                     break
             print()
@@ -301,7 +301,7 @@ class SchemaModule(object):
                 if not isinstance(mod_patterns, collections.abc.Iterable) or isinstance(mod_patterns, str):
                     raise MigratorError(
                         "mod_patterns must be an iterator that's not a string; but it is a(n) '{}'".format(
-                        type(mod_patterns).__name__))
+                            type(mod_patterns).__name__))
                 print("sys.modules entries matching RE patterns: '{}':".format("', '".join(mod_patterns)))
                 compiled_mod_patterns = [re.compile(mod_pattern) for mod_pattern in mod_patterns]
                 for name, module in sys.modules.items():
@@ -327,7 +327,7 @@ class SchemaModule(object):
                 for name, cls in inspect.getmembers(new_module, inspect.isclass):
                     names.add(name)
                     if issubclass(cls, obj_tables.core.Model) and \
-                        not cls in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
+                            not cls in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
                         models_found.add(name)
                 print('targets in names', names.intersection(targets))
                 print('targets in models_found', models_found.intersection(targets))
@@ -361,7 +361,7 @@ class SchemaModule(object):
                         print('\t', name, file)
 
                 changed_modules = [k for k in set(sys.modules) & set(saved['modules'])
-                    if sys.modules[k] != saved['modules'][k]]
+                                   if sys.modules[k] != saved['modules'][k]]
                 if changed_modules:
                     print('changed modules:')
                     for k in changed_modules:
@@ -413,7 +413,7 @@ class SchemaModule(object):
         models = {}
         for name, cls in inspect.getmembers(module, inspect.isclass):
             if issubclass(cls, obj_tables.core.Model) and \
-                not cls in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
+                    not cls in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
                 models[name] = cls
         # ensure that a schema contains some obj_tables.Models
         if not models:
@@ -452,7 +452,7 @@ class SchemaModule(object):
                     related_class = local_attr.related_class
                     if related_class != model_defs[related_class.__name__]:
                         errors.append("{}.{} references a {}, but it's not the model in module {}".format(
-                                model_name, attr_name, related_class.__name__, module.__name__))
+                            model_name, attr_name, related_class.__name__, module.__name__))
         return errors
 
     def run(self):
@@ -500,7 +500,7 @@ class Migrator(object):
 
     SCALAR_ATTRS = ['deleted_models', '_migrated_copy_attr_name']
     COLLECTIONS_ATTRS = ['existing_defs', 'migrated_defs', 'renamed_models', 'models_map',
-        'renamed_attributes', 'renamed_attributes_map']
+                         'renamed_attributes', 'renamed_attributes_map']
 
     # default suffix for a migrated model file
     MIGRATE_SUFFIX = '_migrated'
@@ -519,7 +519,7 @@ class Migrator(object):
     DEFAULT_IO_CLASSES = dict(reader=Reader, writer=Writer)
 
     def __init__(self, existing_defs_file=None, migrated_defs_file=None, renamed_models=None,
-        renamed_attributes=None, io_classes=None, transformations=None):
+                 renamed_attributes=None, io_classes=None, transformations=None):
         """ Construct a Migrator
 
         If it's defined, `transformations` uses its `prepare_existing_models` method to modify existing
@@ -581,7 +581,7 @@ class Migrator(object):
             for attr in existing_model_def.Meta.attributes.values():
                 max_len = max(max_len, len(attr.name))
         return "{}{}".format(Migrator.MIGRATED_COPY_ATTR_PREFIX,
-            '_' * (max_len + 1 - len(Migrator.MIGRATED_COPY_ATTR_PREFIX)))
+                             '_' * (max_len + 1 - len(Migrator.MIGRATED_COPY_ATTR_PREFIX)))
 
     def _validate_renamed_models(self):
         """ Validate renamed models
@@ -606,10 +606,10 @@ class Migrator(object):
                 errors.append("'{}' in renamed models not a migrated model".format(migrated_model))
         duped_existing_models = det_find_dupes([existing_model for existing_model, _ in self.renamed_models])
         if duped_existing_models:
-                errors.append("duplicated existing models in renamed models: '{}'".format(duped_existing_models))
+            errors.append("duplicated existing models in renamed models: '{}'".format(duped_existing_models))
         duped_migrated_models = det_find_dupes([migrated_model for _, migrated_model in self.renamed_models])
         if duped_migrated_models:
-                errors.append("duplicated migrated models in renamed models: '{}'".format(duped_migrated_models))
+            errors.append("duplicated migrated models in renamed models: '{}'".format(duped_migrated_models))
         if errors:
             return errors
 
@@ -642,27 +642,27 @@ class Migrator(object):
         # check renamed attributes
         for (existing_model, existing_attr), (migrated_model, migrated_attr) in self.renamed_attributes:
             if existing_model not in self.existing_defs or \
-                existing_attr not in self.existing_defs[existing_model].Meta.attributes:
+                    existing_attr not in self.existing_defs[existing_model].Meta.attributes:
                 errors.append("'{}.{}' in renamed attributes not an existing model.attribute".format(
                     existing_model, existing_attr))
             if migrated_model not in self.migrated_defs or \
-                migrated_attr not in self.migrated_defs[migrated_model].Meta.attributes:
+                    migrated_attr not in self.migrated_defs[migrated_model].Meta.attributes:
                 errors.append("'{}.{}' in renamed attributes not a migrated model.attribute".format(
                     migrated_model, migrated_attr))
             # renamed attributes must be consistent with renamed models
             # i.e., if an attribute is renamed A.x -> B.y then model A must be renamed A -> B
             if existing_model not in self.models_map or \
-                migrated_model != self.models_map[existing_model]:
+                    migrated_model != self.models_map[existing_model]:
                 errors.append("renamed attribute '{}.{} -> {}.{}' not consistent with renamed models".format(
                     existing_model, existing_attr, migrated_model, migrated_attr))
         duped_existing_attributes = det_find_dupes([existing_attr for existing_attr, _ in self.renamed_attributes])
         if duped_existing_attributes:
-                errors.append("duplicated existing attributes in renamed attributes: '{}'".format(
-                    duped_existing_attributes))
+            errors.append("duplicated existing attributes in renamed attributes: '{}'".format(
+                duped_existing_attributes))
         duped_migrated_attributes = det_find_dupes([migrated_attr for _, migrated_attr in self.renamed_attributes])
         if duped_migrated_attributes:
-                errors.append("duplicated migrated attributes in renamed attributes: '{}'".format(
-                    duped_migrated_attributes))
+            errors.append("duplicated migrated attributes in renamed attributes: '{}'".format(
+                duped_migrated_attributes))
 
         if errors:
             return errors
@@ -784,8 +784,8 @@ class Migrator(object):
         expected_migrated_model_name = self.models_map[existing_model]
         if migrated_model_cls.__name__ != expected_migrated_model_name:
             inconsistencies.append("models map says '{}' migrates to '{}', but _get_inconsistencies parameters "
-                "say '{}' migrates to '{}'".format(existing_model, expected_migrated_model_name, existing_model,
-                    migrated_model))
+                                   "say '{}' migrates to '{}'".format(existing_model, expected_migrated_model_name, existing_model,
+                                                                      migrated_model))
         if inconsistencies:
             # given these inconsistencies the checks below would not be informative
             return inconsistencies
@@ -798,8 +798,9 @@ class Migrator(object):
                 migrated_attr = migrated_model_cls.Meta.attributes[migrated_attr]
                 if type(existing_attr).__name__ != type(migrated_attr).__name__:
                     inconsistencies.append("existing attribute {}.{} type {} differs from its "
-                        "migrated attribute {}.{} type {}".format(existing_model, existing_attr_name,
-                        type(existing_attr).__name__, migrated_class, migrated_attr, type(migrated_attr).__name__))
+                                           "migrated attribute {}.{} type {}".format(
+                                               existing_model, existing_attr_name,
+                                               type(existing_attr).__name__, migrated_class, migrated_attr, type(migrated_attr).__name__))
         if inconsistencies:
             # given these inconsistencies the checks below would not be informative
             return inconsistencies
@@ -816,23 +817,26 @@ class Migrator(object):
                     if isinstance(existing_rel_attr, str) and isinstance(migrated_rel_attr, str):
                         if existing_rel_attr != migrated_rel_attr:
                             inconsistencies.append("{}.{}.{} is '{}', which differs from the migrated value "
-                                "of {}.{}.{}, which is '{}'".format(existing_model, existing_attr_name, rel_attr,
-                                existing_rel_attr, migrated_class, migrated_attr, rel_attr, migrated_rel_attr))
+                                                   "of {}.{}.{}, which is '{}'".format(
+                                                       existing_model, existing_attr_name, rel_attr,
+                                                       existing_rel_attr, migrated_class, migrated_attr, rel_attr, migrated_rel_attr))
                     else:
                         # the attributes are models
                         existing_rel_attr_name = existing_rel_attr.__name__
                         migrated_rel_attr_name = migrated_rel_attr.__name__
                         if existing_rel_attr_name in self.deleted_models:
                             inconsistencies.append("existing model '{}' is not migrated, "
-                                "but is referenced by migrated attribute {}.{}".format(existing_rel_attr_name,
-                                migrated_class, migrated_attr))
+                                                   "but is referenced by migrated attribute {}.{}".format(e
+                                                                                                          xisting_rel_attr_name,
+                                                                                                          migrated_class, migrated_attr))
                         else:
                             expected_migrated_rel_attr = self.models_map[existing_rel_attr_name]
                             if migrated_rel_attr_name != expected_migrated_rel_attr:
                                 inconsistencies.append("{}.{}.{} is '{}', which migrates to '{}', but it "
-                                    "differs from {}.{}.{}, which is '{}'".format(
-                                    existing_model, existing_attr_name, rel_attr, existing_rel_attr_name, expected_migrated_rel_attr,
-                                    migrated_class, migrated_attr, rel_attr, migrated_rel_attr_name))
+                                                       "differs from {}.{}.{}, which is '{}'".format(
+                                                           existing_model, existing_attr_name, rel_attr,
+                                                           existing_rel_attr_name, expected_migrated_rel_attr,
+                                                           migrated_class, migrated_attr, rel_attr, migrated_rel_attr_name))
         return inconsistencies
 
     def _get_existing_model_order(self, existing_file):
@@ -901,7 +905,7 @@ class Migrator(object):
 
         # append newly created models
         migrated_model_names = [migrated_model_name
-            for migrated_model_name in set(self.migrated_defs).difference(self.models_map.values())]
+                                for migrated_model_name in set(self.migrated_defs).difference(self.models_map.values())]
         migrated_models = [self.migrated_defs[model_name] for model_name in sorted(migrated_model_names)]
         migrated_model_order.extend(migrated_models)
 
@@ -918,7 +922,7 @@ class Migrator(object):
             :obj:`str`: name of migrated file
         """
         return [model for model in models.values()
-            if model.Meta.table_format not in [TableFormat.cell, TableFormat.multiple_cells]]
+                if model.Meta.table_format not in [TableFormat.cell, TableFormat.multiple_cells]]
 
     def read_existing_file(self, existing_file):
         """ Read models from existing file
@@ -936,7 +940,7 @@ class Migrator(object):
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
         # data in model files must be already validated with the existing schema
         existing_models = Reader().run(existing_file, models=self._get_models_with_worksheets(self.existing_defs),
-            ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False, validate=False)
+                                       ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False, validate=False)
         if isinstance(existing_models, dict):
             models = []
             for obj_list in existing_models.values():
@@ -979,12 +983,12 @@ class Migrator(object):
         if migrate_suffix is None:
             migrate_suffix = Migrator.MIGRATE_SUFFIX
         migrated_file = os.path.join(os.path.dirname(existing_file),
-            os.path.basename(root) + migrate_suffix + ext)
+                                     os.path.basename(root) + migrate_suffix + ext)
         return migrated_file
 
     # todo: unittest
     def write_migrated_file(self, migrated_models, model_order, existing_file, migrated_file=None,
-        migrate_suffix=None, migrate_in_place=False):
+                            migrate_suffix=None, migrate_in_place=False):
         """ Write migrated models to an external representation
 
         Does not perform validation -- validation must be performed independently.
@@ -1006,7 +1010,7 @@ class Migrator(object):
         """
         if not migrated_file:
             migrated_file = self.path_of_migrated_file(existing_file,
-                migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
+                                                       migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
 
         if not migrate_in_place and os.path.exists(migrated_file):
             raise MigratorError("migrated file '{}' already exists".format(migrated_file))
@@ -1014,7 +1018,7 @@ class Migrator(object):
         # write migrated models to disk
         Writer = self.io_classes['writer']
         Writer().run(migrated_file, migrated_models, models=model_order, validate=False,
-            data_repo_metadata=True)
+                     data_repo_metadata=True)
         return migrated_file
 
     def _migrate_with_transformations(self, existing_models):
@@ -1039,7 +1043,7 @@ class Migrator(object):
         return migrated_models
 
     def _write(self, existing_file, migrated_models, schema_metadata_model=None, migrated_file=None,
-        migrate_suffix=None, migrate_in_place=False):
+               migrate_suffix=None, migrate_in_place=False):
         """ Write migrated models to a migrated file
 
         `Migrator` doesn't use the `schema_package` argument to `Writer.run()` because the directory
@@ -1074,7 +1078,7 @@ class Migrator(object):
             migrated_model_order.insert(0, SchemaRepoMetadata)
             migrated_models.append(schema_metadata_model)
         return self.write_migrated_file(migrated_models, migrated_model_order, existing_file,
-            migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
+                                        migrated_file=migrated_file, migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
 
     def full_migrate(self, existing_file, migrated_file=None, migrate_suffix=None, migrate_in_place=False):
         """ Migrate data from an existing file to a migrated file
@@ -1098,7 +1102,7 @@ class Migrator(object):
         existing_models = self.read_existing_file(existing_file)
         migrated_models = self._migrate_with_transformations(existing_models)
         return self._write(existing_file, migrated_models, migrated_file=migrated_file,
-            migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
+                           migrate_suffix=migrate_suffix, migrate_in_place=migrate_in_place)
 
     def _check_model(self, existing_model, existing_model_def):
         """ Check a model instance against its definition
@@ -1115,7 +1119,7 @@ class Migrator(object):
         # are attributes in existing_model_def missing or uninitialized in existing_model
         for attr_name, attr in existing_model_def.Meta.attributes.items():
             if not hasattr(existing_model, attr_name) or \
-                getattr(existing_model, attr_name) is attr.get_default_cleaned_value():
+                    getattr(existing_model, attr_name) is attr.get_default_cleaned_value():
                 uninitialized_attrs.append("instance(s) of existing model '{}' lack(s) '{}' non-default value".format(
                     existing_model_def.__name__, attr_name))
 
@@ -1181,17 +1185,19 @@ class Migrator(object):
         return migrated_model
 
     def _migrate_expression(self, existing_analyzed_expr):
-        """ Migrate a model instance's `ParsedExpression.expression`
+        """ Migrate a model instance's :obj:`ParsedExpression.expression`
 
-        The ParsedExpression syntax supports model type names in a Name.model_id notation.
+        The :obj:`ParsedExpression` syntax supports model type names in a Name.model_id notation.
         If a model type name changes then these must be migrated.
 
         Args:
-            existing_analyzed_expr (:obj:`ParsedExpression`): an existing model's `ParsedExpression`
+            existing_analyzed_expr (:obj:`ParsedExpression`): an existing model's :obj:`ParsedExpression`
 
         Returns:
             :obj:`str`: a migrated `existing_analyzed_expr.expression`
         """
+        from obj_tables.math.expression import ObjTablesTokenCodes
+
         types_of_referenced_models = existing_analyzed_expr.related_objects.keys()
         changed_model_types = {}
         for existing_model_type in existing_analyzed_expr.related_objects.keys():
@@ -1208,13 +1214,13 @@ class Migrator(object):
             for wc_token in existing_analyzed_expr._obj_tables_tokens:
                 wc_token_string = wc_token.token_string
                 if wc_token.code == ObjTablesTokenCodes.obj_id and \
-                    wc_token.model_type.__name__ in changed_model_types and \
-                    wc_token_string.startswith(wc_token.model_type.__name__ + '.'):
+                        wc_token.model_type.__name__ in changed_model_types and \
+                        wc_token_string.startswith(wc_token.model_type.__name__ + '.'):
 
                     # disambiguated referenced model
                     migrated_model_type_name = changed_model_types[wc_token.model_type.__name__]
                     migrated_wc_token_string = wc_token_string.replace(wc_token.model_type.__name__ + '.',
-                        migrated_model_type_name + '.')
+                                                                       migrated_model_type_name + '.')
                     wc_token_strings.append(migrated_wc_token_string)
                 else:
                     wc_token_strings.append(wc_token_string)
@@ -1223,9 +1229,9 @@ class Migrator(object):
             return existing_analyzed_expr.recreate_whitespace(migrated_expr_wo_spaces)
 
     def _migrate_analyzed_expr(self, existing_model, migrated_model, migrated_models):
-        """ Run the migration of a model instance's `ParsedExpression` attribute, if it has one
+        """ Run the migration of a model instance's :obj:`ParsedExpression` attribute, if it has one
 
-        This must be done after all migrated models have been created. The migrated `ParsedExpression`
+        This must be done after all migrated models have been created. The migrated :obj:`ParsedExpression`
         is assigned to the appropriate attribute in `migrated_model`.
 
         Args:
@@ -1235,9 +1241,11 @@ class Migrator(object):
                 migrated model ids to migrated model instances
 
         Raises:
-            :obj:`MigratorError`: if the `ParsedExpression` in `existing_model` cannot be migrated
+            :obj:`MigratorError`: if the :obj:`ParsedExpression` in `existing_model` cannot be migrated
         """
         if hasattr(existing_model, self.PARSED_EXPR):
+            from obj_tables.math.expression import ParsedExpression
+
             existing_analyzed_expr = getattr(existing_model, self.PARSED_EXPR)
             migrated_attribute = self.PARSED_EXPR
             migrated_expression = self._migrate_expression(existing_analyzed_expr)
@@ -1310,7 +1318,7 @@ class Migrator(object):
 
             migrated_class_name = self.models_map[existing_class_name]
             migrated_model = self._migrate_model(existing_model, existing_schema[existing_class_name],
-                migrated_schema[migrated_class_name])
+                                                 migrated_schema[migrated_class_name])
             existing_migrated_pairs.append((existing_model, migrated_model))
         self._migrate_all_analyzed_exprs(existing_migrated_pairs)
         return existing_migrated_pairs
@@ -1483,9 +1491,10 @@ class MigrationSpec(object):
     _REQUIRED_ATTRS = ['name', 'existing_files', 'schema_files']
     _CHANGES_LISTS = ['seq_of_renamed_models', 'seq_of_renamed_attributes', 'seq_of_transformations']
     _ALLOWED_ATTRS = _REQUIRED_ATTRS + _CHANGES_LISTS + ['migrated_files', 'io_classes',
-        'migrate_suffix', 'migrate_in_place', 'migrations_config_file',
-        'final_schema_branch', 'final_schema_url', 'final_schema_hash', 'final_schema_git_metadata',
-        '_prepared']
+                                                         'migrate_suffix', 'migrate_in_place', 'migrations_config_file',
+                                                         'final_schema_branch', 'final_schema_url',
+                                                         'final_schema_hash', 'final_schema_git_metadata',
+                                                         '_prepared']
 
     def __init__(self, name, **kwargs):
         for attr in self._ALLOWED_ATTRS:
@@ -1495,7 +1504,7 @@ class MigrationSpec(object):
         extra_attrs = set(kwargs) - set(self._ALLOWED_ATTRS)
         if extra_attrs:
             raise MigratorError("initialization of MigrationSpec supports ({}) but extra attribute(s) "
-                "were provided: {}".format(set(self._ALLOWED_ATTRS), extra_attrs))
+                                "were provided: {}".format(set(self._ALLOWED_ATTRS), extra_attrs))
 
         # initialize attributes provided
         for attr, value in kwargs.items():
@@ -1596,7 +1605,7 @@ class MigrationSpec(object):
         errors = []
         # check all attributes of self that aren't classes, methods, functions, or private
         members = inspect.getmembers(self, lambda a:
-            not(inspect.isclass(a) or inspect.ismethod(a) or inspect.isfunction(a)))
+                                     not(inspect.isclass(a) or inspect.ismethod(a) or inspect.isfunction(a)))
         members = [attr for attr, value in members if not attr.startswith('_')]
 
         extra_attrs = set(members).difference(self._ALLOWED_ATTRS)
@@ -1617,8 +1626,8 @@ class MigrationSpec(object):
             if getattr(self, changes_list) is not None:
                 if len(getattr(self, changes_list)) != len(self.schema_files) - 1:
                     errors.append("{} must have 1 mapping for each of the {} migration(s) specified, "
-                        "but it has {}".format(changes_list,  len(self.schema_files) - 1,
-                        len(getattr(self, changes_list))))
+                                  "but it has {}".format(changes_list,  len(self.schema_files) - 1,
+                                                         len(getattr(self, changes_list))))
 
         if self.seq_of_renamed_models:
             required_structure = "seq_of_renamed_models must be None, or a list of lists of pairs of strings"
@@ -1632,15 +1641,15 @@ class MigrationSpec(object):
                 errors.append(required_structure + ", but examining it raises a '{}' error".format(str(e)))
 
         if self.seq_of_renamed_attributes:
-            required_structure = ( "seq_of_renamed_attributes must be None, or a list of lists of pairs "
-                "of pairs of strings")
+            required_structure = ("seq_of_renamed_attributes must be None, or a list of lists of pairs "
+                                  "of pairs of strings")
             try:
                 for renamings in self.seq_of_renamed_attributes:
                     if renamings is not None:
                         for attribute_renaming in renamings:
                             for attr_spec in attribute_renaming:
                                 if len(attr_spec) != 2 or not isinstance(attr_spec[0], str) or \
-                                    not isinstance(attr_spec[1], str):
+                                        not isinstance(attr_spec[1], str):
                                     errors.append(required_structure)
             except TypeError as e:
                 errors.append(required_structure + ", but examining it raises a '{}' error".format(str(e)))
@@ -1651,8 +1660,8 @@ class MigrationSpec(object):
         # ensure that migrated_files is empty or specifies same count as existing_files
         if self.migrated_files is not None and len(self.migrated_files) != len(self.existing_files):
             errors.append("existing_files and migrated_files must provide 1-to-1 corresponding files, "
-                "but they have {} and {} entries, respectively".format(len(self.existing_files),
-                len(self.migrated_files)))
+                          "but they have {} and {} entries, respectively".format(len(self.existing_files),
+                                                                                 len(self.migrated_files)))
 
         return errors
 
@@ -1699,12 +1708,12 @@ class MigrationSpec(object):
         # normalize filenames
         if self.migrations_config_file:
             self.existing_files = self._normalize_filenames(self.existing_files,
-                absolute_file=self.migrations_config_file)
+                                                            absolute_file=self.migrations_config_file)
             self.schema_files = self._normalize_filenames(self.schema_files,
-                absolute_file=self.migrations_config_file)
+                                                          absolute_file=self.migrations_config_file)
             if self.migrated_files:
                 self.migrated_files = self._normalize_filenames(self.migrated_files,
-                    absolute_file=self.migrations_config_file)
+                                                                absolute_file=self.migrations_config_file)
 
         # convert schema metadata into a SchemaRepoMetadata object
         if not self.final_schema_git_metadata:
@@ -1728,7 +1737,7 @@ class MigrationSpec(object):
         for existing_file in self.existing_files:
             migrated_files.append(
                 Migrator.path_of_migrated_file(existing_file, migrate_suffix=self.migrate_suffix,
-                    migrate_in_place=self.migrate_in_place))
+                                               migrate_in_place=self.migrate_in_place))
         return migrated_files
 
     def __str__(self):
@@ -1784,11 +1793,11 @@ class MigrationController(object):
                 # create Migrator for each pair of schemas
 
                 migrator = Migrator(existing_defs_file=ms.schema_files[i],
-                    migrated_defs_file=ms.schema_files[i+1],
-                    renamed_models=ms.seq_of_renamed_models[i],
-                    renamed_attributes=ms.seq_of_renamed_attributes[i],
-                    io_classes=ms.io_classes,
-                    transformations=ms.seq_of_transformations[i])
+                                    migrated_defs_file=ms.schema_files[i+1],
+                                    renamed_models=ms.seq_of_renamed_models[i],
+                                    renamed_attributes=ms.seq_of_renamed_attributes[i],
+                                    io_classes=ms.io_classes,
+                                    transformations=ms.seq_of_transformations[i])
                 migrator.prepare()
                 # the 1st iteration reads models from the existing file; iteration n+1 uses the models set in iteration n
                 if i == 0:
@@ -1798,8 +1807,8 @@ class MigrationController(object):
                 if i == num_migrations - 1:
                     # done migrating, write to file
                     actual_migrated_file = migrator._write(existing_file, models,
-                        schema_metadata_model=ms.final_schema_git_metadata, migrated_file=migrated_file,
-                        migrate_suffix=ms.migrate_suffix, migrate_in_place=ms.migrate_in_place)
+                                                           schema_metadata_model=ms.final_schema_git_metadata, migrated_file=migrated_file,
+                                                           migrate_suffix=ms.migrate_suffix, migrate_in_place=ms.migrate_in_place)
                     all_migrated_files.append(actual_migrated_file)
 
         return all_migrated_files
@@ -1858,7 +1867,7 @@ class SchemaChanges(object):
     _CHANGES_FILE_ATTRS = ['commit_hash', 'renamed_models', 'renamed_attributes', 'transformations_file']
 
     _ATTRIBUTES = ['schema_repo', 'transformations', 'schema_changes_file', 'commit_hash',
-        'renamed_models', 'renamed_attributes', 'transformations_file']
+                   'renamed_models', 'renamed_attributes', 'transformations_file']
 
     # template for the name of a schema changes file; the format placeholders are replaced
     # with the file's creation timestamp and the prefix of the commit's git hash, respectively
@@ -1866,7 +1875,7 @@ class SchemaChanges(object):
     _SHA1_LEN = 40
 
     def __init__(self, schema_repo=None, schema_changes_file=None, commit_hash=None, renamed_models=None,
-        renamed_attributes=None, transformations_file=None):
+                 renamed_attributes=None, transformations_file=None):
         self.schema_repo = schema_repo
         self.schema_changes_file = schema_changes_file
         self.commit_hash = commit_hash
@@ -1949,7 +1958,7 @@ class SchemaChanges(object):
                 commit_hash = sc_dict['commit_hash']
                 if GitRepo.hash_prefix(commit_hash) != hash_prefix:
                     errors.append("hash prefix in schema changes filename '{}' inconsistent "
-                        "with hash in file: '{}'".format(sc_file, sc_dict['commit_hash']))
+                                  "with hash in file: '{}'".format(sc_file, sc_dict['commit_hash']))
                     continue
 
                 # ensure that the hash corresponds to a commit
@@ -1984,7 +1993,7 @@ class SchemaChanges(object):
         """
         # search with glob
         pattern = SchemaChanges._CHANGES_FILENAME_TEMPLATE.format('*',
-            GitRepo.hash_prefix(commit_hash))
+                                                                  GitRepo.hash_prefix(commit_hash))
         migrations_directory = schema_repo.migrations_dir()
         files = list(Path(migrations_directory).glob(pattern))
         num_files = len(files)
@@ -2000,7 +2009,7 @@ class SchemaChanges(object):
         sc_dict = SchemaChanges.load(schema_changes_file)
         if GitRepo.hash_prefix(sc_dict['commit_hash']) != GitRepo.hash_prefix(commit_hash):
             raise MigratorError("hash prefix in schema changes filename '{}' inconsistent "
-                "with hash in file: '{}'".format(schema_changes_file, sc_dict['commit_hash']))
+                                "with hash in file: '{}'".format(schema_changes_file, sc_dict['commit_hash']))
 
         # ensure that the hash corresponds to a commit
         try:
@@ -2018,7 +2027,7 @@ class SchemaChanges(object):
             :obj:`str`: the filename
         """
         return SchemaChanges._CHANGES_FILENAME_TEMPLATE.format(self.get_date_timestamp(),
-            GitRepo.hash_prefix(commit_hash))
+                                                               GitRepo.hash_prefix(commit_hash))
 
     def make_template(self, schema_url=None, commit_hash=None):
         """ Make a template schema changes file
@@ -2134,16 +2143,16 @@ class SchemaChanges(object):
                 schema_changes_file, e))
 
         if not isinstance(schema_changes, dict) or \
-            any([attr not in schema_changes for attr in SchemaChanges._CHANGES_FILE_ATTRS]):
-                raise MigratorError("schema changes file '{}' must have a dict with these attributes:\n{}".format(
-                    schema_changes_file, ', '.join(SchemaChanges._CHANGES_FILE_ATTRS)))
+                any([attr not in schema_changes for attr in SchemaChanges._CHANGES_FILE_ATTRS]):
+            raise MigratorError("schema changes file '{}' must have a dict with these attributes:\n{}".format(
+                schema_changes_file, ', '.join(SchemaChanges._CHANGES_FILE_ATTRS)))
 
         # report empty schema changes files (unmodified templates)
         if schema_changes['renamed_models'] == [] and \
-            schema_changes['renamed_attributes'] == [] and \
-            schema_changes['transformations_file'] == '':
-                raise MigratorError("schema changes file '{}' is empty (an unmodified template)".format(
-                    schema_changes_file))
+                schema_changes['renamed_attributes'] == [] and \
+                schema_changes['transformations_file'] == '':
+            raise MigratorError("schema changes file '{}' is empty (an unmodified template)".format(
+                schema_changes_file))
 
         schema_changes['schema_changes_file'] = schema_changes_file
         return schema_changes
@@ -2157,13 +2166,13 @@ class SchemaChanges(object):
         # use MigrationWrapper to load transformations
         if self.transformations_file:
             transformations_file = os.path.join(os.path.dirname(self.schema_changes_file),
-                    self.transformations_file)
+                                                self.transformations_file)
             wrappers = MigrationWrapper.import_migration_wrapper(transformations_file)
             if 'transformations' not in wrappers or \
-                not isinstance(wrappers['transformations'], MigrationWrapper):
-                    raise MigratorError("the 'transformations_file' in schema changes file '{}' must "
-                        "define a MigrationWrapper instance called 'transformations'".format(
-                        self.schema_changes_file))
+                    not isinstance(wrappers['transformations'], MigrationWrapper):
+                raise MigratorError("the 'transformations_file' in schema changes file '{}' must "
+                                    "define a MigrationWrapper instance called 'transformations'".format(
+                                        self.schema_changes_file))
             return wrappers['transformations']
         return None
 
@@ -2193,10 +2202,10 @@ class SchemaChanges(object):
                     continue
         except TypeError as e:
             errors.append(required_structure.format(schema_changes_kwargs['renamed_models']) + ", "
-                "and examining it raises a(n) '{}' error".format(str(e)))
+                          "and examining it raises a(n) '{}' error".format(str(e)))
 
         required_structure = ("renamed_attributes must be a list of pairs of pairs of "
-            "strings, but is '{}'")
+                              "strings, but is '{}'")
         renamed_attributes = schema_changes_kwargs['renamed_attributes']
         try:
             no_renamed_attributes_error = True
@@ -2204,21 +2213,21 @@ class SchemaChanges(object):
                 # a renaming should be like [['TestNew', 'new_existing_attr'], ['TestNew', 'existing_attr'], ...]
                 existing, migrated = renaming
                 for attr_name in existing, migrated:
-                    if (len(attr_name) != 2 or not isinstance(attr_name[0], str) or \
-                        not isinstance(attr_name[1], str)) and no_renamed_attributes_error:
+                    if (len(attr_name) != 2 or not isinstance(attr_name[0], str) or
+                            not isinstance(attr_name[1], str)) and no_renamed_attributes_error:
                         errors.append(required_structure.format(renamed_attributes))
                         no_renamed_attributes_error = False
                         continue
         except (TypeError, ValueError) as e:
             errors.append(required_structure.format(renamed_attributes) + ", and examining "
-                "it raises a(n) '{}' error".format(str(e)))
+                          "it raises a(n) '{}' error".format(str(e)))
 
         if errors:
             return errors
 
         if len(schema_changes_kwargs['commit_hash']) != SchemaChanges._SHA1_LEN:
             errors.append("commit_hash is '{}', which isn't the right length for a "
-                "git hash".format(schema_changes_kwargs['commit_hash']))
+                          "git hash".format(schema_changes_kwargs['commit_hash']))
 
         return errors
 
@@ -2236,7 +2245,7 @@ class SchemaChanges(object):
         errors = SchemaChanges.validate(schema_changes_kwargs)
         if errors:
             raise MigratorError(
-            "in schema changes file '{}':\n)".format(schema_changes_file, '\n'.join(errors)))
+                "in schema changes file '{}':\n)".format(schema_changes_file, '\n'.join(errors)))
         return SchemaChanges(**schema_changes_kwargs)
 
     def __str__(self):
@@ -2575,7 +2584,7 @@ class GitRepo(object):
             self.repo.git.checkout(commit_hash, detach=True)
         except git.exc.GitError as e:
             raise MigratorError("checkout of '{}' to commit '{}' failed:\n{}".format(self.repo_name(),
-                commit_hash, e))
+                                                                                     commit_hash, e))
 
     def add_file(self, filename):
         """ Add a file to the index
@@ -2671,8 +2680,8 @@ class GitRepo(object):
             rv.append("commit_DAG (child -> parent):\n\t{}".format(
                 "\n\t".join(
                     ["{} -> {}".format(GitRepo.hash_prefix(GitRepo.get_hash(u)),
-                        GitRepo.hash_prefix(GitRepo.get_hash(v)))
-                            for (u, v) in self.commit_DAG.edges])))
+                                       GitRepo.hash_prefix(GitRepo.get_hash(v)))
+                     for (u, v) in self.commit_DAG.edges])))
         else:
             rv.append("commit_DAG: empty")
 
@@ -2753,7 +2762,7 @@ class DataSchemaMigration(object):
 
     # attributes in a `DataSchemaMigration`
     _ATTRIBUTES = ['data_repo_location', 'data_git_repo', 'schema_git_repo', 'data_config_file_basename',
-        'migration_config_data', 'loaded_schema_changes', 'migration_specs', 'io_classes', 'git_repos']
+                   'migration_config_data', 'loaded_schema_changes', 'migration_specs', 'io_classes', 'git_repos']
     _REQUIRED_ATTRIBUTES = ['data_repo_location', 'data_config_file_basename']
 
     def __init__(self, **kwargs):
@@ -2764,8 +2773,8 @@ class DataSchemaMigration(object):
         missing_attrs = set(self._REQUIRED_ATTRIBUTES) - set(kwargs)
         if missing_attrs:
             raise MigratorError("initialization of DataSchemaMigration must provide "
-                "DataSchemaMigration._REQUIRED_ATTRIBUTES ({}) but these are missing: {}".format(
-                self._REQUIRED_ATTRIBUTES, missing_attrs))
+                                "DataSchemaMigration._REQUIRED_ATTRIBUTES ({}) but these are missing: {}".format(
+                                    self._REQUIRED_ATTRIBUTES, missing_attrs))
 
         # initialize attributes provided
         for attr, value in kwargs.items():
@@ -2783,7 +2792,7 @@ class DataSchemaMigration(object):
 
         # clone and load the schema repo
         self.schema_git_repo = GitRepo(self.migration_config_data['schema_repo_url'],
-            branch=self.migration_config_data['branch'])
+                                       branch=self.migration_config_data['branch'])
         self.record_git_repo(self.schema_git_repo)
 
     @staticmethod
@@ -2804,7 +2813,7 @@ class DataSchemaMigration(object):
             :obj:`MigratorError`: if the data-schema migration configuration file already exists
         """
         pathname = os.path.join(data_git_repo.migrations_dir(),
-            DataSchemaMigration.get_name_static(data_git_repo.repo_name(), schema_repo_name))
+                                DataSchemaMigration.get_name_static(data_git_repo.repo_name(), schema_repo_name))
         if os.path.exists(pathname):
             raise MigratorError("data-schema migration configuration file '{}' already exists".format(pathname))
 
@@ -2836,7 +2845,7 @@ class DataSchemaMigration(object):
 
     @staticmethod
     def make_data_schema_migration_conf_file_cmd(data_repo_dir, schema_file_url, files_to_migrate,
-        add_to_repo=True):
+                                                 add_to_repo=True):
         """ Make a data-schema migration configuration file from CLI input
 
         Args:
@@ -2959,7 +2968,7 @@ class DataSchemaMigration(object):
             :obj:`str`: the package name
         """
         normalized_schema_file = normalize_filename(self.migration_config_data['schema_file'],
-            dir=self.schema_git_repo.migrations_dir())
+                                                    dir=self.schema_git_repo.migrations_dir())
         rel_path = Path(normalized_schema_file).relative_to(self.schema_git_repo.repo_dir)
         return rel_path.parent
 
@@ -3026,7 +3035,7 @@ class DataSchemaMigration(object):
             :obj:`str`: the name
         """
         return DataSchemaMigration._MIGRATION_CONF_NAME_TEMPLATE.format(data_repo_name,
-            schema_repo_name, SchemaChanges.get_date_timestamp())
+                                                                        schema_repo_name, SchemaChanges.get_date_timestamp())
 
     def get_data_file_git_commit_hash(self, data_file):
         """ Get the git commit hash of the schema repo that describes a data file
@@ -3043,7 +3052,7 @@ class DataSchemaMigration(object):
         try:
             metadata = utils.read_metadata_from_file(data_file)
         except Exception as e:
-             raise MigratorError("Cannot get schema repo commit hash for '{}':\n{}".format(data_file, e))
+            raise MigratorError("Cannot get schema repo commit hash for '{}':\n{}".format(data_file, e))
         if metadata.schema_repo_metadata:
             return metadata.schema_repo_metadata.revision
         else:
@@ -3075,7 +3084,7 @@ class DataSchemaMigration(object):
         self.record_git_repo(git_repo)
         git_repo.checkout_commit(commit_hash)
         normalized_schema_file = normalize_filename(self.migration_config_data['schema_file'],
-            dir=git_repo.migrations_dir())
+                                                    dir=git_repo.migrations_dir())
         spec_args['schema_files'] = [normalized_schema_file]
 
         spec_args['seq_of_renamed_models'] = []
@@ -3148,7 +3157,7 @@ class DataSchemaMigration(object):
                 io_classes_file_basename))
         schema_repo_dir = self.schema_git_repo.repo_dir
         schema_repo_custom_io_classes_file = os.path.join(schema_repo_dir, self.get_schema_package(),
-            'migrations', io_classes_file_basename)
+                                                          'migrations', io_classes_file_basename)
         if os.path.isfile(schema_repo_custom_io_classes_file):
 
             schema_module = SchemaModule(schema_repo_custom_io_classes_file)
@@ -3270,17 +3279,17 @@ class DataSchemaMigration(object):
         """
         local_dir = os.path.abspath(local_dir)
         config_file_path = DataSchemaMigration.make_data_schema_migration_conf_file_cmd(local_dir,
-            schema_url, data_files, add_to_repo=False)
+                                                                                        schema_url, data_files, add_to_repo=False)
 
         # create and run DataSchemaMigration
         data_schema_migration = DataSchemaMigration(data_repo_location=local_dir,
-            data_config_file_basename=os.path.basename(config_file_path))
+                                                    data_config_file_basename=os.path.basename(config_file_path))
         migrated_files, _ = data_schema_migration.automated_migrate()
         # delete the temporary data-schema migration config file
         remove_silently(config_file_path)
         return migrated_files
 
-    def test_migration(self): # pragma: no cover
+    def test_migration(self):  # pragma: no cover
         """ Test a migration
 
         Check ...
@@ -3405,7 +3414,7 @@ class CementControllers(object):
                 (['--schema_repo_dir'],
                     {'type': str,
                         'help': "path of the directory of the schema's repository; defaults to the "
-                            "current directory",
+                     "current directory",
                         'default': '.'}),
                 (['--commit'],
                     {'type': str,
@@ -3420,12 +3429,11 @@ class CementControllers(object):
             """
             args = self.app.pargs
             schema_changes_template_file = SchemaChanges.make_template_command(args.schema_repo_dir,
-                commit_hash=args.commit)
+                                                                               commit_hash=args.commit)
             # print directions to complete creating, commit & push the schema changes template file
             print("Created and added template schema changes file: '{}'.".format(schema_changes_template_file))
             print("Describe the schema changes in the file's attributes (renamed_attributes, "
-                "renamed_models, and transformations_file). Then commit and push it with git.")
-
+                  "renamed_models, and transformations_file). Then commit and push it with git.")
 
     class DataSchemaMigrationConfigController(Controller):
         """ Create a data-schema migration configuration file.
@@ -3435,18 +3443,18 @@ class CementControllers(object):
 
         class Meta:
             label = 'make-data-schema-migration-config-file'
-            description='Create a data-schema migration configuration file'
-            help='Create a data-schema migration configuration file'
+            description = 'Create a data-schema migration configuration file'
+            help = 'Create a data-schema migration configuration file'
             stacked_on = 'base'
             stacked_type = 'nested'
             arguments = [
                 (['--data_repo_dir'],
                     {'type': str,
                         'help': "path of the directory of the repository storing the data file(s) to migrate; "
-                            "defaults to the current directory",
+                     "defaults to the current directory",
                         'default': '.'}),
                 (['schema_url'], {'type': str,
-                    'help': 'URL of the schema in its git repository, including the branch'}),
+                                  'help': 'URL of the schema in its git repository, including the branch'}),
                 (['file_to_migrate'],
                     dict(action='store', type=str, nargs='+', help='a file to migrate')),
             ]
@@ -3461,7 +3469,6 @@ class CementControllers(object):
             print("Data-schema migration config file created: '{}'".format(migration_config_file))
             print("Commit and push it with git.")
 
-
     class MigrateController(Controller):
         """ Perform a migration configured by a data-schema migration config file
 
@@ -3470,8 +3477,8 @@ class CementControllers(object):
 
         class Meta:
             label = 'do-configured-migration'
-            description='Migrate data file(s) as configured in a data-schema migration configuration file'
-            help='Migrate data file(s) as configured in a data-schema migration configuration file'
+            description = 'Migrate data file(s) as configured in a data-schema migration configuration file'
+            help = 'Migrate data file(s) as configured in a data-schema migration configuration file'
             stacked_on = 'base'
             stacked_type = 'nested'
             arguments = [
@@ -3492,7 +3499,6 @@ class CementControllers(object):
                 for migrated_file in migrated_files:
                     print("'{}' migrated in place".format(migrated_file))
 
-
     class MigrateFileController(Controller):
         """ Migrate specified data file(s)
 
@@ -3501,21 +3507,21 @@ class CementControllers(object):
 
         class Meta:
             label = 'migrate-data'
-            description='Migrate specified data file(s)'
-            help='Migrate specified data file(s)'
+            description = 'Migrate specified data file(s)'
+            help = 'Migrate specified data file(s)'
             stacked_on = 'base'
             stacked_type = 'nested'
             arguments = [
                 (['--data_repo_dir'],
                     {'type': str,
                         'help': "path of the directory of the repository storing the data file(s) to migrate; "
-                            "defaults to the current directory",
+                     "defaults to the current directory",
                         'default': '.'}),
                 (['schema_url'], {'type': str,
-                    'help': 'URL of the schema in its git repository, including the branch'}),
+                                  'help': 'URL of the schema in its git repository, including the branch'}),
                 (['file_to_migrate'],
                     dict(action='store', type=str, nargs='+',
-                    help='a file to migrate')),
+                         help='a file to migrate')),
             ]
 
         @cement.ex(hide=True)
@@ -3523,7 +3529,7 @@ class CementControllers(object):
             args = self.app.pargs
             # args.file_to_migrate is a list of all files to migrate
             migrated_files = DataSchemaMigration.migrate_files(args.schema_url, args.data_repo_dir,
-                args.file_to_migrate)
+                                                               args.file_to_migrate)
             print('migrated files:')
             for migrated_file in migrated_files:
                 print(migrated_file)

@@ -1,7 +1,32 @@
-[rest_api]
+[grammar]
+lark_parser
+
+[bio]
+biopython >= 1.75
+
+[chem]
+bcforms
+bpforms
+openbabel
+
+[math]
+numpy
+pandas
+sympy
+
+[sci]
+pint >= 0.10
+pronto >= 1
+uncertainties
+
+[revisioning]
+gitpython
+wc_utils[git]
+
+[viz]
+graphviz >= 0.13
+
+[rest]
 flask
 flask_cors
 flask_restplus
-
-[schema_viz]
-graphviz >= 0.13

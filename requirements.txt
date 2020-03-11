@@ -1,19 +1,10 @@
-biopython >= 1.75
-gitpython
 inflect
-lark_parser
 natsort
 networkx
-numpy
-pandas
-pint >= 0.10
-pronto >= 1
 python_dateutil
 pyyaml >= 5.1
-scipy
 setuptools
 stringcase
-sympy
-uncertainties
 validate_email
+wc_utils >= 0.0.14
 weakreflist

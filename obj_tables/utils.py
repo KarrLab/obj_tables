@@ -15,7 +15,6 @@ from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute
                              OneToOneAttribute, OneToManyAttribute, ManyToOneAttribute, ManyToManyAttribute,
                              InvalidObjectSet, InvalidObject, Validator, TableFormat,
                              SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
-from wc_utils.util import git
 import collections
 import importlib
 import networkx
@@ -265,6 +264,8 @@ def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', 
         :obj:`list` of :obj:`str`: list of reasons, if any, that the repo might not be
             suitable for collecting metadata
     """
+    from wc_utils.util import git
+    
     md, unsuitable_changes = git.get_repo_metadata(path=path, repo_type=repo_type, data_file=path)
     setattr(model, url_attr, md.url)
     setattr(model, branch_attr, md.branch)

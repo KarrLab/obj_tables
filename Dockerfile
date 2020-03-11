@@ -1,6 +1,6 @@
 # 1. Download ChemAxon Marvin for Debian from https://chemaxon.com/ and save to ./Dockerfile_assets/marvin_linux.deb
 # 2. Obtain license for Marvin and save to ./Dockerfile_assets/chemaxon.license.cxl
-# 3. Build with `docker build -f Dockerfile Dockerfile_assets --tag karrlab/bpforms:latest`
+# 3. Build with `docker build -f Dockerfile Dockerfile_assets --tag karrlab/obj_tables:latest`
 
 # Start from Ubuntu (e.g., bionic - 18.04.4)
 FROM ubuntu
@@ -12,6 +12,13 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/* \
     && locale-gen en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
+
+# Install Git
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y \
+        git \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python (e.g., 3.6.9), pip, and setuptools
 RUN apt-get update -y \
@@ -97,36 +104,35 @@ RUN apt-get update -y \
 ENV JAVA_HOME=/usr/lib/jvm/default-java \
     CLASSPATH=${CLASSPATH}:/opt/chemaxon/marvinsuite/lib/MarvinBeans.jar
 
-# Install BcForms and BpForms
-RUN pip3 install \
-    bcforms[draw] \
-    bpforms[draw,onto_export,protonation]
+# Install GraphViz
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+        graphviz \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
-# Test installations of BcForms and BpForms
+# Install ObjTables
+RUN pip3 install \
+    obj_tables[all]
+
+# Test installations of ObjTables
 ARG test=1
 RUN if [ "$test" = "1" ]; then \
       apt-get update -y \
       && apt-get install --no-install-recommends -y \
-          git \
           build-essential \
           libpython3-dev \
       \
       && cd / \
-      && git clone https://github.com/KarrLab/bpforms.git \
-      && git clone https://github.com/KarrLab/bcforms.git \
+      && git clone https://github.com/KarrLab/obj_tables.git \
+      && cd /obj_tables \
       && pip3 install pytest \
-      && pip3 install -r bpforms/tests/requirements.txt \
-      && pip3 install -r bcforms/tests/requirements.txt \
-      && cd /bpforms \
-      && python3 -m pytest tests/test_core.py tests/test_main.py \
-      && cd /bcforms \
-      && python3 -m pytest tests/test_core.py tests/test_main.py \
+      && pip3 install -r tests/requirements.txt \      
+      && python3 -m pytest tests/ \
       \
       && cd / \
-      && rm -r bpforms \
-      && rm -r bcforms \
+      && rm -r obj_tables \
       && apt-get remove -y \
-          git \
           build-essential \
           libpython3-dev \
       && apt-get autoremove -y \

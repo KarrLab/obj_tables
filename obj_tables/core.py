@@ -40,7 +40,6 @@ import copy
 import dateutil.parser
 import inflect
 import json
-import math
 import numbers
 import pronto
 import queue
@@ -1149,8 +1148,8 @@ class Model(object, metaclass=ModelMeta):
             :obj:`dict` of :obj:`str`, :obj:`Attribute`: dictionary of the names and instances
                 of matching attributes
         """
-        include_nan = include is not None and next((True for i in include if isinstance(i, numbers.Number) and math.isnan(i)), False)
-        exclude_nan = exclude is not None and next((True for e in exclude if isinstance(e, numbers.Number) and math.isnan(e)), False)
+        include_nan = include is not None and next((True for i in include if isinstance(i, numbers.Number) and isnan(i)), False)
+        exclude_nan = exclude is not None and next((True for e in exclude if isinstance(e, numbers.Number) and isnan(e)), False)
         matching_attrs = {}
 
         attrs_to_search = self.__class__.get_attrs(type=type, reverse=reverse)
@@ -1159,11 +1158,11 @@ class Model(object, metaclass=ModelMeta):
             if (include is None or (value in include or
                                     (include_nan
                                      and (isinstance(value, numbers.Number)
-                                      and math.isnan(value))))) and \
+                                      and isnan(value))))) and \
                (exclude is None or (value not in exclude
                                     and (not exclude_nan or not
                                      (isinstance(value, numbers.Number) and
-                                          math.isnan(value))))):
+                                          isnan(value))))):
                 matching_attrs[attr_name] = attr
         return matching_attrs
 
@@ -2392,7 +2391,7 @@ class Model(object, metaclass=ModelMeta):
 
         # copy expressions
         for o in objects_and_copies.values():
-            if isinstance(o, expression.Expression):
+            if o.__class__ == 'obj_tables.math.expression.Expression':
                 objs = {o.__class__: {o.serialize(): o}}
                 for attr_name, attr in o.Meta.attributes.items():
                     if isinstance(attr, RelatedAttribute) and \
@@ -7803,5 +7802,4 @@ class SchemaWarning(ObjTablesWarning):
     pass
 
 
-from .math import expression
 from .utils import get_related_models

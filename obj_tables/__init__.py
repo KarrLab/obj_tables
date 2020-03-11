@@ -19,4 +19,3 @@ from .core import (Model, Attribute,
                    ModelMerge,
                    TOC_TABLE_TYPE, TOC_SHEET_NAME,
                    SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
-from .grammar import ToManyGrammarAttribute, ToManyGrammarTransformer

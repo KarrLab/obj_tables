@@ -1,18 +1,11 @@
 abduct
 attrdict
-bpforms
 configobj
 mock
-natsort
-networkx
-numpy
 objsize
-openbabel
 openpyxl <= 3.0.1
 psutil
 pygithub
 pytest
-pyyaml >= 5.1
-stringcase
+scipy
 wc_onto
-wc_utils[git]

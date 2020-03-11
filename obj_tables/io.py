@@ -44,7 +44,6 @@ from obj_tables.core import (Model, Attribute, RelatedAttribute, Validator, Tabl
 from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
-from wc_utils.util import git
 from wc_utils.workbook.core import get_column_letter, Formula
 from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 
@@ -124,6 +123,8 @@ class WriterBase(object, metaclass=abc.ABCMeta):
         """
         metadata_objects = []
         if data_repo_metadata:
+            from wc_utils.util import git
+
             # create DataRepoMetadata instance
             try:
                 data_repo_metadata_obj = utils.DataRepoMetadata()
@@ -141,6 +142,8 @@ class WriterBase(object, metaclass=abc.ABCMeta):
                     path, str(e)), IoWarning)
 
         if schema_package:
+            from wc_utils.util import git
+            
             # create SchemaRepoMetadata instance
             try:
                 schema_repo_metadata = utils.SchemaRepoMetadata()
