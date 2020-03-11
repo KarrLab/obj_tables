@@ -146,46 +146,30 @@ RUN apt-get update -y \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ./obj_tables/ /tmp/obj_tables/
-RUN pip3 install git+https://github.com/KarrLab/wc_onto.git#egg=wc_onto \
-  && cd /tmp/obj_tables \
-  && pip3 install .[grammar,math,sci,chem,bio,revisioning,viz,rest]
-
-# Test installations of ObjTables
-COPY ./wc_onto.cfg /root/.wc/wc_onto.cfg
-RUN apt-get update -y \
-    && apt-get install --no-install-recommends -y \
-        build-essential \
-        libpython3-dev
-RUN cd /tmp/obj_tables \
-    && pip3 install pytest \
-    && pip3 install -r tests/requirements.txt \
-    && python3 -m pytest tests/
-
 # Install ObjTables
-# RUN pip3 install obj_tables[grammar,math,sci,chem,bio,revisioning,viz,rest]
+RUN pip3 install obj_tables[grammar,math,sci,chem,bio,revisioning,viz,rest]
 
-# Test installations of ObjTables
-# ARG test=1
-# COPY ./wc_onto.cfg /root/.wc/wc_onto.cfg
-# RUN if [ "$test" = "1" ]; then \
-#       apt-get update -y \
-#       && apt-get install --no-install-recommends -y \
-#           build-essential \
-#           libpython3-dev \
-#       \
-#       && cd / \
-#       && git clone https://github.com/KarrLab/obj_tables.git \
-#       && cd /obj_tables \
-#       && pip3 install pytest \
-#       && pip3 install -r tests/requirements.txt \
-#       && python3 -m pytest tests/ \
-#       \
-#       && cd / \
-#       && rm -r obj_tables \
-#       && apt-get remove -y \
-#           build-essential \
-#           libpython3-dev \
-#       && apt-get autoremove -y \
-#       && rm -rf /var/lib/apt/lists/*; \
-#     fi
+# Test ObjTables
+ARG test=1
+COPY ./wc_onto.cfg /root/.wc/wc_onto.cfg
+RUN if [ "$test" = "1" ]; then \
+      apt-get update -y \
+      && apt-get install --no-install-recommends -y \
+          build-essential \
+          libpython3-dev \
+       \
+       && cd / \
+       && git clone https://github.com/KarrLab/obj_tables.git \
+       && cd /obj_tables \
+       && pip3 install pytest \
+       && pip3 install -r tests/requirements.txt \
+       && python3 -m pytest tests/ \
+       \
+       && cd / \
+       && rm -r obj_tables \
+       && apt-get remove -y \
+           build-essential \
+           libpython3-dev \
+       && apt-get autoremove -y \
+       && rm -rf /var/lib/apt/lists/*; \
+     fi
