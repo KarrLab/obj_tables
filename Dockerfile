@@ -1,6 +1,26 @@
-# 1. Download ChemAxon Marvin for Debian from https://chemaxon.com/ and save to ./Dockerfile_assets/marvin_linux.deb
-# 2. Obtain license for Marvin and save to ./Dockerfile_assets/chemaxon.license.cxl
-# 3. Build with `docker build -f Dockerfile Dockerfile_assets --tag karrlab/obj_tables:latest`
+# 1. Download ChemAxon Marvin for Debian from https://chemaxon.com/ and save to `./Dockerfile_assets/marvin_linux.deb`
+# 2. Obtain license for Marvin and save to `./Dockerfile_assets/chemaxon.license.cxl`
+# 3. Copy your Git configuration for accessing GitHub to `./Dockerfile_assets/.gitconfig`. To use SSH to access GitHub,
+#    save the following to `./Dockerfile_assets/.gitconfig`.
+#
+#    [url "ssh://git@github.com/"]
+#      insteadOf = https://github.com/
+#
+# 4. If necessary, copy the SSH keys needed to access GitHub to `./Dockerfile_assets/id_rsa` and `./Dockerfile_assets/id_rsa.pub`.
+# 5. If necessary, copy an SSH known hosts file for GitHub to `./Dockerfile_assets/known_hosts`.
+# 6. Generate an API token for GitHub, and save it to `./Dockerfile_assets/wc_utils.cfg` in the following format:
+#
+#    [wc_utils]
+#        [[github]]
+#            github_api_token = <token>
+#
+# 7. To test the migration feature, generate an API key for BioPortal and save it to `./Dockerfile_assets/wc_onto.cfg` in the following format:
+#
+#    [wc_onto]
+#        [[bioportal]]
+#            key = <key>
+#
+# 8. Build with `docker build -f Dockerfile Dockerfile_assets --tag karrlab/obj_tables:latest`
 
 # Start from Ubuntu (e.g., bionic - 18.04.4)
 FROM ubuntu
@@ -17,6 +37,21 @@ ENV LC_ALL=en_US.UTF-8
 RUN apt-get update -y \
     && apt-get install --no-install-recommends -y \
         git \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Setup access to GitHub
+COPY ./.gitconfig /root/.gitconfig
+COPY ./id_rsa /root/.ssh/id_rsa
+COPY ./id_rsa.pub /root/.ssh/id_rsa.pub
+COPY ./known_hosts /root/.ssh/known_hosts
+COPY ./wc_utils.cfg /root/.wc/wc_utils.cfg
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y \
+        ssh \
+    && chmod 0600 ~/.ssh/id_rsa \
+    && chmod 0644 ~/.ssh/id_rsa.pub \
+    && eval $(ssh-agent -s) && ssh-add ~/.ssh/id_rsa \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
@@ -111,30 +146,46 @@ RUN apt-get update -y \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
-# Install ObjTables
-RUN pip3 install \
-    obj_tables[all]
+COPY ./obj_tables/ /tmp/obj_tables/
+RUN pip3 install git+https://github.com/KarrLab/wc_onto.git#egg=wc_onto \
+  && cd /tmp/obj_tables \
+  && pip3 install .[grammar,math,sci,chem,bio,revisioning,viz,rest]
 
 # Test installations of ObjTables
-ARG test=1
-RUN if [ "$test" = "1" ]; then \
-      apt-get update -y \
-      && apt-get install --no-install-recommends -y \
-          build-essential \
-          libpython3-dev \
-      \
-      && cd / \
-      && git clone https://github.com/KarrLab/obj_tables.git \
-      && cd /obj_tables \
-      && pip3 install pytest \
-      && pip3 install -r tests/requirements.txt \      
-      && python3 -m pytest tests/ \
-      \
-      && cd / \
-      && rm -r obj_tables \
-      && apt-get remove -y \
-          build-essential \
-          libpython3-dev \
-      && apt-get autoremove -y \
-      && rm -rf /var/lib/apt/lists/*; \
-    fi
+COPY ./wc_onto.cfg /root/.wc/wc_onto.cfg
+RUN apt-get update -y \
+    && apt-get install --no-install-recommends -y \
+        build-essential \
+        libpython3-dev
+RUN cd /tmp/obj_tables \
+    && pip3 install pytest \
+    && pip3 install -r tests/requirements.txt \
+    && python3 -m pytest tests/
+
+# Install ObjTables
+# RUN pip3 install obj_tables[grammar,math,sci,chem,bio,revisioning,viz,rest]
+
+# Test installations of ObjTables
+# ARG test=1
+# COPY ./wc_onto.cfg /root/.wc/wc_onto.cfg
+# RUN if [ "$test" = "1" ]; then \
+#       apt-get update -y \
+#       && apt-get install --no-install-recommends -y \
+#           build-essential \
+#           libpython3-dev \
+#       \
+#       && cd / \
+#       && git clone https://github.com/KarrLab/obj_tables.git \
+#       && cd /obj_tables \
+#       && pip3 install pytest \
+#       && pip3 install -r tests/requirements.txt \
+#       && python3 -m pytest tests/ \
+#       \
+#       && cd / \
+#       && rm -r obj_tables \
+#       && apt-get remove -y \
+#           build-essential \
+#           libpython3-dev \
+#       && apt-get autoremove -y \
+#       && rm -rf /var/lib/apt/lists/*; \
+#     fi
