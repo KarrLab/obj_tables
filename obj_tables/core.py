@@ -1158,10 +1158,10 @@ class Model(object, metaclass=ModelMeta):
             if (include is None or (value in include or
                                     (include_nan
                                      and (isinstance(value, numbers.Number)
-                                      and isnan(value))))) and \
+                                          and isnan(value))))) and \
                (exclude is None or (value not in exclude
                                     and (not exclude_nan or not
-                                     (isinstance(value, numbers.Number) and
+                                         (isinstance(value, numbers.Number) and
                                           isnan(value))))):
                 matching_attrs[attr_name] = attr
         return matching_attrs
@@ -2391,7 +2391,10 @@ class Model(object, metaclass=ModelMeta):
 
         # copy expressions
         for o in objects_and_copies.values():
-            if o.__class__ == 'obj_tables.math.expression.Expression':
+            is_expression = next((True for cls in get_superclasses(o.__class__) 
+                                  if cls.__module__ == 'obj_tables.math.expression' 
+                                  and cls.__name__ == 'Expression'), False)
+            if is_expression:
                 objs = {o.__class__: {o.serialize(): o}}
                 for attr_name, attr in o.Meta.attributes.items():
                     if isinstance(attr, RelatedAttribute) and \

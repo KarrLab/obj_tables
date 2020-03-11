@@ -265,7 +265,7 @@ def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', 
             suitable for collecting metadata
     """
     from wc_utils.util import git
-    
+
     md, unsuitable_changes = git.get_repo_metadata(path=path, repo_type=repo_type, data_file=path)
     setattr(model, url_attr, md.url)
     setattr(model, branch_attr, md.branch)
@@ -556,10 +556,9 @@ def init_schema(filename, out_filename=None):
                         cls_name))
 
             attr_name = row[name_col_name]
-            if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_:>\.\- \[\]]*$', attr_name):
+            if not re.match(r'^[a-zA-Z0-9_:>\.\- \[\]]+$', attr_name):
                 raise ValueError(("Invalid attribute name '{}'. "
-                                  "Attribute names must start with a letter or underscore, "
-                                  "and consist of alphanumeric "
+                                  "Attribute names must consist of alphanumeric "
                                   "characters, underscores, colons, forward carets, "
                                   "dots, dashes, square brackets, and spaces.").format(
                     attr_name))

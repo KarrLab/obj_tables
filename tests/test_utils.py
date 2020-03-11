@@ -491,7 +491,7 @@ class InitSchemaTestCase(unittest.TestCase):
         wb = wc_utils.workbook.io.read(schema_xl)
         wb['!!' + core.SCHEMA_SHEET_NAME][3][0] = wb['!!' + core.SCHEMA_SHEET_NAME][3][0] + '?'
         wc_utils.workbook.io.write(schema_xl_2, wb)
-        with self.assertRaisesRegex(ValueError, 'names must start with'):
+        with self.assertRaisesRegex(ValueError, 'names must consist of'):
             utils.init_schema(schema_xl_2,
                               out_filename=out_filename)
 

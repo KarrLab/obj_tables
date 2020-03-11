@@ -19,6 +19,7 @@ import itertools
 import math
 import numpy as np
 import obj_tables
+import obj_tables.math
 import objsize
 import os
 import pronto

@@ -826,8 +826,7 @@ class Migrator(object):
                         migrated_rel_attr_name = migrated_rel_attr.__name__
                         if existing_rel_attr_name in self.deleted_models:
                             inconsistencies.append("existing model '{}' is not migrated, "
-                                                   "but is referenced by migrated attribute {}.{}".format(e
-                                                                                                          xisting_rel_attr_name,
+                                                   "but is referenced by migrated attribute {}.{}".format(existing_rel_attr_name,
                                                                                                           migrated_class, migrated_attr))
                         else:
                             expected_migrated_rel_attr = self.models_map[existing_rel_attr_name]
