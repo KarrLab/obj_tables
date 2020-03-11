@@ -3,6 +3,7 @@ Installation
 
 The following is a brief guide to installing `ObjTables`. The `Dockerfile <https://github.com/KarrLab/obj_tables/blob/master/Dockerfile>`_ in the `ObjTables` Git repository contains detailed instructions for how to install `ObjTables` in Ubuntu Linux.
 
+
 Prerequisites
 --------------------------
 
@@ -17,11 +18,13 @@ First, install the following third-party packages:
 * `Open Babel <http://openbabel.org>`_  (optional): to represent and validate chemical structures
 * `Pip <https://pip.pypa.io>`_ >= 18.0
 * `Python <https://www.python.org>`_ >= 3.6
+* `SSH <https://www.ssh.com/ssh>`_ (optional): to use Git with SSH to revision schemas and datasets
 
 To use ChemAxon Marvin, set ``JAVA_HOME`` to the path to your Java virtual machine (JVM) and add Marvin to the Java class path::
 
    export JAVA_HOME=/usr/lib/jvm/default-java
    export CLASSPATH=$CLASSPATH:/opt/chemaxon/marvinsuite/lib/MarvinBeans.jar
+
 
 Installing the latest release from PyPI
 ---------------------------------------
@@ -38,6 +41,7 @@ We recommend that developers use the following commands to install the latest re
     pip install git+https://github.com/KarrLab/bpforms.git#egg=bpforms
     pip install git+https://github.com/KarrLab/bcforms.git#egg=bcforms
     pip install git+https://github.com/KarrLab/obj_tables.git#egg=obj_tables
+
 
 Installing the optional features
 --------------------------------
@@ -56,3 +60,22 @@ These features can be installed by installing `ObjTables` with the desired optio
 
     pip install obj_tables[bio,chem]
     pip install git+https://github.com/KarrLab/obj_tables.git#egg=obj_tables[bio,chem]
+
+
+Configuring access to GitHub
+----------------------------
+To use the revisioning and migration features, developers must configure `ObjTables` to access GitHub.
+
+* Generate an API token for GitHub, and save it to `~./wc/wc_utils.cfg` in the following format::
+
+    [wc_utils]
+        [[github]]
+            github_api_token = <token>
+
+* Follow these steps to configure SSH access Github:
+
+    * Follow these `instructions <https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent>`_ to generate an SSH key and add it to your GitHub account
+    * Save the following to `~/.gitconfig`::
+
+        [url "ssh://git@github.com/"]
+            insteadOf = https://github.com/
