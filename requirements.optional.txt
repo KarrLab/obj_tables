@@ -1,14 +1,6 @@
 [grammar]
 lark_parser
 
-[bio]
-biopython >= 1.75
-
-[chem]
-bcforms
-bpforms
-openbabel
-
 [math]
 numpy
 pandas
@@ -18,6 +10,14 @@ sympy
 pint >= 0.10
 pronto >= 1
 uncertainties
+
+[chem]
+bcforms
+bpforms
+openbabel
+
+[bio]
+biopython >= 1.75
 
 [revisioning]
 gitpython
