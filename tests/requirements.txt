@@ -8,4 +8,4 @@ psutil
 pygithub
 pytest
 scipy
-wc_onto
+wc_onto >= 0.0.2
