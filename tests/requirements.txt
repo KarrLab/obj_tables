@@ -1,5 +1,6 @@
 abduct
 attrdict
+capturer
 configobj
 mock
 objsize

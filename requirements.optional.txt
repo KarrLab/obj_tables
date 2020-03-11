@@ -30,3 +30,4 @@ graphviz >= 0.13
 flask
 flask_cors
 flask_restplus
+werkzeug < 1
