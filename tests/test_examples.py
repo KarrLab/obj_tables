@@ -153,6 +153,8 @@ class ExamplesTestCase(unittest.TestCase):
         data_filename_tsv = os.path.join(dirname, 'data.tsv', '*.tsv')
         data_filename_multi_csv = os.path.join(dirname, 'data.multi.csv')
         data_filename_multi_tsv = os.path.join(dirname, 'data.multi.tsv')
+        data_filename_json = os.path.join(dirname, 'data.json')
+        data_filename_yml = os.path.join(dirname, 'data.yml')
         schema_and_data_filename_multi_csv = os.path.join(dirname, 'schema_and_data.multi.csv')
         schema_and_data_filename_multi_tsv = os.path.join(dirname, 'schema_and_data.multi.tsv')
         schema_and_data_filename_xlsx = os.path.join(dirname, 'schema_and_data.xlsx')
@@ -167,6 +169,10 @@ class ExamplesTestCase(unittest.TestCase):
         with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_multi_csv]) as app:
             app.run()
         with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_multi_tsv]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_json]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_yml]) as app:
             app.run()
         with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, schema_and_data_filename_multi_csv,
                                 '--write-toc',
@@ -262,8 +268,18 @@ class ExamplesTestCase(unittest.TestCase):
         schema_filename_tsv = os.path.join(dirname, 'schema.tsv')
         schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
         schema_filename_py = os.path.join(dirname, 'schema.py')
-        data_filename_csv = os.path.join(dirname, 'data.csv')
+        data_filename_csv = os.path.join(dirname, 'data.csv/*.csv')
+        data_filename_tsv = os.path.join(dirname, 'data.tsv/*.tsv')
+        data_filename_multi_csv = os.path.join(dirname, 'data.multi.csv')
+        data_filename_multi_tsv = os.path.join(dirname, 'data.multi.tsv')
         data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
+        data_filename_json = os.path.join(dirname, 'data.json')
+        data_filename_yml = os.path.join(dirname, 'data.yml')
+
+        if not os.path.isdir(os.path.dirname(data_filename_csv)):
+            os.mkdir(os.path.dirname(data_filename_csv))
+        if not os.path.isdir(os.path.dirname(data_filename_tsv)):
+            os.mkdir(os.path.dirname(data_filename_tsv))
 
         with __main__.App(argv=['validate', schema_data_filename_xlsx, schema_data_filename_xlsx]) as app:
             app.run()
@@ -277,8 +293,17 @@ class ExamplesTestCase(unittest.TestCase):
 
         with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_csv]) as app:
             app.run()
-
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_tsv]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_multi_csv]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_multi_tsv]) as app:
+            app.run()
         with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_xlsx]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_json]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_yml]) as app:
             app.run()
 
         with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx,

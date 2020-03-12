@@ -566,9 +566,9 @@
             <h3>File formats</h3>
             <p class="before_list"><i>ObjTables</i> supports three formats for collections of tables, or datasets:</p>
             <ul>
-              <li><b>Excel workbook:</b> Each worksheet contains a table which encodes the instances of a class. The names of the worksheets should be <tt>!</tt> followed by the name of a class in the schema (e.g., <tt>!Name</tt>).</li>
-              <li><b>Set of CSV or TSV files:</b> Each file contains a table which encodes the instances of a class. The names of the files should follow the pattern <tt>dir/!*.csv</tt> (e.g., <tt>Doc/!Name.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
-              <li><b>Single text file with multiple CSV or TSV-formatted tables:</b> Each table encodes the instances of a class.</li>
+              <li><b>Excel workbook (.xlsx):</b> Each worksheet contains a table which encodes the instances of a class. The names of the worksheets should be <tt>!!</tt> followed by the name of a class in the schema (e.g., <tt>!!Name</tt>).</li>
+              <li><b>Set of CSV or TSV files (*.csv, *.tsv):</b> Each file contains a table which encodes the instances of a class. The names of the files should follow the pattern <tt>dir/*.csv</tt> (e.g., <tt>Doc/Name.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
+              <li><b>Single text file with multiple CSV or TSV-formatted tables (.multi.csv, .multi.tsv):</b> Each table encodes the instances of a class.</li>
             </ul>
 
             <h3>Document metdata</h3>
@@ -725,14 +725,16 @@
                 <td>
                   <a href="">.csv</a>,
                   <a href="">.tsv</a>,
-                  <a href="">.xlsx</a>,
                   <a href="">.multi.csv</a>,
-                  <a href="">.multi.tsv</a>
+                  <a href="">.multi.tsv</a>,
+                  <a href="">.xlsx</a>,
+                  <a href="">.json</a>,
+                  <a href="">.yml</a>
                 </td>
                 <td>
-                  <a href="">.xlsx</a>,
                   <a href="">.multi.csv</a>,
-                  <a href="">.multi.tsv</a>
+                  <a href="">.multi.tsv</a>,
+                  <a href="">.xlsx</a>
                 </td>
               </tr>
               <tr>
@@ -744,14 +746,18 @@
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema.py">.py</a>
                 </td>
                 <td>
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.csv">.csv</a>,
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.tsv">.tsv</a>,
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.xlsx">.xlsx</a>
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.csv/">.csv</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.tsv/">.tsv</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.multi.csv">.multi.csv</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.multi.tsv">.multi.tsv</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.xlsx">.xlsx</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.json">.json</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.yml">.yml</a>
                 </td>
                 <td>
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema_and_data.xlsx">.xlsx</a>,
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema_and_data.multi.csv">.multi.csv</a>,
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema_and_data.multi.csv">.multi.tsv</a>
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema_and_data.multi.csv">.multi.tsv</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema_and_data.xlsx">.xlsx</a>
                 </td>
               </tr>
               <tr>
@@ -765,14 +771,16 @@
                 <td>
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.csv/">.csv</a>,
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.tsv/">.tsv</a>,
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.xlsx">.xlsx</a>,
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.multi.csv">.multi.csv</a>,
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.multi.tsv">.multi.tsv</a>
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.multi.tsv">.multi.tsv</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.xlsx">.xlsx</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.json">.json</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/data.yml">.yml</a>
                 </td>
                 <td>
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/schema_and_data.xlsx">.xlsx</a>,
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/schema_and_data.multi.csv">.multi.csv</a>,
-                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/schema_and_data.multi.tsv">.multi.tsv</a>
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/schema_and_data.multi.tsv">.multi.tsv</a>,
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_models/schema_and_data.xlsx">.xlsx</a>
                 </td>
               </tr>
               <tr>
@@ -786,14 +794,16 @@
                 <td>
                   <a href="">.csv</a>,
                   <a href="">.tsv</a>,
-                  <a href="">.xlsx</a>,
                   <a href="">.multi.csv</a>,
-                  <a href="">.multi.tsv</a>
+                  <a href="">.multi.tsv</a>,
+                  <a href="">.xlsx</a>,
+                  <a href="">.json</a>,
+                  <a href="">.yml</a>
                 </td>
                 <td>
-                  <a href="">.xlsx</a>,
                   <a href="">.multi.csv</a>,
-                  <a href="">.multi.tsv</a>
+                  <a href="">.multi.tsv</a>,
+                  <a href="">.xlsx</a>
                 </td>
               </tr>
             </tbody>
