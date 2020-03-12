@@ -20,7 +20,6 @@ import unittest
 sys.path.insert(0, 'examples')
 import decode_json
 
-
 class ExamplesTestCase(unittest.TestCase):
     def setUp(self):
         self.dirname = tempfile.mkdtemp()
@@ -53,34 +52,34 @@ class ExamplesTestCase(unittest.TestCase):
 
         # Create children
         jamie_doe = children_fav_games.Child(id='jamie_doe',
-                                           name='Jamie Doe',
-                                           gender=children_fav_games.Child.gender.enum_class.female,
-                                           parents=[jane_doe, john_doe])
+                                             name='Jamie Doe',
+                                             gender=children_fav_games.Child.gender.enum_class.female,
+                                             parents=[jane_doe, john_doe])
         jamie_doe.favorite_video_game = children_fav_games.Game(name='Legend of Zelda: Ocarina of Time',
-                                                              publisher='Nintendo',
-                                                              year=1998)
+                                                                publisher='Nintendo',
+                                                                year=1998)
 
         jimie_doe = children_fav_games.Child(id='jimie_doe',
-                                           name='Jimie Doe',
-                                           gender=children_fav_games.Child.gender.enum_class.male,
-                                           parents=[jane_doe, john_doe])
+                                             name='Jimie Doe',
+                                             gender=children_fav_games.Child.gender.enum_class.male,
+                                             parents=[jane_doe, john_doe])
         jimie_doe.favorite_video_game = children_fav_games.Game(name='Super Mario Brothers',
-                                                              publisher='Nintendo',
-                                                              year=1985)
+                                                                publisher='Nintendo',
+                                                                year=1985)
         linda_roe = children_fav_games.Child(id='linda_roe',
-                                           name='Linda Roe',
-                                           gender=children_fav_games.Child.gender.enum_class.female,
-                                           parents=[mary_roe, richard_roe])
+                                             name='Linda Roe',
+                                             gender=children_fav_games.Child.gender.enum_class.female,
+                                             parents=[mary_roe, richard_roe])
         linda_roe.favorite_video_game = children_fav_games.Game(name='Sonic the Hedgehog',
-                                                              publisher='Sega',
-                                                              year=1991)
+                                                                publisher='Sega',
+                                                                year=1991)
         mike_roe = children_fav_games.Child(id='mike_roe',
-                                          name='Michael Roe',
-                                          gender=children_fav_games.Child.gender.enum_class.male,
-                                          parents=[mary_roe, richard_roe])
+                                            name='Michael Roe',
+                                            gender=children_fav_games.Child.gender.enum_class.male,
+                                            parents=[mary_roe, richard_roe])
         mike_roe.favorite_video_game = children_fav_games.Game(name='SimCity',
-                                                             publisher='Electronic Arts',
-                                                             year=1989)
+                                                               publisher='Electronic Arts',
+                                                               year=1989)
 
         #########################
         mike_roe = mary_roe.children.get_one(id='mike_roe')
@@ -127,31 +126,63 @@ class ExamplesTestCase(unittest.TestCase):
         os.remove(xlsx_filename)
 
     def test_biochemical_model_example(self):
-        schema_filename = 'examples/biochemical_models/schema.csv'
+        dirname = 'examples/biochemical_models'
+        schema_filename_csv = os.path.join(dirname, 'schema.csv')
+        schema_filename_tsv = os.path.join(dirname, 'schema.tsv')
+        schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
 
-        py_module_filename = 'examples/biochemical_models/schema.py'
-        with __main__.App(argv=['init-schema', schema_filename, py_module_filename]) as app:
+        py_module_filename = os.path.join(dirname, 'schema.py')
+        with __main__.App(argv=['init-schema', schema_filename_csv, py_module_filename]) as app:
             app.run()
 
-        template_filename = 'examples/biochemical_models/template.xlsx'
-        with __main__.App(argv=['gen-template', schema_filename, template_filename,
+        template_filename = os.path.join(dirname, 'template.xlsx')
+        with __main__.App(argv=['gen-template', schema_filename_csv, template_filename,
                                 '--write-schema']) as app:
             app.run()
 
-        data_filename = 'examples/biochemical_models/data.xlsx'
-        with __main__.App(argv=['validate', schema_filename, data_filename]) as app:
+        data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
+        with __main__.App(argv=['validate', schema_filename_csv, data_filename_xlsx]) as app:
+            app.run()
+        with __main__.App(argv=['validate', schema_filename_tsv, data_filename_xlsx]) as app:
+            app.run()
+        with __main__.App(argv=['validate', schema_filename_xlsx, data_filename_xlsx]) as app:
             app.run()
 
-        data_copy_filename = 'examples/biochemical_models/data_copy.xlsx'
-        with __main__.App(argv=['convert', schema_filename, data_filename, data_copy_filename,
-            '--write-toc',
-            '--write-schema']) as app:
+        data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
+        data_filename_csv = os.path.join(dirname, 'data.csv', '*.csv')
+        data_filename_tsv = os.path.join(dirname, 'data.tsv', '*.tsv')
+        data_filename_multi_csv = os.path.join(dirname, 'data.multi.csv')
+        data_filename_multi_tsv = os.path.join(dirname, 'data.multi.tsv')
+        schema_and_data_filename_multi_csv = os.path.join(dirname, 'schema_and_data.multi.csv')
+        schema_and_data_filename_multi_tsv = os.path.join(dirname, 'schema_and_data.multi.tsv')
+        schema_and_data_filename_xlsx = os.path.join(dirname, 'schema_and_data.xlsx')
+        if not os.path.isdir(os.path.dirname(data_filename_csv)):
+            os.mkdir(os.path.dirname(data_filename_csv))
+        if not os.path.isdir(os.path.dirname(data_filename_tsv)):
+            os.mkdir(os.path.dirname(data_filename_tsv))
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_csv]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_tsv]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_multi_csv]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_multi_tsv]) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, schema_and_data_filename_multi_csv,
+                                '--write-toc',
+                                '--write-schema']) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, schema_and_data_filename_multi_tsv,
+                                '--write-toc',
+                                '--write-schema']) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, schema_and_data_filename_xlsx,
+                                '--write-toc',
+                                '--write-schema']) as app:
             app.run()
 
-        with __main__.App(argv=['diff', schema_filename, 'Model', data_filename, data_copy_filename]) as app:
+        with __main__.App(argv=['diff', schema_filename_csv, 'Model', data_filename_xlsx, data_filename_multi_csv]) as app:
             app.run()
-
-        os.remove(data_copy_filename)
 
     def test_sbtab_sbml_validate_examples(self):
         self.do_sbtab_sbml_examples('validate')
@@ -223,27 +254,38 @@ class ExamplesTestCase(unittest.TestCase):
                     app.run()
 
     def test_other_examples(self):
-        schema_data_filename = 'examples/transactions/schema_and_data.xlsx'
-        schema_filename_csv = 'examples/transactions/schema.csv'
-        schema_filename_xlsx = 'examples/transactions/schema.xlsx'
-        schema_filename_py = 'examples/transactions/schema.py'
-        data_filename_csv = 'examples/transactions/data.csv'
-        data_filename_xlsx = 'examples/transactions/data.xlsx'
+        dirname = 'examples/financial_transactions'
+        schema_data_filename_xlsx = os.path.join(dirname, 'schema_and_data.xlsx')
+        schema_data_filename_csv = os.path.join(dirname, 'schema_and_data.multi.csv')
+        schema_data_filename_tsv = os.path.join(dirname, 'schema_and_data.multi.tsv')
+        schema_filename_csv = os.path.join(dirname, 'schema.csv')
+        schema_filename_tsv = os.path.join(dirname, 'schema.tsv')
+        schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
+        schema_filename_py = os.path.join(dirname, 'schema.py')
+        data_filename_csv = os.path.join(dirname, 'data.csv')
+        data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
 
-        with __main__.App(argv=['validate', schema_data_filename, schema_data_filename]) as app:
+        with __main__.App(argv=['validate', schema_data_filename_xlsx, schema_data_filename_xlsx]) as app:
             app.run()
-        with __main__.App(argv=['validate', schema_filename_csv, schema_data_filename]) as app:
+        with __main__.App(argv=['validate', schema_filename_csv, schema_data_filename_xlsx]) as app:
             app.run()
-        with __main__.App(argv=['validate', schema_filename_xlsx, schema_data_filename]) as app:
-            app.run()
-
-        with __main__.App(argv=['init-schema', schema_data_filename, schema_filename_py]) as app:
-            app.run()
-
-        with __main__.App(argv=['convert', schema_data_filename, schema_data_filename, data_filename_csv]) as app:
+        with __main__.App(argv=['validate', schema_filename_xlsx, schema_data_filename_xlsx]) as app:
             app.run()
 
-        with __main__.App(argv=['convert', schema_data_filename, schema_data_filename, data_filename_xlsx]) as app:
+        with __main__.App(argv=['init-schema', schema_data_filename_xlsx, schema_filename_py]) as app:
+            app.run()
+
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_csv]) as app:
+            app.run()
+
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_xlsx]) as app:
+            app.run()
+
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx,
+                                schema_data_filename_csv, '--write-toc', '--write-schema']) as app:
+            app.run()
+        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx,
+                                schema_data_filename_tsv, '--write-toc', '--write-schema']) as app:
             app.run()
 
     def test_decode_json(self):

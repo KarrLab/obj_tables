@@ -120,11 +120,16 @@ thead.data-type-title tr {
     background-color: rgb(180, 180, 180);
 }
 
-thead.data-type-section-head tr:first-child {
+thead.data-type-section-head {
     background: none;
+    border: none;
+}
+thead.data-type-section-head tr:first-child th {
+    height: 2rem;
 }
 thead.data-type-section-head tr:nth-child(2) {
     background-color: rgb(227, 227, 227);
+    border: 1px solid #f1f1f1;
 }
 
 tbody.data-type-section tr:nth-child(4n+0),
