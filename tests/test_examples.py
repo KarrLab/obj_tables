@@ -10,6 +10,7 @@ from obj_tables import __main__
 from obj_tables import core
 from obj_tables import io
 from obj_tables import utils
+import json
 import obj_tables
 import os
 import shutil
@@ -18,7 +19,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, 'examples')
-import decode_json
+import decode_data
 
 
 class ExamplesTestCase(unittest.TestCase):
@@ -275,7 +276,7 @@ class ExamplesTestCase(unittest.TestCase):
                                     schema_data_filename_xlsx, '--write-toc', '--write-schema']) as app:
                 app.run()
 
-    def test_decode_json(self):
+    def test_decode_data(self):
         class Parent(core.Model):
             id = core.SlugAttribute()
             name = core.StringAttribute()
@@ -294,7 +295,9 @@ class ExamplesTestCase(unittest.TestCase):
         filename = os.path.join(self.dirname, 'test.json')
         io.JsonWriter().run(filename, [p1, p2, c1, c2, c3], validate=False)
 
-        decoded = decode_json.from_json(filename)
+        with open(filename, 'r') as file:
+            json_dict = json.load(file)
+            decoded = decode_data.decode_data(json_dict)
 
         p1_b = {'__type': 'Parent', 'id': 'p1', 'name': 'P1'}
         p2_b = {'__type': 'Parent', 'id': 'p2', 'name': 'P2'}
