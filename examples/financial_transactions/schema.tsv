@@ -1,7 +1,7 @@
-!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-10 21:43:01' objTablesVersion='0.0.8'                      
-!Name   !Type   !Parent !Format !Verbose name   !Verbose name plural    !Description
-Transaction Class       row Transaction Transaction Stores transactions
-amount  Attribute   Transaction PositiveFloat           
-category    Attribute   Transaction String          
-date    Attribute   Transaction Date            
-payee   Attribute   Transaction String          
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-10 21:43:01' objTablesVersion='0.0.8'						
+!Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural	!Description
+Transaction	Class		row	Transaction	Transaction	Stores transactions
+amount	Attribute	Transaction	PositiveFloat			
+category	Attribute	Transaction	String			
+date	Attribute	Transaction	Date			
+payee	Attribute	Transaction	String			

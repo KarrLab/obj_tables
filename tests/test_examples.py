@@ -20,6 +20,7 @@ import unittest
 sys.path.insert(0, 'examples')
 import decode_json
 
+
 class ExamplesTestCase(unittest.TestCase):
     def setUp(self):
         self.dirname = tempfile.mkdtemp()
@@ -127,68 +128,17 @@ class ExamplesTestCase(unittest.TestCase):
 
     def test_biochemical_model_example(self):
         dirname = 'examples/biochemical_models'
-        schema_filename_csv = os.path.join(dirname, 'schema.csv')
-        schema_filename_tsv = os.path.join(dirname, 'schema.tsv')
         schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
-
-        py_module_filename = os.path.join(dirname, 'schema.py')
-        with __main__.App(argv=['init-schema', schema_filename_csv, py_module_filename]) as app:
-            app.run()
-
-        template_filename = os.path.join(dirname, 'template.xlsx')
-        with __main__.App(argv=['gen-template', schema_filename_csv, template_filename,
-                                '--write-schema']) as app:
-            app.run()
-
         data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
-        with __main__.App(argv=['validate', schema_filename_csv, data_filename_xlsx]) as app:
-            app.run()
-        with __main__.App(argv=['validate', schema_filename_tsv, data_filename_xlsx]) as app:
-            app.run()
-        with __main__.App(argv=['validate', schema_filename_xlsx, data_filename_xlsx]) as app:
+
+        data_copy_filename_xlsx = os.path.join(dirname, 'data_copy.xlsx')
+        with __main__.App(argv=['convert', schema_filename_xlsx, data_filename_xlsx, data_copy_filename_xlsx]) as app:
             app.run()
 
-        data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
-        data_filename_csv = os.path.join(dirname, 'data.csv', '*.csv')
-        data_filename_tsv = os.path.join(dirname, 'data.tsv', '*.tsv')
-        data_filename_multi_csv = os.path.join(dirname, 'data.multi.csv')
-        data_filename_multi_tsv = os.path.join(dirname, 'data.multi.tsv')
-        data_filename_json = os.path.join(dirname, 'data.json')
-        data_filename_yml = os.path.join(dirname, 'data.yml')
-        schema_and_data_filename_multi_csv = os.path.join(dirname, 'schema_and_data.multi.csv')
-        schema_and_data_filename_multi_tsv = os.path.join(dirname, 'schema_and_data.multi.tsv')
-        schema_and_data_filename_xlsx = os.path.join(dirname, 'schema_and_data.xlsx')
-        if not os.path.isdir(os.path.dirname(data_filename_csv)):
-            os.mkdir(os.path.dirname(data_filename_csv))
-        if not os.path.isdir(os.path.dirname(data_filename_tsv)):
-            os.mkdir(os.path.dirname(data_filename_tsv))
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_csv]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_tsv]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_multi_csv]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_multi_tsv]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_json]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_yml]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, schema_and_data_filename_multi_csv,
-                                '--write-toc',
-                                '--write-schema']) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, schema_and_data_filename_multi_tsv,
-                                '--write-toc',
-                                '--write-schema']) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, schema_and_data_filename_xlsx,
-                                '--write-toc',
-                                '--write-schema']) as app:
+        with __main__.App(argv=['diff', schema_filename_xlsx, 'Model', data_filename_xlsx, data_copy_filename_xlsx]) as app:
             app.run()
 
-        with __main__.App(argv=['diff', schema_filename_csv, 'Model', data_filename_xlsx, data_filename_multi_csv]) as app:
-            app.run()
+        os.remove(data_copy_filename_xlsx)
 
     def test_sbtab_sbml_validate_examples(self):
         self.do_sbtab_sbml_examples('validate')
@@ -260,58 +210,70 @@ class ExamplesTestCase(unittest.TestCase):
                     app.run()
 
     def test_other_examples(self):
-        dirname = 'examples/financial_transactions'
-        schema_data_filename_xlsx = os.path.join(dirname, 'schema_and_data.xlsx')
-        schema_data_filename_csv = os.path.join(dirname, 'schema_and_data.multi.csv')
-        schema_data_filename_tsv = os.path.join(dirname, 'schema_and_data.multi.tsv')
-        schema_filename_csv = os.path.join(dirname, 'schema.csv')
-        schema_filename_tsv = os.path.join(dirname, 'schema.tsv')
-        schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
-        schema_filename_py = os.path.join(dirname, 'schema.py')
-        data_filename_csv = os.path.join(dirname, 'data.csv/*.csv')
-        data_filename_tsv = os.path.join(dirname, 'data.tsv/*.tsv')
-        data_filename_multi_csv = os.path.join(dirname, 'data.multi.csv')
-        data_filename_multi_tsv = os.path.join(dirname, 'data.multi.tsv')
-        data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
-        data_filename_json = os.path.join(dirname, 'data.json')
-        data_filename_yml = os.path.join(dirname, 'data.yml')
+        dirnames = [
+            'examples/financial_transactions',
+            'examples/biochemical_models',
+        ]
+        for dirname in dirnames:
+            schema_filename_csv = os.path.join(dirname, 'schema.csv')
+            schema_filename_tsv = os.path.join(dirname, 'schema.tsv')
+            schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
+            schema_filename_py = os.path.join(dirname, 'schema.py')
+            template_filename = os.path.join(dirname, 'template.xlsx')
+            data_filename_csv = os.path.join(dirname, 'data.csv/*.csv')
+            data_filename_tsv = os.path.join(dirname, 'data.tsv/*.tsv')
+            data_filename_multi_csv = os.path.join(dirname, 'data.multi.csv')
+            data_filename_multi_tsv = os.path.join(dirname, 'data.multi.tsv')
+            data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
+            data_filename_json = os.path.join(dirname, 'data.json')
+            data_filename_yml = os.path.join(dirname, 'data.yml')
+            schema_data_filename_xlsx = os.path.join(dirname, 'schema_and_data.xlsx')
+            schema_data_filename_csv = os.path.join(dirname, 'schema_and_data.multi.csv')
+            schema_data_filename_tsv = os.path.join(dirname, 'schema_and_data.multi.tsv')
 
-        if not os.path.isdir(os.path.dirname(data_filename_csv)):
-            os.mkdir(os.path.dirname(data_filename_csv))
-        if not os.path.isdir(os.path.dirname(data_filename_tsv)):
-            os.mkdir(os.path.dirname(data_filename_tsv))
+            if not os.path.isdir(os.path.dirname(data_filename_csv)):
+                os.mkdir(os.path.dirname(data_filename_csv))
+            if not os.path.isdir(os.path.dirname(data_filename_tsv)):
+                os.mkdir(os.path.dirname(data_filename_tsv))
 
-        with __main__.App(argv=['validate', schema_data_filename_xlsx, schema_data_filename_xlsx]) as app:
-            app.run()
-        with __main__.App(argv=['validate', schema_filename_csv, schema_data_filename_xlsx]) as app:
-            app.run()
-        with __main__.App(argv=['validate', schema_filename_xlsx, schema_data_filename_xlsx]) as app:
-            app.run()
+            with __main__.App(argv=['init-schema', schema_filename_csv, schema_filename_py]) as app:
+                app.run()
 
-        with __main__.App(argv=['init-schema', schema_data_filename_xlsx, schema_filename_py]) as app:
-            app.run()
+            with __main__.App(argv=['gen-template', schema_filename_csv, template_filename,
+                                    '--write-toc', '--write-schema']) as app:
+                app.run()
 
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_csv]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_tsv]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_multi_csv]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_multi_tsv]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_xlsx]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_json]) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx, data_filename_yml]) as app:
-            app.run()
+            with __main__.App(argv=['validate', schema_filename_csv, data_filename_xlsx]) as app:
+                app.run()
+            with __main__.App(argv=['validate', schema_filename_tsv, data_filename_xlsx]) as app:
+                app.run()
+            with __main__.App(argv=['validate', schema_filename_xlsx, data_filename_xlsx]) as app:
+                app.run()
+            with __main__.App(argv=['validate', schema_filename_py, data_filename_xlsx]) as app:
+                app.run()
 
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx,
-                                schema_data_filename_csv, '--write-toc', '--write-schema']) as app:
-            app.run()
-        with __main__.App(argv=['convert', schema_data_filename_xlsx, schema_data_filename_xlsx,
-                                schema_data_filename_tsv, '--write-toc', '--write-schema']) as app:
-            app.run()
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_csv]) as app:
+                app.run()
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_tsv]) as app:
+                app.run()
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_multi_csv]) as app:
+                app.run()
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_multi_tsv]) as app:
+                app.run()
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_json]) as app:
+                app.run()
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_yml]) as app:
+                app.run()
+
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx,
+                                    schema_data_filename_csv, '--write-toc', '--write-schema']) as app:
+                app.run()
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx,
+                                    schema_data_filename_tsv, '--write-toc', '--write-schema']) as app:
+                app.run()
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx,
+                                    schema_data_filename_xlsx, '--write-toc', '--write-schema']) as app:
+                app.run()
 
     def test_decode_json(self):
         class Parent(core.Model):
