@@ -105,7 +105,7 @@ Reaction:
 _documentMetadata:
   date: '2020-03-12 09:57:20'
   objTablesVersion: 0.0.8
-_modelMetadata:
+_classMetadata:
   Compound:
     description: Compound
     id: Compound

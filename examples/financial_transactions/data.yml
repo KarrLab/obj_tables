@@ -26,7 +26,7 @@ Transaction:
 _documentMetadata:
   date: '2020-03-12 09:57:32'
   objTablesVersion: 0.0.8
-_modelMetadata:
+_classMetadata:
   Transaction:
     description: Stores transactions
     id: Transaction

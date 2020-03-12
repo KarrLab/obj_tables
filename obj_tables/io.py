@@ -269,9 +269,9 @@ class JsonWriter(WriterBase):
         json_objects['_documentMetadata'][l_case_format + 'Version'] = version
         json_objects['_documentMetadata']['date'] = date
 
-        json_objects['_modelMetadata'] = {}
+        json_objects['_classMetadata'] = {}
         for model in all_models:
-            model_attrs = json_objects['_modelMetadata'][model.__name__] = copy.copy(model_metadata.get(model, {}))
+            model_attrs = json_objects['_classMetadata'][model.__name__] = copy.copy(model_metadata.get(model, {}))
 
             if 'schema' in model_attrs:
                 model_attrs.pop('schema')
@@ -1200,7 +1200,7 @@ class JsonReader(ReaderBase):
                 all_models.update(set(utils.get_related_models(model)))
             model_names = {model.__name__: model for model in all_models}
             self._model_metadata = {}
-            for model_name, model_metadata in json_objs.get('_modelMetadata', {}).items():
+            for model_name, model_metadata in json_objs.get('_classMetadata', {}).items():
                 model = model_names[model_name]
                 self._model_metadata[model] = model_metadata
 
