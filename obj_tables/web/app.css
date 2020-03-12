@@ -1,4 +1,8 @@
-h1, h2, h3, h4, h5, div, p { font-family: 'Raleway', sans-serif; }
+*, h1, h2, h3, h4, h5, h6, p {
+    font-family: 'Raleway', sans-serif;
+    line-height: 140%;
+}
+
 tt {
     font-family: 'Courier New', 'Courier';
     background: #efefef;
@@ -61,8 +65,8 @@ textarea { height: 100px; }
     margin-top: 1rem;
 }
 
-p.before_list {
-    margin-bottom: 0px;
+p.before-list {
+    margin-bottom: 0;
 }
 
 pre {
@@ -71,7 +75,17 @@ pre {
     padding: 0.5rem;
     overflow: visible;
     border-radius: 0.3rem;
-    margin-top: 0rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+p {
+    margin-block-start: 0;
+    margin-block-end: 0;
+    margin-bottom: 1rem;
+}
+ul, ol {
+    margin-bottom: 1rem;
 }
 
 /* table of contents */
@@ -85,8 +99,8 @@ pre {
 .toc h3 {
     color: #333;
     font-size: 1.0rem;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
     margin-top: 0.5rem;
     margin-bottom: 0.2rem;
     padding-bottom: 0.2rem;
@@ -105,16 +119,21 @@ pre {
     line-height: 120%;
 }
 .toc ul ul li {
-    margin-top: 0rem;
+    margin-top: 0;
     font-size: 0.85rem;
     line-height: 120%;
 }
-.toc ul ul ul li {
-    margin-top: 0rem;
-    font-size: 0.80rem;
-    line-height: 120%;
+
+li {
+    margin-top: 0.125rem;
+}
+ul.vertically-spaced-list > li {
+    margin-top: 0.5rem;
 }
 
+thead th, thead td, tbody th, tbody td {
+    padding: .2rem .3125rem .3125rem;
+}
 
 thead.data-type-title tr {
     background-color: rgb(180, 180, 180);
@@ -144,11 +163,11 @@ tbody.data-type-section tr:nth-child(4n+2) {
 }
 tbody.data-type-section tr:nth-child(4n+1) td,
 tbody.data-type-section tr:nth-child(4n+3) td{
-    padding-bottom: 0px;
+    padding-bottom: 0;
 }
 tbody.data-type-section tr:nth-child(4n+0) td,
 tbody.data-type-section tr:nth-child(4n+2) td {
-    padding-top: 0px;
+    padding-top: 0;
 }
 tbody.data-type-section tr:nth-child(4n+0) td:first-child,
 tbody.data-type-section tr:nth-child(4n+2) td:first-child {
@@ -162,4 +181,8 @@ tbody.data-type-section tr:nth-child(4n+3) td:nth-child(2) {
 }
 tbody.data-type-section td tt {
     background: none;
+}
+
+table.examples th, table.examples td {
+    white-space: nowrap;
 }
