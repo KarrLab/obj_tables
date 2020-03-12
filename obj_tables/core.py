@@ -2391,8 +2391,8 @@ class Model(object, metaclass=ModelMeta):
 
         # copy expressions
         for o in objects_and_copies.values():
-            is_expression = next((True for cls in get_superclasses(o.__class__) 
-                                  if cls.__module__ == 'obj_tables.math.expression' 
+            is_expression = next((True for cls in get_superclasses(o.__class__)
+                                  if cls.__module__ == 'obj_tables.math.expression'
                                   and cls.__name__ == 'Expression'), False)
             if is_expression:
                 objs = {o.__class__: {o.serialize(): o}}

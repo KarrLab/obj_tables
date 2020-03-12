@@ -143,7 +143,7 @@ class WriterBase(object, metaclass=abc.ABCMeta):
 
         if schema_package:
             from wc_utils.util import git
-            
+
             # create SchemaRepoMetadata instance
             try:
                 schema_repo_metadata = utils.SchemaRepoMetadata()

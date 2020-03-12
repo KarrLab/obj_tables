@@ -25,7 +25,7 @@ The *ObjTables* toolkit includes five components:
 
 * **Tabular format for collections of tables.** This includes syntax for declaring which cells represent the names of tables and columns, declaring which entries represent metadata such as date that a table was updated, and declaring which entries represent comments.
 * **Tabular format for describing schemas for collections of tables.** This captures the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cells. This supports three modes of encoding relationships into cells in tables.
-    
+
     * **Columns for relationships among objects represented by entries in tables:** Relationships from one (primary) object to other (related) objects can be captured by (a) incorporating a column that represents a unique *key* for each related object into the table that represents the related objects and (b) encoding the keys for the related objects as a comma-separated list into a column in the table that represents the primary objects.
     * **Embedded tables for *-to-one relationships:** To help users encode complex datasets into a minimal number of tables, *ObjTables* can also encode instances of related classes into groups of columns. *ObjTables* uses merged headings to distinguish these columns.
     * **Embedded grammars for relationships:** To help users encode complex datasets into a minimal number of tables, grammars can be used to encode instances of related classes into a single column. These grammars can be defined declaratively in EBNF format using [Lark](https://lark-parser.readthedocs.io).
@@ -34,7 +34,7 @@ The *ObjTables* toolkit includes five components:
 * **Python API for defining schemas:** For more flexibility, the Python API can be used to incorporate custom data types into schemas, utilize multiple inheritance, and define custom validation procedures.
 * **Numerous data types** including types for mathematics, science, chemoinformatics, and genomics.
 * **Software tools for parsing, validating, and manipulating datasets** according to schemas. This includes tools for
-    
+
     * Pretty printing datasets as Excel workbooks. This enables users to use Excel as a graphical user interface for quickly browsing and editing datasets as described below.
     * Creating templates for datasets.
     * Analyzing, comparing, merging, revisioning, and datasets.
