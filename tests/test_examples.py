@@ -220,6 +220,7 @@ class ExamplesTestCase(unittest.TestCase):
             schema_filename_tsv = os.path.join(dirname, 'schema.tsv')
             schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
             schema_filename_py = os.path.join(dirname, 'schema.py')
+            schema_filename_svg = os.path.join(dirname, 'schema.svg')
             template_filename = os.path.join(dirname, 'template.xlsx')
             data_filename_csv = os.path.join(dirname, 'data.csv/*.csv')
             data_filename_tsv = os.path.join(dirname, 'data.tsv/*.tsv')
@@ -238,6 +239,9 @@ class ExamplesTestCase(unittest.TestCase):
                 os.mkdir(os.path.dirname(data_filename_tsv))
 
             with __main__.App(argv=['init-schema', schema_filename_csv, schema_filename_py]) as app:
+                app.run()
+
+            with __main__.App(argv=['viz-schema', schema_filename_csv, schema_filename_svg]) as app:
                 app.run()
 
             with __main__.App(argv=['gen-template', schema_filename_csv, template_filename,
