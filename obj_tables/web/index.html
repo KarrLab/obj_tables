@@ -83,7 +83,7 @@
             <li><b>Web app</b> below <a href="#app"><i class="fi-arrow-down"></i></a>: The web app enables users to use <i>ObjTables</i> without having to install any software.</li>
             <li><b>REST API</b> <a href="api/"><i class="fi-link"></i></a>: The REST API enables users to use <i>ObjTables</i> programmatically without having to install any software.</li>
             <li><b>Command line interface</b> <a href="https://pypi.python.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The command line interface enables users to use <i>ObjTables</i> without having to upload data to this website.</li>
-            <li><b>Python library</b> <a href="https://pypi.python.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The Python library enables users to extend <i>ObjTables</i> with custom attributes and validation and use <i>ObjTables</i> to analyze complex datasets.</li>
+            <li><b>Python API</b> <a href="https://pypi.python.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The Python API enables users to extend <i>ObjTables</i> with custom attributes and validation and use <i>ObjTables</i> to analyze complex datasets.</li>
           </ul>
 
           <p><i>ObjTables</i> was developed to implement languages for describing whole-cell computational models <a href="https://www.wholecell.org"><i class="fi-link"></i></a> and the data needed to build and verify them.</p>
@@ -108,7 +108,7 @@
                   <li><a href="#app">Web app</a></li>
                   <li><a href="#rest">REST API</a></li>
                   <li><a href="#cli">Command line interface</a></li>
-                  <li><a href="#python">Python library</a></li>
+                  <li><a href="#python">Python API</a></li>
                   <li><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                 </ul>
               </li>
@@ -1082,6 +1082,7 @@
             <li>Normalize a dataset into a deterministically reproducible ordering.</li>
             <li class="highlight">Sort a dataset into a random order.</li>
             <li>Pretty print a dataset.</li>
+            <li>Use a schema to determine if two datasets are semantically equivalent.</li>
             <li>Use a schema to evaluate the difference in the semantic meaning of two datasets.</li>
             <li class="highlight">Parse a dataset into a Python data structure.</li>
             <li>Use a schema to convert a dataset to an alternate format.</li>
@@ -1107,12 +1108,8 @@
           A command line interface is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>.
         </div>
         <div class="large-12 cell" id="python">
-          <h3>Python library</h3>
-          <p>A Python library is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>.</p>
-
-          <p>Python modules which implement <i>ObjTables</i> schemas make it easy to create datasets, parse files into structured Python representations, query and edit datasets, and save datasets to files.</p>
-
-          <p>The following example illustrates to programmatically create, manipulate, analyze, and export the same dataset of parents and children described above.</p>
+          <h3>Python API</h3>
+          <p>A Python API is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>. As described above, the Python API has significantly more capabilities than the web application, REST API, and command line program. The following example provides an introduction to the API by illustrating how to use the API to programmatically create, manipulate, analyze, and export the same dataset of children, their parents, and their favorite video games described above. A more comprehensive interactive tutorial is available at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.</p>
 
           <h4>Importing Python modules which implement schemas</h4>
           <pre>import children_fav_games</pre>
@@ -1257,7 +1254,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
         <div class="large-6 cell">
           <h3>Tutorial for the Python API</h3>
-          A Jupyter notebook with an interactive tutorial is available at sandbox.karrlab.org <a href="http://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.
+          A Jupyter notebook with an interactive tutorial is available at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.
         </div>
         <div class="large-6 cell">
           <h3>Documentation for the formats for schemas and datasets</h3>
