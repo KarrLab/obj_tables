@@ -200,7 +200,7 @@
 
           <p>We recommend that developers begin with the tabular format, and transition to the Python format if more flexibility is needed. When more flexibility is needed, we recommend that developers use the <i>ObjTables</i> software tools to convert tabular-formatted schemas into Python modules. This workflow provides a quick path to developing custom schemas.</p>
 
-          <h3>Tabular format</h3>
+          <h3>Tabular format for schemas</h3>
           <p>Tabular-formatted schemas should begin with a single header row which indicates that the schema is encoded in <i>ObjTables</i> format (<tt>!!ObjTables type="Schema" ...</tt>).</p>
 
           <p class="before-list">After the header row, the schema should contain a table with the columns below that defines the classes/models/tables and their attributes/columns. Each row in the table should define a single class or attribute.</p>
@@ -283,7 +283,7 @@
             <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.csv"><i class="fi-link"></i></a></li>
           </ul>
 
-          <h3>Python API</h3>
+          <h3>Implementing schemas in Python using the Python API</h3>
           <p>Schemas can also be implemented using the <i>ObjTables</i> Python API.</p>
           <ul class="vertically-spaced-list">
             <li>Each class should be implemented as a subclass of <tt>obj_tables.Model</tt>.</li>
@@ -376,16 +376,6 @@
           </ul>
 
           <p>The following table lists the attribute types currently available in <i>ObjTables</i>. The first column indicates the names that should be used in conjunction with tabular schema format. The second column indicates the Python class which implements each type and which should be used to define schemas with the Python API. The third column indicates the data type used to encode each attribute into an Excel cell. The fourth column indicates the Python data used to represent each attribute.</p>
-
-          <p class="before-list">A few of the attributes have required arguments:</p>
-          <ul class="vertically-spaced-list">
-            <li><tt>Enum</tt> attribute: The first argument must be a subclass of <tt>enum.Enum</tt> or a list of valid values. For example, an enumerated attribute with two potential values 'A' and 'B' can be specified in the tabular schema format using the syntax <tt>Enum(['A', 'B'])</tt>.</li>
-            <li><tt>*To*</tt> attributes: The first argument must be a class or the name of a class. The constructor must also receive a keyword argument with the key <tt>related_name</tt> whose value is a string that represents the name of a virtual property that should be added to the related class to represent pointers from the related objects back to the primary objects. For example, an attribute with the name <tt>parents</tt> which represents a many-to-many relationship from a class <tt>Child</tt> that represents children to a class <tt>Parent</tt> that represents their parents and contains a virtual attribute <tt>children</tt> that represents the inverse many-to-many relationship can be specified in the tabular schema format using the syntax <tt>ManyToMany('Parent', related_name='children')</tt>.</li>
-          </ul>
-
-          <p>Each attribute also has optional arguments which can be used to control how values of the attribute are validated. For example, <tt>Integer</tt> and <tt>Float</tt> attributes have optional <tt>min</tt> and <tt>max</tt> arguments which can be used to indicate the minimum and maximum valid values. The <tt>String</tt> and <tt>LongString</tt> attributes have optional <tt>min_length</tt> and <tt>max_length</tt> attributes which can be used to indicate the minimum and maximum valid lengths of these attributes.</p>
-
-          <p>Please see the Python API documentation <a href="http://docs.karrlab.org/obj_tables/source/modules.html"><i class="fi-link"></i></a> for detailed information about these optional arguments.</p>
 
           <table>
             <thead class="data-type-title">
@@ -567,6 +557,19 @@
               <tr><td colspan="4">Frequency position matrix</td></tr>
             </tbody>
           </table>
+
+          <h3>Required arguments</h3>
+          <p class="before-list">A few of the attributes have required arguments:</p>
+          <ul class="vertically-spaced-list">
+            <li><tt>Enum</tt> attribute: The first argument must be a subclass of <tt>enum.Enum</tt> or a list of valid values. For example, an enumerated attribute with two potential values 'A' and 'B' can be specified in the tabular schema format using the syntax <tt>Enum(['A', 'B'])</tt>.</li>
+            <li><tt>*To*</tt> attributes: The first argument must be a class or the name of a class. The constructor must also receive a keyword argument with the key <tt>related_name</tt> whose value is a string that represents the name of a virtual property that should be added to the related class to represent pointers from the related objects back to the primary objects. For example, an attribute with the name <tt>parents</tt> which represents a many-to-many relationship from a class <tt>Child</tt> that represents children to a class <tt>Parent</tt> that represents their parents and contains a virtual attribute <tt>children</tt> that represents the inverse many-to-many relationship can be specified in the tabular schema format using the syntax <tt>ManyToMany('Parent', related_name='children')</tt>.</li>
+          </ul>
+
+          <h3>Optional arguments</h3>
+          <p>Each attribute also has optional arguments which can be used to control how values of the attribute are validated. For example, <tt>Integer</tt> and <tt>Float</tt> attributes have optional <tt>min</tt> and <tt>max</tt> arguments which can be used to indicate the minimum and maximum valid values. The <tt>String</tt> and <tt>LongString</tt> attributes have optional <tt>min_length</tt> and <tt>max_length</tt> attributes which can be used to indicate the minimum and maximum valid lengths of these attributes.</p>
+
+          <h3>More information about the arguments</h3>
+          <p>Please see the Python API documentation <a href="http://docs.karrlab.org/obj_tables/source/modules.html"><i class="fi-link"></i></a> for detailed information about these required and optional arguments.</p>
         </div>
       </div>
 
@@ -792,7 +795,7 @@
 
       <div class="grid-x grid-padding-x orange" id="examples">
         <div class="large-12 cell">
-          <h2>Examples</h2>
+          <h2>Examples of schemas and datasets</h2>
         </div>
         <div class="large-12 cell" style="margin-top: 1rem">
           <p>Below are several examples of <i>ObjTables</i> schemas and datasets in all of the supported formats.</p>
@@ -919,9 +922,55 @@
 
       <div class="grid-x grid-padding-x blue" id="validation">
         <div class="large-12 cell">
-          <h2>Validation</h2>
+          <h2>Validation of <i>ObjTables</i> datasets</h2>
         </div>
         <div class="large-12 cell" style="margin-top: 1rem">
+          <p class="before-list">One of the major goals of <i>ObjTables</i> is to make it easy to rigorously validate the syntax and semantics of complex datasets. <i>ObjTables</i> achieves this by making it easy to utilize six levels of validation:</p>
+          <ol class="vertically-spaced-list">
+            <li>
+              <b>Syntactic validation:</b> <i>ObjTables</i> checks:
+              <ul>
+                <li>A dataset is encoded into the tabular, JSON, or YAML format.</li>
+                <li>The dataset contains all of the classes/tables and attributes/columns defined in the schema.</li>
+                <li>The dataset contains no extra classes/tables or attributes/columns.</li>
+                <li>Each class/table is oriented (normal, transposed) as defined in the schema.</li>
+                <li>The document and class metadata are syntactically valid lists of key-value pairs.</li>
+              </ul>
+            </li>
+
+            <li>
+              <b>Attribute validation</b>
+              <ul>
+                <li><i>ObjTables</i> checks that the value of each attribute is consistent with its type. For example, <i>ObjTables</i> checks that the value of each <tt>Integer</tt> attribute can be parsed into an integer.</li>
+                <li><i>ObjTables</i> checks that the value of each attribute is consistent with any constraints defined in the schema. For example, if an <tt>Integer</tt> attribute is defined with <tt>min</tt> and <tt>max</tt> arguments, <i>ObjTables</i> checks that each value is in between these quantities.</li>
+                <li>For *-to-* relationship attributes, <i>ObjTables</i> checks that each related object is defined within the same dataset.</li>
+                <li>Python schema developers can implement additional validation by creating subclasses of <tt>obj_tables.Attribute</tt> and overriding their <tt>validate</tt> methods. For example, this can be used to check that an attribute which represents the participants of a biochemical reaction represents an element-balanced reaction.</li>
+              </ul>
+            </li>
+
+            <li>
+              <b>Object validation:</b>
+              Python schema developers can validate the semantic meaning of each object by overriding the <tt>validate</tt> method of each class. For example, this can be used to check that the values of two attributes that represent that chemical formula and molecular weight of a compound are consistent.
+            </li>
+
+            <li>
+              <b>Uniqueness validation:</b>
+              <ul>
+                <li>For each attribute which is defined with the optional argument <tt>unique=True</tt>, <i>ObjTables</i> checks that the values of the attribute are unique across the dataset.</li>
+                <li>For each <tt>unique_together</tt> constraint of each class, <i>ObjTables</i> checks that the combinations of the values of the attributes defined in the constraint are unique across the dataset. For example, this can be used to check that objects that represent linear mathematical expressions (set of other objects) represent unique expressions.</li>
+              </ul>
+            </li>
+
+            <li>
+              <b>Class validation:</b>
+              Python schema developers can validate the semantic meaning of all of the objects of a class by overriding the <tt>validate_unique</tt> method of each class. For example, this can be used to check that a class that represents the nodes of a graph and their edges does not contain cycles.
+            </li>
+
+            <li>
+              <b>Dataset validation:</b>
+              Python schema developers can validate the semantic meaning of the entire dataset by creating a subclass of <tt>obj_tables.Validator</tt> and overriding its <tt>run</tt> method. For example, this could be used to validate that a dataset that represents a model of the biochemistry of a cell captures the self-replicating behavior of that cell.
+            </li>
+          </ol>
         </div>
       </div>
 

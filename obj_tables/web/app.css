@@ -127,7 +127,7 @@ ul, ol {
 li {
     margin-top: 0.125rem;
 }
-ul.vertically-spaced-list > li {
+.vertically-spaced-list > li {
     margin-top: 0.5rem;
 }
 
