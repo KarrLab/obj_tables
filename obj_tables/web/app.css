@@ -127,6 +127,9 @@ ul, ol {
 li {
     margin-top: 0.125rem;
 }
+li.highlight {
+    list-style-type: circle;
+}
 .vertically-spaced-list > li {
     margin-top: 0.5rem;
 }

@@ -236,7 +236,7 @@
 
           <p>Tabular-formatted schemas can be saved in comma-separated (.csv), tab-separated (.tsv), or Excel (.xlsx) format.</p>
 
-          <h4>Example: Children, their parents, and their favorite video games</h4>
+          <h4 id="example-tabular-schema">Example: Children, their parents, and their favorite video games</h4>
           <p>The following example illustrates a schema for encoding three classes of parents, children, and their favorite video games into two tables of parents and children, with the favorite games of the children embedded into a group of columns within the children table. The example is available in Excel format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/children_fav_games/schema_and_data.xlsx"><i class="fi-link"></i></a>.</p>
 
           <table>
@@ -277,9 +277,9 @@
           <h4>Additional examples</h4>
           <p class="before-list">Additional examples are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>:</p>
           <ul>
-            <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/transactions/schema.csv"><i class="fi-link"></i></a></li>
-            <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_models/schema.csv"><i class="fi-link"></i></a></li>
-            <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.csv"><i class="fi-link"></i></a></li>
+            <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/transactions/schema.tsv"><i class="fi-link"></i></a></li>
+            <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_models/schema.tsv"><i class="fi-link"></i></a></li>
+            <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.tsv"><i class="fi-link"></i></a></li>
           </ul>
 
           <h3>Implementing schemas in Python using the Python API</h3>
@@ -705,13 +705,19 @@
           </ul>
 
           <h3>Examples</h3>
-          <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame class enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame class also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>
+          <h4>Example: Children, their parents, and their favorite video games</h4>
+          <p>The following example illustrates a dataset of children, their parents, and their favorite video games encoded into the schema outlined above <a href="#example-tabular-schema"><i class="fi-arrow-up"></i></a>. To capture this information with a minimal number of tables, each child's favorite video game is encoded into a range of cells within the row which represents the child. This makes the tables human-readable and enables Python to encapsulate related information into separate objects. The example is available in TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/children_fav_games/schema_and_data.multi.tsv"><i class="fi-link"></i></a>.</p>
 
           <table>
             <thead>
               <tr>
                 <th colspan="2">!!!ObjTables objTablesVersion='0.0.8' tableFormat='row'</th>
               </tr>
+            </thead>
+          </table>
+
+          <table>
+            <thead>
               <tr>
                 <th colspan="2">!!ObjTables type='Data' tableFormat='row' id='Parent' objTablesVersion='0.0.8'</th>
               </tr>
@@ -790,11 +796,12 @@
             </tbody>
           </table>
 
-          <p>Excel and Python files for this example are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>.</p>
-
-          <p>Numerous additional examples are also available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>.</p>
+          <h4>Additional examples</h4>
+          <p class="before-list">Additional examples are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>:</p>
           <ul>
-            <li></li>
+            <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/transactions/data.multi.tsv"><i class="fi-link"></i></a></li>
+            <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_models/data.multi.tsv"><i class="fi-link"></i></a></li>
+            <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/"><i class="fi-link"></i></a></li>
           </ul>
         </div>
       </div>
@@ -1061,21 +1068,25 @@
           <h2>Software tools</h2>
         </div>
         <div class="large-12 cell" style="margin-top: 1rem">
-          <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets:</p>
-          <ul class="vertically-spaced-list">
+          <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through the web application, REST API, command line program and Python API. Please see below for more information about using these interfaces. The tools marked with &#9675; are only available through the Python API. Please see the Python documentation for more information about these tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>. </p>
+          <ul class="vertically-spaced-list highlight">
             <li>Generate a Python module that implements a tabular-formatted schema.</li>
-            <li>Generate a template Excel, CSV, or TSV file(s) for a schema.</li>
-            <li>Programmatically construct, search, and analyze datasets.</li>
-            <li>Use Git to revision datasets.</li>
-            <li>Normalize datasets into a deterministically reproducible ordering.</li>
+            <li>Generate a UML diagram for a schema.</li>
+            <li>Generate a template CSV, TSV, or Excel file(s) for a schema.</li>
+            <li class="highlight">Programmatically construct or edit a dataset.</li>
+            <li class="highlight">Merge multiple datasets into a single dataset.</li>
+            <li class="highlight">Partition a dataset into multiple datasets.</li>
+            <li class="highlight">Migrate a dataset between versions of a schema.</li>
+            <li class="highlight">Use Git to revision a dataset.</li>
             <li>Validate that a dataset adheres to a schema and report any errors.</li>
-            <li>Pretty format a dataset according to a schema.</li>
-            <li>Use a schema to compare the semantic meaning of two datasets.</li>
+            <li>Normalize a dataset into a deterministically reproducible ordering.</li>
+            <li class="highlight">Sort a dataset into a random order.</li>
+            <li>Pretty print a dataset.</li>
+            <li>Use a schema to evaluate the difference in the semantic meaning of two datasets.</li>
+            <li class="highlight">Parse a dataset into a Python data structure.</li>
             <li>Use a schema to convert a dataset to an alternate format.</li>
-            <li>Use a schema to convert a dataset to a dictionary of pandas <a href="https://pandas.pydata.org"><i class="fi-link"></i></a> data frames.</li>
-            <li>Generating UML diagrams of schemas.</li>
+            <li class="highlight">Use a schema to convert a dataset to a dictionary of pandas data frames <a href="https://pandas.pydata.org"><i class="fi-link"></i></a>.</li>
           </ul>
-          <p class="before-list">These tools are available through the user interfaces described below.</p>
         </div>
       </div>
 
