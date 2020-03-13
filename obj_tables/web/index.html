@@ -364,7 +364,7 @@
         </div>
         <div class="large-12 cell" style="margin-top: 1rem">
           <p><i>ObjTables</i> supports numerous datatypes, and it is easy to implement additional types.</p>
-          <p class="before-list">This includes powerful datatypes from several scientific packages:</p>
+          <p class="before-list">This includes powerful datatypes from several mathematics and science packages:</p>
           <ul>
             <li>BioPython <a href="https://biopython.org/"><i class="fi-link"></i></a>: sequence informations</li>
             <li>lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>: grammars for describing complex relationships</li>
@@ -374,9 +374,19 @@
             <li>sympy <a href="https://docs.sympy.org"><i class="fi-link"></i></a>: symbolic math</li>
             <li>uncertainties <a href="https://uncertainties-python-package.readthedocs.io"><i class="fi-link"></i></a>: values and their uncertainty</li>
           </ul>
-        </div>
 
-        <div class="large-12 cell">
+          <p>The following table lists the attribute types currently available in <i>ObjTables</i>. The first column indicates the names that should be used in conjunction with tabular schema format. The second column indicates the Python class which implements each type and which should be used to define schemas with the Python API. The third column indicates the data type used to encode each attribute into an Excel cell. The fourth column indicates the Python data used to represent each attribute.</p>
+
+          <p class="before-list">A few of the attributes have required arguments:</p>
+          <ul class="vertically-spaced-list">
+            <li><tt>Enum</tt> attribute: The first argument must be a subclass of <tt>enum.Enum</tt> or a list of valid values. For example, an enumerated attribute with two potential values 'A' and 'B' can be specified in the tabular schema format using the syntax <tt>Enum(['A', 'B'])</tt>.</li>
+            <li><tt>*To*</tt> attributes: The first argument must be a class or the name of a class. The constructor must also receive a keyword argument with the key <tt>related_name</tt> whose value is a string that represents the name of a virtual property that should be added to the related class to represent pointers from the related objects back to the primary objects. For example, an attribute with the name <tt>parents</tt> which represents a many-to-many relationship from a class <tt>Child</tt> that represents children to a class <tt>Parent</tt> that represents their parents and contains a virtual attribute <tt>children</tt> that represents the inverse many-to-many relationship can be specified in the tabular schema format using the syntax <tt>ManyToMany('Parent', related_name='children')</tt>.</li>
+          </ul>
+
+          <p>Each attribute also has optional arguments which can be used to control how values of the attribute are validated. For example, <tt>Integer</tt> and <tt>Float</tt> attributes have optional <tt>min</tt> and <tt>max</tt> arguments which can be used to indicate the minimum and maximum valid values. The <tt>String</tt> and <tt>LongString</tt> attributes have optional <tt>min_length</tt> and <tt>max_length</tt> attributes which can be used to indicate the minimum and maximum valid lengths of these attributes.</p>
+
+          <p>Please see the Python API documentation <a href="http://docs.karrlab.org/obj_tables/source/modules.html"><i class="fi-link"></i></a> for detailed information about these optional arguments.</p>
+
           <table>
             <thead class="data-type-title">
               <tr>
