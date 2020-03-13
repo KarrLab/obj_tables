@@ -75,7 +75,7 @@
           <ul>
             <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively (e.g. <tt>string(min_length=8)</tt>). More complex validations can be defined using a Python schema or by implementing custom types of attributes.</li>
             <li><b>Instance validation:</b> Users can implement custom instance-level validations by creating a Python module which implements a schema and implementing the <tt>validate</tt> methods of the classes.</li>
-            <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules which implement schemas can also capture tuples of attributes which must be unique across all instances of a class. See the documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information.</li>
+            <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules which implement schemas can also capture tuples of attributes which must be unique across all instances of a class. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Model.Meta"><i class="fi-link"></i></a> for more information.</li>
           </ul>
 
           <p class="before-list"><i>ObjTables</i> provides four user interfaces to the software tools:</p>
@@ -98,8 +98,7 @@
                 <ul>
                   <li><a href="#schema-formats">Formats for schemas</a></li>
                   <li><a href="#data-types">Data types</a></li>
-                  <li><a href="#dataset-tabular-format">Tabular format for datasets</a></li>
-                  <li><a href="#json-format">JSON and YAML formats for datasets</a></li>
+                  <li><a href="#dataset-formats">Formats for datasets</a></li>
                   <li><a href="#examples">Examples</a></li>
                 </ul>
               </li>
@@ -217,17 +216,17 @@
                 <li>Classes: Empty, or the name of the parent class. Because this is implemented using Python class inheritance, this must specify an acyclic inheritance graph.</li>
                 <li>Attributes: Name of the class that the attribute belongs to.</li>
               </ul></li>
-            <li><b><tt>!Format</tt></b>:
+            <li id="table-formats"><b><tt>!Format</tt></b>:
               <ul>
                 <li>Classes:
                   <ul>
                     <li><tt>row</tt>: Encode the instances of the class as rows.</li>
                     <li><tt>column</tt>: Encode the instances of the class as columns (i.e. transposed table).</li>
                     <li><tt>multiple_cells</tt>: Encode the instances of the class within a group of columns in the tables of the one-to-many and one-to-one related classes.</li>
-                    <li><tt>cell</tt>: Encode the instances of the class within columns of the related classes, optionally, using a grammar. See the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about working with grammars.</li>
+                    <li><tt>cell</tt>: Encode the instances of the class within columns of the related classes, optionally, using a grammar. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.grammar"><i class="fi-link"></i></a> for more information about working with grammars.</li>
                   </ul>
                 </li>
-                <li>Attributes: One of the data types listed below (e.g., <tt>String</tt>, <tt>Float</tt>). Arguments for the data types can be description in parenthesis (e.g., <tt>String(min_length=5)</tt>. The arguments enable users to customize how data types function and are validated. See the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information about the types and their arguments.</li>
+                <li>Attributes: One of the data types listed below (e.g., <tt>String</tt>, <tt>Float</tt>). Arguments for the data types can be description in parenthesis (e.g., <tt>String(min_length=5)</tt>. The arguments enable users to customize how data types function and are validated. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information about the types and their arguments.</li>
               </ul>
             </li>
             <li><b><tt>!Verbose name</tt></b> (Optional): Verbose name of the component.</li>
@@ -287,7 +286,7 @@
           <p>Schemas can also be implemented using the <i>ObjTables</i> Python API.</p>
           <ul class="vertically-spaced-list">
             <li>Each class should be implemented as a subclass of <tt>obj_tables.Model</tt>.</li>
-            <li>Each attribute of each class should be implemented as a class attribute whose value is an instance of a subclass of <tt>obj_tables.Attribute</tt>. Numerous subclasses of <tt>obj_tables.Attribute</tt> which support a wide range of data types are available. Please see below and the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information, including about the arguments of the constructors of these classes.
+            <li>Each attribute of each class should be implemented as a class attribute whose value is an instance of a subclass of <tt>obj_tables.Attribute</tt>. Numerous subclasses of <tt>obj_tables.Attribute</tt> which support a wide range of data types are available. Please see below and the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information, including about the arguments of the constructors of these classes.
               <ul>
                 <li>Each relationship between two classes should be implemented using the <tt>obj_tables.OneToOneAttribute</tt>, <tt>obj_tables.OneToManyAttribute</tt>, <tt>obj_tables.ManyToOneAttribute</tt>, or <tt>obj_tables.ManyToManyAttribute</tt> subclass.</li>
               </ul>
@@ -307,7 +306,7 @@
             </li>
           </ul>
 
-          <p>Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a> for more information.</p>
+          <p>Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information.</p>
 
           <h4>Example: Children, their parents, and their favorite video games</h4>
           <p>The following example illustrates a schema for encoding three classes of parents, children, and their favorite video games into two tables of parents and children, with the favorite games of the children embedded into a group of columns within the children table. The example is available in Python format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/children_fav_games/schema.py"><i class="fi-link"></i></a>.</p>
@@ -354,6 +353,13 @@
             <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/transactions/schema.py"><i class="fi-link"></i></a></li>
             <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_models/schema.py"><i class="fi-link"></i></a></li>
             <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.py"><i class="fi-link"></i></a></li>
+          </ul>
+
+          <h3>Encoding multiple classes into a single table</h3>
+          <p class="before-list">To encode complex datasets into a minimal number of tables, related classes can be encoded into a column or series of columns of the table that represents their parent classes.</p>
+          <ul class="vertically-spaced-list">
+            <li><b>Classes related by *-to-one attributes:</b> For <tt>row</tt>-formatted classes, classes related by *-to-one attributes can be encoded into a series of consecutive columns by setting the formats of the related classes to <tt>multiple_cells</tt> in the schema. When this feature is used, tables must include an additional row of column headings which indicates the groups of columns. For <tt>column</tt>-formatted classes, classes related by *-to-one attributes can be encoded into a series of consecutive rows by setting the formats of the related classes to <tt>multiple_cells</tt> in the schema. When this feature is used, tables must include an additional column of row headings which indicates the groups of columns.</li>
+            <li><b>Classes related by a <tt>ToManyGrammar</tt> attribute:</b> For <tt>row</tt>-formatted classes, such related classes can be encoded into a column by setting the formats of the related classes to <tt>cell</tt> in the schema. For <tt>column</tt>-formatted classes, such related classes can be encoded into a row by setting the formats of the related classes to <tt>cell</tt>.</li>
           </ul>
         </div>
       </div>
@@ -440,16 +446,16 @@
               <tr><th colspan="4">Relationships</th></tr>
             </thead>
             <tbody class="data-type-section">
-              <tr><td>OneToOne</td><td>obj_tables.OneToOneAttribute</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td>OneToOne</td><td>obj_tables.OneToOneAttribute</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.OneToOneAttribute"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">One-to-one relationship</td></tr>
 
-              <tr><td>OneToMany</td><td>obj_tables.OneToManyAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td>OneToMany</td><td>obj_tables.OneToManyAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.OneToManyAttribute"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">One-to-many relationship</td></tr>
 
-              <tr><td>ManyToOne</td><td>obj_tables.ManyToOneAttribute</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td>ManyToOne</td><td>obj_tables.ManyToOneAttribute</td><td>String</td><td><tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.ManyToOneAttribute"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">Many-to-one relationship</td></tr>
 
-              <tr><td>ManyToMany</td><td>obj_tables.ManyToManyAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td>ManyToMany</td><td>obj_tables.ManyToManyAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.ManyToManyAttribute"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">Many-to-many relationship</td></tr>
             </tbody>
 
@@ -457,8 +463,8 @@
               <tr><th colspan="4"></th></tr>
               <tr><th colspan="4">Grammars for domain-specific languages for encoding data and relationships into an individual cell in a table</th></tr>
             </thead>
-              <tr><td>grammar.ToManyGrammar</td><td>obj_tables.grammar.ToManyGrammarAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
-              <tr><td colspan="4">*-to-many relationship serialized/deserialized using a custom grammar</td></tr>
+              <tr><td>grammar.ToManyGrammar</td><td>obj_tables.grammar.ToManyGrammarAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.Model</tt> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.grammar.ToManyGrammarAttribute"><i class="fi-link"></i></a></td></tr>
+              <tr><td colspan="4">*-to-many relationship serialized/deserialized using a custom grammar.</td></tr>
             </tbody>
 
             <thead class="data-type-section-head">
@@ -505,10 +511,10 @@
               <tr><td>sci.Dois</td><td>obj_tables.sci.DoisAttribute</td><td>String</td><td><tt>list</tt> of <tt>str</tt></td></tr>
               <tr><td colspan="4">List of Digital Object Identifiers</td></tr>
 
-              <tr><td>sci.Identifier</td><td>obj_tables.sci.IdentifierAttribute</td><td>String</td><td><tt>obj_tables.sci.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td>sci.Identifier</td><td>obj_tables.sci.IdentifierAttribute</td><td>String</td><td><tt>obj_tables.sci.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.sci.IdentifierAttribute"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">An identifier in a namespace registered with Identifiers.org</td></tr>
 
-              <tr><td>sci.Identifiers</td><td>obj_tables.sci.IdentifiersAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.sci.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables"><i class="fi-link"></i></a></td></tr>
+              <tr><td>sci.Identifiers</td><td>obj_tables.sci.IdentifiersAttribute</td><td>String</td><td><tt>list</tt> of <tt>obj_tables.sci.Identifer</tt> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.sci.IdentifierAttribute"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">List of identifiers in namespaces registered with Identifiers.org</td></tr>
 
               <tr><td>sci.OntoTerm</td><td>obj_tables.sci.OntoTermAttribute</td><td>String</td><td><tt>pronto.Term</tt> <a href="https://pronto.readthedocs.io/en/latest/pronto/pronto.Term.html"><i class="fi-link"></i></a></td></tr>
@@ -562,65 +568,141 @@
           <p class="before-list">A few of the attributes have required arguments:</p>
           <ul class="vertically-spaced-list">
             <li><tt>Enum</tt> attribute: The first argument must be a subclass of <tt>enum.Enum</tt> or a list of valid values. For example, an enumerated attribute with two potential values 'A' and 'B' can be specified in the tabular schema format using the syntax <tt>Enum(['A', 'B'])</tt>.</li>
+
             <li><tt>*To*</tt> attributes: The first argument must be a class or the name of a class. The constructor must also receive a keyword argument with the key <tt>related_name</tt> whose value is a string that represents the name of a virtual property that should be added to the related class to represent pointers from the related objects back to the primary objects. For example, an attribute with the name <tt>parents</tt> which represents a many-to-many relationship from a class <tt>Child</tt> that represents children to a class <tt>Parent</tt> that represents their parents and contains a virtual attribute <tt>children</tt> that represents the inverse many-to-many relationship can be specified in the tabular schema format using the syntax <tt>ManyToMany('Parent', related_name='children')</tt>.</li>
+
+            <li><tt>ToManyGrammar</tt> attributes: The first argument must be a class or the name of a class. The constructor must also receive a keyword argument with the key <tt>grammar</tt> whose argument is a string that defines the grammar or is the path to a file which defines the grammar. The grammar must be defined using Lark's EBNF syntax. In addition, Python developers can customize how data encoded into a grammar is transformed into class instances and attributes by (1) creating a subclass of <tt>obj_tables.ToManyGrammar</tt> and (2) setting its <tt>Transformer</tt> attribute to a subclass of <tt>obj_tables.ToManyGrammarTransformer</tt>. Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.grammar"><i class="fi-link"></i></a> for more information.</li>
           </ul>
 
           <h3>Optional arguments</h3>
           <p>Each attribute also has optional arguments which can be used to control how values of the attribute are validated. For example, <tt>Integer</tt> and <tt>Float</tt> attributes have optional <tt>min</tt> and <tt>max</tt> arguments which can be used to indicate the minimum and maximum valid values. The <tt>String</tt> and <tt>LongString</tt> attributes have optional <tt>min_length</tt> and <tt>max_length</tt> attributes which can be used to indicate the minimum and maximum valid lengths of these attributes.</p>
 
           <h3>More information about the arguments</h3>
-          <p>Please see the Python API documentation <a href="http://docs.karrlab.org/obj_tables/source/modules.html"><i class="fi-link"></i></a> for detailed information about these required and optional arguments.</p>
+          <p>Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for detailed information about these required and optional arguments.</p>
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x orange" id="dataset-formats">
+        <div class="large-12 cell">
+          <h2>Formats for datasets</h2>
+        </div>
+        <div class="large-12 cell" style="margin-top: 1rem">
+          <p class="before-list"><i>ObjTables</i> can encode and decode datasets into and from the file formats outlined below. We recommend using Excel for viewing and editing datasets. We recommend using CSV or TSV to store datasets because these formats are conducive to revisioning with version control systems such as Git. We recommend using JSON for working with <i>ObjTables</i> in other programming languages beyond Python.</p>
+
+          <ul class="vertically-spaced-list">
+            <li><b>Tabular formats:</b> Collections of tables in comma-separated (CSV), tab-separated (TSV), or Excel format.
+              <ul class="vertically-spaced-list">
+                <li><b>Set of CSV or TSV files (<tt>.csv</tt>, <tt>.tsv</tt>)</b>
+                  <ul>
+                    <li>Each tabular file represents the instances of a class (and possibly related instances of other classes).</li>
+                    <li>The names of the files should follow the pattern <tt>*.{csv,tsv}</tt> (e.g., <tt>Name.csv</tt>).
+                    <li>As described below, the table in each file should be proceeded by a line that begins with <tt>!!ObjTables id="TableName" ...</tt> that declares that <i>ObjTables</i> should process the table in the file and contains metadata about the following table.</li>
+                    <li><i>ObjTables</i> ignores files which do not contain this declaration.  This can be used to store additional metadata alongside a dataset.</li>
+                    <li>Sets of CSV and TSV files can be uploaded to the web application above as a zip archive.</li>
+                  </ul>
+                </li>
+
+                <li><b>Single text file which contains multiple CSV or TSV-formatted tables (<tt>.multi.csv</tt>, <tt>.multi.tsv</tt>)</b>
+                  <ul>
+                    <li>This format is similar to a set of CSV or TSV files, except the tables are concatenated into a single file.</li>
+                    <li>The beginning of each table (and the end of the previous table) is indicated by the <tt>!!ObjTables id="TableName" ...</tt> statements.</li>
+                  </ul>
+                </li>
+
+                <li><b>Excel workbook (<tt>.xlsx</tt>)</b>
+                  <ul>
+                    <li>This format is also similar to a set of CSV or TSV files, except each table is contained in a worksheet in the workbook rather than in a separate text file.</li>
+                    <li>The names of the worksheets should be <tt>!!</tt> followed by the name of a class in the schema (e.g., <tt>!!Name</tt>).</li>
+                    <li>Optionally, workbooks can include a table of contents worksheet that summarizes and provides hyperlinks to the data tables.</li>
+                    <li>Optionally, workbooks can include a worksheet that describes the schema of the dataset.</li>
+                    <li>The <i>ObjTables</i> software tools can generate these optional table of contents and schema worksheets.</li>
+                    <li>Workbooks can contain additional worksheets whose names do not begin with <tt>!!</tt>. These worksheets will be ignored by <i>ObjTables</i>. This can be used to store additional metadata alongside a dataset.</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><b>Data serialization formats:</b> Serialization of <i>ObjTables</i>' internal data structures. See below <a href="#parsing-in-other-languages"><i class="fi-arrow-down"></i></a> for more information about using these formats in other languages.
+              <ul class="vertically-spaced-list">
+                <li><b>JavaScript Object Notation (<tt>.json</tt>)</b></li>
+                <li><b>YAML Ain't Markup Language (<tt>.yml</tt>)</b></li>
+              </ul>
+            </li>
+          </ul>
         </div>
       </div>
 
       <div class="grid-x grid-padding-x orange" id="dataset-tabular-format">
         <div class="large-12 cell">
           <h2>Tabular format for datasets</h2>
+        </div>
+        <div class="large-12 cell" style="margin-top: 1rem">
+          <h3>Dataset/document declaration: declaring that a collection of tables is encoded in <i>ObjTables</i>' tablular format</h3>
+          <p>Each collection of tables must declare that the tables are encoded in <i>ObjTables</i>'s tabular format by including the line <tt>!!!ObjTables ...</tt> before one of the tables.</p>
 
-          <h3>File formats</h3>
-          <p class="before-list"><i>ObjTables</i> supports three formats for collections of tables, or datasets:</p>
+          <h3>Dataset/document-level metdata</h3>
+          <p class="before-list">Optionally, document declarations can capture key-value pairs of document-level metadata. Each key and value should be a string. At a minimum, we recommend using the following keys:
+          </p>
           <ul class="vertically-spaced-list">
-            <li><b>Excel workbook (.xlsx):</b> Each worksheet contains a table which encodes the instances of a class. The names of the worksheets should be <tt>!!</tt> followed by the name of a class in the schema (e.g., <tt>!!Name</tt>).</li>
-            <li><b>Set of CSV or TSV files (*.csv, *.tsv):</b> Each file contains a table which encodes the instances of a class. The names of the files should follow the pattern <tt>dir/*.csv</tt> (e.g., <tt>Doc/Name.tsv</tt>). Sets of CSV and TSV files can be uploaded to this server as a zip archive.</li>
-            <li><b>Single text file with multiple CSV or TSV-formatted tables (.multi.csv, .multi.tsv):</b> A single text file which contains multiple CSV or TSV-formatted tables that each encode the instances of a class. As described below, the beginning of each table (and the end of the previous table) is indicated by a line that begins with <tt>!!ObjTables id="TableName" ...</tt> and which contains metadata about the following table.</li>
+            <li><tt>id</tt>: Use this key to provide a unique identifier for the dataset.</li>
+            <li><tt>schema</tt>: Use this key to annotate the name of the schema of the dataset. If this key is set, <i>ObjTables</i> will check that its value matches the name of the schema used to interpret the dataset.</li>
+            <li><tt>date</tt>: Use this key to annotate the date that the dataset was created or updated.</li>
+            <li><tt>objTablesVersion</tt>: Use this key to indicate the version of the <i>ObjTables</i> tabular format used to encode the dataset.</li>
           </ul>
 
-          <p>The <i>ObjTables</i> software tools can also encode and decode datasets into and from JSON and YAML documents. These formats can be useful for working with <i>ObjTables</i> datasets in other languages. See below for more information about this format <a href="#json-format"><i class="fi-arrow-down"></i></a> and using it to decode JSON and YAML-encoded datasets in other languages <a href="#parsing-in-other-languages"><i class="fi-arrow-down"></i></a>.</p>
+          <h3>Class/table declaration: declaring the class represented by each table</h3>
+          <p>Each table must declare the class that it represents by including a line that begins with <tt>!!ObjTables type='Data' id='&lt;class_name&gt;' ...</tt>). The value of <tt>id</tt> should be the name of a class in the schema.</p>
 
-          <h3>Document metdata</h3>
-          <p>The first row in each dataset must declare that the dataset is encoded in
-
-            describe the version of <i>ObjTables</i> used by the dataset. (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='&lt;class_name&gt;'</tt>).</p>
-
-          <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='class_id' name='Class name' description='Class description'</tt>).</p>
-
-          <h3>Class metdata</h3>
-          <p>The first row in each table must describe the version of <i>ObjTables</i> used by the table and the class which the table represents (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='&lt;class_name&gt;'</tt>).</p>
-
-          <p>Optionally, the first row can contain additional key-value pairs which represent additional metadata such as a description of the table and the date when the table was updated (e.g., <tt>!!ObjTables objTablesVersion='0.0.8' tableFormat='row' id='class_id' name='Class name' description='Class description'</tt>).</p>
-
-          <h3>Class instances (rows) and attributes (columns)</h3>
-          <p>The attributes of each class are represented by the columns of its table, each instance of each class is represented as a row in a table, and the attributes of each instance are encoded into the cells in tables. The first rows in the table should define the attributes represented by each column; each cell should contain a <tt>!</tt> followed by the name an attribute in the schema (e.g., <tt>!Id</tt>).</p>
-
-          <h3>Encoding multiple classes in a single table</h3>
-          <p class="before-list">To help users encode complex relationships into a minimal number of tables, relationships between classes can be encoded into groups of columns and individual cells.</p>
+          <h3>Class/table-level metdata</h3>
+          <p class="before-list"></p>
+          <p class="before-list">Optionally, table declarations can capture key-value pairs of class/table-level metadata. Each key and value should be a string. At a minimum, we recommend using the following keys:
           <ul class="vertically-spaced-list">
-            <li><b>Encoding *-to-one related data into groups of columns:</b> *-to-one relationships to other instances of classes can be encoded into a series of consecutive columns by setting the formats of the related classes to <tt>multiple_cells</tt> in the schema. When this feature is used, tables must include an additional row of column headings which indicates the groups of columns.</li>
-            <li><b>Encoding *-to-many related data into individual columns:</b> *-to-many relationships to other instance of classes can be encoded into a single column by setting the formats of the related classes to <tt>cell</tt> and defining a grammar for serializing and deserializing the related instances to/from strings which can be written to and read from individual cells. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+            <li><tt>schema</tt>: Use this key to annotate the name of the schema of the table. If this key is set, <i>ObjTables</i> will check that its value matches the name of the schema used to interpret the table.</li>
+            <li><tt>tableFormat</tt>: Use this key to indicate the format (<tt>row</tt>, <tt>column</tt>, <tt>multiple_cells</tt>, or <tt>cell</tt>) used to encode the class into the table. See above <a href="#table-formats"><i class="fi-arrow-up"></i></a> for more information about these formats. If this key is set, <i>ObjTables</i> will check that its value matches the format for the class defined in the schema.</li>
+            <li><tt>name</tt>: Use this key to briefly describe the instances of the class.</li>
+            <li><tt>description</tt>: Use this key to capture an extended description of the instances of the class.</li>
+            <li><tt>date</tt>: Use this key to annotate the date that the table was created or updated.</li>
+            <li><tt>objTablesVersion</tt>: Use this key to indicate the version of the <i>ObjTables</i> tabular format used to encode the class.</li>
           </ul>
 
-          <h3>Encoding classes into transposed tables</h3>
-          <p>Optionally, a class can be encoded into a transposed table in which the columns represent instances of the class and the rows represent attributes of the class. This feature is useful for classes which are intended to only have a single instance. Classes can be encoded into transposed tables by setting their format to <tt>column</tt> rather than <tt>row</tt>.</p>
+          <h3>Class attribute declaration: declaring the attribute represented by each entry of each table</h3>
+          <p class="before-list"></p>
+          <ul class="vertically-spaced-list">
+            <li><tt>row</tt>-formatted classes: After the class/table declaration, the cells in the first row of the table should declare the attributes represented by each column. Each cell should begin with <tt>!</tt> followed by the name of the attribute as defined in the schema (e.g., <tt>!Id</tt>).</li>
+            <li><tt>column</tt>-formatted classes: Similarly, after the class declaration, the cells in the first column of the table should declare the attributes represented by each row.</li>
+            <li><tt>multiple_cells</tt>-formatted classes: After the declaration of the table of the parent class, the cells in the second row/column of the table should declare the attributes represented by each range of columns/rows.</li>
+          </ul>
 
-          <h3>Comments</h3>
-          <p>Comments about individual class instances can be encoded by inserting rows whose first cell begins with <tt>%/</tt> and ends with <tt>/%</tt>.</p>
+          <h3>Class instances</h3>
+          <p class="before-list">Class instances should be encoded into tables as follows:</p>
+          <ul class="vertically-spaced-list">
+            <li><tt>row</tt>-formatted classes: Each instance should be encoded into a row of the table.</li>
+            <li><tt>column</tt>-formatted classes: Each instance should be encoded into a column of the table.</li>
+            <li><tt>multiple_cells</tt>-formatted classes: Each instance should be encoded into a range of cells within the row/column of its parent instance.</li>
+            <li><tt>cell</tt>-formatted classes: Each instance should be encoded into a cell in the row/column of its parent instance.</li>
+          </ul>
 
-          <h3>Additional tables, rows, and columns outside the scope of schemas</h3>
-          <p>Sets of tables that encode datasets can include additional tables. Tables that are outside the scope of the schema must have names which do not not begin with an <tt>!</tt>.</p>
+          <h3>Attributes of class instances</h3>
+          <p class="before-list">The value of each attribute of each instance should be encoded into cells as follows:</p>
+          <ul class="vertically-spaced-list">
+            <li><b>Non-relational attributes:</b> Each value should be serialized into a Boolean, number, or string that can be deserialized by the attribute's <tt>deserialize</tt> method. For example, dates can be deserialized into the format <tt>YYYY-MM-DD</tt> and times can be serialized into the format <tt>hh:mm:ss</tt>. Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information about how to serialize each attribute.</li>
+            <li><b>Relational (*-to-one) attributes:</b> Each value should be represented by the serialized value of the primary attribute of the related instance. For example, a value of an attribute which is an instance of a class <tt>CreditCard</tt> which has a primary attribute <tt>number</tt> should be serialized to the number of the credit card.</li>
+            <li><b>Relational (*-to-many) attributes:</b> Each value should be represented as a commana-separated list of the serialized value sof the primary attributes of the related instances. For example, a value of an attribute which is a list of instances of <tt>CreditCard</tt> should be serialized to a comma-separated list of the numbers of the credit cards.</li>
+          </ul>
 
-          <p>Tables can include additional columns. Columns that are outside of the scope of the schema must have names which do not begin with an <tt>!</tt>.</p>
+          <h3>Comments about instances of classes</h3>
+          <p class="before-list">Comments about individual class instances can be encoded as follows:
+            <ul class="vertically-spaced-list">
+              <li><tt>row</tt>-formatted classes: Comments can be encoded as rows with a single cell in the first column which begins with <tt>%/</tt> and ends with <tt>/%</tt>. Comments should be placed above the instance that the comment applies to.</li>
+              <li><tt>column</tt>-formatted classes: Comments can similarly be encoded as columns with a single cell that begins with <tt>%/</tt> and ends with <tt>/%</tt>.</li>
+            </ul>
+          </p>
 
-          <p>Tables can include additional empty rows and rows with comments. Rows that contain comments must begin with <tt>%/</tt> and end with <tt>/%</tt>. Comments will be associated with the next data row, except for comments which are below the final row which will be associated to the final row.</p>
+          <h3>Additional tables, rows, and columns not in the schema</h3>
+          <p>Sets of tables that encode datasets can include additional tables, rows, and columns. This can be used to encapsulate additional metadata alongside datasets.</p>
+          <ul>
+            <li><b>Additional tables:</b> <i>ObjTables</i> ignores tabular files or worksheets which do not contain class/table declarations. <i>ObjTables</i> also ignores worksheets whose names do not begin with <tt>!!</tt>.</li>
+            <li><b>Additional columns (<tt>row</tt>-formatted tables) / rows (<tt>column</tt>-formatted tables):</b> For <tt>row</tt>-formatted tables, <i>ObjTables</i> ignores columns whose headings do not begin with <tt>!</tt>. For <tt>column</tt>-formatted tables, <i>ObjTables</i> ignores rows whose headings do not begin with <tt>!</tt>.
+          </ul>
 
           <h3>Examples</h3>
           <p>The following example illustrates how to encode parents, children, and their favorite video games into two tables according to the example schema below. The FavoriteVideoGame class enables information about the favorite game of each child to be encapsulated into a group of columns within the Child table. The FavoriteVideoGame class also enables the Python representation of the data to encapsulate information about the favorite game of each child into a separate class. This helps make tables and Python code more human-readable.</p>
@@ -721,7 +803,7 @@
       <a name="yaml-format"></a>
       <div class="grid-x grid-padding-x blue">
         <div class="large-12 cell">
-          <h2>JSON and YAML formats for datasets</h2>
+          <h2>JSON/YAML format for datasets</h2>
         </div>
         <div class="large-12 cell" style="margin-top: 1rem">
           <p class="before-list">To make it easy to use <i>ObjTables</i> with a wide range of programming languages, <i>ObjTables</i> can encode datasets into JSON or YAML documents which can easily be parsed by a wide range of languages. <i>ObjTables</i> encodes datasets into JSON or YAML as described and illustrated below.
@@ -995,7 +1077,12 @@
           </ul>
           <p class="before-list">These tools are available through the user interfaces described below.</p>
         </div>
+      </div>
 
+      <div class="grid-x grid-padding-x blue" id="interfaces">
+        <div class="large-12 cell">
+          <h2>User interfaces</h2>
+        </div>
         <div class="large-4 cell">
           <h3>Web app</h3>
           A web app is available above <a href="#app"><i class="fi-arrow-up"></i></a>.
@@ -1145,13 +1232,13 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue" id="help">
+      <div class="grid-x grid-padding-x orange" id="help">
         <div class="large-12 cell">
           <h2>Examples, tutorials, documentation, and help</h2>
         </div>
         <div class="large-6 cell">
           <h3>Installation instructions for the CLI interface and Python API</h3>
-          Installation instructions for the command line program and Python API are available at docs.karrlab.org <a href="http://docs.karrlab.org/obj_tables/installation.html"><i class="fi-link"></i></a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
+          Installation instructions for the command line program and Python API are available at docs.karrlab.org <a href="https://docs.karrlab.org/obj_tables/installation.html"><i class="fi-link"></i></a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
         </div>
         <div class="large-6 cell">
           <h3>Examples</h3>
@@ -1183,7 +1270,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x orange" id="other-resources">
+      <div class="grid-x grid-padding-x blue" id="other-resources">
         <div class="large-12 cell">
           <h2>Useful related resources for working with <i>ObjTables</i></h2>
         </div>
@@ -1201,7 +1288,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x blue" id="contribute">
+      <div class="grid-x grid-padding-x orange" id="contribute">
         <div class="large-12 cell">
           <h2>Contributing to <i>ObjTables</i></h2>
         </div>
@@ -1210,7 +1297,7 @@ obj_tables.io.Writer().run(filename, objects,
         </div>
       </div>
 
-      <div class="grid-x grid-padding-x orange" id="about">
+      <div class="grid-x grid-padding-x blue" id="about">
         <div class="large-12 cell">
           <h2>About <i>ObjTables</i></h2>
         </div>
