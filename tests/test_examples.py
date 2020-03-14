@@ -128,7 +128,7 @@ class ExamplesTestCase(unittest.TestCase):
         os.remove(xlsx_filename)
 
     def test_biochemical_model_example(self):
-        dirname = 'examples/biochemical_models'
+        dirname = 'examples/biochemical_model'
         schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
         data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
 
@@ -213,7 +213,7 @@ class ExamplesTestCase(unittest.TestCase):
     def test_other_examples(self):
         dirnames = [
             'examples/financial_transactions',
-            'examples/biochemical_models',
+            'examples/biochemical_model',
         ]
         for dirname in dirnames:
             schema_filename_csv = os.path.join(dirname, 'schema.csv')
