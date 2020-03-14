@@ -716,7 +716,7 @@
           </ul>
 
           <h3>Examples</h3>
-          <h4>Example: Address book</h4>
+          <h4 id="example-tabular-dataset">Example: Address book</h4>
           <p>The following example illustrates an address book of the CEOs of several major technology companies, the companies that the lead, and their address. The example is encoded into the schema outlined above <a href="#example-tabular-schema"><i class="fi-arrow-up"></i></a>. To capture this information with a minimal number of tables, each CEO and company's address is encoded into a range of cells within the row/column which represents each CEO and each company. This makes the tables human-readable and enables Python to encapsulate related information into separate objects. The example is available in TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema_and_data.multi.tsv"><i class="fi-link"></i></a>.</p>
 
           <div class="example-tabular-dataset">
@@ -1075,86 +1075,102 @@
         </div>
         <div class="large-12 cell" id="python">
           <h3>Python API</h3>
-          <p>A Python API is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>. As described above, the Python API has significantly more capabilities than the web application, REST API, and command line program. The following example provides an introduction to the API by illustrating how to use the API to programmatically create, manipulate, analyze, and export the same dataset of children, their parents, and their favorite video games described above. A more comprehensive interactive tutorial is available at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.</p>
+          <p>A Python API is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>. As described above, the Python API has significantly more capabilities than the web application, REST API, and command line program.</p>
 
-          <h4>Importing Python modules which implement schemas</h4>
-          <pre>import children_fav_games</pre>
+          <p>The following example briefly introduces the API by illustrating how to use the API to programmatically create, manipulate, analyze, and export the same address book of tech CEOs described above <a href="#example-tabular-dataset"><i class="fi-arrow-up"></i></a>. Additional tutorials are available at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.</p>
 
-          <h4>Creating datasets</h4>
-          <pre><b># Create parents</b>
-jane_doe = children_fav_games.Parent(id='jane_doe', name='Jane Doe')
-john_doe = children_fav_games.Parent(id='john_doe', name='John Doe')
-mary_roe = children_fav_games.Parent(id='mary_roe', name='Mary Roe')
-richard_roe = children_fav_games.Parent(id='richard_roe', name='Richard Roe')
+          <h4>Import schema</h4>
+          <pre><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">schema</span> <span style="color: #008000; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">address_book</span>
+PersonType <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person<span style="color: #666666">.</span>type<span style="color: #666666">.</span>enum_class</pre>
 
-<b># Create children</b>
-jamie_doe = children_fav_games.Child(id='jamie_doe',
-                                   name='Jamie Doe',
-                                   gender=children_fav_games.Child.gender.enum_class.female,
-                                   parents=[jane_doe, john_doe])
-jamie_doe.favorite_video_game = children_fav_games.Game(name='Legend of Zelda: Ocarina of Time',
-                                                      publisher='Nintendo',
-                                                      year=1998)
+          <h4>Create companies</h4>
+          <pre>apple <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Company(name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Apple&#39;</span>,
+                             url<span style="color: #666666">=</span><span style="color: #BA2121">&#39;https://www.apple.com/&#39;</span>,
+                             address<span style="color: #666666">=</span>address_book<span style="color: #666666">.</span>Address(street<span style="color: #666666">=</span><span style="color: #BA2121">&#39;10600 N Tantau Ave&#39;</span>,
+                                                          city<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Cupertino&#39;</span>,
+                                                          state<span style="color: #666666">=</span><span style="color: #BA2121">&#39;CA&#39;</span>,
+                                                          zip_code<span style="color: #666666">=</span><span style="color: #BA2121">&#39;95014&#39;</span>,
+                                                          country<span style="color: #666666">=</span><span style="color: #BA2121">&#39;US&#39;</span>))
+facebook <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Company(name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Facebook&#39;</span>,
+                                url<span style="color: #666666">=</span><span style="color: #BA2121">&#39;https://www.facebook.com/&#39;</span>,
+                                address<span style="color: #666666">=</span>address_book<span style="color: #666666">.</span>Address(street<span style="color: #666666">=</span><span style="color: #BA2121">&#39;1 Hacker Way #15&#39;</span>,
+                                                             city<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Menlo Park&#39;</span>, state<span style="color: #666666">=</span><span style="color: #BA2121">&#39;CA&#39;</span>,
+                                                             zip_code<span style="color: #666666">=</span><span style="color: #BA2121">&#39;94025&#39;</span>,
+                                                             country<span style="color: #666666">=</span><span style="color: #BA2121">&#39;US&#39;</span>))
+google <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Company(name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Google&#39;</span>,
+                              url<span style="color: #666666">=</span><span style="color: #BA2121">&#39;https://www.google.com/&#39;</span>,
+                              address<span style="color: #666666">=</span>address_book<span style="color: #666666">.</span>Address(street<span style="color: #666666">=</span><span style="color: #BA2121">&#39;1600 Amphitheatre Pkwy&#39;</span>,
+                                                           city<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Mountain View&#39;</span>,
+                                                           state<span style="color: #666666">=</span><span style="color: #BA2121">&#39;CA&#39;</span>,
+                                                           zip_code<span style="color: #666666">=</span><span style="color: #BA2121">&#39;94043&#39;</span>,
+                                                           country<span style="color: #666666">=</span><span style="color: #BA2121">&#39;US&#39;</span>))
+netflix <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Company(name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Netflix&#39;</span>,
+                               url<span style="color: #666666">=</span><span style="color: #BA2121">&#39;https://www.netflix.com/&#39;</span>,
+                               address<span style="color: #666666">=</span>address_book<span style="color: #666666">.</span>Address(street<span style="color: #666666">=</span><span style="color: #BA2121">&#39;100 Winchester Cir&#39;</span>,
+                                                            city<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Los Gatos&#39;</span>,
+                                                            state<span style="color: #666666">=</span><span style="color: #BA2121">&#39;CA&#39;</span>,
+                                                            zip_code<span style="color: #666666">=</span><span style="color: #BA2121">&#39;95032&#39;</span>,
+                                                            country<span style="color: #666666">=</span><span style="color: #BA2121">&#39;US&#39;</span>))
+companies <span style="color: #666666">=</span> [apple, facebook, google, netflix]</pre>
 
-jimie_doe = children_fav_games.Child(id='jimie_doe',
-                                   name='Jimie Doe',
-                                   gender=children_fav_games.Child.gender.enum_class.male,
-                                   parents=[jane_doe, john_doe])
-jimie_doe.favorite_video_game = children_fav_games.Game(name='Super Mario Brothers',
-                                                      publisher='Nintendo',
-                                                      year=1985)
-linda_roe = children_fav_games.Child(id='linda_roe',
-                                   name='Linda Roe',
-                                   gender=children_fav_games.Child.gender.enum_class.female,
-                                   parents=[mary_roe, richard_roe])
-linda_roe.favorite_video_game = children_fav_games.Game(name='Sonic the Hedgehog',
-                                                      publisher='Sega',
-                                                      year=1991)
-mike_roe = children_fav_games.Child(id='mike_roe',
-                                  name='Michael Roe',
-                                  gender=children_fav_games.Child.gender.enum_class.male,
-                                  parents=[mary_roe, richard_roe])
-mike_roe.favorite_video_game = children_fav_games.Game(name='SimCity',
-                                                     publisher='Electronic Arts',
-                                                     year=1989)</pre>
+          <h4>Create CEOs</h4>
+          <pre>cook <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person(name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Tim Cook&#39;</span>,
+                           <span style="color: #008000">type</span><span style="color: #666666">=</span>PersonType<span style="color: #666666">.</span>business,
+                           company<span style="color: #666666">=</span>apple,
+                           email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;tcook@apple.com&#39;</span>,
+                           phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;408-996-1010&#39;</span>,
+                           address<span style="color: #666666">=</span>apple<span style="color: #666666">.</span>address)
+hastings <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person(name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Reed Hastings&#39;</span>,
+                               <span style="color: #008000">type</span><span style="color: #666666">=</span>PersonType<span style="color: #666666">.</span>business,
+                               company<span style="color: #666666">=</span>netflix,
+                               email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;reed.hastings@netflix.com&#39;</span>,
+                               phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;408-540-3700&#39;</span>,
+                               address<span style="color: #666666">=</span>netflix<span style="color: #666666">.</span>address)
+pichai <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person(name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Sundar Pichai&#39;</span>,
+                             <span style="color: #008000">type</span><span style="color: #666666">=</span>PersonType<span style="color: #666666">.</span>business,
+                             company<span style="color: #666666">=</span>google,
+                             email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;sundar@google.com&#39;</span>,
+                             phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;650-253-0000&#39;</span>,
+                             address<span style="color: #666666">=</span>google<span style="color: #666666">.</span>address)
+zuckerberg <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person(name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Mark Zuckerberg&#39;</span>,
+                                 <span style="color: #008000">type</span><span style="color: #666666">=</span>PersonType<span style="color: #666666">.</span>family,
+                                 company<span style="color: #666666">=</span>facebook,
+                                 email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;zuck@fb.com&#39;</span>,
+                                 phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;650-543-4800&#39;</span>,
+                                 address<span style="color: #666666">=</span>facebook<span style="color: #666666">.</span>address)
 
-          <h4>Querying datasets</h4>
-          <pre>mike_roe = mary_roe.children.get_one(id='mike_roe')
-mikes_parents = mike_roe.parents
-mikes_sisters = mikes_parents[0].children.get(gender=children_fav_games.Child.gender.enum_class.female)</pre>
+ceos <span style="color: #666666">=</span> [cook, hastings, pichai, zuckerberg]</pre>
 
-          <h4>Editing datasets</h4>
-          <pre>jamie_doe.favorite_video_game.name = 'Legend of Zelda'
-jamie_doe.favorite_video_game.year = 1986</pre>
+          <h4>Get a property of a company</h4>
+          <pre><span style="color: #008000; font-weight: bold">assert</span> facebook<span style="color: #666666">.</span>url <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;https://www.facebook.com/&#39;</span></pre>
 
-          <h4>Validating datasets</h4>
-          <pre>import obj_tables
+          <h4>Edit a property of a company</h4>
+          <pre>facebook<span style="color: #666666">.</span>url <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;https://about.fb.com/&#39;</span></pre>
 
-objects = [jane_doe, john_doe, mary_roe, richard_roe,
-           jamie_doe, jimie_doe, linda_roe, mike_roe]
-errors = obj_tables.Validator().run(objects)
-assert errors is None</pre>
+          <h4>Validate address book</h4>                
+          <pre><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables</span>
+errors <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>Validator()<span style="color: #666666">.</span>run(companies <span style="color: #666666">+</span> ceos)
+<span style="color: #008000; font-weight: bold">assert</span> errors <span style="color: #AA22FF; font-weight: bold">is</span> <span style="color: #008000">None</span></pre>
 
-          <h4>Parsing data from files</h4>
-          <pre>import obj_tables.io
+          <h4>Export address book to a file</h4>
+          <pre><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables.io</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">os</span>
+<span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">tempfile</span>
+dirname <span style="color: #666666">=</span> tempfile<span style="color: #666666">.</span>mkdtemp()
+filename_xlsx <span style="color: #666666">=</span> os<span style="color: #666666">.</span>path<span style="color: #666666">.</span>join(dirname, <span style="color: #BA2121">&#39;address_book.xlsx&#39;</span>)
+obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.</span>Writer()<span style="color: #666666">.</span>run(filename_xlsx, companies <span style="color: #666666">+</span> ceos,
+                           models<span style="color: #666666">=</span>[address_book<span style="color: #666666">.</span>Company, address_book<span style="color: #666666">.</span>Person])</pre>
 
-filename = 'examples/children_fav_games.xlsx'
-objects = obj_tables.io.Reader().run(filename,
-                                    models=[children_fav_games.Parent, children_fav_games.Child],
-                                    group_objects_by_model=True)
-parents = objects[children_fav_games.Parent]
-jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')</pre>
 
-          <h4>Exporting datasets to files</h4>
-          <pre>filename = 'examples/children_fav_games_copy.xlsx'
-objects = [jane_doe, john_doe, mary_roe, richard_roe,
-           jamie_doe, jimie_doe, linda_roe, mike_roe]
-obj_tables.io.Writer().run(filename, objects,
-                          models=[children_fav_games.Parent, children_fav_games.Child])</pre>
-
-          <h4>Analyzing datasets</h4>
-          <pre>assert jane_doe.is_equal(jane_doe_2)</pre>
-
+          <h4>Import address book from a file</h4>
+          <pre>objects <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.</span>Reader()<span style="color: #666666">.</span>run(filename_xlsx,
+                                     models<span style="color: #666666">=</span>[address_book<span style="color: #666666">.</span>Company, address_book<span style="color: #666666">.</span>Person],
+                                     group_objects_by_model<span style="color: #666666">=</span><span style="color: #008000">False</span>,
+                                     ignore_sheet_order<span style="color: #666666">=</span><span style="color: #008000">True</span>)</pre>
+        
+          <h4>Check if two CEOs are semantically equivalent</h4>
+          <pre>zuckerberg_copy <span style="color: #666666">=</span> <span style="color: #008000">next</span>(el <span style="color: #008000; font-weight: bold">for</span> el <span style="color: #AA22FF; font-weight: bold">in</span> objects <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">isinstance</span>(el, address_book<span style="color: #666666">.</span>Person) <span style="color: #AA22FF; font-weight: bold">and</span> el<span style="color: #666666">.</span>name <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;Mark Zuckerberg&#39;</span>)
+<span style="color: #008000; font-weight: bold">assert</span> zuckerberg_copy<span style="color: #666666">.</span>is_equal(zuckerberg)</pre>
         </div>
 
         <div class="large-12 cell" id="other-languages">

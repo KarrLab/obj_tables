@@ -18,115 +18,21 @@ import sys
 import tempfile
 import unittest
 
-sys.path.insert(0, 'examples')
-import decode_data
-
 
 class ExamplesTestCase(unittest.TestCase):
     def setUp(self):
+        sys.path.insert(0, 'examples')
+        sys.path.append('examples/address_book')
         self.dirname = tempfile.mkdtemp()
 
     def tearDown(self):
+        sys.path.remove('examples')
+        sys.path.remove('examples/address_book')
         shutil.rmtree(self.dirname)
 
-    def test_web_example(self):
-        schema_filename_tsv = 'examples/children_fav_games/schema.tsv'
-        schema_filename_py = 'examples/children_fav_games/schema.py'
-        data_filename = 'examples/children_fav_games/data.tsv/*.tsv'        
-
-        schema, _ = utils.init_schema(schema_filename_tsv, out_filename=schema_filename_py)
-        models = list(utils.get_models(schema).values())
-
-        io.Reader().run(data_filename,
-                        models=models,
-                        group_objects_by_model=False,
-                        ignore_sheet_order=True)
-
-        #########################
-        # import children_fav_games
-        children_fav_games = schema
-
-        #########################
-        # Create parents
-        jane_doe = children_fav_games.Parent(id='jane_doe', name='Jane Doe')
-        john_doe = children_fav_games.Parent(id='john_doe', name='John Doe')
-        mary_roe = children_fav_games.Parent(id='mary_roe', name='Mary Roe')
-        richard_roe = children_fav_games.Parent(id='richard_roe', name='Richard Roe')
-
-        # Create children
-        jamie_doe = children_fav_games.Child(id='jamie_doe',
-                                             name='Jamie Doe',
-                                             gender=children_fav_games.Child.gender.enum_class.female,
-                                             parents=[jane_doe, john_doe])
-        jamie_doe.favorite_video_game = children_fav_games.Game(name='Legend of Zelda: Ocarina of Time',
-                                                                publisher='Nintendo',
-                                                                year=1998)
-
-        jimie_doe = children_fav_games.Child(id='jimie_doe',
-                                             name='Jimie Doe',
-                                             gender=children_fav_games.Child.gender.enum_class.male,
-                                             parents=[jane_doe, john_doe])
-        jimie_doe.favorite_video_game = children_fav_games.Game(name='Super Mario Brothers',
-                                                                publisher='Nintendo',
-                                                                year=1985)
-        linda_roe = children_fav_games.Child(id='linda_roe',
-                                             name='Linda Roe',
-                                             gender=children_fav_games.Child.gender.enum_class.female,
-                                             parents=[mary_roe, richard_roe])
-        linda_roe.favorite_video_game = children_fav_games.Game(name='Sonic the Hedgehog',
-                                                                publisher='Sega',
-                                                                year=1991)
-        mike_roe = children_fav_games.Child(id='mike_roe',
-                                            name='Michael Roe',
-                                            gender=children_fav_games.Child.gender.enum_class.male,
-                                            parents=[mary_roe, richard_roe])
-        mike_roe.favorite_video_game = children_fav_games.Game(name='SimCity',
-                                                               publisher='Electronic Arts',
-                                                               year=1989)
-
-        #########################
-        mike_roe = mary_roe.children.get_one(id='mike_roe')
-        mikes_parents = mike_roe.parents
-        mikes_sisters = mikes_parents[0].children.get(gender=children_fav_games.Child.gender.enum_class.female)
-
-        #########################
-        jamie_doe.favorite_video_game.name = 'Legend of Zelda'
-        jamie_doe.favorite_video_game.year = 1986
-
-        #########################
-        import obj_tables
-
-        objects = [jane_doe, john_doe, mary_roe, richard_roe,
-                   jamie_doe, jimie_doe, linda_roe, mike_roe]
-        errors = obj_tables.Validator().run(objects)
-        assert errors is None
-
-        #########################
-        import obj_tables.io
-
-        data_filename_xlsx_2 = 'examples/children_fav_games/schema_and_data.xlsx'
-        objects = obj_tables.io.Reader().run(data_filename_xlsx_2,
-                                             models=[children_fav_games.Parent, children_fav_games.Child],
-                                             group_objects_by_model=True,
-                                             ignore_sheet_order=True)
-        parents = objects[children_fav_games.Parent]
-        jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')
-
-        #########################
-        data_filename_xlsx_2 = 'examples/children_fav_games/copy_of_schema_and_data.xlsx'
-        objects = [jane_doe, john_doe, mary_roe, richard_roe,
-                   jamie_doe, jimie_doe, linda_roe, mike_roe]
-        obj_tables.io.Writer().run(data_filename_xlsx_2, objects,
-                                   models=[children_fav_games.Parent, children_fav_games.Child],
-                                   write_toc=True,
-                                   write_schema=True)
-
-        #########################
-        assert jane_doe.is_equal(jane_doe_2)
-
-        #########################
-        # cleanup
-        os.remove(data_filename_xlsx_2)
+    def test_web_tutorial(self):
+        import tutorial
+        tutorial.run()
 
     def test_biochemical_model_example(self):
         dirname = 'examples/biochemical_model'
@@ -216,7 +122,7 @@ class ExamplesTestCase(unittest.TestCase):
             'examples/address_book',
             'examples/biochemical_model',
             'examples/children_fav_games',
-            'examples/financial_transactions',            
+            'examples/financial_transactions',
         ]
         for dirname in dirnames:
             schema_filename_csv = os.path.join(dirname, 'schema.csv')
@@ -284,6 +190,8 @@ class ExamplesTestCase(unittest.TestCase):
                 app.run()
 
     def test_decode_data(self):
+        import decode_data
+
         class Parent(core.Model):
             id = core.SlugAttribute()
             name = core.StringAttribute()
@@ -317,7 +225,7 @@ class ExamplesTestCase(unittest.TestCase):
         c2_b['parents'] = [p1_b]
         c3_b['parents'] = [p2_b]
 
-        self.assertEqual(sorted(decoded.keys()), ['Child', 'Parent', "_documentMetadata", "_classMetadata"])
+        self.assertEqual(sorted(decoded.keys()), ['Child', 'Parent', "_classMetadata", "_documentMetadata"])
         self.assertEqual(len(decoded['Parent']), 2)
         self.assertEqual(len(decoded['Child']), 3)
         parents_b = sorted(decoded['Parent'], key=lambda p: p['id'])
