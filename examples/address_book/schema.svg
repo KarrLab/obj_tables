@@ -124,7 +124,7 @@
 <text text-anchor="start" x="104.5" y="-87.8" font-family="Times,serif" font-size="14.00" fill="#000000">Company</text>
 <polygon fill="#ebffff" stroke="transparent" points=".5,-54 .5,-79 99.5,-79 99.5,-54 .5,-54"/>
 <polygon fill="none" stroke="#000000" points=".5,-54 .5,-79 99.5,-79 99.5,-54 .5,-54"/>
-<text text-anchor="start" x="12" y="-63.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">email_adress</text>
+<text text-anchor="start" x="8" y="-63.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">email_address</text>
 <polygon fill="#ebffff" stroke="transparent" points="99.5,-54 99.5,-79 163.5,-79 163.5,-54 99.5,-54"/>
 <polygon fill="none" stroke="#000000" points="99.5,-54 99.5,-79 163.5,-79 163.5,-54 99.5,-54"/>
 <text text-anchor="start" x="114.5" y="-62.8" font-family="Times,serif" font-size="14.00" fill="#000000">Email</text>

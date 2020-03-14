@@ -10,7 +10,7 @@ Person,Class,,row,Person,People,
 name,Attribute,Person,"String(primary=True, unique=True)",Name,,
 type,Attribute,Person,"Enum(['family', 'friend', 'business'])",Type,,
 company,Attribute,Person,"ManyToOne('Company', related_name='employees')",Company,,
-email_adress,Attribute,Person,Email,Email address,,
+email_address,Attribute,Person,Email,Email address,,
 phone_number,Attribute,Person,String,Phone number,,
 address,Attribute,Person,"OneToOne('Address', related_name='person')",Address,,
 

@@ -1,11 +1,11 @@
-!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:01:31'
-!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-03-14 13:01:31' objTablesVersion='0.0.8'		
+!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:19:04'
+!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'		
 !Table	!Description	!Number of objects
 Schema	Table/model and column/attribute definitions	
 Company		4
 People		4
 
-!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-14 13:01:31' objTablesVersion='0.0.8'						
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'						
 !Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural	!Description
 Company	Class		column	Company	Companies	
 address	Attribute	Company	OneToOne('Address', related_name='company')			
@@ -14,7 +14,7 @@ url	Attribute	Company	Url
 Person	Class		row	Person	People	
 address	Attribute	Person	OneToOne('Address', related_name='person')			
 company	Attribute	Person	ManyToOne('Company', related_name='employees')			
-email_adress	Attribute	Person	Email			
+email_address	Attribute	Person	Email			
 name	Attribute	Person	String(primary=True, unique=True)			
 phone_number	Attribute	Person	String			
 type	Attribute	Person	Enum([('family', 1), ('friend', 2), ('business', 3)])			
@@ -25,7 +25,7 @@ state	Attribute	Address	String
 street	Attribute	Address	String(primary=True, unique=True)			
 zip_code	Attribute	Address	String			
 
-!!ObjTables type='Data' tableFormat='column' id='Company' name='Companies' date='2020-03-14 13:01:31' objTablesVersion='0.0.8'					
+!!ObjTables type='Data' tableFormat='column' id='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'					
 	!Name	Apple	Facebook	Google	Netflix
 	!URL	https://www.apple.com/	https://www.facebook.com/	https://www.google.com/	https://www.netflix.com/
 !Address	!Street	10600 N Tantau Ave	1 Hacker Way #15	1600 Amphitheatre Pkwy	100 Winchester Cir
@@ -34,7 +34,7 @@ zip_code	Attribute	Address	String
 !Address	!Zip code	95014	94025	94043	95032
 !Address	!Country	US	US	US	US
 
-!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:01:31' objTablesVersion='0.0.8'									
+!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'									
 					!Address	!Address	!Address	!Address	!Address
 !Name	!Type	!Company	!Email address	!Phone number	!Street	!City	!State	!Zip code	!Country
 Mark Zuckerberg	family	Facebook	zuck@fb.com	650-543-4800	1 Hacker Way #15	Menlo Park	CA	94025	US

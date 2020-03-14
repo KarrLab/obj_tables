@@ -119,7 +119,7 @@ Person:
     __id: 4
     __type: Company
     name: Apple
-  email_adress: tcook@apple.com
+  email_address: tcook@apple.com
   name: Tim Cook
   phone_number: 408-996-1010
   type: business
@@ -133,7 +133,7 @@ Person:
     __id: 5
     __type: Company
     name: Facebook
-  email_adress: zuck@fb.com
+  email_address: zuck@fb.com
   name: Mark Zuckerberg
   phone_number: 650-543-4800
   type: family
@@ -147,7 +147,7 @@ Person:
     __id: 6
     __type: Company
     name: Google
-  email_adress: sundar@google.com
+  email_address: sundar@google.com
   name: Sundar Pichai
   phone_number: 650-253-0000
   type: business
@@ -161,7 +161,7 @@ Person:
     __id: 7
     __type: Company
     name: Netflix
-  email_adress: reed.hastings@netflix.com
+  email_address: reed.hastings@netflix.com
   name: Reed Hastings
   phone_number: 408-540-3700
   type: business
@@ -176,5 +176,5 @@ _classMetadata:
     id: Person
     name: People
 _documentMetadata:
-  date: '2020-03-14 13:01:31'
+  date: '2020-03-14 13:19:04'
   objTablesVersion: 0.0.8
