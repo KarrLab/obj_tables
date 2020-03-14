@@ -4780,6 +4780,23 @@ class UrlAttribute(RegexAttribute):
                                            verbose_name=verbose_name, description=description,
                                            primary=primary, unique=unique)
 
+    def _get_tabular_schema_format(self):
+        """ Generate a string which represents the format of the attribute for use
+        in tabular-formatted schemas
+
+        Returns:
+            :obj:`str`: string which represents the format of the attribute for use
+                in tabular-formatted schemas
+        """
+        args = []
+        if self.primary:
+            args.append('primary=True')
+        if self.unique:
+            args.append('unique=True')
+
+        return "{}{}".format(self.__class__.__name__.rpartition('Attribute')[0],
+                               "({})".format(", ".join(args)) if args else "")
+
 
 class EmailAttribute(StringAttribute):
     """ Attribute for email addresses """
