@@ -1730,7 +1730,7 @@ class WorkbookReader(ReaderBase):
         assert model_metadata['type'] == DOC_TABLE_TYPE, \
             "Type '{}' must be '{}'.".format(model_metadata['type'], DOC_TABLE_TYPE)
         assert 'tableFormat' not in model_metadata or model_metadata['tableFormat'] == model.Meta.table_format.name, \
-            "Table format must be undefined or '{}'.".format(model.Meta.table_format.name, model_metadata['tableFormat'])
+            "Format of table '{}' must be undefined or '{}'.".format(model.Meta.verbose_name_plural, model.Meta.table_format.name)
 
         if len(data) < num_column_heading_rows:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(

@@ -1,0 +1,180 @@
+Address:
+- __id: 0
+  __type: Address
+  city: Cupertino
+  company:
+    __id: 4
+    __type: Company
+    name: Apple
+  country: US
+  person:
+    __id: 8
+    __type: Person
+    name: Tim Cook
+  state: CA
+  street: 10600 N Tantau Ave
+  zip_code: '95014'
+- __id: 1
+  __type: Address
+  city: Menlo Park
+  company:
+    __id: 5
+    __type: Company
+    name: Facebook
+  country: US
+  person:
+    __id: 9
+    __type: Person
+    name: Mark Zuckerberg
+  state: CA
+  street: '1 Hacker Way #15'
+  zip_code: '94025'
+- __id: 2
+  __type: Address
+  city: Mountain View
+  company:
+    __id: 6
+    __type: Company
+    name: Google
+  country: US
+  person:
+    __id: 10
+    __type: Person
+    name: Sundar Pichai
+  state: CA
+  street: 1600 Amphitheatre Pkwy
+  zip_code: '94043'
+- __id: 3
+  __type: Address
+  city: Los Gatos
+  company:
+    __id: 7
+    __type: Company
+    name: Netflix
+  country: US
+  person:
+    __id: 11
+    __type: Person
+    name: Reed Hastings
+  state: CA
+  street: 100 Winchester Cir
+  zip_code: '95032'
+Company:
+- __id: 4
+  __type: Company
+  address:
+    __id: 0
+    __type: Address
+    street: 10600 N Tantau Ave
+  employees:
+  - __id: 8
+    __type: Person
+    name: Tim Cook
+  name: Apple
+  url: https://www.apple.com/
+- __id: 5
+  __type: Company
+  address:
+    __id: 1
+    __type: Address
+    street: '1 Hacker Way #15'
+  employees:
+  - __id: 9
+    __type: Person
+    name: Mark Zuckerberg
+  name: Facebook
+  url: https://www.facebook.com/
+- __id: 6
+  __type: Company
+  address:
+    __id: 2
+    __type: Address
+    street: 1600 Amphitheatre Pkwy
+  employees:
+  - __id: 10
+    __type: Person
+    name: Sundar Pichai
+  name: Google
+  url: https://www.google.com/
+- __id: 7
+  __type: Company
+  address:
+    __id: 3
+    __type: Address
+    street: 100 Winchester Cir
+  employees:
+  - __id: 11
+    __type: Person
+    name: Reed Hastings
+  name: Netflix
+  url: https://www.netflix.com/
+Person:
+- __id: 8
+  __type: Person
+  address:
+    __id: 0
+    __type: Address
+    street: 10600 N Tantau Ave
+  company:
+    __id: 4
+    __type: Company
+    name: Apple
+  email_adress: tcook@apple.com
+  name: Tim Cook
+  phone_number: 408-996-1010
+  type: business
+- __id: 9
+  __type: Person
+  address:
+    __id: 1
+    __type: Address
+    street: '1 Hacker Way #15'
+  company:
+    __id: 5
+    __type: Company
+    name: Facebook
+  email_adress: zuck@fb.com
+  name: Mark Zuckerberg
+  phone_number: 650-543-4800
+  type: family
+- __id: 10
+  __type: Person
+  address:
+    __id: 2
+    __type: Address
+    street: 1600 Amphitheatre Pkwy
+  company:
+    __id: 6
+    __type: Company
+    name: Google
+  email_adress: sundar@google.com
+  name: Sundar Pichai
+  phone_number: 650-253-0000
+  type: business
+- __id: 11
+  __type: Person
+  address:
+    __id: 3
+    __type: Address
+    street: 100 Winchester Cir
+  company:
+    __id: 7
+    __type: Company
+    name: Netflix
+  email_adress: reed.hastings@netflix.com
+  name: Reed Hastings
+  phone_number: 408-540-3700
+  type: business
+_classMetadata:
+  Address:
+    id: Address
+    name: Addresses
+  Company:
+    id: Company
+    name: Companies
+  Person:
+    id: Person
+    name: People
+_documentMetadata:
+  date: '2020-03-14 13:01:31'
+  objTablesVersion: 0.0.8

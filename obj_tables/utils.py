@@ -497,6 +497,10 @@ def init_schema(filename, out_filename=None):
 
     cls_specs = {}
     for row_list in rows:
+        # ignore empty rows
+        if all(cell in [None, ''] for cell in row_list):
+            continue
+
         row = {}
         for header, cell in zip(header_row, row_list):
             row[header] = cell
@@ -631,7 +635,7 @@ def init_schema(filename, out_filename=None):
             if args:
                 attr_spec['python_args'] = args[0:-1]
                 if attr_spec['verbose_name']:
-                    attr_spec += ", verbose_name='{}'".format(attr_spec['verbose_name'])
+                    attr_spec['python_args'] += ", verbose_name='{}'".format(attr_spec['verbose_name'])
             else:
                 attr_spec['python_args'] = ''
                 if attr_spec['verbose_name']:

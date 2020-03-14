@@ -1,0 +1,9 @@
+!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:01:30'					
+!!ObjTables type='Data' tableFormat='column' id='Company' name='Companies' date='2020-03-14 13:01:30' objTablesVersion='0.0.8'					
+	!Name	Apple	Facebook	Google	Netflix
+	!URL	https://www.apple.com/	https://www.facebook.com/	https://www.google.com/	https://www.netflix.com/
+!Address	!Street	10600 N Tantau Ave	1 Hacker Way #15	1600 Amphitheatre Pkwy	100 Winchester Cir
+!Address	!City	Cupertino	Menlo Park	Mountain View	Los Gatos
+!Address	!State	CA	CA	CA	CA
+!Address	!Zip code	95014	94025	94043	95032
+!Address	!Country	US	US	US	US

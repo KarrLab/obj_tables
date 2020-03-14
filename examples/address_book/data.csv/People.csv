@@ -1,0 +1,7 @@
+!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:01:30' objTablesVersion='0.0.8',,,,,,,,,
+,,,,,!Address,!Address,!Address,!Address,!Address
+!Name,!Type,!Company,!Email address,!Phone number,!Street,!City,!State,!Zip code,!Country
+Mark Zuckerberg,family,Facebook,zuck@fb.com,650-543-4800,1 Hacker Way #15,Menlo Park,CA,94025,US
+Reed Hastings,business,Netflix,reed.hastings@netflix.com,408-540-3700,100 Winchester Cir,Los Gatos,CA,95032,US
+Sundar Pichai,business,Google,sundar@google.com,650-253-0000,1600 Amphitheatre Pkwy,Mountain View,CA,94043,US
+Tim Cook,business,Apple,tcook@apple.com,408-996-1010,10600 N Tantau Ave,Cupertino,CA,95014,US
