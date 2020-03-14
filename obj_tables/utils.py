@@ -629,9 +629,13 @@ def init_schema(filename, out_filename=None):
             attr_type = all_attrs[attr_type_spec]
             attr_spec['python_type'] = attr_type_spec + 'Attribute'
             if args:
-                attr_spec['python_args'] = args[0:-1] + ", verbose_name='{}'".format(attr_spec['verbose_name'])
+                attr_spec['python_args'] = args[0:-1]
+                if attr_spec['verbose_name']:
+                    attr_spec += ", verbose_name='{}'".format(attr_spec['verbose_name'])
             else:
-                attr_spec['python_args'] = "verbose_name='{}'".format(attr_spec['verbose_name'])
+                attr_spec['python_args'] = ''
+                if attr_spec['verbose_name']:
+                    attr_spec['python_args'] = "verbose_name='{}'".format(attr_spec['verbose_name'])
 
             if args:
                 attr = eval('func(' + args, {}, {'func': attr_type})

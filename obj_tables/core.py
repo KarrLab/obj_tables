@@ -3321,6 +3321,16 @@ class Attribute(object, metaclass=abc.ABCMeta):
             error_title=self.verbose_name,
             error_message=self.description)
 
+    def _get_tabular_schema_format(self):
+        """ Generate a string which represents the format of the attribute for use
+        in tabular-formatted schemas
+
+        Returns:
+            :obj:`str`: string which represents the format of the attribute for use
+                in tabular-formatted schemas
+        """
+        return self.__class__.__name__.rpartition('Attribute')[0]
+
 
 class LocalAttribute(object):
     """ Meta data about a local attribute in a class
@@ -3500,7 +3510,9 @@ class EnumAttribute(LiteralAttribute):
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
-            enum_class (:obj:`type` or :obj:`list`): subclass of :obj:`Enum` or :obj:`list` of enumerated values
+            enum_class (:obj:`type` or :obj:`list`): subclass of :obj:`Enum`, :obj:`list` of enumerated names,
+                :obj:`list` of 2-tuples of each enumerated name and its value, or a :obj:`dict` which maps
+                enumerated names to their values 
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`object`, optional): default value
             default_cleaned_value (:obj:`Enum`, optional): value to replace
@@ -3680,6 +3692,22 @@ class EnumAttribute(LiteralAttribute):
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
+
+    def _get_tabular_schema_format(self):
+        """ Generate a string which represents the format of the attribute for use
+        in tabular-formatted schemas
+
+        Returns:
+            :obj:`str`: string which represents the format of the attribute for use
+                in tabular-formatted schemas
+        """
+        serialized_members = []
+        for member in self.enum_class.__members__.values():
+            serialized_val = member.value
+            serialized_members.append("('{}', {})".format(member.name, member.value.__repr__()))
+
+        return "{}([{}])".format(self.__class__.__name__.rpartition('Attribute')[0],
+                               ", ".join(serialized_members))
 
 
 class BooleanAttribute(LiteralAttribute):
@@ -4565,6 +4593,23 @@ class StringAttribute(LiteralAttribute):
         validation.error_message += '\n\n'.join(error_message)
 
         return validation
+
+    def _get_tabular_schema_format(self):
+        """ Generate a string which represents the format of the attribute for use
+        in tabular-formatted schemas
+
+        Returns:
+            :obj:`str`: string which represents the format of the attribute for use
+                in tabular-formatted schemas
+        """
+        args = []
+        if self.primary:
+            args.append('primary=True')
+        if self.unique:
+            args.append('unique=True')
+
+        return "{}{}".format(self.__class__.__name__.rpartition('Attribute')[0],
+                               "({})".format(", ".join(args)) if args else "")
 
 
 class LongStringAttribute(StringAttribute):
@@ -6029,6 +6074,17 @@ class RelatedAttribute(Attribute):
             :obj:`object`: decoded value of the attribute
         """
         raise Exception('This function should not be executed')
+
+    def _get_tabular_schema_format(self):
+        """ Generate a string which represents the format of the attribute for use
+        in tabular-formatted schemas
+
+        Returns:
+            :obj:`str`: string which represents the format of the attribute for use
+                in tabular-formatted schemas
+        """
+        return "{}('{}', related_name='{}')".format(self.__class__.__name__.rpartition('Attribute')[0],
+                                                    self.related_class.__name__, self.related_name)
 
 
 class OneToOneAttribute(RelatedAttribute):

@@ -528,7 +528,7 @@ class WorkbookWriter(WriterBase):
                     attr.name,
                     'Attribute',
                     model.__name__,
-                    attr.__class__.__name__.rpartition('Attribute')[0],
+                    attr._get_tabular_schema_format(),
                     None,
                     None,
                     attr.description or None,
