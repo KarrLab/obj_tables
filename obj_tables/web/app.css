@@ -240,3 +240,9 @@ tbody.data-type-section td tt {
 table.examples th, table.examples td {
     white-space: nowrap;
 }
+table.examples td.indent {
+    padding-left: 1.325rem;
+}
+table.examples td.indent-x2 {
+    padding-left: 2.325rem;
+}

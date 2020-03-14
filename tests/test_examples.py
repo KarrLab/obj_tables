@@ -55,15 +55,21 @@ class ExamplesTestCase(unittest.TestCase):
         self.do_sbtab_sbml_examples('convert')
 
     def do_sbtab_sbml_examples(self, action):
-        schema_filename = 'examples/sbtab/SBtab.csv'
+        dirname = os.path.join('examples', 'sbtab')
+        schema_filename = os.path.join(dirname, 'SBtab.csv')
 
         # Initalize Python module which implements schema
-        py_module_filename = 'examples/sbtab/SBtab.py'
+        py_module_filename = os.path.join(dirname, 'SBtab.py')
         with __main__.App(argv=['init-schema', schema_filename, py_module_filename]) as app:
             app.run()
 
+        # Visualize schema
+        diagram_filename = os.path.join(dirname, 'SBtab.svg')
+        with __main__.App(argv=['viz-schema', schema_filename, diagram_filename]) as app:
+            app.run()
+
         # Generate a template for the schema
-        template_filename = 'examples/sbtab/template.xlsx'
+        template_filename = os.path.join(dirname, 'template.xlsx')
         with __main__.App(argv=['gen-template', schema_filename, template_filename,
                                 '--write-schema',
                                 '--write-toc'
@@ -101,7 +107,7 @@ class ExamplesTestCase(unittest.TestCase):
             'layout_model.tsv',
         ]
         for data_filename in data_filenames:
-            full_data_filename = os.path.join('examples', 'sbtab', data_filename)
+            full_data_filename = os.path.join(dirname, data_filename)
 
             if action == 'validate':
                 with __main__.App(argv=['validate', schema_filename, full_data_filename]) as app:
