@@ -1,4 +1,4 @@
-# Schema automatically generated at 2020-03-10 22:59:07
+# Schema automatically generated at 2020-03-14 11:51:11
 
 import obj_tables
 
@@ -11,9 +11,9 @@ __all__ = [
 
 
 class Game(obj_tables.Model):
-    name = obj_tables.StringAttribute(unique=True, primary=True, verbose_name='None')
-    publisher = obj_tables.StringAttribute(verbose_name='None')
-    year = obj_tables.IntegerAttribute(verbose_name='None')
+    name = obj_tables.StringAttribute(unique=True, primary=True)
+    publisher = obj_tables.StringAttribute()
+    year = obj_tables.IntegerAttribute()
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.multiple_cells
@@ -23,11 +23,11 @@ class Game(obj_tables.Model):
 
 
 class Child(obj_tables.Model):
-    id = obj_tables.StringAttribute(unique=True, primary=True, verbose_name='None')
-    name = obj_tables.StringAttribute(verbose_name='None')
-    gender = obj_tables.EnumAttribute(['female', 'male'], verbose_name='None')
-    parents = obj_tables.ManyToManyAttribute('Parent', related_name='children', verbose_name='None')
-    favorite_video_game = obj_tables.ManyToOneAttribute('Game', related_name='children', verbose_name='None')
+    id = obj_tables.StringAttribute(unique=True, primary=True)
+    name = obj_tables.StringAttribute()
+    gender = obj_tables.EnumAttribute(['female', 'male'])
+    parents = obj_tables.ManyToManyAttribute('Parent', related_name='children')
+    favorite_video_game = obj_tables.ManyToOneAttribute('Game', related_name='children')
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.row
@@ -37,8 +37,8 @@ class Child(obj_tables.Model):
 
 
 class Parent(obj_tables.Model):
-    id = obj_tables.StringAttribute(unique=True, primary=True, verbose_name='None')
-    name = obj_tables.StringAttribute(verbose_name='None')
+    id = obj_tables.StringAttribute(unique=True, primary=True)
+    name = obj_tables.StringAttribute()
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.column

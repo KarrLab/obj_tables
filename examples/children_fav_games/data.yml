@@ -1,0 +1,160 @@
+Child:
+- __id: 0
+  __type: Child
+  favorite_video_game:
+    __id: 4
+    __type: Game
+    name: Legend of Zelda
+  gender: female
+  id: jamie_doe
+  name: Jamie Doe
+  parents:
+  - __id: 8
+    __type: Parent
+    id: jane_doe
+  - __id: 9
+    __type: Parent
+    id: john_doe
+- __id: 1
+  __type: Child
+  favorite_video_game:
+    __id: 5
+    __type: Game
+    name: Super Mario Brothers
+  gender: male
+  id: jimie_doe
+  name: Jimie Doe
+  parents:
+  - __id: 8
+    __type: Parent
+    id: jane_doe
+  - __id: 9
+    __type: Parent
+    id: john_doe
+- __id: 2
+  __type: Child
+  favorite_video_game:
+    __id: 6
+    __type: Game
+    name: Sonic the Hedgehog
+  gender: female
+  id: linda_roe
+  name: Linda Roe
+  parents:
+  - __id: 10
+    __type: Parent
+    id: mary_roe
+  - __id: 11
+    __type: Parent
+    id: richard_roe
+- __id: 3
+  __type: Child
+  favorite_video_game:
+    __id: 7
+    __type: Game
+    name: SimCity
+  gender: male
+  id: mike_roe
+  name: Michael Roe
+  parents:
+  - __id: 10
+    __type: Parent
+    id: mary_roe
+  - __id: 11
+    __type: Parent
+    id: richard_roe
+Game:
+- __id: 4
+  __type: Game
+  children:
+  - __id: 0
+    __type: Child
+    id: jamie_doe
+  name: Legend of Zelda
+  publisher: Nintendo
+  year: 1986.0
+- __id: 5
+  __type: Game
+  children:
+  - __id: 1
+    __type: Child
+    id: jimie_doe
+  name: Super Mario Brothers
+  publisher: Nintendo
+  year: 1985.0
+- __id: 6
+  __type: Game
+  children:
+  - __id: 2
+    __type: Child
+    id: linda_roe
+  name: Sonic the Hedgehog
+  publisher: Sega
+  year: 1991.0
+- __id: 7
+  __type: Game
+  children:
+  - __id: 3
+    __type: Child
+    id: mike_roe
+  name: SimCity
+  publisher: Electronic Arts
+  year: 1989.0
+Parent:
+- __id: 8
+  __type: Parent
+  children:
+  - __id: 0
+    __type: Child
+    id: jamie_doe
+  - __id: 1
+    __type: Child
+    id: jimie_doe
+  id: jane_doe
+  name: Jane Doe
+- __id: 9
+  __type: Parent
+  children:
+  - __id: 0
+    __type: Child
+    id: jamie_doe
+  - __id: 1
+    __type: Child
+    id: jimie_doe
+  id: john_doe
+  name: John Doe
+- __id: 10
+  __type: Parent
+  children:
+  - __id: 2
+    __type: Child
+    id: linda_roe
+  - __id: 3
+    __type: Child
+    id: mike_roe
+  id: mary_roe
+  name: Mary Roe
+- __id: 11
+  __type: Parent
+  children:
+  - __id: 2
+    __type: Child
+    id: linda_roe
+  - __id: 3
+    __type: Child
+    id: mike_roe
+  id: richard_roe
+  name: Richard Roe
+_classMetadata:
+  Child:
+    id: Child
+    name: Child
+  Game:
+    id: Game
+    name: Game
+  Parent:
+    id: Parent
+    name: Parent
+_documentMetadata:
+  date: '2020-03-14 11:51:05'
+  objTablesVersion: 0.0.8

@@ -30,13 +30,14 @@ class ExamplesTestCase(unittest.TestCase):
         shutil.rmtree(self.dirname)
 
     def test_web_example(self):
-        xlsx_filename = 'examples/children_fav_games/schema_and_data.xlsx'
-        py_filename = 'examples/children_fav_games/schema.py'
+        schema_filename_tsv = 'examples/children_fav_games/schema.tsv'
+        schema_filename_py = 'examples/children_fav_games/schema.py'
+        data_filename = 'examples/children_fav_games/data.tsv/*.tsv'        
 
-        schema, _ = utils.init_schema(xlsx_filename, out_filename=py_filename)
+        schema, _ = utils.init_schema(schema_filename_tsv, out_filename=schema_filename_py)
         models = list(utils.get_models(schema).values())
 
-        io.Reader().run(xlsx_filename,
+        io.Reader().run(data_filename,
                         models=models,
                         group_objects_by_model=False,
                         ignore_sheet_order=True)
@@ -103,8 +104,8 @@ class ExamplesTestCase(unittest.TestCase):
         #########################
         import obj_tables.io
 
-        xlsx_filename = 'examples/children_fav_games/schema_and_data.xlsx'
-        objects = obj_tables.io.Reader().run(xlsx_filename,
+        data_filename_xlsx_2 = 'examples/children_fav_games/schema_and_data.xlsx'
+        objects = obj_tables.io.Reader().run(data_filename_xlsx_2,
                                              models=[children_fav_games.Parent, children_fav_games.Child],
                                              group_objects_by_model=True,
                                              ignore_sheet_order=True)
@@ -112,10 +113,10 @@ class ExamplesTestCase(unittest.TestCase):
         jane_doe_2 = next(parent for parent in parents if parent.id == 'jane_doe')
 
         #########################
-        xlsx_filename = 'examples/children_fav_games/copy_of_schema_and_data.xlsx'
+        data_filename_xlsx_2 = 'examples/children_fav_games/copy_of_schema_and_data.xlsx'
         objects = [jane_doe, john_doe, mary_roe, richard_roe,
                    jamie_doe, jimie_doe, linda_roe, mike_roe]
-        obj_tables.io.Writer().run(xlsx_filename, objects,
+        obj_tables.io.Writer().run(data_filename_xlsx_2, objects,
                                    models=[children_fav_games.Parent, children_fav_games.Child],
                                    write_toc=True,
                                    write_schema=True)
@@ -125,7 +126,7 @@ class ExamplesTestCase(unittest.TestCase):
 
         #########################
         # cleanup
-        os.remove(xlsx_filename)
+        os.remove(data_filename_xlsx_2)
 
     def test_biochemical_model_example(self):
         dirname = 'examples/biochemical_model'
@@ -212,8 +213,10 @@ class ExamplesTestCase(unittest.TestCase):
 
     def test_other_examples(self):
         dirnames = [
-            'examples/financial_transactions',
-            'examples/biochemical_model',
+            #'examples/address_book',
+            #'examples/biochemical_model',
+            'examples/children_fav_games',
+            #'examples/financial_transactions',            
         ]
         for dirname in dirnames:
             schema_filename_csv = os.path.join(dirname, 'schema.csv')
