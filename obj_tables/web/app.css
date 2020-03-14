@@ -138,6 +138,31 @@ thead th, thead td, tbody th, tbody td {
     padding: .2rem .3125rem .3125rem;
 }
 
+table.example-tabular-schema thead tr:first-child {
+    background-color: rgb(180, 180, 180);
+}
+table.example-tabular-schema thead tr:nth-child(2) {
+    background-color: rgb(220, 220, 220);
+}
+
+table.example-tabular-schema tbody {
+    border: none;
+    border-bottom: 1px solid #f1f1f1;
+}
+table.example-tabular-schema tbody tr:first-child td {
+    height: 1.5rem;
+    font-size: 2px;
+}
+table.example-tabular-schema tbody tr:nth-child(2) {
+    border-top: 1px solid #f1f1f1;
+    background-color: rgb(220, 220, 220);
+    font-weight: bold;
+}
+table.example-tabular-schema tbody tr:not(:first-child) {
+    border-left: 1px solid #f1f1f1;
+    border-right: 1px solid #f1f1f1;
+}
+
 thead.data-type-title tr {
     background-color: rgb(180, 180, 180);
 }
@@ -150,7 +175,7 @@ thead.data-type-section-head tr:first-child th {
     height: 2rem;
 }
 thead.data-type-section-head tr:nth-child(2) {
-    background-color: rgb(227, 227, 227);
+    background-color: rgb(220, 220, 220);
     border: 1px solid #f1f1f1;
 }
 
@@ -184,6 +209,32 @@ tbody.data-type-section tr:nth-child(4n+3) td:nth-child(2) {
 }
 tbody.data-type-section td tt {
     background: none;
+}
+
+.example-tabular-dataset .doc-head th {
+    background: rgb(180, 180, 180);
+}
+.example-tabular-dataset .class-head th {
+    background: rgb(200, 200, 200);
+}
+.example-tabular-dataset .col-head th {
+    background: rgb(220, 220, 220);    
+}
+.example-tabular-dataset .col-head:nth-child(2) th:not(.empty) {
+    border-bottom: 1px solid #999;
+    text-align: center;
+}
+.example-tabular-dataset tbody th {
+    text-align: left;
+    background: rgb(220, 220, 220);
+}
+.example-tabular-dataset tbody th[rowspan="5"] {
+    border-right: 1px solid #999;
+    max-width: calc(22px + 2 * 0.3125rem);
+    padding-top: 2rem;
+}
+.example-tabular-dataset tbody th:first-child div {
+    transform: rotate(-90deg);
 }
 
 table.examples th, table.examples td {
