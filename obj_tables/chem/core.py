@@ -185,7 +185,7 @@ class ChemicalStructureFormat(int, CaseInsensitiveEnum):
 class ChemicalStructure(object):
     """ A chemical structure
 
-    Attributes        
+    Attributes
         value (:obj:`openbabel.OBMol`, :obj:`bpforms.BpForm`, :obj:`bcforms.BcForm`): value
         serialized_value (:obj:`str`): serialized value
         serialized_format (:obj:`ChemicalStructureFormat`): serialized format
@@ -342,7 +342,7 @@ class ChemicalStructure(object):
         return '{}: {}'.format(dict_value['format'], dict_value['value'])
 
     def deserialize(self, serialized_value):
-        """ Set value from a string representation 
+        """ Set value from a string representation
 
         Args:
             serialized_value (:obj:`str`): string representation

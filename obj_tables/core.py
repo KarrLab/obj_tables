@@ -3512,7 +3512,7 @@ class EnumAttribute(LiteralAttribute):
         Args:
             enum_class (:obj:`type` or :obj:`list`): subclass of :obj:`Enum`, :obj:`list` of enumerated names,
                 :obj:`list` of 2-tuples of each enumerated name and its value, or a :obj:`dict` which maps
-                enumerated names to their values 
+                enumerated names to their values
             none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`object`, optional): default value
             default_cleaned_value (:obj:`Enum`, optional): value to replace

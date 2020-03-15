@@ -93,7 +93,7 @@ def run():
     objects = obj_tables.io.Reader().run(filename_xlsx,
                                          models=[address_book.Company, address_book.Person],
                                          group_objects_by_model=False,
-                                         ignore_sheet_order=True)    
+                                         ignore_sheet_order=True)
 
     #########################
     # Chek if two CEOs are semantically equivalent

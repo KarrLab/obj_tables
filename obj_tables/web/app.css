@@ -218,7 +218,7 @@ tbody.data-type-section td tt {
     background: rgb(200, 200, 200);
 }
 .example-tabular-dataset .col-head th {
-    background: rgb(220, 220, 220);    
+    background: rgb(220, 220, 220);
 }
 .example-tabular-dataset .col-head:nth-child(2) th:not(.empty) {
     border-bottom: 1px solid #999;
