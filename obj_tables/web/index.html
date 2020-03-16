@@ -29,7 +29,7 @@
 
           <p class="before-list"><i>ObjTables</i> makes it easy to</p>
           <ul>
-            <li>Use collections of tables (e.g., an Excel workbook) as a interface for viewing and editing complex datasets that consist of multiple related objects that have multiple attributes</li>
+            <li>Use collections of tables (e.g., an Excel workbook) as an interface for viewing and editing complex datasets that consist of multiple related objects that have multiple attributes</li>
             <li>Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables,</li>
             <li>Use embedded tables and grammars to encode relational information into columns and groups of columns of tables,</li>
             <li>Define schemas for collections of tables,</li>
@@ -41,8 +41,8 @@
 
           <p class="before-list">The <i>ObjTables</i> toolkit includes five components:</p>
           <ul>
-            <li><b>Tabular format for collections of tables.</b> This includes syntax for declaring which cells represent the names of tables and columns, declaring which entries represent metadata such as date that a table was updated, and declaring which entries represent comments.</li>
-            <li><b>Tabular format for describing schemas for collections of tables.</b> This captures the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cells. This supports three modes of encoding relationships into cells in tables.
+            <li><b>Tabular format for collections of tables.</b> This includes syntax for declaring which cells represent the names of tables and columns, declaring which entries represent metadata such as the date that a table was updated, and declaring which entries represent comments.</li>
+            <li><b>Tabular format for schemas for collections of tables.</b> <i>ObjTables</i> schemas capture the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cell. <i>ObjTables</i> supports three modes of encoding relationships into cells in tables.
               <ul>
                 <li><b>Columns for relationships among objects represented by entries in tables:</b> Relationships from one (primary) object to other (related) objects can be captured by (a) incorporating a column that represents a unique <i>key</i> for each related object into the table that represents the related objects and (b) encoding the keys for the related objects as a comma-separated list into a column in the table that represents the primary objects.</li>
                 <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex datasets into a minimal number of tables, <i>ObjTables</i> can also encode instances of related classes into groups of columns. <i>ObjTables</i> uses merged headings to distinguish these columns.</li>
@@ -63,30 +63,31 @@
           <p class="before-list"><i>ObjTables</i> enables users to leverage Excel as a graphical user interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:</p>
           <ul>
             <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the classes represented by the other tables, displays the number of instances of each class, and provides hyperlinks to the other tables.</li>
-            <li><b>Formatted class titles:</b> Each table includes a title bar which describes the class. The title bars are formatted, frozen, and protected from editing.</li>
+            <li><b>Formatted class titles:</b> Each table includes a title bar that describes the class. The title bars are formatted, frozen, and protected from editing.</li>
             <li><b>Formatted attribute headings:</b> Each table includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
             <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into its heading.</li>
             <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides select menus for each attribute that encodes an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>
-            <li><b>Instant validation:</b> <i>ObjTables</i> uses Excel to validate several properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. <i>ObjTables</i> Python schemas can be used to implement thorough validations.</i>
-            <li><b>Hidden extra rows and columns:</b> To help users focus on the attributes of their classes, <i>ObjTables</i> protects and hides all additional rows and columns.</li>
+            <li><b>Instant validation:</b> <i>ObjTables</i> uses Excel to validate several properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. The <i>ObjTables</i> software provides far more extensive validation. Furthermore, <i>ObjTables</i> makes it easy to implement domain-specific validation at multiple levels.</i>
+            <li><b>Hidden extra rows and columns:</b> To help users focus on the attributes of their classes, <i>ObjTables</i> hides all empty rows and columns.</li>
+            <li><b>Protection for unintentional editing:</b> To help users avoid mistakes, <i>ObjTables</i> protects worksheets.</li>
           </ul>
 
           <p class="before-list"><i>ObjTables</i> supports multiple levels of validation of datasets:</p>
           <ul>
-            <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively (e.g. <tt>string(min_length=8)</tt>). More complex validations can be defined using a Python schema or by implementing custom types of attributes.</li>
-            <li><b>Instance validation:</b> Users can implement custom instance-level validations by creating a Python module which implements a schema and implementing the <tt>validate</tt> methods of the classes.</li>
-            <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules which implement schemas can also capture tuples of attributes which must be unique across all instances of a class. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Model.Meta"><i class="fi-link"></i></a> for more information.</li>
+            <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively (e.g. <tt>string(min_length=8)</tt>). More complex validations can be defined by implementing schemas in Python or by implementing custom types of attributes.</li>
+            <li><b>Instance validation:</b> Users can implement custom instance-level validations by creating a Python module that implements a schema and implementing the <tt>validate</tt> methods of the classes.</li>
+            <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules that implement schemas can also capture tuples of attributes that must be unique across all instances of a class. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Model.Meta"><i class="fi-link"></i></a> for more information.</li>
           </ul>
 
           <p class="before-list"><i>ObjTables</i> provides four user interfaces to the software tools:</p>
           <ul>
             <li><b>Web app</b> below <a href="#app"><i class="fi-arrow-down"></i></a>: The web app enables users to use <i>ObjTables</i> without having to install any software.</li>
             <li><b>REST API</b> <a href="api/"><i class="fi-link"></i></a>: The REST API enables users to use <i>ObjTables</i> programmatically without having to install any software.</li>
-            <li><b>Command line interface</b> <a href="https://pypi.python.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The command line interface enables users to use <i>ObjTables</i> without having to upload data to this website.</li>
+            <li><b>Command-line interface</b> <a href="https://pypi.python.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The command-line interface enables users to use <i>ObjTables</i> without having to upload data to this website.</li>
             <li><b>Python API</b> <a href="https://pypi.python.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The Python API enables users to extend <i>ObjTables</i> with custom attributes and validation and use <i>ObjTables</i> to analyze complex datasets.</li>
           </ul>
 
-          <p><i>ObjTables</i> was developed to implement languages for describing whole-cell computational models <a href="https://www.wholecell.org"><i class="fi-link"></i></a> and the data needed to build and verify them.</p>
+          <p>We developed <i>ObjTables</i> to implement languages for describing whole-cell computational models <a href="https://www.wholecell.org"><i class="fi-link"></i></a> and the data needed to build and verify them.</p>
         </div>
         <div class="large-3 cell">
           <div class="toc">
@@ -107,7 +108,7 @@
                 <ul>
                   <li><a href="#app">Web app</a></li>
                   <li><a href="#rest">REST API</a></li>
-                  <li><a href="#cli">Command line interface</a></li>
+                  <li><a href="#cli">Command-line interface</a></li>
                   <li><a href="#python">Python API</a></li>
                   <li><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                 </ul>
@@ -544,7 +545,7 @@
             </thead>
             <tbody class="data-type-section">
               <tr><td>chem.ChemicalStructure</td><td>obj_tables.chem.ChemicalStructureAttribute</td><td>String</td><td><tt>wc_utils.utils.chem.Structure <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></tt></td></tr>
-              <tr><td colspan="3">Chemical structure</td><td>(<tt>openbabel.OBMol</tt> <a href="http://openbabel.org/dev-api/classOpenBabel_1_1OBMol.shtml"><i class="fi-link"></i></a>, <tt>bpforms.BpForm</tt> <a href="https://www.bpforms.org"><i class="fi-link"></i></a>, <tt>bcforms.BcForm</tt> <a href="https://www.bcforms.org"><i class="fi-link"></i></a>)</td></tr>
+              <tr><td colspan="3">Chemical structure</td><td>(<tt>openbabel.OBMol</tt> <a href="https://openbabel.org/dev-api/classOpenBabel_1_1OBMol.shtml"><i class="fi-link"></i></a>, <tt>bpforms.BpForm</tt> <a href="https://www.bpforms.org"><i class="fi-link"></i></a>, <tt>bcforms.BcForm</tt> <a href="https://www.bcforms.org"><i class="fi-link"></i></a>)</td></tr>
 
               <tr><td>chem.EmpiricalFormula</td><td>obj_tables.chem.EmpiricalFormulaAttribute</td><td>String</td><td><tt>wc_utils.utils.chem.EmpiricalFormula</tt> <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">Empirical formula</td></tr>
@@ -1006,7 +1007,7 @@
               </tr>
 
               <tr>
-                <td class="indent">Teusink model of yeast glycolysis <a href="http://doi.org/10.1046/j.1432-1327.2000.01527.x"><i class="fi-link"></i></a></td>
+                <td class="indent">Teusink model of yeast glycolysis <a href="https://doi.org/10.1046/j.1432-1327.2000.01527.x"><i class="fi-link"></i></a></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -1128,7 +1129,7 @@
           <h2>Software tools</h2>
         </div>
         <div class="large-12 cell" style="margin-top: 1rem">
-          <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through the web application, REST API, command line program and Python API. Please see below for more information about using these interfaces. The tools marked with &#9675; are only available through the Python API. Please see the Python documentation for more information about these tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>. </p>
+          <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through the web application, REST API, command-line program and Python API. Please see below for more information about using these interfaces. The tools marked with &#9675; are only available through the Python API. Please see the Python documentation for more information about these tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>. </p>
           <ul class="vertically-spaced-list highlight">
             <li>Generate a Python module that implements a tabular-formatted schema.</li>
             <li>Generate a UML diagram for a schema.</li>
@@ -1164,12 +1165,12 @@
           A REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
         </div>
         <div class="large-4 cell" id="cli">
-          <h3>Command line interface</h3>
-          A command line interface is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>.
+          <h3>Command-line interface</h3>
+          A command-line interface is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>.
         </div>
         <div class="large-12 cell" id="python">
           <h3>Python API</h3>
-          <p>A Python API is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>. As described above, the Python API has significantly more capabilities than the web application, REST API, and command line program.</p>
+          <p>A Python API is available from PyPI <a href="https://pypi.python.org/pypi/obj_tables"><i class="fi-link"></i></a>. As described above, the Python API has significantly more capabilities than the web application, REST API, and command-line program.</p>
 
           <p>The following example briefly introduces the API by illustrating how to use the API to programmatically create, manipulate, analyze, and export the same address book of tech CEOs described above <a href="#example-tabular-dataset"><i class="fi-arrow-up"></i></a>. This tutorial and additional tutorials are available as interactive Jupyter notebooks at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.</p>
 
@@ -1322,7 +1323,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
         </div>
         <div class="large-6 cell">
           <h3>Installation instructions for the CLI interface and Python API</h3>
-          Installation instructions for the command line program and Python API are available at docs.karrlab.org <a href="https://docs.karrlab.org/obj_tables/installation.html"><i class="fi-link"></i></a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
+          Installation instructions for the command-line program and Python API are available at docs.karrlab.org <a href="https://docs.karrlab.org/obj_tables/installation.html"><i class="fi-link"></i></a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
         </div>
         <div class="large-6 cell">
           <h3>Examples</h3>
@@ -1341,8 +1342,8 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
           Documentation for the REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
         </div>
         <div class="large-6 cell">
-          <h3>Documentation for the command line program</h3>
-          Documentation for the command line program is available inline by running <tt>obj-tables --help</tt>.
+          <h3>Documentation for the command-line program</h3>
+          Documentation for the command-line program is available inline by running <tt>obj-tables --help</tt>.
         </div>
         <div class="large-6 cell">
           <h3>Documentation for the Python API</h3>
@@ -1399,7 +1400,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
         </div>
         <div class="large-4 cell">
           <h3>Team</h3>
-          <p class="before-list"><i>ObjTables</i> was developed by the Karr Lab <a href="https://www.karrlab.org"><i class="fi-link"></i></a> at the Icahn School of Medicine at Mount Sinai <a href="https://www.mssm.edu/"><i class="fi-link"></i></a> in New York, US and the Applied Mathematics and Computer Science, from Genomes to the Environment research unit <a href="http://maiage.jouy.inra.fr/?q=en"><i class="fi-link"></i></a> at the Institut National de la Recherche Agronomique <a href="http://www.jouy.inra.fr/en"><i class="fi-link"></i></a> in Jouy en Josas, FR.</p>
+          <p class="before-list"><i>ObjTables</i> was developed by the Karr Lab <a href="https://www.karrlab.org"><i class="fi-link"></i></a> at the Icahn School of Medicine at Mount Sinai <a href="https://www.mssm.edu/"><i class="fi-link"></i></a> in New York, US and the Applied Mathematics and Computer Science, from Genomes to the Environment research unit <a href="http://maiage.jouy.inra.fr/?q=en"><i class="fi-link"></i></a> at the Institut National de la Recherche Agronomique <a href="https://www.jouy.inra.fr/en"><i class="fi-link"></i></a> in Jouy en Josas, FR.</p>
 
           <ul>
             <li>Arthur Goldberg <a href="https://www.mountsinai.org/profiles/arthur-p-goldberg"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/arthurgoldberg/"><i class="fi-social-linkedin"></i></a></li>
