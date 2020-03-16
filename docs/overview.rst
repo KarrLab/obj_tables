@@ -65,7 +65,7 @@ Getting and setting object attributes
 Objects attributes can be get and set as shown below::
 
     name = lab.name
-    lab.url = 'http://www.karrlab.org'
+    lab.url = 'https://www.karrlab.org'
 
 Related attributes can also be edited as shown below::
 

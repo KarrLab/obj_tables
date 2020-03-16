@@ -419,7 +419,8 @@ def init_schema(filename, out_filename=None):
         `obj_tables.Meta.verbose_name`         !Verbose name              String                                     Y
         `obj_tables.Meta.verbose_name_plural`  !Verbose name plural       String                                     Y
         `obj_tables.Meta.description`          !Description                                                          Y
-
+        =====================================  =========================  =========================================  ========
+    
     .. table:: Format for specifying attributes of classes.
         :name: attribute_tabular_schema
 
@@ -433,7 +434,8 @@ def init_schema(filename, out_filename=None):
         `obj_tables.Attribute.verbose_name`                     !Verbose name         String                                      Y
         `obj_tables.Attribute.verbose_name_plural`              !Verbose name plural  String                                      Y
         `obj_tables.Attribute.description`                      !Description          String                                      Y
-
+        ======================================================  ====================  ==========================================  ========
+    
     Args:
         filename (:obj:`str`): path to
         out_filename (:obj:`str`, optional): path to save schema
