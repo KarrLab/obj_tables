@@ -96,7 +96,7 @@ ul, ol {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
 }
-.toc h3 {
+.section:nth-child(even) .toc h3 {
     color: #333;
     font-size: 1.0rem;
     margin: 0;
@@ -124,6 +124,14 @@ ul, ol {
     line-height: 120%;
 }
 
+/* sections */
+.section:nth-child(even) h2 { background: #f6bb42; }
+.section:nth-child(even) h3 { color: #f6bb42; border-bottom: 2px solid #f6bb42; }
+
+.section:nth-child(odd) h2 { background: #3bafda;}
+.section:nth-child(odd) h3 { color: #3bafda; border-bottom: 2px solid #3bafda;}
+
+/* lists */
 li {
     margin-top: 0.125rem;
 }
@@ -134,10 +142,12 @@ li.highlight {
     margin-top: 0.5rem;
 }
 
+/* tables */
 thead th, thead td, tbody th, tbody td {
     padding: .2rem .3125rem .3125rem;
 }
 
+/* example schema */
 table.example-tabular-schema thead tr:first-child {
     background-color: rgb(180, 180, 180);
 }
@@ -163,8 +173,12 @@ table.example-tabular-schema tbody tr:not(:first-child) {
     border-right: 1px solid #f1f1f1;
 }
 
+/* data types */
 thead.data-type-title tr {
     background-color: rgb(180, 180, 180);
+}
+thead.data-type-title th {
+    white-space: nowrap;
 }
 
 thead.data-type-section-head {
@@ -211,6 +225,7 @@ tbody.data-type-section td tt {
     background: none;
 }
 
+/* example dataset */
 .example-tabular-dataset .doc-head th {
     background: rgb(180, 180, 180);
 }
@@ -237,6 +252,7 @@ tbody.data-type-section td tt {
     transform: rotate(-90deg);
 }
 
+/* example files */
 table.examples th, table.examples td {
     white-space: nowrap;
 }
