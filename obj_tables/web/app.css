@@ -3,7 +3,7 @@
     line-height: 140%;
 }
 
-tt {
+.monospace {
     font-family: 'Courier New', 'Courier';
     background: #efefef;
     padding: 2px;
