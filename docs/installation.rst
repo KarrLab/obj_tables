@@ -15,7 +15,7 @@ First, install the following third-party packages:
 
 * `Git <https://git-scm.com/>`_ (optional): to revision schemas and datasets
 * `Graphviz <https://www.graphviz.org/>`_ (optional): to generate UML diagrams of schemas
-* `Open Babel <http://openbabel.org>`_  (optional): to represent and validate chemical structures
+* `Open Babel <https://openbabel.org>`_  (optional): to represent and validate chemical structures
 * `Pip <https://pip.pypa.io>`_ >= 18.0
 * `Python <https://www.python.org>`_ >= 3.6
 * `SSH <https://www.ssh.com/ssh>`_ (optional): to use Git with SSH to revision schemas and datasets
