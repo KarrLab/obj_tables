@@ -380,10 +380,10 @@
           <h2>Data types</h2>
         </div>
         <div class="large-12 cell" style="margin-top: 1rem">
-          <p><i>ObjTables</i> supports numerous datatypes, and it is easy to implement additional types.</p>
-          <p class="before-list">This includes powerful datatypes from several mathematics and science packages:</p>
+          <p><i>ObjTables</i> supports numerous data types, and it is easy to implement additional types.</p>
+          <p class="before-list">This includes powerful data types from several mathematics and science packages:</p>
           <ul>
-            <li>BioPython <a href="https://biopython.org/"><i class="fi-link"></i></a>: sequence informations</li>
+            <li>BioPython <a href="https://biopython.org/"><i class="fi-link"></i></a>: sequence informatics</li>
             <li>lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>: grammars for describing complex relationships</li>
             <li>numpy <a href="https://docs.scipy.org/doc/numpy/"><i class="fi-link"></i></a>: numeric arrays</li>
             <li>pandas <a href="https://pandas.pydata.org"><i class="fi-link"></i></a>: data tables</li>
@@ -647,10 +647,10 @@
           <h2>Tabular format for datasets</h2>
         </div>
         <div class="large-12 cell" style="margin-top: 1rem">
-          <h3>Dataset/document declaration: declaring that a collection of tables is encoded in <i>ObjTables</i>' tablular format</h3>
+          <h3>Dataset/document declaration: declaring that a collection of tables is encoded in <i>ObjTables</i>' tabular format</h3>
           <p>Each collection of tables must declare that the tables are encoded in <i>ObjTables</i>'s tabular format by including the line <tt>!!!ObjTables ...</tt> before one of the tables.</p>
 
-          <h3>Dataset/document-level metdata</h3>
+          <h3>Dataset/document-level metadata</h3>
           <p class="before-list">Optionally, document declarations can capture key-value pairs of document-level metadata. Each key and value should be a string. At a minimum, we recommend using the following keys:
           </p>
           <ul class="vertically-spaced-list">
@@ -663,7 +663,7 @@
           <h3>Class/table declaration: declaring the class represented by each table</h3>
           <p>Each table must declare the class that it represents by including a line that begins with <tt>!!ObjTables type='Data' id='&lt;class_name&gt;' ...</tt>). The value of <tt>id</tt> should be the name of a class in the schema.</p>
 
-          <h3>Class/table-level metdata</h3>
+          <h3>Class/table-level metadata</h3>
           <p class="before-list"></p>
           <p class="before-list">Optionally, table declarations can capture key-value pairs of class/table-level metadata. Each key and value should be a string. At a minimum, we recommend using the following keys:
           <ul class="vertically-spaced-list">
@@ -697,7 +697,7 @@
           <ul class="vertically-spaced-list">
             <li><b>Non-relational attributes:</b> Each value should be serialized into a Boolean, number, or string that can be deserialized by the attribute's <tt>deserialize</tt> method. For example, dates can be deserialized into the format <tt>YYYY-MM-DD</tt> and times can be serialized into the format <tt>hh:mm:ss</tt>. Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information about how to serialize each attribute.</li>
             <li><b>Relational (*-to-one) attributes:</b> Each value should be represented by the serialized value of the primary attribute of the related instance. For example, a value of an attribute which is an instance of a class <tt>CreditCard</tt> which has a primary attribute <tt>number</tt> should be serialized to the number of the credit card.</li>
-            <li><b>Relational (*-to-many) attributes:</b> Each value should be represented as a commana-separated list of the serialized value sof the primary attributes of the related instances. For example, a value of an attribute which is a list of instances of <tt>CreditCard</tt> should be serialized to a comma-separated list of the numbers of the credit cards.</li>
+            <li><b>Relational (*-to-many) attributes:</b> Each value should be represented as a commana-separated list of the serialized value of the primary attributes of the related instances. For example, a value of an attribute which is a list of instances of <tt>CreditCard</tt> should be serialized to a comma-separated list of the numbers of the credit cards.</li>
           </ul>
 
           <h3>Comments about instances of classes</h3>
@@ -1303,7 +1303,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
 
             <li>
               <b>Pretty printing datasets:</b>
-              Use the <tt>normalize</tt> endpoint to pretty print datasets in .xlsx format. This will print the class and attributes in their canonical orders, highlight and freeze the headings of each table, embed help information about each column into comments, setup Excel validation for each cell, and protect each worksheet. Optionally, pretty printed datasets can include an additional worksheet with a table of contents that summarizes and provides hyperlinks to each class, as well as an additional worksheet which contains a copy of the schema. Emedding schemas with datasets is useful for sharing datasets with other researchers or publishing datasets.
+              Use the <tt>normalize</tt> endpoint to pretty print datasets in .xlsx format. This will print the class and attributes in their canonical orders, highlight and freeze the headings of each table, embed help information about each column into comments, setup Excel validation for each cell, and protect each worksheet. Optionally, pretty printed datasets can include an additional worksheet with a table of contents that summarizes and provides hyperlinks to each class, as well as an additional worksheet which contains a copy of the schema. Embedding schemas with datasets is useful for sharing datasets with other researchers or publishing datasets.
             </li>
 
             <li>
@@ -1409,7 +1409,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
           </ul>
         </div>
         <div class="large-4 cell">
-          <h3>Acknowledgements</h3>
+          <h3>Acknowledgments</h3>
           <i>ObjTables</i> was supported by a National Institute of Health P41 award <a href="https://projectreporter.nih.gov/project_info_details.cfm?aid=9460251"><i class="fi-link"></i></a>, a National Institute of Health MIRA R35 award <a href="https://projectreporter.nih.gov/project_info_details.cfm?aid=9509480"><i class="fi-link"></i></a>, and a National Science Foundation INSPIRE award <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1649014"><i class="fi-link"></i></a>.
         </div>
         <div class="large-4 cell">
