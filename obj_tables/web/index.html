@@ -25,23 +25,23 @@
 
       <div class="grid-x grid-padding-x blue" id="overview">
         <div class="large-9 cell">
-          <p><i>ObjTables</i> is a toolkit for using schemas to models collections of tables that represent complex datasets, combining the ease of use of Excel with the rigor and power of schemas.</p>
+          <p><i>ObjTables</i> is a toolkit for using schemas to model collections of tables that represent complex datasets, combining the ease of use of Excel with the rigor and power of schemas.</p>
 
           <p class="before-list"><i>ObjTables</i> makes it easy to</p>
           <ul>
-            <li>Use collections of tables (e.g., an Excel workbook) as an interface for viewing and editing complex datasets that consist of multiple related objects that have multiple attributes</li>
+            <li>Use collections of tables (e.g., an Excel workbook) as an interface for viewing and editing complex datasets that consist of multiple related objects that have multiple attributes,</li>
             <li>Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables,</li>
             <li>Use embedded tables and grammars to encode relational information into columns and groups of columns of tables,</li>
             <li>Define schemas for collections of tables,</li>
             <li>Use schemas to parse collections of tables into Python data structures for further analysis,</li>
             <li>Use schemas to validate the syntax and semantics of collections of tables,</li>
-            <li>Conduct operations on complex datasets, such as comparing and merging datasets, and</li>
-            <li>Edit schemas and migrate datasets to new versions of schemas.</li>
+            <li>Conduct operations on complex datasets, such as comparing and merging objects, and</li>
+            <li>Edit schemas and migrate a dataset to a new version of a schema.</li>
           </ul>
 
           <p class="before-list">The <i>ObjTables</i> toolkit includes five components:</p>
           <ul>
-            <li><b>Tabular format for collections of tables.</b> This includes syntax for declaring which cells represent the names of tables and columns, declaring which entries represent metadata such as the date that a table was updated, and declaring which entries represent comments.</li>
+            <li><b>Tabular format for collections of tables.</b> This includes syntax for declaring which cells each table, instance, and attribute; declaring which entries represent metadata such as the date that a table was updated; and declaring which entries represent comments.</li>
             <li><b>Tabular format for schemas for collections of tables.</b> <i>ObjTables</i> schemas capture the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cell. <i>ObjTables</i> supports three modes of encoding relationships into cells in tables.
               <ul>
                 <li><b>Columns for relationships among objects represented by entries in tables:</b> Relationships from one (primary) object to other (related) objects can be captured by (a) incorporating a column that represents a unique <i>key</i> for each related object into the table that represents the related objects and (b) encoding the keys for the related objects as a comma-separated list into a column in the table that represents the primary objects.</li>
@@ -53,16 +53,16 @@
             <li><b>Numerous data types</b> including types for mathematics, science, chemoinformatics, and genomics.</li>
             <li><b>Software tools for parsing, validating, and manipulating datasets</b> according to schemas. This includes tools for
               <ul>
-                <li>Pretty printing datasets as Excel workbooks. This enables users to use Excel as a graphical user interface for quickly browsing and editing datasets as described below.</li>
+                <li>Pretty printing datasets as Excel workbooks. This enables users to use Excel as a graphical interface for quickly browsing and editing datasets as described below.</li>
                 <li>Creating templates for datasets.</li>
-                <li>Analyzing, comparing, merging, revisioning, and datasets.</li>
+                <li>Analyzing, comparing, merging, and revisioning datasets.</li>
                 <li>Migrating datasets between versions of their schemas.</li>
               </ul></li>
           </ul>
 
-          <p class="before-list"><i>ObjTables</i> enables users to leverage Excel as a graphical user interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:</p>
+          <p class="before-list"><i>ObjTables</i> enables users to leverage Excel as a graphical interface for viewing and editing complex datasets. Excel-encoded datasets have the following features:</p>
           <ul>
-            <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the classes represented by the other tables, displays the number of instances of each class, and provides hyperlinks to the other tables.</li>
+            <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the classes represented by the data tables, displays the number of instances of each class, and provides hyperlinks to the data tables.</li>
             <li><b>Formatted class titles:</b> Each table includes a title bar that describes the class. The title bars are formatted, frozen, and protected from editing.</li>
             <li><b>Formatted attribute headings:</b> Each table includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
             <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into its heading.</li>
@@ -75,7 +75,7 @@
           <p class="before-list"><i>ObjTables</i> supports multiple levels of validation of datasets:</p>
           <ul>
             <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively (e.g. <tt>string(min_length=8)</tt>). More complex validations can be defined by implementing schemas in Python or by implementing custom types of attributes.</li>
-            <li><b>Instance validation:</b> Users can implement custom instance-level validations by creating a Python module that implements a schema and implementing the <tt>validate</tt> methods of the classes.</li>
+            <li><b>Instance validation:</b> Users can implement custom instance-level validations by creating a Python module that implements a schema and implementing the <tt>validate</tt> method of each class.</li>
             <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances (e.g., <tt>string(unique=True)</tt>). Python modules that implement schemas can also capture tuples of attributes that must be unique across all instances of a class. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Model.Meta"><i class="fi-link"></i></a> for more information.</li>
           </ul>
 
