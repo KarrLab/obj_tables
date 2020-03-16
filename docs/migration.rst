@@ -1,9 +1,9 @@
 .. |rarr|   unicode:: U+02192 .. RIGHTWARDS ARROW
 
-Data migration
-==============
+Migration a dataset between versions of its schema
+==================================================
 
-Migration overview
+Overview
 ---------------------
 Consider some data whose structure (also known as its *data model*) is defined by a schema written in a data definition language.
 For example, the structure of an SQL database is defined by a schema written in
@@ -14,15 +14,15 @@ Many systems, including database systems and web software frameworks, provide to
 so that users can avoid the tedious and error-prone manual effort that's usually required when a schema is changed
 and large amounts of data must be migrated.
 
-Packages that use Object model (:obj:`obj_tables`) store data in Excel, csv or tsv files. The structure of
-the data in a file is defined by a schema that uses :obj:`obj_tables`. Object model *migration* enables automated
+Packages that use `ObjTables` (:obj:`obj_tables`) store data in CSV, TSV, or Excel files. The structure of
+the data in a file is defined by a schema that uses :obj:`obj_tables`. `ObjTables` *migration* enables automated
 migration of these data files.
 
-This page explains the concepts of Object model migration and provides detailed instructions on how to configure and use it.
+This page explains the concepts of `ObjTables` migration and provides detailed instructions on how to configure and use it.
 
-Migration concepts
+Concepts
 ----------------------------------------------
-Object model migration automates the process of migrating data files that use a schema which has been updated.
+`ObjTables` migration automates the process of migrating data files that use a schema which has been updated.
 
 Migration assumes that data files which are migrated and the schemas that define their data models
 are stored in Git repositories. The repository storing the data files is called the *data repo*
@@ -94,7 +94,7 @@ which are described below.
     Changes that do not fall into these categories must be handled by a custom Python transformations module
     that processes each *Model* as it is migrated.
 
-The code below contains a schema that's defined using Object model.
+The code below contains a schema that's defined using `ObjTables`.
 This documentation employs it as the schema for an example data file before migration, and
 refers to it as the *existing* schema:
 
@@ -108,8 +108,8 @@ This example shows a changed version of the *existing* schema above, and we refe
 .. literalinclude:: ./migration/changed_schema.py
   :language: Python
 
-Configuring migration
----------------------
+Configuring migrations
+----------------------
 
 To make migration easier and more reliable the durable state used by migration
 in *schema repo*\ s and *data repo*\ s is recorded in configuration files.
@@ -404,7 +404,7 @@ after the schema has been changed, that process can be performed later, as
 Migration of data files in a data repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-People who use Object model schemas, such as whole-cell modelers, should follow one of these sequences of steps
+People who use `ObjTables` schemas, such as whole-cell modelers, should follow one of these sequences of steps
 to migrated files.
 
 *Migrate arbitrary data files*
@@ -554,10 +554,10 @@ Practical considerations
 
 The user must have access rights that allow them to clone the data repo and schema repo.
 
-Limitations
+Known limitations
 ----------------------------------------------
 
-As of August 2019 the implementation of migration has these limitation:
+As of August 2019, the implementation of migration has these limitation:
 
 * Migration requires that schemas and data files be stored in Git repositories -- no other version control systems are supported.
 * Only one schema file per schema repo is supported.

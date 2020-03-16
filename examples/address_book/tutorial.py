@@ -99,6 +99,7 @@ def run():
     # Chek if two CEOs are semantically equivalent
     zuckerberg_copy = next(el for el in objects if isinstance(el, address_book.Person) and el.name == 'Mark Zuckerberg')
     assert zuckerberg_copy.is_equal(zuckerberg)
+    assert zuckerberg_copy.difference(zuckerberg) == ''
 
     #########################
     # Cleanup temporary directory

@@ -27,7 +27,7 @@ setuptools.setup(
     name=name,
     version=md.version,
 
-    description='Database-independent Django-like object model',
+    description='Toolkit for modeling complex datasets with collections of user-friendly tables',
     long_description=md.long_description,
 
     # The project's main homepage.
@@ -54,7 +54,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3.6',
     ],
 
-    keywords='object model, schema',
+    keywords='object model, schema, workbook, Excel, validation',
 
     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
     package_data=package_data,

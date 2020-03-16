@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Object model documentation build configuration file, created by
+# ObjTables documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct 20 18:11:46 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -76,7 +76,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Object model'
+project = 'ObjTables'
 copyright = u'{}, Karr Lab'.format(datetime.datetime.now().year)
 author = 'Jonathan Karr, Arthur Goldberg'
 
@@ -215,7 +215,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = 'Object model v0.0.1'
+# html_title = 'ObjTables v0.0.1'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #
@@ -341,7 +341,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'obj_tables.tex', 'Object model documentation',
+    (master_doc, 'obj_tables.tex', 'ObjTables documentation',
      'Jonathan Karr, Arthur Goldberg', 'manual'),
 ]
 
@@ -383,7 +383,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'obj_tables', 'Object model documentation',
+    (master_doc, 'obj_tables', 'ObjTables documentation',
      [author], 1)
 ]
 
@@ -398,8 +398,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'obj_tables', 'Object model documentation',
-     author, 'Object model', 'One line description of project.',
+    (master_doc, 'obj_tables', 'ObjTables documentation',
+     author, 'ObjTables', 'One line description of project.',
      'Miscellaneous'),
 ]
 

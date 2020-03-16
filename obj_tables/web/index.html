@@ -1203,7 +1203,7 @@
             <li class="highlight">Programmatically construct or edit a dataset.</li>
             <li class="highlight">Merge multiple datasets into a single dataset.</li>
             <li class="highlight">Partition a dataset into multiple datasets.</li>
-            <li class="highlight">Migrate a dataset between versions of a schema.</li>
+            <li class="highlight">Migrate a dataset between versions of a schema. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/migration.html"><i class="fi-link"></i></a> for more information.</li>
             <li class="highlight">Use Git to revision a dataset.</li>
             <li>Validate that a dataset adheres to a schema and report any errors.</li>
             <li>Normalize a dataset into a deterministically reproducible ordering.</li>
@@ -1331,7 +1331,8 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
 
           <h4>Check if two CEOs are semantically equivalent</h4>
           <pre>zuckerberg_copy <span style="color: #666666">=</span> <span style="color: #008000">next</span>(el <span style="color: #008000; font-weight: bold">for</span> el <span style="color: #AA22FF; font-weight: bold">in</span> objects <span style="color: #008000; font-weight: bold">if</span> <span style="color: #008000">isinstance</span>(el, address_book<span style="color: #666666">.</span>Person) <span style="color: #AA22FF; font-weight: bold">and</span> el<span style="color: #666666">.</span>name <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;Mark Zuckerberg&#39;</span>)
-<span style="color: #008000; font-weight: bold">assert</span> zuckerberg_copy<span style="color: #666666">.</span>is_equal(zuckerberg)</pre>
+<span style="color: #008000; font-weight: bold">assert</span> zuckerberg_copy<span style="color: #666666">.</span>is_equal(zuckerberg)
+<span style="color: #008000; font-weight: bold">assert</span> zuckerberg_copy<span style="color: #666666">.</span>difference(zuckerberg) <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;&#39;</span></pre>
         </div>
 
         <div class="large-12 cell" id="other-languages">

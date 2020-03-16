@@ -1,4 +1,4 @@
-""" Database-independent Django-like object model
+""" Toolkit for modeling complex datasets with collections of user-friendly tables
 
 Many classes contain the methods `serialize()` and `deserialize()`, which invert each other.
 `serialize()` converts a python object instance into a string representation, whereas
