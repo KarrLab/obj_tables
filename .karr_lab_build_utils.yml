@@ -1,5 +1,6 @@
 downstream_dependencies:
   - datanator
+  - migration_test_repo
   - wc_kb
   - wc_lang
   - wc_rules
