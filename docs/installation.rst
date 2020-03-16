@@ -1,7 +1,7 @@
 Installation
 ============
 
-The following is a brief guide to installing `ObjTables`. The `Dockerfile <https://github.com/KarrLab/obj_tables/blob/master/Dockerfile>`_ in the `ObjTables` Git repository contains detailed instructions for how to install `ObjTables` in Ubuntu Linux.
+The following is a brief guide to installing the `ObjTables` Python API and command line program. The `Dockerfile <https://github.com/KarrLab/obj_tables/blob/master/Dockerfile>`_ in the `ObjTables` Git repository contains detailed instructions for how to install `ObjTables` in Ubuntu Linux.
 
 
 Prerequisites
@@ -34,7 +34,7 @@ Second, we recommend that users run the following command to install the latest 
 
 Installing the latest revision from GitHub
 ------------------------------------------
-We recommend that developers use the following commands to install the latest revision from GitHub::
+We recommend that developers use the following commands to install the latest revision of `ObjTables` and its dependencies from GitHub::
 
     pip install git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils
     pip install git+https://github.com/KarrLab/wc_utils.git#egg=wc_utils[chem]
@@ -49,12 +49,12 @@ Installing the optional features
 
 * `bio`: Biology attributes for sequences, sequence features, and frequency position matrices (:py:mod:`obj_tables.bio`)
 * `chem`: Chemistry attributes for chemical formulas and structures (:py:mod:`obj_tables.chem`)
-* `grammar`: Encoding/decoding objects and their relationships into and out of individual cells in tables
+* `grammar`: Encoding/decoding objects and their relationships into and out of individual cells in tables  (:py:mod:`obj_tables.grammary`)
 * `math`: Mathematics attributes for arrays, tables, and symbolic expressions (:py:mod:`obj_tables.math`)
-* `rest`: REST API
-* `revisioning`: Revisioning schemas and data sets with Git
+* `rest`: REST API  (:py:mod:`obj_tables.rest`)
+* `revisioning`: Revisioning schemas and data sets with Git  (:py:mod:`obj_tables.migrate`)
 * `sci`: Science attributes for units, quantities, uncertainty, ontology terms, and references (:py:mod:`obj_tables.sci`)
-* `viz`: Methods to generate UML diagrams of schemas
+* `viz`: Methods to generate UML diagrams of schemas (:py:meth:`obj_tables.utils.viz_schema`)
 
 These features can be installed by installing `ObjTables` with the desired options. For example, the `bio` and `chem` features can installed by running one of the following commands::
 
