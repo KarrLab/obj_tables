@@ -601,6 +601,12 @@
           <h3>Optional arguments</h3>
           <p>Most of the attributes also have optional arguments that can be used to control how values of the attribute are validated. For example, the <tt>Integer</tt> and <tt>Float</tt> attributes have optional <tt>min</tt> and <tt>max</tt> arguments which can be used to indicate the minimum and maximum valid values. The <tt>String</tt> and <tt>LongString</tt> attributes have optional <tt>min_length</tt> and <tt>max_length</tt> attributes which can be used to indicate the minimum and maximum valid lengths of each value.</p>
 
+          <p class="before-list" id="primary-attributes">In particular, the following arguments can be used to configure attributes to function as primary keys for encoding relationships from instances of other classes into their tables. These attributes are necessary to encode relationships between entries in different tables.</p>
+          <ul class="vertically-spaced-list">
+            <li><tt>unique</tt>: Set this argument to <tt>True</tt> to indicate that <i>ObjTables</i> should constrain the values of the attribute to be unique across all instances of the its parent class.</li>
+            <li><tt>primary</tt>: Set this argument to <tt>True</tt> to indicate that the attribute is the primary key for its parent class. Each class can only have one primary attribute, and primary attributes should also have <tt>unique = True</tt>.</li>
+          </ul>
+
           <h3>More information about the arguments</h3>
           <p>Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for detailed information about these required and optional arguments.</p>
         </div>
@@ -707,8 +713,8 @@
           <p class="before-list">The value of each attribute of each instance should be encoded into cells as follows:</p>
           <ul class="vertically-spaced-list">
             <li><b>Non-relational attributes:</b> Each value should be serialized into a Boolean, number, or string that can be deserialized by the attribute's <tt>deserialize</tt> method. For example, dates can be deserialized into the format <tt>YYYY-MM-DD</tt>, and times can be serialized into the format <tt>hh:mm:ss</tt>. Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information about how each attribute should be serialized.</li>
-            <li><b>Relational (*-to-one) attributes:</b> Each value should be represented by the serialized value of the primary attribute of the related instance. For example, a value of an attribute, which is an instance of a class <tt>CreditCard</tt>, which has a primary attribute <tt>number</tt>, should be serialized to the number of the credit card.</li>
-            <li><b>Relational (*-to-many) attributes:</b> Each value should be represented as a comma-separated list of the serialized value of the primary attributes of the related instances. For example, a value of an attribute which is a list of instances of <tt>CreditCard</tt> should be serialized to a comma-separated list of the numbers of the credit cards.</li>
+            <li><b>Relational (*-to-one) attributes:</b> Each value should be represented by the serialized value of the primary attribute of the related instance. For example, a value of an attribute, which is an instance of a class <tt>CreditCard</tt>, which has a primary attribute <tt>number</tt>, should be serialized to the number of the credit card. See above <a href="#primary-attributes"><i class="fi-arrow-up"></i></a> for more information about how to set the primary attribute of a class.</li>
+            <li><b>Relational (*-to-many) attributes:</b> Each value should be represented as a comma-separated list of the serialized value of the primary attributes of the related instances. For example, a value of an attribute which is a list of instances of <tt>CreditCard</tt> should be serialized to a comma-separated list of the numbers of the credit cards. See above <a href="#primary-attributes"><i class="fi-arrow-up"></i></a> for more information about how to set the primary attribute of a class.</li>
           </ul>
 
           <h3>Comments about instances of classes</h3>
