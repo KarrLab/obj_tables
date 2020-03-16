@@ -1,4 +1,4 @@
-!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-10 21:34:50' objTablesVersion='0.0.8'
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-10 21:34:50' objTablesVersion='0.0.8'						
 !Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural	!Description
 
 Company	Class		column	Company	Companies	
