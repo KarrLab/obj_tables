@@ -116,6 +116,7 @@
               <li><a href="#roadmap">Limitations and future directions</a></li>
               <li><a href="#help">Examples, tutorials, documentation, and help</a></li>
               <li><a href="#other-resources">Related resources for working with <i>ObjTables</i></a></li>
+              <li><a href="#comparison">Comparison with other tools</a></li>
               <li><a href="#contribute">Contributing to <i>ObjTables</i></a></li>
               <li><a href="#about">About <i>ObjTables</i></a></li>
             </ul>
@@ -291,7 +292,7 @@
           </ul>
 
           <h3>Implementing schemas in Python using the Python API</h3>
-          <p>Schemas can also be implemented using the <i>ObjTables</i> Python API. The API enables developers to define schemas with a similar syntax to object-relational mapping tools such as Django <a href="https://docs.djangoproject.com/en/3.0/topics/db/models/"><i class="fi-link"></i></a>, Ruby <a href="https://guides.rubyonrails.org/active_record_basics.html"><i class="fi-link"></i></a>, and SQLAlchemy <a href="https://docs.sqlalchemy.org/en/14/orm/tutorial.html"><i class="fi-link"></i></a>.</p>
+          <p>Schemas can also be implemented using the <i>ObjTables</i> Python API. The API enables developers to define schemas with a similar syntax to object-relational mapping tools such as Django <a href="https://docs.djangoproject.com/en/3.0/topics/db/models/"><i class="fi-link"></i></a>, Ruby on Rails <a href="https://guides.rubyonrails.org/active_record_basics.html"><i class="fi-link"></i></a>, and SQLAlchemy <a href="https://docs.sqlalchemy.org/en/14/orm/tutorial.html"><i class="fi-link"></i></a>.</p>
           <ul class="vertically-spaced-list">
             <li>Each class should be implemented as a subclass of <tt>obj_tables.Model</tt>.</li>
             <li>Each attribute of each class should be implemented as a class attribute whose value is an instance of a subclass of <tt>obj_tables.Attribute</tt>. Numerous subclasses of <tt>obj_tables.Attribute</tt>, which support a wide range of data types, are available. Please see below <a href="#data-types"><i class="fi-arrow-down"></i></a> and the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information, including the arguments of these classes.
@@ -1433,6 +1434,24 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                 <li>WPS Office <a href="https://www.wps.com"><i class="fi-link"></i></a>: Free workbook editor for Linux, Mac, and Windows</li>
               </ul></li>
             <li>Python <a href="https://python.org/"><i class="fi-link"></i></a>: Language for programmatically interacting with <i>ObjTables</i>-encoded datasets.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid-x grid-padding-x section" id="comparison">
+        <div class="large-12 cell">
+          <h2>Comparison with other data modeling tools</h2>
+        </div>
+        <div class="large-12 cell" style="margin-top: 1rem">
+          <p class="before-list">While <i>ObjTables</i> has many similarities to other toolkits, <i>ObjTables</i>'s unique combination of features provides some advantages for some use cases. Below, we outline the advantages and disadvantages of <i>ObjTables</i> of over several other types of tools.</p>
+          <ul class="vertically-spaced-list">
+            <li><b>Workbook editors with validation</b> such as Excel: Workbook editors are user-friendly tools for quickly viewing and editing datasets, including relatively large datasets. However, workbook editors have limited data types, limited support for relationships, and limited support for validation. In addition, workbook editors do not separate workbooks from schemas such that schemas can be applied to multiple workbooks. As a result, tools for programmatically reading workbooks such as openpxyl cannot link related records across multiple worksheets into a connected object graph. <i>ObjTables</i> leverages the user-friendliness of workbook editors and adds the abilities to parse and validate workbooks with schemas that support many data types and rich validation at multiple levels. Consequently, <i>ObjTables</i> makes it easy to interact with datasets both as workbooks (with tools such as Excel) and as data structures (with languages such as Python).</li>
+
+            <li><b>Web frameworks with object-relational mapping (ORM) tools</b> such as Django, Ruby on Rails, and SQLAlchemy: ORMs make it easy to define schemas and provide extensive support for validation. Together with web frameworks, ORMs can be used to build graphical web-based interfaces for viewing and editing datasets. However, these tools are focused on viewing and editing individual records rather than on viewing and editing entire datasets at once. As a result, it is difficult to use these tools to construct interfaces that enable users to quickly view and edit datasets with the ease of workbook tools such as Excel. In contrast, <i>ObjTables</i> leverages workbooks and workbook editors as an interface for quickly viewing and editing entire datasets. As a result, <i>ObjTables</i> makes it easier to create copies of datasets, revision datasets with version control systems such as Git, share datasets with others, and publish datasets as supplementary materials of journal articles. Furthermore, <i>ObjTables</i> minimizes the number of tables required to encode datasets by making it easy to nest tables. In addition, <i>ObjTables</i> leverages the fact that many more people are familiar with workbooks than web frameworks and ORMs, which enables nearly anyone to view and edit <i>ObjTables</i> datasets. However, unlike web frameworks and ORMs, <i>ObjTables</i> does not support separate models from views, and <i>ObjTables</i> is not suitable for very large datasets.</li>
+
+            <li><b>Schemas for data serialization formats</b> such as JSON Schema and XMLs: Schema systems for data serialization formats such as JSON and XML make it easy to validate complex datasets that are encoded with formats that can easily be copied, shared, and published. However, viewers and editors for data serialization formats focus on viewing and editing individual objects, which can be cumbersome for large datasets. <i>ObjTables</i> improves over these systems by making it possible to convert data encoded in JSON and YAML into workbooks, which are easier to view and edit with tools such as Excel. In addition, <i>ObjTables</i> leverages the fact that many more people are familiar with workbooks than data serialization formats. However, <i>ObjTables</i> is not as mature as these systems, and <i>ObjTables</i> provides limited support for languages beyond Python.</li>
+
+            <li><b>Relational databases and querying tools</b> such as MySQL Workbench for MySQL: Relational databases make it easy to define schemas and conduct arbitrary queries of datasets. However, querying tools such as MySQL Workbench provide cumbersome interfaces for viewing and editing large datasets, relational databases support limited data types, and it is difficult to validate relational databases without ORMs. Furthermore, using a relational database typically requires significant knowledge of its schema. <i>ObjTables</i> improves over these tools by leveraging workbooks and workbook editors for viewing and editing datasets, by supporting more data types, by using nested tables and grammars to simplify the representation of relationships, and by supporting validation.</li>
           </ul>
         </div>
       </div>
