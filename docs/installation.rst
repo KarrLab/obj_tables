@@ -47,13 +47,13 @@ Installing the optional features
 --------------------------------
 `ObjTables` includes several optional features:
 
-* `bio`: Biology attributes for sequences, sequence features, and frequency position matrices (:py:`obj_tables.bio`)
-* `chem`: Chemistry attributes for chemical formulas and structures (:py:`obj_tables.chem`)
+* `bio`: Biology attributes for sequences, sequence features, and frequency position matrices (:py:mod:`obj_tables.bio`)
+* `chem`: Chemistry attributes for chemical formulas and structures (:py:mod:`obj_tables.chem`)
 * `grammar`: Encoding/decoding objects and their relationships into and out of individual cells in tables
-* `math`: Mathematics attributes for arrays, tables, and symbolic expressions (:py:`obj_tables.math`)
+* `math`: Mathematics attributes for arrays, tables, and symbolic expressions (:py:mod:`obj_tables.math`)
 * `rest`: REST API
 * `revisioning`: Revisioning schemas and data sets with Git
-* `sci`: Science attributes for units, quantities, uncertainty, ontology terms, and references (:py:`obj_tables.sci`)
+* `sci`: Science attributes for units, quantities, uncertainty, ontology terms, and references (:py:mod:`obj_tables.sci`)
 * `viz`: Methods to generate UML diagrams of schemas
 
 These features can be installed by installing `ObjTables` with the desired options. For example, the `bio` and `chem` features can installed by running one of the following commands::
