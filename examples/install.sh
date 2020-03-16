@@ -13,6 +13,7 @@ source ~/.bashrc
 conda create -n py369 python=3.6.9
 conda activate py369
 conda install graphviz
+conda install -c openbabel openbabel
 echo "export PATH=~/miniconda3/envs/py369/bin:\$PATH" >> ~/.bashrc
 echo "export PATH=~/miniconda3/envs/py369/bin:\$PATH" >> ~/.bash_profile
 
