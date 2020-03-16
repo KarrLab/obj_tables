@@ -21,17 +21,18 @@ __all__ = [
 
 
 class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
-    """ *-to-many attribute that can be deserialized with a grammar
+    """ \*-to-many attribute that can be deserialized with a grammar
 
     Attributes:
         grammar (:obj:`str`): grammar
         parser (:obj:`lark.Lark`): parser
 
     Class attributes:
-        grammar (:obj:`str`): grammar
-        grammar_path (:obj:`str`): path to grammar
-        Transformer (:obj:`type`): subclass of :obj:`Transformer` which transforms
-            parse trees into a list of instances of :obj:`core.Model`
+
+    * grammar (:obj:`str`): grammar
+    * grammar_path (:obj:`str`): path to grammar
+    * Transformer (:obj:`type`): subclass of :obj:`Transformer` which transforms
+      parse trees into a list of instances of :obj:`core.Model`
     """
     grammar = None
     grammar_path = None
@@ -62,7 +63,7 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
         """ Serialize related object
 
         Args:
-            values (:obj:`list` of :obj:`Model`): Python representation
+            values (:obj:`list` of :obj:`core.Model`): Python representation
             encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
@@ -79,7 +80,7 @@ class ToManyGrammarAttribute(core.RelatedAttribute, metaclass=abc.ABCMeta):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`tuple` of `object`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`core.InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if values in [None, '']:
             return ([], None)
