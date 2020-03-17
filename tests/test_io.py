@@ -3515,6 +3515,33 @@ class ExcelValidationTestCase(unittest.TestCase):
         self.assertEqual(validation.allowed_scalar_value, 1)
         self.assertEqual(validation.ignore_blank, False)
 
+    def test_one_to_one_get_excel_validation_with_multiple_cells(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+            other_child = core.ManyToOneAttribute('OtherChild', related_name='parents')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'other_child')
+
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            parent = core.OneToOneAttribute(Parent, min_related=1, related_name='child')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'parent')
+
+        class OtherChild(core.Model):
+            id = core.SlugAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+                table_format = core.TableFormat.multiple_cells
+
+        validation = Child.parent.get_excel_validation(sheet_models=[Parent])
+        self.assertEqual(validation.criterion, None)
+        self.assertEqual(validation.allowed_scalar_value, None)
+        self.assertEqual(validation.ignore_blank, False)
+
     def test_many_to_one_get_excel_validation(self):
         class Parent(core.Model):
             id = core.SlugAttribute()

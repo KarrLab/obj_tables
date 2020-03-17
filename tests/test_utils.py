@@ -866,6 +866,10 @@ class InitSchemaTestCase(unittest.TestCase):
             group_objects_by_model=True)[Parent][0]
         self.assertTrue(p_1_b.is_equal(p_1))
 
+    def test__get_tabular_schema_format(self):
+        attr = core.UrlAttribute(primary=True, unique=True)
+        self.assertEqual(attr._get_tabular_schema_format(), 'Url(primary=True, unique=True)')
+
 
 class ToPandasTestCase(unittest.TestCase):
     def test(self):
