@@ -3,6 +3,8 @@ attrdict
 capturer
 configobj
 mock
+nbconvert
+nbformat
 objsize
 openpyxl <= 3.0.1
 psutil

@@ -10,7 +10,10 @@ from obj_tables import __main__
 from obj_tables import core
 from obj_tables import io
 from obj_tables import utils
+import glob
 import json
+import nbconvert.preprocessors
+import nbformat
 import obj_tables
 import os
 import shutil
@@ -258,3 +261,13 @@ class ExamplesTestCase(unittest.TestCase):
         self.assertEqual(children_b[0]['parents'], [parents_b[0], parents_b[1]])
         self.assertEqual(children_b[1]['parents'], [parents_b[0]])
         self.assertEqual(children_b[2]['parents'], [parents_b[1]])
+
+    NOTEBOOK_TIMEOUT = 600
+    def test_jupyter_tutorials(self):
+        for filename in glob.glob('examples/tutorials/*.ipynb'):
+            with open(filename) as file:
+                version = json.load(file)['nbformat']
+            with open(filename) as file:
+                notebook = nbformat.read(file, as_version=version)
+            execute_preprocessor = nbconvert.preprocessors.ExecutePreprocessor(timeout=self.NOTEBOOK_TIMEOUT)
+            execute_preprocessor.preprocess(notebook, {'metadata': {'path': 'examples/tutorials/'}})
