@@ -221,7 +221,7 @@ tbody.data-type-section tr:nth-child(4n+1) td:nth-child(2),
 tbody.data-type-section tr:nth-child(4n+3) td:nth-child(2) {
     font-family: 'Courier New', 'Courier';
 }
-tbody.data-type-section td tt {
+tbody.data-type-section td .monospace {
     background: none;
 }
 
