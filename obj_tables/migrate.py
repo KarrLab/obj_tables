@@ -939,7 +939,11 @@ class Migrator(object):
         # ignore_sheet_order because models obtained by inspect.getmembers() are returned in name order
         # data in model files must be already validated with the existing schema
         existing_models = Reader().run(existing_file, models=self._get_models_with_worksheets(self.existing_defs),
-                                       ignore_attribute_order=True, ignore_sheet_order=True, include_all_attributes=False, validate=False)
+                                       allow_multiple_sheets_per_model=True,
+                                       ignore_attribute_order=True,
+                                       ignore_sheet_order=True,
+                                       include_all_attributes=False,
+                                       validate=False)
         if isinstance(existing_models, dict):
             models = []
             for obj_list in existing_models.values():

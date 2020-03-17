@@ -1083,7 +1083,9 @@ class ReaderBase(object, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def run(self, path, schema_name=None, models=None,
-            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
+            allow_multiple_sheets_per_model=False,
+            ignore_missing_models=False, ignore_extra_models=False,
+            ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
             group_objects_by_model=True, validate=True):
@@ -1094,6 +1096,7 @@ class ReaderBase(object, metaclass=abc.ABCMeta):
             schema_name (:obj:`str`, optional): schema name
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
                 of object to read or list of types of objects to read
+            allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
             ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
@@ -1123,7 +1126,9 @@ class JsonReader(ReaderBase):
     """ Read model objects from a JSON or YAML file """
 
     def run(self, path, schema_name=None, models=None,
-            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
+            allow_multiple_sheets_per_model=False,
+            ignore_missing_models=False, ignore_extra_models=False,
+            ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
             group_objects_by_model=True, validate=True):
@@ -1134,6 +1139,7 @@ class JsonReader(ReaderBase):
             schema_name (:obj:`str`, optional): schema name
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type or list
                 of type of objects to read
+            allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
             ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
@@ -1215,7 +1221,9 @@ class WorkbookReader(ReaderBase):
     MODEL_METADATA_PATTERN = r"^!!ObjTables( +(.*?)=('((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\"))* *$"
 
     def run(self, path, schema_name=None, models=None,
-            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
+            allow_multiple_sheets_per_model=False,
+            ignore_missing_models=False, ignore_extra_models=False,
+            ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
             group_objects_by_model=True, validate=True):
@@ -1229,6 +1237,7 @@ class WorkbookReader(ReaderBase):
             schema_name (:obj:`str`, optional): schema name
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type or list
                 of type of objects to read
+            allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
             ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
@@ -1303,7 +1312,9 @@ class WorkbookReader(ReaderBase):
             if model_metadata['type'] != DOC_TABLE_TYPE:
                 continue
             assert 'id' in model_metadata, 'Metadata for sheet "{}" must define the id.'.format(sheet_name)
-            model_name_to_sheet_name[model_metadata['id']] = sheet_name
+            if model_metadata['id'] not in model_name_to_sheet_name:
+                model_name_to_sheet_name[model_metadata['id']] = []
+            model_name_to_sheet_name[model_metadata['id']].append(sheet_name)
             sheet_name_to_model_name[sheet_name] = model_metadata['id']
 
         # drop metadata models unless they're requested
@@ -1319,14 +1330,24 @@ class WorkbookReader(ReaderBase):
         model_name_to_model = {model.__name__: model for model in models}
 
         model_to_sheet_name = collections.OrderedDict()
-        for model_name, sheet_name in model_name_to_sheet_name.items():
+        for model_name, sheet_names in model_name_to_sheet_name.items():
             model = model_name_to_model.get(model_name, None)
             if model:
-                model_to_sheet_name[model] = sheet_name
+                model_to_sheet_name[model] = sheet_names
 
         sheet_name_to_model = collections.OrderedDict()
         for sheet_name, model_name in sheet_name_to_model_name.items():
             sheet_name_to_model[sheet_name] = model_name_to_model.get(model_name, None)
+
+        # optionally, check that each model has only 1 sheet
+        if not allow_multiple_sheets_per_model:
+            multiply_defined_models = []
+            for model_name, sheet_names in model_name_to_sheet_name.items():
+                if len(sheet_names) > 1:
+                    multiply_defined_models.append(model_name)
+            if multiply_defined_models:
+                raise ValueError("Models '{}' should only have one table".format(
+                    "', '".join(sorted(multiply_defined_models))))
 
         # optionally, check every models is defined
         if not ignore_missing_models:
@@ -1385,56 +1406,76 @@ class WorkbookReader(ReaderBase):
         data = {}
         errors = {}
         objects = {}
-        for model, sheet_name in model_to_sheet_name.items():
-            model_attributes, model_data, model_errors, model_objects = self.read_model(
-                reader, sheet_name, schema_name, model,
-                include_all_attributes=include_all_attributes,
-                ignore_missing_attributes=ignore_missing_attributes,
-                ignore_extra_attributes=ignore_extra_attributes,
-                ignore_attribute_order=ignore_attribute_order,
-                ignore_empty_rows=ignore_empty_rows,
-                validate=validate)
-            if model_attributes:
-                attributes[model] = model_attributes
-            if model_data:
-                data[model] = model_data
-            if model_errors:
-                errors[model] = model_errors
-            if model_objects:
-                objects[model] = model_objects
+        for model, sheet_names in model_to_sheet_name.items():
+            attributes[model] = {}
+            data[model] = {}
+            objects[model] = {}
+
+            for sheet_name in sheet_names:
+                sheet_attributes, sheet_data, sheet_errors, sheet_objects = self.read_model(
+                    reader, sheet_name, schema_name, model,
+                    include_all_attributes=include_all_attributes,
+                    ignore_missing_attributes=ignore_missing_attributes,
+                    ignore_extra_attributes=ignore_extra_attributes,
+                    ignore_attribute_order=ignore_attribute_order,
+                    ignore_empty_rows=ignore_empty_rows,
+                    validate=validate)
+
+                if sheet_data:
+                    attributes[model][sheet_name] = sheet_attributes
+                    data[model][sheet_name] = sheet_data
+                    objects[model][sheet_name] = sheet_objects
+
+                if sheet_errors:
+                    if model not in errors:
+                        errors[model] = {}
+                    errors[model][sheet_name] = sheet_errors
 
         if errors:
             forest = ["The data cannot be loaded because '{}' contains error(s):".format(basename(path))]
             for model, model_errors in errors.items():
                 forest.append([quote(model.__name__)])
-                forest.append([model_errors])
+                for sheet_errors in model_errors.values():
+                    forest.append([sheet_errors])
             raise ValueError(indent_forest(forest))
 
         # link objects
         objects_by_primary_attribute = {}
         for model, objects_model in objects.items():
-            objects_by_primary_attribute[model] = {obj.get_primary_attribute(): obj for obj in objects_model}
+            objects_by_primary_attribute[model] = {}
+            for sheet_objects in objects_model.values():
+                for obj in sheet_objects:
+                    primary_attr = obj.get_primary_attribute()
+                    objects_by_primary_attribute[model][primary_attr] = obj
 
-        errors = {}
         decoded = {}
         for model, objects_model in objects.items():
-            model_errors = self.link_model(model, attributes[model], data[model], objects_model,
-                                           objects_by_primary_attribute, decoded=decoded)
-            if model_errors:
-                errors[model] = model_errors
+            for sheet_name in objects_model.keys():
+                sheet_errors = self.link_model(model, attributes[model][sheet_name], data[model][sheet_name], objects[model][sheet_name],
+                                               objects_by_primary_attribute, decoded=decoded)
+            if sheet_errors:
+                if model not in errors:
+                    errors[model] = {}
+                errors[model][sheet_name] = sheet_errors
 
         if errors:
             forest = ["The data cannot be loaded because '{}' contains error(s):".format(basename(path))]
             for model, model_errors in errors.items():
                 forest.append([quote(model.__name__)])
-                forest.append([model_errors])
+                for sheet_errors in model_errors.values():
+                    forest.append([sheet_errors])
             raise ValueError(indent_forest(forest))
 
         # convert to sets
+        all_objects = {}
+        for model, model_objects in objects.items():
+            all_objects[model] = []
+            for sheet_objects in model_objects.values():
+                all_objects[model].extend(sheet_objects)
+        objects = all_objects
+
         for model in models:
-            if model in objects:
-                objects[model] = objects[model]
-            else:
+            if model not in objects:
                 objects[model] = []
 
         for model, model_objects in objects_by_primary_attribute.items():
@@ -2026,7 +2067,9 @@ class MultiSeparatedValuesReader(ReaderBase):
     """
 
     def run(self, path, schema_name=None, models=None,
-            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
+            allow_multiple_sheets_per_model=False,
+            ignore_missing_models=False, ignore_extra_models=False,
+            ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
             group_objects_by_model=True, validate=True):
@@ -2038,6 +2081,7 @@ class MultiSeparatedValuesReader(ReaderBase):
             schema_name (:obj:`str`, optional): schema name
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type or list
                 of type of objects to read
+            allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
             ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
@@ -2106,6 +2150,7 @@ class MultiSeparatedValuesReader(ReaderBase):
         objs = wb_reader.run(os.path.join(tmp_dirname, '*' + ext),
                              schema_name=schema_name,
                              models=models,
+                             allow_multiple_sheets_per_model=allow_multiple_sheets_per_model,
                              ignore_missing_models=ignore_missing_models,
                              ignore_extra_models=ignore_extra_models,
                              ignore_sheet_order=ignore_sheet_order,
@@ -2164,7 +2209,9 @@ class Reader(ReaderBase):
             raise ValueError('Invalid export format: {}'.format(ext))
 
     def run(self, path, schema_name=None, models=None,
-            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
+            allow_multiple_sheets_per_model=False,
+            ignore_missing_models=False, ignore_extra_models=False,
+            ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True,
             group_objects_by_model=True, validate=True):
@@ -2175,6 +2222,7 @@ class Reader(ReaderBase):
             schema_name (:obj:`str`, optional): schema name
             models (:obj:`types.TypeType` or :obj:`list` of :obj:`types.TypeType`, optional): type
                 of object to read or list of types of objects to read
+            allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
             ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
@@ -2203,6 +2251,7 @@ class Reader(ReaderBase):
         result = reader.run(path,
                             schema_name=schema_name,
                             models=models,
+                            allow_multiple_sheets_per_model=allow_multiple_sheets_per_model,
                             ignore_missing_models=ignore_missing_models,
                             ignore_extra_models=ignore_extra_models,
                             ignore_sheet_order=ignore_sheet_order,
@@ -2219,7 +2268,9 @@ class Reader(ReaderBase):
 
 
 def convert(source, destination, schema_name, models,
-            ignore_missing_models=False, ignore_extra_models=False, ignore_sheet_order=False,
+            allow_multiple_sheets_per_model=False,
+            ignore_missing_models=False, ignore_extra_models=False,
+            ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True, protected=True):
     """ Convert among comma-separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
@@ -2230,6 +2281,7 @@ def convert(source, destination, schema_name, models,
         destination (:obj:`str`): path to save converted file
         schema_name (:obj:`str`): schema name
         models (:obj:`list` of :obj:`type`): list of models
+        allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
         ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
             file is missing for one or more models
         ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
@@ -2252,6 +2304,7 @@ def convert(source, destination, schema_name, models,
 
     kwargs = {}
     if isinstance(reader, WorkbookReader):
+        kwargs['allow_multiple_sheets_per_model'] = allow_multiple_sheets_per_model
         kwargs['ignore_missing_models'] = ignore_missing_models
         kwargs['ignore_extra_models'] = ignore_extra_models
         kwargs['ignore_sheet_order'] = ignore_sheet_order

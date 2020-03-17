@@ -298,6 +298,7 @@ def read_metadata_from_file(pathname):
     reader = obj_tables.io.Reader.get_reader(pathname)
 
     metadata_instances = reader().run(pathname, models=[DataRepoMetadata, SchemaRepoMetadata],
+                                      allow_multiple_sheets_per_model=True,
                                       ignore_extra_models=True, ignore_missing_models=True,
                                       group_objects_by_model=True, ignore_attribute_order=True)
     metadata_class_to_attr = {
@@ -420,7 +421,7 @@ def init_schema(filename, out_filename=None):
         `obj_tables.Meta.verbose_name_plural`  !Verbose name plural       String                                     Y
         `obj_tables.Meta.description`          !Description                                                          Y
         =====================================  =========================  =========================================  ========
-    
+
     .. table:: Format for specifying attributes of classes.
         :name: attribute_tabular_schema
 
@@ -435,7 +436,7 @@ def init_schema(filename, out_filename=None):
         `obj_tables.Attribute.verbose_name_plural`              !Verbose name plural  String                                      Y
         `obj_tables.Attribute.description`                      !Description          String                                      Y
         ======================================================  ====================  ==========================================  ========
-    
+
     Args:
         filename (:obj:`str`): path to
         out_filename (:obj:`str`, optional): path to save schema

@@ -16,6 +16,7 @@ import sys
 import types
 
 DEFAULT_READER_ARGS = {
+    'allow_multiple_sheets_per_model': True,
     'ignore_missing_models': True,
     'ignore_sheet_order': True,
     'ignore_missing_attributes': True,

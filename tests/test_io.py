@@ -1024,6 +1024,80 @@ class TestIo(unittest.TestCase):
         self.assertEqual(len(objs), 3)
 
 
+class RepeatedModelsTestCase(unittest.TestCase):
+    def setUp(self):
+        self.tmp_dirname = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp_dirname)
+
+    def test(self):
+        class Parent(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name')
+
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            name = core.StringAttribute()
+            parents = core.ManyToManyAttribute(Parent, related_name='children')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'name', 'parents')
+                table_format = core.TableFormat.column
+
+        p_1_1 = Parent(id='p_1_1', name='p-1-1')
+        p_1_2 = Parent(id='p_1_2', name='p-1-2')
+        p_2_1 = Parent(id='p_2_1', name='p-2-1')
+        p_2_2 = Parent(id='p_2_2', name='p-2-2')
+        c_1_1_1 = Child(id='c_1_1_1', name='c-1-1-1', parents=[p_1_1])
+        c_1_1_2 = Child(id='c_1_1_2', name='c-1-1-2', parents=[p_1_1])
+        c_1_2_1 = Child(id='c_1_2_1', name='c-1-2-1', parents=[p_1_2])
+        c_1_2_2 = Child(id='c_1_2_2', name='c-1-2-2', parents=[p_1_2])
+        c_2_1_1 = Child(id='c_2_1_1', name='c-2-1-1', parents=[p_2_1])
+        c_2_1_2 = Child(id='c_2_1_2', name='c-2-1-2', parents=[p_2_1])
+        c_2_2_1 = Child(id='c_2_2_1', name='c-2-2-1', parents=[p_2_2])
+        c_2_2_2 = Child(id='c_2_2_2', name='c-2-2-2', parents=[p_2_2])
+
+        objs_1 = [p_1_1, p_1_2, c_1_1_1, c_1_1_2, c_1_2_1, c_1_2_2]
+        objs_2 = [p_2_1, p_2_2, c_2_1_1, c_2_1_2, c_2_2_1, c_2_2_2]
+
+        path = os.path.join(self.tmp_dirname, 'class-1-*.tsv')
+        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child])
+
+        path = os.path.join(self.tmp_dirname, 'class-*.tsv')
+        objs_b = obj_tables.io.Reader().run(path, models=[Parent, Child], group_objects_by_model=True)
+        self.assertTrue(next(p for p in objs_b[Parent] if p.id == 'p_1_1').is_equal(p_1_1))
+        self.assertTrue(next(p for p in objs_b[Parent] if p.id == 'p_1_2').is_equal(p_1_2))
+        self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_1_1').is_equal(c_1_1_1))
+        self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_1_2').is_equal(c_1_1_2))
+        self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_2_1').is_equal(c_1_2_1))
+        self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_2_2').is_equal(c_1_2_2))
+
+        path = os.path.join(self.tmp_dirname, 'class-2-*.tsv')
+        obj_tables.io.Writer().run(path, objs_2, models=[Parent, Child])
+
+        path = os.path.join(self.tmp_dirname, 'class-*.tsv')
+        with self.assertRaisesRegex(ValueError, 'should only have one table'):
+            obj_tables.io.Reader().run(path, models=[Parent, Child], group_objects_by_model=True)
+
+        objs_b = obj_tables.io.Reader().run(path, models=[Parent, Child], group_objects_by_model=True, allow_multiple_sheets_per_model=True)
+        self.assertTrue(next(p for p in objs_b[Parent] if p.id == 'p_1_1').is_equal(p_1_1))
+        self.assertTrue(next(p for p in objs_b[Parent] if p.id == 'p_1_2').is_equal(p_1_2))
+        self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_1_1').is_equal(c_1_1_1))
+        self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_1_2').is_equal(c_1_1_2))
+        self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_2_1').is_equal(c_1_2_1))
+        self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_2_2').is_equal(c_1_2_2))
+
+        path = os.path.join(self.tmp_dirname, 'class-2-*.tsv')
+        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child])
+        path = os.path.join(self.tmp_dirname, 'class-*.tsv')
+        with self.assertRaisesRegex(ValueError, 'must be unique, but these values are repeated'):
+            obj_tables.io.Reader().run(path, models=[Parent, Child], group_objects_by_model=True, allow_multiple_sheets_per_model=True)
+
+
 class MultiSeparatedValuesTestCase(unittest.TestCase):
     def setUp(self):
         self.tmp_dirname = tempfile.mkdtemp()
