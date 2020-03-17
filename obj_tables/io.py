@@ -1460,19 +1460,25 @@ class WorkbookReader(ReaderBase):
             forest.append([[errors]])
             raise ValueError(indent_forest(forest))
 
+        # for models with multiple tables, add a comment to the first instance from each table to indicate the table separations
+        for model, model_objects in objects.items():
+            if len(model_objects) > 1:
+                for sheet_name, sheet_objects in model_objects.items():
+                    sheet_objects[0]._comments.append('Source sheet: {}'.format(sheet_name))
+
         # link objects
         objects_by_primary_attribute = {}
-        for model, objects_model in objects.items():
+        for model, model_objects in objects.items():
             objects_by_primary_attribute[model] = {}
-            for sheet_objects in objects_model.values():
+            for sheet_objects in model_objects.values():
                 for obj in sheet_objects:
                     primary_attr = obj.get_primary_attribute()
                     objects_by_primary_attribute[model][primary_attr] = obj
 
         decoded = {}
         errors = {}
-        for model, objects_model in objects.items():
-            for sheet_name in objects_model.keys():
+        for model, model_objects in objects.items():
+            for sheet_name in model_objects.keys():
                 sheet_errors = self.link_model(model, attributes[model][sheet_name], data[model][sheet_name], objects[model][sheet_name],
                                                objects_by_primary_attribute, decoded=decoded)
             if sheet_errors:
