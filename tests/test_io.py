@@ -1097,6 +1097,48 @@ class RepeatedModelsTestCase(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'must be unique, but these values are repeated'):
             obj_tables.io.Reader().run(path, models=[Parent, Child], group_objects_by_model=True, allow_multiple_sheets_per_model=True)
 
+    def test_merge_table_metadata(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+        node_1 = Node(id='node_1')
+        node_2 = Node(id='node_2')
+
+        def discard_metadata(md):
+            md.pop('type')
+            md.pop('id')
+            md.pop('name')
+            md.pop('tableFormat')
+            md.pop('objTablesVersion')
+            md.pop('date')
+
+        path = os.path.join(self.tmp_dirname, '1-*.tsv')
+        obj_tables.io.Writer().run(path, [node_1], models=[Node], model_metadata={Node: {'A': '1', 'B': '2'}})
+        reader = obj_tables.io.Reader()
+        reader.run(path, models=[Node])
+        discard_metadata(reader._model_metadata[Node])
+        self.assertEqual(reader._model_metadata[Node], {'A': '1', 'B': '2'})
+
+        path = os.path.join(self.tmp_dirname, '2-*.tsv')
+        obj_tables.io.Writer().run(path, [node_2], models=[Node], model_metadata={Node: {'A': '1', 'C': '3'}})
+        reader = obj_tables.io.Reader()
+        reader.run(path, models=[Node])
+        discard_metadata(reader._model_metadata[Node])
+        self.assertEqual(reader._model_metadata[Node], {'A': '1', 'C': '3'})
+
+        path = os.path.join(self.tmp_dirname, '*.tsv')
+        reader = obj_tables.io.Reader()
+        reader.run(path, models=[Node], allow_multiple_sheets_per_model=True)
+        discard_metadata(reader._model_metadata[Node])
+        self.assertEqual(reader._model_metadata[Node], {'A': '1', 'B': '2', 'C': '3'})
+
+        path = os.path.join(self.tmp_dirname, '2-*.tsv')
+        obj_tables.io.Writer().run(path, [node_2], models=[Node], model_metadata={Node: {'A': '1', 'B': '3'}})
+
+        path = os.path.join(self.tmp_dirname, '*.tsv')
+        reader = obj_tables.io.Reader()
+        with self.assertRaisesRegex(ValueError, 'Model metadata must be consistent across each table'):
+            reader.run(path, models=[Node], allow_multiple_sheets_per_model=True)
+
 
 class MultiSeparatedValuesTestCase(unittest.TestCase):
     def setUp(self):

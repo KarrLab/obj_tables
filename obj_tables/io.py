@@ -1439,6 +1439,27 @@ class WorkbookReader(ReaderBase):
                     forest.append([sheet_errors])
             raise ValueError(indent_forest(forest))
 
+        # merge metadata across all tables of each model
+        merged_model_metadata = {}
+        errors = []
+        for model, model_metadata in self._model_metadata.items():
+            merged_model_metadata[model] = {}
+            for sheet_name, sheet_metadata in model_metadata.items():
+                for key, val in sheet_metadata.items():
+                    if key in merged_model_metadata[model]:
+                        if merged_model_metadata[model][key] != val:
+                            errors.append('Attribute "{}" for model "{}" is not consistent'.format(
+                                key, model.__name__, ))
+                    else:
+                        merged_model_metadata[model][key] = val
+        self._model_metadata = merged_model_metadata
+
+        if errors:
+            forest = ["The data cannot be loaded because '{}' contains error(s):".format(basename(path))]
+            forest.append([['Model metadata must be consistent across each table:']])
+            forest.append([[errors]])
+            raise ValueError(indent_forest(forest))
+
         # link objects
         objects_by_primary_attribute = {}
         for model, objects_model in objects.items():
@@ -1449,6 +1470,7 @@ class WorkbookReader(ReaderBase):
                     objects_by_primary_attribute[model][primary_attr] = obj
 
         decoded = {}
+        errors = {}
         for model, objects_model in objects.items():
             for sheet_name in objects_model.keys():
                 sheet_errors = self.link_model(model, attributes[model][sheet_name], data[model][sheet_name], objects[model][sheet_name],
@@ -1766,8 +1788,9 @@ class WorkbookReader(ReaderBase):
         doc_metadata, model_metadata, top_comments = self.read_worksheet_metadata(sheet_name, data)
         self.merge_doc_metadata(doc_metadata)
 
-        self._model_metadata[model] = model_metadata
-        # todo
+        if model not in self._model_metadata:
+            self._model_metadata[model] = {}
+        self._model_metadata[model][sheet_name] = model_metadata
         assert model_metadata['type'] == DOC_TABLE_TYPE, \
             "Type '{}' must be '{}'.".format(model_metadata['type'], DOC_TABLE_TYPE)
         assert 'tableFormat' not in model_metadata or model_metadata['tableFormat'] == model.Meta.table_format.name, \
