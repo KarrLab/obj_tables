@@ -460,13 +460,13 @@
               <tr><td>PositiveFloat</td><td>obj_tables.PositiveFloatAttribute</td><td>Number</td><td><span class="monospace">float</span></td></tr>
               <tr><td colspan="4">Positive float</td></tr>
 
-              <tr><td>String</td><td>obj_tables.StringAttribute</td><td>Text</td><td><span class="monospace">str</span></td></tr>
+              <tr><td>String</td><td>obj_tables.StringAttribute</td><td>String</td><td><span class="monospace">str</span></td></tr>
               <tr><td colspan="4">Short string</td></tr>
 
-              <tr><td>LongString</td><td>obj_tables.LongStringAttribute</td><td>Text</td><td><span class="monospace">str</span></td></tr>
+              <tr><td>LongString</td><td>obj_tables.LongStringAttribute</td><td>String</td><td><span class="monospace">str</span></td></tr>
               <tr><td colspan="4">Long string</td></tr>
 
-              <tr><td>Regex</td><td>obj_tables.RegexAttribute</td><td>Text</td><td><span class="monospace">str</span></td></tr>
+              <tr><td>Regex</td><td>obj_tables.RegexAttribute</td><td>String</td><td><span class="monospace">str</span></td></tr>
               <tr><td colspan="4">String that matches a regular expression</td></tr>
 
               <tr><td>Email</td><td>obj_tables.EmailAttribute</td><td>String</td><td><span class="monospace">str</span></td></tr>
@@ -523,10 +523,10 @@
               <tr><td>math.Table</td><td>obj_tables.math.TableAttribute</td><td>String</td><td><span class="monospace">pandas.DataFrame</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">Data table, optionally with row and column labels</td></tr>
 
-              <tr><td>math.ManyToOneExpression</td><td>obj_tables.math.ManyToOneExpressionAttribute</td><td>String</td><td><span class="monospace">numpy.ndarray</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td>math.ManyToOneExpression</td><td>obj_tables.math.ManyToOneExpressionAttribute</td><td>String</td><td><span class="monospace">obj_tables.math.expression.Expression</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">Numerical array or matrix</td></tr>
 
-              <tr><td>math.OneToOneExpression</td><td>obj_tables.math.OneToOneExpressionAttribute</td><td>String</td><td><span class="monospace">numpy.ndarray</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td></tr>
+              <tr><td>math.OneToOneExpression</td><td>obj_tables.math.OneToOneExpressionAttribute</td><td>String</td><td><span class="monospace">obj_tables.math.expression.Expression</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a></td></tr>
               <tr><td colspan="4">Numerical array or matrix</td></tr>
 
               <tr><td>math.SymbolicExpr</td><td>obj_tables.math.SymbolicExprAttribute</td><td>String</td><td><span class="monospace">sympy.Expr</span> <a href="https://docs.sympy.org/latest/_modules/sympy/core/expr.html"><i class="fi-link"></i></a></td></tr>
@@ -707,6 +707,7 @@
           <h3>Class/table-level metadata</h3>
           <p class="before-list">Optionally, table declarations can capture key-value pairs of class/table-level metadata. Each key and value should be a string. At a minimum, we recommend using the keys below. The <i>ObjTables</i> software automatically generates these keys when datasets are exported to files.</p>
           <ul class="vertically-spaced-list">
+            <li><span class="monospace">document</span>: Use this key to annotate the id of the parent document.</li>
             <li><span class="monospace">schema</span>: Use this key to annotate the name of the schema of the table. If this key is set, <i>ObjTables</i> will check that its value matches the name of the schema used to interpret the table.</li>
             <li><span class="monospace">tableFormat</span>: Use this key to indicate the format (<span class="monospace">row</span>, <span class="monospace">column</span>, <span class="monospace">multiple_cells</span>, or <span class="monospace">cell</span>) used to encode the class into the table. See above <a href="#table-formats"><i class="fi-arrow-up"></i></a> for more information about these formats. If this key is set, <i>ObjTables</i> will check that its value matches the format for the class defined in the schema.</li>
             <li><span class="monospace">name</span>: Use this key to briefly describe the class.</li>
@@ -942,7 +943,7 @@
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.py">py</a>
                 </td>
                 <td>
-                  <a href="">svg</a>
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.svg">svg</a>
                 </td>
                 <td>
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/data.tsv/">tsv</a>,
@@ -964,7 +965,7 @@
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema.py">py</a>
                 </td>
                 <td>
-                  <a href="">svg</a>
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema.py">svg</a>
                 </td>
                 <td>
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/data.tsv/">tsv</a>,
@@ -986,7 +987,7 @@
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_model/schema.py">py</a>
                 </td>
                 <td>
-                  <a href="">svg</a>
+                  <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_model/schema.svg">svg</a>
                 </td>
                 <td>
                   <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/biochemical_model/data.tsv/">tsv</a>,
