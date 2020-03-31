@@ -69,6 +69,7 @@ class UnitAttribute(core.LiteralAttribute):
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
+        self.type = registry.Unit
         self.registry = registry
         self.choices = choices
         self.none = none
@@ -323,6 +324,7 @@ class QuantityAttribute(core.LiteralAttribute):
                                                 verbose_name=verbose_name, description=description,
                                                 primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
+        self.type = registry.Quantity
         self.registry = registry
         self.choices = choices
         self.none = none

@@ -18,7 +18,7 @@ __all__ = [
 
 
 class ArrayAttribute(core.LiteralAttribute):
-    """ numpy.array attribute
+    """ numpy.ndarray attribute
 
     Attributes:
         min_length (:obj:`int`): minimum length
@@ -50,6 +50,7 @@ class ArrayAttribute(core.LiteralAttribute):
                                              verbose_name=verbose_name, description=description,
                                              primary=primary, unique=unique)
 
+        self.type = numpy.ndarray
         self.min_length = min_length
         self.max_length = max_length
 
@@ -214,6 +215,7 @@ class TableAttribute(core.LiteralAttribute):
         super(TableAttribute, self).__init__(default=default, none_value=none_value,
                                              verbose_name=verbose_name, description=description,
                                              primary=primary, unique=unique)
+        self.type = pandas.DataFrame
 
     def deserialize(self, value):
         """ Deserialize value

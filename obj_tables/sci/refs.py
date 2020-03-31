@@ -116,6 +116,7 @@ class IdentifierAttribute(core.LiteralAttribute):
                                                                "\nExample:"
                                                                "\n  '16333295' @ 'pubmed'"),
                                                   primary=False, unique=False)
+        self.type = Identifier
 
     def deserialize(self, value):
         """ Deserialize value
@@ -238,6 +239,7 @@ class IdentifiersAttribute(core.LiteralAttribute):
                                                                 "\nExample:"
                                                                 "\n  '16333295' @ 'pubmed', 'CHEBI:36927' @ 'chebi'"),
                                                    primary=False, unique=False)
+        self.type = list
 
     def deserialize(self, value):
         """ Deserialize value
@@ -390,6 +392,7 @@ class DoisAttribute(core.LiteralAttribute):
                                                          "\n  10.1016/j.mib.2015.06.004,"
                                                          " 10.1016/j.coisb.2017.10.005"),
                                             primary=False, unique=False)
+        self.type = list
 
     def deserialize(self, value):
         """ Deserialize value
@@ -532,6 +535,7 @@ class PubMedIdsAttribute(core.LiteralAttribute):
                                                               "\nExample:"
                                                               "\n  16333295, 16333299"),
                                                  primary=False, unique=False)
+        self.type = list
 
     def deserialize(self, value):
         """ Deserialize value

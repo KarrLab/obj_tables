@@ -44,6 +44,7 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
                                                         verbose_name=verbose_name,
                                                         description=description,
                                                         primary=primary, unique=unique)
+        self.type = chem.EmpiricalFormula
 
     def deserialize(self, value):
         """ Deserialize value
@@ -390,6 +391,7 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
                                                          verbose_name=verbose_name,
                                                          description=description,
                                                          primary=primary, unique=unique)
+        self.type = ChemicalStructure
 
     def deserialize(self, value):
         """ Deserialize value

@@ -3069,6 +3069,7 @@ class Attribute(object, metaclass=abc.ABCMeta):
 
     Attributes:
         name (:obj:`str`): name
+        type (:obj:`types.TypeType`): allowed type(s) of the values of the attribute
         init_value (:obj:`object`): initial value
         default (:obj:`object`): default value
         default_cleaned_value (:obj:`object`): value to replace
@@ -3099,6 +3100,7 @@ class Attribute(object, metaclass=abc.ABCMeta):
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
         """
         self.name = None
+        self.type = object
         self.init_value = init_value
         self.default = default
         self.default_cleaned_value = default_cleaned_value
@@ -3339,6 +3341,7 @@ class LocalAttribute(object):
         attr (:obj:`Attribute`): attribute
         cls (:obj:`type`): class which owns this attribute
         name (:obj:`str`): name of the :obj:`attr` in :obj:`cls`
+        type (:obj:`types.TypeType`): allowed type(s) of the values of the attribute
         related_class (:obj:`type`): other class which is related to this attribute
         related_name (:obj:`str`): name of this attribute in :obj:`related_cls`
         primary_class (:obj:`type`): class in which this attribute was defined
@@ -3348,6 +3351,10 @@ class LocalAttribute(object):
         is_primary (:obj:`bool`): :obj:`True` if this :obj:`attr` was defined in :obj:`cls` (:obj:`cls`\ =\ :obj:`primary_cls`)
         is_related (:obj:`bool`): :obj:`True` if this attribute is an instance of :obj:`RelatedAttribute`
         is_related_to_many (:obj:`bool`): :obj:`True` if the value of this attribute is a list (\*-to-many relationship)
+        min_related (:obj:`int`): minimum number of related objects in the forward direction
+        max_related (:obj:`int`): maximum number of related objects in the forward direction
+        min_related_rev (:obj:`int`): minimum number of related objects in the reverse direction
+        max_related_rev (:obj:`int`): maximum number of related objects in the reverse direction
     """
 
     def __init__(self, attr, primary_class, is_primary=True):
@@ -3359,7 +3366,7 @@ class LocalAttribute(object):
                 for the related class of :obj:`attr`
         """
         self.attr = attr
-        self.primary_name = attr.name
+        self.primary_name = attr.name        
         if isinstance(attr, RelatedAttribute):
             self.primary_class = attr.primary_class
             self.is_related = True
@@ -3374,19 +3381,36 @@ class LocalAttribute(object):
         if is_primary:
             self.cls = primary_class
             self.name = attr.name
+            self.type = attr.type
             if isinstance(attr, RelatedAttribute):
+                self.related_type = attr.related_type
                 self.related_class = attr.related_class
                 self.related_name = attr.related_name
+                self.min_related = attr.min_related
+                self.max_related = attr.max_related
+                self.min_related_rev = attr.min_related_rev
+                self.max_related_rev = attr.max_related_rev
             else:
+                self.related_type = None
                 self.related_class = None
                 self.related_name = None
+                self.min_related = None
+                self.max_related = None
+                self.min_related_rev = None
+                self.max_related_rev = None
             self.is_related_to_many = isinstance(attr, (OneToManyAttribute, ManyToManyAttribute))
         else:
             self.cls = attr.related_class
             self.name = attr.related_name
+            self.type = attr.related_type
+            self.related_type = attr.type
             self.related_class = attr.primary_class
             self.related_name = attr.name
             self.is_related_to_many = isinstance(attr, (ManyToOneAttribute, ManyToManyAttribute))
+            self.min_related = attr.min_related_rev
+            self.max_related = attr.max_related_rev
+            self.min_related_rev = attr.min_related
+            self.max_related_rev = attr.max_related
         self.is_primary = is_primary
 
 
@@ -3551,6 +3575,7 @@ class EnumAttribute(LiteralAttribute):
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
+        self.type = enum_class
         self.enum_class = enum_class
         self.none = none
 
@@ -3707,7 +3732,7 @@ class EnumAttribute(LiteralAttribute):
             serialized_members.append("('{}', {})".format(member.name, member.value.__repr__()))
 
         return "{}([{}])".format(self.__class__.__name__.rpartition('Attribute')[0],
-                               ", ".join(serialized_members))
+                                 ", ".join(serialized_members))
 
 
 class BooleanAttribute(LiteralAttribute):
@@ -3740,6 +3765,7 @@ class BooleanAttribute(LiteralAttribute):
                                                none_value=none_value,
                                                verbose_name=verbose_name, description=description,
                                                primary=False, unique=False, unique_case_insensitive=False)
+        self.type = bool
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -3873,6 +3899,7 @@ class FloatAttribute(NumericAttribute):
                                              verbose_name=verbose_name, description=description,
                                              primary=primary, unique=unique, unique_case_insensitive=False)
 
+        self.type = float
         self.min = min
         self.max = max
         self.nan = nan
@@ -4177,6 +4204,7 @@ class IntegerAttribute(NumericAttribute):
                                                verbose_name=verbose_name, description=description,
                                                primary=primary, unique=unique, unique_case_insensitive=False)
 
+        self.type = int
         self.none = none
         self.min = min
         self.max = max
@@ -4475,6 +4503,7 @@ class StringAttribute(LiteralAttribute):
                                               verbose_name=verbose_name, description=description,
                                               primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
+        self.type = str
         self.min_length = min_length
         self.max_length = max_length
         self.none = none
@@ -4609,7 +4638,7 @@ class StringAttribute(LiteralAttribute):
             args.append('unique=True')
 
         return "{}{}".format(self.__class__.__name__.rpartition('Attribute')[0],
-                               "({})".format(", ".join(args)) if args else "")
+                             "({})".format(", ".join(args)) if args else "")
 
 
 class LongStringAttribute(StringAttribute):
@@ -4721,7 +4750,7 @@ class RegexAttribute(StringAttribute):
             args.append('unique=True')
 
         return "{}{}".format(self.__class__.__name__.rpartition('Attribute')[0],
-                               "({})".format(", ".join(args)) if args else "")
+                             "({})".format(", ".join(args)) if args else "")
 
 
 class SlugAttribute(RegexAttribute):
@@ -4795,7 +4824,7 @@ class UrlAttribute(RegexAttribute):
             args.append('unique=True')
 
         return "{}{}".format(self.__class__.__name__.rpartition('Attribute')[0],
-                               "({})".format(", ".join(args)) if args else "")
+                             "({})".format(", ".join(args)) if args else "")
 
 
 class EmailAttribute(StringAttribute):
@@ -4866,6 +4895,7 @@ class DateAttribute(LiteralAttribute):
                                             none_value=none_value,
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique)
+        self.type = date
         self.none = none
 
     def clean(self, value):
@@ -5049,6 +5079,7 @@ class TimeAttribute(LiteralAttribute):
                                             none_value=none_value,
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique)
+        self.type = time
         self.none = none
 
     def clean(self, value):
@@ -5227,6 +5258,7 @@ class DateTimeAttribute(LiteralAttribute):
                                                 none_value=none_value,
                                                 verbose_name=verbose_name, description=description,
                                                 primary=primary, unique=unique)
+        self.type = datetime
         self.none = none
 
     def clean(self, value):
@@ -5921,6 +5953,7 @@ class RelatedAttribute(Attribute):
     """ Attribute which represents a relationship with other `Model`\(s)
 
     Attributes:
+        related_type (:obj:`types.TypeType`): allowed type(s) of the related values of the attribute
         primary_class (:obj:`class`): the type of the class that this related attribute references
         related_class (:obj:`class`): the type of the class that contains a related attribute
         related_name (:obj:`str`): name of related attribute on `related_class`
@@ -6156,6 +6189,8 @@ class OneToOneAttribute(RelatedAttribute):
                                                 min_related_rev=min_related_rev, max_related_rev=1,
                                                 verbose_name=verbose_name, description=description,
                                                 verbose_related_name=verbose_related_name)
+        self.type = Model
+        self.related_type = Model
 
     def set_value(self, obj, new_value):
         """ Update the values of the related attributes of the attribute
@@ -6528,6 +6563,8 @@ class ManyToOneAttribute(RelatedAttribute):
             related_init_value=related_manager, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
             verbose_name=verbose_name, description=description, verbose_related_name=verbose_related_name)
+        self.type = Model
+        self.related_type = RelatedManager
         self.related_manager = related_manager
 
     def get_related_init_value(self, obj):
@@ -6885,6 +6922,8 @@ class OneToManyAttribute(RelatedAttribute):
             related_init_value=None, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
             verbose_name=verbose_name, description=description, verbose_related_name=verbose_related_name)
+        self.type = RelatedManager
+        self.related_type = Model
         self.related_manager = related_manager
 
     def get_init_value(self, obj):
@@ -7222,6 +7261,8 @@ class ManyToManyAttribute(RelatedAttribute):
             related_init_value=related_manager, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
             verbose_name=verbose_name, description=description, verbose_related_name=verbose_related_name)
+        self.type = RelatedManager
+        self.related_type = RelatedManager
         self.related_manager = related_manager
 
     def get_init_value(self, obj):

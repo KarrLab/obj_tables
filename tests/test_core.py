@@ -17,7 +17,7 @@ import gc
 import io
 import itertools
 import math
-import numpy as np
+import numpy
 import obj_tables
 import obj_tables.math
 import objsize
@@ -4366,7 +4366,9 @@ class TestCore(unittest.TestCase):
 
         class TestChild(core.Model):
             name = core.SlugAttribute()
-            parents = core.ManyToManyAttribute(TestParent, related_name='children')
+            parents = core.ManyToManyAttribute(TestParent, related_name='children',
+                                               min_related=2, max_related=4,
+                                               min_related_rev=3, max_related_rev=5)
 
         p = TestParent()
         c = TestChild()
@@ -4375,6 +4377,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestParent.Meta.local_attributes['id'].attr, TestParent.Meta.attributes['id'])
         self.assertEqual(TestParent.Meta.local_attributes['id'].cls, TestParent)
         self.assertEqual(TestParent.Meta.local_attributes['id'].name, 'id')
+        self.assertEqual(TestParent.Meta.local_attributes['id'].type, str)
+        self.assertEqual(TestParent.Meta.local_attributes['id'].related_type, None)
         self.assertEqual(TestParent.Meta.local_attributes['id'].related_class, None)
         self.assertEqual(TestParent.Meta.local_attributes['id'].related_name, None)
         self.assertEqual(TestParent.Meta.local_attributes['id'].primary_class, TestParent)
@@ -4387,6 +4391,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestParent.Meta.local_attributes['children'].attr, TestParent.Meta.related_attributes['children'])
         self.assertEqual(TestParent.Meta.local_attributes['children'].cls, TestParent)
         self.assertEqual(TestParent.Meta.local_attributes['children'].name, 'children')
+        self.assertEqual(TestParent.Meta.local_attributes['children'].type, core.RelatedManager)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].related_type, core.RelatedManager)
         self.assertEqual(TestParent.Meta.local_attributes['children'].related_class, TestChild)
         self.assertEqual(TestParent.Meta.local_attributes['children'].related_name, 'parents')
         self.assertEqual(TestParent.Meta.local_attributes['children'].primary_class, TestChild)
@@ -4396,6 +4402,10 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestParent.Meta.local_attributes['children'].is_primary, False)
         self.assertEqual(TestParent.Meta.local_attributes['children'].is_related, True)
         self.assertEqual(TestParent.Meta.local_attributes['children'].is_related_to_many, True)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].min_related, 3)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].max_related, 5)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].min_related_rev, 2)
+        self.assertEqual(TestParent.Meta.local_attributes['children'].max_related_rev, 4)
 
         self.assertEqual(set(TestChild.Meta.local_attributes.keys()), set(['name', 'parents']))
         self.assertEqual(TestChild.Meta.local_attributes['name'].attr, TestChild.Meta.attributes['name'])
@@ -4422,6 +4432,12 @@ class TestCore(unittest.TestCase):
         self.assertEqual(TestChild.Meta.local_attributes['parents'].is_primary, True)
         self.assertEqual(TestChild.Meta.local_attributes['parents'].is_related, True)
         self.assertEqual(TestChild.Meta.local_attributes['parents'].is_related_to_many, True)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].min_related, 2)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].max_related, 4)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].min_related_rev, 3)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].max_related_rev, 5)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].type, core.RelatedManager)
+        self.assertEqual(TestChild.Meta.local_attributes['parents'].related_type, core.RelatedManager)
 
     def test_get_nested_attr(self):
         class Test1(core.Model):
@@ -4992,7 +5008,7 @@ class TestCaching(unittest.TestCase):
             big_model = BigModel(
                 id='big_model_{}'.format(iteration),
                 # make data array containing obj_data_size bytes
-                data=np.zeros(int(obj_data_size / 2), dtype=np.dtype(np.int16)),
+                data=numpy.zeros(int(obj_data_size / 2), dtype=numpy.dtype(numpy.int16)),
                 # todo: connect to neighbors, with desired network properties
                 neighbors=[]
             )
