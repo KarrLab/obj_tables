@@ -50,7 +50,10 @@ class ArrayAttribute(core.LiteralAttribute):
                                              verbose_name=verbose_name, description=description,
                                              primary=primary, unique=unique)
 
-        self.type = numpy.ndarray
+        if primary:
+            self.type = numpy.ndarray
+        else:
+            self.type = (numpy.ndarray, None.__class__)
         self.min_length = min_length
         self.max_length = max_length
 
@@ -215,7 +218,10 @@ class TableAttribute(core.LiteralAttribute):
         super(TableAttribute, self).__init__(default=default, none_value=none_value,
                                              verbose_name=verbose_name, description=description,
                                              primary=primary, unique=unique)
-        self.type = pandas.DataFrame
+        if primary:
+            self.type = pandas.DataFrame
+        else:
+            self.type = (pandas.DataFrame, None.__class__)
 
     def deserialize(self, value):
         """ Deserialize value

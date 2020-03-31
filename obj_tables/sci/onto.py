@@ -79,7 +79,10 @@ class OntoTermAttribute(core.LiteralAttribute):
                                                 verbose_name=verbose_name, description=description,
                                                 primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
-        self.type = pronto.Term
+        if none and not primary:
+            self.type = (pronto.Term, None.__class__)
+        else:
+            self.type = pronto.Term
         self.ontology = ontology
         self.namespace = namespace
         self.namespace_sep = namespace_sep

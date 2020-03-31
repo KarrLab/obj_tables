@@ -116,7 +116,7 @@ class IdentifierAttribute(core.LiteralAttribute):
                                                                "\nExample:"
                                                                "\n  '16333295' @ 'pubmed'"),
                                                   primary=False, unique=False)
-        self.type = Identifier
+        self.type = (Identifier, None.__class__)
 
     def deserialize(self, value):
         """ Deserialize value

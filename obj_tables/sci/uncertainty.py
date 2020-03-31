@@ -47,7 +47,10 @@ class UncertainFloatAttribute(core.LiteralAttribute):
                                                       default_cleaned_value=default_cleaned_value, none_value=none_value,
                                                       verbose_name=verbose_name, description=description,
                                                       primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
-        self.type = uncertainties.core.Variable
+        if none and not primary:
+            self.type = (uncertainties.core.Variable, None.__class__)
+        else:
+            self.type = uncertainties.core.Variable
         self.none = none
 
     def get_default(self):

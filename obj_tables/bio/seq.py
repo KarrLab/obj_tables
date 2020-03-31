@@ -50,7 +50,10 @@ class FeatureLocAttribute(core.LiteralAttribute):
                                                   verbose_name=verbose_name,
                                                   description=description,
                                                   primary=primary, unique=unique)
-        self.type = Bio.SeqFeature.FeatureLocation
+        if primary:
+            self.type = Bio.SeqFeature.FeatureLocation
+        else:
+            self.type = (Bio.SeqFeature.FeatureLocation, None.__class__)
 
     def deserialize(self, value):
         """ Deserialize value
@@ -201,7 +204,10 @@ class SeqAttribute(core.LiteralAttribute):
                                            description=description,
                                            primary=primary, unique=unique)
 
-        self.type = Bio.Seq.Seq
+        if primary or min_length:
+            self.type = Bio.Seq.Seq
+        else:
+            self.type = (Bio.Seq.Seq, None.__class__)
         self.alphabet = None
         self.min_length = min_length
         self.max_length = max_length
@@ -418,7 +424,7 @@ class FreqPosMatrixAttribute(core.LiteralAttribute):
         super(FreqPosMatrixAttribute, self).__init__(
             default=None, verbose_name=verbose_name,
             description=description)
-        self.type = Bio.motifs.matrix.FrequencyPositionMatrix
+        self.type = (Bio.motifs.matrix.FrequencyPositionMatrix, None.__class__)
 
     def validate(self, obj, value):
         """ Determine if `value` is a valid value

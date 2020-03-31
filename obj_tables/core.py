@@ -3575,7 +3575,10 @@ class EnumAttribute(LiteralAttribute):
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
-        self.type = enum_class
+        if none and not primary:
+            self.type = (enum_class, None.__class__)
+        else:
+            self.type = enum_class
         self.enum_class = enum_class
         self.none = none
 
@@ -3765,7 +3768,7 @@ class BooleanAttribute(LiteralAttribute):
                                                none_value=none_value,
                                                verbose_name=verbose_name, description=description,
                                                primary=False, unique=False, unique_case_insensitive=False)
-        self.type = bool
+        self.type = (bool, None.__class__)
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -4204,7 +4207,10 @@ class IntegerAttribute(NumericAttribute):
                                                verbose_name=verbose_name, description=description,
                                                primary=primary, unique=unique, unique_case_insensitive=False)
 
-        self.type = int
+        if none and not primary:
+            self.type = (int, None.__class__)
+        else:
+            self.type = int
         self.none = none
         self.min = min
         self.max = max
@@ -4503,7 +4509,10 @@ class StringAttribute(LiteralAttribute):
                                               verbose_name=verbose_name, description=description,
                                               primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
-        self.type = str
+        if none and not primary:
+            self.type = (str, None.__class__)
+        else:
+            self.type = str
         self.min_length = min_length
         self.max_length = max_length
         self.none = none
@@ -4895,7 +4904,10 @@ class DateAttribute(LiteralAttribute):
                                             none_value=none_value,
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique)
-        self.type = date
+        if none and not primary:
+            self.type = (date, None.__class__)
+        else:
+            self.type = date
         self.none = none
 
     def clean(self, value):
@@ -5079,7 +5091,10 @@ class TimeAttribute(LiteralAttribute):
                                             none_value=none_value,
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique)
-        self.type = time
+        if none and not primary:
+            self.type = (time, None.__class__)
+        else:
+            self.type = time
         self.none = none
 
     def clean(self, value):
@@ -5258,7 +5273,10 @@ class DateTimeAttribute(LiteralAttribute):
                                                 none_value=none_value,
                                                 verbose_name=verbose_name, description=description,
                                                 primary=primary, unique=unique)
-        self.type = datetime
+        if none and not primary:
+            self.type = (datetime, None.__class__)
+        else:
+            self.type = datetime
         self.none = none
 
     def clean(self, value):
@@ -6189,8 +6207,15 @@ class OneToOneAttribute(RelatedAttribute):
                                                 min_related_rev=min_related_rev, max_related_rev=1,
                                                 verbose_name=verbose_name, description=description,
                                                 verbose_related_name=verbose_related_name)
-        self.type = Model
-        self.related_type = Model
+        if min_related:
+            self.type = Model
+        else:
+            self.type = (Model, None.__class__)
+        
+        if min_related_rev:            
+            self.related_type = Model
+        else:
+            self.related_type = (Model, None.__class__)
 
     def set_value(self, obj, new_value):
         """ Update the values of the related attributes of the attribute
@@ -6563,7 +6588,10 @@ class ManyToOneAttribute(RelatedAttribute):
             related_init_value=related_manager, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=1, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
             verbose_name=verbose_name, description=description, verbose_related_name=verbose_related_name)
-        self.type = Model
+        if min_related:
+            self.type = Model
+        else:
+            self.type = (Model, None.__class__)
         self.related_type = RelatedManager
         self.related_manager = related_manager
 
@@ -6923,7 +6951,10 @@ class OneToManyAttribute(RelatedAttribute):
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
             verbose_name=verbose_name, description=description, verbose_related_name=verbose_related_name)
         self.type = RelatedManager
-        self.related_type = Model
+        if min_related_rev:
+            self.related_type = Model
+        else:
+            self.related_type = (Model, None.__class__)
         self.related_manager = related_manager
 
     def get_init_value(self, obj):
