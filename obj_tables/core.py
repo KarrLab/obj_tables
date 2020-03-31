@@ -3069,7 +3069,7 @@ class Attribute(object, metaclass=abc.ABCMeta):
 
     Attributes:
         name (:obj:`str`): name
-        type (:obj:`types.TypeType`): allowed type(s) of the values of the attribute
+        type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): allowed type(s) of the values of the attribute
         init_value (:obj:`object`): initial value
         default (:obj:`object`): default value
         default_cleaned_value (:obj:`object`): value to replace
@@ -5971,7 +5971,7 @@ class RelatedAttribute(Attribute):
     """ Attribute which represents a relationship with other `Model`\(s)
 
     Attributes:
-        related_type (:obj:`types.TypeType`): allowed type(s) of the related values of the attribute
+        related_type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): allowed type(s) of the related values of the attribute
         primary_class (:obj:`class`): the type of the class that this related attribute references
         related_class (:obj:`class`): the type of the class that contains a related attribute
         related_name (:obj:`str`): name of related attribute on `related_class`
