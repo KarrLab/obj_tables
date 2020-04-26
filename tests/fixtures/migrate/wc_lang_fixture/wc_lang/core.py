@@ -5354,7 +5354,7 @@ class Change(obj_tables.Model, SbmlModelMixin):
         reason_type (:obj:`pronto.Term`): type of reason
         intention (:obj:`str`): intention
         intention_type (:obj:`pronto.Term`): type of intention
-        identifiers (::obj:`list` of :obj:`Identifier`): identifiers
+        identifiers (:obj:`list` of :obj:`Identifier`): identifiers
         conclusions (:obj:`list` of :obj:`Conclusion`): conclusions
         comments (:obj:`str`): comments
         references (:obj:`list` of :obj:`Reference`): references
