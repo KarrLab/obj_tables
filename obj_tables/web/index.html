@@ -622,9 +622,17 @@
           <h3>Optional arguments</h3>
           <p>Most of the attributes also have optional arguments that can be used to control how values of the attribute are validated. For example, the <span class="monospace">Integer</span> and <span class="monospace">Float</span> attributes have optional <span class="monospace">min</span> and <span class="monospace">max</span> arguments which can be used to indicate the minimum and maximum valid values. The <span class="monospace">String</span> and <span class="monospace">LongString</span> attributes have optional <span class="monospace">min_length</span> and <span class="monospace">max_length</span> attributes which can be used to indicate the minimum and maximum valid lengths of each value.</p>
 
-          <p class="before-list" id="primary-attributes">In particular, the following arguments can be used to configure attributes to function as primary keys for encoding relationships from instances of other classes into their tables. These attributes are necessary to encode relationships between entries in different tables.</p>
+          <h4>Specifying required and optional attributes</h4>
+          <p class="before-list" id="required-attributes">The <span class="monospace">none</span> argument controls whether an attribute is required (its value must be defined) or optional (its value can be undefined &ndash; <span class="monospace">null</span> in Excel, <span class="monospace">null</span> in JSON and YAML, <span class="monospace">None</span> in Python):</p>
+          <ul>
+            <li><span class="monospace">none=False</span> means that the value of an attribute must be defined. This makes an attribute required.</li>
+            <li><span class="monospace">none=True</span> means that the value of an attribute can be undefined. This makes an attribute optional.</li>
+          </ul>
+
+          <h4>Specifying that an attribute can function as a foreign key for encoding relationships with instances of other classes into tables</h4>
+          <p class="before-list" id="primary-attributes">The <span class="monospace">unique</span> and <span class="monospace">primary</span> arguments can be used to configure attributes to function as primary keys for encoding relationships between instances of classes into tables:</p>
           <ul class="vertically-spaced-list">
-            <li><span class="monospace">unique</span>: Set this argument to <span class="monospace">True</span> to indicate that <i>ObjTables</i> should constrain the values of the attribute to be unique across all instances of the its parent class.</li>
+            <li><span class="monospace">unique</span>: Set this argument to <span class="monospace">True</span> to indicate that <i>ObjTables</i> should constrain the values of the attribute to be unique across all instances of its parent class.</li>
             <li><span class="monospace">primary</span>: Set this argument to <span class="monospace">True</span> to indicate that the attribute is the primary key for its parent class. Each class can only have one primary attribute, and primary attributes should also have <span class="monospace">unique = True</span>.</li>
           </ul>
 
