@@ -2,7 +2,7 @@ Compound:
 - __id: 0
   __type: Compound
   id: D_Fructose_6_phosphate
-  identifiers: kegg.compound::C00085
+  identifiers: kegg.compound:C00085
   is_constant: true
   model:
     __id: 5
@@ -12,7 +12,7 @@ Compound:
 - __id: 1
   __type: Compound
   id: D_Glucose
-  identifiers: kegg.compound::C00031
+  identifiers: kegg.compound:C00031
   is_constant: true
   model:
     __id: 5
@@ -22,7 +22,7 @@ Compound:
 - __id: 2
   __type: Compound
   id: D_Glucose_6_phosphate
-  identifiers: kegg.compound::C00092
+  identifiers: kegg.compound:C00092
   is_constant: true
   model:
     __id: 5
@@ -32,7 +32,7 @@ Compound:
 - __id: 3
   __type: Compound
   id: Phosphoenolpyruvate
-  identifiers: kegg.compound::C00074
+  identifiers: kegg.compound:C00074
   is_constant: true
   model:
     __id: 5
@@ -42,7 +42,7 @@ Compound:
 - __id: 4
   __type: Compound
   id: Pyruvate
-  identifiers: kegg.compound::C00022
+  identifiers: kegg.compound:C00022
   is_constant: true
   model:
     __id: 5
@@ -83,7 +83,7 @@ Reaction:
   equation: -1.0 D_Glucose_6_phosphate; 1.0 D_Fructose_6_phosphate
   gene: PGI
   id: PGI_R02740
-  identifiers: kegg.reaction::R02740
+  identifiers: kegg.reaction:R02740
   is_reversible: true
   model:
     __id: 5
@@ -95,7 +95,7 @@ Reaction:
   equation: -1.0 D_Glucose; -1.0 Phosphoenolpyruvate; 1.0 Pyruvate; 1.0 D_Glucose_6_phosphate
   gene: PTS
   id: PTS_RPTSsy
-  identifiers: kegg.reaction::RPTSsy
+  identifiers: kegg.reaction:RPTSsy
   is_reversible: true
   model:
     __id: 5
@@ -118,3 +118,6 @@ _classMetadata:
     description: Reaction
     id: Reaction
     name: Reaction
+_documentMetadata:
+  date: '2020-04-26 16:20:54'
+  objTablesVersion: 0.0.9
