@@ -3366,7 +3366,7 @@ class LocalAttribute(object):
                 for the related class of :obj:`attr`
         """
         self.attr = attr
-        self.primary_name = attr.name        
+        self.primary_name = attr.name
         if isinstance(attr, RelatedAttribute):
             self.primary_class = attr.primary_class
             self.is_related = True
@@ -6211,8 +6211,8 @@ class OneToOneAttribute(RelatedAttribute):
             self.type = Model
         else:
             self.type = (Model, None.__class__)
-        
-        if min_related_rev:            
+
+        if min_related_rev:
             self.related_type = Model
         else:
             self.related_type = (Model, None.__class__)
