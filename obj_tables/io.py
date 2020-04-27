@@ -1835,9 +1835,9 @@ class WorkbookReader(ReaderBase):
         assert 'tableFormat' not in model_metadata or model_metadata['tableFormat'] == model.Meta.table_format.name, \
             "Format of table '{}' must be undefined or '{}'.".format(model.Meta.verbose_name_plural, model.Meta.table_format.name)
 
-        if len(data) < 1:
+        if len(data) < min(1, num_column_heading_rows):
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
-                sheet_name, num_column_heading_rows))
+                sheet_name, min(1, num_column_heading_rows)))
 
         if (num_row_heading_columns > 0 and len(data) == 0) or len(data[0]) < num_row_heading_columns:
             raise ValueError("Worksheet '{}' must have {} header column(s)".format(
