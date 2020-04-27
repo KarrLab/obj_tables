@@ -12,7 +12,7 @@ from enum import Enum
 from modulefinder import ModuleFinder
 from networkx.algorithms.dag import topological_sort, ancestors
 from pathlib import Path, PurePath
-from pprint import pprint, pformat
+from pprint import pformat
 from urllib.parse import urlparse
 from warnings import warn
 import argparse
@@ -327,7 +327,7 @@ class SchemaModule(object):
                 for name, cls in inspect.getmembers(new_module, inspect.isclass):
                     names.add(name)
                     if issubclass(cls, obj_tables.core.Model) and \
-                            not cls in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
+                            cls not in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
                         models_found.add(name)
                 print('targets in names', names.intersection(targets))
                 print('targets in models_found', models_found.intersection(targets))
@@ -413,13 +413,13 @@ class SchemaModule(object):
         models = {}
         for name, cls in inspect.getmembers(module, inspect.isclass):
             if issubclass(cls, obj_tables.core.Model) and \
-                    not cls in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
+                    cls not in {obj_tables.Model, obj_tables.abstract.AbstractModel}:
                 models[name] = cls
         # ensure that a schema contains some obj_tables.Models
         if not models:
             raise MigratorError("No subclasses of obj_tables.Model found in '{}'".format(self.abs_module_path))
 
-        ### temporary hack until all references to GitMetadata are removed from test repos ###
+        # start: temporary hack until all references to GitMetadata are removed from test repos
         # todo: rebuild test_repo & migration_test_repo without references to GitMetadata
         to_delete = []
         for model in models.keys():
@@ -427,7 +427,7 @@ class SchemaModule(object):
                 to_delete.append(model)
         for model in to_delete:
             del models[model]
-        ### end temporary hack ###
+        # end: temporary hack
         return models
 
     def _check_imported_models(self, module=None):
@@ -1000,9 +1000,12 @@ class Migrator(object):
             migrated_models (:obj:`list` of `obj_tables.Model`:) the migrated models
             model_order (:obj:`list` of `obj_tables.core.ModelMeta`:) migrated models in the order they should appear in a workbook
             existing_file (:obj:`str`): pathname of file that is being migrated
-            migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided, save migrated file with migrated suffix in same directory as source file
-            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename; default is `Migrator.MIGRATE_SUFFIX`
-            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the migrated file and ignore `migrated_file` and `migrate_suffix`
+            migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided, save
+                migrated file with migrated suffix in same directory as source file
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
+                default is `Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
+                migrated file and ignore `migrated_file` and `migrate_suffix`
 
         Returns:
             :obj:`str`: name of migrated file
@@ -1201,7 +1204,6 @@ class Migrator(object):
         """
         from obj_tables.math.expression import ObjTablesTokenCodes
 
-        types_of_referenced_models = existing_analyzed_expr.related_objects.keys()
         changed_model_types = {}
         for existing_model_type in existing_analyzed_expr.related_objects.keys():
             existing_model_type_name = existing_model_type.__name__
@@ -1580,7 +1582,7 @@ class MigrationSpec(object):
         """
         try:
             fd = open(migrations_config_file, 'r')
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             raise MigratorError("could not read migration config file: '{}'".format(migrations_config_file))
 
         try:
@@ -1629,7 +1631,7 @@ class MigrationSpec(object):
             if getattr(self, changes_list) is not None:
                 if len(getattr(self, changes_list)) != len(self.schema_files) - 1:
                     errors.append("{} must have 1 mapping for each of the {} migration(s) specified, "
-                                  "but it has {}".format(changes_list,  len(self.schema_files) - 1,
+                                  "but it has {}".format(changes_list, len(self.schema_files) - 1,
                                                          len(getattr(self, changes_list))))
 
         if self.seq_of_renamed_models:
@@ -1703,7 +1705,7 @@ class MigrationSpec(object):
             self.seq_of_renamed_attributes = migrated_renamed_attributes
 
         # if a changes_list isn't provided, replace it with a list of Nones indicating no changes
-        empty_per_migration_list = [None]*(len(self.schema_files) - 1)
+        empty_per_migration_list = [None] * (len(self.schema_files) - 1)
         for changes_list in self._CHANGES_LISTS:
             if getattr(self, changes_list) is None:
                 setattr(self, changes_list, empty_per_migration_list)
@@ -1796,7 +1798,7 @@ class MigrationController(object):
                 # create Migrator for each pair of schemas
 
                 migrator = Migrator(existing_defs_file=ms.schema_files[i],
-                                    migrated_defs_file=ms.schema_files[i+1],
+                                    migrated_defs_file=ms.schema_files[i + 1],
                                     renamed_models=ms.seq_of_renamed_models[i],
                                     renamed_attributes=ms.seq_of_renamed_attributes[i],
                                     io_classes=ms.io_classes,
@@ -1932,7 +1934,7 @@ class SchemaChanges(object):
             :obj:`MigratorError`: if no schema changes files are found
         """
         # use glob to search
-        pattern = SchemaChanges._CHANGES_FILENAME_TEMPLATE.format('*',  '*')
+        pattern = SchemaChanges._CHANGES_FILENAME_TEMPLATE.format('*', '*')
         files = list(Path(migrations_directory).glob(pattern))
         num_files = len(files)
         if not num_files:
@@ -2136,7 +2138,7 @@ class SchemaChanges(object):
         """
         try:
             fd = open(schema_changes_file, 'r')
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             raise MigratorError("could not read schema changes file: '{}'".format(
                 schema_changes_file))
         try:
@@ -2315,7 +2317,7 @@ class GitRepo(object):
             if os.path.isdir(repo_location):
                 try:
                     self.repo = git.Repo(repo_location, search_parent_directories=search_parent_directories)
-                except git.exc.GitError as e:
+                except git.exc.GitError:
                     raise MigratorError("instantiating a git.Repo from directory '{}' failed".format(
                         repo_location))
                 self.repo_dir = os.path.dirname(self.repo.git_dir)
@@ -2826,7 +2828,7 @@ class DataSchemaMigration(object):
         config_data = {}
         for name, config_attr in DataSchemaMigration._CONFIG_ATTRIBUTES.items():
             attr_type, _, default = config_attr
-            default = default or eval(attr_type+'()')
+            default = default or eval(attr_type + '()')
             val = kwargs[name] if name in kwargs else default
             config_data[name] = val
 
@@ -2867,7 +2869,7 @@ class DataSchemaMigration(object):
                 `files_to_migrate` aren't files
         """
         data_repo_dir = os.path.abspath(data_repo_dir)
-        ### convert schema_file_url into URL for schema repo & relative path to schema's Python file ###
+        """ convert schema_file_url into URL for schema repo & relative path to schema's Python file """
         migration_config_file_kwargs = {}
         parsed_url = urlparse(schema_file_url)
         # error checks
@@ -2887,12 +2889,12 @@ class DataSchemaMigration(object):
         schema_file = '/'.join(elements[5:])
         migration_config_file_kwargs['schema_file'] = os.path.join('..', schema_file)
 
-        ### extract URL of data repo from local repo clone ###
+        """ extract URL of data repo from local repo clone """
         if not os.path.isdir(data_repo_dir):
             raise MigratorError("data_repo_dir is not a directory: '{}'".format(data_repo_dir))
         git_repo = GitRepo(data_repo_dir)
 
-        ### convert each data_file into path relative to migrations dir of data repo ###
+        """ convert each data_file into path relative to migrations dir of data repo """
         data_repo_root_dir = git_repo.repo_dir
         converted_data_files = []
         errors = []
@@ -2910,7 +2912,7 @@ class DataSchemaMigration(object):
             raise MigratorError('\n'.join(errors))
         migration_config_file_kwargs['files_to_migrate'] = converted_data_files
 
-        ### create data-schema migration config file ###
+        """ create data-schema migration config file """
         config_file_path = DataSchemaMigration.make_migration_config_file(
             git_repo,
             schema_repo_name,
@@ -2936,7 +2938,7 @@ class DataSchemaMigration(object):
         """
         try:
             fd = open(data_schema_migration_conf_file, 'r')
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             raise MigratorError("could not read data-schema migration config file: '{}'".format(
                 data_schema_migration_conf_file))
         try:
@@ -3361,7 +3363,7 @@ class Utils(object):    # pragma: no cover
                 if module.__file__ and module.__file__.startswith(args.repo):
                     max_name = max(max_name, len(module.__name__))
                     max_path = max(max_path, len(module.__file__))
-            custom_format = "{{:<{}}}{{:<{}}}".format(max_name+4, max_path)
+            custom_format = "{{:<{}}}{{:<{}}}".format(max_name + 4, max_path)
             missing, maybe = finder.any_missing_maybe()
             wc_missing = [missin for missin in missing if 'wc_' in missin]
             if wc_missing:

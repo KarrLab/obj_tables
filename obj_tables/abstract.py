@@ -6,7 +6,7 @@
 :License: MIT
 """
 
-from abc import abstractmethod
+from abc import abstractmethod  # noqa: F401
 import abc
 import obj_tables.core
 

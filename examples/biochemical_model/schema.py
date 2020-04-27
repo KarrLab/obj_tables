@@ -1,12 +1,12 @@
-# Schema automatically generated at 2020-03-12 00:22:55
+# Schema automatically generated at 2020-04-26 21:15:29
 
 import obj_tables
 
 
 __all__ = [
-    'Compound'
-    'Model'
-    'Reaction'
+    'Compound',
+    'Model',
+    'Reaction',
 ]
 
 
@@ -23,7 +23,15 @@ class Reaction(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.row
-        attribute_order = ('model', 'id', 'name', 'identifiers', 'equation', 'is_reversible', 'gene',)
+        attribute_order = (
+            'model',
+            'id',
+            'name',
+            'identifiers',
+            'equation',
+            'is_reversible',
+            'gene',
+        )
         verbose_name = 'Reaction'
         verbose_name_plural = 'Reaction'
         description = 'Reaction'
@@ -40,7 +48,13 @@ class Compound(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.row
-        attribute_order = ('model', 'id', 'name', 'identifiers', 'is_constant',)
+        attribute_order = (
+            'model',
+            'id',
+            'name',
+            'identifiers',
+            'is_constant',
+        )
         verbose_name = 'Compound'
         verbose_name_plural = 'Compound'
         description = 'Compound'
@@ -54,7 +68,10 @@ class Model(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.column
-        attribute_order = ('id', 'name',)
+        attribute_order = (
+            'id',
+            'name',
+        )
         verbose_name = 'Model'
         verbose_name_plural = 'Model'
         description = 'Model'

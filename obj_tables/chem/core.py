@@ -74,7 +74,8 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
             value (:obj:`chem.EmpiricalFormula`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
+                list of errors as an instance of `core.InvalidAttribute`
         """
         errors = []
 
@@ -97,7 +98,8 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
             values (:obj:`list` of :obj:`chem.EmpiricalFormula`): list of values
 
         Returns:
-           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
+                list of errors as an instance of `core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -428,7 +430,8 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
             value (:obj:`ChemicalStructure`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of
+                errors as an instance of `core.InvalidAttribute`
         """
         errors = []
 
@@ -451,7 +454,8 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
             values (:obj:`list` of :obj:`ChemicalStructure`): list of values
 
         Returns:
-           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
+                list of errors as an instance of `core.InvalidAttribute`
         """
         str_values = []
         for v in values:

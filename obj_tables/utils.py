@@ -11,16 +11,16 @@ from datetime import datetime
 from itertools import chain
 from pathlib import Path
 from random import shuffle
-from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute,
+from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute,  # noqa: F401
                              OneToOneAttribute, OneToManyAttribute, ManyToOneAttribute, ManyToManyAttribute,
-                             InvalidObjectSet, InvalidObject, Validator, TableFormat,
+                             InvalidObjectSet, Validator, TableFormat,
                              SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 import collections
 import importlib
 import networkx
 import obj_tables.io
 import os.path
-import pandas
+import pandas  # noqa: F401
 import pkgutil
 import random
 import re
@@ -65,7 +65,7 @@ def get_models(module):
         module (:obj:`types.ModuleType`): module
 
     Returns:
-        :obj:`dict` of :obj:`str`\ : :obj:`Model`: dictionary that maps the names of models to models
+        :obj:`dict` of :obj:`str` => :obj:`Model`: dictionary that maps the names of models to models
     """
     models = {}
     for attr_name in dir(module):
@@ -130,10 +130,10 @@ def get_attribute_by_name(cls, group_name, attr_name, verbose_name=False, case_i
     for attr_name_to_search in attr_order:
         attr = cls.Meta.attributes[attr_name_to_search]
         if group_name is None:
-            if (not case_insensitive and ((not verbose_name and attr.name == attr_name)
-                                          or (verbose_name and attr.verbose_name == attr_name))) or \
-                (case_insensitive and ((not verbose_name and attr.name.lower() == attr_name.lower())
-                                       or (verbose_name and attr.verbose_name.lower() == attr_name.lower()))):
+            if (not case_insensitive and ((not verbose_name and attr.name == attr_name) or
+                                          (verbose_name and attr.verbose_name == attr_name))) or \
+                (case_insensitive and ((not verbose_name and attr.name.lower() == attr_name.lower()) or
+                                       (verbose_name and attr.verbose_name.lower() == attr_name.lower()))):
                 return (None, attr)
         else:
             if isinstance(attr, RelatedAttribute) and attr.related_class.Meta.table_format == TableFormat.multiple_cells:
@@ -156,7 +156,7 @@ def group_objects_by_model(objects):
     """
     grouped_objects = {}
     for obj in objects:
-        if not obj.__class__ in grouped_objects:
+        if obj.__class__ not in grouped_objects:
             grouped_objects[obj.__class__] = []
         if obj not in grouped_objects[obj.__class__]:
             grouped_objects[obj.__class__].append(obj)
@@ -197,7 +197,7 @@ def get_component_by_id(models, id, identifier='id'):
         try:
             if getattr(model, identifier) == id:
                 return model
-        except AttributeError as e:
+        except AttributeError:
             raise AttributeError("{} does not have the attribute '{}'".format(model.__class__.__name__,
                                                                               identifier))
     return None
@@ -569,9 +569,9 @@ def init_schema(filename, out_filename=None):
                                   "characters, underscores, colons, forward carets, "
                                   "dots, dashes, square brackets, and spaces.").format(
                     attr_name))
-            attr_name = attr_name.replace('>', '_').replace(':', '_')
+            attr_name = re.sub(r'[^a-zA-Z0-9_]', '_', attr_name)
             attr_name = stringcase.snakecase(attr_name)
-            attr_name = attr_name.replace('__', '_')
+            attr_name = re.sub(r'_+', '_', attr_name)
 
             if attr_name == 'Meta':
                 raise ValueError('"{}" cannot have attribute with name "Meta".'.format(
@@ -681,7 +681,7 @@ def init_schema(filename, out_filename=None):
             file.write('\n')
             file.write('\n')
             file.write('__all__ = [\n')
-            file.write(''.join("    '{}'\n".format(cls_name) for cls_name in sorted(cls_specs.keys())))
+            file.write(''.join("    '{}',\n".format(cls_name) for cls_name in sorted(cls_specs.keys())))
             file.write(']\n')
 
             # print class definitions
@@ -711,8 +711,8 @@ def init_schema(filename, out_filename=None):
                 file.write('    class Meta(obj_tables.Model.Meta):\n')
                 file.write("        table_format = obj_tables.TableFormat.{}\n".format(
                     cls_spec['tab_format'].name))
-                file.write("        attribute_order = ('{}',)\n".format(
-                    "', '".join(cls_spec['attr_order'])
+                file.write("        attribute_order = (\n{}        )\n".format(
+                    "".join("            '{}',\n".format(attr) for attr in cls_spec['attr_order'])
                 ))
                 if cls_spec['verbose_name']:
                     file.write("        verbose_name = '{}'\n".format(
@@ -884,9 +884,9 @@ def viz_schema(module, filename):
             labels.append(f'<TR><TD PORT="{i_row}" BGCOLOR="{bg}"><B>{attr_name}</B></TD><TD BGCOLOR="{bg}">{attr_type}</TD></TR>')
 
         dot.node(model.__name__,
-                 label='<<TABLE CELLPADDING="4" CELLSPACING="0" BORDER="0" CELLBORDER="1">' +
-                 ''.join(labels) +
-                 '</TABLE>>',
+                 label='<<TABLE CELLPADDING="4" CELLSPACING="0" BORDER="0" CELLBORDER="1">'
+                 + ''.join(labels)
+                 + '</TABLE>>',
                  shape="none", margin="0.0,0.055")
 
     root, ext = os.path.splitext(filename)

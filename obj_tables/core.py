@@ -21,13 +21,13 @@ which can then be referenced to deserialize the related attribute.
 from datetime import date, time, datetime
 from enum import Enum
 from itertools import chain
-from math import floor, isnan
+from math import isnan
 from natsort import natsort_keygen, natsorted, ns
-from operator import attrgetter, methodcaller
+from operator import attrgetter
 from stringcase import sentencecase
-from os.path import basename, dirname, splitext
+from os.path import basename, splitext
 from weakref import WeakSet, WeakKeyDictionary
-from wc_utils.util.list import det_dedupe, is_sorted
+from wc_utils.util.list import det_dedupe
 from wc_utils.util.misc import quote, OrderableNone
 from wc_utils.util.ontology import are_terms_equivalent
 from wc_utils.util.string import indent_forest
@@ -1677,7 +1677,7 @@ class Model(object, metaclass=ModelMeta):
             return True
 
         # check objects are of the same class
-        if not self.__class__ is other.__class__:
+        if self.__class__ is not other.__class__:
             return False
 
         # check that their non-related attributes are semantically equal
@@ -2335,7 +2335,7 @@ class Model(object, metaclass=ModelMeta):
                     attrs.append((name, ''))
                     iter_attr = []
                     for v in val:
-                        if not v in printed_objs:
+                        if v not in printed_objs:
                             iter_attr.append(v._tree_str(
                                 printed_objs, depth + 1, max_depth))
                     attrs.extend(iter_attr)
@@ -3731,7 +3731,6 @@ class EnumAttribute(LiteralAttribute):
         """
         serialized_members = []
         for member in self.enum_class.__members__.values():
-            serialized_val = member.value
             serialized_members.append("('{}', {})".format(member.name, member.value.__repr__()))
 
         return "{}([{}])".format(self.__class__.__name__.rpartition('Attribute')[0],
@@ -3798,7 +3797,7 @@ class BooleanAttribute(LiteralAttribute):
                     value = False
                 elif float_value == 1.:
                     value = True
-            except:
+            except Exception:
                 pass
 
         if (value is None) or isinstance(value, bool):
@@ -5971,7 +5970,8 @@ class RelatedAttribute(Attribute):
     """ Attribute which represents a relationship with other `Model`\(s)
 
     Attributes:
-        related_type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): allowed type(s) of the related values of the attribute
+        related_type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): allowed
+            type(s) of the related values of the attribute
         primary_class (:obj:`class`): the type of the class that this related attribute references
         related_class (:obj:`class`): the type of the class that contains a related attribute
         related_name (:obj:`str`): name of related attribute on `related_class`
@@ -6453,7 +6453,6 @@ class OneToOneAttribute(RelatedAttribute):
         new_left_child = right_objs_in_left.get(right_child, right_child)
 
         new_left_child_parent = getattr(new_left_child, self.related_name)
-        new_right_child_parent = left_objs_in_right.get(new_left_child_parent, None)
 
         if new_left_child != cur_left_child and \
                 ((left == right and new_left_child_parent) or (left != right and cur_left_child)):

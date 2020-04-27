@@ -6,14 +6,13 @@
 :License: MIT
 """
 
-from . import core
+from . import core  # noqa: F401
 from . import io
 from . import utils
 import cement
 import obj_tables
 import os.path
-import sys
-import types
+import types  # noqa: F401
 
 DEFAULT_READER_ARGS = {
     'allow_multiple_sheets_per_model': True,

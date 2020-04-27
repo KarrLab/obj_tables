@@ -25,14 +25,13 @@ import os
 import pandas
 import re
 import shutil
-import stringcase
 import tempfile
 import wc_utils.workbook.io
 import yaml
 from datetime import datetime
-from itertools import chain, compress
+from itertools import compress
 from natsort import natsorted, ns
-from os.path import basename, dirname, splitext
+from os.path import basename, splitext
 from warnings import warn
 from obj_tables import utils
 from obj_tables.core import (Model, Attribute, RelatedAttribute, Validator, TableFormat,
@@ -41,11 +40,11 @@ from obj_tables.core import (Model, Attribute, RelatedAttribute, Validator, Tabl
                              DOC_TABLE_TYPE,
                              SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME,
                              TOC_TABLE_TYPE, TOC_SHEET_NAME)
-from wc_utils.util.list import transpose, det_dedupe, is_sorted, dict_by_class
+from wc_utils.util.list import transpose, det_dedupe, dict_by_class
 from wc_utils.util.misc import quote
 from wc_utils.util.string import indent_forest
-from wc_utils.workbook.core import get_column_letter, Formula
-from wc_utils.workbook.io import WorkbookStyle, WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
+from wc_utils.workbook.core import get_column_letter
+from wc_utils.workbook.io import WorksheetStyle, Hyperlink, WorksheetValidation, WorksheetValidationOrientation
 
 
 class WriterBase(object, metaclass=abc.ABCMeta):
@@ -256,7 +255,6 @@ class JsonWriter(WriterBase):
         json_objects = Model.to_dict(objects, all_models)
 
         # add model metadata to JSON
-        format = 'ObjTables'
         l_case_format = 'objTables'
         version = obj_tables.__version__
         now = datetime.now()
@@ -612,29 +610,11 @@ class WorkbookWriter(WriterBase):
                                         "internal:'!!{}'!A1".format(ws_name),
                                         tip='Click to view {}'.format(ws_name.lower())))
 
-            has_multiple_cells = False
-            n_attrs = len(model.Meta.attribute_order)
-            for attr in model.Meta.attributes.values():
-                if isinstance(attr, RelatedAttribute) and \
-                        attr.related_class.Meta.table_format == TableFormat.multiple_cells:
-                    has_multiple_cells = True
-                    n_attrs += len(attr.related_class.Meta.attribute_order)
-                    break
-
-            if model.Meta.table_format == TableFormat.row:
-                range = "OFFSET('!!{}'!A{}, ROW(1:{})-1, 0, 1, {})".format(
-                    ws_name, 3 + has_multiple_cells, 2 ** 20 - 2 - has_multiple_cells, n_attrs)
-            else:
-                range = "OFFSET('!!{}'!{}2, 0, COLUMN(A:{})-1, {}, 1)".format(
-                    ws_name, get_column_letter(2 + has_multiple_cells),
-                    get_column_letter(2 ** 14 - 1 - has_multiple_cells), n_attrs)
-
-            count_formula = 'SUM((COUNTBLANK({})<>{})*1)'.format(range, n_attrs)
             count_val = len(grouped_objects.get(model, []))
             content.append([
                 ws_name,
                 model.Meta.description,
-                count_val,  # Formula('{{={}}}'.format(count_formula), count_val),
+                count_val,
             ])
 
         style = WorksheetStyle(
@@ -1597,9 +1577,9 @@ class WorkbookReader(ReaderBase):
 
             if attr_heading is None:
                 continue
-            l = attr_heading.lower()
+            lower_attr_heading = attr_heading.lower()
 
-            header_map[(g, l)] += 1
+            header_map[(g, lower_attr_heading)] += 1
         duplicate_headers = [x for x, y in header_map.items() if y > 1]
         if duplicate_headers:
             errors = []
@@ -1721,7 +1701,6 @@ class WorkbookReader(ReaderBase):
         # load the data into objects
         objects = []
         errors = []
-        transposed = model.Meta.table_format == TableFormat.column
 
         for row_num, (obj_data, obj_comments) in enumerate(zip(data, objs_comments), start=2):
             obj = model()
@@ -1871,7 +1850,7 @@ class WorkbookReader(ReaderBase):
                 * :obj:`list` of :obj:`str`: comments
         """
         format = 'ObjTables'
-        version = obj_tables.__version__
+        # version = obj_tables.__version__
 
         doc_metadata_headings = []
         model_metadata_headings = []
@@ -2150,7 +2129,6 @@ class MultiSeparatedValuesReader(ReaderBase):
 
         data = reader.read_worksheet('')
 
-        doc_metadata = None
         if data and data[0] and isinstance(data[0][0], str):
             match = re.match(WorkbookReader.DOC_METADATA_PATTERN, data[0][0])
             if match:
@@ -2418,15 +2396,17 @@ def get_fields(cls, schema_name, doc_metadata, doc_metadata_model, model_metadat
               Each element of the list is a tuple.
 
                 1. For attributes of :obj:`cls` that represent \*-to-one relationships to classes encoded
-                   as multiple cells, the first element will be the attribute. This will be used to populate a merged cell in Row 1 of the worksheet
-                   which represents the heading for the multiple columns that encode the attributes of the related class. For all other attributes,
+                   as multiple cells, the first element will be the attribute. This will be used to populate
+                   a merged cell in Row 1 of the worksheet which represents the heading for the multiple
+                   columns that encode the attributes of the related class. For all other attributes,
                    the first element will be :obj:`None`, and no value will be printed in Row 1.
 
                 2. The second element will be the attribute that should be encoded in the column. For attributes that represent
-                   \*-to-one relationships to related classes encoded as multiple cells, this will be an attribute of the related class. For all
-                   other attributes, this will be an attribute of :obj:`cls`. This will be used to populate the columns headings for the worksheet.
-                   For classes that have \*-to-one relationships with classes encoded as multiple columns, the column headings will appear in Row 2
-                   (and the group headings specified by the first element of the tuple will be in Row 1). For all other classes, the column headings
+                   \*-to-one relationships to related classes encoded as multiple cells, this will be an attribute of the
+                   related class. For all other attributes, this will be an attribute of :obj:`cls`. This will be used to
+                   populate the columns headings for the worksheet. For classes that have \*-to-one relationships with
+                   classes encoded as multiple columns, the column headings will appear in Row 2 (and the group headings
+                   specified by the first element of the tuple will be in Row 1). For all other classes, the column headings
                    will appear in Row 1.
 
             * :obj:`list`: field headings
@@ -2503,7 +2483,6 @@ def get_fields(cls, schema_name, doc_metadata, doc_metadata_model, model_metadat
         header_map[((group_heading or '').lower(), attr_heading.lower())].append((group_heading, attr_heading))
     duplicate_headers = list(filter(lambda x: 1 < len(x), header_map.values()))
     if duplicate_headers:
-        errors = []
         for dupes in duplicate_headers:
             str = ', '.join(map(lambda s: "'{}.{}'".format(s[0], s[1]), dupes))
             warn('Duplicate, case insensitive, header fields: {}'.format(str), IoWarning)

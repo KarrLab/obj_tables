@@ -9,7 +9,7 @@
 from .. import core
 import math
 import uncertainties
-import wc_utils.workbook.io
+import wc_utils.workbook.io  # noqa: F401
 
 __all__ = [
     'UncertainFloatAttribute',

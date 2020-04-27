@@ -94,7 +94,8 @@ class FeatureLocAttribute(core.LiteralAttribute):
             value (:obj:`numpy.array`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
+                list of errors as an instance of `core.InvalidAttribute`
         """
         errors = []
 
@@ -117,7 +118,8 @@ class FeatureLocAttribute(core.LiteralAttribute):
             values (:obj:`list` of :obj:`Bio.SeqFeature.FeatureLocation`): list of values
 
         Returns:
-           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return
+                a list of errors as an instance of `core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -242,7 +244,8 @@ class SeqAttribute(core.LiteralAttribute):
             value (:obj:`Bio.Seq.Seq`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
+                list of errors as an instance of `core.InvalidAttribute`
         """
         errors = []
 
@@ -277,7 +280,8 @@ class SeqAttribute(core.LiteralAttribute):
             values (:obj:`list` of :obj:`Bio.Seq.Seq`): list of values
 
         Returns:
-           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return
+                a list of errors as an instance of `core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -434,7 +438,8 @@ class FreqPosMatrixAttribute(core.LiteralAttribute):
             value (:obj:`Bio.motifs.matrix.FrequencyPositionMatrix`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list
+                of errors as an instance of `core.InvalidAttribute`
         """
         if value is not None and not isinstance(value, Bio.motifs.matrix.FrequencyPositionMatrix):
             return core.InvalidAttribute(self, ['Value must be an instance of `Bio.motifs.matrix.FrequencyPositionMatrix`'])

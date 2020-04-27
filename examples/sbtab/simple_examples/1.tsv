@@ -39,7 +39,7 @@ glycolysis	2		ADP	Cytosol
 glycolysis	1		NADH	Cytosol	
 					
 !!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='Relationship' description='Ex 23 - Little graph'					
-!From	!To	!Relation	!Value		
+!FromObject	!ToObject	!Relation	!Value		
 A	A	regulates	1		
 A	B	regulates	-1		
 B	A	regulates	1		

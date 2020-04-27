@@ -8,7 +8,6 @@
 
 from .. import core
 import sympy
-import json
 
 __all__ = [
     'SymbolicBasicAttribute',
@@ -44,8 +43,8 @@ class SymbolicBasicAttribute(core.LiteralAttribute):
             raise ValueError('Default must be a `{}` or `None`'.format(str(sympy_type)[8:-2]))
 
         super(SymbolicBasicAttribute, self).__init__(default=default, none_value=none_value,
-                                                  verbose_name=verbose_name, description=description,
-                                                  primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
+                                                     verbose_name=verbose_name, description=description,
+                                                     primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
         self.sympy_type = sympy_type
         if primary:
@@ -76,7 +75,8 @@ class SymbolicBasicAttribute(core.LiteralAttribute):
             value (:obj:`sympy.Basic`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors
+                as an instance of `core.InvalidAttribute`
         """
         errors = []
 
@@ -98,7 +98,8 @@ class SymbolicBasicAttribute(core.LiteralAttribute):
             values (:obj:`list` of :obj:`sympy.Basic`): list of values
 
         Returns:
-           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `core.InvalidAttribute`
+           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list
+            of errors as an instance of `core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -168,8 +169,9 @@ class SymbolicExprAttribute(SymbolicBasicAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
         """
-        super(SymbolicExprAttribute, self).__init__(sympy_type=sympy.Expr, default=default, none_value=none_value, verbose_name=verbose_name, description=description,
-                                                 primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
+        super(SymbolicExprAttribute, self).__init__(sympy_type=sympy.Expr, default=default, none_value=none_value,
+                                                    verbose_name=verbose_name, description=description,
+                                                    primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
     def serialize(self, value):
         """ Serialize string
@@ -219,8 +221,9 @@ class SymbolicSymbolAttribute(SymbolicBasicAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
         """
-        super(SymbolicSymbolAttribute, self).__init__(sympy_type=sympy.Symbol, default=default, none_value=none_value, verbose_name=verbose_name, description=description,
-                                                   primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
+        super(SymbolicSymbolAttribute, self).__init__(sympy_type=sympy.Symbol, default=default, none_value=none_value,
+                                                      verbose_name=verbose_name, description=description,
+                                                      primary=primary, unique=unique, unique_case_insensitive=unique_case_insensitive)
 
     def serialize(self, value):
         """ Serialize string

@@ -27,7 +27,8 @@ class OntoTermAttribute(core.LiteralAttribute):
         none (:obj:`bool`): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
     """
 
-    def __init__(self, ontology, namespace=None, namespace_sep=':', terms=None, none=True, default=None, default_cleaned_value=None, none_value=None,
+    def __init__(self, ontology, namespace=None, namespace_sep=':', terms=None, none=True,
+                 default=None, default_cleaned_value=None, none_value=None,
                  verbose_name='', description='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """

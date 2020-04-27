@@ -180,8 +180,6 @@ class Diff(flask_restplus.Resource):
             shutil.rmtree(wb_dir_2)
             flask_restplus.abort(400, str(err))
 
-        model = get_model(models, model_name)
-
         try:
             diffs = utils.diff_workbooks(wb_filename_1, wb_filename_2,
                                          models, model_name,

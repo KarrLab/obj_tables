@@ -256,8 +256,8 @@ ReferencePubMed	Attribute	Relation	String	Reference PubMed ID
 ReferenceDOI	Attribute	Relation	String	Reference DOI
 Description	Attribute	Relation	String	Description of the row element
 ID	Attribute	Relation	String	Type of quantitative relation
-From	Attribute	Relation	String	Element at beginning of arrow
-To	Attribute	Relation	String	Element at arrowhead
+FromObject	Attribute	Relation	String	Element at beginning of arrow
+ToObject	Attribute	Relation	String	Element at arrowhead
 IsSymmetric	Attribute	Relation	Boolean	Flag indicating non-symmetric relations
 Value:QuantityType	Attribute	Relation	Float	Numerical value assigned to the relation
 ComponentName	Attribute	Definition	String	Name of component (table, column, attribute to be defined)
@@ -401,8 +401,8 @@ RowString	Attribute	SparseMatrixRow	String	JSON string describing all elements i
 ColumnID	Attribute	SparseMatrixColumn	String	Column identifier
 ColumnString	Attribute	SparseMatrixColumn	String	JSON string describing all elements in the column
 ID	Attribute	Relationship	String	
-From	Attribute	Relationship	String	
-To	Attribute	Relationship	String	
+FromObject	Attribute	Relationship	String	
+ToObject	Attribute	Relationship	String	
 Value	Attribute	Relationship	Integer	
 IsSymmetric	Attribute	Relationship	Boolean	
 Sign	Attribute	Relationship	Enum(['+', '-', '0'], default='0')	

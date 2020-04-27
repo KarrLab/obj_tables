@@ -1,5 +1,5 @@
 !!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' id='Relationship' description='YeastTranscriptionalRegulation'		
-!From	!To	!Relation
+!FromObject	!ToObject	!Relation
 ABF1	YAL041W	Binds
 ABF1	YAL042W	Binds
 ABF1	YAL043C	Binds

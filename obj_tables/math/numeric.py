@@ -81,7 +81,7 @@ class ArrayAttribute(core.LiteralAttribute):
             try:
                 value = numpy.array(json.loads(value), dtype)
                 error = None
-            except:
+            except Exception:
                 value = None
                 error = 'Unable to parse numpy array from string'
         elif isinstance(value, (list, tuple, numpy.ndarray)):
@@ -104,7 +104,8 @@ class ArrayAttribute(core.LiteralAttribute):
             value (:obj:`numpy.array`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
+                list of errors as an instance of `core.InvalidAttribute`
         """
         errors = []
 
@@ -139,7 +140,8 @@ class ArrayAttribute(core.LiteralAttribute):
             values (:obj:`list` of :obj:`numpy.array`): list of values
 
         Returns:
-           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
+                list of errors as an instance of `core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -250,7 +252,7 @@ class TableAttribute(core.LiteralAttribute):
                 value = pandas.DataFrame.from_dict(dict_value, dtype=dtype)
                 value.index = pandas.Index(index)
                 error = None
-            except:
+            except Exception:
                 value = None
                 error = 'Unable to parse pandas.DataFrame from string'
         elif isinstance(value, dict):
@@ -260,7 +262,7 @@ class TableAttribute(core.LiteralAttribute):
                 value = value.astype(dtype)
                 value.index = pandas.Index(index)
                 error = None
-            except:
+            except Exception:
                 value = None
                 error = 'Unable to parse pandas.DataFrame from dict'
         elif isinstance(value, pandas.DataFrame):
@@ -282,7 +284,8 @@ class TableAttribute(core.LiteralAttribute):
             value (:obj:`pandas.DataFrame`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of
+                errors as an instance of `core.InvalidAttribute`
         """
         errors = []
 
@@ -311,7 +314,8 @@ class TableAttribute(core.LiteralAttribute):
             values (:obj:`list` of :obj:`pandas.DataFrame`): list of values
 
         Returns:
-           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
+                list of errors as an instance of `core.InvalidAttribute`
         """
         str_values = []
         for v in values:

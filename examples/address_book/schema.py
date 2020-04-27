@@ -1,12 +1,12 @@
-# Schema automatically generated at 2020-03-14 13:19:02
+# Schema automatically generated at 2020-04-26 21:15:27
 
 import obj_tables
 
 
 __all__ = [
-    'Address'
-    'Company'
-    'Person'
+    'Address',
+    'Company',
+    'Person',
 ]
 
 
@@ -19,7 +19,13 @@ class Address(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.multiple_cells
-        attribute_order = ('street', 'city', 'state', 'zip_code', 'country',)
+        attribute_order = (
+            'street',
+            'city',
+            'state',
+            'zip_code',
+            'country',
+        )
         verbose_name = 'Address'
         verbose_name_plural = 'Addresses'
 
@@ -34,7 +40,14 @@ class Person(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.row
-        attribute_order = ('name', 'type', 'company', 'email_address', 'phone_number', 'address',)
+        attribute_order = (
+            'name',
+            'type',
+            'company',
+            'email_address',
+            'phone_number',
+            'address',
+        )
         verbose_name = 'Person'
         verbose_name_plural = 'People'
 
@@ -46,6 +59,10 @@ class Company(obj_tables.Model):
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.column
-        attribute_order = ('name', 'url', 'address',)
+        attribute_order = (
+            'name',
+            'url',
+            'address',
+        )
         verbose_name = 'Company'
         verbose_name_plural = 'Companies'

@@ -1,10 +1,8 @@
-import pkg_resources
-
-from ._version import __version__
+from ._version import __version__  # noqa: F401
 # :obj:`str`: version
 
 # API
-from .core import (Model, Attribute,
+from .core import (Model, Attribute,  # noqa: F401
                    LiteralAttribute, NumericAttribute, EnumAttribute, BooleanAttribute,
                    FloatAttribute, PositiveFloatAttribute,
                    IntegerAttribute, PositiveIntegerAttribute, StringAttribute, LongStringAttribute,
