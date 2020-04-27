@@ -12,6 +12,7 @@ from . import utils
 from .__main__ import get_schema_models, DEFAULT_WRITER_ARGS, DEFAULT_READER_ARGS
 from wc_utils.util.string import indent_forest
 from werkzeug.datastructures import FileStorage
+import copy
 import flask
 import flask_cors
 import flask_restplus
@@ -115,7 +116,8 @@ class Convert(flask_restplus.Resource):
                 format, objs, schema_name, doc_metadata, model_metadata, models=models,
                 write_toc=args['write-toc'],
                 write_schema=args['write-schema'],
-                protected=args['protected'])
+                protected=args['protected'],
+                **DEFAULT_WRITER_ARGS)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
@@ -247,11 +249,14 @@ class GenTemplate(flask_restplus.Resource):
         finally:
             shutil.rmtree(schema_dir)
 
+        kw_args = copy.copy(DEFAULT_WRITER_ARGS)
+        kw_args['write_empty_cols'] = True
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
             format, [], schema_name, {}, {}, models=models,
             write_toc=args['write-toc'],
             write_schema=args['write-schema'],
-            protected=args['protected'])
+            protected=args['protected'],
+            **kw_args)
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -390,7 +395,8 @@ class Normalize(flask_restplus.Resource):
             format, objs, schema_name, doc_metadata, model_metadata, models=models,
             write_toc=args['write-toc'],
             write_schema=args['write-schema'],
-            protected=args['protected'])
+            protected=args['protected'],
+            **DEFAULT_WRITER_ARGS)
 
         @flask.after_this_request
         def remove_out_file(response):
@@ -611,7 +617,7 @@ def read_workbook(filename, models, schema_name=None):
 
 
 def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, models,
-                      write_toc=False, write_schema=False, protected=True):
+                      write_toc=False, write_schema=False, write_empty_cols=True, protected=True):
     """
     Args:
         format (:obj:`str`): format (.csv, .tsv, .xlsx)
@@ -624,6 +630,7 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
             a table of contents with the file
         write_schema (:obj:`bool`, optional): if :obj:`True`, write
             schema with file
+        write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
         protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
 
     Returns:
@@ -640,8 +647,7 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
     io.Writer().run(temp_filename, objs, schema_name=schema_name, doc_metadata=doc_metadata, model_metadata=model_metadata,
-                    models=models, write_toc=write_toc, write_schema=write_schema, protected=protected,
-                    **DEFAULT_WRITER_ARGS)
+                    models=models, write_toc=write_toc, write_schema=write_schema, protected=protected)
 
     if format in ['csv', 'tsv']:
         filename = os.path.join(dir, 'workbook.{}.zip'.format(format))

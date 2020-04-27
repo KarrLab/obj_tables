@@ -1,4 +1,4 @@
-!!ObjTables type='Data' id='NormalRecord',
+!!ObjTables type='Data' class='NormalRecord',
 !Id,!val
 t_1,long
 t_2,x

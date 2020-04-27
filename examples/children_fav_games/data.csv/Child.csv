@@ -1,5 +1,5 @@
 !!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 11:51:04',,,,,,
-!!ObjTables type='Data' tableFormat='row' id='Child' name='Child' date='2020-03-14 11:51:04' objTablesVersion='0.0.8',,,,,,
+!!ObjTables type='Data' tableFormat='row' class='Child' name='Child' date='2020-03-14 11:51:04' objTablesVersion='0.0.8',,,,,,
 ,,,,!Favorite video game,!Favorite video game,!Favorite video game
 !Id,!Name,!Gender,!Parents,!Name,!Publisher,!Year
 jamie_doe,Jamie Doe,female,"jane_doe, john_doe",Legend of Zelda,Nintendo,1986.0

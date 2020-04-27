@@ -57,7 +57,8 @@ class RestTestCase(unittest.TestCase):
             file.write(rv.data)
 
         p_0_b = io.WorkbookReader().run(workbook_filename_2,
-                                        models=models)[schema.Parent][0]
+                                        models=models,
+                                        ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         # invalid schema
@@ -240,7 +241,8 @@ class RestTestCase(unittest.TestCase):
             file.write(rv.data)
 
         p_0_b = io.WorkbookReader().run(out_workbook_file,
-                                        models=models)[schema.Parent][0]
+                                        models=models,
+                                        ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         # to tsv
@@ -258,7 +260,8 @@ class RestTestCase(unittest.TestCase):
             zip_file.extractall(self.tempdir)
 
         p_0_b = io.WorkbookReader().run(out_workbook_file,
-                                        models=models)[schema.Parent][0]
+                                        models=models,
+                                        ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         # invalid workbook

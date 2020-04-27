@@ -1,5 +1,5 @@
 !!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:19:04'					
-!!ObjTables type='Data' tableFormat='column' id='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'					
+!!ObjTables type='Data' tableFormat='column' class='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'					
 	!Name	Apple	Facebook	Google	Netflix
 	!URL	https://www.apple.com/	https://www.facebook.com/	https://www.google.com/	https://www.netflix.com/
 !Address	!Street	10600 N Tantau Ave	1 Hacker Way #15	1600 Amphitheatre Pkwy	100 Winchester Cir

@@ -10,6 +10,7 @@ from . import core  # noqa: F401
 from . import io
 from . import utils
 import cement
+import copy
 import obj_tables
 import os.path
 import types  # noqa: F401
@@ -166,10 +167,12 @@ class GenTemplateController(cement.Controller):
     def _default(self):
         args = self.app.pargs
         schema_name, schema, models = get_schema_models(args.schema_file)
+        kw_args = copy.copy(DEFAULT_WRITER_ARGS)
+        kw_args['write_empty_cols'] = True
         io.Writer().run(args.template_file, [], schema_name=schema_name, models=models,
                         write_toc=args.write_toc, write_schema=args.write_schema,
                         extra_entries=10, protected=(not args.unprotected),
-                        **DEFAULT_WRITER_ARGS)
+                        **kw_args)
         print('Template saved to {}'.format(args.template_file))
 
 

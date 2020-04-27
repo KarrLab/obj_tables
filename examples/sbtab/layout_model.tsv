@@ -1,18 +1,18 @@
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' id='Compartment'										
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' class='Compartment'										
 !ID	!Name	!Size	!Unit	!SBOTerm						
 Compartment_1	Compartment_1	nan								
 										
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' id='Compound'										
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' class='Compound'										
 !ID	!Name	!Location	!IsConstant	!SBOTerm	!InitialConcentration	!hasOnlySubstanceUnits				
 Species_1		Compartment_1	FALSE		nan	FALSE				
 Species_2		Compartment_1	FALSE		nan	FALSE				
 										
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' id='Reaction'										
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' class='Reaction'										
 !ID	!Name	!ReactionFormula	!Location	!Regulator	!KineticLaw	!SBOTerm	!IsReversible			
 Reaction_1		1 Species_1 <=> 1 Species_2 <=> 					FALSE			
 Reaction_2		1 Species_2 <=> 1 Species_1 <=> 					FALSE			
 										
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' id='Layout' description='SBML Layout'										
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='TestModel layout' date='2018-11-23' type='Data' class='Layout' description='SBML Layout'										
 !ID	!Name	!SBML:layout:modelEntity	!SBML:layout:compartment:id	!SBML:layout:reaction:id	!SBML:layout:species:id	!SBML:layout:CurveSegment	!SBML:layout:X	!SBML:layout:Y	!SBML:layout:width	!SBML:layout:height
 Layout_1		LayoutCanvas							400	220
 CompartmentGlyph_1		Compartment	Compartment_1				5	5	390	210

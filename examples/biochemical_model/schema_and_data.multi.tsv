@@ -26,7 +26,7 @@ is_reversible	Attribute	Reaction	Boolean
 model	Attribute	Reaction	ManyToOne			
 name	Attribute	Reaction	String			Name
 
-!!ObjTables type='Data' tableFormat='row' id='Compound' name='Compound' description='Compound' date='2020-03-12 00:22:57' objTablesVersion='0.0.8'				
+!!ObjTables type='Data' tableFormat='row' class='Compound' name='Compound' description='Compound' date='2020-03-12 00:22:57' objTablesVersion='0.0.8'				
 !Model	!Id	!Name	!Identifiers	!IsConstant
 e_coli	D_Fructose_6_phosphate	D-Fructose 6-phosphate	kegg.compound:C00085	True
 e_coli	D_Glucose	D-Glucose	kegg.compound:C00031	True
@@ -34,11 +34,11 @@ e_coli	D_Glucose_6_phosphate	D-Glucose 6-phosphate	kegg.compound:C00092	True
 e_coli	Phosphoenolpyruvate	Phosphoenolpyruvate	kegg.compound:C00074	True
 e_coli	Pyruvate	Pyruvate	kegg.compound:C00022	True
 
-!!ObjTables type='Data' tableFormat='column' id='Model' name='Model' description='Model' date='2020-03-12 00:22:57' objTablesVersion='0.0.8'	
+!!ObjTables type='Data' tableFormat='column' class='Model' name='Model' description='Model' date='2020-03-12 00:22:57' objTablesVersion='0.0.8'	
 !Id	e_coli
 !Name	
 
-!!ObjTables type='Data' tableFormat='row' id='Reaction' name='Reaction' description='Reaction' date='2020-03-12 00:22:57' objTablesVersion='0.0.8'						
+!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reaction' description='Reaction' date='2020-03-12 00:22:57' objTablesVersion='0.0.8'						
 !Model	!Id	!Name	!Identifiers	!Equation	!IsReversible	!Gene
 e_coli	PGI_R02740		kegg.reaction:R02740	-1.0 D_Glucose_6_phosphate; 1.0 D_Fructose_6_phosphate	True	PGI
 e_coli	PTS_RPTSsy		kegg.reaction:RPTSsy	-1.0 D_Glucose; -1.0 Phosphoenolpyruvate; 1.0 Pyruvate; 1.0 D_Glucose_6_phosphate	True	PTS

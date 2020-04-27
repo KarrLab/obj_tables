@@ -108,15 +108,15 @@ _documentMetadata:
 _classMetadata:
   Compound:
     description: Compound
-    id: Compound
+    class: Compound
     name: Compound
   Model:
     description: Model
-    id: Model
+    class: Model
     name: Model
   Reaction:
     description: Reaction
-    id: Reaction
+    class: Reaction
     name: Reaction
 _documentMetadata:
   date: '2020-04-26 16:20:54'

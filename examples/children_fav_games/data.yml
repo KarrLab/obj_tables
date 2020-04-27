@@ -147,13 +147,13 @@ Parent:
   name: Richard Roe
 _classMetadata:
   Child:
-    id: Child
+    class: Child
     name: Child
   Game:
-    id: Game
+    class: Game
     name: Game
   Parent:
-    id: Parent
+    class: Parent
     name: Parent
 _documentMetadata:
   date: '2020-03-14 11:51:05'

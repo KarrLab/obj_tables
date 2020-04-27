@@ -167,13 +167,13 @@ Person:
   type: business
 _classMetadata:
   Address:
-    id: Address
+    class: Address
     name: Addresses
   Company:
-    id: Company
+    class: Company
     name: Companies
   Person:
-    id: Person
+    class: Person
     name: People
 _documentMetadata:
   date: '2020-03-14 13:19:04'

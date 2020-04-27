@@ -26,7 +26,8 @@ class TestCli(unittest.TestCase):
         self.tempdir = tempfile.mkdtemp()
 
     def tearDown(self):
-        shutil.rmtree(self.tempdir)
+        # shutil.rmtree(self.tempdir)
+        print(self.tempdir)
 
     def test_raw_cli(self):
         with mock.patch('sys.argv', ['obj-tables', '--help']):
@@ -71,7 +72,8 @@ class TestCli(unittest.TestCase):
             app.run()
 
         p_0_b = io.WorkbookReader().run(csv_file_2,
-                                        models=models)[schema.Parent][0]
+                                        models=models,
+                                        ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
     def test_diff(self):
@@ -174,7 +176,8 @@ class TestCli(unittest.TestCase):
             app.run()
 
         p_0_b = io.WorkbookReader().run(xl_file_2,
-                                        models=models)[schema.Parent][0]
+                                        models=models,
+                                        ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         with self.assertRaises(SystemExit):

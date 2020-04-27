@@ -1,4 +1,4 @@
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='lac_Operon' type='Data' id='Gene'			
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='lac_Operon' type='Data' class='Gene'			
 !ID	!LocusName	!GeneProduct	!Operon
 lacZ	b0342	beta-galactosidase	lac
 lacY	b0343	beta-galactoside permease	lac

@@ -12,7 +12,7 @@ category	Attribute	Transaction	String
 date	Attribute	Transaction	Date			
 payee	Attribute	Transaction	String			
 
-!!ObjTables type='Data' tableFormat='row' id='Transaction' name='Transaction' description='Stores transactions' date='2020-03-11 23:55:18' objTablesVersion='0.0.8'			
+!!ObjTables type='Data' tableFormat='row' class='Transaction' name='Transaction' description='Stores transactions' date='2020-03-11 23:55:18' objTablesVersion='0.0.8'			
 !Amount	!Category	!Date	!Payee
 100.0	Food		Restaurant
 50.0	Food		Sam's market

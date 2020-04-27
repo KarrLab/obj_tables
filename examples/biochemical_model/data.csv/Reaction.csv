@@ -1,4 +1,4 @@
-!!ObjTables type='Data' tableFormat='row' id='Reaction' name='Reaction' description='Reaction' date='2020-03-12 00:22:56' objTablesVersion='0.0.8',,,,,,
+!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reaction' description='Reaction' date='2020-03-12 00:22:56' objTablesVersion='0.0.8',,,,,,
 !Model,!Id,!Name,!Identifiers,!Equation,!IsReversible,!Gene
 e_coli,PGI_R02740,,kegg.reaction:R02740,-1.0 D_Glucose_6_phosphate; 1.0 D_Fructose_6_phosphate,True,PGI
 e_coli,PTS_RPTSsy,,kegg.reaction:RPTSsy,-1.0 D_Glucose; -1.0 Phosphoenolpyruvate; 1.0 Pyruvate; 1.0 D_Glucose_6_phosphate,True,PTS

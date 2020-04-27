@@ -25,7 +25,7 @@ state	Attribute	Address	String
 street	Attribute	Address	String(primary=True, unique=True)			
 zip_code	Attribute	Address	String			
 
-!!ObjTables type='Data' tableFormat='column' id='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'					
+!!ObjTables type='Data' tableFormat='column' class='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'					
 	!Name	Apple	Facebook	Google	Netflix
 	!URL	https://www.apple.com/	https://www.facebook.com/	https://www.google.com/	https://www.netflix.com/
 !Address	!Street	10600 N Tantau Ave	1 Hacker Way #15	1600 Amphitheatre Pkwy	100 Winchester Cir
@@ -34,7 +34,7 @@ zip_code	Attribute	Address	String
 !Address	!Zip code	95014	94025	94043	95032
 !Address	!Country	US	US	US	US
 
-!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'									
+!!ObjTables type='Data' tableFormat='row' class='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'									
 					!Address	!Address	!Address	!Address	!Address
 !Name	!Type	!Company	!Email address	!Phone number	!Street	!City	!State	!Zip code	!Country
 Mark Zuckerberg	family	Facebook	zuck@fb.com	650-543-4800	1 Hacker Way #15	Menlo Park	CA	94025	US

@@ -1,4 +1,4 @@
-!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:19:03' objTablesVersion='0.0.8',,,,,,,,,
+!!ObjTables type='Data' tableFormat='row' class='Person' name='People' date='2020-03-14 13:19:03' objTablesVersion='0.0.8',,,,,,,,,
 ,,,,,!Address,!Address,!Address,!Address,!Address
 !Name,!Type,!Company,!Email address,!Phone number,!Street,!City,!State,!Zip code,!Country
 Mark Zuckerberg,family,Facebook,zuck@fb.com,650-543-4800,1 Hacker Way #15,Menlo Park,CA,94025,US

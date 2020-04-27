@@ -1,4 +1,4 @@
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='BIOMD0000000061' type='Data' id='Reaction'							
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='BIOMD0000000061' type='Data' class='Reaction'							
 !ID	!Name	!ReactionFormula	!Regulator	!KineticLaw	!IsReversible	!Identifiers:ec-code	
 vinGlc	Glucose Mixed flow to extracellular medium	GlcX0 <=> GlcX		extracellular * k0 * (GlcX0 - GlcX)	TRUE		
 vGlcTrans	Glucose uptake	GlcX <=> 59.0 Glc	G6P	extracellular * V2f / Yvol * (GlcX / K2Glc / (1 + GlcX / K2Glc + (P2 * (GlcX / K2Glc) + 1) / (P2 * (Glc / K2Glc) + 1) * (1 + Glc / K2Glc + G6P / K2IG6P + Glc * G6P / (K2Glc * K2IIG6P)))) - cytosol * V2r / Yvol * (Glc / K2Glc / (1 + Glc / K2Glc + (P2 * (Glc / K2Glc) + 1) / (P2 * (GlcX / K2Glc) + 1) * (1 + GlcX / K2Glc) + G6P / K2IG6P + Glc * G6P / (K2Glc * K2IIG6P)))	TRUE		
@@ -25,7 +25,7 @@ vstorage	Storage	ATP + G6P <=> ADP		cytosol * k22 * ATP * G6P	TRUE
 vconsum	ATP consumption	ATP <=> ADP		cytosol * k23 * ATP	TRUE		
 vAK	Adenylate kinase	ATP + AMP <=> 2.0 ADP		"cytosol * (k24f * AMP * ATP - k24r * pow(ADP, 2))"	TRUE	2.7.4.3	
 							
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='BIOMD0000000061' type='Data' id='Compound'							
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='BIOMD0000000061' type='Data' class='Compound'							
 !ID	!Name	!Location	!Charge	!IsConstant	!InitialConcentration	!hasOnlySubstanceUnits	!Identifiers:kegg.compound
 GlcX	Extracellular glucose	extracellular	0	FALSE	6.7	FALSE	C00293
 Glc	Cytosolic glucose	cytosol	0	FALSE	0.573074	FALSE	C00293
@@ -53,12 +53,12 @@ P		extracellular	0	FALSE	0	FALSE
 CNX0	Mixed flow cyanide 	extracellular	0	FALSE	5.6	FALSE	C00177
 GlcX0	Mixed flow glucose	extracellular	0	FALSE	24	FALSE	C00293
 							
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='BIOMD0000000061' type='Data' id='Compartment'							
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='BIOMD0000000061' type='Data' class='Compartment'							
 !ID	!Size						
 extracellular	1						
 cytosol	1						
 							
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='BIOMD0000000061' type='Data' id='Quantity'							
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='BIOMD0000000061' type='Data' class='Quantity'							
 !ID	!SBML:parameter:id	!Value	!Unit	!Description			
 k0_vinGlc	k0	0.048	min_inverse	local parameter			
 V2f_vGlcTrans	V2f	1014.96	mM_per_minute	local parameter			

@@ -29,5 +29,5 @@ _documentMetadata:
 _classMetadata:
   Transaction:
     description: Stores transactions
-    id: Transaction
+    class: Transaction
     name: Transaction

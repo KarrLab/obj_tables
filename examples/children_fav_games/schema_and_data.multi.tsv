@@ -21,7 +21,7 @@ name	Attribute	Game	String(primary=True, unique=True)
 publisher	Attribute	Game	String			
 year	Attribute	Game	Integer			
 
-!!ObjTables type='Data' tableFormat='row' id='Child' name='Child' date='2020-03-14 11:51:05' objTablesVersion='0.0.8'						
+!!ObjTables type='Data' tableFormat='row' class='Child' name='Child' date='2020-03-14 11:51:05' objTablesVersion='0.0.8'						
 				!Favorite video game	!Favorite video game	!Favorite video game
 !Id	!Name	!Gender	!Parents	!Name	!Publisher	!Year
 jamie_doe	Jamie Doe	female	jane_doe, john_doe	Legend of Zelda	Nintendo	1986.0
@@ -29,6 +29,6 @@ jimie_doe	Jimie Doe	male	jane_doe, john_doe	Super Mario Brothers	Nintendo	1985.0
 linda_roe	Linda Roe	female	mary_roe, richard_roe	Sonic the Hedgehog	Sega	1991.0
 mike_roe	Michael Roe	male	mary_roe, richard_roe	SimCity	Electronic Arts	1989.0
 
-!!ObjTables type='Data' tableFormat='column' id='Parent' name='Parent' date='2020-03-14 11:51:05' objTablesVersion='0.0.8'				
+!!ObjTables type='Data' tableFormat='column' class='Parent' name='Parent' date='2020-03-14 11:51:05' objTablesVersion='0.0.8'				
 !Id	jane_doe	john_doe	mary_roe	richard_roe
 !Name	Jane Doe	John Doe	Mary Roe	Richard Roe

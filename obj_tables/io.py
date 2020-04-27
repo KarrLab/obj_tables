@@ -279,7 +279,7 @@ class JsonWriter(WriterBase):
                 model_attrs.pop('type')
             if 'tableFormat' in model_attrs:
                 model_attrs.pop('tableFormat')
-            model_attrs['id'] = model.__name__
+            model_attrs['class'] = model.__name__
             model_attrs['name'] = model.Meta.verbose_name_plural
             if model.Meta.description:
                 model_attrs['description'] = model.Meta.description
@@ -1345,11 +1345,11 @@ class WorkbookReader(ReaderBase):
                 "Schema must be '{}'".format(schema_name)
             if model_metadata['type'] != DOC_TABLE_TYPE:
                 continue
-            assert 'id' in model_metadata, 'Metadata for sheet "{}" must define the id.'.format(sheet_name)
-            if model_metadata['id'] not in model_name_to_sheet_name:
-                model_name_to_sheet_name[model_metadata['id']] = []
-            model_name_to_sheet_name[model_metadata['id']].append(sheet_name)
-            sheet_name_to_model_name[sheet_name] = model_metadata['id']
+            assert 'class' in model_metadata, 'Metadata for sheet "{}" must define the class.'.format(sheet_name)
+            if model_metadata['class'] not in model_name_to_sheet_name:
+                model_name_to_sheet_name[model_metadata['class']] = []
+            model_name_to_sheet_name[model_metadata['class']].append(sheet_name)
+            sheet_name_to_model_name[sheet_name] = model_metadata['class']
 
         # drop metadata models unless they're requested
         ignore_model_names = []
@@ -1835,7 +1835,7 @@ class WorkbookReader(ReaderBase):
         assert 'tableFormat' not in model_metadata or model_metadata['tableFormat'] == model.Meta.table_format.name, \
             "Format of table '{}' must be undefined or '{}'.".format(model.Meta.verbose_name_plural, model.Meta.table_format.name)
 
-        if len(data) < num_column_heading_rows:
+        if len(data) < 1:
             raise ValueError("Worksheet '{}' must have {} header row(s)".format(
                 sheet_name, num_column_heading_rows))
 
@@ -2242,7 +2242,7 @@ class MultiSeparatedValuesReader(ReaderBase):
             ext (:obj:`str`): extension
         """
         if metadata['type'] == DOC_TABLE_TYPE:
-            tmp_path = os.path.join(dirname, metadata['id'] + ext)
+            tmp_path = os.path.join(dirname, metadata['class'] + ext)
             wc_utils.workbook.io.write(tmp_path, {'': data})
 
 
@@ -2493,7 +2493,7 @@ def get_fields(cls, schema_name, doc_metadata, doc_metadata_model, model_metadat
         model_metadata['schema'] = schema_name
     model_metadata['type'] = DOC_TABLE_TYPE
     model_metadata['tableFormat'] = cls.Meta.table_format.name
-    model_metadata['id'] = cls.__name__
+    model_metadata['class'] = cls.__name__
     model_metadata['name'] = cls.Meta.verbose_name_plural
     model_metadata.pop('description', None)
     if cls.Meta.description:
@@ -2502,7 +2502,7 @@ def get_fields(cls, schema_name, doc_metadata, doc_metadata_model, model_metadat
         now.year, now.month, now.day, now.hour, now.minute, now.second)
     model_metadata[l_case_format + 'Version'] = version
 
-    keys = ['schema', 'type', 'tableFormat', 'id', 'name', 'description', 'date', l_case_format + 'Version']
+    keys = ['schema', 'type', 'tableFormat', 'class', 'name', 'description', 'date', l_case_format + 'Version']
     keys += sorted(set(model_metadata.keys()) - set(keys))
     model_metadata_heading_list = ["{}='{}'".format(k, model_metadata[k].replace("'", "\'")) for k in keys if k in model_metadata]
     model_metadata_heading_list.insert(0, '!!' + format)

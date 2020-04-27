@@ -1,4 +1,4 @@
-!!ObjTables type='Data' id='SimpleModel',
+!!ObjTables type='Data' class='SimpleModel',
 !val,!extra
 nice long string,
 too short,

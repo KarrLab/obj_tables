@@ -1,4 +1,4 @@
-!!ObjTables type='Data' id='Test'	
+!!ObjTables type='Data' class='Test'	
 !Id	Mpn_Karr_2016
 !Name	"Karr et al., 2016 Mycoplasma pneumoniae M129 model"
 !Version	0.0.1

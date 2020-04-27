@@ -1,5 +1,5 @@
 !!!ObjTables objTablesVersion='0.0.8' date='2020-03-12 00:22:56',,,,
-!!ObjTables type='Data' tableFormat='row' id='Compound' name='Compound' description='Compound' date='2020-03-12 00:22:56' objTablesVersion='0.0.8',,,,
+!!ObjTables type='Data' tableFormat='row' class='Compound' name='Compound' description='Compound' date='2020-03-12 00:22:56' objTablesVersion='0.0.8',,,,
 !Model,!Id,!Name,!Identifiers,!IsConstant
 e_coli,D_Fructose_6_phosphate,D-Fructose 6-phosphate,kegg.compound:C00085,True
 e_coli,D_Glucose,D-Glucose,kegg.compound:C00031,True

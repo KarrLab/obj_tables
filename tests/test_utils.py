@@ -706,7 +706,7 @@ class InitSchemaTestCase(unittest.TestCase):
         wb = wc_utils.workbook.io.read(filename)
         wb['Extra'] = wc_utils.workbook.Worksheet()
         wb['Extra'].append(wc_utils.workbook.Row([
-            "!!ObjTables type='Data' id='Extra' objTablesVersion='{}'".format(
+            "!!ObjTables type='Data' class='Extra' objTablesVersion='{}'".format(
                 obj_tables.__version__)]))
         wb['!!' + core.SCHEMA_SHEET_NAME] = wc_utils.workbook.Worksheet()
         wb['!!' + core.SCHEMA_SHEET_NAME].append(wc_utils.workbook.Row([
