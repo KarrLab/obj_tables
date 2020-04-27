@@ -9,7 +9,7 @@
 from . import core
 from . import io
 from . import utils
-from .__main__ import get_schema_models, DEFAULT_READER_ARGS
+from .__main__ import get_schema_models, DEFAULT_WRITER_ARGS, DEFAULT_READER_ARGS
 from wc_utils.util.string import indent_forest
 from werkzeug.datastructures import FileStorage
 import flask
@@ -640,7 +640,8 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
     io.Writer().run(temp_filename, objs, schema_name=schema_name, doc_metadata=doc_metadata, model_metadata=model_metadata,
-                    models=models, write_toc=write_toc, write_schema=write_schema, protected=protected)
+                    models=models, write_toc=write_toc, write_schema=write_schema, protected=protected,
+                    **DEFAULT_WRITER_ARGS)
 
     if format in ['csv', 'tsv']:
         filename = os.path.join(dir, 'workbook.{}.zip'.format(format))

@@ -14,6 +14,10 @@ import obj_tables
 import os.path
 import types  # noqa: F401
 
+DEFAULT_WRITER_ARGS = {
+    'write_empty_cols': False,
+}
+
 DEFAULT_READER_ARGS = {
     'allow_multiple_sheets_per_model': True,
     'ignore_missing_models': True,
@@ -77,7 +81,8 @@ class ConvertController(cement.Controller):
                         doc_metadata=reader._doc_metadata,
                         model_metadata=reader._model_metadata,
                         models=models, write_toc=args.write_toc, write_schema=args.write_schema,
-                        protected=(not args.unprotected))
+                        protected=(not args.unprotected),
+                        **DEFAULT_WRITER_ARGS)
         print('Workbook saved to {}'.format(args.out_wb_file))
 
 
@@ -163,7 +168,8 @@ class GenTemplateController(cement.Controller):
         schema_name, schema, models = get_schema_models(args.schema_file)
         io.Writer().run(args.template_file, [], schema_name=schema_name, models=models,
                         write_toc=args.write_toc, write_schema=args.write_schema,
-                        extra_entries=10, protected=(not args.unprotected))
+                        extra_entries=10, protected=(not args.unprotected),
+                        **DEFAULT_WRITER_ARGS)
         print('Template saved to {}'.format(args.template_file))
 
 
@@ -216,7 +222,8 @@ class NormalizeController(cement.Controller):
                         doc_metadata=reader._doc_metadata,
                         model_metadata=reader._model_metadata,
                         models=models, write_toc=args.write_toc, write_schema=args.write_schema,
-                        protected=(not args.unprotected))
+                        protected=(not args.unprotected),
+                        **DEFAULT_WRITER_ARGS)
         print('Normalized workbook saved to {}'.format(args.out_wb_file))
 
 

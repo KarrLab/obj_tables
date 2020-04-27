@@ -1023,6 +1023,102 @@ class TestIo(unittest.TestCase):
         objs = obj_tables.io.Reader().run(filename, models=[NodeTranspose], group_objects_by_model=False)
         self.assertEqual(len(objs), 3)
 
+    def test_not_write_empty_cols(self):
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            non_empty_attr_1 = core.StringAttribute()
+            empty_attr_1 = core.StringAttribute()
+            empty_attr_2 = core.StringAttribute()
+            non_empty_attr_2 = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'non_empty_attr_1', 'empty_attr_1', 'empty_attr_2', 'non_empty_attr_2')
+
+        objs_1 = [
+            Node(id='n_0', non_empty_attr_1='00', non_empty_attr_2='01'),
+            Node(id='n_1', non_empty_attr_1='10', non_empty_attr_2='11'),
+        ]
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_tables.io.Writer().run(filename, objs_1, models=[Node], write_empty_cols=False)
+        wb = read_workbook(filename)
+        self.assertEqual(wb['!!Nodes'][1], Row(['!Id', '!Non empty attr 1', '!Non empty attr 2']))
+        objs_2 = obj_tables.io.Reader().run(filename, models=[Node], group_objects_by_model=False, ignore_missing_attributes=True)
+        for obj_1, obj_2 in zip(objs_1, objs_2):
+            self.assertTrue(obj_2.is_equal(obj_1))
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_tables.io.Writer().run(filename, objs_1, models=[Node], write_empty_cols=True)
+        wb = read_workbook(filename)
+        self.assertEqual(wb['!!Nodes'][1], Row(['!Id', '!Non empty attr 1', '!Empty attr 1', '!Empty attr 2', '!Non empty attr 2']))
+        objs_2 = obj_tables.io.Reader().run(filename, models=[Node], group_objects_by_model=False, ignore_missing_attributes=True)
+        for obj_1, obj_2 in zip(objs_1, objs_2):
+            self.assertTrue(obj_2.is_equal(obj_1))
+
+    def test_not_write_empty_cols_with_nested_model(self):
+        class Child(core.Model):
+            id = core.SlugAttribute()
+            attr = core.StringAttribute()
+
+            class Meta(core.Model.Meta):
+                table_format = core.TableFormat.multiple_cells
+                attribute_order = ('id', 'attr')
+
+        class Node(core.Model):
+            id = core.SlugAttribute()
+            non_empty_attr_1 = core.StringAttribute()
+            empty_attr_1 = core.StringAttribute()
+            empty_attr_2 = core.StringAttribute()
+            non_empty_attr_2 = core.StringAttribute()
+            child = core.OneToOneAttribute(Child, related_name='parent')
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id', 'non_empty_attr_1', 'empty_attr_1', 'empty_attr_2', 'non_empty_attr_2', 'child')
+
+        objs_1 = [
+            Node(id='n_0', non_empty_attr_1='00', non_empty_attr_2='01'),
+            Node(id='n_1', non_empty_attr_1='10', non_empty_attr_2='11'),
+        ]
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_tables.io.Writer().run(filename, objs_1, models=[Node, Child], write_empty_cols=False)
+        wb = read_workbook(filename)
+        self.assertEqual(wb['!!Nodes'][2], Row(['!Id', '!Non empty attr 1', '!Non empty attr 2']))
+        objs_2 = obj_tables.io.Reader().run(filename, models=[Node, Child], group_objects_by_model=False, ignore_missing_attributes=True)
+        for obj_1, obj_2 in zip(objs_1, objs_2):
+            self.assertTrue(obj_2.is_equal(obj_1))
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_tables.io.Writer().run(filename, objs_1, models=[Node, Child], write_empty_cols=True)
+        wb = read_workbook(filename)
+        self.assertEqual(wb['!!Nodes'][2], Row(['!Id', '!Non empty attr 1', '!Empty attr 1',
+                                                '!Empty attr 2', '!Non empty attr 2', '!Id', '!Attr']))
+        objs_2 = obj_tables.io.Reader().run(filename, models=[Node, Child], group_objects_by_model=False, ignore_missing_attributes=True)
+        for obj_1, obj_2 in zip(objs_1, objs_2):
+            self.assertTrue(obj_2.is_equal(obj_1))
+
+        objs_1 = [
+            Node(id='n_0', non_empty_attr_1='00', non_empty_attr_2='01', child=Child(id='c_0')),
+            Node(id='n_1', non_empty_attr_1='10', non_empty_attr_2='11', child=Child(id='c_1')),
+        ]
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_tables.io.Writer().run(filename, objs_1, models=[Node, Child], write_empty_cols=False)
+        wb = read_workbook(filename)
+        self.assertEqual(wb['!!Nodes'][2], Row(['!Id', '!Non empty attr 1', '!Non empty attr 2', '!Id']))
+        objs_2 = obj_tables.io.Reader().run(filename, models=[Node, Child], group_objects_by_model=False, ignore_missing_attributes=True)
+        for obj_1, obj_2 in zip(objs_1, objs_2):
+            self.assertTrue(obj_2.is_equal(obj_1))
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_tables.io.Writer().run(filename, objs_1, models=[Node, Child], write_empty_cols=True)
+        wb = read_workbook(filename)
+        self.assertEqual(wb['!!Nodes'][2], Row(['!Id', '!Non empty attr 1', '!Empty attr 1',
+                                                '!Empty attr 2', '!Non empty attr 2', '!Id', '!Attr']))
+        objs_2 = obj_tables.io.Reader().run(filename, models=[Node, Child], group_objects_by_model=False, ignore_missing_attributes=True)
+        for obj_1, obj_2 in zip(objs_1, objs_2):
+            self.assertTrue(obj_2.is_equal(obj_1))
+
 
 class RepeatedModelsTestCase(unittest.TestCase):
     def setUp(self):
