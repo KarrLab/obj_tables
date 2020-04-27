@@ -1474,11 +1474,17 @@ class WorkbookReader(ReaderBase):
             raise ValueError(indent_forest(forest))
 
         # merge metadata across all tables of each model
+        unmerged_model_metadata = self._model_metadata
         merged_model_metadata = {}
         errors = []
-        for model, model_metadata in self._model_metadata.items():
+        for model, model_metadata in unmerged_model_metadata.items():
             merged_model_metadata[model] = {}
             for sheet_name, sheet_metadata in model_metadata.items():
+                # ignore sheet-specific metadata
+                if 'id' in sheet_metadata:
+                    sheet_metadata.pop('id')
+
+                # merge metadata across sheets
                 for key, val in sheet_metadata.items():
                     if key in merged_model_metadata[model]:
                         if merged_model_metadata[model][key] != val:
@@ -1756,12 +1762,13 @@ class WorkbookReader(ReaderBase):
         objects = []
         errors = []
 
+        source_table_id = self._model_metadata[model][sheet_name].get('id', None)
         for row_num, (obj_data, obj_comments) in enumerate(zip(data, objs_comments), start=2):
             obj = model()
             obj._comments = obj_comments
 
             # save object location in file
-            obj.set_source(reader.path, sheet_name, attribute_seq, row_num)
+            obj.set_source(reader.path, sheet_name, attribute_seq, row_num, table_id=source_table_id)
 
             obj_errors = []
             obj_data = list(compress(obj_data, good_columns))

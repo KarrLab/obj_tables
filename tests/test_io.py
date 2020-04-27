@@ -1161,7 +1161,10 @@ class RepeatedModelsTestCase(unittest.TestCase):
         objs_2 = [p_2_1, p_2_2, c_2_1_1, c_2_1_2, c_2_2_1, c_2_2_2]
 
         path = os.path.join(self.tmp_dirname, 'class-1-*.tsv')
-        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child])
+        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child], model_metadata={
+            Parent: {'id': 'parent_1'},
+            Child: {'id': 'child_1'},
+        })
 
         path = os.path.join(self.tmp_dirname, 'class-*.tsv')
         objs_b = obj_tables.io.Reader().run(path, models=[Parent, Child], group_objects_by_model=True)
@@ -1171,9 +1174,14 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_1_2').is_equal(c_1_1_2))
         self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_2_1').is_equal(c_1_2_1))
         self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_2_2').is_equal(c_1_2_2))
+        self.assertTrue(all(p._source.table_id == 'parent_1' for p in objs_b[Parent]))
+        self.assertTrue(all(c._source.table_id == 'child_1' for c in objs_b[Child]))
 
         path = os.path.join(self.tmp_dirname, 'class-2-*.tsv')
-        obj_tables.io.Writer().run(path, objs_2, models=[Parent, Child])
+        obj_tables.io.Writer().run(path, objs_2, models=[Parent, Child], model_metadata={
+            Parent: {'id': 'parent_2'},
+            Child: {'id': 'child_2'},
+        })
 
         path = os.path.join(self.tmp_dirname, 'class-*.tsv')
         with self.assertRaisesRegex(ValueError, 'should only have one table'):
@@ -1186,6 +1194,10 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_1_2').is_equal(c_1_1_2))
         self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_2_1').is_equal(c_1_2_1))
         self.assertTrue(next(c for c in objs_b[Child] if c.id == 'c_1_2_2').is_equal(c_1_2_2))
+        self.assertTrue(all(p._source.table_id == 'parent_1' for p in objs_b[Parent] if p.id.startswith('p_1')))
+        self.assertTrue(all(p._source.table_id == 'parent_2' for p in objs_b[Parent] if p.id.startswith('p_2')))
+        self.assertTrue(all(c._source.table_id == 'child_1' for c in objs_b[Child] if c.id.startswith('c_1')))
+        self.assertTrue(all(c._source.table_id == 'child_2' for c in objs_b[Child] if c.id.startswith('c_2')))
 
         path = os.path.join(self.tmp_dirname, 'class-2-*.tsv')
         obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child])

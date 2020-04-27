@@ -1713,7 +1713,7 @@ class Model(object, metaclass=ModelMeta):
 
         return super(Model, self).__str__()
 
-    def set_source(self, path_name, sheet_name, attribute_seq, row):
+    def set_source(self, path_name, sheet_name, attribute_seq, row, table_id=None):
         """ Set metadata about source of the file, worksheet, columns, and row where the object was defined
 
         Args:
@@ -1722,8 +1722,9 @@ class Model(object, metaclass=ModelMeta):
             attribute_seq (:obj:`list`): sequence of attribute names in source file; blank values
                 indicate attributes that were ignored
             row (:obj:`int`): row number of object in its source file
+            table_id (:obj:`str`, optional): id of the source table
         """
-        self._source = ModelSource(path_name, sheet_name, attribute_seq, row)
+        self._source = ModelSource(path_name, sheet_name, attribute_seq, row, table_id=table_id)
 
     def get_source(self, attr_name):
         """ Get file location of attribute with name `attr_name`
@@ -3047,9 +3048,10 @@ class ModelSource(object):
         attribute_seq (:obj:`list`): sequence of attribute names in source file; blank values
             indicate attributes that were ignored
         row (:obj:`int`): row number of object in its source file
+        table_id (:obj:`str`): id of the source table
     """
 
-    def __init__(self, path_name, sheet_name, attribute_seq, row):
+    def __init__(self, path_name, sheet_name, attribute_seq, row, table_id=None):
         """
         Args:
             path_name (:obj:`str`): pathname of source file for object
@@ -3057,11 +3059,13 @@ class ModelSource(object):
             attribute_seq (:obj:`list`): sequence of attribute names in source file; blank values
                 indicate attributes that were ignored
             row (:obj:`int`): row number of object in its source file
+            table_id (:obj:`str`, optional): id of the source table
         """
         self.path_name = path_name
         self.sheet_name = sheet_name
         self.attribute_seq = attribute_seq
         self.row = row
+        self.table_id = table_id
 
 
 class Attribute(object, metaclass=abc.ABCMeta):
@@ -7967,6 +7971,5 @@ class ObjTablesWarning(UserWarning):
 class SchemaWarning(ObjTablesWarning):
     """ Schema warning """
     pass
-
 
 from .utils import get_related_models
