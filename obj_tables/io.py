@@ -472,10 +472,13 @@ class WorkbookWriter(WriterBase):
         format = 'ObjTables'
         l_case_format = 'objTables'
         table_type = SCHEMA_TABLE_TYPE
-        version = obj_tables.__version__
-        now = datetime.now()
-        date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
-            now.year, now.month, now.day, now.hour, now.minute, now.second)
+        version = obj_tables.__version__        
+        if doc_metadata and 'date' in doc_metadata:
+            date = doc_metadata['date']
+        else:
+            now = datetime.now()
+            date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
+                now.year, now.month, now.day, now.hour, now.minute, now.second)
 
         content = []
 
@@ -570,9 +573,11 @@ class WorkbookWriter(WriterBase):
         format = 'ObjTables'
         l_case_format = 'objTables'
         version = obj_tables.__version__
-        now = datetime.now()
-        date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
-            now.year, now.month, now.day, now.hour, now.minute, now.second)
+        date = doc_metadata.get('date', None)
+        if not date:
+            now = datetime.now()
+            date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
+                now.year, now.month, now.day, now.hour, now.minute, now.second)
 
         content = []
 
@@ -2338,7 +2343,7 @@ class Reader(ReaderBase):
         return result
 
 
-def convert(source, destination, schema_name, models,
+def convert(source, destination, schema_name=None, models=None,
             allow_multiple_sheets_per_model=False,
             ignore_missing_models=False, ignore_extra_models=False,
             ignore_sheet_order=False,
@@ -2350,7 +2355,7 @@ def convert(source, destination, schema_name, models,
     Args:
         source (:obj:`str`): path to source file
         destination (:obj:`str`): path to save converted file
-        schema_name (:obj:`str`): schema name
+        schema_name (:obj:`str`, optional): schema name
         models (:obj:`list` of :obj:`type`): list of models
         allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
         ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
@@ -2615,6 +2620,7 @@ def format_doc_metadata(schema_name, metadata, date=None):
     format = 'ObjTables'
     l_case_format = 'objTables'
     version = obj_tables.__version__
+    date = date or metadata.get('date', None)
     if date is None:
         now = datetime.now()
         date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
@@ -2628,6 +2634,7 @@ def format_doc_metadata(schema_name, metadata, date=None):
                      f"{l_case_format}Version='{version}'",
                      f"date='{date}'"]
     if schema_name:
+        metadata.pop(f"schema", None)
         metadata_strs.insert(1, f"schema='{schema_name}'")
     metadata_strs += ["{}='{}'".format(k, v.replace("'", "\'")) for k, v in metadata.items()]
 

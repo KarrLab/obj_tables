@@ -1162,8 +1162,8 @@ class RepeatedModelsTestCase(unittest.TestCase):
 
         path = os.path.join(self.tmp_dirname, 'class-1-*.tsv')
         obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child], model_metadata={
-            Parent: {'id': 'parent_1'},
-            Child: {'id': 'child_1'},
+            Parent: {'id': 'parent_1', 'date': '2020'},
+            Child: {'id': 'child_1', 'date': '2020'},
         })
 
         path = os.path.join(self.tmp_dirname, 'class-*.tsv')
@@ -1179,8 +1179,8 @@ class RepeatedModelsTestCase(unittest.TestCase):
 
         path = os.path.join(self.tmp_dirname, 'class-2-*.tsv')
         obj_tables.io.Writer().run(path, objs_2, models=[Parent, Child], model_metadata={
-            Parent: {'id': 'parent_2'},
-            Child: {'id': 'child_2'},
+            Parent: {'id': 'parent_2', 'date': '2020'},
+            Child: {'id': 'child_2', 'date': '2020'},
         })
 
         path = os.path.join(self.tmp_dirname, 'class-*.tsv')
@@ -1200,7 +1200,10 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertTrue(all(c._source.table_id == 'child_2' for c in objs_b[Child] if c.id.startswith('c_2')))
 
         path = os.path.join(self.tmp_dirname, 'class-2-*.tsv')
-        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child])
+        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child], model_metadata={
+            Parent: {'date': '2020'},
+            Child: {'date': '2020'},
+        })
         path = os.path.join(self.tmp_dirname, 'class-*.tsv')
         with self.assertRaisesRegex(ValueError, 'must be unique, but these values are repeated'):
             obj_tables.io.Reader().run(path, models=[Parent, Child], group_objects_by_model=True, allow_multiple_sheets_per_model=True)
