@@ -4674,7 +4674,9 @@ class TestCore(unittest.TestCase):
         self.assertTrue(model.has_attr_vals(attr_2='xyz'))
         self.assertFalse(model.has_attr_vals(attr_1='xyz'))
         self.assertFalse(model.has_attr_vals(attr_2='abc'))
-        self.assertFalse(model.has_attr_vals(attr_3='lmnop'))
+        self.assertFalse(model.has_attr_vals(attr_3='lmnop', __check_attr_defined=False))
+        with self.assertRaisesRegex(AttributeError, 'object has no attribute'):
+            model.has_attr_vals(attr_3='lmnop', __check_attr_defined=True)
 
     def test_get_none_value(self):
         attr = core.DateAttribute()

@@ -2767,11 +2767,13 @@ class Model(object, metaclass=ModelMeta):
         # return data
         return return_val
 
-    def has_attr_vals(self, __type=None, **kwargs):
+    def has_attr_vals(self, __type=None, __check_attr_defined=True, **kwargs):
         """ Check if the type and values of the attributes of an object match a set of conditions
 
         Args:
             __type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): subclass(es) of :obj:`Model`
+            __check_attr_defined (:obj:`bool`, optional): if :obj:`True`, raise an exception if the queried
+                attribute is not defined
             **kwargs: dictionary of attribute name/value pairs to find matching
                 object or create new object
 
@@ -2781,11 +2783,16 @@ class Model(object, metaclass=ModelMeta):
         """
         if '__type' in kwargs:
             __type = kwargs.pop('__type')
+        if '__check_attr_defined' in kwargs:
+            __check_attr_defined = kwargs.pop('__check_attr_defined')
 
         if __type and not isinstance(self, __type):
             return False
 
         for attr, val in kwargs.items():
+            if __check_attr_defined and attr not in self.Meta.local_attributes:
+                raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, attr))
+
             if not hasattr(self, attr) or getattr(self, attr) != val:
                 return False
 
@@ -2826,7 +2833,7 @@ class Model(object, metaclass=ModelMeta):
         # filter by type/attributes
         matches = []
         for child in children:
-            if child.has_attr_vals(__type=__type, **kwargs):
+            if child.has_attr_vals(__type=__type, __check_attr_defined=False, **kwargs):
                 matches.append(child)
         children = matches
 
@@ -2873,7 +2880,7 @@ class Model(object, metaclass=ModelMeta):
         # filter by type/attributes
         matches = []
         for child in children:
-            if child.has_attr_vals(__type=__type, **kwargs):
+            if child.has_attr_vals(__type=__type, __check_attr_defined=False, **kwargs):
                 matches.append(child)
         children = matches
 
@@ -5709,7 +5716,7 @@ class RelatedManager(list):
 
         matches = []
         for obj in self:
-            if obj.has_attr_vals(__type=__type, **kwargs):
+            if obj.has_attr_vals(__type=__type, __check_attr_defined=False, **kwargs):
                 matches.append(obj)
         return matches
 
