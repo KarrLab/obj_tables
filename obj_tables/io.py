@@ -2505,8 +2505,9 @@ def get_fields(cls, schema_name, doc_metadata, doc_metadata_model, model_metadat
     model_metadata.pop('description', None)
     if cls.Meta.description:
         model_metadata['description'] = cls.Meta.description
-    model_metadata['date'] = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
-        now.year, now.month, now.day, now.hour, now.minute, now.second)
+    if 'date' not in model_metadata:
+        model_metadata['date'] = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
+            now.year, now.month, now.day, now.hour, now.minute, now.second)
     model_metadata[l_case_format + 'Version'] = version
 
     keys = ['schema', 'type', 'tableFormat', 'class', 'name', 'description', 'date', l_case_format + 'Version']

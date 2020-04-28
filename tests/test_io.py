@@ -1220,7 +1220,7 @@ class RepeatedModelsTestCase(unittest.TestCase):
             md.pop('date')
 
         path = os.path.join(self.tmp_dirname, '1-*.tsv')
-        obj_tables.io.Writer().run(path, [node_1], models=[Node], model_metadata={Node: {'A': '1', 'B': '2'}})
+        obj_tables.io.Writer().run(path, [node_1], models=[Node], model_metadata={Node: {'A': '1', 'B': '2', 'date': '2020'}})
         reader = obj_tables.io.Reader()
         objs = reader.run(path, models=[Node])
         discard_metadata(reader._model_metadata[Node])
@@ -1228,7 +1228,7 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertEqual(objs[Node][0]._comments, [])
 
         path = os.path.join(self.tmp_dirname, '2-*.tsv')
-        obj_tables.io.Writer().run(path, [node_2], models=[Node], model_metadata={Node: {'A': '1', 'C': '3'}})
+        obj_tables.io.Writer().run(path, [node_2], models=[Node], model_metadata={Node: {'A': '1', 'C': '3', 'date': '2020'}})
         reader = obj_tables.io.Reader()
         objs = reader.run(path, models=[Node])
         discard_metadata(reader._model_metadata[Node])
@@ -1246,7 +1246,7 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertEqual(node_2._comments, ['Source sheet: 2-Nodes'])
 
         path = os.path.join(self.tmp_dirname, '2-*.tsv')
-        obj_tables.io.Writer().run(path, [node_2], models=[Node], model_metadata={Node: {'A': '1', 'B': '3'}})
+        obj_tables.io.Writer().run(path, [node_2], models=[Node], model_metadata={Node: {'A': '1', 'B': '3', 'date': '2020'}})
 
         path = os.path.join(self.tmp_dirname, '*.tsv')
         reader = obj_tables.io.Reader()
@@ -1338,7 +1338,7 @@ class TestMetadataModels(unittest.TestCase):
         test_data_repo = self.github_test_data_repo.make_test_repo(self.test_data_repo_dir)
 
         # prepare test schema repo
-        test_schema_repo_url = 'https://github.com/KarrLab/test_repo'
+        test_schema_repo_url = 'https://github.com/KarrLab/obj_tables_test_schema_repo'
         self.test_schema_repo_dir = os.path.join(self.tmp_dirname, 'test_schema_repo')
         test_schema_repo = git.Repo.clone_from(test_schema_repo_url, self.test_schema_repo_dir)
 

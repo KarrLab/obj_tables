@@ -257,7 +257,7 @@ class TestMetadata(unittest.TestCase):
         self.test_data_repo = self.github_test_data_repo.make_test_repo(self.test_data_repo_dir)
 
         # prepare test schema repo
-        test_schema_repo_url = 'https://github.com/KarrLab/test_repo'
+        test_schema_repo_url = 'https://github.com/KarrLab/obj_tables_test_schema_repo'
         self.test_schema_repo_dir = os.path.join(self.tmp_dirname, 'test_schema_repo')
         test_schema_repo = git.Repo.clone_from(test_schema_repo_url, self.test_schema_repo_dir)
 

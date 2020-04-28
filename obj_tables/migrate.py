@@ -420,7 +420,7 @@ class SchemaModule(object):
             raise MigratorError("No subclasses of obj_tables.Model found in '{}'".format(self.abs_module_path))
 
         # start: temporary hack until all references to GitMetadata are removed from test repos
-        # todo: rebuild test_repo & migration_test_repo without references to GitMetadata
+        # todo: rebuild obj_tables_test_schema_repo & obj_tables_test_migration_repo without references to GitMetadata
         to_delete = []
         for model in models.keys():
             if model.endswith('GitMetadata'):
