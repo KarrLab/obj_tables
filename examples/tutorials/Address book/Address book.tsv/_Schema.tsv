@@ -1,0 +1,19 @@
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-04-28 15:09:22' objTablesVersion='0.0.9'						
+!Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural	!Description
+Company	Class		column	Company	Companies	
+address	Attribute	Company	OneToOne('Address', related_name='company')			
+name	Attribute	Company	String(primary=True, unique=True)			
+url	Attribute	Company	Url			Enter a valid URL
+Person	Class		row	Person	People	
+address	Attribute	Person	ManyToOne('Address', related_name='people')			
+company	Attribute	Person	ManyToOne('Company', related_name='employees')			
+email_address	Attribute	Person	Email			Enter a valid email address
+name	Attribute	Person	String(primary=True, unique=True)			
+phone_number	Attribute	Person	String			
+type	Attribute	Person	Enum([('family', 'family'), ('friend', 'friend'), ('business', 'business')])			
+Address	Class		multiple_cells	Address	Addresses	
+city	Attribute	Address	String			
+country	Attribute	Address	String			
+state	Attribute	Address	String			
+street	Attribute	Address	String(primary=True, unique=True)			
+zip_code	Attribute	Address	String			
