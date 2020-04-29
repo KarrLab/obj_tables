@@ -472,7 +472,7 @@ class WorkbookWriter(WriterBase):
         format = 'ObjTables'
         l_case_format = 'objTables'
         table_type = SCHEMA_TABLE_TYPE
-        version = obj_tables.__version__        
+        version = obj_tables.__version__
         if doc_metadata and 'date' in doc_metadata:
             date = doc_metadata['date']
         else:
