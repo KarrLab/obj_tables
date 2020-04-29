@@ -1161,7 +1161,9 @@ class RepeatedModelsTestCase(unittest.TestCase):
         objs_2 = [p_2_1, p_2_2, c_2_1_1, c_2_1_2, c_2_2_1, c_2_2_2]
 
         path = os.path.join(self.tmp_dirname, 'class-1-*.tsv')
-        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child], model_metadata={
+        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child],
+                                   doc_metadata={'date': '2020'},
+                                   model_metadata={
             Parent: {'id': 'parent_1', 'date': '2020'},
             Child: {'id': 'child_1', 'date': '2020'},
         })
@@ -1178,7 +1180,9 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertTrue(all(c._source.table_id == 'child_1' for c in objs_b[Child]))
 
         path = os.path.join(self.tmp_dirname, 'class-2-*.tsv')
-        obj_tables.io.Writer().run(path, objs_2, models=[Parent, Child], model_metadata={
+        obj_tables.io.Writer().run(path, objs_2, models=[Parent, Child],
+                                   doc_metadata={'date': '2020'},
+                                   model_metadata={
             Parent: {'id': 'parent_2', 'date': '2020'},
             Child: {'id': 'child_2', 'date': '2020'},
         })
@@ -1200,7 +1204,9 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertTrue(all(c._source.table_id == 'child_2' for c in objs_b[Child] if c.id.startswith('c_2')))
 
         path = os.path.join(self.tmp_dirname, 'class-2-*.tsv')
-        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child], model_metadata={
+        obj_tables.io.Writer().run(path, objs_1, models=[Parent, Child],
+                                   doc_metadata={'date': '2020'},
+                                   model_metadata={
             Parent: {'date': '2020'},
             Child: {'date': '2020'},
         })
@@ -1223,7 +1229,9 @@ class RepeatedModelsTestCase(unittest.TestCase):
             md.pop('date')
 
         path = os.path.join(self.tmp_dirname, '1-*.tsv')
-        obj_tables.io.Writer().run(path, [node_1], models=[Node], model_metadata={Node: {'A': '1', 'B': '2', 'date': '2020'}})
+        obj_tables.io.Writer().run(path, [node_1], models=[Node],
+                                   doc_metadata={'date': '2020'},
+                                   model_metadata={Node: {'A': '1', 'B': '2', 'date': '2020'}})
         reader = obj_tables.io.Reader()
         objs = reader.run(path, models=[Node])
         discard_metadata(reader._model_metadata[Node])
@@ -1231,7 +1239,9 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertEqual(objs[Node][0]._comments, [])
 
         path = os.path.join(self.tmp_dirname, '2-*.tsv')
-        obj_tables.io.Writer().run(path, [node_2], models=[Node], model_metadata={Node: {'A': '1', 'C': '3', 'date': '2020'}})
+        obj_tables.io.Writer().run(path, [node_2], models=[Node],
+                                   doc_metadata={'date': '2020'},
+                                   model_metadata={Node: {'A': '1', 'C': '3', 'date': '2020'}})
         reader = obj_tables.io.Reader()
         objs = reader.run(path, models=[Node])
         discard_metadata(reader._model_metadata[Node])
@@ -1249,7 +1259,9 @@ class RepeatedModelsTestCase(unittest.TestCase):
         self.assertEqual(node_2._comments, ['Source sheet: 2-Nodes'])
 
         path = os.path.join(self.tmp_dirname, '2-*.tsv')
-        obj_tables.io.Writer().run(path, [node_2], models=[Node], model_metadata={Node: {'A': '1', 'B': '3', 'date': '2020'}})
+        obj_tables.io.Writer().run(path, [node_2], models=[Node],
+                                   doc_metadata={'date': '2020'},
+                                   model_metadata={Node: {'A': '1', 'B': '3', 'date': '2020'}})
 
         path = os.path.join(self.tmp_dirname, '*.tsv')
         reader = obj_tables.io.Reader()

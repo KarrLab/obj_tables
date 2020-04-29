@@ -259,15 +259,15 @@ class JsonWriter(WriterBase):
         # add model metadata to JSON
         l_case_format = 'objTables'
         version = obj_tables.__version__
-        now = datetime.now()
-        date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
-            now.year, now.month, now.day, now.hour, now.minute, now.second)
 
         json_objects['_documentMetadata'] = copy.copy(doc_metadata)
         if schema_name:
             json_objects['_documentMetadata']['schema'] = schema_name
         json_objects['_documentMetadata'][l_case_format + 'Version'] = version
-        json_objects['_documentMetadata']['date'] = date
+        if 'date' not in json_objects['_documentMetadata']:
+            now = datetime.now()
+            json_objects['_documentMetadata']['date'] = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
+                now.year, now.month, now.day, now.hour, now.minute, now.second)
 
         json_objects['_classMetadata'] = {}
         for model in all_models:
@@ -356,6 +356,12 @@ class WorkbookWriter(WriterBase):
 
         doc_metadata = doc_metadata or {}
         model_metadata = model_metadata or {}
+        if 'date' not in doc_metadata:
+            doc_metadata = copy.copy(doc_metadata)
+            now = datetime.now()
+            doc_metadata['date'] = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
+                now.year, now.month, now.day, now.hour, now.minute, now.second)
+        date = doc_metadata['date']
 
         # get related objects
         all_objects = objects
@@ -424,10 +430,11 @@ class WorkbookWriter(WriterBase):
         # add table of contents to workbook
         all_models = models + unordered_models
         if write_toc:
-            self.write_toc(writer, all_models, schema_name, doc_metadata, grouped_objects, write_schema=write_schema, protected=protected)
+            self.write_toc(writer, all_models, schema_name, date, doc_metadata,
+                           grouped_objects, write_schema=write_schema, protected=protected)
             doc_metadata = None
         if write_schema:
-            self.write_schema(writer, all_models, schema_name, doc_metadata, protected=protected)
+            self.write_schema(writer, all_models, schema_name, date, doc_metadata, protected=protected)
             doc_metadata = None
 
         # add sheets to workbook
@@ -444,7 +451,7 @@ class WorkbookWriter(WriterBase):
             else:
                 objects = []
 
-            self.write_model(writer, model, objects, schema_name, doc_metadata, doc_metadata_model, model_metadata.get(model, {}),
+            self.write_model(writer, model, objects, schema_name, date, doc_metadata, doc_metadata_model, model_metadata.get(model, {}),
                              sheet_models, include_all_attributes=include_all_attributes, encoded=encoded,
                              write_empty_cols=write_empty_cols, extra_entries=extra_entries, protected=protected)
             doc_metadata = None
@@ -452,7 +459,7 @@ class WorkbookWriter(WriterBase):
         # finalize workbook
         writer.finalize_workbook()
 
-    def write_schema(self, writer, models, name, doc_metadata, protected=True):
+    def write_schema(self, writer, models, name, date, doc_metadata, protected=True):
         """ Write a worksheet with a schema
 
         Args:
@@ -460,6 +467,7 @@ class WorkbookWriter(WriterBase):
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear in the table of contents
             name (:obj:`str`): name
+            date (:obj:`str`): date
             doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
@@ -473,17 +481,11 @@ class WorkbookWriter(WriterBase):
         l_case_format = 'objTables'
         table_type = SCHEMA_TABLE_TYPE
         version = obj_tables.__version__
-        if doc_metadata and 'date' in doc_metadata:
-            date = doc_metadata['date']
-        else:
-            now = datetime.now()
-            date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
-                now.year, now.month, now.day, now.hour, now.minute, now.second)
 
         content = []
 
         if doc_metadata is not None:
-            content.append([format_doc_metadata(name, doc_metadata, date=date)])
+            content.append([format_doc_metadata(name, doc_metadata)])
 
         model_metadata_strs = ["!!{}".format(format),
                                "type='{}'".format(table_type),
@@ -550,7 +552,7 @@ class WorkbookWriter(WriterBase):
 
         writer.write_worksheet(sheet_name, content, style=style, protected=protected)
 
-    def write_toc(self, writer, models, schema_name, doc_metadata, grouped_objects, write_schema=False, protected=True):
+    def write_toc(self, writer, models, schema_name, date, doc_metadata, grouped_objects, write_schema=False, protected=True):
         """ Write a worksheet with a table of contents
 
         Args:
@@ -558,6 +560,7 @@ class WorkbookWriter(WriterBase):
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
                 appear in the table of contents
             schema_name (:obj:`str`): schema name
+            date (:obj:`str`): date
             doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             grouped_objects (:obj:`dict`): dictionary which maps models
@@ -573,16 +576,11 @@ class WorkbookWriter(WriterBase):
         format = 'ObjTables'
         l_case_format = 'objTables'
         version = obj_tables.__version__
-        date = doc_metadata.get('date', None)
-        if not date:
-            now = datetime.now()
-            date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
-                now.year, now.month, now.day, now.hour, now.minute, now.second)
 
         content = []
 
         if doc_metadata is not None:
-            content.append([format_doc_metadata(schema_name, doc_metadata, date=date)])
+            content.append([format_doc_metadata(schema_name, doc_metadata)])
 
         model_metadata_strs = ["!!{}".format(format),
                                "type='{}'".format(table_type),
@@ -635,7 +633,7 @@ class WorkbookWriter(WriterBase):
 
         writer.write_worksheet(sheet_name, content, style=style, protected=protected)
 
-    def write_model(self, writer, model, objects, schema_name, doc_metadata, doc_metadata_model, model_metadata, sheet_models,
+    def write_model(self, writer, model, objects, schema_name, date, doc_metadata, doc_metadata_model, model_metadata, sheet_models,
                     include_all_attributes=True, encoded=None, write_empty_cols=True, extra_entries=0, protected=True):
         """ Write a list of model objects to a file
 
@@ -644,6 +642,7 @@ class WorkbookWriter(WriterBase):
             model (:obj:`type`): model
             objects (:obj:`list` of :obj:`Model`): list of instances of `model`
             schema_name (:obj:`str`): schema name
+            date (:obj:`str`): date
             doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
                 (e.g., `!!!ObjTables ...`)
             doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
@@ -657,7 +656,7 @@ class WorkbookWriter(WriterBase):
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         attrs, _, headings, merge_ranges, field_validations, metadata_headings = get_fields(
-            model, schema_name, doc_metadata, doc_metadata_model, model_metadata,
+            model, schema_name, date, doc_metadata, doc_metadata_model, model_metadata,
             include_all_attributes=include_all_attributes,
             sheet_models=sheet_models)
 
@@ -964,6 +963,13 @@ class MultiSeparatedValuesWriter(WriterBase):
         _, ext = splitext(path)
         ext = ext.lower()
 
+        doc_metadata = doc_metadata or {}
+        if 'date' not in doc_metadata:
+            doc_metadata = copy.copy(doc_metadata)
+            now = datetime.now()
+            doc_metadata['date'] = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
+                now.year, now.month, now.day, now.hour, now.minute, now.second)
+
         tmp_dirname = tempfile.mkdtemp()
         tmp_paths = os.path.join(tmp_dirname, '*' + ext)
         WorkbookWriter().run(tmp_paths,
@@ -989,7 +995,7 @@ class MultiSeparatedValuesWriter(WriterBase):
                              protected=protected)
 
         with open(path, 'w') as out_file:
-            out_file.write(format_doc_metadata(schema_name, doc_metadata or {}))
+            out_file.write(format_doc_metadata(schema_name, doc_metadata))
             out_file.write("\n")
 
             all_tmp_paths = list(glob.glob(tmp_paths))
@@ -1614,7 +1620,7 @@ class WorkbookReader(ReaderBase):
 
         # get worksheet
         exp_attrs, exp_sub_attrs, exp_headings, _, _, _ = get_fields(
-            model, schema_name, {}, None, {}, include_all_attributes=include_all_attributes)
+            model, schema_name, '', {}, None, {}, include_all_attributes=include_all_attributes)
         if model.Meta.table_format == TableFormat.row:
             data, _, headings, top_comments = self.read_sheet(model, reader, sheet_name,
                                                               num_column_heading_rows=len(exp_headings),
@@ -2431,12 +2437,13 @@ def create_template(path, schema_name, models, title=None, description=None, key
                                   protected=protected)
 
 
-def get_fields(cls, schema_name, doc_metadata, doc_metadata_model, model_metadata, include_all_attributes=True, sheet_models=None):
+def get_fields(cls, schema_name, date, doc_metadata, doc_metadata_model, model_metadata, include_all_attributes=True, sheet_models=None):
     """ Get the attributes, headings, and validation for a worksheet
 
     Args:
         cls (:obj:`type`): Model type (subclass of :obj:`Model`)
         schema_name (:obj:`str`): schema name
+        date (:obj:`str`): date
         doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
             (e.g., `!!!ObjTables ...`)
         doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
@@ -2499,7 +2506,6 @@ def get_fields(cls, schema_name, doc_metadata, doc_metadata_model, model_metadat
         metadata_headings.append([format_doc_metadata(schema_name, doc_metadata)])
 
     # model metadata
-    now = datetime.now()
     model_metadata = dict(model_metadata)
     if schema_name:
         model_metadata['schema'] = schema_name
@@ -2511,8 +2517,7 @@ def get_fields(cls, schema_name, doc_metadata, doc_metadata_model, model_metadat
     if cls.Meta.description:
         model_metadata['description'] = cls.Meta.description
     if 'date' not in model_metadata:
-        model_metadata['date'] = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
-            now.year, now.month, now.day, now.hour, now.minute, now.second)
+        model_metadata['date'] = date
     model_metadata[l_case_format + 'Version'] = version
 
     keys = ['schema', 'type', 'tableFormat', 'class', 'name', 'description', 'date', l_case_format + 'Version']
@@ -2606,13 +2611,12 @@ def get_ordered_attributes(cls, include_all_attributes=True):
     return attrs
 
 
-def format_doc_metadata(schema_name, metadata, date=None):
+def format_doc_metadata(schema_name, metadata):
     """ Format document metadata as a string of key-value pairs of document metadata
 
     Args:
         schema_name (:obj:`str`): schema name
         metadata (:obj:`dict`): document metadata
-        date (:obj:`str`, optional): date
 
     Returns:
         :obj:`str`: string of key-value pairs of document metadata
@@ -2620,11 +2624,7 @@ def format_doc_metadata(schema_name, metadata, date=None):
     format = 'ObjTables'
     l_case_format = 'objTables'
     version = obj_tables.__version__
-    date = date or metadata.get('date', None)
-    if date is None:
-        now = datetime.now()
-        date = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(
-            now.year, now.month, now.day, now.hour, now.minute, now.second)
+    date = metadata.get('date', '')
 
     metadata = dict(metadata)
     metadata.pop(f"{l_case_format}Version", None)
