@@ -31,27 +31,26 @@
                   <li><a href="app">Web app</a></li>
                   <li><a href="api">REST API</a></li>
                   <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
-                  <li><a href="https://pypi.org/pypi/obj_tables/">Python library</a></li>
-                  <li><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
+                  <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
+                  <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
                   <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
-                  <li><a href="/#license">License</a></li>
+                  <li class="separator"><a href="/#license">License</a></li>
                 </ul>
               </li>
               <li>
                 <a href="#">Docs</a>
                 <ul class="menu">
                   <li><a href="docs#examples">Examples</a></li>
-                  <li><a href="docs#schema-formats">Schema formats</a></li>
+                  <li class="separator"><a href="docs#schema-formats">Schema formats</a></li>
                   <li><a href="docs#data-types">Data types</a></li>
                   <li><a href="docs#dataset-formats">Dataset formats</a></li>
                   <li><a href="docs#validation">Data validation</a></li>
-                  <li><a href="api">REST API</a></li>
+                  <li class="separator"><a href="api">REST API</a></li>
                   <li><a href="/#cli">CLI</a></li>
-                  <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python API: tutorials</a></li>
-                  <li><a href="https://docs.karrlab.org/obj_tables">Python API: docs</a></li>
+                  <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
+                  <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
                   <li><a href="docs#other-languages">Other languages</a></li>
-                  <li><a href="/#citation">Citation</a></li>
-                  <li><a href="docs#help">More help</a></li>
+                  <li class="separator"><a href="docs#help">More help</a></li>
                 </ul>
               </li>
               <li>
@@ -60,6 +59,7 @@
                   <li><a href="/#contact">Contact info</a></li>
                   <li><a href="/#team">Team</a></li>
                   <li><a href="/#funding">Funding</a></li>
+                  <li class="separator"><a href="/#citation">Citation</a></li>
                 </ul>
               </li>
             </ul>
@@ -114,7 +114,7 @@
                   <li><b>Embedded grammars for relationships:</b> To help users encode complex datasets into a minimal number of tables, grammars can be used to encode instances of related classes into a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
               </ul>
               </li>
-              <li><b>Python API for defining schemas:</b> For more flexibility, the Python API can be used to incorporate custom data types into schemas and define custom validation procedures.</li>
+              <li><b>Python package for defining schemas:</b> For more flexibility, the Python package can be used to incorporate custom data types into schemas and define custom validation procedures.</li>
               <li><b>Numerous data types</b> including types for mathematics, science, chemoinformatics, and genomics.</li>
               <li><b>Software tools for parsing, validating, and manipulating datasets</b> according to schemas. This includes tools for
                 <ul>
@@ -149,7 +149,7 @@
               <li><b>Web app</b> <a href="app"><i class="fi-link"></i></a>: The web app enables users to use <i>ObjTables</i> without having to install any software.</li>
               <li><b>REST API</b> <a href="api/"><i class="fi-link"></i></a>: The REST API enables users to use <i>ObjTables</i> programmatically without having to install any software.</li>
               <li><b>Command-line program</b> <a href="https://pypi.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The command-line program enables users to use <i>ObjTables</i> without having to upload data to this website.</li>
-              <li><b>Python API</b> <a href="https://pypi.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The Python API enables users to extend <i>ObjTables</i> with custom attributes and validation and use <i>ObjTables</i> to analyze complex datasets.</li>
+              <li><b>Python package</b> <a href="https://pypi.org/pypi/obj_tables/"><i class="fi-link"></i></a>: The Python package enables users to extend <i>ObjTables</i> with custom attributes and validation and use <i>ObjTables</i> to analyze complex datasets.</li>
             </ul>
 
             <p>We developed <i>ObjTables</i> to implement languages for describing whole-cell computational models <a href="https://www.wholecell.org"><i class="fi-link"></i></a> and the data needed to build and verify them.</p>
@@ -174,21 +174,29 @@
             <h2>Software tools</h2>
 
             <div class="grid-x grid-padding-x">
-              <div class="large-3 cell">
+              <div class="large-4 cell">
                 <h3>Web app</h3>
                 A web app is available at <a href="app">objtables.org/app</a>.
               </div>
-              <div class="large-3 cell" id="rest">
+              <div class="large-4 cell" id="rest">
                 <h3>REST API</h3>
                 A REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
               </div>
-              <div class="large-3 cell" id="cli">
+              <div class="large-4 cell" id="cli">
                 <h3>Command-line program</h3>
                 A command-line program is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.
               </div>
-              <div class="large-3 cell" id="python">
-                <h3>Python API</h3>
-                <p>A Python API is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.</p>
+              <div class="large-4 cell" id="python">
+                <h3>Python package</h3>
+                <p>A Python package is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.</p>
+              </div>
+              <div class="large-4 cell" id="docker">
+                <h3>Docker image</h3>
+                <p>A Dockerfile for building a Docker image is available from GitHub <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.</p>
+              </div>
+              <div class="large-4 cell" id="code">
+                <h3>Source code</h3>
+                <p>The source code is available from GitHub <a href="https://github.com/KarrLab/obj_tables"><i class="fi-link"></i></a>.</p>
               </div>
             </div>
           </div>
@@ -201,11 +209,11 @@
                 The documentation contains several example schemas and datasets <a href="docs"><i class="fi-link"></i></a>.
               </div>
               <div class="large-4 cell">
-                <h3>CLI and Python API installation</h3>
-                Installation instructions for the command-line program and Python API are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
+                <h3>CLI and Python package installation</h3>
+                Installation instructions for the command-line program and Python package are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
               </div>
               <div class="large-4 cell">
-                <h3>Tutorials for the Python API</h3>
+                <h3>Tutorials for the Python package</h3>
                 A Jupyter notebook with interactive tutorials is available at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.
               </div>
               <div class="large-4 cell">
@@ -221,8 +229,8 @@
                 Documentation for the command-line program is available inline by running <span class="monospace">obj-tables --help</span>.
               </div>
               <div class="large-4 cell">
-                <h3>Docs for the Python API</h3>
-                An introduction to the Python API is available at <a href="docs">objtables.org/docs</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables">docs.karrlab.org</a>.
+                <h3>Docs for the Python package</h3>
+                An introduction to the Python package is available at <a href="docs">objtables.org/docs</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables">docs.karrlab.org</a>.
               </div>
               <div class="large-4 cell">
                 <h3>Further help</h3>

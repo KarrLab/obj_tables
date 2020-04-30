@@ -24,34 +24,33 @@
           </div>
           <div class="large-5 small-10 cell links">
             <ul class="dropdown menu" data-dropdown-menu>
-              <li><a href="/">Home</a></li>
+              <li class="active-page"><a href="/">Home</a></li>
               <li>
                 <a href="#">Software</a>
                 <ul class="menu">
                   <li><a href="app">Web app</a></li>
                   <li><a href="api">REST API</a></li>
                   <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
-                  <li><a href="https://pypi.org/pypi/obj_tables/">Python library</a></li>
-                  <li><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
+                  <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
+                  <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
                   <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
-                  <li><a href="/#license">License</a></li>
+                  <li class="separator"><a href="/#license">License</a></li>
                 </ul>
               </li>
-              <li class="active-page">
+              <li>
                 <a href="#">Docs</a>
                 <ul class="menu">
                   <li><a href="docs#examples">Examples</a></li>
-                  <li><a href="docs#schema-formats">Schema formats</a></li>
+                  <li class="separator"><a href="docs#schema-formats">Schema formats</a></li>
                   <li><a href="docs#data-types">Data types</a></li>
                   <li><a href="docs#dataset-formats">Dataset formats</a></li>
                   <li><a href="docs#validation">Data validation</a></li>
-                  <li><a href="api">REST API</a></li>
+                  <li class="separator"><a href="api">REST API</a></li>
                   <li><a href="/#cli">CLI</a></li>
-                  <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python API: tutorials</a></li>
-                  <li><a href="https://docs.karrlab.org/obj_tables">Python API: docs</a></li>
+                  <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
+                  <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
                   <li><a href="docs#other-languages">Other languages</a></li>
-                  <li><a href="/#citation">Citation</a></li>
-                  <li><a href="docs#help">More help</a></li>
+                  <li class="separator"><a href="docs#help">More help</a></li>
                 </ul>
               </li>
               <li>
@@ -60,6 +59,7 @@
                   <li><a href="/#contact">Contact info</a></li>
                   <li><a href="/#team">Team</a></li>
                   <li><a href="/#funding">Funding</a></li>
+                  <li class="separator"><a href="/#citation">Citation</a></li>
                 </ul>
               </li>
             </ul>
@@ -86,7 +86,7 @@
                 <li><a href="#validation">Dataset validation</a></li>
                 <li><a href="#tools">Software tools</a>
                   <ul>
-                    <li><a href="#python">Python API</a></li>
+                    <li><a href="#python">Python package</a></li>
                     <li><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                   </ul>
                 </li>
@@ -324,9 +324,9 @@
             <h2>Formats for schemas</h2>
 
             <div style="margin-top: 1rem">
-              <p><i>ObjTables</i> schemas can either be defined using the tabular format described below or using the <i>ObjTables</i> Python API. The tabular format is easy to use, and requires no programming. The tabular format supports most of the features of <i>ObjTables</i>, including a wide range of data types, relationships, transposed and embedded tables, single inheritance, and basic validation.</p>
+              <p><i>ObjTables</i> schemas can either be defined using the tabular format described below or using the <i>ObjTables</i> Python package. The tabular format is easy to use, and requires no programming. The tabular format supports most of the features of <i>ObjTables</i>, including a wide range of data types, relationships, transposed and embedded tables, single inheritance, and basic validation.</p>
 
-              <p>The <i>ObjTables</i> Python API is more flexible. In addition to the features of the tabular schema format, the Python API supports abstract classes and methods, custom data types, custom validation, custom Excel formatting, and more. The Python API can also be used to encapsulate methods for manipulating data inside schemas.</p>
+              <p>The <i>ObjTables</i> Python package is more flexible. In addition to the features of the tabular schema format, the Python package supports abstract classes and methods, custom data types, custom validation, custom Excel formatting, and more. The Python package can also be used to encapsulate methods for manipulating data inside schemas.</p>
 
               <p>We recommend that developers begin with the tabular format, and transition to the Python format when more capabilities are needed. When more capabilities are required, we recommend that developers use the <i>ObjTables</i> software tools to convert their initial tabular-formatted schema into a Python module. This workflow provides a quick path to developing a custom schema.</p>
 
@@ -418,8 +418,8 @@
                 <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.tsv"><i class="fi-link"></i></a></li>
               </ul>
 
-              <h3>Implementing schemas in Python using the Python API</h3>
-              <p>Schemas can also be implemented using the <i>ObjTables</i> Python API. The API enables developers to define schemas with a similar syntax to object-relational mapping tools such as Django <a href="https://docs.djangoproject.com/en/3.0/topics/db/models/"><i class="fi-link"></i></a>, Ruby on Rails <a href="https://guides.rubyonrails.org/active_record_basics.html"><i class="fi-link"></i></a>, and SQLAlchemy <a href="https://docs.sqlalchemy.org/en/14/orm/tutorial.html"><i class="fi-link"></i></a>.</p>
+              <h3>Implementing schemas in Python using the Python package</h3>
+              <p>Schemas can also be implemented using the <i>ObjTables</i> Python package. The API enables developers to define schemas with a similar syntax to object-relational mapping tools such as Django <a href="https://docs.djangoproject.com/en/3.0/topics/db/models/"><i class="fi-link"></i></a>, Ruby on Rails <a href="https://guides.rubyonrails.org/active_record_basics.html"><i class="fi-link"></i></a>, and SQLAlchemy <a href="https://docs.sqlalchemy.org/en/14/orm/tutorial.html"><i class="fi-link"></i></a>.</p>
               <ul class="vertically-spaced-list">
                 <li>Each class should be implemented as a subclass of <span class="monospace">obj_tables.Model</span>.</li>
                 <li>Each attribute of each class should be implemented as a class attribute whose value is an instance of a subclass of <span class="monospace">obj_tables.Attribute</span>. Numerous subclasses of <span class="monospace">obj_tables.Attribute</span>, which support a wide range of data types, are available. Please see below <a href="#data-types"><i class="fi-arrow-down"></i></a> and the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information, including the arguments of these classes.
@@ -532,7 +532,7 @@
                 <li>uncertainties <a href="https://uncertainties-python-package.readthedocs.io"><i class="fi-link"></i></a>: values and their uncertainty</li>
               </ul>
 
-              <p>The following table lists the attribute types currently available in <i>ObjTables</i>. The first column indicates the names that should be used in conjunction with the tabular schema format. The second column indicates the Python class which implements each type, and which should be used to define schemas with the Python API. The third column indicates the data type used to encode each attribute into an Excel cell. The fourth column indicates the Python data type used to represent each attribute in the <i>ObjTables</i> software tools.</p>
+              <p>The following table lists the attribute types currently available in <i>ObjTables</i>. The first column indicates the names that should be used in conjunction with the tabular schema format. The second column indicates the Python class which implements each type, and which should be used to define schemas with the Python package. The third column indicates the data type used to encode each attribute into an Excel cell. The fourth column indicates the Python data type used to represent each attribute in the <i>ObjTables</i> software tools.</p>
 
               <table>
                 <thead class="data-type-title">
@@ -1084,7 +1084,7 @@
           <div id="tools">
             <h2>Software tools</h2>
             <div style="margin-top: 1rem">
-              <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through all of the user interfaces (the web application, REST API, command-line program, and Python API). Please see below for more information about using these interfaces. The tools marked with &#9675; are only available through the Python API. Please see the Python documentation for more information about these tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>. </p>
+              <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through all of the user interfaces (the web application, REST API, command-line program, and Python package). Please see below for more information about using these interfaces. The tools marked with &#9675; are only available through the Python package. Please see the Python documentation for more information about these tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>. </p>
               <ul class="vertically-spaced-list highlight">
                 <li>Generate a Python module that implements a tabular-formatted schema.</li>
                 <li>Generate a UML diagram for a schema.</li>
@@ -1108,9 +1108,9 @@
           </div>
 
           <div id="python">
-            <h2>Python API</h2>
+            <h2>Python package</h2>
             <div>
-              <p>As described above, the Python API has significantly more capabilities than the web application, REST API, and command-line program.</p>
+              <p>As described above, the Python package has significantly more capabilities than the web application, REST API, and command-line program.</p>
 
               <p>The following example briefly introduces the API by illustrating how to use the API to programmatically create, manipulate, analyze, and export the same address book of tech CEOs described above <a href="#example-tabular-dataset"><i class="fi-arrow-up"></i></a>. Additional and more extensive tutorials are available as interactive Jupyter notebooks at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.</p>
 
@@ -1265,7 +1265,7 @@
             <div style="margin-top: 1rem">
               <p class="before-list"><i>ObjTables</i> is under active development. Below are several open issues that we intend to address going forward. Please see the GitHub issue list <a href="https://github.com/KarrLab/obj_tables/issues"><i class="fi-link"></i></a> for more information.</p>
               <ul>
-                <li>Currently, <i>ObjTables</i> has limited capabilities to convert schemas implemented with the Python API to the tabular format.</li>
+                <li>Currently, <i>ObjTables</i> has limited capabilities to convert schemas implemented with the Python package to the tabular format.</li>
                 <li>Currently, <i>ObjTables</i> has limited support for multiple inheritance.</li>
                 <li>Currently, <i>ObjTables</i> only supports one view per class.</li>
                 <li>Currently, <i>ObjTables</i> serializes <span class="monospace">Array</span> and <span class="monospace">Table</span> to individual cells. We are contemplating enabling these attributes to be serialized to separate files/worksheets.</li>
