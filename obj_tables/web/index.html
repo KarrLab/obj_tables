@@ -5,7 +5,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ObjTables: Toolkit for modeling complex data with the ease of Excel and the power of schemas</title>
-    <meta name="description" content="ObjTables is a toolkit for systematically building, annotating, validating, and parsing complex tabular datasets with the ease of use of Excel and the power of schemas. ObjTables makes it easy to design schemas for datasets, generate template Excel workbooks with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in langauges such as Python. The ObjTables software is available through four interfaces: a web application, a REST API, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
+    <meta name="description" content="ObjTables is a toolkit for systematically building, annotating, validating, and parsing complex tabular datasets with the ease of use of Excel and the power of schemas. ObjTables makes it easy to design schemas for datasets, generate template Excel workbooks with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in languages such as Python. The ObjTables software is available through four interfaces: a web application, a REST API, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
     <meta name="keywords" content="data, table, schema, data model, meta model, data type, validate, Python"/>
     <meta name="language" content="EN">
     <meta name="copyright" content="Karr Lab"/>
@@ -155,7 +155,7 @@
               <li><b>Table of contents:</b> Optionally, each dataset can include a table that describes the classes represented by the data tables, displays the number of instances of each class, and provides hyperlinks to the data tables.</li>
               <li><b>Formatted class titles:</b> Each table includes a title bar that describes the class. The title bars are formatted, frozen, and protected from editing.</li>
               <li><b>Formatted attribute headings:</b> Each table includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
-              <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into its heading.</li>
+              <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into it's heading.</li>
               <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides select menus for each attribute that encodes an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>
               <li><b>Instant validation:</b> <i>ObjTables</i> uses Excel to validate several properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. The <i>ObjTables</i> software provides far more extensive validation. Furthermore, <i>ObjTables</i> makes it easy to implement domain-specific validation at multiple levels.</i>
               <li><b>Hidden extra rows and columns:</b> To help users focus on the attributes of their classes, <i>ObjTables</i> hides all empty rows and columns.</li>
@@ -183,16 +183,44 @@
           <div id="use-cases">
             <h2>Use cases</h2>
 
-            <p class="before-list" style="margin-top: 1rem"><i>ObjTables</i> was designed for uses cases where users need to quickly view, edit, validate, analyze, and share entire datasets.</p>
-            <ul class="vertically-spaced-list">
-              <li><b>Data integration and modeling:</b> <i>ObjTables</i> is ideal for data integration and modeling because <i>ObjTables</i> makes it easy to use (a) workbooks for building and editing datasets/models, (b) the <i>ObjTables</i> software to rigorously validate datasets/models and quickly correct errors, (c) programming languages to analyze datasets and simulate models, and (d) version control systems such as Git to revision datasets and models.</li>
+            <div class="grid-x grid-padding-x" style="margin-top: 1rem">
+              <div class="large-12 cell">
+                <i>ObjTables</i> was designed for uses cases where users need to quickly view, edit, validate, analyze, and share complex data.
+              </div>
+              <div class="large-6 cell">
+                <h3>Building, validating and analyzing complex datasets and models</h3>
 
-              <li><b>Domain-specific formats/languages for nascent domains:</b> <i>ObjTables</i> makes it easy to quickly define a format/language for a domain, including the schema and software tools for interacting with datasets encoded in the schema. In particular, <i>ObjTables</i> is well-suited to building domain-specific formats/langauges for nascent academic fields because <i>ObjTables</i> schemas and datasets are easy to create and iteratively edit.</li>
+                <p>Many fields aim to understand how behaviors emerge from complex networks. This often requires integrating diverse data about different parts of the network. For example, systems biology aims to understand how cellular behavior emerges from genotype, often using genomics, biochemical, and other data. Excel is a popular tool for merging data because it's flexible and easy to use. However, Excel only supports a few data types, and Excel has limited support for multi-dimensional data. In addition, it is difficult to debug and analyze Excel workbooks.</p>
 
-              <li><b>Supplementary data of academic journal articles:</b> <i>ObjTables</i> is an excellent medium for supplementary data for journal articles. <i>ObjTables</i> enables authors to publish their data in a format that can easily be (a) viewed by any reader (with just a workbook viewer such as Excel) generally without needing to install or learn any software and (b) parsed by readers into a data structure for further analysis. The later is made easy by the ability to package schemas and datasets together into a single workbook.</li>
+                <p>By combining Excel with schemas, <i>ObjTables</i> makes it easy to build, validate, and analyze complex datasets: (a) users can use Excel to assemble diverse data into tables, (b) users can quickly define schemas for their data, and (c) users can use these schemas to validate their data and parse their data into data structures suitable for further analysis in languages such as Python. For example, we have used <i>ObjTables</i> to build integrated datasets of the biochemistry of <i>Mycoplasma pneumoniae</i> and H1 human embryonic stem cells.</p>
 
-              <li><b>Sharing data with collaborators and colleagues:</b> For similar reasons, <i>ObjTables</i> is an excellent medium for sharing data with collaborators and colleagues. Because Excel is so common, in many cases, <i>ObjTables</i> datasets shared via email or with networks such as DropBox and Google Drive can be previewed in email clients and web browsers without users having to open any additional software.</li>
-            </ul>
+                <p><i>ObjTables</i> also makes it easy to build datasets iteratively over time by helping users revision data with Git and migrate their data as they revise their schemas.</p>
+              </div>
+
+              <div class="large-6 cell">
+                <h3>Defining formats for new types of data and models</h3>
+
+                <p>New areas of science often require new types of data and new kinds of models. In turn, this often requires new formats to capture these data and models and new software for working with these formats, including new tools for parsing and validating data and models described in these formats. Creating these formats is often an obstacle for new domains that have limited resources. Evolving these formats as new approaches emerge is also challenging because this often requires updating the software tools for the format and converting old files to the revised format.</p>
+
+                <p><i>ObjTables</i> addresses this issue by making it easy to define schemas for domain-specific data and providing software tools for parsing, manipulating, and validating data encoded in these schemas. For example, we have used <i>ObjTables</i> to create, WC-KB <a href="https://github.com/KarrLab/wc_kb"><i class="fi-link"></i></a>, a format for the experimental omics, biochemical, and physiological data needed to model cellular biochemistry. We have also used <i>ObjTables</i> to create, WC-Lang <a href="https://github.com/KarrLab/wc_lang"><i class="fi-link"></i></a>, a format for whole-cell models of all of the biochemical activity in a cell. Creating these formats required minimal code.</p>
+              </div>
+
+              <div class="large-6 cell">
+                <h3>Publishing re-usable supplementary materials</h3>
+
+                <p>Although supplementary materials often contain valuable data, supplementary materials are underutilized because they are often provided in custom formats that are difficult to understand, parse, and re-use.</p>
+
+                <p><i>ObjTables</i> addresses this issue by enabling authors to publish materials in a tabular format which can easily be read by humans and computers: (a) <i>ObjTables</i> enables authors to pretty print their data with tables of contents and inline help, (b) <i>ObjTables</i> enables authors to provide schemas for parsing their data, and (c) <i>ObjTables</i> enables readers to use these schemas to parse and analyze published data with minimal effort. Together, this makes it easier for authors to publish supplementary materials that are easy for others to re-use for additional studies.</p>
+              </div>
+
+              <div class="large-6 cell">
+                <h3>Sharing re-usable data and models</h3>
+
+                <pe>Researchers often need to send their collaborators new datasets and models that cannot be described in any existing format. This often requires collaborators to write custom codes to parse these custom datasets and models. The substantial effort needed to write these codes is a frequent barrier to collaboration.</p>
+
+                <p><i>ObjTables</i> makes it easier to share re-usable data and models with collaborators by (a) enabling researchers to rigorously describe the structure of their data or model with a schema, (b) enabling researchers to capture metadata about their data or model, (c) providing researchers software tools for validating their data, and (d) enabling collaborators to use these schemas to parse data from their colleagues quickly.</p>
+              </div>
+            </div>
           </div>
 
           <div id="software">
@@ -296,6 +324,7 @@
                   <li>Jonathan Karr <a href="https://www.karrlab.org/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/jonrkarr/"><i class="fi-social-linkedin"></i></a></li>
                   <li>Arthur Goldberg <a href="https://www.mountsinai.org/profiles/arthur-p-goldberg"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/arthurgoldberg/"><i class="fi-social-linkedin"></i></a></li>
                   <li>Wolfram Liebermeister <a href="https://www.metabolic-economics.de/liebermeister/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/wolfram-liebermeister-28264226/"><i class="fi-social-linkedin"></i></a></li>
+                  <li>John Sekar <a href="https://www.linkedin.com/in/john-sekar/"><i class="fi-social-linkedin"></i></a></li>
                   <li>Bilal Shaikh <a href="https://www.bshaikh.com"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/bilalshaikh42/"><i class="fi-social-linkedin"></i></a></li>
                 </ul>
               </div>
