@@ -100,6 +100,10 @@ ol {
     outline: none;
 }
 
+.highlight {
+    font-weight: bold;
+}
+
 
 /* top bar */
 
@@ -116,7 +120,7 @@ ol {
 }
 
 .page-title .title {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     font-weight: bold;
     height: 100%;
     display: flex;
@@ -168,6 +172,10 @@ ol {
     border-bottom: 1px solid #f6bb42;
 }
 
+.dropdown .is-dropdown-submenu {
+    min-width: 205px;
+}
+
 .dropdown .is-dropdown-submenu li {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -183,6 +191,7 @@ ol {
 .dropdown .is-dropdown-submenu a {
     padding: 0;
     color: #333;
+    white-space: nowrap;
 }
 
 .dropdown .is-dropdown-submenu li:hover {
