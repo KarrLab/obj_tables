@@ -5,16 +5,24 @@
 
 `ObjTables` makes it easy to:
 
-* Use collections of tables (e.g., an Excel workbook) as an interface for viewing and editing complex datasets that consist of multiple related objects that have multiple attributes,
-* Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables,
-* Use embedded tables and grammars to encode relational information into columns and groups of columns of tables,
-* Define schemas for collections of tables,
-* Use schemas to parse collections of tables into Python data structures for further analysis,
-* Use schemas to validate the syntax and semantics of collections of tables,
-* Conduct operations on complex datasets, such as comparing and merging objects, and
-* Edit schemas and migrate a dataset to a new version of a schema.
+* Use collections of tables (e.g., an Excel workbook) to represent complex data consisting of multiple related objects of multiple types (e.g., rows of worksheets), each with multiple attributes (e.g., columns).
+* Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables.
+* Use Excel as a graphical interface for viewing and editing complex datasets.
+* Use embedded tables and grammars to encode relational information into columns and groups of columns of tables.
+* Define clear schemas for tabular datasets.
+* Use schemas to rigorously validate tabular datasets.
+* Use schemas to parse tabular datasets into data structures for further analysis in languages such as Python.
+* Compare, merge, split, revision, and migrate tabular datasets.
 
-Please see https://www.objtables.org for an overview of `ObjTables` and https://sandbox.karrlab.org/tree/obj_tables for interactive tutorials for the `ObjTables` Python API. This website contains documentation for `ObjTables` migrations, the `ObjTables` Python API, and the `ObjTables` source code.
+The `ObjTables` toolkit includes five components:
+
+* Format for schemas for tabular datasets
+* Numerous data types
+* Format for tabular datasets
+* Software tools for parsing, validating, and manipulating tabular datasets
+* Python package for more flexibility and anal
+
+Please see https://www.objtables.org for an overview of `ObjTables` and https://sandbox.karrlab.org/tree/obj_tables for interactive tutorials for the `ObjTables` Python API. This website contains documentation for `ObjTables` migrations and the `ObjTables` Python API.
 
 
 Contents
