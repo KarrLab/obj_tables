@@ -262,7 +262,7 @@ li {
     margin-top: 0.125rem;
 }
 
-li.highlight {
+li.optional {
     list-style-type: circle;
 }
 

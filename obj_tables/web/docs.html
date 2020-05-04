@@ -1049,8 +1049,8 @@
                   <b>Syntactic validation:</b> The <i>ObjTables</i> software performs the following checks:
                   <ul>
                     <li>A dataset is encoded in the one of the tabular, JSON, or YAML formats.</li>
-                    <li class="highlight">The dataset contains all of the classes/tables and attributes/columns defined in the schema.</li>
-                    <li class="highlight">The dataset contains no extra classes/tables or attributes/columns.</li>
+                    <li class="optional">The dataset contains all of the classes/tables and attributes/columns defined in the schema.</li>
+                    <li class="optional">The dataset contains no extra classes/tables or attributes/columns.</li>
                     <li>Each class/table is oriented (normal, transposed) as defined in the schema.</li>
                     <li>The document and class metadata are syntactically valid lists of key-value pairs.</li>
                   </ul>
@@ -1095,25 +1095,25 @@
           <div id="tools">
             <h2>Software tools</h2>
             <div style="margin-top: 1rem">
-              <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through all of the user interfaces (the web application, REST API, command-line program, and Python package). Please see below for more information about using these interfaces. The tools marked with &#9675; are only available through the Python package. Please see the Python documentation for more information about these tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>. </p>
-              <ul class="vertically-spaced-list highlight">
+              <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through all of the user interfaces (the web application, REST API, command-line program, and Python package). Please see below for more information about using these interfaces. The tools marked with &#9675; are only available through the Python package. Please see the Python documentation for more information about these tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>.</p>
+              <ul class="vertically-spaced-list optional">
                 <li>Generate a Python module that implements a tabular-formatted schema.</li>
                 <li>Generate a UML diagram for a schema.</li>
                 <li>Generate a template CSV, TSV, or Excel file(s) for a schema.</li>
-                <li class="highlight">Programmatically construct or edit a dataset.</li>
-                <li class="highlight">Merge multiple datasets into a single dataset.</li>
-                <li class="highlight">Partition a dataset into multiple datasets.</li>
-                <li class="highlight">Migrate a dataset between versions of a schema. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/migration.html"><i class="fi-link"></i></a> for more information.</li>
-                <li class="highlight">Use Git to revision a dataset.</li>
+                <li class="optional">Programmatically construct or edit a dataset.</li>
+                <li class="optional">Merge multiple datasets into a single dataset.</li>
+                <li class="optional">Partition a dataset into multiple datasets.</li>
+                <li class="optional">Migrate a dataset between versions of a schema. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/migration.html"><i class="fi-link"></i></a> for more information.</li>
+                <li class="optional">Use Git to revision a dataset.</li>
                 <li>Validate that a dataset adheres to a schema and report any errors.</li>
                 <li>Normalize a dataset into a deterministically reproducible ordering.</li>
-                <li class="highlight">Sort a dataset into a random order.</li>
+                <li class="optional">Sort a dataset into a random order.</li>
                 <li>Pretty print a dataset.</li>
                 <li>Use a schema to determine if two datasets are semantically equivalent.</li>
                 <li>Use a schema to evaluate the difference in the semantic meaning of two datasets.</li>
-                <li class="highlight">Parse a dataset into a Python data structure.</li>
+                <li class="optional">Parse a dataset into a Python data structure.</li>
                 <li>Use a schema to convert a dataset to an alternate format.</li>
-                <li class="highlight">Use a schema to convert a dataset to a dictionary of pandas data frames <a href="https://pandas.pydata.org"><i class="fi-link"></i></a>.</li>
+                <li class="optional">Use a schema to convert a dataset to a dictionary of pandas data frames <a href="https://pandas.pydata.org"><i class="fi-link"></i></a>.</li>
               </ul>
             </div>
           </div>
