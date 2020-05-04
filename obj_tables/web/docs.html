@@ -101,7 +101,12 @@
             <div class="toc">
               <h2>Contents</h2>
               <ul>
-                <li><a href="#examples">Example schemas and datasets</a></li>
+                <li><a href="#examples">Example schemas and datasets</a>
+                  <ul>
+                    <li><a href="#example">Address book</a></li>
+                    <li><a href="#more-examples">More examples</a></li>
+                  </ul>
+                </li>
                 <li><a href="#formats">Formats for datasets</a>
                   <ul>
                     <li><a href="#schema-formats">Formats for schemas</a></li>
@@ -128,6 +133,145 @@
         <div class="large-10 cell content-container">
           <div id="examples">
             <h2>Example schemas and datasets</h2>
+
+            <h3 id="example">Address book</h3>
+            <p>The following illustrates a schema for an address book of people, the companies that they work for, and their addresses and an example adress book of the CEOs of several technology companies.</p>
+
+            <p>Address books are implementing using three classes to represent people (<span class="monospace">Person</span>), the companies that they work for (<span class="monospace">Company</span>), and their addresses (<span class="monospace">Address</span>). To capture address books with a minimal number of tables, each person and company's address is encoded into a range of cells within the row/column which represents each person and each company. This is achieved by embedding instances of the <span class="monospace">Address</span> class within the tables for the <span class="monospace">Company</span> and <span class="monospace">Person</span> classes. This makes the tables more human-readable, and it enables Python to encapsulate related information into distinct objects.</p>
+
+            <h4 id="example-tabular-schema">Tabular-formatted schema</h4>
+            <p>The example is available in TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.tsv"><i class="fi-link"></i></a>.</p>
+
+            <table class="example-tabular-schema">
+              <thead>
+                <tr>
+                  <th colspan="7">!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-10 21:34:50' objTablesVersion='0.0.8'</th>
+                </tr>
+                <tr>
+                  <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Verbose name</th><th>!Verbose name plural</th><th>!Description</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr><td colspan="7" class="separator">&nbsp;</td></tr>
+                <tr><td>Company</td><td>Class</td><td></td><td>column</td><td>Company</td><td>Companies</td><td></td></tr>
+                <tr><td>name</td><td>Attribute</td><td>Company</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td><td></td></tr>
+                <tr><td>url</td><td>Attribute</td><td>Company</td><td>Url</td><td>URL</td><td></td><td></td></tr>
+                <tr><td>address</td><td>Attribute</td><td>Company</td><td>OneToOne('Address', related_name='company')</td><td>Address</td><td></td><td></td></tr>
+              </tbody>
+
+              <tbody>
+                <tr><td colspan="7" class="separator">&nbsp;</td></tr>
+                <tr><td>Person</td><td>Class</td><td></td><td>row</td><td>Person</td><td>People</td><td></td></tr>
+                <tr><td>name</td><td>Attribute</td><td>Person</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td><td></td></tr>
+                <tr><td>type</td><td>Attribute</td><td>Person</td><td>Enum(['family', 'friend', 'business'])</td><td>Type</td><td></td><td></td></tr>
+                <tr><td>company</td><td>Attribute</td><td>Person</td><td>ManyToOne('Company', related_name='employees')</td><td>Company</td><td></td><td></td></tr>
+                <tr><td>email_address</td><td>Attribute</td><td>Person</td><td>Email</td><td>Email address</td><td></td><td></td></tr>
+                <tr><td>phone_number</td><td>Attribute</td><td>Person</td><td>String</td><td>Phone number</td><td></td><td></td></tr>
+                <tr><td>address</td><td>Attribute</td><td>Person</td><td>OneToOne('Address', related_name='person')</td><td>Address</td><td></td><td></td></tr>
+              </tbody>
+
+              <tbody>
+                <tr><td colspan="7" class="separator">&nbsp;</td></tr>
+                <tr><td>Address</td><td>Class</td><td></td><td>multiple_cells</td><td>Address</td><td>Addresses</td><td></td></tr>
+                <tr><td>street</td><td>Attribute</td><td>Address</td><td>String(primary=True, unique=True)</td><td>Street</td><td></td><td></td></tr>
+                <tr><td>city</td><td>Attribute</td><td>Address</td><td>String</td><td>City</td><td></td><td></td></tr>
+                <tr><td>state</td><td>Attribute</td><td>Address</td><td>String</td><td>State</td><td></td><td></td></tr>
+                <tr><td>zip_code</td><td>Attribute</td><td>Address</td><td>String</td><td>Zip code</td><td></td><td></td></tr>
+                <tr><td>country</td><td>Attribute</td><td>Address</td><td>String</td><td>Country</td><td></td><td></td></tr>
+              </tbody>
+            </table>
+
+            <h4>Python schema</h4>
+            <p>The example is available in Python format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.py"><i class="fi-link"></i></a>.</p>
+
+            <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables</span>
+
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Address</span>(obj_tables<span style="color: #666666">.</span>Model):
+    street <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Street&#39;</span>)
+    city <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;City&#39;</span>)
+    state <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;State&#39;</span>)
+    zip_code <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Zip code&#39;</span>)
+    country <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Country&#39;</span>)
+
+    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
+        table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>multiple_cells
+        attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;street&#39;</span>, <span style="color: #BA2121">&#39;city&#39;</span>, <span style="color: #BA2121">&#39;state&#39;</span>, <span style="color: #BA2121">&#39;zip_code&#39;</span>, <span style="color: #BA2121">&#39;country&#39;</span>,)
+        verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Address&#39;</span>
+        verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Addresses&#39;</span>
+
+
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Person</span>(obj_tables<span style="color: #666666">.</span>Model):
+    name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Name&#39;</span>)
+    <span style="color: #008000">type</span> <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>EnumAttribute([<span style="color: #BA2121">&#39;family&#39;</span>, <span style="color: #BA2121">&#39;friend&#39;</span>, <span style="color: #BA2121">&#39;business&#39;</span>], verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Type&#39;</span>)
+    company <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>ManyToOneAttribute(<span style="color: #BA2121">&#39;Company&#39;</span>, related_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;employees&#39;</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Company&#39;</span>)
+    email_address <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>EmailAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Email address&#39;</span>)
+    phone_number <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Phone number&#39;</span>)
+    address <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>OneToOneAttribute(<span style="color: #BA2121">&#39;Address&#39;</span>, related_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;person&#39;</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Address&#39;</span>)
+
+    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
+        table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>row
+        attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;name&#39;</span>, <span style="color: #BA2121">&#39;type&#39;</span>, <span style="color: #BA2121">&#39;company&#39;</span>, <span style="color: #BA2121">&#39;email_address&#39;</span>, <span style="color: #BA2121">&#39;phone_number&#39;</span>, <span style="color: #BA2121">&#39;address&#39;</span>,)
+        verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Person&#39;</span>
+        verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;People&#39;</span>
+
+
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Company</span>(obj_tables<span style="color: #666666">.</span>Model):
+    name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Name&#39;</span>)
+    url <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>UrlAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;URL&#39;</span>)
+    address <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>OneToOneAttribute(<span style="color: #BA2121">&#39;Address&#39;</span>, related_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;company&#39;</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Address&#39;</span>)
+
+    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
+        table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>column
+        attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;name&#39;</span>, <span style="color: #BA2121">&#39;url&#39;</span>, <span style="color: #BA2121">&#39;address&#39;</span>,)
+        verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Company&#39;</span>
+        verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Companies&#39;</span></pre>
+
+            <h4 id="example-tabular-dataset">Tabular-formatted dataset</h4>
+            <p>The following example illustrates an address book of the CEOs of several major technology companies, the companies that they lead, and their addresses. The example is available in merged-TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema_and_data.multi.tsv"><i class="fi-link"></i></a>.</p>
+
+            <table>
+              <thead>
+                <tr class="doc-head">
+                  <th>!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:19:04'</th>
+                </tr>
+              </thead>
+            </table>
+
+            <table>
+              <thead>
+                <tr class="class-head">
+                  <th colspan="6">!!ObjTables type='Data' tableFormat='column' id='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><th></th><th>!Name</th><td>Apple</td><td>Facebook</td><td>Google</td><td>Netflix</td></tr>
+                <tr><th></th><th>!URL</th><td>https://www.apple.com/</td><td>https://www.facebook.com/</td><td>https://www.google.com/</td><td>https://www.netflix.com/</td></tr>
+                <tr><th rowspan="5"><div>!Address</div></th><th>!Street</th><td>10600 N Tantau Ave</td><td>1 Hacker Way #15</td><td>1600 Amphitheatre Pkwy</td><td>100 Winchester Cir</td></tr>
+                <tr><th>!City</th><td>Cupertino</td><td>Menlo Park</td><td>Mountain View</td><td>Los Gatos</td></tr>
+                <tr><th>!State</th><td>CA</td><td>CA</td><td>CA</td><td>CA</td></tr>
+                <tr><th>!Zip code</th><td>95014</td><td>94025</td><td>94043</td><td>95032</td></tr>
+                <tr><th>!Country</th><td>US</td><td>US</td><td>US</td><td>US</td></tr>
+              </tbody>
+            </table>
+
+            <table>
+              <thead>
+                <tr class="class-head">
+                  <th colspan="10">!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
+                </tr>
+                <tr class="col-head"><th class="empty"></th><th class="empty"></th><th class="empty"></th><th class="empty"></th><th class="empty"></th><th colspan="5">!Address</th></tr>
+                <tr class="col-head"><th>!Name</th><th>!Type</th><th>!Company</th><th>!Email address</th><th>!Phone number</th><th>!Street</th><th>!City</th><th>!State</th><th>!Zip code</th><th>!Country</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Mark Zuckerberg</td><td>family</td><td>Facebook</td><td>zuck@fb.com</td><td>650-543-4800</td><td>1 Hacker Way #15</td><td>Menlo Park</td><td>CA</td><td>94025</td><td>US</td></tr>
+                <tr><td>Reed Hastings</td><td>business</td><td>Netflix</td><td>reed.hastings@netflix.com</td><td>408-540-3700</td><td>100 Winchester Cir</td><td>Los Gatos</td><td>CA</td><td>95032</td><td>US</td></tr>
+                <tr><td>Sundar Pichai</td><td>business</td><td>Google</td><td>sundar@google.com</td><td>650-253-0000</td><td>1600 Amphitheatre Pkwy</td><td>Mountain View</td><td>CA</td><td>94043</td><td>US</td></tr>
+                <tr><td>Tim Cook</td><td>business</td><td>Apple</td><td>tcook@apple.com</td><td>408-996-1010</td><td>10600 N Tantau Ave</td><td>Cupertino</td><td>CA</td><td>95014</td><td>US</td></tr>
+              </tbody>
+            </table>
+
+            <h3 id="more-examples">Additional examples</h3>
             <div style="margin-top: 1rem">
               <p>Below are several examples of <i>ObjTables</i> schemas and datasets in all of the supported formats.</p>
 
@@ -393,57 +537,6 @@
 
               <p>Tabular-formatted schemas can be saved in comma-separated (.csv), tab-separated (.tsv), or Excel (.xlsx) format.</p>
 
-              <h4 id="example-tabular-schema">Example: Address book</h4>
-              <p>The following example illustrates a schema for an address book of people, the companies that they work for, and their addresses. The <span class="monospace">Address</span> class will be embedded into the tables for the <span class="monospace">Company</span> and <span class="monospace">Person</span> classes. This schema design minimizes the number of data tables needed to represent an address book. The example is available in TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.tsv"><i class="fi-link"></i></a>.</p>
-
-              <table class="example-tabular-schema">
-                <thead>
-                  <tr>
-                    <th colspan="7">!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-10 21:34:50' objTablesVersion='0.0.8'</th>
-                  </tr>
-                  <tr>
-                    <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Verbose name</th><th>!Verbose name plural</th><th>!Description</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <tr><td colspan="7" class="separator">&nbsp;</td></tr>
-                  <tr><td>Company</td><td>Class</td><td></td><td>column</td><td>Company</td><td>Companies</td><td></td></tr>
-                  <tr><td>name</td><td>Attribute</td><td>Company</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td><td></td></tr>
-                  <tr><td>url</td><td>Attribute</td><td>Company</td><td>Url</td><td>URL</td><td></td><td></td></tr>
-                  <tr><td>address</td><td>Attribute</td><td>Company</td><td>OneToOne('Address', related_name='company')</td><td>Address</td><td></td><td></td></tr>
-                </tbody>
-
-                <tbody>
-                  <tr><td colspan="7" class="separator">&nbsp;</td></tr>
-                  <tr><td>Person</td><td>Class</td><td></td><td>row</td><td>Person</td><td>People</td><td></td></tr>
-                  <tr><td>name</td><td>Attribute</td><td>Person</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td><td></td></tr>
-                  <tr><td>type</td><td>Attribute</td><td>Person</td><td>Enum(['family', 'friend', 'business'])</td><td>Type</td><td></td><td></td></tr>
-                  <tr><td>company</td><td>Attribute</td><td>Person</td><td>ManyToOne('Company', related_name='employees')</td><td>Company</td><td></td><td></td></tr>
-                  <tr><td>email_address</td><td>Attribute</td><td>Person</td><td>Email</td><td>Email address</td><td></td><td></td></tr>
-                  <tr><td>phone_number</td><td>Attribute</td><td>Person</td><td>String</td><td>Phone number</td><td></td><td></td></tr>
-                  <tr><td>address</td><td>Attribute</td><td>Person</td><td>OneToOne('Address', related_name='person')</td><td>Address</td><td></td><td></td></tr>
-                </tbody>
-
-                <tbody>
-                  <tr><td colspan="7" class="separator">&nbsp;</td></tr>
-                  <tr><td>Address</td><td>Class</td><td></td><td>multiple_cells</td><td>Address</td><td>Addresses</td><td></td></tr>
-                  <tr><td>street</td><td>Attribute</td><td>Address</td><td>String(primary=True, unique=True)</td><td>Street</td><td></td><td></td></tr>
-                  <tr><td>city</td><td>Attribute</td><td>Address</td><td>String</td><td>City</td><td></td><td></td></tr>
-                  <tr><td>state</td><td>Attribute</td><td>Address</td><td>String</td><td>State</td><td></td><td></td></tr>
-                  <tr><td>zip_code</td><td>Attribute</td><td>Address</td><td>String</td><td>Zip code</td><td></td><td></td></tr>
-                  <tr><td>country</td><td>Attribute</td><td>Address</td><td>String</td><td>Country</td><td></td><td></td></tr>
-                </tbody>
-              </table>
-
-              <h4>Additional examples</h4>
-              <p class="before-list">Additional examples are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>:</p>
-              <ul>
-                <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/financial_transactions/schema.tsv"><i class="fi-link"></i></a></li>
-                <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_model/schema.tsv"><i class="fi-link"></i></a></li>
-                <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.tsv"><i class="fi-link"></i></a></li>
-              </ul>
-
               <h3>Implementing schemas in Python using the Python package</h3>
               <p>Schemas can also be implemented using the <i>ObjTables</i> Python package. The API enables developers to define schemas with a similar syntax to object-relational mapping tools such as Django <a href="https://docs.djangoproject.com/en/3.0/topics/db/models/"><i class="fi-link"></i></a>, Ruby on Rails <a href="https://guides.rubyonrails.org/active_record_basics.html"><i class="fi-link"></i></a>, and SQLAlchemy <a href="https://docs.sqlalchemy.org/en/14/orm/tutorial.html"><i class="fi-link"></i></a>.</p>
               <ul class="vertically-spaced-list">
@@ -469,59 +562,6 @@
               </ul>
 
               <p>Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information.</p>
-
-              <h4>Example: Address book</h4>
-              <p>The following example illustrates a schema for an address book. The schema includes three classes to represent people (<span class="monospace">Person</span>), the companies that they work for (<span class="monospace">Company</span>), and their addresses (<span class="monospace">Address</span>). The example is available in Python format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.py"><i class="fi-link"></i></a>.</p>
-
-              <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables</span>
-
-    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Address</span>(obj_tables<span style="color: #666666">.</span>Model):
-        street <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Street&#39;</span>)
-        city <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;City&#39;</span>)
-        state <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;State&#39;</span>)
-        zip_code <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Zip code&#39;</span>)
-        country <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Country&#39;</span>)
-
-        <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
-            table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>multiple_cells
-            attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;street&#39;</span>, <span style="color: #BA2121">&#39;city&#39;</span>, <span style="color: #BA2121">&#39;state&#39;</span>, <span style="color: #BA2121">&#39;zip_code&#39;</span>, <span style="color: #BA2121">&#39;country&#39;</span>,)
-            verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Address&#39;</span>
-            verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Addresses&#39;</span>
-
-
-    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Person</span>(obj_tables<span style="color: #666666">.</span>Model):
-        name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Name&#39;</span>)
-        <span style="color: #008000">type</span> <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>EnumAttribute([<span style="color: #BA2121">&#39;family&#39;</span>, <span style="color: #BA2121">&#39;friend&#39;</span>, <span style="color: #BA2121">&#39;business&#39;</span>], verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Type&#39;</span>)
-        company <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>ManyToOneAttribute(<span style="color: #BA2121">&#39;Company&#39;</span>, related_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;employees&#39;</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Company&#39;</span>)
-        email_address <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>EmailAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Email address&#39;</span>)
-        phone_number <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Phone number&#39;</span>)
-        address <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>OneToOneAttribute(<span style="color: #BA2121">&#39;Address&#39;</span>, related_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;person&#39;</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Address&#39;</span>)
-
-        <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
-            table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>row
-            attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;name&#39;</span>, <span style="color: #BA2121">&#39;type&#39;</span>, <span style="color: #BA2121">&#39;company&#39;</span>, <span style="color: #BA2121">&#39;email_address&#39;</span>, <span style="color: #BA2121">&#39;phone_number&#39;</span>, <span style="color: #BA2121">&#39;address&#39;</span>,)
-            verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Person&#39;</span>
-            verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;People&#39;</span>
-
-
-    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Company</span>(obj_tables<span style="color: #666666">.</span>Model):
-        name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(primary<span style="color: #666666">=</span><span style="color: #008000">True</span>, unique<span style="color: #666666">=</span><span style="color: #008000">True</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Name&#39;</span>)
-        url <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>UrlAttribute(verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;URL&#39;</span>)
-        address <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>OneToOneAttribute(<span style="color: #BA2121">&#39;Address&#39;</span>, related_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;company&#39;</span>, verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Address&#39;</span>)
-
-        <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
-            table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>column
-            attribute_order <span style="color: #666666">=</span> (<span style="color: #BA2121">&#39;name&#39;</span>, <span style="color: #BA2121">&#39;url&#39;</span>, <span style="color: #BA2121">&#39;address&#39;</span>,)
-            verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Company&#39;</span>
-            verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Companies&#39;</span></pre>
-
-              <h4>Additional examples</h4>
-              <p class="before-list">Additional examples are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>:</p>
-              <ul>
-                <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/financial_transactions/schema.py"><i class="fi-link"></i></a></li>
-                <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_model/schema.py"><i class="fi-link"></i></a></li>
-                <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/SBtab.py"><i class="fi-link"></i></a></li>
-              </ul>
 
               <h3>Encoding multiple classes into a single table</h3>
               <p class="before-list">To encode complex datasets into a minimal number of tables, related classes can be encoded into a column or a series of columns of the table that represents their (<span class="monospace">row</span>-formatted) parent classes. (For <span class="monospace">column</span>-formatted parent classes, related classes can be encoded into a row or a series of rows.)</p>
@@ -891,61 +931,6 @@
               <ul class="vertically-spaced-list">
                 <li><b>Additional tables:</b> <i>ObjTables</i> ignores tabular files or worksheets which do not contain class/table declarations. <i>ObjTables</i> also ignores worksheets whose names do not begin with <span class="monospace">!!</span>.</li>
                 <li><b>Additional columns (<span class="monospace">row</span>-formatted tables) / rows (<span class="monospace">column</span>-formatted tables):</b> For <span class="monospace">row</span>-formatted tables, <i>ObjTables</i> ignores columns whose headings do not begin with <span class="monospace">!</span>. For <span class="monospace">column</span>-formatted tables, <i>ObjTables</i> ignores rows whose headings do not begin with <span class="monospace">!</span>.
-              </ul>
-
-              <h3>Examples</h3>
-              <h4 id="example-tabular-dataset">Example: Address book</h4>
-              <p>The following example illustrates an address book of the CEOs of several major technology companies, the companies that they lead, and their addresses. The example is encoded into the schema outlined above <a href="#example-tabular-schema"><i class="fi-arrow-up"></i></a>. To capture this information with a minimal number of tables, each CEO and company's address is encoded into a range of cells within the row/column which represents each CEO and each company. This makes the tables human-readable and enables Python to encapsulate related information into distinct objects. The example is available in merged-TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema_and_data.multi.tsv"><i class="fi-link"></i></a>.</p>
-
-              <div class="example-tabular-dataset">
-                <table>
-                  <thead>
-                    <tr class="doc-head">
-                      <th>!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:19:04'</th>
-                    </tr>
-                  </thead>
-                </table>
-
-                <table>
-                  <thead>
-                    <tr class="class-head">
-                      <th colspan="6">!!ObjTables type='Data' tableFormat='column' id='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><th></th><th>!Name</th><td>Apple</td><td>Facebook</td><td>Google</td><td>Netflix</td></tr>
-                    <tr><th></th><th>!URL</th><td>https://www.apple.com/</td><td>https://www.facebook.com/</td><td>https://www.google.com/</td><td>https://www.netflix.com/</td></tr>
-                    <tr><th rowspan="5"><div>!Address</div></th><th>!Street</th><td>10600 N Tantau Ave</td><td>1 Hacker Way #15</td><td>1600 Amphitheatre Pkwy</td><td>100 Winchester Cir</td></tr>
-                    <tr><th>!City</th><td>Cupertino</td><td>Menlo Park</td><td>Mountain View</td><td>Los Gatos</td></tr>
-                    <tr><th>!State</th><td>CA</td><td>CA</td><td>CA</td><td>CA</td></tr>
-                    <tr><th>!Zip code</th><td>95014</td><td>94025</td><td>94043</td><td>95032</td></tr>
-                    <tr><th>!Country</th><td>US</td><td>US</td><td>US</td><td>US</td></tr>
-                  </tbody>
-                </table>
-
-                <table>
-                  <thead>
-                    <tr class="class-head">
-                      <th colspan="10">!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
-                    </tr>
-                    <tr class="col-head"><th class="empty"></th><th class="empty"></th><th class="empty"></th><th class="empty"></th><th class="empty"></th><th colspan="5">!Address</th></tr>
-                    <tr class="col-head"><th>!Name</th><th>!Type</th><th>!Company</th><th>!Email address</th><th>!Phone number</th><th>!Street</th><th>!City</th><th>!State</th><th>!Zip code</th><th>!Country</th></tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>Mark Zuckerberg</td><td>family</td><td>Facebook</td><td>zuck@fb.com</td><td>650-543-4800</td><td>1 Hacker Way #15</td><td>Menlo Park</td><td>CA</td><td>94025</td><td>US</td></tr>
-                    <tr><td>Reed Hastings</td><td>business</td><td>Netflix</td><td>reed.hastings@netflix.com</td><td>408-540-3700</td><td>100 Winchester Cir</td><td>Los Gatos</td><td>CA</td><td>95032</td><td>US</td></tr>
-                    <tr><td>Sundar Pichai</td><td>business</td><td>Google</td><td>sundar@google.com</td><td>650-253-0000</td><td>1600 Amphitheatre Pkwy</td><td>Mountain View</td><td>CA</td><td>94043</td><td>US</td></tr>
-                    <tr><td>Tim Cook</td><td>business</td><td>Apple</td><td>tcook@apple.com</td><td>408-996-1010</td><td>10600 N Tantau Ave</td><td>Cupertino</td><td>CA</td><td>95014</td><td>US</td></tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <h4>Additional examples</h4>
-              <p class="before-list">Additional examples are available at GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/"><i class="fi-link"></i></a>:</p>
-              <ul>
-                <li>The amounts and dates of financial transactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/financial_transactions/data.multi.tsv"><i class="fi-link"></i></a></li>
-                <li>Kinetic models of biochemical reactions <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/biochemical_model/data.multi.tsv"><i class="fi-link"></i></a></li>
-                <li>SBtab: systems biology data and kinetic models <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/sbtab/"><i class="fi-link"></i></a></li>
               </ul>
             </div>
           </div>
