@@ -45,7 +45,7 @@ Please see the [user documentation](https://www.objtables.org), [developer docum
 
 * [Jonathan Karr](https://www.karrlab.org)
 * [Arthur Goldberg](https://www.mountsinai.org/profiles/arthur-p-goldberg)
-* [Wolfram Liebermeister](https://www.metabolic-economics.de/liebermeister/)
+* [Wolfram Liebermeister](http://genome.jouy.inra.fr/~wliebermeis/index_en.html)
 * [John Sekar](https://www.linkedin.com/in/john-sekar/)
 * [Bilal Shaikh](https://www.bshaikh.com)
 

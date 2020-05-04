@@ -18,7 +18,8 @@ This package was developed by the `Karr Lab <https://www.karrlab.org/>`_ at the 
 
 * `Jonathan Karr <https://www.karrlab.org/>`_
 * `Arthur Goldberg <https://www.mountsinai.org/profiles/arthur-p-goldberg>`_
-* `Wolfram Liebermeister <https://www.metabolic-economics.de/liebermeister/>`_
+* `Wolfram Liebermeister <http://genome.jouy.inra.fr/~wliebermeis/index_en.html>`_
+* `John Sekar <https://www.linkedin.com/in/john-sekar/>`_
 * `Bilal Shaikh <https://www.bshaikh.com/>`_
 
 
