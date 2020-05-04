@@ -1,5 +1,16 @@
 $(document).foundation();
 
+$(document).ready(function(){
+    if (location.hash) {
+        Foundation.SmoothScroll.scrollToLoc(location.hash, {
+            "offset": 55,
+            "threshold": 50,
+            "animationEasing": "linear",
+            "animationDuration": 500
+        });
+    }
+});
+
 function changeMethod(evt){
     var method = $('#method').val();
     switch(method) {
