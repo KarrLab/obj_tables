@@ -49,7 +49,7 @@
           </div>
           <div class="large-4 small-10 cell links">
             <ul class="dropdown menu" data-dropdown-menu>
-              <li class="active-page"><a href="/">Home</a></li>
+              <li><a href="/">Home</a></li>
               <li>
                 <a href="#">Software</a>
                 <ul class="menu">
@@ -77,7 +77,7 @@
                   <li class="separator"><a href="docs#help">More help</a></li>
                 </ul>
               </li>
-              <li>
+              <li class="active-page">
                 <a href="#">About</a>
                 <ul class="menu">
                   <li><a href="about#license">License</a></li>
@@ -95,67 +95,72 @@
     </div>
 
     <div class="grid-container content">
-      <div class="grid-x grid-padding-x">
-        <div class="large-6 cell content-container">
-          <h2>Upload schema and dataset</h2>
-          <a id="form"></a>
-          <form>
-            <label>Select an operation
-              <select id="method" name="method">
-                <option value="convert">Convert: convert a dataset to another format according to a schema</option>
-                <option value="diff">Difference: compare the semantic meaning two datasets according to a schema</option>
-                <option value="gen-template">Generate template: generate a template set of tables for a schema</option>
-                <option value="init-schema">Initialize Python schema: generate a Python module that implements a tabular-formatted schema</option>
-                <option value="normalize">Normalize: pretty format a dataset according to a schema</option>
-                <option value="validate" selected>Validate: check that a dataset adheres to a schema and report any errors</option>
-                <option value="viz-schema">Visualize: generate a UML diagram for a schema</option>
-              </select>
-            </label>
-
-            <label>Upload a schema (.csv, .tsv, .xlsx). See the documentation below <a href="#schema-formats"><i class="fi-arrow-down"></i></a> for information about the format.
-              <input type="file" id="schema" name="schema" accept=".csv,.tsv,.xlsx" />
-            </label>
-
-            <label id="label_model">Enter the name of a class to difference or normalize
-              <input type="text" id="model" name="model" />
-            </label>
-
-            <label id="label_workbook">Upload a dataset
-              <input type="file" id="workbook" name="workbook" accept=".csv,.tsv,.xlsx,.zip" />
-            </label>
-
-            <label id="label_workbook-2">Upload a second dataset
-              <input type="file" id="workbook-2" name="workbook-2" accept=".csv,.tsv,.xlsx,.zip" />
-            </label>
-
-            <label id="label_format">Select an output format
-              <select id="format" name="format">
-                <option value="xlsx" selected>Excel workbook</option>
-                <option value="csv">Zip archive of comma-separated tables</option>
-                <option value="tsv">Zip archive of tab-separated tables</option>
-              </select>
-            </label>
-
-            <label id="label_viz_format">Select an output format
-              <select id="viz_format" name="viz_format">
-                <!--
-                <option value="gif">GIF</option>
-                <option value="jpg">JPEG</option>
-                -->
-                <option value="pdf">PDF</option>
-                <option value="png">PNG</option>
-                <option value="svg" selected>SVG</option>
-              </select>
-            </label>
-
-            <input id="submit" type="button" class="button" value="Submit"/>
-          </form>
+      <div class="grid-x grid-padding-x" data-sticky-container>
+        <div class="large-2 cell">
+          <div class="toc-container sticky" data-sticky data-margin-top="0">
+            <div class="toc">
+              <h2>Contents</h2>
+              <ul>
+                <li><a href="#license">License</a></li>
+                <li><a href="#citation">Citing <i>ObjTables</i></a></li>
+                <li><a href="#contribute">Contributing to <i>ObjTables</i></a></li>
+                <li><a href="#team">Development team</a></li>
+                <li><a href="#funding">Funding</a></li>
+                <li><a href="#contact">Contact information</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div class="large-6 cell content-container">
-          <h2>Results</h2>
-            <textarea id="errors" name="errors" style="height: 12.5rem; margin-top: 1.25rem;" disabled>
-            </textarea>
+        <div class="large-10 cell content-container">
+          <div id="license">
+            <h2>License</h2>
+            <p style="margin-top: 1rem">
+              <i>ObjTables</i> is released under the MIT license <a href="https://github.com/KarrLab/obj_tables/blob/master/LICENSE"><i class="fi-link"></i></a>.
+            </p>
+          </div>
+
+          <div id="citation">
+            <h2>Citing <i>ObjTables</i></h2>
+            <p style="margin-top: 1rem">
+              Check back soon!
+            </p>
+          </div>
+
+          <div id="contribute">
+            <h2>Contributing to <i>ObjTables</i></h2>
+
+            <p style="margin-top: 1rem">
+              We welcome contributions to <i>ObjTables</i>! To contribute, please submit a GitHub pull request <a href="https://github.com/karrlab/obj_tables/pulls"><i class="fi-link"></i></a> or contact us by email <a href="mailto:info@karrlab.org"><i class="fi-mail"></i></a>.
+            </p>
+          </div>
+
+          <div id="team">
+            <h2>Development team</h2>
+            <p class="before-list" style="margin-top: 1rem"><i>ObjTables</i> was developed by the Karr Lab <a href="https://www.karrlab.org"><i class="fi-link"></i></a> at the Icahn School of Medicine at Mount Sinai <a href="https://www.mssm.edu/"><i class="fi-link"></i></a> in New York, US and the Applied Mathematics and Computer Science, from Genomes to the Environment research unit <a href="http://maiage.jouy.inra.fr/?q=en"><i class="fi-link"></i></a> at the Institut National de la Recherche Agronomique <a href="https://www.jouy.inra.fr/en"><i class="fi-link"></i></a> in Jouy en Josas, FR.</p>
+
+            <ul>
+              <li>Jonathan Karr <a href="https://www.karrlab.org/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/jonrkarr/"><i class="fi-social-linkedin"></i></a></li>
+              <li>Arthur Goldberg <a href="https://www.mountsinai.org/profiles/arthur-p-goldberg"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/arthurgoldberg/"><i class="fi-social-linkedin"></i></a></li>
+              <li>Wolfram Liebermeister <a href="http://genome.jouy.inra.fr/~wliebermeis/index_en.html"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/wolfram-liebermeister-28264226/"><i class="fi-social-linkedin"></i></a></li>
+              <li>John Sekar <a href="https://www.linkedin.com/in/john-sekar/"><i class="fi-social-linkedin"></i></a></li>
+              <li>Bilal Shaikh <a href="https://www.bshaikh.com"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/bilalshaikh42/"><i class="fi-social-linkedin"></i></a></li>
+            </ul>
+          </div>
+
+          <div id="funding">
+            <h2>Funding</h2>
+            <p style="margin-top: 1rem">
+              <i>ObjTables</i> was supported by a National Institute of Health P41 award <a href="https://projectreporter.nih.gov/project_info_details.cfm?aid=9460251"><i class="fi-link"></i></a>, a National Institute of Health MIRA R35 award <a href="https://projectreporter.nih.gov/project_info_details.cfm?aid=9509480"><i class="fi-link"></i></a>, a National Science Foundation INSPIRE award <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1649014"><i class="fi-link"></i></a>, and a German Research Foundation grant <a href="https://gepris.dfg.de/gepris/projekt/201064029"><i class="fi-link"></i></a>.
+            </p>
+          </div>
+
+          <div id="contact">
+            <h2>Contact information</h2>
+            <p style="margin-top: 1rem">
+              Please contact the Karr Lab <a href="mailto:info@karrlab.org"><i class="fi-mail"></i></a> with any questions or comments.
+            </p>
+          </div>
         </div>
       </div>
     </div>
