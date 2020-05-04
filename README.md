@@ -41,7 +41,7 @@ Please see the [user documentation](https://www.objtables.org), [developer docum
 *ObjTables* is released under the [MIT license](LICENSE).
 
 ## Development team
-*ObjTables* was developed by the [Karr Lab](https://www.karrlab.org) at the Icahn School of Medicine at Mount Sinai in New York, USA and the [Applied Mathematics and Computer Science, from Genomes to the Environment research unit](http://maiage.jouy.inra.fr/?q=en) at the [Institut National de la Recherche Agronomique](https://www.jouy.inra.fr/en) in Jouy en Josas, FR.
+*ObjTables* was developed by the [Karr Lab](https://www.karrlab.org) at the Icahn School of Medicine at Mount Sinai in New York, USA and the [Applied Mathematics and Computer Science, from Genomes to the Environment research unit](https://maiage.inra.fr/) at the [National Research Institute for Agriculture, Food and Environment](https://www.inrae.fr/en/centres/ile-france-jouy-josas-antony/) in Jouy en Josas, FR.
 
 * [Jonathan Karr](https://www.karrlab.org)
 * [Arthur Goldberg](https://www.mountsinai.org/profiles/arthur-p-goldberg)
