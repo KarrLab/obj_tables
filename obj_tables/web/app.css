@@ -120,11 +120,12 @@ ol {
 }
 
 .page-title .title {
-    font-size: 1.20rem;
+    font-size: 1.1rem;
     font-weight: bold;
     height: 100%;
     display: flex;
     align-items: center;
+    white-space: nowrap;
 }
 
 .page-title .title .title {
@@ -146,7 +147,11 @@ ol {
 .dropdown.menu>li>a {
     font-weight: bold;
     padding: 0.25rem 0;
-    margin-left: 2rem;
+    margin-left: 0.35rem;
+    font-size: 1rem;
+}
+.dropdown.menu>li:first-child>a {
+    margin-right: 9px;
 }
 
 .dropdown.menu>li>a,
@@ -156,6 +161,7 @@ ol {
 
 .dropdown.menu>li.is-dropdown-submenu-parent>a::after {
     border-color: #fff transparent transparent;
+    right: 9px;
 }
 
 .dropdown.menu>li.active-page>a,
