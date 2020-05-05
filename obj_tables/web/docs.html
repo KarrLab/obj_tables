@@ -49,7 +49,18 @@
           </div>
           <div class="large-4 medium-6 small-10 cell links">
             <ul class="dropdown menu" data-dropdown-menu>
-              <li><a href="/">Home</a></li>
+              <li><a href="/">Home</a>
+                <ul class="menu">
+                  <li><a href="/#overview">Overview</a></li>
+                  <li><a href="/#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
+                  <li><a href="/#motivation">Motivation</a></li>
+                  <li><a href="/#features">Features</a></li>
+                  <li><a href="/#components">Components of the toolkit</a></li>
+                  <li><a href="/#software">Software tools</a></li>
+                  <li><a href="/#use-cases">Use cases</a></li>
+                  <li><a href="/#help">Examples, tutorials, docs &amp; help</a></li>
+                </ul>
+              </li>
               <li>
                 <a>Software</a>
                 <ul class="menu">
@@ -73,7 +84,10 @@
                   <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
                   <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
                   <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
-                  <li><a href="#other-languages">Other languages</a></li>
+                  <li class="separator"><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
+                  <li><a href="#other-resources">Resources for working with <i>ObjTables</i></a></li>
+                  <li><a href="#comparison">Comparison with other tools</a></li>
+                  <li><a href="#roadmap">Limitations and future directions</a></li>
                   <li class="separator"><a href="#help">More help</a></li>
                 </ul>
               </li>
@@ -101,7 +115,7 @@
             <div class="toc">
               <h2>Contents</h2>
               <ul>
-                <li><a href="#examples">Example schemas and datasets</a></li>
+                <li><a href="#examples">Example schema and dataset files</a></li>
                 <li><a href="#formats">Formats for datasets</a>
                   <ul>
                     <li><a href="#schema-formats">Formats for schemas</a></li>
@@ -116,9 +130,9 @@
                     <li><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                   </ul>
                 </li>
-                <li><a href="#roadmap">Limitations and future directions</a></li>
                 <li><a href="#other-resources">Related resources for working with <i>ObjTables</i></a></li>
                 <li><a href="#comparison">Comparison with other tools</a></li>
+                <li><a href="#roadmap">Limitations and future directions</a></li>
                 <li><a href="#help">Further help</a></li>
               </ul>
             </div>
@@ -127,7 +141,7 @@
 
         <div class="large-10 cell content-container">
           <div id="examples">
-            <h2>Example schemas and datasets</h2>
+            <h2>Example schema and dataset files</h2>
 
             <div style="margin-top: 1rem">
               <p>Below are several examples of <i>ObjTables</i> schemas and datasets in all of the supported formats.</p>
@@ -1128,22 +1142,6 @@
             </div>
           </div>
 
-          <div id="roadmap">
-            <h2>Known limitations and future directions</h2>
-            <div style="margin-top: 1rem">
-              <p class="before-list"><i>ObjTables</i> is under active development. Below are several open issues that we intend to address going forward. Please see the GitHub issue list <a href="https://github.com/KarrLab/obj_tables/issues"><i class="fi-link"></i></a> for more information.</p>
-              <ul>
-                <li>Currently, <i>ObjTables</i> has limited capabilities to convert schemas implemented with the Python package to the tabular format.</li>
-                <li>Currently, <i>ObjTables</i> has limited support for multiple inheritance.</li>
-                <li>Currently, <i>ObjTables</i> only supports one view per class.</li>
-                <li>Currently, <i>ObjTables</i> serializes <span class="monospace">Array</span> and <span class="monospace">Table</span> to individual cells. We are contemplating enabling these attributes to be serialized to separate files/worksheets.</li>
-                <li>Currently, <i>ObjTables</i> datasets can be exported to JSON and YAML. To facilitate use with other tools, we aim to also convert datasets to an SQL format such as SQLite.</li>
-                <li>Due to the limitations of the pint package, datasets that use <span class="monospace">Unit</span> attributes cannot be pickled.</li>
-                <li><i>ObjTables</i> is still somewhat memory and CPU-inefficient. In particular, the importing and exporting of datasets is inefficient. Going forward, we aim to improve the performance of <i>ObjTables</i>.</li>
-              </ul>
-            </div>
-          </div>
-
           <div id="other-resources">
             <h2>Useful related resources for working with <i>ObjTables</i></h2>
             <div style="margin-top: 1rem">
@@ -1172,6 +1170,22 @@
                 <li><b>Schemas for data serialization formats</b> such as JSON Schema and XMLs: Schema systems for data serialization formats such as JSON and XML make it easy to validate complex datasets that are encoded with formats that can easily be copied, shared, and published. However, viewers and editors for data serialization formats focus on viewing and editing individual objects, which can be cumbersome for large datasets. <i>ObjTables</i> improves over these systems by making it possible to convert data encoded in JSON and YAML into workbooks, which are easier to view and edit with tools such as Excel. In addition, <i>ObjTables</i> leverages the fact that many more people are familiar with workbooks than data serialization formats. However, <i>ObjTables</i> is not as mature as these systems, and <i>ObjTables</i> provides limited support for languages beyond Python.</li>
 
                 <li><b>Relational databases and querying tools</b> such as MySQL Workbench for MySQL: Relational databases make it easy to define schemas and conduct arbitrary queries of datasets. However, querying tools such as MySQL Workbench provide cumbersome interfaces for viewing and editing large datasets, relational databases support limited data types, and it is difficult to validate relational databases without ORMs. Furthermore, using a relational database typically requires significant knowledge of its schema. <i>ObjTables</i> improves over these tools by leveraging workbooks and workbook editors for viewing and editing datasets, by supporting more data types, by using nested tables and grammars to simplify the representation of relationships, and by supporting validation.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div id="roadmap">
+            <h2>Known limitations and future directions</h2>
+            <div style="margin-top: 1rem">
+              <p class="before-list"><i>ObjTables</i> is under active development. Below are several open issues that we intend to address going forward. Please see the GitHub issue list <a href="https://github.com/KarrLab/obj_tables/issues"><i class="fi-link"></i></a> for more information.</p>
+              <ul>
+                <li>Currently, <i>ObjTables</i> has limited capabilities to convert schemas implemented with the Python package to the tabular format.</li>
+                <li>Currently, <i>ObjTables</i> has limited support for multiple inheritance.</li>
+                <li>Currently, <i>ObjTables</i> only supports one view per class.</li>
+                <li>Currently, <i>ObjTables</i> serializes <span class="monospace">Array</span> and <span class="monospace">Table</span> to individual cells. We are contemplating enabling these attributes to be serialized to separate files/worksheets.</li>
+                <li>Currently, <i>ObjTables</i> datasets can be exported to JSON and YAML. To facilitate use with other tools, we aim to also convert datasets to an SQL format such as SQLite.</li>
+                <li>Due to the limitations of the pint package, datasets that use <span class="monospace">Unit</span> attributes cannot be pickled.</li>
+                <li><i>ObjTables</i> is still somewhat memory and CPU-inefficient. In particular, the importing and exporting of datasets is inefficient. Going forward, we aim to improve the performance of <i>ObjTables</i>.</li>
               </ul>
             </div>
           </div>
