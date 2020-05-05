@@ -176,7 +176,11 @@
           <div id="features">
             <h2>Features</h2>
 
-            <div class="grid-x grid-padding-x">
+            <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
+              <div class="large-12 cell">
+                <p>As described above, <i>ObjTables</i> was designed for cases, such as supplementary materials, where datasets need to be both human and machine-readable, and for emerging domains which need to create new formats for new types of datasets (and associated software tools, including graphical tools for viewing and editing complex datasets) with minimal effort. <i>ObjTables</i> is well-suited to these use cases because it provides the functionality described below. <i>ObjTables</i> is well-suited to supplementary materials because it enables readers to both use Excel to view arbitrary datasets and use schemas to parse arbitrary datasets into convenient data structures for further analysis. <i>ObjTables</i> is well-suited to developing data formats for emerging domains because it provides emerging domains the ability to quickly define precise formats for complex data, as well as user-friendly tools for creating, viewing, editing, validating, merging, comparing, revisioning, migrating complex datasets.</p>
+              </div>
+
               <div class="large-6 cell">
                 <div>
                   <h3>Create Excel templates for building complex datasets</h3>
@@ -241,7 +245,7 @@
                 </div>
 
                 <div>
-                  <h3>Visualize schemas</h3>
+                  <h3>Visualize schemas for datasets</h3>
                   <p>To help users understand schemas, <i>ObjTables</i> can generate UML diagrams of schemas.</p>
                 </div>
               </div>
@@ -251,7 +255,11 @@
           <div id="components">
             <h2>Components of the <i>ObjTables</i> toolkit</h2>
 
-            <div class="grid-x grid-padding-x">
+            <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
+              <div class="large-12 cell">
+                <p>To make it easy to work with complex data, <i>ObjTables</i> provides a complete and coordinated set of tools for building, validating, analyzing, and sharing complex data. This includes a simple format for schemas for datasets, numerous data types for scientific research, a markup syntax for tabular-formatted datasets, and software tools for validating, merging, comparing, revisioning, and migrating datasets. For use cases which require additional flexibility, <i>ObjTables</i> also provides a Python library which can be used to implement custom data types and validations.</p>
+              </div>
+
               <div class="large-6 cell">
                 <h3>Format for schemas for tabular datasets</h3>
 
@@ -291,7 +299,15 @@
           <div id="software">
             <h2>Software tools</h2>
 
-            <div class="grid-x grid-padding-x">
+            <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
+              <div class="large-12 cell">
+                <p>The <i>ObjTables</i> toolkit includes four software interfaces: a web application, a REST API, a command-line program, and a Python package. The web application, REST API, and command-line program provide the same features. In addition to the features of the web application, REST API, and command-line program, the Python package can programmatically query, edit, merge, split, revision, and migrate datasets. The Python package is also more flexible. For example, the Python package can support additional datatypes and custom validation.</p>
+
+                <p>We recommend beginning with the web application, REST API, or command-line program. We recommend using the Python package when more flexibility is required, such as a custom data type, or to analyze datasets with Python tools such as NumPy, Pandas, scikit-learn, or SciPy.</p>
+
+                <p>For convenience, a Dockerfile for building an Ubuntu image with the <i>ObjTables</i> tools is also available. The image can be used to run the web application, REST API, command-line program, or Python package. In addition, the <i>ObjTables</i> source code is available from GitHub.</p>
+              </div>
+
               <div class="large-4 cell">
                 <h3>Web application</h3>
                 A web application is available at <a href="app">objtables.org/app</a>.
@@ -310,7 +326,7 @@
                 <p>The Python package provides more flexibility than the web application, REST API, and command-line program for custom data types and custom validation. The Python package is also best-suited for analyzing datasets.</p>
               </div>
               <div class="large-4 cell" id="docker">
-                <h3>Docker image</h3>
+                <h3>Dockerfile</h3>
                 <p>A Dockerfile for building a Docker image is available from GitHub <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.</p>
               </div>
               <div class="large-4 cell" id="code">
@@ -325,8 +341,24 @@
 
             <div class="grid-x grid-padding-x" style="margin-top: 1rem">
               <div class="large-12 cell">
-                <i>ObjTables</i> was designed for uses cases where users need to quickly view, edit, validate, analyze, and share complex data.
+                <p><i>ObjTables</i> was designed to help users share complex data with the ease of spreadsheets and the rigor of schemas. <i>ObjTables</i> excels at cases where datasets need to be both human and machine-readable. For example, <i>ObjTables</i> is well-suited to supplementary materials of journal articles where it is important to share materials in a human-readable format that doesn't require special domain-specific software (e.g., Excel workbooks), and where it is important to share materials in a format that enables their re-use for additional studies. <i>ObjTables</i> is also well-suited to emergent fields which need to quickly build new formats (and associated software tools) for new types of data. For example, we have used <i>ObjTables</i> to build formats for describing whole-cell models and the datasets needed to build and validate whole-cell models.</p>
               </div>
+              <div class="large-6 cell">
+                <h3>Publishing re-usable supplementary materials</h3>
+
+                <p>Although supplementary materials often contain valuable data, supplementary materials are underutilized because they are often provided in custom formats that are difficult to understand, parse, and re-use.</p>
+
+                <p><i>ObjTables</i> addresses this issue by enabling authors to publish materials in a tabular format which can easily be read by humans and computers: (a) <i>ObjTables</i> enables authors to pretty print their data with tables of contents and inline help, (b) <i>ObjTables</i> enables authors to provide schemas for parsing their data, and (c) <i>ObjTables</i> enables readers to use these schemas to parse and analyze published data with minimal effort. Together, this makes it easier for authors to publish supplementary materials that are easy for others to re-use for additional studies.</p>
+              </div>
+
+              <div class="large-6 cell">
+                <h3>Sharing re-usable data and models</h3>
+
+                <p>Researchers often need to send their collaborators new datasets and models that cannot be described in any existing format. This often requires collaborators to write custom codes to parse these custom datasets and models. The substantial effort needed to write these codes is a frequent barrier to collaboration.</p>
+
+                <p><i>ObjTables</i> makes it easier to share re-usable data and models with collaborators by (a) enabling researchers to rigorously describe the structure of their data or model with a schema, (b) enabling researchers to capture metadata about their data or model, (c) providing researchers software tools for validating their data, and (d) enabling collaborators to use these schemas to parse data from their colleagues quickly.</p>
+              </div>
+
               <div class="large-6 cell">
                 <h3>Building, validating and analyzing complex datasets and models</h3>
 
@@ -344,31 +376,21 @@
 
                 <p><i>ObjTables</i> addresses this issue by making it easy to define schemas for domain-specific data and providing software tools for parsing, manipulating, and validating data encoded in these schemas. For example, we have used <i>ObjTables</i> to create, WC-KB <a href="https://github.com/KarrLab/wc_kb"><i class="fi-link"></i></a>, a format for the experimental omics, biochemical, and physiological data needed to model cellular biochemistry. We have also used <i>ObjTables</i> to create, WC-Lang <a href="https://github.com/KarrLab/wc_lang"><i class="fi-link"></i></a>, a format for whole-cell models of all of the biochemical activity in a cell. Creating these formats required minimal code.</p>
               </div>
-
-              <div class="large-6 cell">
-                <h3>Publishing re-usable supplementary materials</h3>
-
-                <p>Although supplementary materials often contain valuable data, supplementary materials are underutilized because they are often provided in custom formats that are difficult to understand, parse, and re-use.</p>
-
-                <p><i>ObjTables</i> addresses this issue by enabling authors to publish materials in a tabular format which can easily be read by humans and computers: (a) <i>ObjTables</i> enables authors to pretty print their data with tables of contents and inline help, (b) <i>ObjTables</i> enables authors to provide schemas for parsing their data, and (c) <i>ObjTables</i> enables readers to use these schemas to parse and analyze published data with minimal effort. Together, this makes it easier for authors to publish supplementary materials that are easy for others to re-use for additional studies.</p>
-              </div>
-
-              <div class="large-6 cell">
-                <h3>Sharing re-usable data and models</h3>
-
-                <p>Researchers often need to send their collaborators new datasets and models that cannot be described in any existing format. This often requires collaborators to write custom codes to parse these custom datasets and models. The substantial effort needed to write these codes is a frequent barrier to collaboration.</p>
-
-                <p><i>ObjTables</i> makes it easier to share re-usable data and models with collaborators by (a) enabling researchers to rigorously describe the structure of their data or model with a schema, (b) enabling researchers to capture metadata about their data or model, (c) providing researchers software tools for validating their data, and (d) enabling collaborators to use these schemas to parse data from their colleagues quickly.</p>
-              </div>
             </div>
           </div>
 
           <div id="help">
             <h2>Examples, tutorials, documentation, and help</h2>
-            <div class="grid-x grid-padding-x">
+            <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
+              <div class="large-12 cell">
+                <p>
+                  Extensive examples, interactive tutorials, and documentation for the <i>ObjTables</i> formats and software tools are available through the links below. Please contact us for further help.
+                </p>
+              </div>
+
               <div class="large-4 cell">
                 <h3>Examples</h3>
-                The documentation contains several example schemas and datasets <a href="docs"><i class="fi-link"></i></a>.
+                The documentation contains several example schemas and datasets <a href="docs#examples"><i class="fi-link"></i></a>.
               </div>
               <div class="large-4 cell">
                 <h3>Command-line program installation</h3>
