@@ -239,16 +239,22 @@ ol {
     max-width: 70rem;
 }
 
+.splash img {
+    width: 50%;
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+}
+
 .splash h1 {
-    color: #3bafda;
+    font-size: 1.75rem;
     font-weight: bold;
+    margin-bottom: 1rem;
+    color: #33333377;
 }
 
-.splash .subtitle {
-    font-size: 1.5rem;
-    font-weight: bold;
+.splash h1 .title {
+    color: #333333;
 }
-
 
 /* table of contents */
 
