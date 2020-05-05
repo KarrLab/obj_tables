@@ -227,7 +227,7 @@ ol {
 
 /* splash */
 .splash {
-    background: linear-gradient(to bottom, #3bafda99, #3bafda33 100%);
+    background: linear-gradient(to bottom, #3bafda77, #3bafda22 100%);
     padding-top: calc(-1rem + 3rem + 3rem);
     padding-bottom: 3rem;
     margin-bottom: 3rem;
@@ -240,7 +240,7 @@ ol {
 }
 
 .splash img {
-    width: 50%;
+    width: 65%;
     margin-top: 1rem;
     margin-bottom: 2rem;
 }
