@@ -88,6 +88,10 @@ pre {
 }
 
 p {
+    margin-bottom: 0;
+}
+
+p:not(:last-child) {
     margin-bottom: 1rem;
 }
 
@@ -211,9 +215,38 @@ ol {
 
 /* content */
 
-.content {
+.content,
+.content-top {
     padding-top: calc(3rem + 2rem);
+}
+
+.content,
+.content-bottom {
     padding-bottom: 2rem;
+}
+
+/* splash */
+.splash {
+    background: linear-gradient(to bottom, #3bafda99, #3bafda33 100%);
+    padding-top: calc(-1rem + 3rem + 3rem);
+    padding-bottom: 3rem;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.splash-container {
+    margin: auto;
+    max-width: 70rem;
+}
+
+.splash h1 {
+    color: #3bafda;
+    font-weight: bold;
+}
+
+.splash .subtitle {
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
 
