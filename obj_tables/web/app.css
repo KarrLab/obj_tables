@@ -229,7 +229,9 @@ ol {
     padding-bottom: 2rem;
 }
 
+
 /* splash */
+
 .splash {
     background: linear-gradient(to bottom, #3bafda55, #3bafda19 100%);
     padding-top: calc(-1rem + 3rem + 3rem);
@@ -259,6 +261,7 @@ ol {
 .splash h1 .title {
     color: #333333;
 }
+
 
 /* table of contents */
 
@@ -482,7 +485,6 @@ table.examples tr.indent-x2 td:first-child {
     .grid-container {
         overflow-x: hidden;
     }
-
     .page-title .title {
         font-size: 1rem;
     }
@@ -504,57 +506,44 @@ table.examples tr.indent-x2 td:first-child {
     .toc {
         margin-bottom: 4rem;
     }
-
     table.examples {
         font-size: 0.8rem;
     }
-
     table.examples th {
         vertical-align: bottom;
     }
-
     table.examples th,
     table.examples td {
         white-space: normal;
     }
-
     table.examples.stack td:first-child {
         font-weight: bold;
     }
-
     table.examples.stack tbody tr {
         padding: 0.25rem;
     }
-
     table.examples.stack tbody td {
         padding: 0;
     }
-
-
     table.examples tr.indent td {
         padding-left: 1.325rem;
     }
-
     table.examples tr.indent-x2 td {
         padding-left: 2.325rem;
     }
-
     thead.data-type-title th {
         white-space: normal;
     }
-
     tbody.data-type-section tr {
         padding: 0.25rem;
         font-size: 0.8rem;
     }
-
     tbody.data-type-section tr td:first-child {
         font-weight: bold;
     }
     tbody.data-type-section tr:nth-child(even) {
         display: none;
     }
-
     .table-scroll,
     pre {
         font-size: 0.8em;
