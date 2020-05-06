@@ -150,12 +150,9 @@ ol {
 
 .dropdown.menu>li>a {
     font-weight: bold;
-    padding: 0.25rem 0;
+    padding: 0;
     margin-left: 0.35rem;
     font-size: 1rem;
-}
-.dropdown.menu>li:first-child>a {
-    margin-right: 9px;
 }
 
 .dropdown.menu>li>a,
@@ -475,6 +472,10 @@ table.examples tr.indent-x2 td:first-child {
 /* mobile */
 
 @media screen and (max-width: 39.9375em) {
+    .grid-container {
+        overflow-x: hidden;
+    }
+
     .page-title .title {
         font-size: 1rem;
     }
