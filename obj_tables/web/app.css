@@ -463,11 +463,11 @@ table.examples td {
     white-space: nowrap;
 }
 
-table.examples td.indent {
+table.examples tr.indent td:first-child {
     padding-left: 1.325rem;
 }
 
-table.examples td.indent-x2 {
+table.examples tr.indent-x2 td:first-child {
     padding-left: 2.325rem;
 }
 
@@ -495,5 +495,60 @@ table.examples td.indent-x2 {
     }
     .toc {
         margin-bottom: 4rem;
+    }
+
+    table.examples {
+        font-size: 0.8rem;
+    }
+
+    table.examples th {
+        vertical-align: bottom;
+    }
+
+    table.examples th,
+    table.examples td {
+        white-space: normal;
+    }
+
+    table.examples.stack td:first-child {
+        font-weight: bold;
+    }
+
+    table.examples.stack tbody tr {
+        padding: 0.25rem;
+    }
+
+    table.examples.stack tbody td {
+        padding: 0;
+    }
+
+
+    table.examples tr.indent td {
+        padding-left: 1.325rem;
+    }
+
+    table.examples tr.indent-x2 td {
+        padding-left: 2.325rem;
+    }
+
+    thead.data-type-title th {
+        white-space: normal;
+    }
+
+    tbody.data-type-section tr {
+        padding: 0.25rem;
+        font-size: 0.8rem;
+    }
+
+    tbody.data-type-section tr td:first-child {
+        font-weight: bold;
+    }
+    tbody.data-type-section tr:nth-child(even) {
+        display: none;
+    }
+
+    .table-scroll,
+    pre {
+        font-size: 0.8em;
     }
 }
