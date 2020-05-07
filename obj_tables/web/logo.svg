@@ -3,9 +3,9 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 807.3 254.3" style="enable-background:new 0 0 807.3 254.3;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#DF990A;}
-	.st1{fill:#45D83D;}
-	.st2{fill:#3BAFDA;}
+	.st0{fill:#ff7f00;}
+	.st1{fill:#0FCC00;}
+	.st2{fill:#00A6CC;}
 	.st3{fill:#CCF5FF;}
 	.st4{fill:none;}
 	.st5{fill:#FFE2B3;}
@@ -14,9 +14,9 @@
 	.st8{fill:none;stroke:url(#SVGID_3_);stroke-width:10;stroke-miterlimit:10;}
 	.st9{fill:url(#SVGID_4_);}
 	.st10{fill:#666666;}
-	.st11{fill:#D1FFCC;stroke:#45D83D;stroke-width:5;stroke-miterlimit:10;}
-	.st12{fill:none;stroke:#45D83D;stroke-width:5;stroke-miterlimit:10;}
-	.st13{fill:#97FF8F;stroke:#45D83D;stroke-width:5;stroke-miterlimit:10;}
+	.st11{fill:#D1FFCC;stroke:#0FCC00;stroke-width:5;stroke-miterlimit:10;}
+	.st12{fill:none;stroke:#0FCC00;stroke-width:5;stroke-miterlimit:10;}
+	.st13{fill:#97FF8F;stroke:#0FCC00;stroke-width:5;stroke-miterlimit:10;}
 </style>
 <g>
 	<path class="st0" d="M597.1,190.2c-1.2,0-2.4-0.2-3.4-0.7c-1-0.5-1.9-1.1-2.6-1.9c-0.7-0.8-1.3-1.7-1.7-2.8c-0.4-1-0.6-2.1-0.6-3.2
