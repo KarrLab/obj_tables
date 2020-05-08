@@ -114,7 +114,7 @@
           <div class="toc-container sticky" data-sticky data-margin-top="0">
             <div class="toc">
               <h2>Contents</h2>
-              <ul>
+              <ul data-magellan>
                 <li><a href="#examples">Example schema and dataset files</a>
                   <ul>
                     <li><a href="#address-book">Address book</a></li>
@@ -145,10 +145,10 @@
         </div>
 
         <div class="large-10 cell content-container">
-          <div id="examples">
+          <div id="examples" data-magellan-target="examples">
             <h2>Example schema and dataset files</h2>
 
-            <h3 id="address-book">Address book of the CEOs of technology companies</h3>
+            <h3 id="address-book" data-magellan-target="address-book">Address book of the CEOs of technology companies</h3>
             <p>The following illustrates a schema for an address book of people, the companies that they work for, and their addresses, and an example address book of the CEOs of several technology companies.</p>
 
             <p>Address books are implemented using three classes to represent people (<span class="monospace">Person</span>), the companies that they work for (<span class="monospace">Company</span>), and their addresses (<span class="monospace">Address</span>). To capture address books with a minimal number of tables, each person and company's address is encoded into a range of cells within the row/column which represents each person and each company. This is achieved by embedding instances of the <span class="monospace">Address</span> class within the tables for the <span class="monospace">Company</span> and <span class="monospace">Person</span> classes. This makes the tables more human-readable, and it enables Python to encapsulate related information into distinct objects.</p>
@@ -341,7 +341,7 @@
               </table>
             </div>
 
-            <h3 id="more-examples">Additional examples</h3>
+            <h3 id="more-examples" data-magellan-target="more-examples">Additional examples</h3>
 
             <div style="margin-top: 1rem">
               <p>Below are several examples of <i>ObjTables</i> schemas and datasets in all of the supported formats.</p>
@@ -586,8 +586,8 @@
             </div>
           </div>
 
-          <div id="schema-formats">
-            <a id="formats"></a>
+          <a id="formats" data-magellan-target="formats"></a>
+          <div id="schema-formats" data-magellan-target="schema-formats">            
             <h2>Formats for schemas</h2>
 
             <div style="margin-top: 1rem">
@@ -679,7 +679,7 @@
             </div>
           </div>
 
-          <div id="data-types">
+          <div id="data-types" data-magellan-target="data-types">
             <h2>Data types</h2>
 
             <div style="margin-top: 1rem">
@@ -1212,7 +1212,7 @@
             </div>
           </div>
 
-          <div id="dataset-formats">
+          <div id="dataset-formats" data-magellan-target="dataset-formats">
             <h2>File formats for datasets</h2>
 
             <div style="margin-top: 1rem">
@@ -1446,7 +1446,7 @@
             </div>
           </div>
 
-          <div id="validation">
+          <div id="validation" data-magellan-target="validation">
             <h2>Validation of <i>ObjTables</i> datasets</h2>
             <div style="margin-top: 1rem">
               <p class="before-list">One of the major goals of <i>ObjTables</i> is to make it easy to rigorously validate the syntax and semantics of complex datasets. <i>ObjTables</i> achieves this by making it easy to utilize the six levels of validation summarized below. The validations marked with &#9675; can optionally be disabled.</p>
@@ -1498,7 +1498,7 @@
             </div>
           </div>
 
-          <div id="tools">
+          <div id="tools" data-magellan-target="tools">
             <h2>Software tools</h2>
             <div style="margin-top: 1rem">
               <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through all of the user interfaces (the web application, REST API, command-line program, and Python package). Please see below for more information about using these interfaces. The tools marked with &#9675; are only available through the Python package. Please see the Python documentation for more information about these tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>.</p>
@@ -1524,7 +1524,7 @@
             </div>
           </div>
 
-          <div id="python">
+          <div id="python" data-magellan-target="python">
             <h2>Python package</h2>
             <div>
               <p>As described above, the Python package has significantly more capabilities than the web application, REST API, and command-line program.</p>
@@ -1670,7 +1670,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
     zuckerberg) <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;&#39;</span></pre>
             </div>
 
-            <div id="other-languages">
+            <div id="other-languages" data-magellan-target="other-languages">
               <h2>Working with <i>ObjTables</i> datasets with other programming languages</h2>
               <div>
                 <p class="before-list">We recommend that developers use the REST API to work with <i>ObjTables</i> in other programming languages:</p>
@@ -1721,7 +1721,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
             </div>
           </div>
 
-          <div id="other-resources">
+          <div id="other-resources" data-magellan-target="other-resources">
             <h2>Useful related resources for working with <i>ObjTables</i></h2>
             <div style="margin-top: 1rem">
               <p class="before-list">Below are several resources that we recommend for working with <i>ObjTables</i>-encoded datasets:</p>
@@ -1737,7 +1737,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
             </div>
           </div>
 
-          <div id="comparison">
+          <div id="comparison" data-magellan-target="comparison">
             <h2>Comparison with other data modeling tools</h2>
             <div style="margin-top: 1rem">
               <p class="before-list">While <i>ObjTables</i> has many similarities to other toolkits, <i>ObjTables</i>'s unique combination of features provides some advantages for some use cases. Below, we outline the advantages and disadvantages of <i>ObjTables</i> of over several other types of tools.</p>
@@ -1753,7 +1753,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
             </div>
           </div>
 
-          <div id="roadmap">
+          <div id="roadmap" data-magellan-target="roadmap">
             <h2>Known limitations and future directions</h2>
             <div style="margin-top: 1rem">
               <p class="before-list"><i>ObjTables</i> is under active development. Below are several open issues that we intend to address going forward. Please see the GitHub issue list <a href="https://github.com/KarrLab/obj_tables/issues"><i class="fi-link"></i></a> for more information.</p>
@@ -1769,7 +1769,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
             </div>
           </div>
 
-          <div id="help">
+          <div id="help" data-magellan-target="help">
             <h2>Further help</h2>
             <p style="margin-top: 1rem">
               Please contact the Karr Lab <a href="mailto:info@karrlab.org"><i class="fi-mail"></i></a> with any questions.

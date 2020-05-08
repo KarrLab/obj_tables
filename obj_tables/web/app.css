@@ -279,7 +279,8 @@ ol {
     color: #333;
 }
 
-.toc a:hover {
+.toc a:hover,
+.toc a.is-active {
     color: #3bafda;
 }
 
