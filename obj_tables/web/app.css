@@ -124,6 +124,10 @@ ol {
     height: 100%;
 }
 
+.page-title .menu-icon {
+    margin-right: 0.5rem;
+}
+
 .page-title .title {
     font-size: 1.25rem;
     font-weight: bold;
@@ -136,10 +140,12 @@ ol {
 .page-title .title .title {
     color: #fff;
     margin-right: 0.25rem;
+    display: inline-block;
 }
 
 .page-title .title .subtitle {
     color: #ffffff77;
+    display: inline-block;
 }
 
 .page-title .links {
@@ -217,6 +223,75 @@ ol {
     color: #fff;
 }
 
+#offCanvasLeft {
+    background: #ccc;
+}
+
+.position-left.is-transition-push {
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+#offCanvasLeft .close-button {
+    top: 0;
+    line-height: 3rem;
+    z-index: 1;
+}
+
+#offCanvasLeft .accordion {
+    background: #ccc;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+#offCanvasLeft li.accordion-item {
+  margin-top: 0;
+}
+
+#offCanvasLeft .accordion-title {
+    font-size: 1rem;
+    padding: 0 0.5rem;
+    line-height: 3rem;
+    margin: 0;
+    border-top-color: #aaa;
+    border-bottom-color: #aaa;
+    border-left: none;
+    border-right: none;
+    color: #333;
+    background: #ccc;
+}
+
+#offCanvasLeft .accordion-item:first-child .accordion-title {
+    border-top: none;
+}
+
+#offCanvasLeft .accordion-title::before {
+    display: none;
+}
+
+#offCanvasLeft .accordion-content {
+    background: #efefef;
+    padding: 0;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    margin: 0;
+    border: none;
+    list-style-type: none;
+}
+
+#offCanvasLeft .accordion-content li {
+    padding-left: 1rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+#offCanvasLeft .accordion-content li:first-child {
+    padding-top: 0.5rem;
+}
+
+#offCanvasLeft .accordion-content li a {
+    color: #333;
+}
 
 /* content */
 
@@ -488,7 +563,7 @@ table.examples tr.indent-x2 td:first-child {
         overflow-x: hidden;
     }
     .page-title .title {
-        font-size: 1rem;
+        font-size: 1.5rem;
     }
     .dropdown.menu>li>a {
         margin-left: 0.6rem;

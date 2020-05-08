@@ -40,548 +40,620 @@
     </script>
   </head>
   <body data-smooth-scroll data-offset="55" id="top">
-    <div class="page-title">
-      <div class="grid-container">
-        <div class="grid-x grid-padding-x">
-          <a class="large-8 medium-6 small-2 cell title" href="#top">
-            <span class="title"><i>ObjTables</i><span class="show-for-large">:</span></span>
-            <span class="subtitle show-for-large">Combining the ease of spreadsheets &amp; the power of schemas</span>
-          </a>
-          <div class="large-4 medium-6 small-10 cell links">
-            <ul class="dropdown menu" data-dropdown-menu>
-              <li class="active-page"><a>Home</a>
-                <ul class="menu">
-                  <li><a href="#overview">Overview</a></li>
-                  <li><a href="#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
-                  <li><a href="#motivation">Motivation</a></li>
-                  <li><a href="#features">Features</a></li>
-                  <li><a href="#components">Components of the toolkit</a></li>
-                  <li><a href="#software">Software tools</a></li>
-                  <li><a href="#use-cases">Use cases</a></li>
-                  <li><a href="#help">Examples, tutorials, docs &amp; help</a></li>
-                </ul>
-              </li>
-              <li>
-                <a>Software</a>
-                <ul class="menu">
-                  <li><a href="app">Web application</a></li>
-                  <li><a href="api">REST API</a></li>
-                  <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
-                  <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
-                  <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
-                  <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
-                </ul>
-              </li>
-              <li>
-                <a>Docs</a>
-                <ul class="menu">
-                  <li><a href="docs#examples">Examples</a></li>
-                  <li class="separator"><a href="docs#schema-formats">Schema formats</a></li>
-                  <li><a href="docs#data-types">Data types</a></li>
-                  <li><a href="docs#dataset-formats">Dataset formats</a></li>
-                  <li><a href="docs#validation">Data validation</a></li>
-                  <li class="separator"><a href="api">REST API</a></li>
-                  <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
-                  <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
-                  <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
-                  <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
-                  <li><a href="docs#other-resources">Resources for working with <i>ObjTables</i></a></li>
-                  <li><a href="docs#comparison">Comparison with other tools</a></li>
-                  <li><a href="docs#roadmap">Limitations and future directions</a></li>
-                  <li class="separator"><a href="docs#help">More help</a></li>
-                </ul>
-              </li>
-              <li>
-                <a>About</a>
-                <ul class="menu">
-                  <li><a href="about#license">License</a></li>
-                  <li><a href="about#citation">Citation</a></li>
-                  <li class="separator"><a href="about#contribute">Contributing</a></li>
-                  <li class="separator"><a href="about#team">Team</a></li>
-                  <li><a href="about#funding">Funding</a></li>
-                  <li class="separator"><a href="about#contact">Contact info</a></li>
-                </ul>
-              </li>
+    <div class="off-canvas-wrapper">
+      <div class="off-canvas position-left" id="offCanvasLeft" data-off-canvas>
+        <!-- Close button -->
+        <button class="close-button" aria-label="Close menu" type="button" data-close>
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+        <!-- Menu -->
+        <ul class="accordion" data-accordion data-allow-all-closed="true">
+          <li class="accordion-item is-active" data-accordion-item>
+            <a class="accordion-title">Home</a>
+            <ul class="accordion-content" data-tab-content>
+              <li><a href="#overview">Overview</a></li>
+              <li><a href="#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
+              <li><a href="#motivation">Motivation</a></li>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#components">Components of the toolkit</a></li>
+              <li><a href="#software">Software tools</a></li>
+              <li><a href="#use-cases">Use cases</a></li>
+              <li><a href="#help">Examples, tutorials, docs &amp; help</a></li>
             </ul>
+          </li>
+          <li class="accordion-item" data-accordion-item>
+            <a class="accordion-title">Software</a>
+            <ul class="accordion-content" data-tab-content>
+              <li><a href="app">Web application</a></li>
+              <li><a href="api">REST API</a></li>
+              <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+              <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
+              <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
+              <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
+            </ul>
+          </li>
+          <li class="accordion-item" data-accordion-item>
+            <a class="accordion-title">Docs</a>
+            <ul class="accordion-content" data-tab-content>
+              <li><a href="docs#examples">Examples</a></li>
+              <li class="separator"><a href="docs#schema-formats">Schema formats</a></li>
+              <li><a href="docs#data-types">Data types</a></li>
+              <li><a href="docs#dataset-formats">Dataset formats</a></li>
+              <li><a href="docs#validation">Data validation</a></li>
+              <li class="separator"><a href="api">REST API</a></li>
+              <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+              <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
+              <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
+              <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
+              <li><a href="docs#other-resources">Resources for working with <i>ObjTables</i></a></li>
+              <li><a href="docs#comparison">Comparison with other tools</a></li>
+              <li><a href="docs#roadmap">Limitations and future directions</a></li>
+              <li class="separator"><a href="docs#help">More help</a></li>
+            </ul>
+          </li>
+          <li class="accordion-item" data-accordion-item>
+            <a class="accordion-title">About</a>
+            <ul class="accordion-content" data-tab-content>
+              <li><a href="about#license">License</a></li>
+              <li><a href="about#citation">Citation</a></li>
+              <li class="separator"><a href="about#contribute">Contributing</a></li>
+              <li class="separator"><a href="about#team">Team</a></li>
+              <li><a href="about#funding">Funding</a></li>
+              <li class="separator"><a href="about#contact">Contact info</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="off-canvas-content" data-off-canvas-content>
+        <div class="page-title">
+          <div class="grid-container">
+            <div class="grid-x grid-padding-x">
+              <div class="large-8 medium-6 small-12 cell title">
+                <button class="menu-icon hide-for-medium" type="button" data-open="offCanvasLeft"></button>
+                <a href="#top">
+                  <span class="title"><i>ObjTables</i><span class="show-for-large">:</span></span>
+                  <span class="subtitle show-for-large">Combining the ease of spreadsheets &amp; the power of schemas</span>
+                </a>
+              </div>
+              <div class="large-4 medium-6 hide-for-small cell links">
+                <ul class="dropdown menu" data-dropdown-menu>
+                  <li class="active-page"><a>Home</a>
+                    <ul class="menu">
+                      <li><a href="#overview">Overview</a></li>
+                      <li><a href="#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
+                      <li><a href="#motivation">Motivation</a></li>
+                      <li><a href="#features">Features</a></li>
+                      <li><a href="#components">Components of the toolkit</a></li>
+                      <li><a href="#software">Software tools</a></li>
+                      <li><a href="#use-cases">Use cases</a></li>
+                      <li><a href="#help">Examples, tutorials, docs &amp; help</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a>Software</a>
+                    <ul class="menu">
+                      <li><a href="app">Web application</a></li>
+                      <li><a href="api">REST API</a></li>
+                      <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+                      <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
+                      <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
+                      <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a>Docs</a>
+                    <ul class="menu">
+                      <li><a href="docs#examples">Examples</a></li>
+                      <li class="separator"><a href="docs#schema-formats">Schema formats</a></li>
+                      <li><a href="docs#data-types">Data types</a></li>
+                      <li><a href="docs#dataset-formats">Dataset formats</a></li>
+                      <li><a href="docs#validation">Data validation</a></li>
+                      <li class="separator"><a href="api">REST API</a></li>
+                      <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+                      <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
+                      <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
+                      <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
+                      <li><a href="docs#other-resources">Resources for working with <i>ObjTables</i></a></li>
+                      <li><a href="docs#comparison">Comparison with other tools</a></li>
+                      <li><a href="docs#roadmap">Limitations and future directions</a></li>
+                      <li class="separator"><a href="docs#help">More help</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a>About</a>
+                    <ul class="menu">
+                      <li><a href="about#license">License</a></li>
+                      <li><a href="about#citation">Citation</a></li>
+                      <li class="separator"><a href="about#contribute">Contributing</a></li>
+                      <li class="separator"><a href="about#team">Team</a></li>
+                      <li><a href="about#funding">Funding</a></li>
+                      <li class="separator"><a href="about#contact">Contact info</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="splash">
-      <div class="splash-container">
-        <img src="logo.svg" alt="ObjTables logo"/>
+        <div class="splash">
+          <div class="splash-container">
+            <img src="logo.svg" alt="ObjTables logo"/>
 
-        <h1><span class="title"><i>ObjTables</i>:</span> Modeling data with the ease of spreadsheets &amp; the power of schemas</h1>
+            <h1><span class="title"><i>ObjTables</i>:</span> Modeling data with the ease of spreadsheets &amp; the power of schemas</h1>
 
-        <p><i>ObjTables</i> is a toolkit for creating re-usable datasets that are both human and machine-readable, combining the ease of spreadsheets (e.g., Excel workbooks) with the rigor of schemas (classes, their attributes, the type of each attribute, and the possible relationships between instances of classes).</p>
+            <p><i>ObjTables</i> is a toolkit for creating re-usable datasets that are both human and machine-readable, combining the ease of spreadsheets (e.g., Excel workbooks) with the rigor of schemas (classes, their attributes, the type of each attribute, and the possible relationships between instances of classes).</p>
 
-        <p><i>ObjTables</i> consists of a format for describing schemas for spreadsheets, numerous data types for science, a syntax for indicating the class and attribute represented by each table and column in a workbook, and software for using schemas to rigorously validate, merge, split, compare, and revision datasets.</p>
+            <p><i>ObjTables</i> consists of a format for describing schemas for spreadsheets, numerous data types for science, a syntax for indicating the class and attribute represented by each table and column in a workbook, and software for using schemas to rigorously validate, merge, split, compare, and revision datasets.</p>
 
-        <p><i>ObjTables</i> is ideal for supplementary materials of journal article, as well as for emerging domains which need to quickly build new formats for new types of data and associated software with minimal effort.</p>
-      </div>
-    </div>
+            <p><i>ObjTables</i> is ideal for supplementary materials of journal article, as well as for emerging domains which need to quickly build new formats for new types of data and associated software with minimal effort.</p>
+          </div>
+        </div>
 
-    <div class="grid-container content-bottom" data-sticky-container id="sticky-container">
-      <div class="grid-x grid-padding-x">
-        <div class="large-2 cell">
-          <div class="toc-container sticky" data-sticky data-margin-top="0" data-top-anchor="sticky-container">
-            <div class="toc">
-              <h2>Contents</h2>
-              <ul data-magellan>
-                <li><a href="#overview">Overview</a></li>
-                <li><a href="#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a>
+        <div class="grid-container content-bottom" data-sticky-container id="sticky-container">
+          <div class="grid-x grid-padding-x">
+            <div class="large-2 cell">
+              <div class="toc-container sticky" data-sticky data-margin-top="0" data-top-anchor="sticky-container">
+                <div class="toc">
+                  <h2>Contents</h2>
+                  <ul data-magellan>
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a>
+                      <ul>
+                        <li><a href="#tabular-schema">Tabular-formatted schema</a></li>
+                        <li><a href="#python-schema">Python-defined schema</a></li>
+                        <li><a href="#tabular-dataset">Tabular-formatted dataset</a></li>
+                        <li><a href="#python-dataset">Python-generated dataset</a></li>
+                      </ul>
+                    </li>
+                    <li><a href="#motivation">Motivation</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#components">Components of the toolkit</a></li>
+                    <li><a href="#software">Software tools</a></li>
+                    <li><a href="#use-cases">Use cases</a></li>
+                    <li><a href="#help">Examples, tutorials, docs &amp; help</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="large-10 cell content-container">
+              <div class="grid-x grid-padding-x" id="overview" data-magellan-target="overview">
+                <div class="large-12 cell">
+                  <h2>Overview</h2>
+                </div>
+
+                <div class="large-6 cell">
+                  <div>
+                    <h3>Use cases</h3>
+                    <ul>
+                      <li>Integrating heterogeneous data.</li>
+                      <li>Collaboratively and iteratively building complex datasets and models.</li>
+                      <li>Defining formats for new types of data and models.</li>
+                      <li>Publishing re-usable supplementary materials to journal articles.</li>
+                      <li>Sharing re-usable data with collaborators.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3>Components of the <i>ObjTables</i> toolkit</h3>
+                    <ul>
+                      <li>Format for schemas for tabular datasets.</li>
+                      <li>Numerous data types for mathematics, science, chemistry, and biology.</li>
+                      <li>Markup format for tabular datasets (e.g., Excel workbooks or collections of CSV/TSV files).</li>
+                      <li>Software tools for working with tabular datasets.</li>
+                      <li>Python package for additional flexibility and more complex analyses.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="large-6 cell">
+                  <h3>Benefits</h3>
                   <ul>
-                    <li><a href="#tabular-schema">Tabular-formatted schema</a></li>
-                    <li><a href="#python-schema">Python-defined schema</a></li>
-                    <li><a href="#tabular-dataset">Tabular-formatted dataset</a></li>
-                    <li><a href="#python-dataset">Python-generated dataset</a></li>
-                  </ul>
-                </li>
-                <li><a href="#motivation">Motivation</a></li>
-                <li><a href="#features">Features</a></li>
-                <li><a href="#components">Components of the toolkit</a></li>
-                <li><a href="#software">Software tools</a></li>
-                <li><a href="#use-cases">Use cases</a></li>
-                <li><a href="#help">Examples, tutorials, docs &amp; help</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="large-10 cell content-container">
-          <div class="grid-x grid-padding-x" id="overview" data-magellan-target="overview">
-            <div class="large-12 cell">
-              <h2>Overview</h2>
-            </div>
-
-            <div class="large-6 cell">
-              <div>
-                <h3>Use cases</h3>
-                <ul>
-                  <li>Integrating heterogeneous data.</li>
-                  <li>Collaboratively and iteratively building complex datasets and models.</li>
-                  <li>Defining formats for new types of data and models.</li>
-                  <li>Publishing re-usable supplementary materials to journal articles.</li>
-                  <li>Sharing re-usable data with collaborators.</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3>Components of the <i>ObjTables</i> toolkit</h3>
-                <ul>
-                  <li>Format for schemas for tabular datasets.</li>
-                  <li>Numerous data types for mathematics, science, chemistry, and biology.</li>
-                  <li>Markup format for tabular datasets (e.g., Excel workbooks or collections of CSV/TSV files).</li>
-                  <li>Software tools for working with tabular datasets.</li>
-                  <li>Python package for additional flexibility and more complex analyses.</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="large-6 cell">
-              <h3>Benefits</h3>
-              <ul>
-                <li>Use collections of tables (e.g., an Excel workbook) to represent complex data consisting of multiple related objects of multiple types (e.g., rows of worksheets), each with multiple attributes (e.g., columns).</li>
-                <li>Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables.</li>
-                <li>Use Excel as a graphical interface for viewing and editing complex datasets.</li>
-                <li>Use embedded tables and grammars to encode relational information into columns and groups of columns of tables.</li>
-                <li>Define clear schemas for tabular datasets.</li>
-                <li>Use schemas to rigorously validate tabular datasets.</li>
-                <li>Use schemas to parse tabular datasets into data structures for further analysis in languages such as Python.</li>
-                <li>Compare, merge, split, revision, and migrate tabular datasets.</li>
-              </ul>
-            </div>
-          </div>
-
-          <div id="what-is-objtables" data-magellan-target="what-is-objtables">
-            <h2>What is an <i>ObjTables</i> schema and dataset?</h2>
-            <p style="margin-top: 1rem;">An <i>ObjTables</i> <b>schema</b> defines the types of objects that the workbook can represent (the tables of the workbook), their attributes (the columns of each table), the type of each attribute (e.g., Boolean, integer, float, string, etc.), and the possible relationships between the instances of the objects (rows of the tables). Optionally, schemas can also define which attributes are required and how each attribute, object, and the entire dataset should validated. As illustrated below, schemas can be defined using our simple tabular format, or as a Python module.</p>
-
-            <p>An <i>ObjTables</i> <b>dataset</b> is a workbook or collection of tables. The workbook defines the objects that constitute the dataset (the rows of the tables), the attributes of each object (the values of the cells), and the relationships between the objects (the values of the cells that represent relationships). As illustrated below, each table must be marked with a statement that begins with <span class="monospace">!!</span> that indicates the class represented by the table. Similarly, each column must be marked with a statement that begins with <span class="monospace">!</span> that indicates the attribute represented the column. These statements describe the link between workbooks and their schemas.</p>
-
-            <h3 id="example">Example: Address book of CEOs</h3>
-            <p>The following illustrates a schema for an address book of people and their employers, and an example address book of the CEOs of several technology companies. The documentation contains more complete examples <a href="docs/#examples"><i class="fi-link"></i></a> that illustrates additional features of <i>ObjTables</i>. The documentation includes Excel, CSV, TSV, JSON, YAML, and Python files for these examples.</p>
-
-            <h4 id="tabular-schema" data-magellan-target="tabular-schema">Tabular-formatted schema</h4>
-
-            <div class="table-scroll">
-              <table class="example-tabular-schema">
-                <thead>
-                  <tr>
-                    <th colspan="7">!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-10 21:34:50' objTablesVersion='0.0.8'</th>
-                  </tr>
-                  <tr>
-                    <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Verbose name</th><th>!Verbose name plural</th><th>!Description</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <tr><td colspan="7" class="separator">&nbsp;</td></tr>
-                  <tr><td>Person</td><td>Class</td><td></td><td>row</td><td>Person</td><td>People</td><td></td></tr>
-                  <tr><td>name</td><td>Attribute</td><td>Person</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td><td></td></tr>
-                  <tr><td>company</td><td>Attribute</td><td>Person</td><td>String</td><td>Company</td><td></td><td></td></tr>
-                  <tr><td>email_address</td><td>Attribute</td><td>Person</td><td>Email</td><td>Email address</td><td></td><td></td></tr>
-                  <tr><td>phone_number</td><td>Attribute</td><td>Person</td><td>String</td><td>Phone number</td><td></td><td></td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <h4 id="python-schema" data-magellan-target="python-schema">Schema defined as a Python module</h4>
-
-            <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables</span>
-
-<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Person</span>(obj_tables<span style="color: #666666">.</span>Model):
-    name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(
-        primary<span style="color: #666666">=</span><span style="color: #008000">True</span>,
-        unique<span style="color: #666666">=</span><span style="color: #008000">True</span>,
-        verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Name&#39;</span>)
-    company <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(
-        verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Company&#39;</span>)
-    email_address <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>EmailAttribute(
-        verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Email address&#39;</span>)
-    phone_number <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(
-        verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Phone number&#39;</span>)
-
-    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
-        table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>row
-        attribute_order <span style="color: #666666">=</span> (
-            <span style="color: #BA2121">&#39;name&#39;</span>,
-            <span style="color: #BA2121">&#39;company&#39;</span>,
-            <span style="color: #BA2121">&#39;email_address&#39;</span>,
-            <span style="color: #BA2121">&#39;phone_number&#39;</span>,
-        )
-        verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Person&#39;</span>
-        verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;People&#39;</span></pre>
-
-            <h4 id="tabular-dataset" data-magellan-target="tabular-dataset">Tabular-formatted dataset</h4>
-
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr class="doc-head">
-                    <th>!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:19:04'</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr class="class-head">
-                    <th colspan="4">!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
-                  </tr>
-                  <tr class="col-head">
-                    <th>!Name</th>
-                    <th>!Company</th>
-                    <th>!Email address</th>
-                    <th>!Phone number</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>Mark Zuckerberg</td><td>Facebook</td><td>zuck@fb.com</td><td>650-543-4800</td></tr>
-                  <tr><td>Reed Hastings</td><td>Netflix</td><td>reed.hastings@netflix.com</td><td>408-540-3700</td></tr>
-                  <tr><td>Sundar Pichai</td><td>Google</td><td>sundar@google.com</td><td>650-253-0000</td></tr>
-                  <tr><td>Tim Cook</td><td>Apple</td><td>tcook@apple.com</td><td>408-996-1010</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <h4 id="python-dataset" data-magellan-target="python-dataset">Python code for generating the dataset</h4>
-            <pre>cook <span style="color: #666666">=</span> Person(
-    name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Tim Cook&#39;</span>,
-    company<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Apple&#39;</span>,
-    email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;tcook@apple.com&#39;</span>,
-    phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;408-996-1010&#39;</span>,
-)
-
-hastings <span style="color: #666666">=</span> Person(
-    name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Reed Hastings&#39;</span>,
-    company<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Netflix&#39;</span>,
-    email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;reed.hastings@netflix.com&#39;</span>,
-    phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;408-540-3700&#39;</span>,
-)
-
-pichai <span style="color: #666666">=</span> Person(
-    name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Sundar Pichai&#39;</span>,
-    company<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Google&#39;</span>,
-    email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;sundar@google.com&#39;</span>,
-    phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;650-253-0000&#39;</span>,
-)
-
-zuckerberg <span style="color: #666666">=</span> Person(
-    name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Mark Zuckerberg&#39;</span>,
-    company<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Facebook&#39;</span>,
-    email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;zuck@fb.com&#39;</span>,
-    phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;650-543-4800&#39;</span>,
-)</pre>
-          </div>
-
-          <div id="motivation" data-magellan-target="motivation">
-            <h2>Motivation</h2>
-
-            <p style="margin-top: 1rem">Despite numerous formats, software tools, and repositories, it remains difficult to re-use many types of data for additional investigation. In particular, it remains difficult to re-use most supplementary datasets to journal articles because they are often are provided as Excel workbooks. While Excel is ease to use, Excel workbooks are difficult to re-use because Excel has limited support for multi-dimensional data, metadata, data validation, and analysis. Alternative formats, such as relational databases, which can handle multi-dimensional data, metadata, data validation, and analysis are ill-suited to supplementary materials because they require substantially more knowledge, effort, and frequently complex software to utilize.</p>
-
-            <p>To make it easier to re-use data, <i>ObjTables</i> combines the ease of use of spreadsheets (e.g., Excel workbooks) with the rigor of schemas (i.e. a set of classes, their attributes, the type of each attribute, and the relationships among the classes) and structured metadata. This enables users to use Excel to view and edit aribtrarily complex datasets, and to use schemas and the <i>ObjTables</i> software tools to parse datasets and metadata into data structures suitable for analysis in languages such as Python with powerful tools such as NumPy, Pandas, scikit-learn, and SciPy.</p>
-
-            <p>To make it easier to build datasets, the <i>ObjTables</i> software can also use schemas to validate, merge, split, compare, revision, and migrate datasets. Together, these features also make <i>ObjTables</i> well-suited to emerging domains which need to create new formats for new types of data and associated software tools for viewing, editing, validating, and analyzing these formats with minimal effort. For example, <i>ObjTables</i> is well-suited to defining new formats for multi-omics datasets that combine genomics, transcriptomics, proteomics, biochemical, and microscopy data.</p>
-
-            <p>The <i>ObjTables</i> toolkit consists of a format for schemas for tabular datasets, numerous data types for scientific data and models, a markup format for tabular datasets (e.g., Excel workbooks), and software tools for using schemas to validate, compare, merge, split, revision, and migrate tabular datasets. <i>ObjTables</i> includes four software tools: a web application, a REST API, a command-line program, and a Python package.</p>
-
-            <p>This website provides an introduction to <i>ObjTables</i>, as well as links to use and obtain the <i>ObjTables</i> software and source code, examples, tutorials, and documentation.</p>
-          </div>
-
-          <div id="features" data-magellan-target="features">
-            <h2>Features</h2>
-
-            <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
-              <div class="large-12 cell">
-                <p>As described above, <i>ObjTables</i> was designed for cases, such as supplementary materials, where datasets need to be both human and machine-readable, and for emerging domains which need to create new formats for new types of datasets (and associated software tools, including graphical tools for viewing and editing complex datasets) with minimal effort. <i>ObjTables</i> is well-suited to these use cases because it provides the functionality described below. <i>ObjTables</i> is well-suited to supplementary materials because it enables readers to both use Excel to view arbitrary datasets and use schemas to parse arbitrary datasets into convenient data structures for further analysis. <i>ObjTables</i> is well-suited to developing data formats for emerging domains because it provides emerging domains the ability to quickly define precise formats for complex data, as well as user-friendly tools for creating, viewing, editing, validating, merging, comparing, revisioning, migrating complex datasets.</p>
-              </div>
-
-              <div class="large-6 cell">
-                <div>
-                  <h3>Create Excel templates for building complex datasets</h3>
-                  <p>To make it easy to build datasets, the <i>ObjTables</i> software can generate template Excel workbooks for schemas with a table of contents, skeletons for the tables and columns, inline help, dropdown menus, and Excel validation.</p>
-                </div>
-
-                <div>
-                  <h3>Use Excel as a GUI for viewing and editing complex datasets</h3>
-                  <p><i>ObjTables</i> enables users to leverage Excel as a graphical interface for viewing and editing complex datasets. <i>ObjTables</i> Excel datasets have the following features:</p>
-                  <ul class="vertically-spaced-list">
-                    <li><b>Table of contents:</b> Datasets can include a worksheet that describes the data represented by each worksheet and provides hyperlinks to each worksheet.</li>
-                    <li><b>Formatted class titles:</b> Each worksheet includes a title bar that describes the data captured by the worksheet. The title bars are formatted, frozen, and protected from editing.</li>
-                    <li><b>Formatted attribute headings:</b> Each workbook includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
-                    <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into it's heading.</li>
-                    <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides dropdown menus for each attribute that represents an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>
-                    <li><b>Instant validation:</b> <i>ObjTables</i> uses Excel to validate several basic properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. The <i>ObjTables</i> software provides more extensive validation.</i></li>
-                    <li><b>Hidden extra rows and columns:</b> To help users focus on their data, <i>ObjTables</i> hides all empty rows and columns.</li>
-                    <li><b>Protection from unintentional editing:</b> To help users avoid mistakes, <i>ObjTables</i> protects worksheets.</li>
+                    <li>Use collections of tables (e.g., an Excel workbook) to represent complex data consisting of multiple related objects of multiple types (e.g., rows of worksheets), each with multiple attributes (e.g., columns).</li>
+                    <li>Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables.</li>
+                    <li>Use Excel as a graphical interface for viewing and editing complex datasets.</li>
+                    <li>Use embedded tables and grammars to encode relational information into columns and groups of columns of tables.</li>
+                    <li>Define clear schemas for tabular datasets.</li>
+                    <li>Use schemas to rigorously validate tabular datasets.</li>
+                    <li>Use schemas to parse tabular datasets into data structures for further analysis in languages such as Python.</li>
+                    <li>Compare, merge, split, revision, and migrate tabular datasets.</li>
                   </ul>
                 </div>
+              </div>
 
-                <div>
-                  <h3>Iteratively build and revision complex datasets</h3>
-                  <p>The <i>ObjTables</i> software leverages Git to make it easy to build datasets iteratively, revision datasets, and track their provenance, including when each revision was made, who made it, and why it was made.</p>
+              <div id="what-is-objtables" data-magellan-target="what-is-objtables">
+                <h2>What is an <i>ObjTables</i> schema and dataset?</h2>
+                <p style="margin-top: 1rem;">An <i>ObjTables</i> <b>schema</b> defines the types of objects that the workbook can represent (the tables of the workbook), their attributes (the columns of each table), the type of each attribute (e.g., Boolean, integer, float, string, etc.), and the possible relationships between the instances of the objects (rows of the tables). Optionally, schemas can also define which attributes are required and how each attribute, object, and the entire dataset should validated. As illustrated below, schemas can be defined using our simple tabular format, or as a Python module.</p>
+
+                <p>An <i>ObjTables</i> <b>dataset</b> is a workbook or collection of tables. The workbook defines the objects that constitute the dataset (the rows of the tables), the attributes of each object (the values of the cells), and the relationships between the objects (the values of the cells that represent relationships). As illustrated below, each table must be marked with a statement that begins with <span class="monospace">!!</span> that indicates the class represented by the table. Similarly, each column must be marked with a statement that begins with <span class="monospace">!</span> that indicates the attribute represented the column. These statements describe the link between workbooks and their schemas.</p>
+
+                <h3 id="example">Example: Address book of CEOs</h3>
+                <p>The following illustrates a schema for an address book of people and their employers, and an example address book of the CEOs of several technology companies. The documentation contains more complete examples <a href="docs/#examples"><i class="fi-link"></i></a> that illustrates additional features of <i>ObjTables</i>. The documentation includes Excel, CSV, TSV, JSON, YAML, and Python files for these examples.</p>
+
+                <h4 id="tabular-schema" data-magellan-target="tabular-schema">Tabular-formatted schema</h4>
+
+                <div class="table-scroll">
+                  <table class="example-tabular-schema">
+                    <thead>
+                      <tr>
+                        <th colspan="7">!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-10 21:34:50' objTablesVersion='0.0.8'</th>
+                      </tr>
+                      <tr>
+                        <th>!Name</th><th>!Type</th><th>!Parent</th><th>!Format</th><th>!Verbose name</th><th>!Verbose name plural</th><th>!Description</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      <tr><td colspan="7" class="separator">&nbsp;</td></tr>
+                      <tr><td>Person</td><td>Class</td><td></td><td>row</td><td>Person</td><td>People</td><td></td></tr>
+                      <tr><td>name</td><td>Attribute</td><td>Person</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td><td></td></tr>
+                      <tr><td>company</td><td>Attribute</td><td>Person</td><td>String</td><td>Company</td><td></td><td></td></tr>
+                      <tr><td>email_address</td><td>Attribute</td><td>Person</td><td>Email</td><td>Email address</td><td></td><td></td></tr>
+                      <tr><td>phone_number</td><td>Attribute</td><td>Person</td><td>String</td><td>Phone number</td><td></td><td></td></tr>
+                    </tbody>
+                  </table>
                 </div>
 
-                <div>
-                  <h3>Iteratively build schemas and migrate complex datasets</h3>
-                  <p>To make it easy to build schemas iteratively, the <i>ObjTables</i> software can revision schemas, as well as migrate datasets between different versions of schemas (e.g., adding, removing, and renaming tables and columns).</p>
+                <h4 id="python-schema" data-magellan-target="python-schema">Schema defined as a Python module</h4>
+
+                <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables</span>
+
+    <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Person</span>(obj_tables<span style="color: #666666">.</span>Model):
+        name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(
+            primary<span style="color: #666666">=</span><span style="color: #008000">True</span>,
+            unique<span style="color: #666666">=</span><span style="color: #008000">True</span>,
+            verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Name&#39;</span>)
+        company <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(
+            verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Company&#39;</span>)
+        email_address <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>EmailAttribute(
+            verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Email address&#39;</span>)
+        phone_number <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(
+            verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Phone number&#39;</span>)
+
+        <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
+            table_format <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>row
+            attribute_order <span style="color: #666666">=</span> (
+                <span style="color: #BA2121">&#39;name&#39;</span>,
+                <span style="color: #BA2121">&#39;company&#39;</span>,
+                <span style="color: #BA2121">&#39;email_address&#39;</span>,
+                <span style="color: #BA2121">&#39;phone_number&#39;</span>,
+            )
+            verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Person&#39;</span>
+            verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;People&#39;</span></pre>
+
+                <h4 id="tabular-dataset" data-magellan-target="tabular-dataset">Tabular-formatted dataset</h4>
+
+                <div class="table-scroll">
+                  <table>
+                    <thead>
+                      <tr class="doc-head">
+                        <th>!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:19:04'</th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+
+                <div class="table-scroll">
+                  <table>
+                    <thead>
+                      <tr class="class-head">
+                        <th colspan="4">!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
+                      </tr>
+                      <tr class="col-head">
+                        <th>!Name</th>
+                        <th>!Company</th>
+                        <th>!Email address</th>
+                        <th>!Phone number</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Mark Zuckerberg</td><td>Facebook</td><td>zuck@fb.com</td><td>650-543-4800</td></tr>
+                      <tr><td>Reed Hastings</td><td>Netflix</td><td>reed.hastings@netflix.com</td><td>408-540-3700</td></tr>
+                      <tr><td>Sundar Pichai</td><td>Google</td><td>sundar@google.com</td><td>650-253-0000</td></tr>
+                      <tr><td>Tim Cook</td><td>Apple</td><td>tcook@apple.com</td><td>408-996-1010</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <h4 id="python-dataset" data-magellan-target="python-dataset">Python code for generating the dataset</h4>
+                <pre>cook <span style="color: #666666">=</span> Person(
+        name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Tim Cook&#39;</span>,
+        company<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Apple&#39;</span>,
+        email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;tcook@apple.com&#39;</span>,
+        phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;408-996-1010&#39;</span>,
+    )
+
+    hastings <span style="color: #666666">=</span> Person(
+        name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Reed Hastings&#39;</span>,
+        company<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Netflix&#39;</span>,
+        email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;reed.hastings@netflix.com&#39;</span>,
+        phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;408-540-3700&#39;</span>,
+    )
+
+    pichai <span style="color: #666666">=</span> Person(
+        name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Sundar Pichai&#39;</span>,
+        company<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Google&#39;</span>,
+        email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;sundar@google.com&#39;</span>,
+        phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;650-253-0000&#39;</span>,
+    )
+
+    zuckerberg <span style="color: #666666">=</span> Person(
+        name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Mark Zuckerberg&#39;</span>,
+        company<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Facebook&#39;</span>,
+        email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;zuck@fb.com&#39;</span>,
+        phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;650-543-4800&#39;</span>,
+    )</pre>
+              </div>
+
+              <div id="motivation" data-magellan-target="motivation">
+                <h2>Motivation</h2>
+
+                <p style="margin-top: 1rem">Despite numerous formats, software tools, and repositories, it remains difficult to re-use many types of data for additional investigation. In particular, it remains difficult to re-use most supplementary datasets to journal articles because they are often are provided as Excel workbooks. While Excel is ease to use, Excel workbooks are difficult to re-use because Excel has limited support for multi-dimensional data, metadata, data validation, and analysis. Alternative formats, such as relational databases, which can handle multi-dimensional data, metadata, data validation, and analysis are ill-suited to supplementary materials because they require substantially more knowledge, effort, and frequently complex software to utilize.</p>
+
+                <p>To make it easier to re-use data, <i>ObjTables</i> combines the ease of use of spreadsheets (e.g., Excel workbooks) with the rigor of schemas (i.e. a set of classes, their attributes, the type of each attribute, and the relationships among the classes) and structured metadata. This enables users to use Excel to view and edit aribtrarily complex datasets, and to use schemas and the <i>ObjTables</i> software tools to parse datasets and metadata into data structures suitable for analysis in languages such as Python with powerful tools such as NumPy, Pandas, scikit-learn, and SciPy.</p>
+
+                <p>To make it easier to build datasets, the <i>ObjTables</i> software can also use schemas to validate, merge, split, compare, revision, and migrate datasets. Together, these features also make <i>ObjTables</i> well-suited to emerging domains which need to create new formats for new types of data and associated software tools for viewing, editing, validating, and analyzing these formats with minimal effort. For example, <i>ObjTables</i> is well-suited to defining new formats for multi-omics datasets that combine genomics, transcriptomics, proteomics, biochemical, and microscopy data.</p>
+
+                <p>The <i>ObjTables</i> toolkit consists of a format for schemas for tabular datasets, numerous data types for scientific data and models, a markup format for tabular datasets (e.g., Excel workbooks), and software tools for using schemas to validate, compare, merge, split, revision, and migrate tabular datasets. <i>ObjTables</i> includes four software tools: a web application, a REST API, a command-line program, and a Python package.</p>
+
+                <p>This website provides an introduction to <i>ObjTables</i>, as well as links to use and obtain the <i>ObjTables</i> software and source code, examples, tutorials, and documentation.</p>
+              </div>
+
+              <div id="features" data-magellan-target="features">
+                <h2>Features</h2>
+
+                <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
+                  <div class="large-12 cell">
+                    <p>As described above, <i>ObjTables</i> was designed for cases, such as supplementary materials, where datasets need to be both human and machine-readable, and for emerging domains which need to create new formats for new types of datasets (and associated software tools, including graphical tools for viewing and editing complex datasets) with minimal effort. <i>ObjTables</i> is well-suited to these use cases because it provides the functionality described below. <i>ObjTables</i> is well-suited to supplementary materials because it enables readers to both use Excel to view arbitrary datasets and use schemas to parse arbitrary datasets into convenient data structures for further analysis. <i>ObjTables</i> is well-suited to developing data formats for emerging domains because it provides emerging domains the ability to quickly define precise formats for complex data, as well as user-friendly tools for creating, viewing, editing, validating, merging, comparing, revisioning, migrating complex datasets.</p>
+                  </div>
+
+                  <div class="large-6 cell">
+                    <div>
+                      <h3>Create Excel templates for building complex datasets</h3>
+                      <p>To make it easy to build datasets, the <i>ObjTables</i> software can generate template Excel workbooks for schemas with a table of contents, skeletons for the tables and columns, inline help, dropdown menus, and Excel validation.</p>
+                    </div>
+
+                    <div>
+                      <h3>Use Excel as a GUI for viewing and editing complex datasets</h3>
+                      <p><i>ObjTables</i> enables users to leverage Excel as a graphical interface for viewing and editing complex datasets. <i>ObjTables</i> Excel datasets have the following features:</p>
+                      <ul class="vertically-spaced-list">
+                        <li><b>Table of contents:</b> Datasets can include a worksheet that describes the data represented by each worksheet and provides hyperlinks to each worksheet.</li>
+                        <li><b>Formatted class titles:</b> Each worksheet includes a title bar that describes the data captured by the worksheet. The title bars are formatted, frozen, and protected from editing.</li>
+                        <li><b>Formatted attribute headings:</b> Each workbook includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
+                        <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into it's heading.</li>
+                        <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides dropdown menus for each attribute that represents an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>
+                        <li><b>Instant validation:</b> <i>ObjTables</i> uses Excel to validate several basic properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. The <i>ObjTables</i> software provides more extensive validation.</i></li>
+                        <li><b>Hidden extra rows and columns:</b> To help users focus on their data, <i>ObjTables</i> hides all empty rows and columns.</li>
+                        <li><b>Protection from unintentional editing:</b> To help users avoid mistakes, <i>ObjTables</i> protects worksheets.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3>Iteratively build and revision complex datasets</h3>
+                      <p>The <i>ObjTables</i> software leverages Git to make it easy to build datasets iteratively, revision datasets, and track their provenance, including when each revision was made, who made it, and why it was made.</p>
+                    </div>
+
+                    <div>
+                      <h3>Iteratively build schemas and migrate complex datasets</h3>
+                      <p>To make it easy to build schemas iteratively, the <i>ObjTables</i> software can revision schemas, as well as migrate datasets between different versions of schemas (e.g., adding, removing, and renaming tables and columns).</p>
+                    </div>
+                  </div>
+
+                  <div class="large-6 cell">
+                    <div>
+                      <h3>Rigorously validate and quickly debug complex datasets</h3>
+                      <p><i>ObjTables</i> makes it easy to validate and debug datasets at multiple levels:</p>
+                      <ul class="vertically-spaced-list">
+                        <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively. More complex validations can be defined by implementing using Python package.</li>
+                        <li><b>Instance validation:</b> Users can use the Python package to implement custom instance-level validation by customizing the `obj_tables.Model.validate` method of each class.</li>
+                        <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances. Python modules that implement schemas can also capture tuples of attributes that must be unique across all instances of a class. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Model.Meta"><i class="fi-link"></i></a> for more information.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3>Merge and split datasets</h3>
+                      <p>To help users build large datasets, the <i>ObjTables</i> software can merge datasets by identifying common objects, joining them, and concatenating their relationships to other objects. To help users break down datasets into smaller, more manageable pieces, the <i>ObjTables</i> software can split datasets by cutting relationships and identifying all of the resulting connected subsets of the dataset.</p>
+                    </div>
+
+                    <div>
+                      <h3>Compare/difference datasets</h3>
+                      <p>To help users compare and review changes to datasets, the <i>ObjTables</i> software can determine if datasets are semantically equal and identify their differences.</p>
+                    </div>
+
+                    <div>
+                      <h3>Query and analyze complex datasets</h3>
+                      <p>The <i>ObjTables</i> Python package makes it easy to find objects in datasets and use Python to conduct complex analyses of datasets such as numerical simulations.</p>
+                    </div>
+
+                    <div>
+                      <h3>Pretty print datasets for publication</h3>
+                      <p>To make it easy to create files suitable for supplementary materials of journal articles, <i>ObjTables</i> can pretty print datasets with tables of contents, formatted table titles and column headings, and inline help.</p>
+                    </div>
+
+                    <div>
+                      <h3>Visualize schemas for datasets</h3>
+                      <p>To help users understand schemas, <i>ObjTables</i> can generate UML diagrams of schemas.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div class="large-6 cell">
-                <div>
-                  <h3>Rigorously validate and quickly debug complex datasets</h3>
-                  <p><i>ObjTables</i> makes it easy to validate and debug datasets at multiple levels:</p>
-                  <ul class="vertically-spaced-list">
-                    <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively. More complex validations can be defined by implementing using Python package.</li>
-                    <li><b>Instance validation:</b> Users can use the Python package to implement custom instance-level validation by customizing the `obj_tables.Model.validate` method of each class.</li>
-                    <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances. Python modules that implement schemas can also capture tuples of attributes that must be unique across all instances of a class. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Model.Meta"><i class="fi-link"></i></a> for more information.</li>
-                  </ul>
-                </div>
+              <div id="components" data-magellan-target="components">
+                <h2>Components of the <i>ObjTables</i> toolkit</h2>
 
-                <div>
-                  <h3>Merge and split datasets</h3>
-                  <p>To help users build large datasets, the <i>ObjTables</i> software can merge datasets by identifying common objects, joining them, and concatenating their relationships to other objects. To help users break down datasets into smaller, more manageable pieces, the <i>ObjTables</i> software can split datasets by cutting relationships and identifying all of the resulting connected subsets of the dataset.</p>
-                </div>
+                <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
+                  <div class="large-12 cell">
+                    <p>To make it easy to work with complex data, <i>ObjTables</i> provides a complete and coordinated set of tools for building, validating, analyzing, and sharing complex data. This includes a simple format for schemas for datasets, numerous data types for scientific research, a markup syntax for tabular-formatted datasets, and software tools for validating, merging, comparing, revisioning, and migrating datasets. For use cases which require additional flexibility, <i>ObjTables</i> also provides a Python library which can be used to implement custom data types and validations.</p>
+                  </div>
 
-                <div>
-                  <h3>Compare/difference datasets</h3>
-                  <p>To help users compare and review changes to datasets, the <i>ObjTables</i> software can determine if datasets are semantically equal and identify their differences.</p>
-                </div>
+                  <div class="large-6 cell">
+                    <h3>Format for schemas for tabular datasets</h3>
 
-                <div>
-                  <h3>Query and analyze complex datasets</h3>
-                  <p>The <i>ObjTables</i> Python package makes it easy to find objects in datasets and use Python to conduct complex analyses of datasets such as numerical simulations.</p>
-                </div>
+                    <p><i>ObjTables</i> schemas capture the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cell. <i>ObjTables</i> supports three modes of encoding relationships into cells in tables.</p>
 
-                <div>
-                  <h3>Pretty print datasets for publication</h3>
-                  <p>To make it easy to create files suitable for supplementary materials of journal articles, <i>ObjTables</i> can pretty print datasets with tables of contents, formatted table titles and column headings, and inline help.</p>
-                </div>
+                    <ul class="vertically-spaced-list">
+                      <li><b>Columns for relationships among objects represented by entries in tables:</b> Relationships from one (primary) object to other (related) objects can be captured by (a) incorporating a column that represents a unique <i>key</i> for each related object into the table that represents the related objects and (b) encoding the keys for the related objects as a comma-separated list into a column in the table that represents the primary objects.</li>
+                      <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex datasets into a minimal number of tables, <i>ObjTables</i> can also encode instances of related classes into groups of columns. <i>ObjTables</i> uses merged headings to distinguish these columns.</li>
+                      <li><b>Embedded grammars for relationships:</b> To help users encode complex datasets into a minimal number of tables, grammars can be used to encode instances of related classes into a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+                    </ul>
+                  </div>
 
-                <div>
-                  <h3>Visualize schemas for datasets</h3>
-                  <p>To help users understand schemas, <i>ObjTables</i> can generate UML diagrams of schemas.</p>
-                </div>
-              </div>
-            </div>
-          </div>
+                  <div class="large-6 cell">
+                    <div>
+                      <h3>Numerous data types</h3>
+                      <i>ObjTables</i> provides numerous data types, including for mathematics, science, chemoinformatics, and genomics.
+                    </div>
 
-          <div id="components" data-magellan-target="components">
-            <h2>Components of the <i>ObjTables</i> toolkit</h2>
+                    <div>
+                      <h3>Markup format for tabular datasets (e.g., Excel workbooks)</h3>
+                      The format includes syntax for declaring which cells represent each table, instance, and attribute; declaring which entries represent metadata such as the date that a table was updated; and declaring which entries represent comments.
+                    </div>
 
-            <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
-              <div class="large-12 cell">
-                <p>To make it easy to work with complex data, <i>ObjTables</i> provides a complete and coordinated set of tools for building, validating, analyzing, and sharing complex data. This includes a simple format for schemas for datasets, numerous data types for scientific research, a markup syntax for tabular-formatted datasets, and software tools for validating, merging, comparing, revisioning, and migrating datasets. For use cases which require additional flexibility, <i>ObjTables</i> also provides a Python library which can be used to implement custom data types and validations.</p>
-              </div>
+                    <div>
+                      <h3>Software tools for working with tabular datasets</h3>
+                      <i>ObjTables</i> includes a web application, a REST API, a command-line program, and a Python package for working with datasets. These tools can be used to pretty print, validate, compare, revision, and migrate datasets.
+                    </div>
 
-              <div class="large-6 cell">
-                <h3>Format for schemas for tabular datasets</h3>
-
-                <p><i>ObjTables</i> schemas capture the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cell. <i>ObjTables</i> supports three modes of encoding relationships into cells in tables.</p>
-
-                <ul class="vertically-spaced-list">
-                  <li><b>Columns for relationships among objects represented by entries in tables:</b> Relationships from one (primary) object to other (related) objects can be captured by (a) incorporating a column that represents a unique <i>key</i> for each related object into the table that represents the related objects and (b) encoding the keys for the related objects as a comma-separated list into a column in the table that represents the primary objects.</li>
-                  <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex datasets into a minimal number of tables, <i>ObjTables</i> can also encode instances of related classes into groups of columns. <i>ObjTables</i> uses merged headings to distinguish these columns.</li>
-                  <li><b>Embedded grammars for relationships:</b> To help users encode complex datasets into a minimal number of tables, grammars can be used to encode instances of related classes into a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
-                </ul>
-              </div>
-
-              <div class="large-6 cell">
-                <div>
-                  <h3>Numerous data types</h3>
-                  <i>ObjTables</i> provides numerous data types, including for mathematics, science, chemoinformatics, and genomics.
-                </div>
-
-                <div>
-                  <h3>Markup format for tabular datasets (e.g., Excel workbooks)</h3>
-                  The format includes syntax for declaring which cells represent each table, instance, and attribute; declaring which entries represent metadata such as the date that a table was updated; and declaring which entries represent comments.
-                </div>
-
-                <div>
-                  <h3>Software tools for working with tabular datasets</h3>
-                  <i>ObjTables</i> includes a web application, a REST API, a command-line program, and a Python package for working with datasets. These tools can be used to pretty print, validate, compare, revision, and migrate datasets.
-                </div>
-
-                <div>
-                  <h3>Python package for additional flexibility</h3>
-                  For more flexibility, the Python package can be used to incorporate custom data types, define custom validation, query, and analyze datasets.
+                    <div>
+                      <h3>Python package for additional flexibility</h3>
+                      For more flexibility, the Python package can be used to incorporate custom data types, define custom validation, query, and analyze datasets.
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div id="software" data-magellan-target="software">
-            <h2>Software tools</h2>
+              <div id="software" data-magellan-target="software">
+                <h2>Software tools</h2>
 
-            <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
-              <div class="large-12 cell">
-                <p>The <i>ObjTables</i> toolkit includes four software interfaces: a web application, a REST API, a command-line program, and a Python package. The web application, REST API, and command-line program provide the same features. In addition to the features of the web application, REST API, and command-line program, the Python package can programmatically query, edit, merge, split, revision, and migrate datasets. The Python package is also more flexible. For example, the Python package can support additional datatypes and custom validation.</p>
+                <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
+                  <div class="large-12 cell">
+                    <p>The <i>ObjTables</i> toolkit includes four software interfaces: a web application, a REST API, a command-line program, and a Python package. The web application, REST API, and command-line program provide the same features. In addition to the features of the web application, REST API, and command-line program, the Python package can programmatically query, edit, merge, split, revision, and migrate datasets. The Python package is also more flexible. For example, the Python package can support additional datatypes and custom validation.</p>
 
-                <p>We recommend beginning with the web application, REST API, or command-line program. We recommend using the Python package when more flexibility is required, such as a custom data type, or to analyze datasets with Python tools such as NumPy, Pandas, scikit-learn, or SciPy.</p>
+                    <p>We recommend beginning with the web application, REST API, or command-line program. We recommend using the Python package when more flexibility is required, such as a custom data type, or to analyze datasets with Python tools such as NumPy, Pandas, scikit-learn, or SciPy.</p>
 
-                <p>For convenience, a Dockerfile for building an Ubuntu image with the <i>ObjTables</i> tools is also available. The image can be used to run the web application, REST API, command-line program, or Python package. In addition, the <i>ObjTables</i> source code is available from GitHub.</p>
+                    <p>For convenience, a Dockerfile for building an Ubuntu image with the <i>ObjTables</i> tools is also available. The image can be used to run the web application, REST API, command-line program, or Python package. In addition, the <i>ObjTables</i> source code is available from GitHub.</p>
+                  </div>
+
+                  <div class="large-4 cell">
+                    <h3>Web application</h3>
+                    A web application is available at <a href="app">objtables.org/app</a>.
+                  </div>
+                  <div class="large-4 cell" id="rest">
+                    <h3>REST API</h3>
+                    A REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
+                  </div>
+                  <div class="large-4 cell" id="cli">
+                    <h3>Command-line program</h3>
+                    A command-line program is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.
+                  </div>
+                  <div class="large-4 cell" id="python">
+                    <h3>Python package</h3>
+                    <p>A Python package is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.</p>
+                    <p>The Python package provides more flexibility than the web application, REST API, and command-line program for custom data types and custom validation. The Python package is also best-suited for analyzing datasets.</p>
+                  </div>
+                  <div class="large-4 cell" id="docker">
+                    <h3>Dockerfile</h3>
+                    <p>A Dockerfile for building a Docker image is available from GitHub <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.</p>
+                  </div>
+                  <div class="large-4 cell" id="code">
+                    <h3>Source code</h3>
+                    <p>The source code is available from GitHub <a href="https://github.com/KarrLab/obj_tables"><i class="fi-link"></i></a>.</p>
+                  </div>
+                </div>
               </div>
 
-              <div class="large-4 cell">
-                <h3>Web application</h3>
-                A web application is available at <a href="app">objtables.org/app</a>.
-              </div>
-              <div class="large-4 cell" id="rest">
-                <h3>REST API</h3>
-                A REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
-              </div>
-              <div class="large-4 cell" id="cli">
-                <h3>Command-line program</h3>
-                A command-line program is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.
-              </div>
-              <div class="large-4 cell" id="python">
-                <h3>Python package</h3>
-                <p>A Python package is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.</p>
-                <p>The Python package provides more flexibility than the web application, REST API, and command-line program for custom data types and custom validation. The Python package is also best-suited for analyzing datasets.</p>
-              </div>
-              <div class="large-4 cell" id="docker">
-                <h3>Dockerfile</h3>
-                <p>A Dockerfile for building a Docker image is available from GitHub <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.</p>
-              </div>
-              <div class="large-4 cell" id="code">
-                <h3>Source code</h3>
-                <p>The source code is available from GitHub <a href="https://github.com/KarrLab/obj_tables"><i class="fi-link"></i></a>.</p>
-              </div>
-            </div>
-          </div>
+              <div id="use-cases" data-magellan-target="use-cases">
+                <h2>Use cases</h2>
 
-          <div id="use-cases" data-magellan-target="use-cases">
-            <h2>Use cases</h2>
+                <div class="grid-x grid-padding-x" style="margin-top: 1rem">
+                  <div class="large-12 cell">
+                    <p><i>ObjTables</i> was designed to help users share complex data with the ease of spreadsheets and the rigor of schemas. <i>ObjTables</i> excels at cases where datasets need to be both human and machine-readable. For example, <i>ObjTables</i> is well-suited to supplementary materials of journal articles where it is important to share materials in a human-readable format that doesn't require special domain-specific software (e.g., Excel workbooks), and where it is important to share materials in a format that enables their re-use for additional studies. <i>ObjTables</i> is also well-suited to emergent fields which need to quickly build new formats (and associated software tools) for new types of data. For example, we have used <i>ObjTables</i> to build formats for describing whole-cell models and the datasets needed to build and validate whole-cell models.</p>
+                  </div>
+                  <div class="large-6 cell">
+                    <h3>Publishing re-usable supplementary materials</h3>
 
-            <div class="grid-x grid-padding-x" style="margin-top: 1rem">
-              <div class="large-12 cell">
-                <p><i>ObjTables</i> was designed to help users share complex data with the ease of spreadsheets and the rigor of schemas. <i>ObjTables</i> excels at cases where datasets need to be both human and machine-readable. For example, <i>ObjTables</i> is well-suited to supplementary materials of journal articles where it is important to share materials in a human-readable format that doesn't require special domain-specific software (e.g., Excel workbooks), and where it is important to share materials in a format that enables their re-use for additional studies. <i>ObjTables</i> is also well-suited to emergent fields which need to quickly build new formats (and associated software tools) for new types of data. For example, we have used <i>ObjTables</i> to build formats for describing whole-cell models and the datasets needed to build and validate whole-cell models.</p>
-              </div>
-              <div class="large-6 cell">
-                <h3>Publishing re-usable supplementary materials</h3>
+                    <p>Although supplementary materials often contain valuable data, supplementary materials are underutilized because they are often provided in custom formats that are difficult to understand, parse, and re-use.</p>
 
-                <p>Although supplementary materials often contain valuable data, supplementary materials are underutilized because they are often provided in custom formats that are difficult to understand, parse, and re-use.</p>
+                    <p><i>ObjTables</i> addresses this issue by enabling authors to publish materials in a tabular format which can easily be read by humans and computers: (a) <i>ObjTables</i> enables authors to pretty print their data with tables of contents and inline help, (b) <i>ObjTables</i> enables authors to provide schemas for parsing their data, and (c) <i>ObjTables</i> enables readers to use these schemas to parse and analyze published data with minimal effort. Together, this makes it easier for authors to publish supplementary materials that are easy for others to re-use for additional studies.</p>
+                  </div>
 
-                <p><i>ObjTables</i> addresses this issue by enabling authors to publish materials in a tabular format which can easily be read by humans and computers: (a) <i>ObjTables</i> enables authors to pretty print their data with tables of contents and inline help, (b) <i>ObjTables</i> enables authors to provide schemas for parsing their data, and (c) <i>ObjTables</i> enables readers to use these schemas to parse and analyze published data with minimal effort. Together, this makes it easier for authors to publish supplementary materials that are easy for others to re-use for additional studies.</p>
-              </div>
+                  <div class="large-6 cell">
+                    <h3>Sharing re-usable data and models</h3>
 
-              <div class="large-6 cell">
-                <h3>Sharing re-usable data and models</h3>
+                    <p>Researchers often need to send their collaborators new datasets and models that cannot be described in any existing format. This often requires collaborators to write custom codes to parse these custom datasets and models. The substantial effort needed to write these codes is a frequent barrier to collaboration.</p>
 
-                <p>Researchers often need to send their collaborators new datasets and models that cannot be described in any existing format. This often requires collaborators to write custom codes to parse these custom datasets and models. The substantial effort needed to write these codes is a frequent barrier to collaboration.</p>
+                    <p><i>ObjTables</i> makes it easier to share re-usable data and models with collaborators by (a) enabling researchers to rigorously describe the structure of their data or model with a schema, (b) enabling researchers to capture metadata about their data or model, (c) providing researchers software tools for validating their data, and (d) enabling collaborators to use these schemas to parse data from their colleagues quickly.</p>
+                  </div>
 
-                <p><i>ObjTables</i> makes it easier to share re-usable data and models with collaborators by (a) enabling researchers to rigorously describe the structure of their data or model with a schema, (b) enabling researchers to capture metadata about their data or model, (c) providing researchers software tools for validating their data, and (d) enabling collaborators to use these schemas to parse data from their colleagues quickly.</p>
+                  <div class="large-6 cell">
+                    <h3>Building, validating and analyzing complex datasets and models</h3>
+
+                    <p>Many fields aim to understand how behaviors emerge from complex networks. This often requires integrating diverse data about different parts of the network. For example, systems biology aims to understand how cellular behavior emerges from genotype, often using genomics, biochemical, and other data. Excel is a popular tool for merging data because it's flexible and easy to use. However, Excel only supports a few data types, and Excel has limited support for multi-dimensional data. In addition, it is difficult to debug and analyze Excel workbooks.</p>
+
+                    <p>By combining Excel with schemas, <i>ObjTables</i> makes it easy to build, validate, and analyze complex datasets: (a) users can use Excel to assemble diverse data into tables, (b) users can quickly define schemas for their data, and (c) users can use these schemas to validate their data and parse their data into data structures suitable for further analysis in languages such as Python. For example, we have used <i>ObjTables</i> to build integrated datasets of the biochemistry of <i>Mycoplasma pneumoniae</i> and H1 human embryonic stem cells.</p>
+
+                    <p><i>ObjTables</i> also makes it easy to build datasets iteratively over time by helping users revision data with Git and migrate their data as they revise their schemas.</p>
+                  </div>
+
+                  <div class="large-6 cell">
+                    <h3>Defining formats for new types of data and models</h3>
+
+                    <p>New areas of science often require new types of data and new kinds of models. In turn, this often requires new formats to capture these data and models and new software for working with these formats, including new tools for parsing and validating data and models described in these formats. Creating these formats is often an obstacle for new domains that have limited resources. Evolving these formats as new approaches emerge is also challenging because this often requires updating the software tools for the format and converting old files to the revised format.</p>
+
+                    <p><i>ObjTables</i> addresses this issue by making it easy to define schemas for domain-specific data and providing software tools for parsing, manipulating, and validating data encoded in these schemas. For example, we have used <i>ObjTables</i> to create, WC-KB <a href="https://github.com/KarrLab/wc_kb"><i class="fi-link"></i></a>, a format for the experimental omics, biochemical, and physiological data needed to model cellular biochemistry. We have also used <i>ObjTables</i> to create, WC-Lang <a href="https://github.com/KarrLab/wc_lang"><i class="fi-link"></i></a>, a format for whole-cell models of all of the biochemical activity in a cell. Creating these formats required minimal code.</p>
+                  </div>
+                </div>
               </div>
 
-              <div class="large-6 cell">
-                <h3>Building, validating and analyzing complex datasets and models</h3>
+              <div id="help" data-magellan-target="help">
+                <h2>Examples, tutorials, documentation, and help</h2>
+                <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
+                  <div class="large-12 cell">
+                    <p>
+                      Extensive examples, interactive tutorials, and documentation for the <i>ObjTables</i> formats and software tools are available through the links below. Please contact us for further help.
+                    </p>
+                  </div>
 
-                <p>Many fields aim to understand how behaviors emerge from complex networks. This often requires integrating diverse data about different parts of the network. For example, systems biology aims to understand how cellular behavior emerges from genotype, often using genomics, biochemical, and other data. Excel is a popular tool for merging data because it's flexible and easy to use. However, Excel only supports a few data types, and Excel has limited support for multi-dimensional data. In addition, it is difficult to debug and analyze Excel workbooks.</p>
-
-                <p>By combining Excel with schemas, <i>ObjTables</i> makes it easy to build, validate, and analyze complex datasets: (a) users can use Excel to assemble diverse data into tables, (b) users can quickly define schemas for their data, and (c) users can use these schemas to validate their data and parse their data into data structures suitable for further analysis in languages such as Python. For example, we have used <i>ObjTables</i> to build integrated datasets of the biochemistry of <i>Mycoplasma pneumoniae</i> and H1 human embryonic stem cells.</p>
-
-                <p><i>ObjTables</i> also makes it easy to build datasets iteratively over time by helping users revision data with Git and migrate their data as they revise their schemas.</p>
-              </div>
-
-              <div class="large-6 cell">
-                <h3>Defining formats for new types of data and models</h3>
-
-                <p>New areas of science often require new types of data and new kinds of models. In turn, this often requires new formats to capture these data and models and new software for working with these formats, including new tools for parsing and validating data and models described in these formats. Creating these formats is often an obstacle for new domains that have limited resources. Evolving these formats as new approaches emerge is also challenging because this often requires updating the software tools for the format and converting old files to the revised format.</p>
-
-                <p><i>ObjTables</i> addresses this issue by making it easy to define schemas for domain-specific data and providing software tools for parsing, manipulating, and validating data encoded in these schemas. For example, we have used <i>ObjTables</i> to create, WC-KB <a href="https://github.com/KarrLab/wc_kb"><i class="fi-link"></i></a>, a format for the experimental omics, biochemical, and physiological data needed to model cellular biochemistry. We have also used <i>ObjTables</i> to create, WC-Lang <a href="https://github.com/KarrLab/wc_lang"><i class="fi-link"></i></a>, a format for whole-cell models of all of the biochemical activity in a cell. Creating these formats required minimal code.</p>
-              </div>
-            </div>
-          </div>
-
-          <div id="help" data-magellan-target="help">
-            <h2>Examples, tutorials, documentation, and help</h2>
-            <div class="grid-x grid-padding-x" style="margin-top: 1rem;">
-              <div class="large-12 cell">
-                <p>
-                  Extensive examples, interactive tutorials, and documentation for the <i>ObjTables</i> formats and software tools are available through the links below. Please contact us for further help.
-                </p>
-              </div>
-
-              <div class="large-4 cell">
-                <h3>Examples</h3>
-                The documentation contains several example schemas and datasets <a href="docs#examples"><i class="fi-link"></i></a>.
-              </div>
-              <div class="large-4 cell">
-                <h3>Command-line program installation</h3>
-                Installation instructions for the command-line program are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
-              </div>
-              <div class="large-4 cell">
-                <h3>Python package installation</h3>
-                Installation instructions for the Python package are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
-              </div>
-              <div class="large-4 cell">
-                <h3>Tutorials for the Python package</h3>
-                A Jupyter notebook with interactive tutorials is available at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.
-              </div>
-              <div class="large-4 cell">
-                <h3>Docs for the schema and dataset formats</h3>
-                Documentation for the formats for schemas and the formats for datasets is available at <a href="docs">objtables.org/docs</a>.
-              </div>
-              <div class="large-4 cell">
-                <h3>Docs for the REST API</h3>
-                Documentation for the REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
-              </div>
-              <div class="large-4 cell">
-                <h3>Docs for the command-line program</h3>
-                Documentation for the command-line program is available inline by running <span class="monospace">obj-tables --help</span>.
-              </div>
-              <div class="large-4 cell">
-                <h3>Docs for the Python package</h3>
-                An introduction to the Python package is available at <a href="docs">objtables.org/docs</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables">docs.karrlab.org</a>.
-              </div>
-              <div class="large-4 cell">
-                <h3>Further help</h3>
-                Please contact the Karr Lab <a href="mailto:info@karrlab.org"><i class="fi-mail"></i></a> with any questions.
+                  <div class="large-4 cell">
+                    <h3>Examples</h3>
+                    The documentation contains several example schemas and datasets <a href="docs#examples"><i class="fi-link"></i></a>.
+                  </div>
+                  <div class="large-4 cell">
+                    <h3>Command-line program installation</h3>
+                    Installation instructions for the command-line program are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
+                  </div>
+                  <div class="large-4 cell">
+                    <h3>Python package installation</h3>
+                    Installation instructions for the Python package are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available from the <i>ObjTables</i> Git repository <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
+                  </div>
+                  <div class="large-4 cell">
+                    <h3>Tutorials for the Python package</h3>
+                    A Jupyter notebook with interactive tutorials is available at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.
+                  </div>
+                  <div class="large-4 cell">
+                    <h3>Docs for the schema and dataset formats</h3>
+                    Documentation for the formats for schemas and the formats for datasets is available at <a href="docs">objtables.org/docs</a>.
+                  </div>
+                  <div class="large-4 cell">
+                    <h3>Docs for the REST API</h3>
+                    Documentation for the REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
+                  </div>
+                  <div class="large-4 cell">
+                    <h3>Docs for the command-line program</h3>
+                    Documentation for the command-line program is available inline by running <span class="monospace">obj-tables --help</span>.
+                  </div>
+                  <div class="large-4 cell">
+                    <h3>Docs for the Python package</h3>
+                    An introduction to the Python package is available at <a href="docs">objtables.org/docs</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables">docs.karrlab.org</a>.
+                  </div>
+                  <div class="large-4 cell">
+                    <h3>Further help</h3>
+                    Please contact the Karr Lab <a href="mailto:info@karrlab.org"><i class="fi-mail"></i></a> with any questions.
+                  </div>
+                </div>
               </div>
             </div>
           </div>

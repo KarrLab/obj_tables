@@ -40,136 +40,208 @@
     </script>
   </head>
   <body data-smooth-scroll data-offset="55">
-    <div class="page-title">
-      <div class="grid-container">
-        <div class="grid-x grid-padding-x">
-          <a class="large-8 medium-6 small-2 cell title" href="/">
-            <span class="title"><i>ObjTables</i><span class="show-for-large">:</span></span>
-            <span class="subtitle show-for-large">Combining the ease of spreadsheets &amp; the power of schemas</span>
-          </a>
-          <div class="large-4 medium-6 small-10 cell links">
-            <ul class="dropdown menu" data-dropdown-menu>
-              <li><a>Home</a>
-                <ul class="menu">
-                  <li><a href="/#overview">Overview</a></li>
-                  <li><a href="/#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
-                  <li><a href="/#motivation">Motivation</a></li>
-                  <li><a href="/#features">Features</a></li>
-                  <li><a href="/#components">Components of the toolkit</a></li>
-                  <li><a href="/#software">Software tools</a></li>
-                  <li><a href="/#use-cases">Use cases</a></li>
-                  <li><a href="/#help">Examples, tutorials, docs &amp; help</a></li>
-                </ul>
-              </li>
-              <li class="active-page">
-                <a>Software</a>
-                <ul class="menu">
-                  <li><a href="app">Web application</a></li>
-                  <li><a href="api">REST API</a></li>
-                  <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
-                  <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
-                  <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
-                  <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
-                </ul>
-              </li>
-              <li>
-                <a>Docs</a>
-                <ul class="menu">
-                  <li><a href="docs#examples">Examples</a></li>
-                  <li class="separator"><a href="docs#schema-formats">Schema formats</a></li>
-                  <li><a href="docs#data-types">Data types</a></li>
-                  <li><a href="docs#dataset-formats">Dataset formats</a></li>
-                  <li><a href="docs#validation">Data validation</a></li>
-                  <li class="separator"><a href="api">REST API</a></li>
-                  <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
-                  <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
-                  <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
-                  <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
-                  <li><a href="docs#other-resources">Resources for working with <i>ObjTables</i></a></li>
-                  <li><a href="docs#comparison">Comparison with other tools</a></li>
-                  <li><a href="docs#roadmap">Limitations and future directions</a></li>
-                  <li class="separator"><a href="docs#help">More help</a></li>
-                </ul>
-              </li>
-              <li>
-                <a>About</a>
-                <ul class="menu">
-                  <li><a href="about#license">License</a></li>
-                  <li><a href="about#citation">Citation</a></li>
-                  <li class="separator"><a href="about#contribute">Contributing</a></li>
-                  <li class="separator"><a href="about#team">Team</a></li>
-                  <li><a href="about#funding">Funding</a></li>
-                  <li class="separator"><a href="about#contact">Contact info</a></li>
-                </ul>
-              </li>
+    <div class="off-canvas-wrapper">
+      <div class="off-canvas position-left" id="offCanvasLeft" data-off-canvas>
+        <!-- Close button -->
+        <button class="close-button" aria-label="Close menu" type="button" data-close>
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+        <!-- Menu -->
+        <ul class="accordion" data-accordion data-allow-all-closed="true">
+          <li class="accordion-item is-active" data-accordion-item>
+            <a class="accordion-title">Home</a>
+            <ul class="accordion-content" data-tab-content>
+              <li><a href="/#overview">Overview</a></li>
+              <li><a href="/#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
+              <li><a href="/#motivation">Motivation</a></li>
+              <li><a href="/#features">Features</a></li>
+              <li><a href="/#components">Components of the toolkit</a></li>
+              <li><a href="/#software">Software tools</a></li>
+              <li><a href="/#use-cases">Use cases</a></li>
+              <li><a href="/#help">Examples, tutorials, docs &amp; help</a></li>
             </ul>
+          </li>
+          <li class="accordion-item" data-accordion-item>
+            <a class="accordion-title">Software</a>
+            <ul class="accordion-content" data-tab-content>
+              <li><a href="app">Web application</a></li>
+              <li><a href="api">REST API</a></li>
+              <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+              <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
+              <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
+              <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
+            </ul>
+          </li>
+          <li class="accordion-item" data-accordion-item>
+            <a class="accordion-title">Docs</a>
+            <ul class="accordion-content" data-tab-content>
+              <li><a href="docs#examples">Examples</a></li>
+              <li class="separator"><a href="docs#schema-formats">Schema formats</a></li>
+              <li><a href="docs#data-types">Data types</a></li>
+              <li><a href="docs#dataset-formats">Dataset formats</a></li>
+              <li><a href="docs#validation">Data validation</a></li>
+              <li class="separator"><a href="api">REST API</a></li>
+              <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+              <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
+              <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
+              <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
+              <li><a href="docs#other-resources">Resources for working with <i>ObjTables</i></a></li>
+              <li><a href="docs#comparison">Comparison with other tools</a></li>
+              <li><a href="docs#roadmap">Limitations and future directions</a></li>
+              <li class="separator"><a href="docs#help">More help</a></li>
+            </ul>
+          </li>
+          <li class="accordion-item" data-accordion-item>
+            <a class="accordion-title">About</a>
+            <ul class="accordion-content" data-tab-content>
+              <li><a href="about#license">License</a></li>
+              <li><a href="about#citation">Citation</a></li>
+              <li class="separator"><a href="about#contribute">Contributing</a></li>
+              <li class="separator"><a href="about#team">Team</a></li>
+              <li><a href="about#funding">Funding</a></li>
+              <li class="separator"><a href="about#contact">Contact info</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="off-canvas-content" data-off-canvas-content>
+        <div class="page-title">
+          <div class="grid-container">
+            <div class="grid-x grid-padding-x">
+              <div class="large-8 medium-6 small-12 cell title">
+                <button class="menu-icon hide-for-medium" type="button" data-open="offCanvasLeft"></button>
+                <a href="#top">
+                  <span class="title"><i>ObjTables</i><span class="show-for-large">:</span></span>
+                  <span class="subtitle show-for-large">Combining the ease of spreadsheets &amp; the power of schemas</span>
+                </a>
+              </div>
+              <div class="large-4 medium-6 hide-for-small cell links">
+                <ul class="dropdown menu" data-dropdown-menu>
+                  <li><a>Home</a>
+                    <ul class="menu">
+                      <li><a href="/#overview">Overview</a></li>
+                      <li><a href="/#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
+                      <li><a href="/#motivation">Motivation</a></li>
+                      <li><a href="/#features">Features</a></li>
+                      <li><a href="/#components">Components of the toolkit</a></li>
+                      <li><a href="/#software">Software tools</a></li>
+                      <li><a href="/#use-cases">Use cases</a></li>
+                      <li><a href="/#help">Examples, tutorials, docs &amp; help</a></li>
+                    </ul>
+                  </li>
+                  <li class="active-page">
+                    <a>Software</a>
+                    <ul class="menu">
+                      <li><a href="app">Web application</a></li>
+                      <li><a href="api">REST API</a></li>
+                      <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+                      <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
+                      <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
+                      <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a>Docs</a>
+                    <ul class="menu">
+                      <li><a href="docs#examples">Examples</a></li>
+                      <li class="separator"><a href="docs#schema-formats">Schema formats</a></li>
+                      <li><a href="docs#data-types">Data types</a></li>
+                      <li><a href="docs#dataset-formats">Dataset formats</a></li>
+                      <li><a href="docs#validation">Data validation</a></li>
+                      <li class="separator"><a href="api">REST API</a></li>
+                      <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+                      <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
+                      <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
+                      <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
+                      <li><a href="docs#other-resources">Resources for working with <i>ObjTables</i></a></li>
+                      <li><a href="docs#comparison">Comparison with other tools</a></li>
+                      <li><a href="docs#roadmap">Limitations and future directions</a></li>
+                      <li class="separator"><a href="docs#help">More help</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a>About</a>
+                    <ul class="menu">
+                      <li><a href="about#license">License</a></li>
+                      <li><a href="about#citation">Citation</a></li>
+                      <li class="separator"><a href="about#contribute">Contributing</a></li>
+                      <li class="separator"><a href="about#team">Team</a></li>
+                      <li><a href="about#funding">Funding</a></li>
+                      <li class="separator"><a href="about#contact">Contact info</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="grid-container content">
-      <div class="grid-x grid-padding-x">
-        <div class="large-6 cell content-container">
-          <h2>Upload schema and dataset</h2>
-          <a id="form"></a>
-          <form>
-            <label>Select an operation
-              <select id="method" name="method">
-                <option value="convert">Convert: convert a dataset to another format according to a schema</option>
-                <option value="diff">Difference: compare the semantic meaning two datasets according to a schema</option>
-                <option value="gen-template">Generate template: generate a template set of tables for a schema</option>
-                <option value="init-schema">Initialize Python schema: generate a Python module that implements a tabular-formatted schema</option>
-                <option value="normalize">Normalize: pretty format a dataset according to a schema</option>
-                <option value="validate" selected>Validate: check that a dataset adheres to a schema and report any errors</option>
-                <option value="viz-schema">Visualize: generate a UML diagram for a schema</option>
-              </select>
-            </label>
+        <div class="grid-container content">
+          <div class="grid-x grid-padding-x">
+            <div class="large-6 cell content-container">
+              <h2>Upload schema and dataset</h2>
+              <a id="form"></a>
+              <form>
+                <label>Select an operation
+                  <select id="method" name="method">
+                    <option value="convert">Convert: convert a dataset to another format according to a schema</option>
+                    <option value="diff">Difference: compare the semantic meaning two datasets according to a schema</option>
+                    <option value="gen-template">Generate template: generate a template set of tables for a schema</option>
+                    <option value="init-schema">Initialize Python schema: generate a Python module that implements a tabular-formatted schema</option>
+                    <option value="normalize">Normalize: pretty format a dataset according to a schema</option>
+                    <option value="validate" selected>Validate: check that a dataset adheres to a schema and report any errors</option>
+                    <option value="viz-schema">Visualize: generate a UML diagram for a schema</option>
+                  </select>
+                </label>
 
-            <label>Upload an <i>ObjTables</i> schema (.csv, .tsv, .xlsx). See the documentation <a href="docs#schema-formats"><i class="fi-link"></i></a> for information about the format for schemas.
-              <input type="file" id="schema" name="schema" accept=".csv,.tsv,.xlsx" />
-            </label>
+                <label>Upload an <i>ObjTables</i> schema (.csv, .tsv, .xlsx). See the documentation <a href="docs#schema-formats"><i class="fi-link"></i></a> for information about the format for schemas.
+                  <input type="file" id="schema" name="schema" accept=".csv,.tsv,.xlsx" />
+                </label>
 
-            <label id="label_model">Enter the name of a class to difference or normalize
-              <input type="text" id="model" name="model" />
-            </label>
+                <label id="label_model">Enter the name of a class to difference or normalize
+                  <input type="text" id="model" name="model" />
+                </label>
 
-            <label id="label_workbook">Upload an <i>ObjTables</i>-formatted dataset. See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.
-              <input type="file" id="workbook" name="workbook" accept=".csv,.tsv,.xlsx,.zip" />
-            </label>
+                <label id="label_workbook">Upload an <i>ObjTables</i>-formatted dataset. See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.
+                  <input type="file" id="workbook" name="workbook" accept=".csv,.tsv,.xlsx,.zip" />
+                </label>
 
-            <label id="label_workbook-2">Upload a second <i>ObjTables</i>-formatted dataset. See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.
-              <input type="file" id="workbook-2" name="workbook-2" accept=".csv,.tsv,.xlsx,.zip" />
-            </label>
+                <label id="label_workbook-2">Upload a second <i>ObjTables</i>-formatted dataset. See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.
+                  <input type="file" id="workbook-2" name="workbook-2" accept=".csv,.tsv,.xlsx,.zip" />
+                </label>
 
-            <label id="label_format">Select an output format
-              <select id="format" name="format">
-                <option value="xlsx" selected>Excel workbook</option>
-                <option value="csv">Zip archive of comma-separated tables</option>
-                <option value="tsv">Zip archive of tab-separated tables</option>
-              </select>
-            </label>
+                <label id="label_format">Select an output format
+                  <select id="format" name="format">
+                    <option value="xlsx" selected>Excel workbook</option>
+                    <option value="csv">Zip archive of comma-separated tables</option>
+                    <option value="tsv">Zip archive of tab-separated tables</option>
+                  </select>
+                </label>
 
-            <label id="label_viz_format">Select an output format
-              <select id="viz_format" name="viz_format">
-                <!--
-                <option value="gif">GIF</option>
-                <option value="jpg">JPEG</option>
-                -->
-                <option value="pdf">PDF</option>
-                <option value="png">PNG</option>
-                <option value="svg" selected>SVG</option>
-              </select>
-            </label>
+                <label id="label_viz_format">Select an output format
+                  <select id="viz_format" name="viz_format">
+                    <!--
+                    <option value="gif">GIF</option>
+                    <option value="jpg">JPEG</option>
+                    -->
+                    <option value="pdf">PDF</option>
+                    <option value="png">PNG</option>
+                    <option value="svg" selected>SVG</option>
+                  </select>
+                </label>
 
-            <input id="submit" type="button" class="button" value="Submit"/>
-          </form>
-        </div>
+                <input id="submit" type="button" class="button" value="Submit"/>
+              </form>
+            </div>
 
-        <div class="large-6 cell content-container">
-          <h2>Results</h2>
-            <textarea id="errors" name="errors" style="height: 12.5rem; margin-top: 1.25rem;" disabled>
-            </textarea>
+            <div class="large-6 cell content-container">
+              <h2>Results</h2>
+                <textarea id="errors" name="errors" style="height: 12.5rem; margin-top: 1.25rem;" disabled>
+                </textarea>
+            </div>
+          </div>
         </div>
       </div>
     </div>
