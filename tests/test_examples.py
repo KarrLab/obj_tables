@@ -132,6 +132,7 @@ class ExamplesTestCase(unittest.TestCase):
             'examples/biochemical_model',
             'examples/children_fav_games',
             'examples/financial_transactions',
+            'examples/genomics',
         ]
         for dirname in dirnames:
             schema_filename_csv = os.path.join(dirname, 'schema.csv')

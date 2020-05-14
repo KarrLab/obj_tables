@@ -17,6 +17,7 @@ from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute
                              SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
 import collections
 import importlib
+import inflect
 import networkx
 import obj_tables.io
 import os.path
@@ -531,13 +532,19 @@ def init_schema(filename, out_filename=None):
                         cls_name))
 
             if row[parent_col_name]:
-                cls['super_class'] = row[parent_col_name]
-
-            def_verbose_name = cls_name
+                cls['super_class'] = row[parent_col_name]            
 
             cls['tab_format'] = TableFormat[row[format_col_name] or 'row']
+
+            def_verbose_name = cls_name
             cls['verbose_name'] = row.get(verbose_name_col_name, def_verbose_name) or def_verbose_name
-            cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, def_verbose_name) or def_verbose_name
+            
+            if verbose_name_col_name in row:
+                def_plural_verbose_name = inflect.engine().plural(row[verbose_name_col_name])
+            else:
+                def_plural_verbose_name = cls_name
+            cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, def_plural_verbose_name) or def_plural_verbose_name
+            
             cls['desc'] = row.get(desc_col_name, None) or None
 
         elif row[type_col_name] == attr_type:
@@ -638,11 +645,11 @@ def init_schema(filename, out_filename=None):
             if args:
                 attr_spec['python_args'] = args[0:-1]
                 if attr_spec['verbose_name']:
-                    attr_spec['python_args'] += ", verbose_name='{}'".format(attr_spec['verbose_name'])
+                    attr_spec['python_args'] += ", verbose_name='{}'".format(attr_spec['verbose_name'].replace("'", "\\'"))
             else:
                 attr_spec['python_args'] = ''
                 if attr_spec['verbose_name']:
-                    attr_spec['python_args'] = "verbose_name='{}'".format(attr_spec['verbose_name'])
+                    attr_spec['python_args'] = "verbose_name='{}'".format(attr_spec['verbose_name'].replace("'", "\\'"))
 
             if args:
                 attr = eval('func(' + args, {}, {'func': attr_type})
@@ -716,14 +723,14 @@ def init_schema(filename, out_filename=None):
                 ))
                 if cls_spec['verbose_name']:
                     file.write("        verbose_name = '{}'\n".format(
-                        cls_spec['verbose_name'].replace("'", "\'")
+                        cls_spec['verbose_name'].replace("'", "\\'")
                     ))
                 if cls_spec['verbose_name_plural']:
                     file.write("        verbose_name_plural = '{}'\n".format(
-                        cls_spec['verbose_name_plural'].replace("'", "\'")
+                        cls_spec['verbose_name_plural'].replace("'", "\\'")
                     ))
                 if cls_spec['desc']:
-                    file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\'")))
+                    file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\\'")))
 
     # return the created module and its name
     return (module, schema_name)

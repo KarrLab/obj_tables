@@ -1,0 +1,35 @@
+!!!ObjTables objTablesVersion='1.0.0' date='2020-05-14 17:04:33'
+!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-05-14 17:04:33' objTablesVersion='1.0.0'		
+!Table	!Description	!Number of objects
+Schema	Table/model and column/attribute definitions	
+Genes		2
+Transcripts		4
+
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-05-14 17:04:33' objTablesVersion='1.0.0'						
+!Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural	!Description
+Gene	Class		row	Gene	Genes	
+id	Attribute	Gene	String(primary=True, unique=True)			
+location	Attribute	Gene	ManyToOne('Location', related_name='genes')			
+symbol	Attribute	Gene	String			
+Transcript	Class		row	Transcript	Transcripts	
+gene	Attribute	Transcript	ManyToOne('Gene', related_name='transcripts')			
+id	Attribute	Transcript	String(primary=True, unique=True)			
+location	Attribute	Transcript	ManyToOne('Location', related_name='transcripts')			
+Location	Class		multiple_cells	Location	Locations	
+chromosome	Attribute	Location	String			
+five_prime	Attribute	Location	PositiveInteger			
+three_prime	Attribute	Location	PositiveInteger			
+
+!!ObjTables type='Data' tableFormat='row' class='Gene' name='Genes' date='2020-05-14 17:04:33' objTablesVersion='1.0.0'				
+		!Location	!Location	!Location
+!Id	!Symbol	!Chromosome	!5'	!3'
+ENSG00000130203	APOE	19	44905791.0	44909393.0
+ENSG00000139618	BRCA2	13	32315086.0	32400266.0
+
+!!ObjTables type='Data' tableFormat='row' class='Transcript' name='Transcripts' date='2020-05-14 17:04:33' objTablesVersion='1.0.0'				
+		!Location	!Location	!Location
+!Id	!Gene	!Chromosome	!5'	!3'
+ENST00000252486.9	ENSG00000130203	19	44905796.0	44909393.0
+ENST00000380152.7	ENSG00000139618	13	32315474.0	32400266.0
+ENST00000425718.1	ENSG00000130203	19	44906360.0	44908954.0
+ENST00000544455.5	ENSG00000139618	13	32315480.0	32399668.0

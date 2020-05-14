@@ -1,0 +1,14 @@
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-05-14 17:04:33' objTablesVersion='1.0.0'				
+!Name	!Type	!Parent	!Format	!Verbose name
+Gene	Class		row	Gene
+id	Attribute	Gene	String(primary=True, unique=True)	Id
+symbol	Attribute	Gene	String	Symbol
+location	Attribute	Gene	ManyToOne('Location', related_name='genes')	Location
+Transcript	Class		row	Transcript
+id	Attribute	Transcript	String(primary=True, unique=True)	Id
+gene	Attribute	Transcript	ManyToOne('Gene', related_name='transcripts')	Gene
+location	Attribute	Transcript	ManyToOne('Location', related_name='transcripts')	Location
+Location	Class		multiple_cells	Location
+chromosome	Attribute	Location	String	Chromosome
+five_prime	Attribute	Location	PositiveInteger(primary=True, unique=True)	5'
+three_prime	Attribute	Location	PositiveInteger	3'
