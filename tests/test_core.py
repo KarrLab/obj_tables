@@ -22,6 +22,7 @@ import obj_tables
 import obj_tables.math
 import objsize
 import os
+import pathlib
 import pronto
 import psutil
 import pytest
@@ -4697,6 +4698,32 @@ class TestCore(unittest.TestCase):
         attr = core.StringAttribute(none_value=lambda: 'def')
         self.assertEqual(attr.get_none_value(), 'def')
 
+    def test_LocalPathAttribute(self):
+        attr = core.LocalPathAttribute()
+        none_attr = core.LocalPathAttribute(none=True, unique=True, default_cleaned_value='default_path')
+
+        self.assertEqual(attr.clean(None), (None, None))
+        self.assertEqual(attr.clean(''), (None, None))
+        self.assertEqual(attr.clean('LICENSE'), (pathlib.Path('LICENSE'), None))
+        self.assertEqual(attr.clean(pathlib.Path('LICENSE')), (pathlib.Path('LICENSE'), None))
+        self.assertIsInstance(attr.clean(1)[1], core.InvalidAttribute)
+
+        self.assertEqual(attr.validate(None, pathlib.Path('LICENSE')), None)
+        self.assertNotEqual(attr.validate(None, pathlib.Path('__non-existant-path__')), None)
+        self.assertNotEqual(attr.validate(None, None), None)
+        self.assertEqual(none_attr.validate(None, None), None)
+
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.serialize(pathlib.Path('LICENSE')), 'LICENSE')
+
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(pathlib.Path('LICENSE')), 'LICENSE')
+
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertEqual(attr.from_builtin('LICENSE'), pathlib.Path('LICENSE'))
+
+        attr.get_excel_validation()
+        none_attr.get_excel_validation()
 
 class ContextTestCase(unittest.TestCase):
     def test(self):

@@ -41,6 +41,7 @@ import dateutil.parser
 import inflect
 import json
 import numbers
+import pathlib
 import pronto
 import queue
 import re
@@ -4663,13 +4664,14 @@ class StringAttribute(LiteralAttribute):
 class LongStringAttribute(StringAttribute):
     """ Long string attribute """
 
-    def __init__(self, min_length=0, max_length=2**32 - 1, default='', default_cleaned_value='', none_value='',
+    def __init__(self, min_length=0, max_length=2**32 - 1, none=False, default='', default_cleaned_value='', none_value='',
                  verbose_name='', description='',
                  primary=False, unique=False, unique_case_insensitive=False):
         """
         Args:
             min_length (:obj:`int`, optional): minimum length
             max_length (:obj:`int`, optional): maximum length
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
             default (:obj:`str`, optional): default value
             default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
             verbose_name (:obj:`str`, optional): verbose name
@@ -4680,7 +4682,7 @@ class LongStringAttribute(StringAttribute):
         """
 
         super(LongStringAttribute, self).__init__(min_length=min_length, max_length=max_length,
-                                                  default=default,
+                                                  none=none, default=default,
                                                   default_cleaned_value=default_cleaned_value,
                                                   none_value=none_value,
                                                   verbose_name=verbose_name, description=description,
@@ -4800,6 +4802,160 @@ class SlugAttribute(RegexAttribute):
                                             min_length=1, max_length=90,
                                             verbose_name=verbose_name, description=description,
                                             primary=primary, unique=unique)
+
+
+class LocalPathAttribute(LongStringAttribute):
+    """ Attribute to be used for paths to local files and directories """
+
+    def __init__(self, verbose_name='', description='Enter a path to a local file or directory',
+                 none=False, default=None, default_cleaned_value=None, none_value=None,
+                 primary=False, unique=False):
+        """
+        Args:
+            verbose_name (:obj:`str`, optional): verbose name
+            description (:obj:`str`, optional): description
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
+            default (:obj:`str`, optional): default value
+            default_cleaned_value (:obj:`str`, optional): value to replace :obj:`None` values with during cleaning
+            primary (:obj:`bool`, optional): indicate if attribute is primary attribute
+            unique (:obj:`bool`, optional): indicate if attribute value must be unique
+        """
+        super(LocalPathAttribute, self).__init__(verbose_name=verbose_name, description=description,
+                                            none=none, default=default,
+                                            default_cleaned_value=default_cleaned_value, none_value=none_value,
+                                            primary=primary, unique=unique)
+
+    def clean(self, value):
+        """ Convert attribute value into the appropriate type
+
+        Args:
+            value (:obj:`object`): value of attribute to clean
+
+        Returns:
+            :obj:`tuple`: (:obj:`pathlib.Path`, :obj:`None`), or (:obj:`None`, :obj:`InvalidAttribute`) reporting error
+        """
+        if value in (None, ''):
+            return (self.get_default_cleaned_value(), None)
+
+        if not isinstance(value, pathlib.Path):
+            try:
+                value = pathlib.Path(value)
+            except TypeError:
+                return (value, InvalidAttribute(self, ['String must be a path to a local file or directory']))
+
+        return (value, None)
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`pathlib.Path`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+        """
+        value_str = None if value is None else str(value)
+        error = super(LocalPathAttribute, self).validate(obj, value_str)
+        if error:
+            errors = error.messages
+        else:
+            errors = []
+
+        if value and not value.exists():
+            errors.append('Value must be a path to a local file or directory')
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
+
+    def serialize(self, value):
+        """ Serialize string
+
+        Args:
+            value (:obj:`pathlib.Path`): Python representation
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        if value is None:
+            return ''
+        return str(value)
+
+    def to_builtin(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`pathlib.Path`): value of the attribute
+
+        Returns:
+            :obj:`str`: simple Python representation of a value of the attribute
+        """
+        if value is None:
+            return None
+        return str(value)
+
+    def from_builtin(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`str`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`pathlib.Path`: decoded value of the attribute
+        """
+        if json is None:
+            return None
+        return pathlib.Path(json)
+
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(LocalPathAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+
+        if self.none:
+            validation.type = wc_utils.workbook.io.FieldValidationType.any
+            validation.ignore_blank = True
+            input_message = ['Enter a path to a local file or directory, or blank.']
+            error_message = ['Value must be a path to a local file or directory, or blank.']
+        else:
+            validation.type = wc_utils.workbook.io.FieldValidationType.length
+            validation.criterion = wc_utils.workbook.io.FieldValidationCriterion['>=']
+            validation.allowed_scalar_value = 1
+            validation.ignore_blank = False
+            input_message = ['Enter a path to a local file or directory.']
+            error_message = ['Value must be a path to a local file or directory.']
+
+        input_message = ['Enter a path to a local file or directory.']
+        error_message = ['Value must be a path to a local file or directory.']
+        if self.unique:
+            input_message.append('Value must be unique.')
+            error_message.append('Value must be unique.')
+
+        default = self.get_default_cleaned_value()
+        if default is not None:
+            input_message.append('Default: "{}".'.format(default))
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        validation.input_message = validation.input_message or ''
+        validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        validation.error_message = validation.error_message or ''
+        validation.error_message += '\n\n'.join(error_message)
+
+        return validation
 
 
 class UrlAttribute(RegexAttribute):
