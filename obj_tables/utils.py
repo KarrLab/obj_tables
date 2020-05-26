@@ -539,7 +539,7 @@ def init_schema(filename, out_filename=None):
             def_verbose_name = cls_name
             cls['verbose_name'] = row.get(verbose_name_col_name, def_verbose_name) or def_verbose_name
             
-            if verbose_name_col_name in row:
+            if row.get(verbose_name_col_name, None):
                 def_plural_verbose_name = inflect.engine().plural(row[verbose_name_col_name])
             else:
                 def_plural_verbose_name = cls_name
