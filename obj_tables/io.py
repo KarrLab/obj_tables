@@ -1871,8 +1871,10 @@ class WorkbookReader(ReaderBase):
                         cell = cell.strip()
                         column_heading[i_cell] = cell
                 column_headings.append(column_heading)
-            else:
+            elif column_headings:
                 column_headings.insert(0, [None] * len(column_headings[0]))
+            else:
+                raise ValueError("Worksheet '{}' must have {} header rows(s)".format(sheet_name, num_row_heading_columns))
 
         # separate header columns
         row_headings = []

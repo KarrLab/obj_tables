@@ -2415,7 +2415,7 @@ class ChemicalStructure(obj_tables.Model, SbmlModelMixin):
         format (:obj:`ChemicalStructureFormat`): format of the structure
         alphabet (:obj:`ChemicalStructureAlphabet`): alphabet of BpForms-encoded structure
 
-        empirical_formula (:obj:`EmpiricalFormula`): empirical formula
+        empirical_formula (:obj:`EmpiricalFormula`): chemical formula
         molecular_weight (:obj:`float`): molecular weight
         charge (:obj:`int`): charge
     """

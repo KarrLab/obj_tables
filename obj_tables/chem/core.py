@@ -24,9 +24,9 @@ __all__ = [
 
 
 class EmpiricalFormulaAttribute(core.LiteralAttribute):
-    """ Empirical formula attribute """
+    """ Chemical formula attribute """
 
-    def __init__(self, default=None, none_value=None, verbose_name='', description="An empirical formula (e.g. 'H2O', 'CO2', or 'NaCl')",
+    def __init__(self, default=None, none_value=None, verbose_name='', description="A chemical formula (e.g. 'H2O', 'CO2', or 'NaCl')",
                  primary=False, unique=False):
         """
         Args:
@@ -162,8 +162,8 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 
-        input_message = ['Enter an empirical formula (e.g. "H2O").']
-        error_message = ['Value must be an empirical formula (e.g. "H2O").']
+        input_message = ['Enter an chemical formula (e.g. "H2O").']
+        error_message = ['Value must be an chemical formula (e.g. "H2O").']
 
         if self.unique:
             input_message.append('Value must be unique.')
@@ -171,11 +171,17 @@ class EmpiricalFormulaAttribute(core.LiteralAttribute):
 
         if validation.input_message:
             validation.input_message += '\n\n'
-        validation.input_message += '\n\n'.join(input_message)
+        if input_message:
+            if not validation.input_message:
+                validation.input_message = ""
+            validation.input_message += '\n\n'.join(input_message)
 
         if validation.error_message:
             validation.error_message += '\n\n'
-        validation.error_message += '\n\n'.join(error_message)
+        if error_message:
+            if not validation.error_message:
+                validation.error_message = ""
+            validation.error_message += '\n\n'.join(error_message)
 
         return validation
 
