@@ -694,7 +694,7 @@ def init_schema(filename, out_filename=None):
             # print class definitions
             classes_to_define = list(sub_classes['obj_tables.Model'])
             while classes_to_define:
-                cls_name = classes_to_define.pop()
+                cls_name = classes_to_define.pop(0)
                 cls_spec = cls_specs[cls_name]
                 classes_to_define.extend(sub_classes.get(cls_name, []))
 
