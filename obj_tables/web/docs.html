@@ -480,7 +480,8 @@
                           <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/financial_transactions/schema_and_data.xlsx">xlsx</a>
                         </td>
                       </tr>
-                      <td>Genomics: Genes and transcript variants</td>
+                      <tr>
+                        <td>Genomics: Genes and transcript variants</td>
                         <td>
                           <span class="hide-for-medium">Schema: </span>
                           <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/genomics/schema.tsv">tsv</a>,
@@ -503,6 +504,32 @@
                           <span class="hide-for-medium">Schema &amp; dataset: </span>
                           <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/genomics/schema_and_data.multi.csv">multi.tsv</a>,
                           <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/genomics/schema_and_data.xlsx">xlsx</a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Metabolomics: Khodayari &amp; Maranas kinetic model of <i>Escherichia coli</i> metabolism <a href="https://doi.org/10.1038/ncomms13806"><i class="fi-link"></i></a></td>
+                        <td>
+                          <span class="hide-for-medium">Schema: </span>
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/schema.tsv">tsv</a>,
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/schema.xlsx">xlsx</a>,
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/schema.py">py</a>
+                        </td>
+                        <td>
+                          <span class="hide-for-medium">UML diagram: </span>
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/schema.svg">svg</a>
+                        </td>
+                        <td>
+                          <span class="hide-for-medium">Dataset: </span>
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/data.tsv/">tsv</a>,
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/data.multi.tsv">multi.tsv</a>,
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/data.xlsx">xlsx</a>,
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/data.json">json</a>,
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/data.yml">yml</a>
+                        </td>
+                        <td>
+                          <span class="hide-for-medium">Schema &amp; dataset: </span>
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/schema_and_data.multi.csv">multi.tsv</a>,
+                          <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/metabolomics/schema_and_data.xlsx">xlsx</a>
                         </td>
                       </tr>
                       <tr>
@@ -957,6 +984,26 @@
                       <tr>
                         <td colspan="4">Time</td>
                       </tr>
+
+                      <tr>
+                        <td>Range</td>
+                        <td><span class="hide-for-medium">Python class: </span>obj_tables.RangeAttribute</td>
+                        <td><span class="hide-for-medium">Excel type: </span>String</td>
+                        <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.Range</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Range"><i class="fi-link"></i></a></td>
+                      </tr>
+                      <tr>
+                        <td colspan="4">Range of values (e.g., 10-100)</td>
+                      </tr>
+
+                      <tr>
+                        <td>List</td>
+                        <td><span class="hide-for-medium">Python class: </span>obj_tables.ListAttribute</td>
+                        <td><span class="hide-for-medium">Excel type: </span>String</td>
+                        <td><span class="hide-for-medium">Python type: </span><span class="monospace">list</span></td>
+                      </tr>
+                      <tr>
+                        <td colspan="4">List of values</td>
+                      </tr>
                     </tbody>
 
                     <thead class="data-type-section-head">
@@ -1209,13 +1256,23 @@
                       </tr>
 
                       <tr>
-                        <td>chem.EmpiricalFormula</td>
-                        <td><span class="hide-for-medium">Python class: </span>obj_tables.chem.EmpiricalFormulaAttribute</td>
+                        <td>chem.ChemicalFormula</td>
+                        <td><span class="hide-for-medium">Python class: </span>obj_tables.chem.ChemicalFormulaAttribute</td>
                         <td><span class="hide-for-medium">Excel type: </span>String</td>
                         <td><span class="hide-for-medium">Python type: </span><span class="monospace">wc_utils.utils.chem.EmpiricalFormula</span> <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></td>
                       </tr>
                       <tr>
-                        <td colspan="4">Empirical formula</td>
+                        <td colspan="4">Chemical formula</td>
+                      </tr>
+
+                      <tr>
+                        <td>chem.ReactionEquation</td>
+                        <td><span class="hide-for-medium">Python class: </span>obj_tables.chem.ReactionEquationAttribute</td>
+                        <td><span class="hide-for-medium">Excel type: </span>String</td>
+                        <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.chem.ReactionEquation</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.chem.core.ReactionEquation"><i class="fi-link"></i></a></td>
+                      </tr>
+                      <tr>
+                        <td colspan="4">Reaction equation</td>
                       </tr>
                     </tbody>
 

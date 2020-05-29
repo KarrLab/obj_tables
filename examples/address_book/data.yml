@@ -8,7 +8,7 @@ Address:
     name: Apple
   country: US
   person:
-    __id: 8
+    __id: 11
     __type: Person
     name: Tim Cook
   state: CA
@@ -23,7 +23,7 @@ Address:
     name: Facebook
   country: US
   person:
-    __id: 9
+    __id: 8
     __type: Person
     name: Mark Zuckerberg
   state: CA
@@ -53,7 +53,7 @@ Address:
     name: Netflix
   country: US
   person:
-    __id: 11
+    __id: 9
     __type: Person
     name: Reed Hastings
   state: CA
@@ -67,7 +67,7 @@ Company:
     __type: Address
     street: 10600 N Tantau Ave
   employees:
-  - __id: 8
+  - __id: 11
     __type: Person
     name: Tim Cook
   name: Apple
@@ -79,7 +79,7 @@ Company:
     __type: Address
     street: '1 Hacker Way #15'
   employees:
-  - __id: 9
+  - __id: 8
     __type: Person
     name: Mark Zuckerberg
   name: Facebook
@@ -103,27 +103,13 @@ Company:
     __type: Address
     street: 100 Winchester Cir
   employees:
-  - __id: 11
+  - __id: 9
     __type: Person
     name: Reed Hastings
   name: Netflix
   url: https://www.netflix.com/
 Person:
 - __id: 8
-  __type: Person
-  address:
-    __id: 0
-    __type: Address
-    street: 10600 N Tantau Ave
-  company:
-    __id: 4
-    __type: Company
-    name: Apple
-  email_address: tcook@apple.com
-  name: Tim Cook
-  phone_number: 408-996-1010
-  type: business
-- __id: 9
   __type: Person
   address:
     __id: 1
@@ -137,6 +123,20 @@ Person:
   name: Mark Zuckerberg
   phone_number: 650-543-4800
   type: family
+- __id: 9
+  __type: Person
+  address:
+    __id: 3
+    __type: Address
+    street: 100 Winchester Cir
+  company:
+    __id: 7
+    __type: Company
+    name: Netflix
+  email_address: reed.hastings@netflix.com
+  name: Reed Hastings
+  phone_number: 408-540-3700
+  type: business
 - __id: 10
   __type: Person
   address:
@@ -154,16 +154,16 @@ Person:
 - __id: 11
   __type: Person
   address:
-    __id: 3
+    __id: 0
     __type: Address
-    street: 100 Winchester Cir
+    street: 10600 N Tantau Ave
   company:
-    __id: 7
+    __id: 4
     __type: Company
-    name: Netflix
-  email_address: reed.hastings@netflix.com
-  name: Reed Hastings
-  phone_number: 408-540-3700
+    name: Apple
+  email_address: tcook@apple.com
+  name: Tim Cook
+  phone_number: 408-996-1010
   type: business
 _classMetadata:
   Address:
@@ -177,4 +177,4 @@ _classMetadata:
     name: People
 _documentMetadata:
   date: '2020-03-14 13:19:04'
-  objTablesVersion: 0.0.8
+  objTablesVersion: 1.0.0

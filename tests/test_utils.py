@@ -358,7 +358,7 @@ class TestMetadata(unittest.TestCase):
         self.assertNotIn('core.String', attrs)
         self.assertNotIn('core.StringAttribute', attrs)
         self.assertNotIn('StringAttribute', attrs)
-        self.assertIn('chem.EmpiricalFormula', attrs)
+        self.assertIn('chem.ChemicalFormula', attrs)
 
 
 class InitSchemaTestCase(unittest.TestCase):

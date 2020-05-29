@@ -1,0 +1,152 @@
+# Schema automatically generated at 2020-05-29 00:17:39
+
+import obj_tables
+import obj_tables.chem
+
+
+__all__ = [
+    'Compartment',
+    'Kinetics',
+    'Metabolite',
+    'Reaction',
+    'Reference',
+    'Regulation',
+]
+
+
+class Compartment(obj_tables.Model):
+    id = obj_tables.StringAttribute(primary=True, unique=True)
+    name = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None)
+
+    class Meta(obj_tables.Model.Meta):
+        table_format = obj_tables.TableFormat.row
+        attribute_order = (
+            'id',
+            'name',
+        )
+        verbose_name = 'Compartment'
+        verbose_name_plural = 'Compartments'
+
+
+class Metabolite(obj_tables.Model):
+    id = obj_tables.StringAttribute(primary=True, unique=True)
+    id_i_a_f1260 = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None, verbose_name='Id (iAF1260 [Ref1])')
+    name = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None)
+    formula = obj_tables.chem.ChemicalFormulaAttribute()
+
+    class Meta(obj_tables.Model.Meta):
+        table_format = obj_tables.TableFormat.row
+        attribute_order = (
+            'id',
+            'id_i_a_f1260',
+            'name',
+            'formula',
+        )
+        verbose_name = 'Metabolite'
+        verbose_name_plural = 'Metabolites'
+
+
+class Kinetics(obj_tables.Model):
+    value = obj_tables.RangeAttribute()
+    molecule = obj_tables.StringAttribute()
+    organism = obj_tables.StringAttribute()
+    uniprot_ids = obj_tables.ListAttribute(verbose_name='UniProt ids')
+    comments = obj_tables.LongStringAttribute()
+    pubmed_ids = obj_tables.ListAttribute(verbose_name='PubMed ids')
+    image = obj_tables.EnumAttribute(['2D-image'], none=True)
+
+    class Meta(obj_tables.Model.Meta):
+        table_format = obj_tables.TableFormat.cell
+        attribute_order = (
+            'value',
+            'molecule',
+            'organism',
+            'uniprot_ids',
+            'comments',
+            'pubmed_ids',
+            'image',
+        )
+        verbose_name = 'Kinetics'
+        verbose_name_plural = 'Kinetics'
+
+
+class Reaction(obj_tables.Model):
+    id = obj_tables.StringAttribute(primary=True, unique=True)
+    id_i_a_f1260 = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None, verbose_name='Id (iAF1260 [Ref1])')
+    name = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None)
+    equation = obj_tables.chem.ReactionEquationAttribute(species_cls='Metabolite', compartment_cls='Compartment')
+    reversible = obj_tables.BooleanAttribute()
+    subsystem = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None)
+    ec_number = obj_tables.RegexAttribute(pattern='\d+\.\d+\.\d+\.\d+', none=True, default=None, default_cleaned_value=None, verbose_name='EC number')
+    gene_rule = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None)
+    k_ms = obj_tables.ManyToManyAttribute('Kinetics', related_name='k_m_reactions', cell_dialect='tsv', verbose_name='Km (mM) [Ref2, Ref3]')
+    k_cats = obj_tables.ManyToManyAttribute('Kinetics', related_name='k_cat_reactions', cell_dialect='tsv', verbose_name='kcat (s^-1) [Ref2, Ref3]')
+    k_cat_k_ms = obj_tables.ManyToManyAttribute('Kinetics', related_name='k_cat_k_m_reactions', cell_dialect='tsv', verbose_name='kcat/Km (mM^-1 s^-1) [Ref2, Ref3]')
+    k_is = obj_tables.ManyToManyAttribute('Kinetics', related_name='k_i_reactions', cell_dialect='tsv', verbose_name='Ki (mM) [Ref2, Ref3]')
+    coupled_to_biomass = obj_tables.BooleanAttribute()
+
+    class Meta(obj_tables.Model.Meta):
+        table_format = obj_tables.TableFormat.row
+        attribute_order = (
+            'id',
+            'id_i_a_f1260',
+            'name',
+            'equation',
+            'reversible',
+            'subsystem',
+            'ec_number',
+            'gene_rule',
+            'k_ms',
+            'k_cats',
+            'k_cat_k_ms',
+            'k_is',
+            'coupled_to_biomass',
+        )
+        verbose_name = 'Reaction'
+        verbose_name_plural = 'Reactions'
+
+
+class Regulation(obj_tables.Model):
+    reaction = obj_tables.ManyToOneAttribute('Reaction', related_name='regulations')
+    regulator = obj_tables.ManyToOneAttribute('Metabolite', related_name='regulated_reactions')
+    regulator_compartment = obj_tables.ManyToOneAttribute('Compartment', related_name='regulated_reactions')
+    type = obj_tables.EnumAttribute(['activation', 'competitive inhibition', 'mixed inhibition'], verbose_name='Type [Ref2, Ref3]')
+
+    class Meta(obj_tables.Model.Meta):
+        table_format = obj_tables.TableFormat.row
+        attribute_order = (
+            'reaction',
+            'regulator',
+            'regulator_compartment',
+            'type',
+        )
+        verbose_name = 'Regulation'
+        verbose_name_plural = 'Regulations'
+
+
+class Reference(obj_tables.Model):
+    id = obj_tables.StringAttribute(primary=True, unique=True)
+    title = obj_tables.LongStringAttribute()
+    authors = obj_tables.LongStringAttribute()
+    journal = obj_tables.StringAttribute()
+    volume = obj_tables.PositiveIntegerAttribute()
+    issue = obj_tables.PositiveIntegerAttribute()
+    start_page = obj_tables.PositiveIntegerAttribute()
+    end_page = obj_tables.PositiveIntegerAttribute()
+    pubmed_id = obj_tables.PositiveIntegerAttribute(verbose_name='PubMed id')
+
+    class Meta(obj_tables.Model.Meta):
+        table_format = obj_tables.TableFormat.row
+        attribute_order = (
+            'id',
+            'title',
+            'authors',
+            'journal',
+            'volume',
+            'issue',
+            'start_page',
+            'end_page',
+            'pubmed_id',
+        )
+        verbose_name = 'Reference'
+        verbose_name_plural = 'References'

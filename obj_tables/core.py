@@ -37,8 +37,11 @@ import abc
 import collections
 import collections.abc
 import copy
+import csv
 import dateutil.parser
+import enum
 import inflect
+import io
 import json
 import numbers
 import pathlib
@@ -516,7 +519,7 @@ class Manager(object):
     This class is inspired by Django's `Manager` class. An instance of :obj:`Manger` is associated with
     each :obj:`Model` and accessed as the class attribute `objects` (as in Django).
     The tuples of attributes to index are specified by the `indexed_attrs_tuples` attribute of
-    `core.Model.Meta`, which contains a tuple of tuples of attributes to index.
+    `Model.Meta`, which contains a tuple of tuples of attributes to index.
     :obj:`Model`\ s with empty `indexed_attrs_tuples` attributes incur no overhead from `Manager`.
 
     :obj:`Manager` maintains a dictionary for each indexed attribute tuple, and a reverse index from each
@@ -1247,10 +1250,10 @@ class Model(object, metaclass=ModelMeta):
                     attr.related_class, attr.primary_class.__name__, attr_name))
 
         # tabular orientation
-        if cls.Meta.table_format == TableFormat.cell:
-            if len(cls.Meta.related_attributes) == 0:
-                raise ValueError(
-                    'Inline model "{}" should have at least one one-to-one or one-to-many attribute'.format(cls.__name__))
+        # if cls.Meta.table_format == TableFormat.cell:
+        #     if len(cls.Meta.related_attributes) == 0:
+        #         raise ValueError(
+        #             'Inline model "{}" should have at least one one-to-one or one-to-many attribute'.format(cls.__name__))
 
     def __setattr__(self, attr_name, value, propagate=True):
         """ Set attribute and validate any unique attribute constraints
@@ -2201,7 +2204,8 @@ class Model(object, metaclass=ModelMeta):
                     elif isinstance(attr_val, Model):
                         val.append(attr_val.serialize())
                     else:
-                        val.append(attr_val)
+                        attr = cls.Meta.attributes[attr_name]
+                        val.append(attr.serialize(attr_val))
                 val = tuple(val)
 
                 if val in vals:
@@ -3343,7 +3347,12 @@ class Attribute(object, metaclass=abc.ABCMeta):
             :obj:`str`: string which represents the format of the attribute for use
                 in tabular-formatted schemas
         """
-        return self.__class__.__name__.rpartition('Attribute')[0]
+        module = self.__module__.split('.')
+        if len(module) >= 2 and module[1] != 'core':
+            module = module[1] + '.'
+        else:
+            module = ''
+        return module + self.__class__.__name__.rpartition('Attribute')[0]
 
 
 class LocalAttribute(object):
@@ -3674,7 +3683,9 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation of a value of the attribute
         """
-        return value.name
+        if value:
+            return value.name
+        return None
 
     def from_builtin(self, json):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
@@ -3686,7 +3697,9 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`Enum`: decoded value of the attribute
         """
-        return self.enum_class[json]
+        if json:
+            return self.enum_class[json]
+        return None
 
     def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
         """ Get Excel validation
@@ -3741,12 +3754,18 @@ class EnumAttribute(LiteralAttribute):
             :obj:`str`: string which represents the format of the attribute for use
                 in tabular-formatted schemas
         """
+        args = []
+
         serialized_members = []
         for member in self.enum_class.__members__.values():
             serialized_members.append("('{}', {})".format(member.name, member.value.__repr__()))
+        args.append("[{}]".format(", ".join(serialized_members)))
 
-        return "{}([{}])".format(self.__class__.__name__.rpartition('Attribute')[0],
-                                 ", ".join(serialized_members))
+        if self.none:
+            args.append("none=True")
+
+        return "{}({})".format(self.__class__.__name__.rpartition('Attribute')[0],
+                                 ", ".join(args))
 
 
 class BooleanAttribute(LiteralAttribute):
@@ -4762,9 +4781,15 @@ class RegexAttribute(StringAttribute):
                 in tabular-formatted schemas
         """
         args = []
-        args.append(self.pattern.__repr__())
+        args.append("r'{}'".format(self.pattern.replace("'", "\'")))
         if self.flags:
             args.append('flags={}'.format(self.flags))
+        if self.none:
+            args.append('none=True')
+        if self.default != '':
+            args.append('default={}'.format(self.default.__repr__()))
+        if self.default_cleaned_value != '':
+            args.append('default_cleaned_value={}'.format(self.default_cleaned_value.__repr__()))
         if self.primary:
             args.append('primary=True')
         if self.unique:
@@ -4821,9 +4846,9 @@ class LocalPathAttribute(LongStringAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
         """
         super(LocalPathAttribute, self).__init__(verbose_name=verbose_name, description=description,
-                                            none=none, default=default,
-                                            default_cleaned_value=default_cleaned_value, none_value=none_value,
-                                            primary=primary, unique=unique)
+                                                 none=none, default=default,
+                                                 default_cleaned_value=default_cleaned_value, none_value=none_value,
+                                                 primary=primary, unique=unique)
 
     def clean(self, value):
         """ Convert attribute value into the appropriate type
@@ -5607,6 +5632,372 @@ class DateTimeAttribute(LiteralAttribute):
         return validation
 
 
+class Range(object):
+    """ A numerical range
+
+    Attributes
+        min (:obj:`int`, `float`): minimum
+        max (:obj:`int`, `float`): maximum
+    """
+
+    def __init__(self, min, max):
+        """
+        Args:
+            min (:obj:`int`, `float`): minimum
+            max (:obj:`int`, `float`): maximum
+        """
+        self.min = min
+        self.max = max
+
+    def is_equal(self, other, tol=0.):
+        if self.__class__ != other.__class__:
+            return False
+
+        min_eq = self.min.__class__ == other.min.__class__ and (
+            self.min == other.min or (isinstance(self.min, (int, float)) and (
+                (isnan(self.min) and isnan(other.min)) or
+                (self.min == 0. and abs(other.min) < tol) or
+                (self.min != 0. and abs((self.min - other.min) / self.min) < tol))))
+        max_eq = self.max.__class__ == other.max.__class__ and (
+            self.max == other.max or (isinstance(self.max, (int, float)) and (
+                (isnan(self.max) and isnan(other.max)) or
+                (self.max == 0. and abs(other.max) < tol) or
+                (self.max != 0. and abs((self.max - other.max) / self.max) < tol))))
+
+        return min_eq and max_eq
+
+
+class RangeAttribute(LiteralAttribute):
+    """ Attribute for a range of values (x-y)
+
+    Attributes:
+        type (:obj:`type`): type of elements
+    """
+
+    def __init__(self, type=float, separator='-', separator_pattern=r'(?<!e) *- *', none=True, default=None, none_value=None, verbose_name='',
+                 description="A range of values"):
+        """
+        Args:
+            type (:obj:`type`, optional): type of elements
+            separator (:obj:`str`, optional): element separator for serialization
+            separator_pattern (:obj:`str`, optional): element separator for deserialization
+            none (:obj:`bool`, optional): if :obj:`False`, the attribute is invalid if its value is :obj:`None`
+            default (:obj:`Range`, optional): default value
+            none_value (:obj:`Range`, optional): none value
+            verbose_name (:obj:`str`, optional): verbose name
+            description (:obj:`str`, optional): description
+        """
+        if default is not None and not isinstance(default, Range):
+            raise ValueError('Default must be an instance of `Range` or `None`')
+
+        super(RangeAttribute, self).__init__(default=default, none_value=none_value,
+                                             verbose_name=verbose_name,
+                                             description=description)
+        self.type = type
+        self.separator = separator
+        self.separator_pattern = separator_pattern
+        self.none = none
+
+    def value_equal(self, val1, val2, tol=0.):
+        """ Determine if attribute values are equal
+
+        Args:
+            val1 (:obj:`Range`): first value
+            val2 (:obj:`Range`): second value
+            tol (:obj:`float`, optional): equality tolerance
+
+        Returns:
+            :obj:`bool`: True if attribute values are equal
+        """
+        if isinstance(val1, Range):
+            return val1.is_equal(val2, tol=tol)
+        else:
+            return val1 == val2
+
+    def clean(self, value):
+        """ Deserialize value
+
+        Args:
+            value (:obj:`str`): semantically equivalent representation
+
+        Returns:
+            :obj:`Range`: cleaned value
+            :obj:`InvalidAttribute`: cleaning error
+        """
+        if value is None or value == '':
+            return (None, None)
+        elif isinstance(value, Range):
+            return (value, None)
+        elif isinstance(value, str):
+            try:
+                value = [self.type(el) for el in re.split(self.separator_pattern, value, re.IGNORECASE)]
+                assert len(value) <= 2, "Range must contain one or two values"
+                return (Range(value[0], value[-1]), None)
+            except (ValueError, AssertionError) as error:
+                return (None, InvalidAttribute(self, [str(error)]))
+        else:
+            return (None, InvalidAttribute(self, ['Unable to deserialize an instance of {}'.format(value.__class__.__name__)]))
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value
+
+        Args:
+            obj (:obj:`Model`): class being validated
+            value (:obj:`Range`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return
+                list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if self.none:
+            if value is not None and not isinstance(value, Range):
+                errors.append('Value must be an instance of `Range` or `None`')
+        elif not isinstance(value, Range):
+            errors.append('Value must be an instance of `Range`')
+
+        if isinstance(value, Range) and (not isinstance(value.min, self.type) or not isinstance(value.max, self.type)):
+            errors.append('Values must be instances of `{}`'.format(self.type.__name__))
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
+
+    def serialize(self, value):
+        """ Serialize string
+
+        Args:
+            value (:obj:`Range`): Python representation
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        if value:
+            if value.min == value.max:
+                return str(value.min)
+            else:
+                return '{}{}{}'.format(value.min, self.separator, value.max)
+        else:
+            return ''
+
+    def to_builtin(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`Range`): value of the attribute
+
+        Returns:
+            :obj:`dict`: simple Python representation of a value of the attribute
+        """
+        if value:
+            if value.min == value.max:
+                return value.min
+            else:
+                return {'min': value.min, 'max': value.max}
+        else:
+            return None
+
+    def from_builtin(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`dict`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`Range`: decoded value of the attribute
+        """
+        if json:
+            if isinstance(json, dict):
+                return Range(json['min'], json['max'])
+            else:
+                return Range(json, json)
+        else:
+            return None
+
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(RangeAttribute, self).get_excel_validation(sheet_models=sheet_models,
+                                                                      doc_metadata_model=doc_metadata_model)
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.any
+
+        input_message = ['Enter a number or range (e.g. "1" or "1{}2").'.format(self.separator)]
+        error_message = ['Value must be a number or range (e.g. "1" or "1{}2").'.format(self.separator)]
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        if input_message:
+            if not validation.input_message:
+                validation.input_message = ""
+            validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        if error_message:
+            if not validation.error_message:
+                validation.error_message = ""
+            validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
+
+class ListAttribute(LiteralAttribute):
+    """ List attribute 
+
+    Attributes:
+        type (:obj:`type`): type of elements
+        separator (:obj:`str`): element separator for serialization
+        separator_pattern (:obj:`str`): element separator for deserialization
+    """
+
+    def __init__(self, type=str, separator=', ', separator_pattern=', *', default=[], none_value=[], verbose_name='',
+                 description="A list of values"):
+        """
+        Args:
+            type (:obj:`type`, optional): type of elements
+            separator (:obj:`str`, optional): element separator for serialization
+            separator_pattern (:obj:`str`, optional): element separator for deserialization
+            default (:obj:`list`, optional): default value
+            none_value (:obj:`list`, optional): none value
+            verbose_name (:obj:`str`, optional): verbose name
+            description (:obj:`str`, optional): description
+        """
+        if not isinstance(default, list):
+            raise ValueError('Default must be a list')
+
+        super(ListAttribute, self).__init__(default=default, none_value=none_value,
+                                            verbose_name=verbose_name,
+                                            description=description)
+        self.type = type
+        self.separator = separator
+        self.separator_pattern = separator_pattern
+
+    def clean(self, value):
+        """ Deserialize value
+
+        Args:
+            value (:obj:`str`): semantically equivalent representation
+
+        Returns:
+            :obj:`list`: cleaned value
+            :obj:`InvalidAttribute`: cleaning error
+        """
+        if value is None or value == '':
+            return ([], None)
+        elif isinstance(value, list):
+            return (value, None)
+        elif isinstance(value, str):
+            try:
+                return ([self.type(el) for el in re.split(self.separator_pattern, value)], None)
+            except ValueError as error:
+                return (None, InvalidAttribute(self, [str(error)]))
+        else:
+            return (None, InvalidAttribute(self, ['Unable to deserialize an instance of {}'.format(value.__class__.__name__)]))
+
+    def validate(self, obj, value):
+        """ Determine if `value` is a valid value
+
+        Args:
+            obj (:obj:`Model`): class being validated
+            value (:obj:`list`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return
+                list of errors as an instance of `InvalidAttribute`
+        """
+        errors = []
+
+        if not isinstance(value, list):
+            errors.append('Value must be an instance of `list`')
+
+        elif next((True for el in value if not isinstance(el, self.type)), False):
+            errors.append('Values must be instances of `{}`'.format(self.type.__name__))
+
+        if errors:
+            return InvalidAttribute(self, errors)
+        return None
+
+    def serialize(self, value):
+        """ Serialize string
+
+        Args:
+            value (:obj:`list`): Python representation
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        return self.separator.join(str(el) for el in value)
+
+    def to_builtin(self, value):
+        """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
+        that is compatible with JSON and YAML
+
+        Args:
+            value (:obj:`list`): value of the attribute
+
+        Returns:
+            :obj:`dict`: simple Python representation of a value of the attribute
+        """
+        return value
+
+    def from_builtin(self, json):
+        """ Decode a simple Python representation (dict, list, str, float, bool, None) of a value of the attribute
+        that is compatible with JSON and YAML
+
+        Args:
+            json (:obj:`dict`): simple Python representation of a value of the attribute
+
+        Returns:
+            :obj:`list`: decoded value of the attribute
+        """
+        return json
+
+    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get Excel validation
+
+        Args:
+            sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
+            doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
+
+        Returns:
+            :obj:`wc_utils.workbook.io.FieldValidation`: validation
+        """
+        validation = super(ListAttribute, self).get_excel_validation(sheet_models=sheet_models,
+                                                                     doc_metadata_model=doc_metadata_model)
+
+        validation.type = wc_utils.workbook.io.FieldValidationType.any
+
+        input_message = ['Enter an "{}"-separated list (e.g. "A{}B").'.format(self.separator, self.separator)]
+        error_message = ['Value must be a "{}"-separated list (e.g. "A{}B").'.format(self.separator, self.separator)]
+
+        if validation.input_message:
+            validation.input_message += '\n\n'
+        if input_message:
+            if not validation.input_message:
+                validation.input_message = ""
+            validation.input_message += '\n\n'.join(input_message)
+
+        if validation.error_message:
+            validation.error_message += '\n\n'
+        if error_message:
+            if not validation.error_message:
+                validation.error_message = ""
+            validation.error_message += '\n\n'.join(error_message)
+
+        return validation
+
+
 class RelatedManager(list):
     """ Represent values and related values of related attributes
 
@@ -6133,8 +6524,13 @@ class ManyToManyRelatedManager(RelatedManager):
         return objs
 
 
-class RelatedAttribute(Attribute):
-    """ Attribute which represents a relationship with other `Model`\(s)
+class BaseRelatedAttribute(object):
+    """ Attribute which represents a relationship with 1 or more other `Model`\s """
+    pass
+
+
+class RelatedAttribute(BaseRelatedAttribute, Attribute):
+    """ Attribute which represents a relationship with another `Model`
 
     Attributes:
         related_type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): allowed
@@ -6338,8 +6734,141 @@ class RelatedAttribute(Attribute):
             :obj:`str`: string which represents the format of the attribute for use
                 in tabular-formatted schemas
         """
-        return "{}('{}', related_name='{}')".format(self.__class__.__name__.rpartition('Attribute')[0],
-                                                    self.related_class.__name__, self.related_name)
+        args = []
+        args.append("'{}'".format(self.related_class.__name__))
+        args.append("related_name='{}'".format(self.related_name))
+        if isinstance(self, ToManyAttribute):
+            args.append("cell_dialect='{}'".format(self.cell_dialect.name))
+        return "{}({})".format(self.__class__.__name__.rpartition('Attribute')[0], ', '.join(args))
+
+
+class CellDialect(str, enum.Enum):
+    """ Dialect for serializing values to a cell """
+    json = 'json'
+    csv = 'excel'
+    tsv = 'excel-tab'
+
+
+class ToManyAttribute(RelatedAttribute):
+    """ *-to-many attribute
+
+    Attributes:
+        cell_dialect (:obj:`CellDialect`): dialect for serializing values to a cell
+    """
+    def serialize_to_cell(self, values, encoded=None):
+        """ Serialize related object
+
+        Args:
+            values (:obj:`list` of :obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: simple Python representation
+        """
+        if self.cell_dialect == CellDialect.json:
+            return json.dumps([v.to_dict(v, encode_primary_objects=False, encoded=encoded) for v in values], indent=8)
+
+        else:
+            non_none_attr_names = {}
+            serialized_values = []
+            for value in values:
+                serialized_value = {}
+                for attr in self.related_class.Meta.attributes.values():
+                    attr_val = getattr(value, attr.name)
+                    if isinstance(attr, RelatedAttribute):
+                        serialized_attr_val = attr.serialize(attr_val, encoded=encoded)
+                    else:
+                        serialized_attr_val = attr.serialize(attr_val)
+
+                    serialized_value[attr.verbose_name] = serialized_attr_val
+
+                    if serialized_attr_val:
+                        non_none_attr_names[attr.name] = attr.verbose_name
+                serialized_values.append(serialized_value)
+
+            attr_order = get_attr_order(self.related_class)
+            table_values = io.StringIO()
+            fieldnames = [non_none_attr_names[attr_name]
+                          for attr_name in attr_order if attr_name in non_none_attr_names]
+            writer = csv.DictWriter(table_values, fieldnames=fieldnames, dialect=self.cell_dialect.value)
+            writer.writeheader()
+            for serialized_value in serialized_values:
+                for attr in self.related_class.Meta.attributes.values():
+                    if attr.name not in non_none_attr_names:
+                        serialized_value.pop(attr.verbose_name)
+
+                writer.writerow(serialized_value)
+
+            table_values.seek(0)
+            return table_values.read().replace('\r\n', '\n')
+
+    def deserialize_from_cell(self, values, objects, decoded=None):
+        """ Deserialize value from cell
+
+        Args:
+            values (:obj:`str`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`dict`
+        """
+        if self.cell_dialect == CellDialect.json:
+            deserialized_values = []
+            for value in json.loads(values):
+                deserialized_values.append(self.related_class.from_dict(value, [self.related_class], decode_primary_objects=False,
+                                                         primary_objects=objects, decoded=decoded))
+            return (deserialized_values, None)
+
+        else:
+            reader = csv.DictReader(io.StringIO(values), dialect=self.cell_dialect.value)
+            deserialized_values = []
+            attr_verbose_names = set(attr.verbose_name for attr in self.related_class.Meta.attributes.values())
+            encoded = {}
+            for row in reader:                
+                unknown_cols = set(row.keys()).difference(attr_verbose_names)
+                if unknown_cols:
+                    return (None, InvalidAttribute(self, ['Value contains unknown columns: {}'.format(", ".join(unknown_cols))]))
+
+                deserialized_value = self.related_class()
+                for attr in self.related_class.Meta.attributes.values():
+                    if isinstance(attr, RelatedAttribute):
+                        attr_val, error = attr.deserialize(row.get(attr.verbose_name, None), objects, decoded=decoded)
+                    else:
+                        attr_val, error = attr.deserialize(row.get(attr.verbose_name, None))
+                    if error:
+                        print(attr.name, attr.__class__.__name__, row.get(attr.verbose_name, None), row)
+                        return (None, InvalidAttribute(self, ['Unable to deserialize value: {}'.format(str(error))]))
+                    setattr(deserialized_value, attr.name, attr_val)
+
+                serialized_value = []
+                for attr in self.related_class.Meta.attributes.values():
+                    attr_val = getattr(deserialized_value, attr.name)
+                    if isinstance(attr, RelatedAttribute):
+                        serialize_attr_val = attr.serialize(attr_val, encoded=encoded)
+                    else:
+                        serialize_attr_val = attr.serialize(attr_val)
+                    serialized_value.append(serialize_attr_val)
+                serialized_value = tuple(serialized_value)
+
+                if self.related_class not in objects:
+                    objects[self.related_class] = {}
+                existing_deserialized_value = objects[self.related_class].get(serialized_value, None)                
+                if existing_deserialized_value:
+                    for attr in self.related_class.Meta.local_attributes.values():
+                        if attr.is_related_to_many:
+                            getattr(existing_deserialized_value, attr.name).extend(getattr(deserialized_value, attr.name, []))
+                            setattr(deserialized_value, attr.name, [])
+                        elif attr.is_related:
+                            related_val = getattr(deserialized_value, attr.name)
+                            setattr(deserialized_value, attr.name, None)
+                            setattr(existing_deserialized_value, attr.name, related_val)
+                    deserialized_value = existing_deserialized_value
+                else:
+                    objects[self.related_class][serialized_value] = deserialized_value
+
+                deserialized_values.append(deserialized_value)
+            return (deserialized_values, None)
 
 
 class OneToOneAttribute(RelatedAttribute):
@@ -6548,8 +7077,7 @@ class OneToOneAttribute(RelatedAttribute):
             :obj:`str`: simple Python representation
         """
         if self.related_class.Meta.table_format == TableFormat.cell:
-            return json.dumps(value.to_dict(value, encode_primary_objects=False, encoded=encoded),
-                              indent=8)
+            return self.serialize_to_cell(value, encoded=encoded)
 
         else:
             if value is None:
@@ -6557,6 +7085,18 @@ class OneToOneAttribute(RelatedAttribute):
 
             primary_attr = value.__class__.Meta.primary_attribute
             return primary_attr.serialize(getattr(value, primary_attr.name))
+
+    def serialize_to_cell(self, value, encoded=None):
+        """ Serialize related object
+
+        Args:
+            value (:obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: string representation
+        """
+        return json.dumps(value.to_dict(value, encode_primary_objects=False, encoded=encoded), indent=8)
 
     def deserialize(self, value, objects, decoded=None):
         """ Deserialize value
@@ -6574,9 +7114,7 @@ class OneToOneAttribute(RelatedAttribute):
 
         if self.related_class.Meta.table_format == TableFormat.cell:
             try:
-                obj = self.related_class.from_dict(json.loads(value), [self.related_class], decode_primary_objects=False,
-                                                   primary_objects=objects, decoded=decoded)
-                error = None
+                obj, error = self.deserialize_from_cell(value, objects, decoded)
             except Exception as exception:
                 obj = None
                 error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
@@ -6599,6 +7137,20 @@ class OneToOneAttribute(RelatedAttribute):
                 return (related_objs.pop(), None)
 
             return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
+
+    def deserialize_from_cell(self, value, objects, decoded=None):
+        """ Deserialize value from cell
+
+        Args:
+            value (:obj:`str`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`Model`
+        """
+        return (self.related_class.from_dict(json.loads(value), [self.related_class], decode_primary_objects=False,
+                                            primary_objects=objects, decoded=decoded), None)
 
     def merge(self, left, right, right_objs_in_left, left_objs_in_right):
         """ Merge an attribute of elements of two models
@@ -6916,8 +7468,7 @@ class ManyToOneAttribute(RelatedAttribute):
             :obj:`str`: simple Python representation
         """
         if self.related_class.Meta.table_format == TableFormat.cell:
-            return json.dumps(value.to_dict(value, encode_primary_objects=False, encoded=encoded),
-                              indent=8)
+            return self.serialize_to_cell(value, encoded=encoded)
 
         else:
             if value is None:
@@ -6925,6 +7476,18 @@ class ManyToOneAttribute(RelatedAttribute):
 
             primary_attr = value.__class__.Meta.primary_attribute
             return primary_attr.serialize(getattr(value, primary_attr.name))
+
+    def serialize_to_cell(self, value, encoded=None):
+        """ Serialize related object
+
+        Args:
+            value (:obj:`Model`): Python representation
+            encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
+
+        Returns:
+            :obj:`str`: string representation
+        """
+        return json.dumps(value.to_dict(value, encode_primary_objects=False, encoded=encoded), indent=8)
 
     def deserialize(self, value, objects, decoded=None):
         """ Deserialize value
@@ -6942,9 +7505,7 @@ class ManyToOneAttribute(RelatedAttribute):
 
         if self.related_class.Meta.table_format == TableFormat.cell:
             try:
-                obj = self.related_class.from_dict(json.loads(value), [self.related_class], decode_primary_objects=False,
-                                                   primary_objects=objects, decoded=decoded)
-                error = None
+                obj, error = self.deserialize_from_cell(value, objects, decoded)
             except Exception as exception:
                 obj = None
                 error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
@@ -6967,6 +7528,20 @@ class ManyToOneAttribute(RelatedAttribute):
                 return (related_objs.pop(), None)
 
             return (None, InvalidAttribute(self, ['Multiple matching objects with primary attribute = {}'.format(value)]))
+
+    def deserialize_from_cell(self, value, objects, decoded=None):
+        """ Deserialize value from cell
+
+        Args:
+            value (:obj:`str`): String representation
+            objects (:obj:`dict`): dictionary of objects, grouped by model
+            decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
+
+        Returns:
+            :obj:`Model`
+        """
+        return (self.related_class.from_dict(json.loads(value), [self.related_class], decode_primary_objects=False,
+                                            primary_objects=objects, decoded=decoded), None)
 
     def merge(self, left, right, right_objs_in_left, left_objs_in_right):
         """ Merge an attribute of elements of two models
@@ -7079,19 +7654,20 @@ class ManyToOneAttribute(RelatedAttribute):
         return validation
 
 
-class OneToManyAttribute(RelatedAttribute):
+class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
     """ Represents a one-to-many relationship between two types of objects.
     This is analagous to a foreign key relationship in a database.
 
     Attributes:
         related_manager (:obj:`type`): related manager
+        cell_dialect (:obj:`CellDialect`): dialect for serializing values to a cell
     """
 
     def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
                  related_default=None, none_value=list,
                  min_related=0, max_related=float('inf'), min_related_rev=0,
                  verbose_name='', verbose_related_name='', description='',
-                 related_manager=OneToManyRelatedManager):
+                 related_manager=OneToManyRelatedManager, cell_dialect=CellDialect.json):
         """
         Args:
             related_class (:obj:`class`): related class
@@ -7109,6 +7685,7 @@ class OneToManyAttribute(RelatedAttribute):
             verbose_related_name (:obj:`str`, optional): verbose related name
             description (:obj:`str`, optional): description
             related_manager (:obj:`type`, optional): related manager
+            cell_dialect (:obj:`CellDialect`, optional): dialect for serializing values to a cell
         """
         super(OneToManyAttribute, self).__init__(
             related_class, related_name=related_name,
@@ -7122,6 +7699,9 @@ class OneToManyAttribute(RelatedAttribute):
         else:
             self.related_type = (Model, None.__class__)
         self.related_manager = related_manager
+        if not isinstance(cell_dialect, CellDialect):
+            cell_dialect = CellDialect[cell_dialect]
+        self.cell_dialect = cell_dialect
 
     def get_init_value(self, obj):
         """ Get initial value for attribute
@@ -7271,8 +7851,7 @@ class OneToManyAttribute(RelatedAttribute):
             :obj:`str`: simple Python representation
         """
         if self.related_class.Meta.table_format == TableFormat.cell:
-            return json.dumps([v.to_dict(v, encode_primary_objects=False, encoded=encoded) for v in value],
-                              indent=8)
+            return self.serialize_to_cell(value, encoded=encoded)
 
         else:
             serialized_vals = []
@@ -7300,11 +7879,7 @@ class OneToManyAttribute(RelatedAttribute):
 
         if self.related_class.Meta.table_format == TableFormat.cell:
             try:
-                objs = []
-                for v in json.loads(values):
-                    objs.append(self.related_class.from_dict(v, [self.related_class], decode_primary_objects=False,
-                                                             primary_objects=objects, decoded=decoded))
-                error = None
+                objs, error = self.deserialize_from_cell(values, objects, decoded)
             except Exception as exception:
                 objs = None
                 error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
@@ -7421,18 +7996,19 @@ class OneToManyAttribute(RelatedAttribute):
         return validation
 
 
-class ManyToManyAttribute(RelatedAttribute):
+class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
     """ Represents a many-to-many relationship between two types of objects.
 
     Attributes:
         related_manager (:obj:`type`): related manager
+        cell_dialect (:obj:`CellDialect`): dialect for serializing values to a cell
     """
 
     def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
                  related_default=list(), none_value=list,
                  min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', description='',
-                 related_manager=ManyToManyRelatedManager):
+                 related_manager=ManyToManyRelatedManager, cell_dialect=CellDialect.json):
         """
         Args:
             related_class (:obj:`class`): related class
@@ -7451,6 +8027,7 @@ class ManyToManyAttribute(RelatedAttribute):
             verbose_related_name (:obj:`str`, optional): verbose related name
             description (:obj:`str`, optional): description
             related_manager (:obj:`type`, optional): related manager
+            cell_dialect (:obj:`CellDialect`, optional): dialect for serializing values to a cell
         """
         super(ManyToManyAttribute, self).__init__(
             related_class, related_name=related_name,
@@ -7461,6 +8038,9 @@ class ManyToManyAttribute(RelatedAttribute):
         self.type = RelatedManager
         self.related_type = RelatedManager
         self.related_manager = related_manager
+        if not isinstance(cell_dialect, CellDialect):
+            cell_dialect = CellDialect[cell_dialect]
+        self.cell_dialect = cell_dialect
 
     def get_init_value(self, obj):
         """ Get initial value for attribute
@@ -7629,8 +8209,7 @@ class ManyToManyAttribute(RelatedAttribute):
             :obj:`str`: simple Python representation
         """
         if self.related_class.Meta.table_format == TableFormat.cell:
-            return json.dumps([v.to_dict(v, encode_primary_objects=False, encoded=encoded) for v in value],
-                              indent=8)
+            return self.serialize_to_cell(value, encoded=encoded)
 
         else:
             serialized_vals = []
@@ -7658,11 +8237,7 @@ class ManyToManyAttribute(RelatedAttribute):
 
         if self.related_class.Meta.table_format == TableFormat.cell:
             try:
-                objs = []
-                for v in json.loads(values):
-                    objs.append(self.related_class.from_dict(v, [self.related_class], decode_primary_objects=False,
-                                                             primary_objects=objects, decoded=decoded))
-                error = None
+                objs, error = self.deserialize_from_cell(values, objects, decoded)
             except Exception as exception:
                 objs = None
                 error = InvalidAttribute(self, ['{}: {}'.format(exception.__class__.__name__, str(exception))])
@@ -8135,4 +8710,4 @@ class SchemaWarning(ObjTablesWarning):
     """ Schema warning """
     pass
 
-from .utils import get_related_models
+from .utils import get_related_models, get_attr_order

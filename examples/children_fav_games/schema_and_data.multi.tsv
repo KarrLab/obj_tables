@@ -1,27 +1,27 @@
-!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 11:51:05'
-!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-03-14 11:51:05' objTablesVersion='0.0.8'		
+!!!ObjTables objTablesVersion='1.0.0' date='2020-05-29 00:18:57'
+!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-05-29 00:18:57' objTablesVersion='1.0.0'		
 !Table	!Description	!Number of objects
 Schema	Table/model and column/attribute definitions	
 Child		4
 Parent		4
 
-!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-14 11:51:05' objTablesVersion='0.0.8'						
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-05-29 00:18:57' objTablesVersion='1.0.0'						
 !Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural	!Description
 Child	Class		row	Child	Child	
-favorite_video_game	Attribute	Child	ManyToOne('Game', related_name='children')			
-gender	Attribute	Child	Enum([('female', 1), ('male', 2)])			
-id	Attribute	Child	String(primary=True, unique=True)			
-name	Attribute	Child	String			
-parents	Attribute	Child	ManyToMany('Parent', related_name='children')			
+favorite_video_game	Attribute	Child	ManyToOne('Game', related_name='children')	Favorite video game		
+gender	Attribute	Child	Enum([('female', 1), ('male', 2)])	Gender		
+id	Attribute	Child	String(primary=True, unique=True)	Id		
+name	Attribute	Child	String	Name		
+parents	Attribute	Child	ManyToMany('Parent', related_name='children', cell_dialect='json')	Parents		
 Parent	Class		column	Parent	Parent	
-id	Attribute	Parent	String(primary=True, unique=True)			
-name	Attribute	Parent	String			
+id	Attribute	Parent	String(primary=True, unique=True)	Id		
+name	Attribute	Parent	String	Name		
 Game	Class		multiple_cells	Game	Game	
-name	Attribute	Game	String(primary=True, unique=True)			
-publisher	Attribute	Game	String			
-year	Attribute	Game	Integer			
+name	Attribute	Game	String(primary=True, unique=True)	Name		
+publisher	Attribute	Game	String	Publisher		
+year	Attribute	Game	Integer	Year		
 
-!!ObjTables type='Data' tableFormat='row' class='Child' name='Child' date='2020-03-14 11:51:05' objTablesVersion='0.0.8'						
+!!ObjTables type='Data' tableFormat='row' class='Child' name='Child' date='2020-03-10 21:34:50' objTablesVersion='1.0.0'						
 				!Favorite video game	!Favorite video game	!Favorite video game
 !Id	!Name	!Gender	!Parents	!Name	!Publisher	!Year
 jamie_doe	Jamie Doe	female	jane_doe, john_doe	Legend of Zelda	Nintendo	1986.0
@@ -29,6 +29,6 @@ jimie_doe	Jimie Doe	male	jane_doe, john_doe	Super Mario Brothers	Nintendo	1985.0
 linda_roe	Linda Roe	female	mary_roe, richard_roe	Sonic the Hedgehog	Sega	1991.0
 mike_roe	Michael Roe	male	mary_roe, richard_roe	SimCity	Electronic Arts	1989.0
 
-!!ObjTables type='Data' tableFormat='column' class='Parent' name='Parent' date='2020-03-14 11:51:05' objTablesVersion='0.0.8'				
+!!ObjTables type='Data' tableFormat='column' class='Parent' name='Parent' date='2020-03-10 21:34:50' objTablesVersion='1.0.0'				
 !Id	jane_doe	john_doe	mary_roe	richard_roe
 !Name	Jane Doe	John Doe	Mary Roe	Richard Roe

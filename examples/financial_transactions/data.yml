@@ -23,11 +23,11 @@ Transaction:
   category: Food
   date: null
   payee: Sam's market
-_documentMetadata:
-  date: '2020-03-12 09:57:32'
-  objTablesVersion: 0.0.8
 _classMetadata:
   Transaction:
-    description: Stores transactions
     class: Transaction
+    description: Stores transactions
     name: Transaction
+_documentMetadata:
+  date: '2020-03-11 23:55:18'
+  objTablesVersion: 1.0.0

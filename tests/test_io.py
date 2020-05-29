@@ -3484,7 +3484,7 @@ class ExcelValidationTestCase(unittest.TestCase):
                                                          min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_3')])
             many_to_many_attr_2 = core.ManyToManyAttribute(TestChild2, related_name='parents_4',
                                                            min_related=1, default_cleaned_value=lambda: [TestChild2(id='child_b_4')])
-            formula_attr = chem.EmpiricalFormulaAttribute(unique=True)
+            formula_attr = chem.ChemicalFormulaAttribute(unique=True)
             onto_attr_1 = onto.OntoTermAttribute(sbo_ontotology,
                                                  namespace='SBO',
                                                  namespace_sep='_',

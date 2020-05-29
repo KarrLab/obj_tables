@@ -486,16 +486,16 @@ class TestCore(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'must be defined'):
             TestParent.validate_related_attributes()
 
-        class TestChild(core.Model):
-            id = core.StringAttribute(primary=True)
+        # class TestChild(core.Model):
+        #     id = core.StringAttribute(primary=True)
 
-            class Meta (core.Model.Meta):
-                table_format = core.TableFormat.cell
+        #     class Meta (core.Model.Meta):
+        #         table_format = core.TableFormat.cell
 
-        class TestParent(core.Model):
-            pass
-        with self.assertRaisesRegex(ValueError, 'should have at least one one-to-one or one-to-many attribute'):
-            TestChild.validate_related_attributes()
+        # class TestParent(core.Model):
+        #     pass
+        # with self.assertRaisesRegex(ValueError, 'should have at least one one-to-one or one-to-many attribute'):
+        #     TestChild.validate_related_attributes()
 
     def test_validate_attributes(self):
         class TestChild(core.Model):
@@ -4724,6 +4724,142 @@ class TestCore(unittest.TestCase):
 
         attr.get_excel_validation()
         none_attr.get_excel_validation()
+
+    def test_Range(self):
+        self.assertTrue(core.Range(1.1, 1.2).is_equal(core.Range(1.1, 1.2)))
+        self.assertFalse(core.Range(1.1, 1.2).is_equal(core.Range(1.1, 1.1)))
+        self.assertTrue(core.Range(float('nan'), 1.2).is_equal(core.Range(float('nan'), 1.2)))
+        self.assertTrue(core.Range('A', 'B').is_equal(core.Range('A', 'B')))
+        self.assertTrue(core.Range(1.1, 1.2).is_equal(core.Range(1.1 + 1e-10, 1.2), tol=1e-6))
+        self.assertFalse(core.Range(1.1, 1.1).is_equal(1.1))
+
+    def test_RangeAttribute(self):
+        attr = core.RangeAttribute()
+        int_attr = core.RangeAttribute(type=int, description="")
+        not_none_attr = core.RangeAttribute(none=False)
+
+        with self.assertRaisesRegex(ValueError, 'Default must be'):
+            core.RangeAttribute(default=1.1)
+
+        self.assertFalse(attr.value_equal(1.1, core.Range(1.1, 1.1)))
+
+        self.assertEqual(attr.clean(None), (None, None))
+        self.assertEqual(attr.clean(''), (None, None))
+        self.assertTrue(attr.value_equal(attr.clean('1.1-2.2')[0], core.Range(1.1, 2.2)))
+        self.assertTrue(attr.value_equal(attr.clean('1.1 -2.2')[0], core.Range(1.1, 2.2)))
+        self.assertTrue(attr.value_equal(attr.clean('1.1- 2.2')[0], core.Range(1.1, 2.2)))
+        self.assertTrue(attr.value_equal(attr.clean('1.1 - 2.2')[0], core.Range(1.1, 2.2)))
+        self.assertIsInstance(attr.clean('1.1 - 2.2 - 3.3')[1], core.InvalidAttribute)
+        self.assertTrue(attr.value_equal(attr.clean(core.Range(1.1, 2.2))[0], core.Range(1.1, 2.2)))
+        self.assertIsInstance(attr.clean(1)[1], core.InvalidAttribute)
+
+        self.assertTrue(attr.value_equal(int_attr.clean('1-2')[0], core.Range(1, 2)))
+        self.assertIsInstance(int_attr.clean('1-B')[1], core.InvalidAttribute)
+
+        self.assertEqual(attr.validate(None, None), None)
+        self.assertNotEqual(not_none_attr.validate(None, None), None)
+        self.assertEqual(attr.validate(None, core.Range(1.1, 1.2)), None)
+        self.assertNotEqual(attr.validate(None, core.Range(1.1, 'B')), None)
+        self.assertNotEqual(attr.validate(None, 1.1), None)
+
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.serialize(core.Range(1.1, 1.1)), '1.1')
+        self.assertEqual(attr.serialize(core.Range(1.1, 2.2)), '1.1-2.2')
+
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(core.Range(1.1, 1.1)), 1.1)
+        self.assertEqual(attr.to_builtin(core.Range(1.1, 2.2)), {'min': 1.1, 'max': 2.2})
+
+        self.assertEqual(attr.from_builtin(None), None)
+        self.assertTrue(attr.value_equal(attr.from_builtin(1.1), core.Range(1.1, 1.1)))
+        self.assertTrue(attr.value_equal(attr.from_builtin({'min': 1.1, 'max': 2.2}), core.Range(1.1, 2.2)))
+
+        attr.get_excel_validation()
+        int_attr.get_excel_validation()
+
+    def test_ListAttribute(self):
+        attr = core.ListAttribute()
+        int_attr = core.ListAttribute(type=int, description="")
+
+        with self.assertRaisesRegex(ValueError, 'Default must be a list'):
+            core.ListAttribute(type=int, default=())
+
+        self.assertEqual(attr.clean(None), ([], None))
+        self.assertEqual(attr.clean(''), ([], None))
+        self.assertEqual(attr.clean('A,B'), (['A', 'B'], None))
+        self.assertEqual(attr.clean('A, B'), (['A', 'B'], None))
+        self.assertEqual(attr.clean('A,  B'), (['A', 'B'], None))
+        self.assertEqual(attr.clean(['A', 'B']), (['A', 'B'], None))
+        self.assertIsInstance(attr.clean(1)[1], core.InvalidAttribute)
+
+        self.assertEqual(int_attr.clean('1, 2'), ([1, 2], None))
+        self.assertIsInstance(int_attr.clean('1, B')[1], core.InvalidAttribute)
+
+        self.assertNotEqual(attr.validate(None, None), None)
+        self.assertEqual(attr.validate(None, []), None)
+        self.assertEqual(attr.validate(None, ['A', 'B']), None)
+        self.assertNotEqual(attr.validate(None, ['A', 1]), None)
+
+        self.assertEqual(int_attr.validate(None, [1, 2]), None)
+        self.assertNotEqual(int_attr.validate(None, ['A', 1]), None)
+
+        self.assertEqual(attr.serialize([]), '')
+        self.assertEqual(attr.serialize(['A', 'B']), 'A, B')
+
+        self.assertEqual(attr.to_builtin([]), [])
+        self.assertEqual(attr.to_builtin(['A', 'B', 'C']), ['A', 'B', 'C'])
+
+        self.assertEqual(attr.from_builtin([]), [])
+        self.assertEqual(attr.from_builtin(['A', 'B', 'C']), ['A', 'B', 'C'])
+
+        attr.get_excel_validation()
+        int_attr.get_excel_validation()
+
+    def test_ManyToManySeparatedValuesTableAttribute(self):
+        class Row(core.Model):
+            attr_1 = core.StringAttribute()
+            attr_2 = core.FloatAttribute()
+            attr_3 = core.IntegerAttribute()
+
+            class Meta(core.Model.Meta):
+                table_format = core.TableFormat.cell
+
+        class Node(core.Model):
+            rows = core.ManyToManyAttribute(Row, related_name='nodes', cell_dialect='tsv')
+
+        attr = Node.rows
+        rows = [
+            Row(attr_1='a', attr_3=1),
+            Row(attr_1='b', attr_3=2),
+        ]
+        serialized_val = (
+            'Attr 1\tAttr 3\n'
+            'a\t1.0\n'
+            'b\t2.0\n'
+        )
+        self.assertEqual(attr.serialize(rows), serialized_val)
+
+        objects = {}
+        rows2, error = attr.deserialize(serialized_val, objects)
+        self.assertEqual(error, None)
+        self.assertEqual(len(rows2), len(rows))
+        for row2, row in zip(rows2, rows):
+            self.assertTrue(row2.is_equal(row))
+
+        rows3, error = attr.deserialize(serialized_val, objects)
+        self.assertEqual(error, None)
+        self.assertEqual(len(rows3), len(rows2))
+        for row2, row3 in zip(rows2, rows3):
+            self.assertIs(row3, row2)
+
+        serialized_val = (
+            'Attr 1\tAttr 4\n'
+            'a\t1.0\n'
+            'b\t2.0\n'
+        )
+        _, error = attr.deserialize(serialized_val, {})
+        self.assertNotEqual(error, None)
+
 
 class ContextTestCase(unittest.TestCase):
     def test(self):

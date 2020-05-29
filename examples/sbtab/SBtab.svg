@@ -959,459 +959,459 @@
 <!-- Quantity -->
 <g id="node12" class="node">
 <title>Quantity</title>
-<polygon fill="#ff8a5b" stroke="transparent" points="5.5,-6122 5.5,-6152 325.5,-6152 325.5,-6122 5.5,-6122"/>
-<polygon fill="none" stroke="#000000" points="5.5,-6122 5.5,-6152 325.5,-6152 325.5,-6122 5.5,-6122"/>
-<text text-anchor="start" x="130.5" y="-6133.6" font-family="Times,serif" font-weight="bold" font-size="18.00" fill="#000000">Quantity</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-6097 5.5,-6122 269.5,-6122 269.5,-6097 5.5,-6097"/>
-<polygon fill="none" stroke="#000000" points="5.5,-6097 5.5,-6122 269.5,-6122 269.5,-6097 5.5,-6097"/>
-<text text-anchor="start" x="110" y="-6106.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">comment</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-6097 269.5,-6122 325.5,-6122 325.5,-6097 269.5,-6097"/>
-<polygon fill="none" stroke="#000000" points="269.5,-6097 269.5,-6122 325.5,-6122 325.5,-6097 269.5,-6097"/>
-<text text-anchor="start" x="280.5" y="-6105.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-6072 5.5,-6097 269.5,-6097 269.5,-6072 5.5,-6072"/>
-<polygon fill="none" stroke="#000000" points="5.5,-6072 5.5,-6097 269.5,-6097 269.5,-6072 5.5,-6072"/>
-<text text-anchor="start" x="90.5" y="-6081.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reference_name</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-6072 269.5,-6097 325.5,-6097 325.5,-6072 269.5,-6072"/>
-<polygon fill="none" stroke="#000000" points="269.5,-6072 269.5,-6097 325.5,-6097 325.5,-6072 269.5,-6072"/>
-<text text-anchor="start" x="280.5" y="-6080.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-6047 5.5,-6072 269.5,-6072 269.5,-6047 5.5,-6047"/>
-<polygon fill="none" stroke="#000000" points="5.5,-6047 5.5,-6072 269.5,-6072 269.5,-6047 5.5,-6047"/>
-<text text-anchor="start" x="79.5" y="-6056.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reference_pub_med</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-6047 269.5,-6072 325.5,-6072 325.5,-6047 269.5,-6047"/>
-<polygon fill="none" stroke="#000000" points="269.5,-6047 269.5,-6072 325.5,-6072 325.5,-6047 269.5,-6047"/>
-<text text-anchor="start" x="280.5" y="-6055.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-6022 5.5,-6047 269.5,-6047 269.5,-6022 5.5,-6022"/>
-<polygon fill="none" stroke="#000000" points="5.5,-6022 5.5,-6047 269.5,-6047 269.5,-6022 5.5,-6022"/>
-<text text-anchor="start" x="91" y="-6031.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reference_d_o_i</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-6022 269.5,-6047 325.5,-6047 325.5,-6022 269.5,-6022"/>
-<polygon fill="none" stroke="#000000" points="269.5,-6022 269.5,-6047 325.5,-6047 325.5,-6022 269.5,-6022"/>
-<text text-anchor="start" x="280.5" y="-6030.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5997 5.5,-6022 269.5,-6022 269.5,-5997 5.5,-5997"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5997 5.5,-6022 269.5,-6022 269.5,-5997 5.5,-5997"/>
-<text text-anchor="start" x="105" y="-6006.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">description</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5997 269.5,-6022 325.5,-6022 325.5,-5997 269.5,-5997"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5997 269.5,-6022 325.5,-6022 325.5,-5997 269.5,-5997"/>
-<text text-anchor="start" x="280.5" y="-6005.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5972 5.5,-5997 269.5,-5997 269.5,-5972 5.5,-5972"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5972 5.5,-5997 269.5,-5997 269.5,-5972 5.5,-5972"/>
-<text text-anchor="start" x="121" y="-5981.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">name</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5972 269.5,-5997 325.5,-5997 325.5,-5972 269.5,-5972"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5972 269.5,-5997 325.5,-5997 325.5,-5972 269.5,-5972"/>
-<text text-anchor="start" x="280.5" y="-5980.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5947 5.5,-5972 269.5,-5972 269.5,-5947 5.5,-5947"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5947 5.5,-5972 269.5,-5972 269.5,-5947 5.5,-5947"/>
-<text text-anchor="start" x="78" y="-5956.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">miriam_annotations</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5947 269.5,-5972 325.5,-5972 325.5,-5947 269.5,-5947"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5947 269.5,-5972 325.5,-5972 325.5,-5947 269.5,-5947"/>
-<text text-anchor="start" x="280.5" y="-5955.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5922 5.5,-5947 269.5,-5947 269.5,-5922 5.5,-5922"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5922 5.5,-5947 269.5,-5947 269.5,-5922 5.5,-5922"/>
-<text text-anchor="start" x="125" y="-5931.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">type</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5922 269.5,-5947 325.5,-5947 325.5,-5922 269.5,-5922"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5922 269.5,-5947 325.5,-5947 325.5,-5922 269.5,-5922"/>
-<text text-anchor="start" x="280.5" y="-5930.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5897 5.5,-5922 269.5,-5922 269.5,-5897 5.5,-5897"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5897 5.5,-5922 269.5,-5922 269.5,-5897 5.5,-5897"/>
-<text text-anchor="start" x="116" y="-5906.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">symbol</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5897 269.5,-5922 325.5,-5922 325.5,-5897 269.5,-5897"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5897 269.5,-5922 325.5,-5922 325.5,-5897 269.5,-5897"/>
-<text text-anchor="start" x="280.5" y="-5905.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5872 5.5,-5897 269.5,-5897 269.5,-5872 5.5,-5872"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5872 5.5,-5897 269.5,-5897 269.5,-5872 5.5,-5872"/>
-<text text-anchor="start" x="107.5" y="-5881.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">position_x</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5872 269.5,-5897 325.5,-5897 325.5,-5872 269.5,-5872"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5872 269.5,-5897 325.5,-5897 325.5,-5872 269.5,-5872"/>
-<text text-anchor="start" x="283.5" y="-5880.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5847 5.5,-5872 269.5,-5872 269.5,-5847 5.5,-5847"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5847 5.5,-5872 269.5,-5872 269.5,-5847 5.5,-5847"/>
-<text text-anchor="start" x="107.5" y="-5856.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">position_y</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5847 269.5,-5872 325.5,-5872 325.5,-5847 269.5,-5847"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5847 269.5,-5872 325.5,-5872 325.5,-5847 269.5,-5847"/>
-<text text-anchor="start" x="283.5" y="-5855.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5822 5.5,-5847 269.5,-5847 269.5,-5822 5.5,-5822"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5822 5.5,-5847 269.5,-5847 269.5,-5822 5.5,-5822"/>
-<text text-anchor="start" x="128" y="-5831.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">i_d</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5822 269.5,-5847 325.5,-5847 325.5,-5822 269.5,-5822"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5822 269.5,-5847 325.5,-5847 325.5,-5822 269.5,-5822"/>
-<text text-anchor="start" x="280.5" y="-5830.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5797 5.5,-5822 269.5,-5822 269.5,-5797 5.5,-5797"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5797 5.5,-5822 269.5,-5822 269.5,-5797 5.5,-5797"/>
-<text text-anchor="start" x="113" y="-5806.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">quantity</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5797 269.5,-5822 325.5,-5822 325.5,-5797 269.5,-5797"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5797 269.5,-5822 325.5,-5822 325.5,-5797 269.5,-5797"/>
-<text text-anchor="start" x="280.5" y="-5805.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5772 5.5,-5797 269.5,-5797 269.5,-5772 5.5,-5772"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5772 5.5,-5797 269.5,-5797 269.5,-5772 5.5,-5772"/>
-<text text-anchor="start" x="110" y="-5781.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reference</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5772 269.5,-5797 325.5,-5797 325.5,-5772 269.5,-5772"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5772 269.5,-5797 325.5,-5797 325.5,-5772 269.5,-5772"/>
-<text text-anchor="start" x="280.5" y="-5780.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5747 5.5,-5772 269.5,-5772 269.5,-5747 5.5,-5747"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5747 5.5,-5772 269.5,-5772 269.5,-5747 5.5,-5747"/>
-<text text-anchor="start" x="93.5" y="-5756.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">quantity_name</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5747 269.5,-5772 325.5,-5772 325.5,-5747 269.5,-5747"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5747 269.5,-5772 325.5,-5772 325.5,-5747 269.5,-5747"/>
-<text text-anchor="start" x="280.5" y="-5755.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5722 5.5,-5747 269.5,-5747 269.5,-5722 5.5,-5722"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5722 5.5,-5747 269.5,-5747 269.5,-5722 5.5,-5722"/>
-<text text-anchor="start" x="97" y="-5731.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">quantity_type</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5722 269.5,-5747 325.5,-5747 325.5,-5722 269.5,-5722"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5722 269.5,-5747 325.5,-5747 325.5,-5722 269.5,-5722"/>
-<text text-anchor="start" x="280.5" y="-5730.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5697 5.5,-5722 269.5,-5722 269.5,-5697 5.5,-5697"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5697 5.5,-5722 269.5,-5722 269.5,-5697 5.5,-5697"/>
-<text text-anchor="start" x="122" y="-5706.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">value</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5697 269.5,-5722 325.5,-5722 325.5,-5697 269.5,-5697"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5697 269.5,-5722 325.5,-5722 325.5,-5697 269.5,-5697"/>
-<text text-anchor="start" x="283.5" y="-5705.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5672 5.5,-5697 269.5,-5697 269.5,-5672 5.5,-5672"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5672 5.5,-5697 269.5,-5697 269.5,-5672 5.5,-5672"/>
-<text text-anchor="start" x="121" y="-5681.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">mean</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5672 269.5,-5697 325.5,-5697 325.5,-5672 269.5,-5672"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5672 269.5,-5697 325.5,-5697 325.5,-5672 269.5,-5672"/>
-<text text-anchor="start" x="283.5" y="-5680.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5647 5.5,-5672 269.5,-5672 269.5,-5647 5.5,-5647"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5647 5.5,-5672 269.5,-5672 269.5,-5647 5.5,-5647"/>
-<text text-anchor="start" x="128.5" y="-5656.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">std</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5647 269.5,-5672 325.5,-5672 325.5,-5647 269.5,-5647"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5647 269.5,-5672 325.5,-5672 325.5,-5647 269.5,-5647"/>
-<text text-anchor="start" x="283.5" y="-5655.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5622 5.5,-5647 269.5,-5647 269.5,-5622 5.5,-5622"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5622 5.5,-5647 269.5,-5647 269.5,-5622 5.5,-5622"/>
-<text text-anchor="start" x="125.5" y="-5631.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">min</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5622 269.5,-5647 325.5,-5647 325.5,-5622 269.5,-5622"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5622 269.5,-5647 325.5,-5647 325.5,-5622 269.5,-5622"/>
-<text text-anchor="start" x="283.5" y="-5630.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5597 5.5,-5622 269.5,-5622 269.5,-5597 5.5,-5597"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5597 5.5,-5622 269.5,-5622 269.5,-5597 5.5,-5597"/>
-<text text-anchor="start" x="124.5" y="-5606.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">max</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5597 269.5,-5622 325.5,-5622 325.5,-5597 269.5,-5597"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5597 269.5,-5622 325.5,-5622 325.5,-5597 269.5,-5597"/>
-<text text-anchor="start" x="283.5" y="-5605.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5572 5.5,-5597 269.5,-5597 269.5,-5572 5.5,-5572"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5572 5.5,-5597 269.5,-5597 269.5,-5572 5.5,-5572"/>
-<text text-anchor="start" x="115.5" y="-5581.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">median</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5572 269.5,-5597 325.5,-5597 325.5,-5572 269.5,-5572"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5572 269.5,-5597 325.5,-5597 325.5,-5572 269.5,-5572"/>
-<text text-anchor="start" x="283.5" y="-5580.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5547 5.5,-5572 269.5,-5572 269.5,-5547 5.5,-5547"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5547 5.5,-5572 269.5,-5572 269.5,-5547 5.5,-5547"/>
-<text text-anchor="start" x="89" y="-5556.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">geometric_mean</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5547 269.5,-5572 325.5,-5572 325.5,-5547 269.5,-5547"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5547 269.5,-5572 325.5,-5572 325.5,-5547 269.5,-5547"/>
-<text text-anchor="start" x="283.5" y="-5555.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5522 5.5,-5547 269.5,-5547 269.5,-5522 5.5,-5522"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5522 5.5,-5547 269.5,-5547 269.5,-5522 5.5,-5522"/>
-<text text-anchor="start" x="125.5" y="-5531.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">sign</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5522 269.5,-5547 325.5,-5547 325.5,-5522 269.5,-5522"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5522 269.5,-5547 325.5,-5547 325.5,-5522 269.5,-5522"/>
-<text text-anchor="start" x="280.5" y="-5530.8" font-family="Times,serif" font-size="14.00" fill="#000000">Enum</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5497 5.5,-5522 269.5,-5522 269.5,-5497 5.5,-5497"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5497 5.5,-5522 269.5,-5522 269.5,-5497 5.5,-5497"/>
-<text text-anchor="start" x="109.5" y="-5506.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">prob_dist</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5497 269.5,-5522 325.5,-5522 325.5,-5497 269.5,-5497"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5497 269.5,-5522 325.5,-5522 325.5,-5497 269.5,-5497"/>
-<text text-anchor="start" x="280.5" y="-5505.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5472 5.5,-5497 269.5,-5497 269.5,-5472 5.5,-5472"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5472 5.5,-5497 269.5,-5497 269.5,-5472 5.5,-5472"/>
-<text text-anchor="start" x="69.5" y="-5481.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_m_l_parameter_id</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5472 269.5,-5497 325.5,-5497 325.5,-5472 269.5,-5472"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5472 269.5,-5497 325.5,-5497 325.5,-5472 269.5,-5472"/>
-<text text-anchor="start" x="280.5" y="-5480.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5447 5.5,-5472 269.5,-5472 269.5,-5447 5.5,-5447"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5447 5.5,-5472 269.5,-5472 269.5,-5447 5.5,-5447"/>
-<text text-anchor="start" x="125.5" y="-5456.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">unit</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5447 269.5,-5472 325.5,-5472 325.5,-5447 269.5,-5447"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5447 269.5,-5472 325.5,-5472 325.5,-5447 269.5,-5447"/>
-<text text-anchor="start" x="280.5" y="-5455.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5422 5.5,-5447 269.5,-5447 269.5,-5422 5.5,-5422"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5422 5.5,-5447 269.5,-5447 269.5,-5422 5.5,-5422"/>
-<text text-anchor="start" x="123.5" y="-5431.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">scale</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5422 269.5,-5447 325.5,-5447 325.5,-5422 269.5,-5422"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5422 269.5,-5447 325.5,-5447 325.5,-5422 269.5,-5422"/>
-<text text-anchor="start" x="280.5" y="-5430.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5397 5.5,-5422 269.5,-5422 269.5,-5397 5.5,-5397"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5397 5.5,-5422 269.5,-5422 269.5,-5397 5.5,-5397"/>
-<text text-anchor="start" x="124" y="-5406.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">time</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5397 269.5,-5422 325.5,-5422 325.5,-5397 269.5,-5397"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5397 269.5,-5422 325.5,-5422 325.5,-5397 269.5,-5397"/>
-<text text-anchor="start" x="283.5" y="-5405.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5372 5.5,-5397 269.5,-5397 269.5,-5372 5.5,-5372"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5372 5.5,-5397 269.5,-5397 269.5,-5372 5.5,-5372"/>
-<text text-anchor="start" x="105.5" y="-5381.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">time_point</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5372 269.5,-5397 325.5,-5397 325.5,-5372 269.5,-5372"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5372 269.5,-5397 325.5,-5397 325.5,-5372 269.5,-5372"/>
-<text text-anchor="start" x="280.5" y="-5380.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5347 5.5,-5372 269.5,-5372 269.5,-5347 5.5,-5347"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5347 5.5,-5372 269.5,-5372 269.5,-5347 5.5,-5347"/>
-<text text-anchor="start" x="110" y="-5356.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">condition</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5347 269.5,-5372 325.5,-5372 325.5,-5347 269.5,-5347"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5347 269.5,-5372 325.5,-5372 325.5,-5347 269.5,-5347"/>
-<text text-anchor="start" x="280.5" y="-5355.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5322 5.5,-5347 269.5,-5347 269.5,-5322 5.5,-5322"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5322 5.5,-5347 269.5,-5347 269.5,-5322 5.5,-5322"/>
-<text text-anchor="start" x="126.5" y="-5331.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">p_h</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5322 269.5,-5347 325.5,-5347 325.5,-5322 269.5,-5322"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5322 269.5,-5347 325.5,-5347 325.5,-5322 269.5,-5322"/>
-<text text-anchor="start" x="283.5" y="-5330.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5297 5.5,-5322 269.5,-5322 269.5,-5297 5.5,-5297"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5297 5.5,-5322 269.5,-5322 269.5,-5297 5.5,-5297"/>
-<text text-anchor="start" x="101" y="-5306.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">temperature</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5297 269.5,-5322 325.5,-5322 325.5,-5297 269.5,-5297"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5297 269.5,-5322 325.5,-5322 325.5,-5297 269.5,-5297"/>
-<text text-anchor="start" x="283.5" y="-5305.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5272 5.5,-5297 269.5,-5297 269.5,-5272 5.5,-5272"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5272 5.5,-5297 269.5,-5297 269.5,-5272 5.5,-5272"/>
-<text text-anchor="start" x="114.5" y="-5281.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">location</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5272 269.5,-5297 325.5,-5297 325.5,-5272 269.5,-5272"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5272 269.5,-5297 325.5,-5297 325.5,-5272 269.5,-5272"/>
-<text text-anchor="start" x="280.5" y="-5280.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5247 5.5,-5272 269.5,-5272 269.5,-5247 5.5,-5247"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5247 5.5,-5272 269.5,-5272 269.5,-5247 5.5,-5247"/>
-<text text-anchor="start" x="34.5" y="-5256.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">location_s_b_m_l_compartment_id</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5247 269.5,-5272 325.5,-5272 325.5,-5247 269.5,-5247"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5247 269.5,-5272 325.5,-5272 325.5,-5247 269.5,-5247"/>
-<text text-anchor="start" x="280.5" y="-5255.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5222 5.5,-5247 269.5,-5247 269.5,-5222 5.5,-5222"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5222 5.5,-5247 269.5,-5247 269.5,-5222 5.5,-5222"/>
-<text text-anchor="start" x="106.5" y="-5231.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">compound</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5222 269.5,-5247 325.5,-5247 325.5,-5222 269.5,-5222"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5222 269.5,-5247 325.5,-5247 325.5,-5222 269.5,-5222"/>
-<text text-anchor="start" x="280.5" y="-5230.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5197 5.5,-5222 269.5,-5222 269.5,-5197 5.5,-5197"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5197 5.5,-5222 269.5,-5222 269.5,-5197 5.5,-5197"/>
-<text text-anchor="start" x="46.5" y="-5206.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">compound_s_b_m_l_species_id</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5197 269.5,-5222 325.5,-5222 325.5,-5197 269.5,-5197"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5197 269.5,-5222 325.5,-5222 325.5,-5197 269.5,-5197"/>
-<text text-anchor="start" x="280.5" y="-5205.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5172 5.5,-5197 269.5,-5197 269.5,-5172 5.5,-5172"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5172 5.5,-5197 269.5,-5197 269.5,-5172 5.5,-5172"/>
-<text text-anchor="start" x="113.5" y="-5181.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reaction</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5172 269.5,-5197 325.5,-5197 325.5,-5172 269.5,-5172"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5172 269.5,-5197 325.5,-5197 325.5,-5172 269.5,-5172"/>
-<text text-anchor="start" x="280.5" y="-5180.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5147 5.5,-5172 269.5,-5172 269.5,-5147 5.5,-5147"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5147 5.5,-5172 269.5,-5172 269.5,-5147 5.5,-5147"/>
-<text text-anchor="start" x="50" y="-5156.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reaction_s_b_m_l_reaction_id</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5147 269.5,-5172 325.5,-5172 325.5,-5147 269.5,-5147"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5147 269.5,-5172 325.5,-5172 325.5,-5147 269.5,-5147"/>
-<text text-anchor="start" x="280.5" y="-5155.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5122 5.5,-5147 269.5,-5147 269.5,-5122 5.5,-5122"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5122 5.5,-5147 269.5,-5147 269.5,-5122 5.5,-5122"/>
-<text text-anchor="start" x="115" y="-5131.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">enyzme</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5122 269.5,-5147 325.5,-5147 325.5,-5122 269.5,-5122"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5122 269.5,-5147 325.5,-5147 325.5,-5122 269.5,-5122"/>
-<text text-anchor="start" x="280.5" y="-5130.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5097 5.5,-5122 269.5,-5122 269.5,-5097 5.5,-5097"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5097 5.5,-5122 269.5,-5122 269.5,-5097 5.5,-5097"/>
-<text text-anchor="start" x="55" y="-5106.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">enyzme_s_b_m_l_species_id</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5097 269.5,-5122 325.5,-5122 325.5,-5097 269.5,-5097"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5097 269.5,-5122 325.5,-5122 325.5,-5097 269.5,-5097"/>
-<text text-anchor="start" x="280.5" y="-5105.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5072 5.5,-5097 269.5,-5097 269.5,-5072 5.5,-5072"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5072 5.5,-5097 269.5,-5097 269.5,-5072 5.5,-5072"/>
-<text text-anchor="start" x="44" y="-5081.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">enyzme_s_b_m_l_parameter_id</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5072 269.5,-5097 325.5,-5097 325.5,-5072 269.5,-5072"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5072 269.5,-5097 325.5,-5097 325.5,-5072 269.5,-5072"/>
-<text text-anchor="start" x="280.5" y="-5080.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-5047 5.5,-5072 269.5,-5072 269.5,-5047 5.5,-5047"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5047 5.5,-5072 269.5,-5072 269.5,-5047 5.5,-5047"/>
-<text text-anchor="start" x="124" y="-5056.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">gene</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-5047 269.5,-5072 325.5,-5072 325.5,-5047 269.5,-5047"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5047 269.5,-5072 325.5,-5072 325.5,-5047 269.5,-5047"/>
-<text text-anchor="start" x="280.5" y="-5055.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-5022 5.5,-5047 269.5,-5047 269.5,-5022 5.5,-5022"/>
-<polygon fill="none" stroke="#000000" points="5.5,-5022 5.5,-5047 269.5,-5047 269.5,-5022 5.5,-5022"/>
-<text text-anchor="start" x="110" y="-5031.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">organism</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-5022 269.5,-5047 325.5,-5047 325.5,-5022 269.5,-5022"/>
-<polygon fill="none" stroke="#000000" points="269.5,-5022 269.5,-5047 325.5,-5047 325.5,-5022 269.5,-5022"/>
-<text text-anchor="start" x="280.5" y="-5030.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4997 5.5,-5022 269.5,-5022 269.5,-4997 5.5,-4997"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4997 5.5,-5022 269.5,-5022 269.5,-4997 5.5,-4997"/>
-<text text-anchor="start" x="104" y="-5006.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">provenance</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4997 269.5,-5022 325.5,-5022 325.5,-4997 269.5,-4997"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4997 269.5,-5022 325.5,-5022 325.5,-4997 269.5,-4997"/>
-<text text-anchor="start" x="280.5" y="-5005.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4972 5.5,-4997 269.5,-4997 269.5,-4972 5.5,-4972"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4972 5.5,-4997 269.5,-4997 269.5,-4972 5.5,-4972"/>
-<text text-anchor="start" x="103" y="-4981.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_term</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4972 269.5,-4997 325.5,-4997 325.5,-4972 269.5,-4972"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4972 269.5,-4997 325.5,-4997 325.5,-4972 269.5,-4972"/>
-<text text-anchor="start" x="280.5" y="-4980.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4947 5.5,-4972 269.5,-4972 269.5,-4947 5.5,-4947"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4947 5.5,-4972 269.5,-4972 269.5,-4947 5.5,-4947"/>
-<text text-anchor="start" x="108" y="-4956.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">identifiers</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4947 269.5,-4972 325.5,-4972 325.5,-4947 269.5,-4947"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4947 269.5,-4972 325.5,-4972 325.5,-4947 269.5,-4947"/>
-<text text-anchor="start" x="280.5" y="-4955.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4922 5.5,-4947 269.5,-4947 269.5,-4922 5.5,-4922"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4922 5.5,-4947 269.5,-4947 269.5,-4922 5.5,-4922"/>
-<text text-anchor="start" x="64" y="-4931.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">identifiers_kegg_reaction</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4922 269.5,-4947 325.5,-4947 325.5,-4922 269.5,-4922"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4922 269.5,-4947 325.5,-4947 325.5,-4922 269.5,-4922"/>
-<text text-anchor="start" x="280.5" y="-4930.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4897 5.5,-4922 269.5,-4922 269.5,-4897 5.5,-4897"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4897 5.5,-4922 269.5,-4922 269.5,-4897 5.5,-4897"/>
-<text text-anchor="start" x="57" y="-4906.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">identifiers_kegg_compound</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4897 269.5,-4922 325.5,-4922 325.5,-4897 269.5,-4897"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4897 269.5,-4922 325.5,-4922 325.5,-4897 269.5,-4897"/>
-<text text-anchor="start" x="280.5" y="-4905.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4872 5.5,-4897 269.5,-4897 269.5,-4872 5.5,-4872"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4872 5.5,-4897 269.5,-4897 269.5,-4872 5.5,-4872"/>
-<text text-anchor="start" x="75.5" y="-4881.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">identifiers_obo_chebi</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4872 269.5,-4897 325.5,-4897 325.5,-4872 269.5,-4872"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4872 269.5,-4897 325.5,-4897 325.5,-4872 269.5,-4872"/>
-<text text-anchor="start" x="280.5" y="-4880.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4847 5.5,-4872 269.5,-4872 269.5,-4847 5.5,-4847"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4847 5.5,-4872 269.5,-4872 269.5,-4847 5.5,-4847"/>
-<text text-anchor="start" x="37" y="-4856.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reaction_identifiers_kegg_reaction</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4847 269.5,-4872 325.5,-4872 325.5,-4847 269.5,-4847"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4847 269.5,-4872 325.5,-4872 325.5,-4847 269.5,-4847"/>
-<text text-anchor="start" x="280.5" y="-4855.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4822 5.5,-4847 269.5,-4847 269.5,-4822 5.5,-4822"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4822 5.5,-4847 269.5,-4847 269.5,-4822 5.5,-4822"/>
-<text text-anchor="start" x="23" y="-4831.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">compound_identifiers_kegg_compound</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4822 269.5,-4847 325.5,-4847 325.5,-4822 269.5,-4822"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4822 269.5,-4847 325.5,-4847 325.5,-4822 269.5,-4822"/>
-<text text-anchor="start" x="280.5" y="-4830.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4797 5.5,-4822 269.5,-4822 269.5,-4797 5.5,-4797"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4797 5.5,-4822 269.5,-4822 269.5,-4797 5.5,-4797"/>
-<text text-anchor="start" x="83" y="-4806.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">biological_element</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4797 269.5,-4822 325.5,-4822 325.5,-4797 269.5,-4797"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4797 269.5,-4822 325.5,-4822 325.5,-4797 269.5,-4797"/>
-<text text-anchor="start" x="280.5" y="-4805.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4772 5.5,-4797 269.5,-4797 269.5,-4772 5.5,-4772"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4772 5.5,-4797 269.5,-4797 269.5,-4772 5.5,-4772"/>
-<text text-anchor="start" x="81.5" y="-4781.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">mathematical_type</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4772 269.5,-4797 325.5,-4797 325.5,-4772 269.5,-4772"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4772 269.5,-4797 325.5,-4797 325.5,-4772 269.5,-4772"/>
-<text text-anchor="start" x="280.5" y="-4780.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4747 5.5,-4772 269.5,-4772 269.5,-4747 5.5,-4747"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4747 5.5,-4772 269.5,-4772 269.5,-4747 5.5,-4747"/>
-<text text-anchor="start" x="80" y="-4756.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">data_geometric_std</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4747 269.5,-4772 325.5,-4772 325.5,-4747 269.5,-4747"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4747 269.5,-4772 325.5,-4772 325.5,-4747 269.5,-4747"/>
-<text text-anchor="start" x="283.5" y="-4755.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4722 5.5,-4747 269.5,-4747 269.5,-4722 5.5,-4722"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4722 5.5,-4747 269.5,-4747 269.5,-4722 5.5,-4722"/>
-<text text-anchor="start" x="97" y="-4731.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">prior_median</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4722 269.5,-4747 325.5,-4747 325.5,-4722 269.5,-4722"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4722 269.5,-4747 325.5,-4747 325.5,-4722 269.5,-4722"/>
-<text text-anchor="start" x="283.5" y="-4730.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4697 5.5,-4722 269.5,-4722 269.5,-4697 5.5,-4697"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4697 5.5,-4722 269.5,-4722 269.5,-4697 5.5,-4697"/>
-<text text-anchor="start" x="110" y="-4706.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">prior_std</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4697 269.5,-4722 325.5,-4722 325.5,-4697 269.5,-4697"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4697 269.5,-4722 325.5,-4722 325.5,-4697 269.5,-4697"/>
-<text text-anchor="start" x="283.5" y="-4705.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4672 5.5,-4697 269.5,-4697 269.5,-4672 5.5,-4672"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4672 5.5,-4697 269.5,-4697 269.5,-4672 5.5,-4672"/>
-<text text-anchor="start" x="78" y="-4681.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">prior_geometric_std</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4672 269.5,-4697 325.5,-4697 325.5,-4672 269.5,-4672"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4672 269.5,-4697 325.5,-4697 325.5,-4672 269.5,-4672"/>
-<text text-anchor="start" x="283.5" y="-4680.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4647 5.5,-4672 269.5,-4672 269.5,-4647 5.5,-4647"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4647 5.5,-4672 269.5,-4672 269.5,-4647 5.5,-4647"/>
-<text text-anchor="start" x="99.5" y="-4656.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">lower_bound</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4647 269.5,-4672 325.5,-4672 325.5,-4647 269.5,-4647"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4647 269.5,-4672 325.5,-4672 325.5,-4647 269.5,-4647"/>
-<text text-anchor="start" x="283.5" y="-4655.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4622 5.5,-4647 269.5,-4647 269.5,-4622 5.5,-4622"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4622 5.5,-4647 269.5,-4647 269.5,-4622 5.5,-4622"/>
-<text text-anchor="start" x="98" y="-4631.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">upper_bound</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4622 269.5,-4647 325.5,-4647 325.5,-4622 269.5,-4622"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4622 269.5,-4647 325.5,-4647 325.5,-4622 269.5,-4622"/>
-<text text-anchor="start" x="283.5" y="-4630.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4597 5.5,-4622 269.5,-4622 269.5,-4597 5.5,-4597"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4597 5.5,-4622 269.5,-4622 269.5,-4597 5.5,-4597"/>
-<text text-anchor="start" x="112.5" y="-4606.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">data_std</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4597 269.5,-4622 325.5,-4622 325.5,-4597 269.5,-4597"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4597 269.5,-4622 325.5,-4622 325.5,-4597 269.5,-4597"/>
-<text text-anchor="start" x="283.5" y="-4605.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4572 5.5,-4597 269.5,-4597 269.5,-4572 5.5,-4572"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4572 5.5,-4597 269.5,-4597 269.5,-4572 5.5,-4572"/>
-<text text-anchor="start" x="98" y="-4581.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">physical_type</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4572 269.5,-4597 325.5,-4597 325.5,-4572 269.5,-4572"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4572 269.5,-4597 325.5,-4597 325.5,-4572 269.5,-4572"/>
-<text text-anchor="start" x="280.5" y="-4580.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4547 5.5,-4572 269.5,-4572 269.5,-4547 5.5,-4547"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4547 5.5,-4572 269.5,-4572 269.5,-4547 5.5,-4547"/>
-<text text-anchor="start" x="103.5" y="-4556.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">dependence</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4547 269.5,-4572 325.5,-4572 325.5,-4547 269.5,-4547"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4547 269.5,-4572 325.5,-4572 325.5,-4547 269.5,-4547"/>
-<text text-anchor="start" x="280.5" y="-4555.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4522 5.5,-4547 269.5,-4547 269.5,-4522 5.5,-4522"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4522 5.5,-4547 269.5,-4547 269.5,-4522 5.5,-4522"/>
-<text text-anchor="start" x="62" y="-4531.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">use_as_prior_information</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4522 269.5,-4547 325.5,-4547 325.5,-4522 269.5,-4522"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4522 269.5,-4547 325.5,-4547 325.5,-4522 269.5,-4522"/>
-<text text-anchor="start" x="274.5" y="-4530.8" font-family="Times,serif" font-size="14.00" fill="#000000">Boolean</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4497 5.5,-4522 269.5,-4522 269.5,-4497 5.5,-4497"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4497 5.5,-4522 269.5,-4522 269.5,-4497 5.5,-4497"/>
-<text text-anchor="start" x="86.5" y="-4506.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_m_l_element</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4497 269.5,-4522 325.5,-4522 325.5,-4497 269.5,-4497"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4497 269.5,-4522 325.5,-4522 325.5,-4497 269.5,-4497"/>
-<text text-anchor="start" x="280.5" y="-4505.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4472 5.5,-4497 269.5,-4497 269.5,-4472 5.5,-4472"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4472 5.5,-4497 269.5,-4497 269.5,-4472 5.5,-4472"/>
-<text text-anchor="start" x="100.5" y="-4481.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">abbreviation</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4472 269.5,-4497 325.5,-4497 325.5,-4472 269.5,-4472"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4472 269.5,-4497 325.5,-4497 325.5,-4472 269.5,-4472"/>
-<text text-anchor="start" x="280.5" y="-4480.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4447 5.5,-4472 269.5,-4472 269.5,-4447 5.5,-4447"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4447 5.5,-4472 269.5,-4472 269.5,-4447 5.5,-4447"/>
-<text text-anchor="start" x="102.5" y="-4456.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">matrix_info</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4447 269.5,-4472 325.5,-4472 325.5,-4447 269.5,-4447"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4447 269.5,-4472 325.5,-4472 325.5,-4447 269.5,-4447"/>
-<text text-anchor="start" x="280.5" y="-4455.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4422 5.5,-4447 269.5,-4447 269.5,-4422 5.5,-4422"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4422 5.5,-4447 269.5,-4447 269.5,-4422 5.5,-4422"/>
-<text text-anchor="start" x="55" y="-4431.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_equilibrium_constant</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4422 269.5,-4447 325.5,-4447 325.5,-4422 269.5,-4422"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4422 269.5,-4447 325.5,-4447 325.5,-4422 269.5,-4422"/>
-<text text-anchor="start" x="283.5" y="-4430.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4397 5.5,-4422 269.5,-4422 269.5,-4397 5.5,-4397"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4397 5.5,-4422 269.5,-4422 269.5,-4397 5.5,-4397"/>
-<text text-anchor="start" x="61" y="-4406.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_identifiers_obo_sbo</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4397 269.5,-4422 325.5,-4422 325.5,-4397 269.5,-4397"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4397 269.5,-4422 325.5,-4422 325.5,-4397 269.5,-4397"/>
-<text text-anchor="start" x="280.5" y="-4405.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4372 5.5,-4397 269.5,-4397 269.5,-4372 5.5,-4372"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4372 5.5,-4397 269.5,-4397 269.5,-4372 5.5,-4372"/>
-<text text-anchor="start" x="77.5" y="-4381.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_concentration</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4372 269.5,-4397 325.5,-4397 325.5,-4372 269.5,-4372"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4372 269.5,-4397 325.5,-4397 325.5,-4372 269.5,-4372"/>
-<text text-anchor="start" x="283.5" y="-4380.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4347 5.5,-4372 269.5,-4372 269.5,-4347 5.5,-4347"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4347 5.5,-4372 269.5,-4372 269.5,-4347 5.5,-4347"/>
-<text text-anchor="start" x="10.5" y="-4356.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_concentration_[m_m_log10]_median</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4347 269.5,-4372 325.5,-4372 325.5,-4347 269.5,-4347"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4347 269.5,-4372 325.5,-4372 325.5,-4347 269.5,-4347"/>
-<text text-anchor="start" x="283.5" y="-4355.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4322 5.5,-4347 269.5,-4347 269.5,-4322 5.5,-4322"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4322 5.5,-4347 269.5,-4347 269.5,-4322 5.5,-4322"/>
-<text text-anchor="start" x="106" y="-4331.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">value_type</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4322 269.5,-4347 325.5,-4347 325.5,-4322 269.5,-4322"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4322 269.5,-4347 325.5,-4347 325.5,-4322 269.5,-4322"/>
-<text text-anchor="start" x="280.5" y="-4330.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4297 5.5,-4322 269.5,-4322 269.5,-4297 5.5,-4297"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4297 5.5,-4322 269.5,-4322 269.5,-4297 5.5,-4297"/>
-<text text-anchor="start" x="82.5" y="-4306.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">concentration_min</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4297 269.5,-4322 325.5,-4322 325.5,-4297 269.5,-4297"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4297 269.5,-4322 325.5,-4322 325.5,-4297 269.5,-4297"/>
-<text text-anchor="start" x="283.5" y="-4305.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#ebffff" stroke="transparent" points="5.5,-4272 5.5,-4297 269.5,-4297 269.5,-4272 5.5,-4272"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4272 5.5,-4297 269.5,-4297 269.5,-4272 5.5,-4272"/>
-<text text-anchor="start" x="81.5" y="-4281.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">concentration_max</text>
-<polygon fill="#ebffff" stroke="transparent" points="269.5,-4272 269.5,-4297 325.5,-4297 325.5,-4272 269.5,-4272"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4272 269.5,-4297 325.5,-4297 325.5,-4272 269.5,-4272"/>
-<text text-anchor="start" x="283.5" y="-4280.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
-<polygon fill="#bfffff" stroke="transparent" points="5.5,-4247 5.5,-4272 269.5,-4272 269.5,-4247 5.5,-4247"/>
-<polygon fill="none" stroke="#000000" points="5.5,-4247 5.5,-4272 269.5,-4272 269.5,-4247 5.5,-4247"/>
-<text text-anchor="start" x="35.5" y="-4256.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">parameter_s_b_m_l_parameter_id</text>
-<polygon fill="#bfffff" stroke="transparent" points="269.5,-4247 269.5,-4272 325.5,-4272 325.5,-4247 269.5,-4247"/>
-<polygon fill="none" stroke="#000000" points="269.5,-4247 269.5,-4272 325.5,-4272 325.5,-4247 269.5,-4247"/>
-<text text-anchor="start" x="280.5" y="-4255.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ff8a5b" stroke="transparent" points="10.5,-6122 10.5,-6152 321.5,-6152 321.5,-6122 10.5,-6122"/>
+<polygon fill="none" stroke="#000000" points="10.5,-6122 10.5,-6152 321.5,-6152 321.5,-6122 10.5,-6122"/>
+<text text-anchor="start" x="131" y="-6133.6" font-family="Times,serif" font-weight="bold" font-size="18.00" fill="#000000">Quantity</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-6097 10.5,-6122 265.5,-6122 265.5,-6097 10.5,-6097"/>
+<polygon fill="none" stroke="#000000" points="10.5,-6097 10.5,-6122 265.5,-6122 265.5,-6097 10.5,-6097"/>
+<text text-anchor="start" x="110.5" y="-6106.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">comment</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-6097 265.5,-6122 321.5,-6122 321.5,-6097 265.5,-6097"/>
+<polygon fill="none" stroke="#000000" points="265.5,-6097 265.5,-6122 321.5,-6122 321.5,-6097 265.5,-6097"/>
+<text text-anchor="start" x="276.5" y="-6105.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-6072 10.5,-6097 265.5,-6097 265.5,-6072 10.5,-6072"/>
+<polygon fill="none" stroke="#000000" points="10.5,-6072 10.5,-6097 265.5,-6097 265.5,-6072 10.5,-6072"/>
+<text text-anchor="start" x="91" y="-6081.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reference_name</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-6072 265.5,-6097 321.5,-6097 321.5,-6072 265.5,-6072"/>
+<polygon fill="none" stroke="#000000" points="265.5,-6072 265.5,-6097 321.5,-6097 321.5,-6072 265.5,-6072"/>
+<text text-anchor="start" x="276.5" y="-6080.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-6047 10.5,-6072 265.5,-6072 265.5,-6047 10.5,-6047"/>
+<polygon fill="none" stroke="#000000" points="10.5,-6047 10.5,-6072 265.5,-6072 265.5,-6047 10.5,-6047"/>
+<text text-anchor="start" x="80" y="-6056.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reference_pub_med</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-6047 265.5,-6072 321.5,-6072 321.5,-6047 265.5,-6047"/>
+<polygon fill="none" stroke="#000000" points="265.5,-6047 265.5,-6072 321.5,-6072 321.5,-6047 265.5,-6047"/>
+<text text-anchor="start" x="276.5" y="-6055.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-6022 10.5,-6047 265.5,-6047 265.5,-6022 10.5,-6022"/>
+<polygon fill="none" stroke="#000000" points="10.5,-6022 10.5,-6047 265.5,-6047 265.5,-6022 10.5,-6022"/>
+<text text-anchor="start" x="91.5" y="-6031.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reference_d_o_i</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-6022 265.5,-6047 321.5,-6047 321.5,-6022 265.5,-6022"/>
+<polygon fill="none" stroke="#000000" points="265.5,-6022 265.5,-6047 321.5,-6047 321.5,-6022 265.5,-6022"/>
+<text text-anchor="start" x="276.5" y="-6030.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5997 10.5,-6022 265.5,-6022 265.5,-5997 10.5,-5997"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5997 10.5,-6022 265.5,-6022 265.5,-5997 10.5,-5997"/>
+<text text-anchor="start" x="105.5" y="-6006.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">description</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5997 265.5,-6022 321.5,-6022 321.5,-5997 265.5,-5997"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5997 265.5,-6022 321.5,-6022 321.5,-5997 265.5,-5997"/>
+<text text-anchor="start" x="276.5" y="-6005.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5972 10.5,-5997 265.5,-5997 265.5,-5972 10.5,-5972"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5972 10.5,-5997 265.5,-5997 265.5,-5972 10.5,-5972"/>
+<text text-anchor="start" x="121.5" y="-5981.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">name</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5972 265.5,-5997 321.5,-5997 321.5,-5972 265.5,-5972"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5972 265.5,-5997 321.5,-5997 321.5,-5972 265.5,-5972"/>
+<text text-anchor="start" x="276.5" y="-5980.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5947 10.5,-5972 265.5,-5972 265.5,-5947 10.5,-5947"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5947 10.5,-5972 265.5,-5972 265.5,-5947 10.5,-5947"/>
+<text text-anchor="start" x="78.5" y="-5956.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">miriam_annotations</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5947 265.5,-5972 321.5,-5972 321.5,-5947 265.5,-5947"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5947 265.5,-5972 321.5,-5972 321.5,-5947 265.5,-5947"/>
+<text text-anchor="start" x="276.5" y="-5955.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5922 10.5,-5947 265.5,-5947 265.5,-5922 10.5,-5922"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5922 10.5,-5947 265.5,-5947 265.5,-5922 10.5,-5922"/>
+<text text-anchor="start" x="125.5" y="-5931.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">type</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5922 265.5,-5947 321.5,-5947 321.5,-5922 265.5,-5922"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5922 265.5,-5947 321.5,-5947 321.5,-5922 265.5,-5922"/>
+<text text-anchor="start" x="276.5" y="-5930.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5897 10.5,-5922 265.5,-5922 265.5,-5897 10.5,-5897"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5897 10.5,-5922 265.5,-5922 265.5,-5897 10.5,-5897"/>
+<text text-anchor="start" x="116.5" y="-5906.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">symbol</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5897 265.5,-5922 321.5,-5922 321.5,-5897 265.5,-5897"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5897 265.5,-5922 321.5,-5922 321.5,-5897 265.5,-5897"/>
+<text text-anchor="start" x="276.5" y="-5905.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5872 10.5,-5897 265.5,-5897 265.5,-5872 10.5,-5872"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5872 10.5,-5897 265.5,-5897 265.5,-5872 10.5,-5872"/>
+<text text-anchor="start" x="108" y="-5881.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">position_x</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5872 265.5,-5897 321.5,-5897 321.5,-5872 265.5,-5872"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5872 265.5,-5897 321.5,-5897 321.5,-5872 265.5,-5872"/>
+<text text-anchor="start" x="279.5" y="-5880.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5847 10.5,-5872 265.5,-5872 265.5,-5847 10.5,-5847"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5847 10.5,-5872 265.5,-5872 265.5,-5847 10.5,-5847"/>
+<text text-anchor="start" x="108" y="-5856.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">position_y</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5847 265.5,-5872 321.5,-5872 321.5,-5847 265.5,-5847"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5847 265.5,-5872 321.5,-5872 321.5,-5847 265.5,-5847"/>
+<text text-anchor="start" x="279.5" y="-5855.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5822 10.5,-5847 265.5,-5847 265.5,-5822 10.5,-5822"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5822 10.5,-5847 265.5,-5847 265.5,-5822 10.5,-5822"/>
+<text text-anchor="start" x="128.5" y="-5831.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">i_d</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5822 265.5,-5847 321.5,-5847 321.5,-5822 265.5,-5822"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5822 265.5,-5847 321.5,-5847 321.5,-5822 265.5,-5822"/>
+<text text-anchor="start" x="276.5" y="-5830.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5797 10.5,-5822 265.5,-5822 265.5,-5797 10.5,-5797"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5797 10.5,-5822 265.5,-5822 265.5,-5797 10.5,-5797"/>
+<text text-anchor="start" x="113.5" y="-5806.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">quantity</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5797 265.5,-5822 321.5,-5822 321.5,-5797 265.5,-5797"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5797 265.5,-5822 321.5,-5822 321.5,-5797 265.5,-5797"/>
+<text text-anchor="start" x="276.5" y="-5805.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5772 10.5,-5797 265.5,-5797 265.5,-5772 10.5,-5772"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5772 10.5,-5797 265.5,-5797 265.5,-5772 10.5,-5772"/>
+<text text-anchor="start" x="110.5" y="-5781.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reference</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5772 265.5,-5797 321.5,-5797 321.5,-5772 265.5,-5772"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5772 265.5,-5797 321.5,-5797 321.5,-5772 265.5,-5772"/>
+<text text-anchor="start" x="276.5" y="-5780.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5747 10.5,-5772 265.5,-5772 265.5,-5747 10.5,-5747"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5747 10.5,-5772 265.5,-5772 265.5,-5747 10.5,-5747"/>
+<text text-anchor="start" x="94" y="-5756.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">quantity_name</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5747 265.5,-5772 321.5,-5772 321.5,-5747 265.5,-5747"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5747 265.5,-5772 321.5,-5772 321.5,-5747 265.5,-5747"/>
+<text text-anchor="start" x="276.5" y="-5755.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5722 10.5,-5747 265.5,-5747 265.5,-5722 10.5,-5722"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5722 10.5,-5747 265.5,-5747 265.5,-5722 10.5,-5722"/>
+<text text-anchor="start" x="97.5" y="-5731.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">quantity_type</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5722 265.5,-5747 321.5,-5747 321.5,-5722 265.5,-5722"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5722 265.5,-5747 321.5,-5747 321.5,-5722 265.5,-5722"/>
+<text text-anchor="start" x="276.5" y="-5730.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5697 10.5,-5722 265.5,-5722 265.5,-5697 10.5,-5697"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5697 10.5,-5722 265.5,-5722 265.5,-5697 10.5,-5697"/>
+<text text-anchor="start" x="122.5" y="-5706.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">value</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5697 265.5,-5722 321.5,-5722 321.5,-5697 265.5,-5697"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5697 265.5,-5722 321.5,-5722 321.5,-5697 265.5,-5697"/>
+<text text-anchor="start" x="279.5" y="-5705.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5672 10.5,-5697 265.5,-5697 265.5,-5672 10.5,-5672"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5672 10.5,-5697 265.5,-5697 265.5,-5672 10.5,-5672"/>
+<text text-anchor="start" x="121.5" y="-5681.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">mean</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5672 265.5,-5697 321.5,-5697 321.5,-5672 265.5,-5672"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5672 265.5,-5697 321.5,-5697 321.5,-5672 265.5,-5672"/>
+<text text-anchor="start" x="279.5" y="-5680.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5647 10.5,-5672 265.5,-5672 265.5,-5647 10.5,-5647"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5647 10.5,-5672 265.5,-5672 265.5,-5647 10.5,-5647"/>
+<text text-anchor="start" x="129" y="-5656.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">std</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5647 265.5,-5672 321.5,-5672 321.5,-5647 265.5,-5647"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5647 265.5,-5672 321.5,-5672 321.5,-5647 265.5,-5647"/>
+<text text-anchor="start" x="279.5" y="-5655.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5622 10.5,-5647 265.5,-5647 265.5,-5622 10.5,-5622"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5622 10.5,-5647 265.5,-5647 265.5,-5622 10.5,-5622"/>
+<text text-anchor="start" x="126" y="-5631.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">min</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5622 265.5,-5647 321.5,-5647 321.5,-5622 265.5,-5622"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5622 265.5,-5647 321.5,-5647 321.5,-5622 265.5,-5622"/>
+<text text-anchor="start" x="279.5" y="-5630.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5597 10.5,-5622 265.5,-5622 265.5,-5597 10.5,-5597"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5597 10.5,-5622 265.5,-5622 265.5,-5597 10.5,-5597"/>
+<text text-anchor="start" x="125" y="-5606.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">max</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5597 265.5,-5622 321.5,-5622 321.5,-5597 265.5,-5597"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5597 265.5,-5622 321.5,-5622 321.5,-5597 265.5,-5597"/>
+<text text-anchor="start" x="279.5" y="-5605.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5572 10.5,-5597 265.5,-5597 265.5,-5572 10.5,-5572"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5572 10.5,-5597 265.5,-5597 265.5,-5572 10.5,-5572"/>
+<text text-anchor="start" x="116" y="-5581.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">median</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5572 265.5,-5597 321.5,-5597 321.5,-5572 265.5,-5572"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5572 265.5,-5597 321.5,-5597 321.5,-5572 265.5,-5572"/>
+<text text-anchor="start" x="279.5" y="-5580.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5547 10.5,-5572 265.5,-5572 265.5,-5547 10.5,-5547"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5547 10.5,-5572 265.5,-5572 265.5,-5547 10.5,-5547"/>
+<text text-anchor="start" x="89.5" y="-5556.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">geometric_mean</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5547 265.5,-5572 321.5,-5572 321.5,-5547 265.5,-5547"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5547 265.5,-5572 321.5,-5572 321.5,-5547 265.5,-5547"/>
+<text text-anchor="start" x="279.5" y="-5555.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5522 10.5,-5547 265.5,-5547 265.5,-5522 10.5,-5522"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5522 10.5,-5547 265.5,-5547 265.5,-5522 10.5,-5522"/>
+<text text-anchor="start" x="126" y="-5531.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">sign</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5522 265.5,-5547 321.5,-5547 321.5,-5522 265.5,-5522"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5522 265.5,-5547 321.5,-5547 321.5,-5522 265.5,-5522"/>
+<text text-anchor="start" x="276.5" y="-5530.8" font-family="Times,serif" font-size="14.00" fill="#000000">Enum</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5497 10.5,-5522 265.5,-5522 265.5,-5497 10.5,-5497"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5497 10.5,-5522 265.5,-5522 265.5,-5497 10.5,-5497"/>
+<text text-anchor="start" x="110" y="-5506.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">prob_dist</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5497 265.5,-5522 321.5,-5522 321.5,-5497 265.5,-5497"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5497 265.5,-5522 321.5,-5522 321.5,-5497 265.5,-5497"/>
+<text text-anchor="start" x="276.5" y="-5505.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5472 10.5,-5497 265.5,-5497 265.5,-5472 10.5,-5472"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5472 10.5,-5497 265.5,-5497 265.5,-5472 10.5,-5472"/>
+<text text-anchor="start" x="70" y="-5481.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_m_l_parameter_id</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5472 265.5,-5497 321.5,-5497 321.5,-5472 265.5,-5472"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5472 265.5,-5497 321.5,-5497 321.5,-5472 265.5,-5472"/>
+<text text-anchor="start" x="276.5" y="-5480.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5447 10.5,-5472 265.5,-5472 265.5,-5447 10.5,-5447"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5447 10.5,-5472 265.5,-5472 265.5,-5447 10.5,-5447"/>
+<text text-anchor="start" x="126" y="-5456.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">unit</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5447 265.5,-5472 321.5,-5472 321.5,-5447 265.5,-5447"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5447 265.5,-5472 321.5,-5472 321.5,-5447 265.5,-5447"/>
+<text text-anchor="start" x="276.5" y="-5455.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5422 10.5,-5447 265.5,-5447 265.5,-5422 10.5,-5422"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5422 10.5,-5447 265.5,-5447 265.5,-5422 10.5,-5422"/>
+<text text-anchor="start" x="124" y="-5431.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">scale</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5422 265.5,-5447 321.5,-5447 321.5,-5422 265.5,-5422"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5422 265.5,-5447 321.5,-5447 321.5,-5422 265.5,-5422"/>
+<text text-anchor="start" x="276.5" y="-5430.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5397 10.5,-5422 265.5,-5422 265.5,-5397 10.5,-5397"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5397 10.5,-5422 265.5,-5422 265.5,-5397 10.5,-5397"/>
+<text text-anchor="start" x="124.5" y="-5406.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">time</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5397 265.5,-5422 321.5,-5422 321.5,-5397 265.5,-5397"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5397 265.5,-5422 321.5,-5422 321.5,-5397 265.5,-5397"/>
+<text text-anchor="start" x="279.5" y="-5405.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5372 10.5,-5397 265.5,-5397 265.5,-5372 10.5,-5372"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5372 10.5,-5397 265.5,-5397 265.5,-5372 10.5,-5372"/>
+<text text-anchor="start" x="106" y="-5381.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">time_point</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5372 265.5,-5397 321.5,-5397 321.5,-5372 265.5,-5372"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5372 265.5,-5397 321.5,-5397 321.5,-5372 265.5,-5372"/>
+<text text-anchor="start" x="276.5" y="-5380.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5347 10.5,-5372 265.5,-5372 265.5,-5347 10.5,-5347"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5347 10.5,-5372 265.5,-5372 265.5,-5347 10.5,-5347"/>
+<text text-anchor="start" x="110.5" y="-5356.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">condition</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5347 265.5,-5372 321.5,-5372 321.5,-5347 265.5,-5347"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5347 265.5,-5372 321.5,-5372 321.5,-5347 265.5,-5347"/>
+<text text-anchor="start" x="276.5" y="-5355.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5322 10.5,-5347 265.5,-5347 265.5,-5322 10.5,-5322"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5322 10.5,-5347 265.5,-5347 265.5,-5322 10.5,-5322"/>
+<text text-anchor="start" x="127" y="-5331.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">p_h</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5322 265.5,-5347 321.5,-5347 321.5,-5322 265.5,-5322"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5322 265.5,-5347 321.5,-5347 321.5,-5322 265.5,-5322"/>
+<text text-anchor="start" x="279.5" y="-5330.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5297 10.5,-5322 265.5,-5322 265.5,-5297 10.5,-5297"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5297 10.5,-5322 265.5,-5322 265.5,-5297 10.5,-5297"/>
+<text text-anchor="start" x="101.5" y="-5306.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">temperature</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5297 265.5,-5322 321.5,-5322 321.5,-5297 265.5,-5297"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5297 265.5,-5322 321.5,-5322 321.5,-5297 265.5,-5297"/>
+<text text-anchor="start" x="279.5" y="-5305.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5272 10.5,-5297 265.5,-5297 265.5,-5272 10.5,-5272"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5272 10.5,-5297 265.5,-5297 265.5,-5272 10.5,-5272"/>
+<text text-anchor="start" x="115" y="-5281.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">location</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5272 265.5,-5297 321.5,-5297 321.5,-5272 265.5,-5272"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5272 265.5,-5297 321.5,-5297 321.5,-5272 265.5,-5272"/>
+<text text-anchor="start" x="276.5" y="-5280.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5247 10.5,-5272 265.5,-5272 265.5,-5247 10.5,-5247"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5247 10.5,-5272 265.5,-5272 265.5,-5247 10.5,-5247"/>
+<text text-anchor="start" x="35" y="-5256.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">location_s_b_m_l_compartment_id</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5247 265.5,-5272 321.5,-5272 321.5,-5247 265.5,-5247"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5247 265.5,-5272 321.5,-5272 321.5,-5247 265.5,-5247"/>
+<text text-anchor="start" x="276.5" y="-5255.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5222 10.5,-5247 265.5,-5247 265.5,-5222 10.5,-5222"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5222 10.5,-5247 265.5,-5247 265.5,-5222 10.5,-5222"/>
+<text text-anchor="start" x="107" y="-5231.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">compound</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5222 265.5,-5247 321.5,-5247 321.5,-5222 265.5,-5222"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5222 265.5,-5247 321.5,-5247 321.5,-5222 265.5,-5222"/>
+<text text-anchor="start" x="276.5" y="-5230.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5197 10.5,-5222 265.5,-5222 265.5,-5197 10.5,-5197"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5197 10.5,-5222 265.5,-5222 265.5,-5197 10.5,-5197"/>
+<text text-anchor="start" x="47" y="-5206.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">compound_s_b_m_l_species_id</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5197 265.5,-5222 321.5,-5222 321.5,-5197 265.5,-5197"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5197 265.5,-5222 321.5,-5222 321.5,-5197 265.5,-5197"/>
+<text text-anchor="start" x="276.5" y="-5205.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5172 10.5,-5197 265.5,-5197 265.5,-5172 10.5,-5172"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5172 10.5,-5197 265.5,-5197 265.5,-5172 10.5,-5172"/>
+<text text-anchor="start" x="114" y="-5181.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reaction</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5172 265.5,-5197 321.5,-5197 321.5,-5172 265.5,-5172"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5172 265.5,-5197 321.5,-5197 321.5,-5172 265.5,-5172"/>
+<text text-anchor="start" x="276.5" y="-5180.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5147 10.5,-5172 265.5,-5172 265.5,-5147 10.5,-5147"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5147 10.5,-5172 265.5,-5172 265.5,-5147 10.5,-5147"/>
+<text text-anchor="start" x="50.5" y="-5156.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reaction_s_b_m_l_reaction_id</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5147 265.5,-5172 321.5,-5172 321.5,-5147 265.5,-5147"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5147 265.5,-5172 321.5,-5172 321.5,-5147 265.5,-5147"/>
+<text text-anchor="start" x="276.5" y="-5155.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5122 10.5,-5147 265.5,-5147 265.5,-5122 10.5,-5122"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5122 10.5,-5147 265.5,-5147 265.5,-5122 10.5,-5122"/>
+<text text-anchor="start" x="115.5" y="-5131.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">enyzme</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5122 265.5,-5147 321.5,-5147 321.5,-5122 265.5,-5122"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5122 265.5,-5147 321.5,-5147 321.5,-5122 265.5,-5122"/>
+<text text-anchor="start" x="276.5" y="-5130.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5097 10.5,-5122 265.5,-5122 265.5,-5097 10.5,-5097"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5097 10.5,-5122 265.5,-5122 265.5,-5097 10.5,-5097"/>
+<text text-anchor="start" x="55.5" y="-5106.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">enyzme_s_b_m_l_species_id</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5097 265.5,-5122 321.5,-5122 321.5,-5097 265.5,-5097"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5097 265.5,-5122 321.5,-5122 321.5,-5097 265.5,-5097"/>
+<text text-anchor="start" x="276.5" y="-5105.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5072 10.5,-5097 265.5,-5097 265.5,-5072 10.5,-5072"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5072 10.5,-5097 265.5,-5097 265.5,-5072 10.5,-5072"/>
+<text text-anchor="start" x="44.5" y="-5081.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">enyzme_s_b_m_l_parameter_id</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5072 265.5,-5097 321.5,-5097 321.5,-5072 265.5,-5072"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5072 265.5,-5097 321.5,-5097 321.5,-5072 265.5,-5072"/>
+<text text-anchor="start" x="276.5" y="-5080.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-5047 10.5,-5072 265.5,-5072 265.5,-5047 10.5,-5047"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5047 10.5,-5072 265.5,-5072 265.5,-5047 10.5,-5047"/>
+<text text-anchor="start" x="124.5" y="-5056.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">gene</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-5047 265.5,-5072 321.5,-5072 321.5,-5047 265.5,-5047"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5047 265.5,-5072 321.5,-5072 321.5,-5047 265.5,-5047"/>
+<text text-anchor="start" x="276.5" y="-5055.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-5022 10.5,-5047 265.5,-5047 265.5,-5022 10.5,-5022"/>
+<polygon fill="none" stroke="#000000" points="10.5,-5022 10.5,-5047 265.5,-5047 265.5,-5022 10.5,-5022"/>
+<text text-anchor="start" x="110.5" y="-5031.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">organism</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-5022 265.5,-5047 321.5,-5047 321.5,-5022 265.5,-5022"/>
+<polygon fill="none" stroke="#000000" points="265.5,-5022 265.5,-5047 321.5,-5047 321.5,-5022 265.5,-5022"/>
+<text text-anchor="start" x="276.5" y="-5030.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4997 10.5,-5022 265.5,-5022 265.5,-4997 10.5,-4997"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4997 10.5,-5022 265.5,-5022 265.5,-4997 10.5,-4997"/>
+<text text-anchor="start" x="104.5" y="-5006.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">provenance</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4997 265.5,-5022 321.5,-5022 321.5,-4997 265.5,-4997"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4997 265.5,-5022 321.5,-5022 321.5,-4997 265.5,-4997"/>
+<text text-anchor="start" x="276.5" y="-5005.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4972 10.5,-4997 265.5,-4997 265.5,-4972 10.5,-4972"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4972 10.5,-4997 265.5,-4997 265.5,-4972 10.5,-4972"/>
+<text text-anchor="start" x="103.5" y="-4981.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_term</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4972 265.5,-4997 321.5,-4997 321.5,-4972 265.5,-4972"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4972 265.5,-4997 321.5,-4997 321.5,-4972 265.5,-4972"/>
+<text text-anchor="start" x="276.5" y="-4980.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4947 10.5,-4972 265.5,-4972 265.5,-4947 10.5,-4947"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4947 10.5,-4972 265.5,-4972 265.5,-4947 10.5,-4947"/>
+<text text-anchor="start" x="108.5" y="-4956.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">identifiers</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4947 265.5,-4972 321.5,-4972 321.5,-4947 265.5,-4947"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4947 265.5,-4972 321.5,-4972 321.5,-4947 265.5,-4947"/>
+<text text-anchor="start" x="276.5" y="-4955.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4922 10.5,-4947 265.5,-4947 265.5,-4922 10.5,-4922"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4922 10.5,-4947 265.5,-4947 265.5,-4922 10.5,-4922"/>
+<text text-anchor="start" x="64.5" y="-4931.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">identifiers_kegg_reaction</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4922 265.5,-4947 321.5,-4947 321.5,-4922 265.5,-4922"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4922 265.5,-4947 321.5,-4947 321.5,-4922 265.5,-4922"/>
+<text text-anchor="start" x="276.5" y="-4930.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4897 10.5,-4922 265.5,-4922 265.5,-4897 10.5,-4897"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4897 10.5,-4922 265.5,-4922 265.5,-4897 10.5,-4897"/>
+<text text-anchor="start" x="57.5" y="-4906.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">identifiers_kegg_compound</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4897 265.5,-4922 321.5,-4922 321.5,-4897 265.5,-4897"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4897 265.5,-4922 321.5,-4922 321.5,-4897 265.5,-4897"/>
+<text text-anchor="start" x="276.5" y="-4905.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4872 10.5,-4897 265.5,-4897 265.5,-4872 10.5,-4872"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4872 10.5,-4897 265.5,-4897 265.5,-4872 10.5,-4872"/>
+<text text-anchor="start" x="76" y="-4881.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">identifiers_obo_chebi</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4872 265.5,-4897 321.5,-4897 321.5,-4872 265.5,-4872"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4872 265.5,-4897 321.5,-4897 321.5,-4872 265.5,-4872"/>
+<text text-anchor="start" x="276.5" y="-4880.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4847 10.5,-4872 265.5,-4872 265.5,-4847 10.5,-4847"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4847 10.5,-4872 265.5,-4872 265.5,-4847 10.5,-4847"/>
+<text text-anchor="start" x="37.5" y="-4856.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">reaction_identifiers_kegg_reaction</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4847 265.5,-4872 321.5,-4872 321.5,-4847 265.5,-4847"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4847 265.5,-4872 321.5,-4872 321.5,-4847 265.5,-4847"/>
+<text text-anchor="start" x="276.5" y="-4855.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4822 10.5,-4847 265.5,-4847 265.5,-4822 10.5,-4822"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4822 10.5,-4847 265.5,-4847 265.5,-4822 10.5,-4822"/>
+<text text-anchor="start" x="23.5" y="-4831.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">compound_identifiers_kegg_compound</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4822 265.5,-4847 321.5,-4847 321.5,-4822 265.5,-4822"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4822 265.5,-4847 321.5,-4847 321.5,-4822 265.5,-4822"/>
+<text text-anchor="start" x="276.5" y="-4830.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4797 10.5,-4822 265.5,-4822 265.5,-4797 10.5,-4797"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4797 10.5,-4822 265.5,-4822 265.5,-4797 10.5,-4797"/>
+<text text-anchor="start" x="83.5" y="-4806.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">biological_element</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4797 265.5,-4822 321.5,-4822 321.5,-4797 265.5,-4797"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4797 265.5,-4822 321.5,-4822 321.5,-4797 265.5,-4797"/>
+<text text-anchor="start" x="276.5" y="-4805.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4772 10.5,-4797 265.5,-4797 265.5,-4772 10.5,-4772"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4772 10.5,-4797 265.5,-4797 265.5,-4772 10.5,-4772"/>
+<text text-anchor="start" x="82" y="-4781.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">mathematical_type</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4772 265.5,-4797 321.5,-4797 321.5,-4772 265.5,-4772"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4772 265.5,-4797 321.5,-4797 321.5,-4772 265.5,-4772"/>
+<text text-anchor="start" x="276.5" y="-4780.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4747 10.5,-4772 265.5,-4772 265.5,-4747 10.5,-4747"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4747 10.5,-4772 265.5,-4772 265.5,-4747 10.5,-4747"/>
+<text text-anchor="start" x="80.5" y="-4756.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">data_geometric_std</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4747 265.5,-4772 321.5,-4772 321.5,-4747 265.5,-4747"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4747 265.5,-4772 321.5,-4772 321.5,-4747 265.5,-4747"/>
+<text text-anchor="start" x="279.5" y="-4755.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4722 10.5,-4747 265.5,-4747 265.5,-4722 10.5,-4722"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4722 10.5,-4747 265.5,-4747 265.5,-4722 10.5,-4722"/>
+<text text-anchor="start" x="97.5" y="-4731.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">prior_median</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4722 265.5,-4747 321.5,-4747 321.5,-4722 265.5,-4722"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4722 265.5,-4747 321.5,-4747 321.5,-4722 265.5,-4722"/>
+<text text-anchor="start" x="279.5" y="-4730.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4697 10.5,-4722 265.5,-4722 265.5,-4697 10.5,-4697"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4697 10.5,-4722 265.5,-4722 265.5,-4697 10.5,-4697"/>
+<text text-anchor="start" x="110.5" y="-4706.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">prior_std</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4697 265.5,-4722 321.5,-4722 321.5,-4697 265.5,-4697"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4697 265.5,-4722 321.5,-4722 321.5,-4697 265.5,-4697"/>
+<text text-anchor="start" x="279.5" y="-4705.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4672 10.5,-4697 265.5,-4697 265.5,-4672 10.5,-4672"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4672 10.5,-4697 265.5,-4697 265.5,-4672 10.5,-4672"/>
+<text text-anchor="start" x="78.5" y="-4681.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">prior_geometric_std</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4672 265.5,-4697 321.5,-4697 321.5,-4672 265.5,-4672"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4672 265.5,-4697 321.5,-4697 321.5,-4672 265.5,-4672"/>
+<text text-anchor="start" x="279.5" y="-4680.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4647 10.5,-4672 265.5,-4672 265.5,-4647 10.5,-4647"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4647 10.5,-4672 265.5,-4672 265.5,-4647 10.5,-4647"/>
+<text text-anchor="start" x="100" y="-4656.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">lower_bound</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4647 265.5,-4672 321.5,-4672 321.5,-4647 265.5,-4647"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4647 265.5,-4672 321.5,-4672 321.5,-4647 265.5,-4647"/>
+<text text-anchor="start" x="279.5" y="-4655.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4622 10.5,-4647 265.5,-4647 265.5,-4622 10.5,-4622"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4622 10.5,-4647 265.5,-4647 265.5,-4622 10.5,-4622"/>
+<text text-anchor="start" x="98.5" y="-4631.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">upper_bound</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4622 265.5,-4647 321.5,-4647 321.5,-4622 265.5,-4622"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4622 265.5,-4647 321.5,-4647 321.5,-4622 265.5,-4622"/>
+<text text-anchor="start" x="279.5" y="-4630.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4597 10.5,-4622 265.5,-4622 265.5,-4597 10.5,-4597"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4597 10.5,-4622 265.5,-4622 265.5,-4597 10.5,-4597"/>
+<text text-anchor="start" x="113" y="-4606.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">data_std</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4597 265.5,-4622 321.5,-4622 321.5,-4597 265.5,-4597"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4597 265.5,-4622 321.5,-4622 321.5,-4597 265.5,-4597"/>
+<text text-anchor="start" x="279.5" y="-4605.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4572 10.5,-4597 265.5,-4597 265.5,-4572 10.5,-4572"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4572 10.5,-4597 265.5,-4597 265.5,-4572 10.5,-4572"/>
+<text text-anchor="start" x="98.5" y="-4581.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">physical_type</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4572 265.5,-4597 321.5,-4597 321.5,-4572 265.5,-4572"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4572 265.5,-4597 321.5,-4597 321.5,-4572 265.5,-4572"/>
+<text text-anchor="start" x="276.5" y="-4580.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4547 10.5,-4572 265.5,-4572 265.5,-4547 10.5,-4547"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4547 10.5,-4572 265.5,-4572 265.5,-4547 10.5,-4547"/>
+<text text-anchor="start" x="104" y="-4556.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">dependence</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4547 265.5,-4572 321.5,-4572 321.5,-4547 265.5,-4547"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4547 265.5,-4572 321.5,-4572 321.5,-4547 265.5,-4547"/>
+<text text-anchor="start" x="276.5" y="-4555.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4522 10.5,-4547 265.5,-4547 265.5,-4522 10.5,-4522"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4522 10.5,-4547 265.5,-4547 265.5,-4522 10.5,-4522"/>
+<text text-anchor="start" x="62.5" y="-4531.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">use_as_prior_information</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4522 265.5,-4547 321.5,-4547 321.5,-4522 265.5,-4522"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4522 265.5,-4547 321.5,-4547 321.5,-4522 265.5,-4522"/>
+<text text-anchor="start" x="270.5" y="-4530.8" font-family="Times,serif" font-size="14.00" fill="#000000">Boolean</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4497 10.5,-4522 265.5,-4522 265.5,-4497 10.5,-4497"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4497 10.5,-4522 265.5,-4522 265.5,-4497 10.5,-4497"/>
+<text text-anchor="start" x="87" y="-4506.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_m_l_element</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4497 265.5,-4522 321.5,-4522 321.5,-4497 265.5,-4497"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4497 265.5,-4522 321.5,-4522 321.5,-4497 265.5,-4497"/>
+<text text-anchor="start" x="276.5" y="-4505.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4472 10.5,-4497 265.5,-4497 265.5,-4472 10.5,-4472"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4472 10.5,-4497 265.5,-4497 265.5,-4472 10.5,-4472"/>
+<text text-anchor="start" x="101" y="-4481.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">abbreviation</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4472 265.5,-4497 321.5,-4497 321.5,-4472 265.5,-4472"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4472 265.5,-4497 321.5,-4497 321.5,-4472 265.5,-4472"/>
+<text text-anchor="start" x="276.5" y="-4480.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4447 10.5,-4472 265.5,-4472 265.5,-4447 10.5,-4447"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4447 10.5,-4472 265.5,-4472 265.5,-4447 10.5,-4447"/>
+<text text-anchor="start" x="103" y="-4456.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">matrix_info</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4447 265.5,-4472 321.5,-4472 321.5,-4447 265.5,-4447"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4447 265.5,-4472 321.5,-4472 321.5,-4447 265.5,-4447"/>
+<text text-anchor="start" x="276.5" y="-4455.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4422 10.5,-4447 265.5,-4447 265.5,-4422 10.5,-4422"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4422 10.5,-4447 265.5,-4447 265.5,-4422 10.5,-4422"/>
+<text text-anchor="start" x="55.5" y="-4431.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_equilibrium_constant</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4422 265.5,-4447 321.5,-4447 321.5,-4422 265.5,-4422"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4422 265.5,-4447 321.5,-4447 321.5,-4422 265.5,-4422"/>
+<text text-anchor="start" x="279.5" y="-4430.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4397 10.5,-4422 265.5,-4422 265.5,-4397 10.5,-4397"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4397 10.5,-4422 265.5,-4422 265.5,-4397 10.5,-4397"/>
+<text text-anchor="start" x="61.5" y="-4406.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_identifiers_obo_sbo</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4397 265.5,-4422 321.5,-4422 321.5,-4397 265.5,-4397"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4397 265.5,-4422 321.5,-4422 321.5,-4397 265.5,-4397"/>
+<text text-anchor="start" x="276.5" y="-4405.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4372 10.5,-4397 265.5,-4397 265.5,-4372 10.5,-4372"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4372 10.5,-4397 265.5,-4397 265.5,-4372 10.5,-4372"/>
+<text text-anchor="start" x="78" y="-4381.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_concentration</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4372 265.5,-4397 321.5,-4397 321.5,-4372 265.5,-4372"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4372 265.5,-4397 321.5,-4397 321.5,-4372 265.5,-4372"/>
+<text text-anchor="start" x="279.5" y="-4380.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4347 10.5,-4372 265.5,-4372 265.5,-4347 10.5,-4347"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4347 10.5,-4372 265.5,-4372 265.5,-4347 10.5,-4347"/>
+<text text-anchor="start" x="15.5" y="-4356.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">s_b_o_concentration_m_m_log10_median</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4347 265.5,-4372 321.5,-4372 321.5,-4347 265.5,-4347"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4347 265.5,-4372 321.5,-4372 321.5,-4347 265.5,-4347"/>
+<text text-anchor="start" x="279.5" y="-4355.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4322 10.5,-4347 265.5,-4347 265.5,-4322 10.5,-4322"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4322 10.5,-4347 265.5,-4347 265.5,-4322 10.5,-4322"/>
+<text text-anchor="start" x="106.5" y="-4331.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">value_type</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4322 265.5,-4347 321.5,-4347 321.5,-4322 265.5,-4322"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4322 265.5,-4347 321.5,-4347 321.5,-4322 265.5,-4322"/>
+<text text-anchor="start" x="276.5" y="-4330.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4297 10.5,-4322 265.5,-4322 265.5,-4297 10.5,-4297"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4297 10.5,-4322 265.5,-4322 265.5,-4297 10.5,-4297"/>
+<text text-anchor="start" x="83" y="-4306.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">concentration_min</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4297 265.5,-4322 321.5,-4322 321.5,-4297 265.5,-4297"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4297 265.5,-4322 321.5,-4322 321.5,-4297 265.5,-4297"/>
+<text text-anchor="start" x="279.5" y="-4305.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#ebffff" stroke="transparent" points="10.5,-4272 10.5,-4297 265.5,-4297 265.5,-4272 10.5,-4272"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4272 10.5,-4297 265.5,-4297 265.5,-4272 10.5,-4272"/>
+<text text-anchor="start" x="82" y="-4281.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">concentration_max</text>
+<polygon fill="#ebffff" stroke="transparent" points="265.5,-4272 265.5,-4297 321.5,-4297 321.5,-4272 265.5,-4272"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4272 265.5,-4297 321.5,-4297 321.5,-4272 265.5,-4272"/>
+<text text-anchor="start" x="279.5" y="-4280.8" font-family="Times,serif" font-size="14.00" fill="#000000">Float</text>
+<polygon fill="#bfffff" stroke="transparent" points="10.5,-4247 10.5,-4272 265.5,-4272 265.5,-4247 10.5,-4247"/>
+<polygon fill="none" stroke="#000000" points="10.5,-4247 10.5,-4272 265.5,-4272 265.5,-4247 10.5,-4247"/>
+<text text-anchor="start" x="36" y="-4256.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">parameter_s_b_m_l_parameter_id</text>
+<polygon fill="#bfffff" stroke="transparent" points="265.5,-4247 265.5,-4272 321.5,-4272 321.5,-4247 265.5,-4247"/>
+<polygon fill="none" stroke="#000000" points="265.5,-4247 265.5,-4272 321.5,-4272 321.5,-4247 265.5,-4247"/>
+<text text-anchor="start" x="276.5" y="-4255.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
 </g>
 <!-- QuantityInfo -->
 <g id="node13" class="node">
@@ -2320,13 +2320,13 @@
 <text text-anchor="start" x="212.5" y="-10018.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
 <polygon fill="#bfffff" stroke="transparent" points="73.5,-9985 73.5,-10010 201.5,-10010 201.5,-9985 73.5,-9985"/>
 <polygon fill="none" stroke="#000000" points="73.5,-9985 73.5,-10010 201.5,-10010 201.5,-9985 73.5,-9985"/>
-<text text-anchor="start" x="122.5" y="-9994.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">from</text>
+<text text-anchor="start" x="101.5" y="-9994.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">from_object</text>
 <polygon fill="#bfffff" stroke="transparent" points="201.5,-9985 201.5,-10010 257.5,-10010 257.5,-9985 201.5,-9985"/>
 <polygon fill="none" stroke="#000000" points="201.5,-9985 201.5,-10010 257.5,-10010 257.5,-9985 201.5,-9985"/>
 <text text-anchor="start" x="212.5" y="-9993.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
 <polygon fill="#ebffff" stroke="transparent" points="73.5,-9960 73.5,-9985 201.5,-9985 201.5,-9960 73.5,-9960"/>
 <polygon fill="none" stroke="#000000" points="73.5,-9960 73.5,-9985 201.5,-9985 201.5,-9960 73.5,-9960"/>
-<text text-anchor="start" x="131.5" y="-9969.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">to</text>
+<text text-anchor="start" x="110.5" y="-9969.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">to_object</text>
 <polygon fill="#ebffff" stroke="transparent" points="201.5,-9960 201.5,-9985 257.5,-9985 257.5,-9960 201.5,-9960"/>
 <polygon fill="none" stroke="#000000" points="201.5,-9960 201.5,-9985 257.5,-9985 257.5,-9960 201.5,-9960"/>
 <text text-anchor="start" x="212.5" y="-9968.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
@@ -2357,13 +2357,13 @@
 <text text-anchor="start" x="193.5" y="-10374.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
 <polygon fill="#ebffff" stroke="transparent" points="93.5,-10341 93.5,-10366 182.5,-10366 182.5,-10341 93.5,-10341"/>
 <polygon fill="none" stroke="#000000" points="93.5,-10341 93.5,-10366 182.5,-10366 182.5,-10341 93.5,-10341"/>
-<text text-anchor="start" x="123" y="-10350.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">from</text>
+<text text-anchor="start" x="102" y="-10350.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">from_object</text>
 <polygon fill="#ebffff" stroke="transparent" points="182.5,-10341 182.5,-10366 238.5,-10366 238.5,-10341 182.5,-10341"/>
 <polygon fill="none" stroke="#000000" points="182.5,-10341 182.5,-10366 238.5,-10366 238.5,-10341 182.5,-10341"/>
 <text text-anchor="start" x="193.5" y="-10349.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>
 <polygon fill="#bfffff" stroke="transparent" points="93.5,-10316 93.5,-10341 182.5,-10341 182.5,-10316 93.5,-10316"/>
 <polygon fill="none" stroke="#000000" points="93.5,-10316 93.5,-10341 182.5,-10341 182.5,-10316 93.5,-10316"/>
-<text text-anchor="start" x="132" y="-10325.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">to</text>
+<text text-anchor="start" x="111" y="-10325.8" font-family="Times,serif" font-weight="bold" font-size="14.00" fill="#000000">to_object</text>
 <polygon fill="#bfffff" stroke="transparent" points="182.5,-10316 182.5,-10341 238.5,-10341 238.5,-10316 182.5,-10316"/>
 <polygon fill="none" stroke="#000000" points="182.5,-10316 182.5,-10341 238.5,-10341 238.5,-10316 182.5,-10316"/>
 <text text-anchor="start" x="193.5" y="-10324.8" font-family="Times,serif" font-size="14.00" fill="#000000">String</text>

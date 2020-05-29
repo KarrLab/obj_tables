@@ -1,4 +1,4 @@
-# Schema automatically generated at 2020-04-26 21:15:29
+# Schema automatically generated at 2020-05-29 00:18:53
 
 import obj_tables
 
@@ -8,6 +8,46 @@ __all__ = [
     'Model',
     'Reaction',
 ]
+
+
+class Model(obj_tables.Model):
+    """ Model """
+
+    id = obj_tables.SlugAttribute(verbose_name='Id')
+    name = obj_tables.StringAttribute(verbose_name='Name')
+
+    class Meta(obj_tables.Model.Meta):
+        table_format = obj_tables.TableFormat.column
+        attribute_order = (
+            'id',
+            'name',
+        )
+        verbose_name = 'Model'
+        verbose_name_plural = 'Model'
+        description = 'Model'
+
+
+class Compound(obj_tables.Model):
+    """ Compound """
+
+    model = obj_tables.ManyToOneAttribute('Model', related_name='compounds', verbose_name='Model')
+    id = obj_tables.SlugAttribute(verbose_name='Id')
+    name = obj_tables.StringAttribute(verbose_name='Name')
+    identifiers = obj_tables.StringAttribute(verbose_name='Identifiers')
+    is_constant = obj_tables.BooleanAttribute(verbose_name='IsConstant')
+
+    class Meta(obj_tables.Model.Meta):
+        table_format = obj_tables.TableFormat.row
+        attribute_order = (
+            'model',
+            'id',
+            'name',
+            'identifiers',
+            'is_constant',
+        )
+        verbose_name = 'Compound'
+        verbose_name_plural = 'Compound'
+        description = 'Compound'
 
 
 class Reaction(obj_tables.Model):
@@ -35,43 +75,3 @@ class Reaction(obj_tables.Model):
         verbose_name = 'Reaction'
         verbose_name_plural = 'Reaction'
         description = 'Reaction'
-
-
-class Compound(obj_tables.Model):
-    """ Compound """
-
-    model = obj_tables.ManyToOneAttribute('Model', related_name='compounds', verbose_name='Model')
-    id = obj_tables.SlugAttribute(verbose_name='Id')
-    name = obj_tables.StringAttribute(verbose_name='Name')
-    identifiers = obj_tables.StringAttribute(verbose_name='Identifiers')
-    is_constant = obj_tables.BooleanAttribute(verbose_name='IsConstant')
-
-    class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TableFormat.row
-        attribute_order = (
-            'model',
-            'id',
-            'name',
-            'identifiers',
-            'is_constant',
-        )
-        verbose_name = 'Compound'
-        verbose_name_plural = 'Compound'
-        description = 'Compound'
-
-
-class Model(obj_tables.Model):
-    """ Model """
-
-    id = obj_tables.SlugAttribute(verbose_name='Id')
-    name = obj_tables.StringAttribute(verbose_name='Name')
-
-    class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TableFormat.column
-        attribute_order = (
-            'id',
-            'name',
-        )
-        verbose_name = 'Model'
-        verbose_name_plural = 'Model'
-        description = 'Model'

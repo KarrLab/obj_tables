@@ -1,4 +1,4 @@
-# Schema automatically generated at 2020-04-26 21:15:32
+# Schema automatically generated at 2020-05-29 00:18:55
 
 import obj_tables
 
@@ -10,20 +10,18 @@ __all__ = [
 ]
 
 
-class Game(obj_tables.Model):
-    name = obj_tables.StringAttribute(unique=True, primary=True)
-    publisher = obj_tables.StringAttribute()
-    year = obj_tables.IntegerAttribute()
+class Parent(obj_tables.Model):
+    id = obj_tables.StringAttribute(unique=True, primary=True)
+    name = obj_tables.StringAttribute()
 
     class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TableFormat.multiple_cells
+        table_format = obj_tables.TableFormat.column
         attribute_order = (
+            'id',
             'name',
-            'publisher',
-            'year',
         )
-        verbose_name = 'Game'
-        verbose_name_plural = 'Game'
+        verbose_name = 'Parent'
+        verbose_name_plural = 'Parent'
 
 
 class Child(obj_tables.Model):
@@ -46,15 +44,17 @@ class Child(obj_tables.Model):
         verbose_name_plural = 'Child'
 
 
-class Parent(obj_tables.Model):
-    id = obj_tables.StringAttribute(unique=True, primary=True)
-    name = obj_tables.StringAttribute()
+class Game(obj_tables.Model):
+    name = obj_tables.StringAttribute(unique=True, primary=True)
+    publisher = obj_tables.StringAttribute()
+    year = obj_tables.IntegerAttribute()
 
     class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TableFormat.column
+        table_format = obj_tables.TableFormat.multiple_cells
         attribute_order = (
-            'id',
             'name',
+            'publisher',
+            'year',
         )
-        verbose_name = 'Parent'
-        verbose_name_plural = 'Parent'
+        verbose_name = 'Game'
+        verbose_name_plural = 'Game'

@@ -1,20 +1,20 @@
-!!!ObjTables objTablesVersion='0.0.8' date='2020-03-11 23:55:18'
-!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-03-11 23:55:18' objTablesVersion='0.0.8',,
+!!!ObjTables objTablesVersion='1.0.0' date='2020-03-11 23:55:18'
+!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-03-11 23:55:18' objTablesVersion='1.0.0',,
 !Table,!Description,!Number of objects
 Schema,Table/model and column/attribute definitions,
 Transaction,Stores transactions,4
 
-!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-11 23:55:18' objTablesVersion='0.0.8',,,,,,
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-03-11 23:55:18' objTablesVersion='1.0.0',,,,,,
 !Name,!Type,!Parent,!Format,!Verbose name,!Verbose name plural,!Description
 Transaction,Class,,row,Transaction,Transaction,Stores transactions
-amount,Attribute,Transaction,PositiveFloat,,,
-category,Attribute,Transaction,String,,,
-date,Attribute,Transaction,Date,,,
-payee,Attribute,Transaction,String,,,
+amount,Attribute,Transaction,PositiveFloat,Amount,,
+category,Attribute,Transaction,String,Category,,
+date,Attribute,Transaction,Date,Date,,
+payee,Attribute,Transaction,String,Payee,,
 
-!!ObjTables type='Data' tableFormat='row' class='Transaction' name='Transaction' description='Stores transactions' date='2020-03-11 23:55:18' objTablesVersion='0.0.8',,,
-!Amount,!Category,!Date,!Payee
-100.0,Food,,Restaurant
-50.0,Food,,Sam's market
-30.0,Wine,,Liquor store
-10.0,Food,,Sam's market
+!!ObjTables type='Data' tableFormat='row' class='Transaction' name='Transaction' description='Stores transactions' date='2020-03-11 23:55:18' objTablesVersion='1.0.0',,
+!Amount,!Category,!Payee
+100.0,Food,Restaurant
+50.0,Food,Sam's market
+30.0,Wine,Liquor store
+10.0,Food,Sam's market

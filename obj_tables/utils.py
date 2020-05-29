@@ -640,6 +640,8 @@ def init_schema(filename, out_filename=None):
         }
         for attr_spec in cls_spec['attrs'].values():
             attr_type_spec, _, args = attr_spec['type'].partition('(')
+            if attr_type_spec not in all_attrs:
+                raise ValueError('Attribute "{}" is not defined'.format(attr_type_spec))
             attr_type = all_attrs[attr_type_spec]
             attr_spec['python_type'] = attr_type_spec + 'Attribute'
             if args:

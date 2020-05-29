@@ -10,26 +10,27 @@ from obj_tables import core
 from wc_utils.util import chem
 import bcforms
 import bpforms
+import lark.exceptions
 import obj_tables.chem
 import openbabel
 import unittest
 
 
-class EmpiricalFormulaAttributeTestCase(unittest.TestCase):
+class ChemicalFormulaAttributeTestCase(unittest.TestCase):
 
     def test(self):
-        attr = obj_tables.chem.EmpiricalFormulaAttribute()
-        primary_attr = obj_tables.chem.EmpiricalFormulaAttribute(primary=True, unique=True)
+        attr = obj_tables.chem.ChemicalFormulaAttribute()
+        primary_attr = obj_tables.chem.ChemicalFormulaAttribute(primary=True, unique=True)
         self.assertEqual(attr.default, None)
 
-        attr = obj_tables.chem.EmpiricalFormulaAttribute(default='C1H1O2')
+        attr = obj_tables.chem.ChemicalFormulaAttribute(default='C1H1O2')
         self.assertEqual(attr.default, chem.EmpiricalFormula('C1H1O2'))
 
-        attr = obj_tables.chem.EmpiricalFormulaAttribute(default=chem.EmpiricalFormula('C1H1O2'))
+        attr = obj_tables.chem.ChemicalFormulaAttribute(default=chem.EmpiricalFormula('C1H1O2'))
         self.assertEqual(attr.default, chem.EmpiricalFormula('C1H1O2'))
 
         class Node(core.Model):
-            value = obj_tables.chem.EmpiricalFormulaAttribute()
+            value = obj_tables.chem.ChemicalFormulaAttribute()
 
         attr = Node.Meta.attributes['value']
 
@@ -58,7 +59,7 @@ class EmpiricalFormulaAttributeTestCase(unittest.TestCase):
         self.assertNotEqual(attr.validate(node, 'x'), None)
         self.assertNotEqual(attr.validate(node, 1), None)
 
-        attr2 = obj_tables.chem.EmpiricalFormulaAttribute(primary=True)
+        attr2 = obj_tables.chem.ChemicalFormulaAttribute(primary=True)
         self.assertEqual(attr.validate(None, None), None)
         self.assertEqual(attr.validate(None, chem.EmpiricalFormula('C')), None)
         self.assertNotEqual(attr2.validate(None, None), None)
@@ -478,3 +479,259 @@ class ChemicalStructureAttributeTestCase(unittest.TestCase):
 
         attr = obj_tables.chem.ChemicalStructureAttribute(primary=True, unique=True)
         attr.get_excel_validation()
+
+
+class ReactionEquationAttributeTestCase(unittest.TestCase):
+
+    def test_ReactionParticipant(self):
+        class Node(obj_tables.core.Model):
+            id = obj_tables.core.StringAttribute(unique=True, primary=True)
+
+        part = obj_tables.chem.ReactionParticipant('A', 'c', 1.)
+        part2 = obj_tables.chem.ReactionParticipant('A', 'c', 1.)
+        part3 = obj_tables.chem.ReactionParticipant(Node(id='A'), Node(id='c'), 1.)
+        part4 = obj_tables.chem.ReactionParticipant('B', 'c', 1.)
+        part5 = obj_tables.chem.ReactionParticipant('A', 'e', 1.)
+        part6 = obj_tables.chem.ReactionParticipant('A', 'c', 2.)
+        part7 = obj_tables.chem.ReactionParticipant('A', 'c', 2.2)
+
+        self.assertTrue(part.is_equal(part))
+        self.assertTrue(part.is_equal(part2))
+        self.assertFalse(part.is_equal(part3))
+        self.assertFalse(part.is_equal(part4))
+        self.assertFalse(part.is_equal(part5))
+        self.assertFalse(part.is_equal(part6))
+        self.assertFalse(part.is_equal(part7))
+
+        self.assertEqual(part.to_dict(), {
+            "species": "A",
+            "compartment": "c",
+            "stoichiometry": 1.,
+        })
+        self.assertEqual(part3.to_dict(), {
+            "species": "A",
+            "compartment": "c",
+            "stoichiometry": 1.,
+        })
+
+        self.assertEqual(part.serialize(include_compartment=False), 'A')
+        self.assertEqual(part.serialize(include_compartment=True), 'A[c]')
+        self.assertEqual(part3.serialize(include_compartment=False), 'A')
+        self.assertEqual(part3.serialize(include_compartment=True), 'A[c]')
+        self.assertEqual(part6.serialize(include_compartment=False), '(2) A')
+        self.assertEqual(part6.serialize(include_compartment=True), '(2) A[c]')
+        self.assertEqual(part7.serialize(include_compartment=False), '(2.2) A')
+        self.assertEqual(part7.serialize(include_compartment=True), '(2.2) A[c]')
+
+    def test_ReactionEquation(self):
+        class Node(obj_tables.core.Model):
+            id = obj_tables.core.StringAttribute(unique=True, primary=True)
+
+        species = {
+            'A': Node(id='A'),
+            'B': Node(id='B'),
+            'C': Node(id='C'),
+        }
+        compartments = {
+            'c': Node(id='c'),
+            'e': Node(id='e'),
+        }
+
+        rxn = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -1.),
+            obj_tables.chem.ReactionParticipant('B', 'c', 1.),
+        ])
+        rxn2 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -1.),
+            obj_tables.chem.ReactionParticipant('B', 'c', 1.),
+        ])
+        rxn3 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -1.)
+        ])
+        rxn4 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -1.),
+            obj_tables.chem.ReactionParticipant('B', 'c', 2.),
+        ])
+        rxn5 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -1.),
+            obj_tables.chem.ReactionParticipant('B', 'e', 1.),
+        ])
+        rxn6 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -3.3),
+            obj_tables.chem.ReactionParticipant('B', 'e', 2.),
+        ])
+        rxn7 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant(species['A'], compartments['c'], -3.3),
+            obj_tables.chem.ReactionParticipant(species['B'], compartments['e'], 2.),
+            obj_tables.chem.ReactionParticipant(species['C'], compartments['e'], 1.7),
+        ])
+        rxn8 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -3.3),
+            obj_tables.chem.ReactionParticipant('B', 'e', 2.),
+            obj_tables.chem.ReactionParticipant('C', 'e', 1.7),
+        ])
+        rxn9 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -2.),
+            obj_tables.chem.ReactionParticipant('B', 'c', 4.),
+        ])
+
+        self.assertTrue(rxn.is_equal(rxn))
+        self.assertTrue(rxn.is_equal(rxn2))
+        self.assertFalse(rxn.is_equal(None))
+        self.assertFalse(rxn.is_equal(rxn3))
+        self.assertFalse(rxn.is_equal(rxn4))
+        self.assertFalse(rxn.is_equal(rxn5))
+        self.assertFalse(rxn.is_equal(rxn6))
+        self.assertFalse(rxn.is_equal(rxn7))
+        self.assertFalse(rxn.is_equal(rxn8))
+        self.assertFalse(rxn.is_equal(rxn9))
+
+        self.assertEqual(rxn.to_dict(), [
+            {
+                "species": "A",
+                "compartment": "c",
+                "stoichiometry": -1.,
+            },
+            {
+                "species": "B",
+                "compartment": "c",
+                "stoichiometry": 1.,
+            },
+        ])
+
+        self.assertEqual(rxn.serialize(), '[c]: A <=> B')
+        self.assertEqual(rxn5.serialize(), 'A[c] <=> B[e]')
+        self.assertEqual(rxn6.serialize(), '(3.3) A[c] <=> (2) B[e]')
+        self.assertEqual(rxn7.serialize(), '(3.3) A[c] <=> (1.7) C[e] + (2) B[e]')
+        self.assertEqual(rxn8.serialize(), '(3.3) A[c] <=> (1.7) C[e] + (2) B[e]')
+
+        self.assertTrue(obj_tables.chem.ReactionEquation().deserialize('[c]: A <=> B').is_equal(rxn))
+        self.assertTrue(obj_tables.chem.ReactionEquation().deserialize('[c]: (2) A <=> (4) B').is_equal(rxn9))
+        self.assertTrue(obj_tables.chem.ReactionEquation().deserialize('A[c] <=> B[e]').is_equal(rxn5))
+        self.assertTrue(obj_tables.chem.ReactionEquation().deserialize('(3.3) A[c] <=> (2) B[e]').is_equal(rxn6))
+        self.assertTrue(obj_tables.chem.ReactionEquation().deserialize('(3.3) A[c] <=> (1.7) C[e] + (2) B[e]').is_equal(rxn8))
+
+        rxn10 = obj_tables.chem.ReactionEquation().deserialize('(3.3) A[c] <=> (1.7) C[e] + (2) B[e]', species, compartments)
+        self.assertTrue(rxn10.is_equal(rxn7))
+
+        with self.assertRaisesRegex(lark.exceptions.VisitError, 'must be defined'):
+            obj_tables.chem.ReactionEquation().deserialize('(3.3) D[c] <=> (1.7) F[e] + (2) E[e]', species, compartments)
+
+        with self.assertRaisesRegex(lark.exceptions.VisitError, 'must be defined'):
+            obj_tables.chem.ReactionEquation().deserialize('(3.3) A[d] <=> (1.7) C[f] + (2) B[f]', species, compartments)
+
+        with self.assertRaisesRegex(lark.exceptions.VisitError, 'Reaction participants cannot be repeated'):
+            obj_tables.chem.ReactionEquation().deserialize('(3.3) A[c] + (3.3) A[c] <=> (1.7) C[e] + (2) B[e]')
+
+    def test_ReactionEquationAttribute(self):
+        class Species(obj_tables.core.Model):
+            id = obj_tables.core.StringAttribute(unique=True, primary=True)
+
+        class Compartment(obj_tables.core.Model):
+            id = obj_tables.core.StringAttribute(unique=True, primary=True)
+
+        attr = obj_tables.chem.ReactionEquationAttribute()
+        not_none_attr = obj_tables.chem.ReactionEquationAttribute(none=False, unique=True, description="")
+
+        rxn = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -1.),
+            obj_tables.chem.ReactionParticipant('B', 'c', 1.),
+        ])
+        rxn2 = obj_tables.chem.ReactionEquation([
+            obj_tables.chem.ReactionParticipant('A', 'c', -1.),
+            obj_tables.chem.ReactionParticipant('B', 'c', 2.),
+        ])
+
+        self.assertEqual(attr.validate(None, rxn), None)
+        self.assertEqual(attr.validate(None, None), None)
+        self.assertNotEqual(attr.validate(None, 1), None)
+        self.assertNotEqual(not_none_attr.validate(None, None), None)
+
+        self.assertEqual(attr.validate_unique(None, [rxn, rxn2]), None)
+        self.assertNotEqual(attr.validate_unique(None, [rxn, rxn]), None)
+
+        self.assertEqual(attr.serialize(None), '')
+        self.assertEqual(attr.serialize(rxn),  '[c]: A <=> B')
+
+        self.assertEqual(attr.deserialize(None), (None, None))
+        self.assertEqual(attr.deserialize(''), (None, None))
+        self.assertTrue(attr.deserialize('[c]: A <=> B')[0].is_equal(
+            obj_tables.chem.ReactionEquation([
+                obj_tables.chem.ReactionParticipant('A', 'c', -1.),
+                obj_tables.chem.ReactionParticipant('B', 'c', 1.),
+            ]
+            )))
+        self.assertIsInstance(attr.deserialize('[c] A <=> B')[1], obj_tables.InvalidAttribute)
+
+        objects = {
+            Species: {
+                'A': Species(id='A'),
+                'B': Species(id='B'),
+            },
+            Compartment: {
+                'c': Compartment(id='c'),
+            }
+        }
+        obj_attr = obj_tables.chem.ReactionEquationAttribute(species_cls=Species, compartment_cls=Compartment)
+        rxn3, _ = obj_attr.deserialize('[c]: A <=> B', objects)
+        self.assertTrue(rxn3.is_equal(
+            obj_tables.chem.ReactionEquation([
+                obj_tables.chem.ReactionParticipant(objects[Species]['A'], objects[Compartment]['c'], -1.),
+                obj_tables.chem.ReactionParticipant(objects[Species]['B'], objects[Compartment]['c'], 1.),
+            ])
+        ))
+        obj_attr = obj_tables.chem.ReactionEquationAttribute(species_cls='Species', compartment_cls='Compartment')
+        rxn3, _ = obj_attr.deserialize('[c]: A <=> B', objects)
+        self.assertTrue(rxn3.is_equal(
+            obj_tables.chem.ReactionEquation([
+                obj_tables.chem.ReactionParticipant(objects[Species]['A'], objects[Compartment]['c'], -1.),
+                obj_tables.chem.ReactionParticipant(objects[Species]['B'], objects[Compartment]['c'], 1.),
+            ])
+        ))
+        obj_attr = obj_tables.chem.ReactionEquationAttribute(
+            species_cls=Species.__module__ + '.' + Species.__name__,
+            compartment_cls=Compartment.__module__ + '.' + Compartment.__name__)
+        rxn3, _ = obj_attr.deserialize('[c]: A <=> B', objects)
+        self.assertTrue(rxn3.is_equal(
+            obj_tables.chem.ReactionEquation([
+                obj_tables.chem.ReactionParticipant(objects[Species]['A'], objects[Compartment]['c'], -1.),
+                obj_tables.chem.ReactionParticipant(objects[Species]['B'], objects[Compartment]['c'], 1.),
+            ])
+        ))
+
+        obj_attr = obj_tables.chem.ReactionEquationAttribute(species_cls=Species, compartment_cls=Compartment)
+        rxn3, _ = obj_attr.deserialize('[c]: A <=> B')
+        self.assertTrue(rxn3.is_equal(
+            obj_tables.chem.ReactionEquation([
+                obj_tables.chem.ReactionParticipant('A', 'c', -1.),
+                obj_tables.chem.ReactionParticipant('B', 'c', 1.),
+            ])
+        ))
+
+        obj_attr = obj_tables.chem.ReactionEquationAttribute(species_cls='Species', compartment_cls='Comp')
+        with self.assertRaisesRegex(ValueError, 'Unable to resolve class'):
+            obj_attr.deserialize('[c]: A <=> B', objects=objects)
+
+        obj_attr = obj_tables.chem.ReactionEquationAttribute(species_cls='Spec', compartment_cls='Compartment')
+        with self.assertRaisesRegex(ValueError, 'Unable to resolve class'):
+            obj_attr.deserialize('[c]: A <=> B', objects=objects)
+
+        self.assertEqual(attr.to_builtin(None), None)
+        self.assertEqual(attr.to_builtin(rxn),  [
+            {
+                "species": "A",
+                "compartment": "c",
+                "stoichiometry": -1.,
+            },
+            {
+                "species": "B",
+                "compartment": "c",
+                "stoichiometry": 1.,
+            },
+        ])
+
+        with self.assertRaisesRegex(NotImplementedError, 'Cannot be converted from JSON'):
+            attr.from_builtin(None)
+
+        attr.get_excel_validation()
+        not_none_attr.get_excel_validation()

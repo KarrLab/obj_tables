@@ -1,7 +1,7 @@
-!!!ObjTables objTablesVersion='0.0.8' date='2020-03-10 22:52:34'
-!!ObjTables type='Data' tableFormat='row' class='Transaction' name='Transaction' description='Stores transactions' date='2020-03-10 22:52:34' objTablesVersion='0.0.8'			
-!Amount	!Category	!Date	!Payee
-100.0	Food		Restaurant
-50.0	Food		Sam's market
-30.0	Wine		Liquor store
-10.0	Food		Sam's market
+!!!ObjTables objTablesVersion='1.0.0' date='2020-03-11 23:55:18'
+!!ObjTables type='Data' tableFormat='row' class='Transaction' name='Transaction' description='Stores transactions' date='2020-03-11 23:55:18' objTablesVersion='1.0.0'		
+!Amount	!Category	!Payee
+100.0	Food	Restaurant
+50.0	Food	Sam's market
+30.0	Wine	Liquor store
+10.0	Food	Sam's market

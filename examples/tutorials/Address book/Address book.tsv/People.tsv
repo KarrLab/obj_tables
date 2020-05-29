@@ -1,4 +1,4 @@
-!!ObjTables type='Data' tableFormat='row' class='Person' name='People' date='2020-04-28 15:09:22' objTablesVersion='0.0.9'									
+!!ObjTables type='Data' tableFormat='row' class='Person' name='People' date='2020-05-29 00:17:37' objTablesVersion='1.0.0'									
 					!Address	!Address	!Address	!Address	!Address
 !Name	!Type	!Company	!Email address	!Phone number	!Street	!City	!State	!Zip code	!Country
 Mark Zuckerberg	business	Facebook	zuck@fb.com	650-543-4800	1 Hacker Way #15	Menlo Park	CA	94025	US

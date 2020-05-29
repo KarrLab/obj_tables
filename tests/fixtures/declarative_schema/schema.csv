@@ -6,7 +6,7 @@ Name,Attribute,Parent,String,Name
 Id,Attribute,Child,Slug,Identifier
 Name,Attribute,Child,String,Name
 Parents,Attribute,Child,"ManyToMany('Parent', related_name='children')",Parents
-Formula,Attribute,Child,chem.EmpiricalFormula,Empirical formula
+Formula,Attribute,Child,chem.ChemicalFormula,Chemical formula
 Size,Attribute,Child,"Enum(['small', 'medium', 'large'], default='small', default_cleaned_value='small')",Size
 Quantity,Attribute,Child,"ManyToOne('Quantity', related_name='children')",
 Child,Class,,row,Represents a child

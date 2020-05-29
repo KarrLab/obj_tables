@@ -1,4 +1,4 @@
-# Schema automatically generated at 2020-04-26 21:15:27
+# Schema automatically generated at 2020-05-29 00:18:50
 
 import obj_tables
 
@@ -10,24 +10,20 @@ __all__ = [
 ]
 
 
-class Address(obj_tables.Model):
-    street = obj_tables.StringAttribute(primary=True, unique=True, verbose_name='Street')
-    city = obj_tables.StringAttribute(verbose_name='City')
-    state = obj_tables.StringAttribute(verbose_name='State')
-    zip_code = obj_tables.StringAttribute(verbose_name='Zip code')
-    country = obj_tables.StringAttribute(verbose_name='Country')
+class Company(obj_tables.Model):
+    name = obj_tables.StringAttribute(primary=True, unique=True, verbose_name='Name')
+    url = obj_tables.UrlAttribute(verbose_name='URL')
+    address = obj_tables.OneToOneAttribute('Address', related_name='company', verbose_name='Address')
 
     class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TableFormat.multiple_cells
+        table_format = obj_tables.TableFormat.column
         attribute_order = (
-            'street',
-            'city',
-            'state',
-            'zip_code',
-            'country',
+            'name',
+            'url',
+            'address',
         )
-        verbose_name = 'Address'
-        verbose_name_plural = 'Addresses'
+        verbose_name = 'Company'
+        verbose_name_plural = 'Companies'
 
 
 class Person(obj_tables.Model):
@@ -52,17 +48,21 @@ class Person(obj_tables.Model):
         verbose_name_plural = 'People'
 
 
-class Company(obj_tables.Model):
-    name = obj_tables.StringAttribute(primary=True, unique=True, verbose_name='Name')
-    url = obj_tables.UrlAttribute(verbose_name='URL')
-    address = obj_tables.OneToOneAttribute('Address', related_name='company', verbose_name='Address')
+class Address(obj_tables.Model):
+    street = obj_tables.StringAttribute(primary=True, unique=True, verbose_name='Street')
+    city = obj_tables.StringAttribute(verbose_name='City')
+    state = obj_tables.StringAttribute(verbose_name='State')
+    zip_code = obj_tables.StringAttribute(verbose_name='Zip code')
+    country = obj_tables.StringAttribute(verbose_name='Country')
 
     class Meta(obj_tables.Model.Meta):
-        table_format = obj_tables.TableFormat.column
+        table_format = obj_tables.TableFormat.multiple_cells
         attribute_order = (
-            'name',
-            'url',
-            'address',
+            'street',
+            'city',
+            'state',
+            'zip_code',
+            'country',
         )
-        verbose_name = 'Company'
-        verbose_name_plural = 'Companies'
+        verbose_name = 'Address'
+        verbose_name_plural = 'Addresses'

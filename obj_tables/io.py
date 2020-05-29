@@ -34,7 +34,7 @@ from natsort import natsorted, ns
 from os.path import basename, splitext
 from warnings import warn
 from obj_tables import utils
-from obj_tables.core import (Model, Attribute, RelatedAttribute, Validator, TableFormat,
+from obj_tables.core import (Model, Attribute, BaseRelatedAttribute, RelatedAttribute, Validator, TableFormat,
                              InvalidObject, excel_col_name,
                              InvalidAttribute, ObjTablesWarning,
                              DOC_TABLE_TYPE,
@@ -535,7 +535,7 @@ class WorkbookWriter(WriterBase):
                     'Attribute',
                     model.__name__,
                     attr._get_tabular_schema_format(),
-                    None,
+                    attr.verbose_name or None,
                     None,
                     attr.description or None,
                 ])
@@ -2036,7 +2036,7 @@ class WorkbookReader(ReaderBase):
         errors = []
         for obj_data, obj in zip(data, objects):
             for (group_attr, sub_attr), attr_value in zip(attributes, obj_data):
-                if group_attr is None and isinstance(sub_attr, RelatedAttribute):
+                if group_attr is None and isinstance(sub_attr, BaseRelatedAttribute):
                     value, error = sub_attr.deserialize(attr_value, objects_by_primary_attribute, decoded=decoded)
                     if error:
                         error.set_location_and_value(utils.source_report(obj, sub_attr.name), attr_value)
@@ -2045,7 +2045,7 @@ class WorkbookReader(ReaderBase):
                         setattr(obj, sub_attr.name, value)
 
                 elif group_attr and attr_value not in [None, '']:
-                    if isinstance(sub_attr, RelatedAttribute):
+                    if isinstance(sub_attr, BaseRelatedAttribute):
                         value, error = sub_attr.deserialize(attr_value, objects_by_primary_attribute, decoded=decoded)
                     else:
                         value, error = sub_attr.deserialize(attr_value)

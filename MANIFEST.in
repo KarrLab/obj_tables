@@ -7,6 +7,9 @@ include LICENSE
 # requirements
 include requirements.txt
 
+# grammars
+include obj_tables/chem/reaction_equation.lark
+
 # documentation
 include README.rst
 
