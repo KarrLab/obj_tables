@@ -1,7 +1,7 @@
 `ObjTables` documentation
 ================================================
 
-`ObjTables` is a toolkit for using schemas to model collections of tables that represent complex datasets, combining the ease of use of Excel with the rigor and power of schemas.
+`ObjTables` is a toolkit which makes it easy to use spreadsheets (e.g., Excel workbooks) to work with complex datasets by combining spreadsheets with rigorous schemas and an object-relational mapping system (ORM; similar to Active Record (Ruby), Django (Python), Doctrine (PHP), Hibernate (Java), Propel (PHP), SQLAlchemy (Python), etc.). This combination enables users to use programs such as Microsoft Excel, LibreOffice Calc, and OpenOffice Calc to view and edit spreadsheets and use schemas and the `ObjTables` software to validate the syntax and semantics of datasets, compare and merge datasets, and parse datasets into object-oriented data structures for further querying and analysis with languages such as Python.
 
 `ObjTables` makes it easy to:
 

@@ -108,6 +108,18 @@ ol {
     font-weight: bold;
 }
 
+.blue {
+    color: #3bafda;
+}
+
+.green {
+    color: #0fcc00;
+}
+
+.orange {
+    color: #ff7f00;
+}
+
 
 /* top bar */
 
@@ -555,6 +567,22 @@ table.examples tr.indent-x2 td:first-child {
     padding-left: 2.325rem;
 }
 
+
+/* large screens */
+.show-for-extra-large {
+    display: none;
+}
+.hide-for-extra-large {
+    display: inline-block;
+}
+@media screen and (min-width: 81.5em) {
+    .show-for-extra-large {
+        display: inline-block;
+    }
+    .hide-for-extra-large {
+        display: none;
+    }
+}
 
 /* mobile */
 
