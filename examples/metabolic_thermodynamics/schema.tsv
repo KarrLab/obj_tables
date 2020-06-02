@@ -1,0 +1,61 @@
+!!ObjTables type='Schema'					
+!Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural
+Compartment	Class		row	Compartment	Compartments
+id	Attribute	Compartment	String(primary=True, unique=True)		
+name	Attribute	Compartment	String(none=True, default=None, default_cleaned_value=None)		
+Metabolite	Class		row	Metabolite	Metabolites
+id	Attribute	Metabolite	String(primary=True, unique=True)		
+name	Attribute	Metabolite	String(none=True, default=None, default_cleaned_value=None)		
+formula	Attribute	Metabolite	chem.ChemicalFormula		
+Reaction	Class		row	Reaction	Reactions
+id	Attribute	Reaction	String(primary=True, unique=True)		
+id_iAF1260	Attribute	Reaction	String(none=True, default=None, default_cleaned_value=None)	Id (iAF1260 [Ref1])	
+name	Attribute	Reaction	String(none=True, default=None, default_cleaned_value=None)		
+equation	Attribute	Reaction	chem.ReactionEquation(species_cls='Metabolite', compartment_cls='Compartment')		
+reversible	Attribute	Reaction	Boolean		
+subsystem	Attribute	Reaction	String(none=True, default=None, default_cleaned_value=None)		
+ec_number	Attribute	Reaction	Regex(pattern='\d+\.\d+\.\d+\.\d+', none=True, default=None, default_cleaned_value=None)	EC number	
+lower_bound	Attribute	Reaction	Float		
+upper_bound	Attribute	Reaction	Float		
+flux_acetate	Attribute	Reaction	Float	Flux (Acetate media, mmol * gCDW^-1 * h^-1)	
+flux_acetate_uncertainty	Attribute	Reaction	Float	Flux uncertainty (Acetate media, mmol * gCDW^-1 * h^-1)	
+flux_fructose	Attribute	Reaction	Float	Flux (Fructose media, mmol * gCDW^-1 * h^-1)	
+flux_fructose_uncertainty	Attribute	Reaction	Float	Flux uncertainty (Fructose media, mmol * gCDW^-1 * h^-1)	
+flux_galactose	Attribute	Reaction	Float	Flux (Galactose media, mmol * gCDW^-1 * h^-1)	
+flux_galactose_uncertainty	Attribute	Reaction	Float	Flux uncertainty (Galactose media, mmol * gCDW^-1 * h^-1)	
+flux_glucose	Attribute	Reaction	Float	Flux (Glucose media, mmol * gCDW^-1 * h^-1)	
+flux_glucose_uncertainty	Attribute	Reaction	Float	Flux uncertainty (Glucose media, mmol * gCDW^-1 * h^-1)	
+flux_glycerol	Attribute	Reaction	Float	Flux (Glycerol media, mmol * gCDW^-1 * h^-1)	
+flux_glycerol_uncertainty	Attribute	Reaction	Float	Flux uncertainty (Glycerol media, mmol * gCDW^-1 * h^-1)	
+flux_gluconate	Attribute	Reaction	Float	Flux (Gluconate media, mmol * gCDW^-1 * h^-1)	
+flux_gluconate_uncertainty	Attribute	Reaction	Float	Flux uncertainty (Gluconate media, mmol * gCDW^-1 * h^-1)	
+flux_pyruvate	Attribute	Reaction	Float	Flux (Pyruvate media, mmol * gCDW^-1 * h^-1)	
+flux_pyruvate_uncertainty	Attribute	Reaction	Float	Flux uncertainty (Pyruvate media, mmol * gCDW^-1 * h^-1)	
+flux_succinate	Attribute	Reaction	Float	Flux (Succinate media, mmol * gCDW^-1 * h^-1)	
+flux_succinate_uncertainty	Attribute	Reaction	Float	Flux uncertainty (Succinate media, mmol * gCDW^-1 * h^-1)	
+delta_g_acetate	Attribute	Reaction	Float	ΔG (Acetate, kJ * mol^-1)	
+delta_g_acetate_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Acetate, kJ * mol^-1)	
+delta_g_fructose	Attribute	Reaction	Float	ΔG (Fructose, kJ * mol^-1)	
+delta_g_fructose_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Fructose, kJ * mol^-1)	
+delta_g_galactose	Attribute	Reaction	Float	ΔG (Galactose, kJ * mol^-1)	
+delta_g_galactose_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Galactose, kJ * mol^-1)	
+delta_g_glucose	Attribute	Reaction	Float	ΔG (Glucose, kJ * mol^-1)	
+delta_g_glucose_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Glucose, kJ * mol^-1)	
+delta_g_glycerol	Attribute	Reaction	Float	ΔG (Glycerol, kJ * mol^-1)	
+delta_g_glycerol_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Glycerol, kJ * mol^-1)	
+delta_g_gluconate	Attribute	Reaction	Float	ΔG (Gluconate, kJ * mol^-1)	
+delta_g_gluconate_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Gluconate, kJ * mol^-1)	
+delta_g_pyruvate	Attribute	Reaction	Float	ΔG (Pyruvate, kJ * mol^-1)	
+delta_g_pyruvate_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Pyruvate, kJ * mol^-1)	
+delta_g_succinate	Attribute	Reaction	Float	ΔG (Succinate, kJ * mol^-1)	
+delta_g_succinate_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Succinate, kJ * mol^-1)	
+Reference	Class		row	Reference	References
+id	Attribute	Reference	String(primary=True, unique=True)		
+title	Attribute	Reference	LongString		
+authors	Attribute	Reference	LongString		
+journal	Attribute	Reference	String		
+volume	Attribute	Reference	PositiveInteger		
+issue	Attribute	Reference	PositiveInteger		
+start_page	Attribute	Reference	PositiveInteger		
+end_page	Attribute	Reference	PositiveInteger		
+pubmed_id	Attribute	Reference	PositiveInteger	PubMed id	

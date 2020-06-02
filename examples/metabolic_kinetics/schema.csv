@@ -5,7 +5,6 @@ id,Attribute,Compartment,"String(primary=True, unique=True)",,
 name,Attribute,Compartment,"String(none=True, default=None, default_cleaned_value=None)",,
 Metabolite,Class,,row,Metabolite,Metabolites
 id,Attribute,Metabolite,"String(primary=True, unique=True)",,
-id_iAF1260,Attribute,Metabolite,"String(none=True, default=None, default_cleaned_value=None)",Id (iAF1260 [Ref1]),
 name,Attribute,Metabolite,"String(none=True, default=None, default_cleaned_value=None)",,
 formula,Attribute,Metabolite,chem.ChemicalFormula,,
 Kinetics,Class,,cell,Kinetics,Kinetics

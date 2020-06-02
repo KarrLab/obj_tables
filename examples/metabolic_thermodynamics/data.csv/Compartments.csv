@@ -1,0 +1,5 @@
+!!!ObjTables objTablesVersion='1.0.0' date='2020-06-02 16:01:35',
+!!ObjTables type='Data' tableFormat='row' class='Compartment' name='Compartments' date='2020-06-02 16:01:35' objTablesVersion='1.0.0',
+!Id,!Name
+c,cytosol
+e,extracellular space

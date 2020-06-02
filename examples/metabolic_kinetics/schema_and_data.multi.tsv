@@ -16,7 +16,6 @@ name	Attribute	Compartment	String	Name
 Metabolite	Class		row	Metabolite	Metabolites	
 formula	Attribute	Metabolite	chem.ChemicalFormula	Formula		
 id	Attribute	Metabolite	String(primary=True, unique=True)	Id		
-id_i_a_f1260	Attribute	Metabolite	String	Id (iAF1260 [Ref1])		
 name	Attribute	Metabolite	String	Name		
 Reaction	Class		row	Reaction	Reactions	
 coupled_to_biomass	Attribute	Reaction	Boolean	Coupled to biomass		
@@ -62,291 +61,291 @@ c	cytosol
 e	extracellular space
 p	periplasm
 
-!!ObjTables type='Data' tableFormat='row' class='Metabolite' name='Metabolites' date='2020-05-28 23:58:52' objTablesVersion='1.0.0' format='row'			
-!Id	!Id (iAF1260 [Ref1])	!Name	!Formula
-1pyr5c	1pyr5c	1-Pyrroline-5-carboxylate	C5H6NO2
-2ahbut	2ahbut	(S)-2-Aceto-2-hydroxybutanoate	C6H9O4
-2aobut	2aobut	L-2-Amino-3-oxobutanoate	C4H7NO3
-2cpr5p	2cpr5p	1-(2-Carboxyphenylamino)-1-deoxy-D-ribulose 5-phosphate	C12H13NO9P
-2dda7p	2dda7p	2-Dehydro-3-deoxy-D-arabino-heptonate 7-phosphate	C7H10O10P
-2ddg6p	2ddg6p	2-Dehydro-3-deoxy-D-gluconate 6-phosphate	C6H8O9P
-2ippm	2ippm	2-Isopropylmaleate	C7H8O4
-2obut	2obut	2-Oxobutanoate	C4H5O3
-2pg	2pg	D-Glycerate 2-phosphate	C3H4O7P
-3c2hmp	3c2hmp	3-Carboxy-2-hydroxy-4-methylpentanoate	C7H10O5
-3c3hmp	3c3hmp	3-Carboxy-3-hydroxy-4-methylpentanoate	C7H10O5
-3c4mop	3c4mop	3-Carboxy-4-methyl-2-oxopentanoate	C7H8O5
-3dhq	3dhq	3-Dehydroquinate	C7H9O6
-3dhsk	3dhsk	3-Dehydroshikimate	C7H7O5
-3haACP	3haACP	(3R)-3-Hydroxyacyl-[acyl-carrier protein]	C15H27N2O9PRS
-3hbcoa	3hbcoa	(S)-3-Hydroxybutanoyl-CoA	C25H38N7O18P3S
-3hcddec5eACP	3hcddec5eACP	(R)-3-hydroxy-cis-dodec-5-enoyl-[acyl-carrier protein]	C23H41N2O9PRS
-3hcmrs7eACP	3hcmrs7eACP	(R)-3-hydroxy-cis-myristol-7-eoyl-[acyl-carrier protein]	C25H45N2O9PRS
-3hcpalm9eACP	3hcpalm9eACP	(R)-3-hydroxy-cis-palm-9-eoyl-[acyl-carrier protein]	C27H49N2O9PRS
-3hdcoa	3hdcoa	(S)-3-Hydroxydecanoyl-CoA	C31H50N7O18P3S
-3hddcoa	3hddcoa	(S)-3-Hydroxydodecanoyl-CoA	C33H54N7O18P3S
-3hddecACP	3hddecACP	(R)-3-Hydroxydodecanoyl-[acyl-carrier protein]	C23H43N2O9PRS
-3hdecACP	3hdecACP	(R)-3-Hydroxydecanoyl-[acyl-carrier protein]	C21H39N2O9PRS
-3hhcoa	3hhcoa	(S)-3-Hydroxyhexanoyl-CoA	C27H42N7O18P3S
-3hhdcoa	3hhdcoa	(S)-3-Hydroxyhexadecanoyl-CoA	C37H62N7O18P3S
-3hhexACP	3hhexACP	(R)-3-Hydroxyhexanoyl-[acyl-carrier protein]	C17H31N2O9PRS
-3hmrsACP	3hmrsACP	(R)-3-Hydroxytetradecanoyl-[acyl-carrier protein]	C25H47N2O9PRS
-3hocoa	3hocoa	(S)-3-Hydroxyoctanoyl-CoA	C29H46N7O18P3S
-3hoctaACP	3hoctaACP	(R)-3-Hydroxyoctadecanoyl-[acyl-carrier protein]	C29H55N2O9PRS
-3hoctACP	3hoctACP	(R)-3-Hydroxyoctanoyl-[acyl-carrier protein]	C19H35N2O9PRS
-3hodcoa	3hodcoa	(S)-3-Hydroxyoctadecanoyl-CoA	C39H66N7O18P3S
-3hpalmACP	3hpalmACP	R-3-hydroxypalmitoyl-[acyl-carrier protein]	C27H51N2O9PRS
-3htdcoa	3htdcoa	(S)-3-Hydroxytetradecanoyl-CoA	C35H58N7O18P3S
-3ig3p	3ig3p	C'-(3-Indolyl)-glycerol 3-phosphate	C11H12NO6P
-3mob	3mob	3-Methyl-2-oxobutanoate	C5H7O3
-3mop	3mop	(S)-3-Methyl-2-oxopentanoate	C6H9O3
-3ocddec5eACP	3ocddec5eACP	3-oxo-cis-dodec-5-enoyl-[acyl-carrier protein]	C23H39N2O9PRS
-3ocmrs7eACP	3ocmrs7eACP	3-oxo-cis-myristol-7-eoyl-[acyl-carrier protein]	C25H43N2O9PRS
-3ocpalm9eACP	3ocpalm9eACP	3-oxo-cis-palm-9-eoyl-[acyl-carrier protein]	C27H47N2O9PRS
-3odcoa	3odcoa	3-Oxodecanoyl-CoA	C31H48N7O18P3S
-3oddcoa	3oddcoa	3-Oxododecanoyl-CoA	C33H52N7O18P3S
-3oddecACP	3oddecACP	3-Oxododecanoyl-[acyl-carrier protein]	C23H41N2O9PRS
-3odecACP	3odecACP	3-Oxodecanoyl-[acyl-carrier protein]	C21H37N2O9PRS
-3ohcoa	3ohcoa	3-Oxohexanoyl-CoA	C27H40N7O18P3S
-3ohdcoa	3ohdcoa	3-Oxohexadecanoyl-CoA	C37H60N7O18P3S
-3ohexACP	3ohexACP	3-Oxohexanoyl-[acyl-carrier protein]	C17H29N2O9PRS
-3omrsACP	3omrsACP	3-Oxotetradecanoyl-[acyl-carrier protein]	C25H45N2O9PRS
-3oocoa	3oocoa	3-Oxooctanoyl-CoA	C29H44N7O18P3S
-3ooctACP	3ooctACP	3-Oxooctanoyl-[acyl-carrier protein]	C19H33N2O9PRS
-3ooctdACP	3ooctdACP	3-Oxooctadecanoyl-[acyl-carrier protein]	C29H53N2O9PRS
-3oodcoa	3oodcoa	3-Oxooctadecanoyl-CoA	C39H64N7O18P3S
-3opalmACP	3opalmACP	3-Oxohexadecanoyl-[acyl-carrier protein]	C27H49N2O9PRS
-3otdcoa	3otdcoa	3-Oxotetradecanoyl-CoA	C35H56N7O18P3S
-3pg	3pg	3-Phospho-D-glycerate	C3H4O7P
-3php	3php	3-Phosphohydroxypyruvate	C3H2O7P
-3psme	3psme	5-O-(1-Carboxyvinyl)-3-phosphoshikimate	C10H9O10P
-4abut	4abut	4-Aminobutanoate	C4H9NO2
-4abutn	4abutn	4-Aminobutanal	C4H10NO
-4mop	4mop	4-Methyl-2-oxopentanoate	C6H9O3
-4pasp	4pasp	4-Phospho-L-aspartate	C4H6NO7P
-5aizc	5aizc	5-amino-1-(5-phospho-D-ribosyl)imidazole-4-carboxylate	C9H11N3O9P
-5caiz	5caiz	5-phosphoribosyl-5-carboxyaminoimidazole	C9H11N3O9P
-5mthf	5mthf	5-Methyltetrahydrofolate	C20H24N7O6
-6pgc	6pgc	6-Phospho-D-gluconate	C6H10O10P
-6pgl	6pgl	6-phospho-D-glucono-1,5-lactone	C6H9O9P
-10fthf	10fthf	10-Formyltetrahydrofolate	C20H21N7O7
-12ppd-R	12ppd-R	(R)-Propane-1,2-diol	C3H8O2
-13dpg	13dpg	3-Phospho-D-glyceroyl phosphate	C3H4O10P2
-15dap	15dap	1,5-Diaminopentane	C5H16N2
-23dhdp	23dhdp	2,3-Dihydrodipicolinate	C7H5NO4
-23dhmb	23dhmb	(R)-2,3-Dihydroxy-3-methylbutanoate	C5H9O4
-23dhmp	23dhmp	(R)-2,3-Dihydroxy-3-methylpentanoate	C6H11O4
-25aics	25aics	(S)-2-[5-Amino-1-(5-phospho-D-ribosyl)imidazole-4-carboxamido]succinate	C13H15N4O12P
-26dap-LL	26dap-LL	LL-2,6-Diaminoheptanedioate 	C7H14N2O4
-26dap-M	26dap-M	meso-2,6-Diaminoheptanedioate	C7H14N2O4
-34hpp	34hpp	3-(4-Hydroxyphenyl)pyruvate	C9H7O4
-aacoa	aacoa	Acetoacetyl-CoA	C25H36N7O18P3S
-aact	aact	Aminoacetone	C3H8NO
-ac	ac	Acetate	C2H3O2
-acACP	acACP	Acetyl-ACP	C13H23N2O8PRS
-acald	acald	Acetaldehyde	C2H4O
-accoa	accoa	Acetyl-CoA	C23H34N7O17P3S
-acetol	acetol	Acetol	C3H6O2
-acg5p	acg5p	N-Acetyl-L-glutamyl 5-phosphate	C7H9NO8P
-acg5sa	acg5sa	N-Acetyl-L-glutamate 5-semialdehyde	C7H10NO4
-acglu	acglu	N-Acetyl-L-glutamate	C7H9NO5
-acon-C	acon-C	cis-Aconitate	C6H3O6
-acorn	acorn	N2-Acetyl-L-ornithine	C7H14N2O3
-ACP	ACP	acyl carrier protein	C11H21N2O7PRS
-acser	acser	O-Acetyl-L-serine	C5H9NO4
-actACP	actACP	Acetoacetyl-ACP	C15H25N2O9PRS
-actp	actp	Acetyl phosphate	C2H3O5P
-adp	adp	ADP	C10H12N5O10P2
-adpglc	adpglc	ADPglucose	C16H23N5O15P2
-agm	agm	Agmatine	C5H16N4
-aicar	aicar	5-Amino-1-(5-Phospho-D-ribosyl)imidazole-4-carboxamide	C9H13N4O8P
-air	air	5-amino-1-(5-phospho-D-ribosyl)imidazole	C8H12N3O7P
-akg	akg	2-Oxoglutarate	C5H4O5
-ala-D	ala-D	D-Alanine	C3H7NO2
-ala-L	ala-L	L-Alanine	C3H7NO2
-alac-S	alac-S	(S)-2-Acetolactate	C5H7O4
-amp	amp	AMP	C10H12N5O7P
-anth	anth	Anthranilate	C7H6NO2
-arg-L	arg-L	L-Arginine	C6H15N4O2
-argsuc	argsuc	N(omega)-(L-Arginino)succinate	C10H17N4O6
-asn-L	asn-L	L-Asparagine	C4H8N2O3
-asp-L	asp-L	L-Aspartate	C4H6NO4
-aspsa	aspsa	L-Aspartate 4-semialdehyde	C4H7NO3
-atp	atp	ATP	C10H12N5O13P3
-b2coa	b2coa	Crotonoyl-CoA	C25H36N7O17P3S
-Biomass	Biomass	Biomass	
-btcoa	btcoa	Butanoyl-CoA	C25H38N7O17P3S
-but	but	Butyrate (n-C4:0)	C4H7O2
-but2eACP	but2eACP	But-2-enoyl-[acyl-carrier protein]	C15H25N2O8PRS
-butACP	butACP	Butyryl-ACP (n-C4:0ACP)	C15H27N2O8PRS
-cbp	cbp	Carbamoyl phosphate	CH2NO5P
-cddec5eACP	cddec5eACP	cis-dodec-5-enoyl-[acyl-carrier protein] (n-C12:1)	C23H41N2O8PRS
-cdec3eACP	cdec3eACP	cis-dec-3-enoyl-[acyl-carrier protein] (n-C10:1)	C21H37N2O8PRS
-chor	chor	chorismate	C10H8O6
-cit	cit	Citrate	C6H5O7
-citr-L	citr-L	L-Citrulline	C6H13N3O3
-co2	co2	CO2	CO2
-coa	coa	Coenzyme A	C21H32N7O16P3S
-cys-L	cys-L	L-Cysteine	C3H7NO2S
-cyst-L	cyst-L	L-Cystathionine	C7H14N2O4S
-dc2coa	dc2coa	trans-Dec-2-enoyl-CoA	C31H48N7O17P3S
-dca	dca	Decanoate (n-C10:0)	C10H19O2
-dcaACP	dcaACP	Decanoyl-ACP (n-C10:0ACP)	C21H39N2O8PRS
-dcacoa	dcacoa	Decanoyl-CoA (n-C10:0CoA)	C31H50N7O17P3S
-dcamp	dcamp	N6-(1,2-Dicarboxyethyl)-AMP	C14H14N5O11P
-dd2coa	dd2coa	trans-Dodec-2-enoyl-CoA	C33H52N7O17P3S
-ddca	ddca	Dodecanoate (n-C12:0)	C12H23O2
-ddcaACP	ddcaACP	Dodecanoyl-ACP (n-C12:0ACP)	C23H43N2O8PRS
-ddcacoa	ddcacoa	Dodecanoyl-CoA (n-C12:0CoA)	C33H54N7O17P3S
-dhap	dhap	Dihydroxyacetone phosphate	C3H5O6P
-e4p	e4p	D-Erythrose 4-phosphate	C4H7O7P
-eig3p	eig3p	D-erythro-1-(Imidazol-4-yl)glycerol 3-phosphate	C6H9N2O6P
-etoh	etoh	Ethanol	C2H6O
-f6p	f6p	D-Fructose 6-phosphate	C6H11O9P
-fad	fad	Flavin adenine dinucleotide oxidized	C27H31N9O15P2
-fadh2	fadh2	Flavin adenine dinucleotide reduced	C27H33N9O15P2
-fdp	fdp	D-Fructose 1,6-bisphosphate	C6H10O12P2
-fgam	fgam	N2-Formyl-N1-(5-phospho-D-ribosyl)glycinamide	C8H13N2O9P
-for	for	Formate	CHO2
-fprica	fprica	5-Formamido-1-(5-phospho-D-ribosyl)imidazole-4-carboxamide	C10H13N4O9P
-fum	fum	Fumarate	C4H2O4
-g1p	g1p	D-Glucose 1-phosphate	C6H11O9P
-g3p	g3p	Glyceraldehyde 3-phosphate	C3H5O6P
-g6p	g6p	D-Glucose 6-phosphate	C6H11O9P
-gar	gar	N1-(5-Phospho-D-ribosyl)glycinamide	C7H14N2O8P
-gdp	gdp	GDP	C10H12N5O11P2
-gg4abut	gg4abut	gamma-glutamyl-gamma aminobutyric acid	C9H15N2O5
-ggbutal	ggbutal	gamma-glutamyl-gamma-butyraldehyde	C9H16N2O4
-ggptrc	ggptrc	gamma-glutamyl-putrescine	C9H20N3O3
-glc-D	glc-D	D-Glucose	C6H12O6
-gln-L	gln-L	L-Glutamine	C5H10N2O3
-glu5p	glu5p	L-Glutamate 5-phosphate	C5H8NO7P
-glu5sa	glu5sa	L-Glutamate 5-semialdehyde	C5H9NO3
-glu-L	glu-L	L-Glutamate	C5H8NO4
-glx	glx	Glyoxylate	C2HO3
-gly	gly	Glycine	C2H5NO2
-glyc	glyc	Glycerol	C3H8O3
-glyc3p	glyc3p	Glycerol 3-phosphate	C3H7O6P
-glycogen	glycogen	glycogen	C6H10O5
-gthrd	gthrd	Reduced glutathione	C10H16N3O6S
-gtp	gtp	GTP	C10H12N5O14P3
-h	h	H+	H
-h2o	h2o	H2O	H2O
-h2o2	h2o2	Hydrogen peroxide	H2O2
-h2s	h2s	Hydrogen sulfide	H2S
-hco3	hco3	Bicarbonate	CHO3
-hcys-L	hcys-L	L-Homocysteine	C4H9NO2S
-hdca	hdca	Hexadecanoate (n-C16:0)	C16H31O2
-hdcea	hdcea	Hexadecenoate (n-C16:1)	C16H29O2
-hdcoa	hdcoa	Hexadecenoyl-CoA (n-C16:1CoA)	C37H60N7O17P3S
-hdd2coa	hdd2coa	trans-Hexadec-2-enoyl-CoA	C37H60N7O17P3S
-hdeACP	hdeACP	cis-hexadec-9-enoyl-[acyl-carrier protein] (n-C16:1)	C27H49N2O8PRS
-hexACP	hexACP	Hexanoyl-ACP (n-C6:0ACP)	C17H31N2O8PRS
-his-L	his-L	L-Histidine	C6H9N3O2
-hisp	hisp	L-Histidinol phosphate	C6H11N3O4P
-histd	histd	L-Histidinol	C6H12N3O
-hom-L	hom-L	L-Homoserine	C4H9NO3
-hx2coa	hx2coa	trans-Hex-2-enoyl-CoA	C27H40N7O17P3S
-hxa	hxa	Hexanoate (n-C6:0)	C6H11O2
-hxcoa	hxcoa	Hexanoyl-CoA (n-C6:0CoA)	C27H42N7O17P3S
-icit	icit	Isocitrate	C6H5O7
-ile-L	ile-L	L-Isoleucine	C6H13NO2
-imacp	imacp	3-(Imidazol-4-yl)-2-oxopropyl phosphate	C6H7N2O5P
-imp	imp	IMP	C10H11N4O8P
-lac-D	lac-D	D-Lactate	C3H5O3
-leu-L	leu-L	L-Leucine	C6H13NO2
-lgt-S	lgt-S	(R)-S-Lactoylglutathione	C13H20N3O8S
-lys-L	lys-L	L-Lysine	C6H15N2O2
-mal-L	mal-L	L-Malate	C4H4O5
-malACP	malACP	Malonyl-[acyl-carrier protein]	C14H22N2O10PRS
-malcoa	malcoa	Malonyl-CoA	C24H33N7O19P3S
-met-L	met-L	L-Methionine	C5H11NO2S
-mlthf	mlthf	5,10-Methylenetetrahydrofolate	C20H21N7O6
-mthgxl	mthgxl	Methylglyoxal	C3H4O2
-myrsACP	myrsACP	Myristoyl-ACP (n-C14:0ACP)	C25H47N2O8PRS
-nad	nad	Nicotinamide adenine dinucleotide	C21H26N7O14P2
-nadh	nadh	Nicotinamide adenine dinucleotide - reduced	C21H27N7O14P2
-nadp	nadp	Nicotinamide adenine dinucleotide phosphate	C21H25N7O17P3
-nadph	nadph	Nicotinamide adenine dinucleotide phosphate - reduced	C21H26N7O17P3
-nh4	nh4	Ammonium	H4N
-o2	o2	O2	O2
-oaa	oaa	Oxaloacetate	C4H2O5
-oc2coa	oc2coa	trans-Oct-2-enoyl-CoA	C29H44N7O17P3S
-ocACP	ocACP	Octanoyl-ACP (n-C8:0ACP)	C19H35N2O8PRS
-occoa	occoa	Octanoyl-CoA (n-C8:0CoA)	C29H46N7O17P3S
-ocdca	ocdca	octadecanoate (n-C18:0)	C18H35O2
-ocdcaACP	ocdcaACP	Octadecanoyl-ACP (n-C18:0ACP)	C29H55N2O8PRS
-ocdcea	ocdcea	octadecenoate (n-C18:1)	C18H33O2
-octa	octa	octanoate (n-C8:0)	C8H15O2
-octeACP	octeACP	cis-octadec-11-enoyl-[acyl-carrier protein] (n-C18:1)	C29H53N2O8PRS
-od2coa	od2coa	trans-Octadec-2-enoyl-CoA	C39H64N7O17P3S
-odecoa	odecoa	Octadecenoyl-CoA (n-C18:1CoA)	C39H64N7O17P3S
-orn	orn	Ornithine	C5H13N2O2
-palmACP	palmACP	Palmitoyl-ACP (n-C16:0ACP)	C27H51N2O8PRS
-pep	pep	Phosphoenolpyruvate	C3H2O6P
-phe-L	phe-L	L-Phenylalanine	C9H11NO2
-phom	phom	O-Phospho-L-homoserine	C4H8NO6P
-phpyr	phpyr	Phenylpyruvate	C9H7O3
-pi	pi	Phosphate	HO4P
-pmtcoa	pmtcoa	Palmitoyl-CoA (n-C16:0CoA)	C37H62N7O17P3S
-pphn	pphn	Prephenate	C10H8O6
-ppi	ppi	Diphosphate	HO7P2
-pram	pram	5-Phospho-beta-D-ribosylamine	C5H11NO7P
-pran	pran	N-(5-Phospho-D-ribosyl)anthranilate	C12H13NO9P
-prbamp	prbamp	1-(5-Phosphoribosyl)-AMP	C15H19N5O14P2
-prbatp	prbatp	1-(5-Phosphoribosyl)-ATP	C15H19N5O20P4
-prfp	prfp	1-(5-Phosphoribosyl)-5-[(5-phosphoribosylamino)methylideneamino]imidazole-4-carboxamide	C15H21N5O15P2
-prlp	prlp	5-[(5-phospho-1-deoxyribulos-1-ylamino)methylideneamino]-1-(5-phosphoribosyl)imidazole-4-carboxamide	C15H21N5O15P2
-pro-L	pro-L	L-Proline	C5H9NO2
-prpp	prpp	5-Phospho-alpha-D-ribose 1-diphosphate	C5H8O14P3
-pser-L	pser-L	O-Phospho-L-serine	C3H6NO6P
-ptrc	ptrc	Putrescine	C4H14N2
-pyr	pyr	Pyruvate	C3H3O3
-q8	q8	Ubiquinone-8	C49H74O4
-q8h2	q8h2	Ubiquinol-8	C49H76O4
-r5p	r5p	alpha-D-Ribose 5-phosphate	C5H9O8P
-rib-D	rib-D	D-Ribose	C5H10O5
-ru5p-D	ru5p-D	D-Ribulose 5-phosphate	C5H9O8P
-s7p	s7p	Sedoheptulose 7-phosphate	C7H13O10P
-ser-D	ser__D	D-Serine	C3H7NO3
-ser-L	ser-L	L-Serine	C3H7NO3
-skm	skm	Shikimate	C7H9O5
-skm5p	skm5p	Shikimate 5-phosphate	C7H8O8P
-sl2a6o	sl2a6o	N-Succinyl-2-L-amino-6-oxoheptanedioate	C11H12NO8
-sl26da	sl26da	N-Succinyl-LL-2,6-diaminoheptanedioate	C11H16N2O7
-stcoa	stcoa	Stearoyl-CoA (n-C18:0CoA)	C39H66N7O17P3S
-sucarg	sucarg	N2-Succinyl-L-arginine	C10H17N4O5
-succ	succ	Succinate	C4H4O4
-succoa	succoa	Succinyl-CoA	C25H35N7O19P3S
-sucglu	sucglu	N2-Succinyl-L-glutamate	C9H10NO7
-suchms	suchms	O-Succinyl-L-homoserine	C8H12NO6
-sucorn	sucorn	N2-Succinyl-L-ornithine	C9H15N2O5
-sucsal	sucsal	Succinic semialdehyde	C4H5O3
-t3c5ddeceACP	t3c5ddeceACP	trans-3-cis-5-dodecenoyl-[acyl-carrier protein]	C23H39N2O8PRS
-t3c7mrseACP	t3c7mrseACP	trans-3-cis-7-myristoleoyl-[acyl-carrier protein]	C25H43N2O8PRS
-t3c9palmeACP	t3c9palmeACP	trans-3-cis-9-palmitoleoyl-[acyl-carrier protein]	C27H47N2O8PRS
-t3c11vaceACP	t3c11vaceACP	trans-3-cis-11-vacceoyl-[acyl-carrier protein]	C29H51N2O8PRS
-td2coa	td2coa	trans-Tetradec-2-enoyl-CoA	C35H56N7O17P3S
-tdcoa	tdcoa	Tetradecanoyl-CoA (n-C14:0CoA)	C35H58N7O17P3S
-tddec2eACP	tddec2eACP	trans-Dodec-2-enoyl-[acyl-carrier protein]	C23H41N2O8PRS
-tdeACP	tdeACP	cis-tetradec-7-enoyl-[acyl-carrier protein] (n-C14:1)	C25H45N2O8PRS
-tdec2eACP	tdec2eACP	trans-Dec-2-enoyl-[acyl-carrier protein]	C21H37N2O8PRS
-tdecoa	tdecoa	Tetradecenoyl-CoA (n-C14:1CoA)	C35H56N7O17P3S
-thdp	thdp	2,3,4,5-Tetrahydrodipicolinate	C7H7NO4
-thex2eACP	thex2eACP	trans-Hex-2-enoyl-[acyl-carrier protein]	C17H29N2O8PRS
-thf	thf	5,6,7,8-Tetrahydrofolate	C19H21N7O6
-thr-L	thr-L	L-Threonine	C4H9NO3
-tmrs2eACP	tmrs2eACP	trans-Tetradec-2-enoyl-[acyl-carrier protein]	C25H45N2O8PRS
-toct2eACP	toct2eACP	trans-Oct-2-enoyl-[acyl-carrier protein]	C19H33N2O8PRS
-toctd2eACP	toctd2eACP	trans-octadec-2-enoyl-[acyl-carrier protein]	C29H53N2O8PRS
-tpalm2eACP	tpalm2eACP	trans-Hexadec-2-enoyl-[acyl-carrier protein]	C27H49N2O8PRS
-trp-L	trp-L	L-Tryptophan	C11H12N2O2
-ttdca	ttdca	tetradecanoate (n-C14:0)	C14H27O2
-ttdcea	ttdcea	tetradecenoate (n-C14:1)	C14H25O2
-tyr-L	tyr-L	L-Tyrosine	C9H11NO3
-urea	urea	Urea	CH4N2O
-val-L	val-L	L-Valine	C5H11NO2
-xu5p-D	xu5p-D	D-Xylulose 5-phosphate	C5H9O8P
+!!ObjTables type='Data' tableFormat='row' class='Metabolite' name='Metabolites' date='2020-05-28 23:58:52' objTablesVersion='1.0.0' format='row'		
+!Id	!Name	!Formula
+1pyr5c	1-Pyrroline-5-carboxylate	C5H6NO2
+2ahbut	(S)-2-Aceto-2-hydroxybutanoate	C6H9O4
+2aobut	L-2-Amino-3-oxobutanoate	C4H7NO3
+2cpr5p	1-(2-Carboxyphenylamino)-1-deoxy-D-ribulose 5-phosphate	C12H13NO9P
+2dda7p	2-Dehydro-3-deoxy-D-arabino-heptonate 7-phosphate	C7H10O10P
+2ddg6p	2-Dehydro-3-deoxy-D-gluconate 6-phosphate	C6H8O9P
+2ippm	2-Isopropylmaleate	C7H8O4
+2obut	2-Oxobutanoate	C4H5O3
+2pg	D-Glycerate 2-phosphate	C3H4O7P
+3c2hmp	3-Carboxy-2-hydroxy-4-methylpentanoate	C7H10O5
+3c3hmp	3-Carboxy-3-hydroxy-4-methylpentanoate	C7H10O5
+3c4mop	3-Carboxy-4-methyl-2-oxopentanoate	C7H8O5
+3dhq	3-Dehydroquinate	C7H9O6
+3dhsk	3-Dehydroshikimate	C7H7O5
+3haACP	(3R)-3-Hydroxyacyl-[acyl-carrier protein]	C15H27N2O9PRS
+3hbcoa	(S)-3-Hydroxybutanoyl-CoA	C25H38N7O18P3S
+3hcddec5eACP	(R)-3-hydroxy-cis-dodec-5-enoyl-[acyl-carrier protein]	C23H41N2O9PRS
+3hcmrs7eACP	(R)-3-hydroxy-cis-myristol-7-eoyl-[acyl-carrier protein]	C25H45N2O9PRS
+3hcpalm9eACP	(R)-3-hydroxy-cis-palm-9-eoyl-[acyl-carrier protein]	C27H49N2O9PRS
+3hdcoa	(S)-3-Hydroxydecanoyl-CoA	C31H50N7O18P3S
+3hddcoa	(S)-3-Hydroxydodecanoyl-CoA	C33H54N7O18P3S
+3hddecACP	(R)-3-Hydroxydodecanoyl-[acyl-carrier protein]	C23H43N2O9PRS
+3hdecACP	(R)-3-Hydroxydecanoyl-[acyl-carrier protein]	C21H39N2O9PRS
+3hhcoa	(S)-3-Hydroxyhexanoyl-CoA	C27H42N7O18P3S
+3hhdcoa	(S)-3-Hydroxyhexadecanoyl-CoA	C37H62N7O18P3S
+3hhexACP	(R)-3-Hydroxyhexanoyl-[acyl-carrier protein]	C17H31N2O9PRS
+3hmrsACP	(R)-3-Hydroxytetradecanoyl-[acyl-carrier protein]	C25H47N2O9PRS
+3hocoa	(S)-3-Hydroxyoctanoyl-CoA	C29H46N7O18P3S
+3hoctaACP	(R)-3-Hydroxyoctadecanoyl-[acyl-carrier protein]	C29H55N2O9PRS
+3hoctACP	(R)-3-Hydroxyoctanoyl-[acyl-carrier protein]	C19H35N2O9PRS
+3hodcoa	(S)-3-Hydroxyoctadecanoyl-CoA	C39H66N7O18P3S
+3hpalmACP	R-3-hydroxypalmitoyl-[acyl-carrier protein]	C27H51N2O9PRS
+3htdcoa	(S)-3-Hydroxytetradecanoyl-CoA	C35H58N7O18P3S
+3ig3p	C'-(3-Indolyl)-glycerol 3-phosphate	C11H12NO6P
+3mob	3-Methyl-2-oxobutanoate	C5H7O3
+3mop	(S)-3-Methyl-2-oxopentanoate	C6H9O3
+3ocddec5eACP	3-oxo-cis-dodec-5-enoyl-[acyl-carrier protein]	C23H39N2O9PRS
+3ocmrs7eACP	3-oxo-cis-myristol-7-eoyl-[acyl-carrier protein]	C25H43N2O9PRS
+3ocpalm9eACP	3-oxo-cis-palm-9-eoyl-[acyl-carrier protein]	C27H47N2O9PRS
+3odcoa	3-Oxodecanoyl-CoA	C31H48N7O18P3S
+3oddcoa	3-Oxododecanoyl-CoA	C33H52N7O18P3S
+3oddecACP	3-Oxododecanoyl-[acyl-carrier protein]	C23H41N2O9PRS
+3odecACP	3-Oxodecanoyl-[acyl-carrier protein]	C21H37N2O9PRS
+3ohcoa	3-Oxohexanoyl-CoA	C27H40N7O18P3S
+3ohdcoa	3-Oxohexadecanoyl-CoA	C37H60N7O18P3S
+3ohexACP	3-Oxohexanoyl-[acyl-carrier protein]	C17H29N2O9PRS
+3omrsACP	3-Oxotetradecanoyl-[acyl-carrier protein]	C25H45N2O9PRS
+3oocoa	3-Oxooctanoyl-CoA	C29H44N7O18P3S
+3ooctACP	3-Oxooctanoyl-[acyl-carrier protein]	C19H33N2O9PRS
+3ooctdACP	3-Oxooctadecanoyl-[acyl-carrier protein]	C29H53N2O9PRS
+3oodcoa	3-Oxooctadecanoyl-CoA	C39H64N7O18P3S
+3opalmACP	3-Oxohexadecanoyl-[acyl-carrier protein]	C27H49N2O9PRS
+3otdcoa	3-Oxotetradecanoyl-CoA	C35H56N7O18P3S
+3pg	3-Phospho-D-glycerate	C3H4O7P
+3php	3-Phosphohydroxypyruvate	C3H2O7P
+3psme	5-O-(1-Carboxyvinyl)-3-phosphoshikimate	C10H9O10P
+4abut	4-Aminobutanoate	C4H9NO2
+4abutn	4-Aminobutanal	C4H10NO
+4mop	4-Methyl-2-oxopentanoate	C6H9O3
+4pasp	4-Phospho-L-aspartate	C4H6NO7P
+5aizc	5-amino-1-(5-phospho-D-ribosyl)imidazole-4-carboxylate	C9H11N3O9P
+5caiz	5-phosphoribosyl-5-carboxyaminoimidazole	C9H11N3O9P
+5mthf	5-Methyltetrahydrofolate	C20H24N7O6
+6pgc	6-Phospho-D-gluconate	C6H10O10P
+6pgl	6-phospho-D-glucono-1,5-lactone	C6H9O9P
+10fthf	10-Formyltetrahydrofolate	C20H21N7O7
+12ppd-R	(R)-Propane-1,2-diol	C3H8O2
+13dpg	3-Phospho-D-glyceroyl phosphate	C3H4O10P2
+15dap	1,5-Diaminopentane	C5H16N2
+23dhdp	2,3-Dihydrodipicolinate	C7H5NO4
+23dhmb	(R)-2,3-Dihydroxy-3-methylbutanoate	C5H9O4
+23dhmp	(R)-2,3-Dihydroxy-3-methylpentanoate	C6H11O4
+25aics	(S)-2-[5-Amino-1-(5-phospho-D-ribosyl)imidazole-4-carboxamido]succinate	C13H15N4O12P
+26dap-LL	LL-2,6-Diaminoheptanedioate 	C7H14N2O4
+26dap-M	meso-2,6-Diaminoheptanedioate	C7H14N2O4
+34hpp	3-(4-Hydroxyphenyl)pyruvate	C9H7O4
+aacoa	Acetoacetyl-CoA	C25H36N7O18P3S
+aact	Aminoacetone	C3H8NO
+ac	Acetate	C2H3O2
+acACP	Acetyl-ACP	C13H23N2O8PRS
+acald	Acetaldehyde	C2H4O
+accoa	Acetyl-CoA	C23H34N7O17P3S
+acetol	Acetol	C3H6O2
+acg5p	N-Acetyl-L-glutamyl 5-phosphate	C7H9NO8P
+acg5sa	N-Acetyl-L-glutamate 5-semialdehyde	C7H10NO4
+acglu	N-Acetyl-L-glutamate	C7H9NO5
+acon-C	cis-Aconitate	C6H3O6
+acorn	N2-Acetyl-L-ornithine	C7H14N2O3
+ACP	acyl carrier protein	C11H21N2O7PRS
+acser	O-Acetyl-L-serine	C5H9NO4
+actACP	Acetoacetyl-ACP	C15H25N2O9PRS
+actp	Acetyl phosphate	C2H3O5P
+adp	Adenosine diphosphate	C10H12N5O10P2
+adpglc	ADPglucose	C16H23N5O15P2
+agm	Agmatine	C5H16N4
+aicar	5-Amino-1-(5-Phospho-D-ribosyl)imidazole-4-carboxamide	C9H13N4O8P
+air	5-amino-1-(5-phospho-D-ribosyl)imidazole	C8H12N3O7P
+akg	2-Oxoglutarate	C5H4O5
+ala-D	D-Alanine	C3H7NO2
+ala-L	L-Alanine	C3H7NO2
+alac-S	(S)-2-Acetolactate	C5H7O4
+amp	Adenosine monophosphate	C10H12N5O7P
+anth	Anthranilate	C7H6NO2
+arg-L	L-Arginine	C6H15N4O2
+argsuc	N(omega)-(L-Arginino)succinate	C10H17N4O6
+asn-L	L-Asparagine	C4H8N2O3
+asp-L	L-Aspartate	C4H6NO4
+aspsa	L-Aspartate 4-semialdehyde	C4H7NO3
+atp	Adenosine triphosphate	C10H12N5O13P3
+b2coa	Crotonoyl-CoA	C25H36N7O17P3S
+Biomass	Biomass	
+btcoa	Butanoyl-CoA	C25H38N7O17P3S
+but	Butyrate (n-C4:0)	C4H7O2
+but2eACP	But-2-enoyl-[acyl-carrier protein]	C15H25N2O8PRS
+butACP	Butyryl-ACP (n-C4:0ACP)	C15H27N2O8PRS
+cbp	Carbamoyl phosphate	CH2NO5P
+cddec5eACP	cis-dodec-5-enoyl-[acyl-carrier protein] (n-C12:1)	C23H41N2O8PRS
+cdec3eACP	cis-dec-3-enoyl-[acyl-carrier protein] (n-C10:1)	C21H37N2O8PRS
+chor	chorismate	C10H8O6
+cit	Citrate	C6H5O7
+citr-L	L-Citrulline	C6H13N3O3
+co2	CO2	CO2
+coa	Coenzyme A	C21H32N7O16P3S
+cys-L	L-Cysteine	C3H7NO2S
+cyst-L	L-Cystathionine	C7H14N2O4S
+dc2coa	trans-Dec-2-enoyl-CoA	C31H48N7O17P3S
+dca	Decanoate (n-C10:0)	C10H19O2
+dcaACP	Decanoyl-ACP (n-C10:0ACP)	C21H39N2O8PRS
+dcacoa	Decanoyl-CoA (n-C10:0CoA)	C31H50N7O17P3S
+dcamp	N6-(1,2-Dicarboxyethyl)-AMP	C14H14N5O11P
+dd2coa	trans-Dodec-2-enoyl-CoA	C33H52N7O17P3S
+ddca	Dodecanoate (n-C12:0)	C12H23O2
+ddcaACP	Dodecanoyl-ACP (n-C12:0ACP)	C23H43N2O8PRS
+ddcacoa	Dodecanoyl-CoA (n-C12:0CoA)	C33H54N7O17P3S
+dhap	Dihydroxyacetone phosphate	C3H5O6P
+e4p	D-Erythrose 4-phosphate	C4H7O7P
+eig3p	D-erythro-1-(Imidazol-4-yl)glycerol 3-phosphate	C6H9N2O6P
+etoh	Ethanol	C2H6O
+f6p	D-Fructose 6-phosphate	C6H11O9P
+fad	Flavin adenine dinucleotide oxidized	C27H31N9O15P2
+fadh2	Flavin adenine dinucleotide reduced	C27H33N9O15P2
+fdp	D-Fructose 1,6-bisphosphate	C6H10O12P2
+fgam	N2-Formyl-N1-(5-phospho-D-ribosyl)glycinamide	C8H13N2O9P
+for	Formate	CHO2
+fprica	5-Formamido-1-(5-phospho-D-ribosyl)imidazole-4-carboxamide	C10H13N4O9P
+fum	Fumarate	C4H2O4
+g1p	D-Glucose 1-phosphate	C6H11O9P
+g3p	Glyceraldehyde 3-phosphate	C3H5O6P
+g6p	D-Glucose 6-phosphate	C6H11O9P
+gar	N1-(5-Phospho-D-ribosyl)glycinamide	C7H14N2O8P
+gdp	GDP	C10H12N5O11P2
+gg4abut	gamma-glutamyl-gamma aminobutyric acid	C9H15N2O5
+ggbutal	gamma-glutamyl-gamma-butyraldehyde	C9H16N2O4
+ggptrc	gamma-glutamyl-putrescine	C9H20N3O3
+glc-D	D-Glucose	C6H12O6
+gln-L	L-Glutamine	C5H10N2O3
+glu5p	L-Glutamate 5-phosphate	C5H8NO7P
+glu5sa	L-Glutamate 5-semialdehyde	C5H9NO3
+glu-L	L-Glutamate	C5H8NO4
+glx	Glyoxylate	C2HO3
+gly	Glycine	C2H5NO2
+glyc	Glycerol	C3H8O3
+glyc3p	Glycerol 3-phosphate	C3H7O6P
+glycogen	glycogen	C6H10O5
+gthrd	Reduced glutathione	C10H16N3O6S
+gtp	GTP	C10H12N5O14P3
+h	H+	H
+h2o	H2O	H2O
+h2o2	Hydrogen peroxide	H2O2
+h2s	Hydrogen sulfide	H2S
+hco3	Bicarbonate	CHO3
+hcys-L	L-Homocysteine	C4H9NO2S
+hdca	Hexadecanoate (n-C16:0)	C16H31O2
+hdcea	Hexadecenoate (n-C16:1)	C16H29O2
+hdcoa	Hexadecenoyl-CoA (n-C16:1CoA)	C37H60N7O17P3S
+hdd2coa	trans-Hexadec-2-enoyl-CoA	C37H60N7O17P3S
+hdeACP	cis-hexadec-9-enoyl-[acyl-carrier protein] (n-C16:1)	C27H49N2O8PRS
+hexACP	Hexanoyl-ACP (n-C6:0ACP)	C17H31N2O8PRS
+his-L	L-Histidine	C6H9N3O2
+hisp	L-Histidinol phosphate	C6H11N3O4P
+histd	L-Histidinol	C6H12N3O
+hom-L	L-Homoserine	C4H9NO3
+hx2coa	trans-Hex-2-enoyl-CoA	C27H40N7O17P3S
+hxa	Hexanoate (n-C6:0)	C6H11O2
+hxcoa	Hexanoyl-CoA (n-C6:0CoA)	C27H42N7O17P3S
+icit	Isocitrate	C6H5O7
+ile-L	L-Isoleucine	C6H13NO2
+imacp	3-(Imidazol-4-yl)-2-oxopropyl phosphate	C6H7N2O5P
+imp	IMP	C10H11N4O8P
+lac-D	D-Lactate	C3H5O3
+leu-L	L-Leucine	C6H13NO2
+lgt-S	(R)-S-Lactoylglutathione	C13H20N3O8S
+lys-L	L-Lysine	C6H15N2O2
+mal-L	L-Malate	C4H4O5
+malACP	Malonyl-[acyl-carrier protein]	C14H22N2O10PRS
+malcoa	Malonyl-CoA	C24H33N7O19P3S
+met-L	L-Methionine	C5H11NO2S
+mlthf	5,10-Methylenetetrahydrofolate	C20H21N7O6
+mthgxl	Methylglyoxal	C3H4O2
+myrsACP	Myristoyl-ACP (n-C14:0ACP)	C25H47N2O8PRS
+nad	Nicotinamide adenine dinucleotide	C21H26N7O14P2
+nadh	Nicotinamide adenine dinucleotide - reduced	C21H27N7O14P2
+nadp	Nicotinamide adenine dinucleotide phosphate	C21H25N7O17P3
+nadph	Nicotinamide adenine dinucleotide phosphate - reduced	C21H26N7O17P3
+nh4	Ammonium	H4N
+o2	O2	O2
+oaa	Oxaloacetate	C4H2O5
+oc2coa	trans-Oct-2-enoyl-CoA	C29H44N7O17P3S
+ocACP	Octanoyl-ACP (n-C8:0ACP)	C19H35N2O8PRS
+occoa	Octanoyl-CoA (n-C8:0CoA)	C29H46N7O17P3S
+ocdca	octadecanoate (n-C18:0)	C18H35O2
+ocdcaACP	Octadecanoyl-ACP (n-C18:0ACP)	C29H55N2O8PRS
+ocdcea	octadecenoate (n-C18:1)	C18H33O2
+octa	octanoate (n-C8:0)	C8H15O2
+octeACP	cis-octadec-11-enoyl-[acyl-carrier protein] (n-C18:1)	C29H53N2O8PRS
+od2coa	trans-Octadec-2-enoyl-CoA	C39H64N7O17P3S
+odecoa	Octadecenoyl-CoA (n-C18:1CoA)	C39H64N7O17P3S
+orn	Ornithine	C5H13N2O2
+palmACP	Palmitoyl-ACP (n-C16:0ACP)	C27H51N2O8PRS
+pep	Phosphoenolpyruvate	C3H2O6P
+phe-L	L-Phenylalanine	C9H11NO2
+phom	O-Phospho-L-homoserine	C4H8NO6P
+phpyr	Phenylpyruvate	C9H7O3
+pi	Phosphate	HO4P
+pmtcoa	Palmitoyl-CoA (n-C16:0CoA)	C37H62N7O17P3S
+pphn	Prephenate	C10H8O6
+ppi	Diphosphate	HO7P2
+pram	5-Phospho-beta-D-ribosylamine	C5H11NO7P
+pran	N-(5-Phospho-D-ribosyl)anthranilate	C12H13NO9P
+prbamp	1-(5-Phosphoribosyl)-AMP	C15H19N5O14P2
+prbatp	1-(5-Phosphoribosyl)-ATP	C15H19N5O20P4
+prfp	1-(5-Phosphoribosyl)-5-[(5-phosphoribosylamino)methylideneamino]imidazole-4-carboxamide	C15H21N5O15P2
+prlp	5-[(5-phospho-1-deoxyribulos-1-ylamino)methylideneamino]-1-(5-phosphoribosyl)imidazole-4-carboxamide	C15H21N5O15P2
+pro-L	L-Proline	C5H9NO2
+prpp	5-Phospho-alpha-D-ribose 1-diphosphate	C5H8O14P3
+pser-L	O-Phospho-L-serine	C3H6NO6P
+ptrc	Putrescine	C4H14N2
+pyr	Pyruvate	C3H3O3
+q8	Ubiquinone-8	C49H74O4
+q8h2	Ubiquinol-8	C49H76O4
+r5p	alpha-D-Ribose 5-phosphate	C5H9O8P
+rib-D	D-Ribose	C5H10O5
+ru5p-D	D-Ribulose 5-phosphate	C5H9O8P
+s7p	Sedoheptulose 7-phosphate	C7H13O10P
+ser-D	D-Serine	C3H7NO3
+ser-L	L-Serine	C3H7NO3
+skm	Shikimate	C7H9O5
+skm5p	Shikimate 5-phosphate	C7H8O8P
+sl2a6o	N-Succinyl-2-L-amino-6-oxoheptanedioate	C11H12NO8
+sl26da	N-Succinyl-LL-2,6-diaminoheptanedioate	C11H16N2O7
+stcoa	Stearoyl-CoA (n-C18:0CoA)	C39H66N7O17P3S
+sucarg	N2-Succinyl-L-arginine	C10H17N4O5
+succ	Succinate	C4H4O4
+succoa	Succinyl-CoA	C25H35N7O19P3S
+sucglu	N2-Succinyl-L-glutamate	C9H10NO7
+suchms	O-Succinyl-L-homoserine	C8H12NO6
+sucorn	N2-Succinyl-L-ornithine	C9H15N2O5
+sucsal	Succinic semialdehyde	C4H5O3
+t3c5ddeceACP	trans-3-cis-5-dodecenoyl-[acyl-carrier protein]	C23H39N2O8PRS
+t3c7mrseACP	trans-3-cis-7-myristoleoyl-[acyl-carrier protein]	C25H43N2O8PRS
+t3c9palmeACP	trans-3-cis-9-palmitoleoyl-[acyl-carrier protein]	C27H47N2O8PRS
+t3c11vaceACP	trans-3-cis-11-vacceoyl-[acyl-carrier protein]	C29H51N2O8PRS
+td2coa	trans-Tetradec-2-enoyl-CoA	C35H56N7O17P3S
+tdcoa	Tetradecanoyl-CoA (n-C14:0CoA)	C35H58N7O17P3S
+tddec2eACP	trans-Dodec-2-enoyl-[acyl-carrier protein]	C23H41N2O8PRS
+tdeACP	cis-tetradec-7-enoyl-[acyl-carrier protein] (n-C14:1)	C25H45N2O8PRS
+tdec2eACP	trans-Dec-2-enoyl-[acyl-carrier protein]	C21H37N2O8PRS
+tdecoa	Tetradecenoyl-CoA (n-C14:1CoA)	C35H56N7O17P3S
+thdp	2,3,4,5-Tetrahydrodipicolinate	C7H7NO4
+thex2eACP	trans-Hex-2-enoyl-[acyl-carrier protein]	C17H29N2O8PRS
+thf	5,6,7,8-Tetrahydrofolate	C19H21N7O6
+thr-L	L-Threonine	C4H9NO3
+tmrs2eACP	trans-Tetradec-2-enoyl-[acyl-carrier protein]	C25H45N2O8PRS
+toct2eACP	trans-Oct-2-enoyl-[acyl-carrier protein]	C19H33N2O8PRS
+toctd2eACP	trans-octadec-2-enoyl-[acyl-carrier protein]	C29H53N2O8PRS
+tpalm2eACP	trans-Hexadec-2-enoyl-[acyl-carrier protein]	C27H49N2O8PRS
+trp-L	L-Tryptophan	C11H12N2O2
+ttdca	tetradecanoate (n-C14:0)	C14H27O2
+ttdcea	tetradecenoate (n-C14:1)	C14H25O2
+tyr-L	L-Tyrosine	C9H11NO3
+urea	Urea	CH4N2O
+val-L	L-Valine	C5H11NO2
+xu5p-D	D-Xylulose 5-phosphate	C5H9O8P
 
 !!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reactions' date='2020-05-28 23:58:52' objTablesVersion='1.0.0' format='row'												
 !Id	!Id (iAF1260 [Ref1])	!Name	!Equation	!Reversible	!Subsystem	!EC number	!Gene rule	!Km (mM) [Ref2, Ref3]	!kcat (s^-1) [Ref2, Ref3]	!kcat/Km (mM^-1 s^-1) [Ref2, Ref3]	!Ki (mM) [Ref2, Ref3]	!Coupled to biomass
@@ -702,7 +701,7 @@ ACHBS	ACHBS	2-aceto-2-hydroxybutanoate synthase	[c]: 2obut + h + pyr <=> 2ahbut 
 "	"
 "	"
 "	True
-ACKr	ACKr	acetate kinase	[c]: ac + atp <=> actp + adp	True	Pyruvate Metabolism	2.7.2.1	(b3115 or b2296 or b1849)	"Value	Molecule
+ACKr	ACKr	acetate kinase	[c]: actp + adp <=> ac + atp	True	Pyruvate Metabolism	2.7.2.1	(b3115 or b2296 or b1849)	"Value	Molecule
 7.0	acetate
 300.0	acetate
 0.16	acetyl phosphate
@@ -3478,7 +3477,7 @@ GLYCL	GLYCL	Glycine Cleavage System	[c]: gly + nad + thf <=> co2 + mlthf + nadh 
 "	"
 "	"
 "	
-GLYCtex			glyc[c] <=> glyc[e]	False				"
+GLYCtex	GLYCtex		glyc[c] <=> glyc[e]	False				"
 "	"
 "	"
 "	"
@@ -5379,7 +5378,7 @@ UP_AC			[e]: <=> ac	False				"
 "	"
 "	"
 "	
-UP_FOR			[e]: <=> for	False				"
+UP_FOR	EX_for(e)		[e]: <=> for	False				"
 "	"
 "	"
 "	"
@@ -5389,7 +5388,7 @@ UP_GLU_L			[e]: <=> glu-L	False				"
 "	"
 "	"
 "	
-UP_GLYC			[e]: <=> glyc	False				"
+UP_GLYC	EX_glyc(e)		[e]: <=> glyc	False				"
 "	"
 "	"
 "	"
@@ -5459,295 +5458,295 @@ Ref3	EcoCyc: fusing model organism databases with systems biology.	Keseler IM, M
 
 !!ObjTables type='Data' tableFormat='row' class='Regulation' name='Regulations' date='2020-05-28 23:58:52' objTablesVersion='1.0.0' format='row'			
 !Reaction	!Regulator	!Regulator compartment	!Type [Ref2, Ref3]
-GLCS1	6pgl	c	competitive inhibition
-PSP_L	ser-L	c	competitive inhibition
-PGCD	ser-L	c	competitive inhibition
-PGCD	nadh	c	competitive inhibition
-GLUN	nadh	c	mixed inhibition
-GLUN	pi	c	mixed inhibition
-IGPDH	pi	c	competitive inhibition
-ACODA	pi	c	competitive inhibition
-ACODA	ac	c	competitive inhibition
-ACODA	gthrd	c	competitive inhibition
-ACODA	orn	c	competitive inhibition
-ACOTA	orn	c	competitive inhibition
-OCBT	orn	c	competitive inhibition
-OCBT	gly	c	competitive inhibition
-GLUSy	gly	c	competitive inhibition
-GLUSy	adp	c	competitive inhibition
-GLGC	adp	c	competitive inhibition
-GLGC	fdp	c	competitive inhibition
-PPC	fdp	c	activation
-PPC	fum	c	competitive inhibition
-ADSS	fum	c	competitive inhibition
-ADSS	succ	c	competitive inhibition
-DHQTi	succ	c	competitive inhibition
-ABTA	succ	c	competitive inhibition
-ABTA	akg	c	competitive inhibition
-PPS	akg	c	competitive inhibition
-PPS	adp	c	competitive inhibition
-PPS	adpglc	c	competitive inhibition
-PPS	atp	c	competitive inhibition
-GLUN	atp	c	mixed inhibition
-LDH_D	atp	c	mixed inhibition
-PPA	atp	c	competitive inhibition
-PTAr	atp	c	mixed inhibition
-PTAr	adp	c	mixed inhibition
-PTAr	nadh	c	mixed inhibition
-PTAr	nadph	p	mixed inhibition
-G5SD	nadph	p	competitive inhibition
-G6PDH2r	nadph	p	mixed inhibition
-G6PDH2r	nadh	c	competitive inhibition
-GLUN	nadph	p	mixed inhibition
-GLUSy	nadph	p	competitive inhibition
-G5SD	co2	c	competitive inhibition
-G5SD	nadp	c	competitive inhibition
-3OAR100	nadp	c	competitive inhibition
-GLUN	nadp	c	mixed inhibition
-GLUSy	nadp	c	competitive inhibition
-GND	nadp	c	competitive inhibition
-GND	atp	c	competitive inhibition
+TALA	pi	c	competitive inhibition
+OCBT	ser-L	c	competitive inhibition
+GLUSy	ser-L	c	competitive inhibition
+GLUSy	succ	c	competitive inhibition
+PPC	succ	c	competitive inhibition
+PPC	accoa	c	activation
+PGMT	accoa	c	competitive inhibition
+PGMT	coa	c	competitive inhibition
+KARA1	coa	c	competitive inhibition
+KARA1	nadp	c	competitive inhibition
+P5CR	nadp	c	competitive inhibition
+P5CR	pro-L	c	competitive inhibition
+GLU5K	pro-L	c	competitive inhibition
+GLU5K	adp	c	competitive inhibition
+PRPPS	adp	c	competitive inhibition
+PRPPS	rib-D	c	competitive inhibition
+GLUN	adp	c	mixed inhibition
+GLUN	glu-L	c	activation
+PRFGS	glu-L	c	competitive inhibition
+GLUSy	glu-L	c	competitive inhibition
+ASPK	glu-L	c	competitive inhibition
+ASPK	succ	c	competitive inhibition
+ASPK	thr-L	c	competitive inhibition
+PGCD	thr-L	c	competitive inhibition
+PGCD	gly	c	competitive inhibition
+GLNS	gly	c	competitive inhibition
+GLNS	trp-L	c	competitive inhibition
+CYSDS	trp-L	c	competitive inhibition
+CYSDS	phe-L	c	competitive inhibition
+CHORM	phe-L	c	competitive inhibition
+CHORM	tyr-L	c	competitive inhibition
+ILETA	tyr-L	c	competitive inhibition
+ILETA	leu-L	c	competitive inhibition
+OCBT	leu-L	c	competitive inhibition
+OCBT	pi	c	competitive inhibition
+PRAIS	pi	c	competitive inhibition
+PRAIS	atp	c	competitive inhibition
+GLUSy	atp	c	competitive inhibition
+SUCOAS	atp	c	competitive inhibition
+SUCOAS	adp	c	competitive inhibition
+SUCOAS	succ	c	competitive inhibition
+SUCOAS	nadh	c	competitive inhibition
+P5CR	nadh	c	competitive inhibition
+KARA1	nadh	c	competitive inhibition
+PPCK	nadh	c	competitive inhibition
+PPCK	fdp	c	competitive inhibition
+GND	fdp	c	mixed inhibition
+GND	ru5p-D	c	mixed inhibition
 GND	coa	c	competitive inhibition
-ACGS	coa	c	competitive inhibition
-ACGS	acglu	c	competitive inhibition
-ACGS	arg-L	c	competitive inhibition
-ACGK	arg-L	c	competitive inhibition
-ACGK	atp	c	competitive inhibition
-AGMT	arg-L	c	competitive inhibition
-AGMT	orn	c	competitive inhibition
-ACGS	citr-L	c	competitive inhibition
-ACOATA	coa	c	competitive inhibition
-ACOATA	ACP	c	competitive inhibition
-ACCOAC	ACP	c	competitive inhibition
-EAR100x	ACP	c	competitive inhibition
-EAR100x	pmtcoa	c	competitive inhibition
-EAR100y	pmtcoa	c	competitive inhibition
-ACOATA	accoa	c	competitive inhibition
-3OAS100	accoa	c	competitive inhibition
-3OAS100	pi	c	activation
-MCOATA	accoa	c	competitive inhibition
-MCOATA	coa	c	competitive inhibition
-ME1	accoa	c	competitive inhibition
-ME1	atp	c	competitive inhibition
-ME1	asp-L	c	activation
-ASNN	asp-L	c	competitive inhibition
-ASNN	asn-L	c	competitive inhibition
-ASNS1	asn-L	c	competitive inhibition
-ASNS1	gln-L	c	competitive inhibition
-GLUSy	asn-L	c	competitive inhibition
-OCBT	asn-L	c	competitive inhibition
-ASPT	asp-L	c	competitive inhibition
-ASPT	mal-L	c	competitive inhibition
-GLUSy	mal-L	c	competitive inhibition
+GND	atp	c	competitive inhibition
+GND	nadp	c	competitive inhibition
+FBP	fdp	c	competitive inhibition
+FBP	pi	c	competitive inhibition
+FBP	g6p	c	competitive inhibition
+FBP	amp	c	mixed inhibition
+GLNS	amp	c	competitive inhibition
+RPI	amp	c	mixed inhibition
+PPS	amp	c	competitive inhibition
+PPS	mal-L	c	competitive inhibition
+PPC	mal-L	c	competitive inhibition
 ASPK	mal-L	c	competitive inhibition
-ASPK	hom-L	c	competitive inhibition
-GLUSy	hom-L	c	competitive inhibition
-HSDy	hom-L	c	competitive inhibition
-HSDy	atp	c	activation
-HSDy	cys-L	c	competitive inhibition
-ASAD	cys-L	c	competitive inhibition
+GLUSy	mal-L	c	competitive inhibition
+ASPT	mal-L	c	competitive inhibition
+ASPT	succ	c	competitive inhibition
+ASPT	pser-L	c	competitive inhibition
+HSK	pser-L	c	competitive inhibition
+HSK	thr-L	c	competitive inhibition
+HSK	val-L	c	competitive inhibition
+OCBT	val-L	c	competitive inhibition
+HSK	lys-L	c	competitive inhibition
+ASPK	lys-L	c	competitive inhibition
+OCBT	lys-L	c	competitive inhibition
+DAPDC	lys-L	c	competitive inhibition
+DAPDC	glu-L	c	competitive inhibition
+DAPDC	cys-L	c	competitive inhibition
+PGMT	cys-L	c	activation
+GLUSy	cys-L	c	competitive inhibition
+SERD_L	cys-L	c	competitive inhibition
+SERD_L	his-L	c	competitive inhibition
+HISTP	his-L	c	competitive inhibition
+GLUSy	his-L	c	competitive inhibition
+ATPPRT	his-L	c	competitive inhibition
+ATPPRT	amp	c	competitive inhibition
+ATPPRT	atp	c	competitive inhibition
+SERD_L	ala-L	c	competitive inhibition
+SERAT	ala-L	c	competitive inhibition
+SERAT	ser-L	c	competitive inhibition
+SERAT	gly	c	competitive inhibition
+SERAT	coa	c	competitive inhibition
+SERAT	cys-L	c	competitive inhibition
+SERAT	atp	c	competitive inhibition
+PGCD	ala-L	c	competitive inhibition
+OCBT	ala-L	c	competitive inhibition
+GLUSy	ala-L	c	competitive inhibition
+CYSDS	ala-L	c	competitive inhibition
+HSK	cys-L	c	competitive inhibition
 GLYAT	cys-L	c	competitive inhibition
 GLYAT	coa	c	competitive inhibition
-HSK	cys-L	c	competitive inhibition
-HSK	aspsa	c	competitive inhibition
-HSK	hcys-L	c	competitive inhibition
-HSK	ser-L	c	competitive inhibition
+ASAD	cys-L	c	competitive inhibition
+HSDy	cys-L	c	competitive inhibition
+HSDy	ser-L	c	competitive inhibition
+HSDy	nadp	c	competitive inhibition
+HSDy	thr-L	c	competitive inhibition
+HSDy	atp	c	activation
+HSDy	hom-L	c	competitive inhibition
+PGCD	hom-L	c	competitive inhibition
+GLUSy	hom-L	c	competitive inhibition
+ASPK	hom-L	c	competitive inhibition
+ARGDC	lys-L	c	competitive inhibition
+ARGDC	agm	c	competitive inhibition
+HSK	met-L	c	competitive inhibition
+CYSDS	met-L	c	competitive inhibition
+HSST	met-L	c	competitive inhibition
+GLUSy	met-L	c	competitive inhibition
 HSK	ile-L	c	competitive inhibition
 OCBT	ile-L	c	competitive inhibition
-HSK	met-L	c	competitive inhibition
-GLUSy	met-L	c	competitive inhibition
-HSST	met-L	c	competitive inhibition
-CYSDS	met-L	c	competitive inhibition
-CYSDS	ala-L	c	competitive inhibition
-GLUSy	ala-L	c	competitive inhibition
-OCBT	ala-L	c	competitive inhibition
-PGCD	ala-L	c	competitive inhibition
-SERAT	ala-L	c	competitive inhibition
-SERAT	atp	c	competitive inhibition
-SERAT	cys-L	c	competitive inhibition
-SERAT	coa	c	competitive inhibition
-SERAT	gly	c	competitive inhibition
-SERAT	ser-L	c	competitive inhibition
-SERD_L	ala-L	c	competitive inhibition
-SERD_L	his-L	c	competitive inhibition
-ATPPRT	his-L	c	competitive inhibition
-ATPPRT	atp	c	competitive inhibition
-ATPPRT	amp	c	competitive inhibition
-ACALD	amp	c	competitive inhibition
-ACALD	nad	c	activation
-GLUN	nad	c	mixed inhibition
-THRD	nad	c	competitive inhibition
-THRD	adp	c	competitive inhibition
-THRD	atp	c	competitive inhibition
-THRD	pyr	c	competitive inhibition
-GLUSy	pyr	c	competitive inhibition
+HSK	ser-L	c	competitive inhibition
+HSK	hcys-L	c	competitive inhibition
+HSK	aspsa	c	competitive inhibition
+ASPT	asp-L	c	competitive inhibition
+PPC	asp-L	c	competitive inhibition
+GLUSy	asp-L	c	competitive inhibition
+ASNS2	asp-L	c	competitive inhibition
+ASNS2	nh4	c	competitive inhibition
+METS	nh4	c	activation
+ASNS2	amp	c	competitive inhibition
+ASNN	asp-L	c	competitive inhibition
+ASNN	asn-L	c	competitive inhibition
+OCBT	asn-L	c	competitive inhibition
+GLUSy	asn-L	c	competitive inhibition
+ASNS1	asn-L	c	competitive inhibition
+ASNS1	gln-L	c	competitive inhibition
+ME1	asp-L	c	activation
+ME1	succ	c	competitive inhibition
+ME1	coa	c	competitive inhibition
+ME1	oaa	c	competitive inhibition
+PPS	oaa	c	competitive inhibition
+GLUSy	oaa	c	competitive inhibition
+FRD2	oaa	c	competitive inhibition
+FRD2	ppi	c	activation
+GLUN	ppi	c	activation
+GLGC	ppi	c	competitive inhibition
+GLGC	amp	c	competitive inhibition
+GLGC	pep	c	competitive inhibition
+PTAr	pep	c	activation
+PTAr	pyr	c	activation
+PSCVT	pyr	c	competitive inhibition
+PSCVT	pep	c	competitive inhibition
+PSCVT	3psme	c	competitive inhibition
 PROD2	pyr	c	competitive inhibition
 PROD2	lac-D	c	competitive inhibition
 GHMT2r	lac-D	c	competitive inhibition
 GHMT2r	ser-L	c	activation
-PSCVT	pyr	c	competitive inhibition
-PSCVT	3psme	c	competitive inhibition
-PSCVT	pep	c	competitive inhibition
-ICDHyr	pep	c	mixed inhibition
-ICDHyr	glx	c	competitive inhibition
-ICDHyr	oaa	c	competitive inhibition
-FRD2	oaa	c	competitive inhibition
-FRD2	atp	c	activation
-FRD2	ppi	c	activation
-GLGC	ppi	c	competitive inhibition
-GLUN	ppi	c	activation
-GLUSy	oaa	c	competitive inhibition
-ME1	oaa	c	competitive inhibition
-PPS	oaa	c	competitive inhibition
-ICL	pep	c	competitive inhibition
-ICL	3pg	c	competitive inhibition
-PGK	3pg	c	activation
-PGK	atp	c	activation
-ICL	akg	c	competitive inhibition
-ICL	icit	c	mixed inhibition
-ICL	succ	c	competitive inhibition
-ICL	acon-C	c	competitive inhibition
-GLUSy	acon-C	c	competitive inhibition
-PPNDH	acon-C	c	competitive inhibition
-PPNDH	phe-L	c	competitive inhibition
-CHORM	phe-L	c	competitive inhibition
-CHORM	acon-C	c	competitive inhibition
-CHORM	chor	c	competitive inhibition
-CHORM	cit	c	competitive inhibition
-FUM	cit	c	competitive inhibition
-PPC	cit	c	competitive inhibition
-PPND	cit	c	competitive inhibition
-PPND	34hpp	c	competitive inhibition
-PPND	amp	c	competitive inhibition
-PPND	tyr-L	c	competitive inhibition
-CHORM	tyr-L	c	competitive inhibition
-ILETA	tyr-L	c	competitive inhibition
-ILETA	leu-L	c	competitive inhibition
-ASPK	leu-L	c	competitive inhibition
-OCBT	leu-L	c	competitive inhibition
-PPND	nadh	c	competitive inhibition
-PPNDH	cit	c	competitive inhibition
-FBA	cit	c	activation
+GLUSy	pyr	c	competitive inhibition
+THRD	pyr	c	competitive inhibition
+THRD	atp	c	competitive inhibition
+THRD	adp	c	competitive inhibition
+THRD	nad	c	competitive inhibition
+GLUN	nad	c	mixed inhibition
+ACALD	nad	c	activation
+ACALD	amp	c	competitive inhibition
+PTAr	nadph	p	mixed inhibition
+GLUSy	nadph	p	competitive inhibition
+GLUN	nadph	p	mixed inhibition
+G6PDH2r	nadph	p	mixed inhibition
+G6PDH2r	nadh	c	competitive inhibition
+G5SD	nadph	p	competitive inhibition
+G5SD	nadp	c	competitive inhibition
+G5SD	co2	c	competitive inhibition
+PTAr	nadh	c	mixed inhibition
+PTAr	adp	c	mixed inhibition
+PTAr	atp	c	mixed inhibition
+PPS	pep	c	competitive inhibition
+FBP_Glpx	pep	c	mixed inhibition
+FBP_Glpx	amp	c	mixed inhibition
+FBP_Glpx	pi	c	competitive inhibition
+FBP_Glpx	adp	c	mixed inhibition
+FBP	pep	c	activation
+PPCK	pep	c	competitive inhibition
+PGI	pep	c	competitive inhibition
+PGI	6pgc	c	mixed inhibition
+EDA	6pgc	c	competitive inhibition
+EDA	g3p	c	competitive inhibition
+PPCK	g3p	c	competitive inhibition
 FBA	pep	c	activation
 FBA	dhap	c	mixed inhibition
 PPCK	dhap	c	competitive inhibition
-PPCK	atp	c	competitive inhibition
-PPCK	f6p	c	competitive inhibition
-PPCK	g3p	c	competitive inhibition
-EDA	g3p	c	competitive inhibition
-EDA	6pgc	c	competitive inhibition
-PGI	6pgc	c	mixed inhibition
-PGI	pep	c	competitive inhibition
-PPCK	nadh	c	competitive inhibition
-PPCK	pep	c	competitive inhibition
-PPCK	fdp	c	competitive inhibition
-CYSDS	phe-L	c	competitive inhibition
-FBP	pep	c	activation
-FBP	adp	c	mixed inhibition
-FBP	amp	c	mixed inhibition
-FBP	fdp	c	competitive inhibition
-FBP	g6p	c	competitive inhibition
-FBP	pi	c	competitive inhibition
-FBP_Glpx	adp	c	mixed inhibition
-FBP_Glpx	pep	c	mixed inhibition
-FBP_Glpx	pi	c	competitive inhibition
-FBP_Glpx	amp	c	mixed inhibition
-PPS	pep	c	competitive inhibition
-PTAr	pep	c	activation
-GLGC	pep	c	competitive inhibition
-PTAr	pyr	c	activation
-ADK1	amp	c	competitive inhibition
-ASNS2	amp	c	competitive inhibition
-ASNS2	asp-L	c	competitive inhibition
-ASNS2	nh4	c	competitive inhibition
-METS	nh4	c	activation
-GLGC	amp	c	competitive inhibition
-GLUDy	amp	c	activation
-GLUDy	atp	c	activation
-GLUN	amp	c	activation
+FBA	cit	c	activation
+PPNDH	cit	c	competitive inhibition
+PPNDH	phe-L	c	competitive inhibition
+PPNDH	acon-C	c	competitive inhibition
+CHORM	acon-C	c	competitive inhibition
+GLUSy	acon-C	c	competitive inhibition
+ICL	acon-C	c	competitive inhibition
+ICL	succ	c	competitive inhibition
+ICL	icit	c	mixed inhibition
+ICL	akg	c	competitive inhibition
+SDPTA	akg	c	competitive inhibition
+SUCOAS	akg	c	competitive inhibition
+PPS	akg	c	competitive inhibition
+ABTA	akg	c	competitive inhibition
+ABTA	succ	c	competitive inhibition
+ICL	3pg	c	competitive inhibition
+PGK	3pg	c	activation
+PGK	atp	c	activation
+ICL	pep	c	competitive inhibition
+PPND	cit	c	competitive inhibition
+PPND	nadh	c	competitive inhibition
+PPND	tyr-L	c	competitive inhibition
+PPND	amp	c	competitive inhibition
+PPND	34hpp	c	competitive inhibition
+PPC	cit	c	competitive inhibition
+FUM	cit	c	competitive inhibition
+CHORM	cit	c	competitive inhibition
+ICDHyr	pep	c	mixed inhibition
+ICDHyr	oaa	c	competitive inhibition
+ICDHyr	glx	c	competitive inhibition
+GLGC	fdp	c	competitive inhibition
+GLGC	adp	c	competitive inhibition
+FRD2	atp	c	activation
+ME1	atp	c	competitive inhibition
+ME1	accoa	c	competitive inhibition
+PPS	atp	c	competitive inhibition
+PPS	adpglc	c	competitive inhibition
+PPS	adp	c	competitive inhibition
+GLUSy	amp	c	competitive inhibition
 GLUPRT	amp	c	competitive inhibition
 GLUPRT	adp	c	competitive inhibition
-GLUSy	amp	c	competitive inhibition
-PPS	amp	c	competitive inhibition
-RPI	amp	c	mixed inhibition
-GLNS	amp	c	competitive inhibition
-GLNS	gly	c	competitive inhibition
-GLNS	phom	c	competitive inhibition
-GLNS	ser-L	c	competitive inhibition
-GLNS	trp-L	c	competitive inhibition
-ANPRT	trp-L	c	competitive inhibition
-ANS	trp-L	c	competitive inhibition
-CYSDS	trp-L	c	competitive inhibition
-GLUSy	his-L	c	competitive inhibition
-HISTP	his-L	c	competitive inhibition
-SERD_L	cys-L	c	competitive inhibition
-HSK	pser-L	c	competitive inhibition
-ASPT	pser-L	c	competitive inhibition
-HSK	lys-L	c	competitive inhibition
-ARGDC	lys-L	c	competitive inhibition
-ARGDC	agm	c	competitive inhibition
-DAPDC	lys-L	c	competitive inhibition
-DAPDC	cys-L	c	competitive inhibition
-DAPDC	glu-L	c	competitive inhibition
-ASPK	glu-L	c	competitive inhibition
-GLUN	glu-L	c	activation
-GLUSy	glu-L	c	competitive inhibition
-PRFGS	glu-L	c	competitive inhibition
-OCBT	lys-L	c	competitive inhibition
-ASPK	lys-L	c	competitive inhibition
-HSK	val-L	c	competitive inhibition
-OCBT	val-L	c	competitive inhibition
-HSK	thr-L	c	competitive inhibition
-HSDy	thr-L	c	competitive inhibition
-ASPK	thr-L	c	competitive inhibition
-PGCD	thr-L	c	competitive inhibition
-GLUSy	cys-L	c	competitive inhibition
-PGMT	cys-L	c	activation
-PGMT	accoa	c	competitive inhibition
-PGMT	g1p	c	competitive inhibition
-PGMT	coa	c	competitive inhibition
-HSDy	nadp	c	competitive inhibition
-HSDy	ser-L	c	competitive inhibition
-PGCD	hom-L	c	competitive inhibition
-ASPK	succ	c	competitive inhibition
-PPS	mal-L	c	competitive inhibition
-PPC	mal-L	c	competitive inhibition
-ASPT	succ	c	competitive inhibition
-GLUSy	asp-L	c	competitive inhibition
-PPC	asp-L	c	competitive inhibition
-ME1	coa	c	competitive inhibition
-ME1	succ	c	competitive inhibition
-PPC	accoa	c	activation
-KARA1	coa	c	competitive inhibition
-KARA1	nadh	c	competitive inhibition
-KARA1	nadp	c	competitive inhibition
-GND	fdp	c	mixed inhibition
-GND	ru5p-D	c	mixed inhibition
-P5CR	nadp	c	competitive inhibition
-P5CR	nadh	c	competitive inhibition
-P5CR	pro-L	c	competitive inhibition
-GLU5K	pro-L	c	competitive inhibition
-GLU5K	adp	c	competitive inhibition
-PYKA	atp	c	mixed inhibition
-PYKA	succoa	c	mixed inhibition
-PYKF	succoa	c	mixed inhibition
+GLUN	amp	c	activation
+GLUDy	amp	c	activation
+GLUDy	atp	c	activation
+ADK1	amp	c	competitive inhibition
+FBP	adp	c	mixed inhibition
+PPC	fdp	c	activation
+PPCK	f6p	c	competitive inhibition
+PPCK	atp	c	competitive inhibition
+GLUN	nadh	c	mixed inhibition
+PGCD	nadh	c	competitive inhibition
 PYKF	atp	c	mixed inhibition
-SUCOAS	atp	c	competitive inhibition
-SUCOAS	akg	c	competitive inhibition
-SUCOAS	nadh	c	competitive inhibition
-SUCOAS	succ	c	competitive inhibition
-SUCOAS	adp	c	competitive inhibition
-GLUSy	atp	c	competitive inhibition
-PRAIS	atp	c	competitive inhibition
-PRAIS	pi	c	competitive inhibition
-SDPTA	akg	c	competitive inhibition
-GLUSy	succ	c	competitive inhibition
-PPC	succ	c	competitive inhibition
-GLUN	adp	c	mixed inhibition
-PRPPS	adp	c	competitive inhibition
-PRPPS	rib-D	c	competitive inhibition
-GLUSy	ser-L	c	competitive inhibition
-PGCD	gly	c	competitive inhibition
-OCBT	pi	c	competitive inhibition
-OCBT	ser-L	c	competitive inhibition
-TALA	pi	c	competitive inhibition
+PYKF	succoa	c	mixed inhibition
+PYKA	succoa	c	mixed inhibition
+PYKA	atp	c	mixed inhibition
+ACGK	atp	c	competitive inhibition
+ACGK	arg-L	c	competitive inhibition
+AGMT	arg-L	c	competitive inhibition
+AGMT	orn	c	competitive inhibition
+OCBT	orn	c	competitive inhibition
+ACOTA	orn	c	competitive inhibition
+ACODA	orn	c	competitive inhibition
+ACODA	gthrd	c	competitive inhibition
+ACODA	ac	c	competitive inhibition
+ACODA	pi	c	competitive inhibition
+ACGS	arg-L	c	competitive inhibition
+ACGS	citr-L	c	competitive inhibition
+ACGS	acglu	c	competitive inhibition
+ACGS	coa	c	competitive inhibition
+PPA	atp	c	competitive inhibition
+LDH_D	atp	c	mixed inhibition
+GLUN	atp	c	mixed inhibition
+3OAS100	pi	c	activation
+3OAS100	accoa	c	competitive inhibition
+IGPDH	pi	c	competitive inhibition
+GLUN	pi	c	mixed inhibition
+OCBT	gly	c	competitive inhibition
+ASPK	leu-L	c	competitive inhibition
+CHORM	chor	c	competitive inhibition
+ANS	trp-L	c	competitive inhibition
+ANPRT	trp-L	c	competitive inhibition
+GLNS	ser-L	c	competitive inhibition
+GLNS	phom	c	competitive inhibition
+GLUSy	gly	c	competitive inhibition
+PGCD	ser-L	c	competitive inhibition
+GLUN	nadp	c	mixed inhibition
+GLUSy	adp	c	competitive inhibition
+GLUSy	nadp	c	competitive inhibition
+3OAR100	nadp	c	competitive inhibition
+MCOATA	coa	c	competitive inhibition
+MCOATA	accoa	c	competitive inhibition
+ACOATA	coa	c	competitive inhibition
+ACOATA	accoa	c	competitive inhibition
+ACOATA	ACP	c	competitive inhibition
+EAR100x	ACP	c	competitive inhibition
+EAR100x	pmtcoa	c	competitive inhibition
+EAR100y	pmtcoa	c	competitive inhibition
+ACCOAC	ACP	c	competitive inhibition
+PGMT	g1p	c	competitive inhibition
+PPC	fum	c	competitive inhibition
+ADSS	fum	c	competitive inhibition
+ADSS	succ	c	competitive inhibition
+DHQTi	succ	c	competitive inhibition
+PSP_L	ser-L	c	competitive inhibition
+GLCS1	6pgl	c	competitive inhibition

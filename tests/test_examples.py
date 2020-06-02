@@ -153,12 +153,7 @@ class ExamplesTestCase(unittest.TestCase):
                 os.mkdir(os.path.dirname(data_filename_csv))
             if not os.path.isdir(os.path.dirname(data_filename_tsv)):
                 os.mkdir(os.path.dirname(data_filename_tsv))
-
-            with __main__.App(argv=['init-schema', schema_filename_csv, schema_filename_tsv]) as app:
-                app.run()
-            with __main__.App(argv=['init-schema', schema_filename_csv, schema_filename_xlsx]) as app:
-                app.run()
-
+            
             with __main__.App(argv=['viz-schema', schema_filename_csv, schema_filename_svg]) as app:
                 app.run()
 
@@ -167,6 +162,10 @@ class ExamplesTestCase(unittest.TestCase):
                 app.run()
 
             with __main__.App(argv=['validate', schema_filename_csv, data_filename_xlsx]) as app:
+                app.run()
+            with __main__.App(argv=['validate', schema_filename_tsv, data_filename_xlsx]) as app:
+                app.run()
+            with __main__.App(argv=['validate', schema_filename_xlsx, data_filename_xlsx]) as app:
                 app.run()
             with __main__.App(argv=['validate', schema_filename_py, data_filename_xlsx]) as app:
                 app.run()

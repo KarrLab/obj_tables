@@ -41,7 +41,6 @@ class Compartment(obj_tables.Model):
 
 class Metabolite(obj_tables.Model):
     id = obj_tables.StringAttribute(primary=True, unique=True)
-    id_i_a_f1260 = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None, verbose_name='Id (iAF1260 [Ref1])')
     name = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None)
     formula = obj_tables.chem.ChemicalFormulaAttribute()
 
@@ -49,7 +48,6 @@ class Metabolite(obj_tables.Model):
         table_format = obj_tables.TableFormat.row
         attribute_order = (
             'id',
-            'id_i_a_f1260',
             'name',
             'formula',
         )

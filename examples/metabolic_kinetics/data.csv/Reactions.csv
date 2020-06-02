@@ -352,7 +352,7 @@ ACHBS,ACHBS,2-aceto-2-hydroxybutanoate synthase,[c]: 2obut + h + pyr <=> 2ahbut 
 ","
 ","
 ",True
-ACKr,ACKr,acetate kinase,[c]: ac + atp <=> actp + adp,True,Pyruvate Metabolism,2.7.2.1,(b3115 or b2296 or b1849),"Value	Molecule
+ACKr,ACKr,acetate kinase,[c]: actp + adp <=> ac + atp,True,Pyruvate Metabolism,2.7.2.1,(b3115 or b2296 or b1849),"Value	Molecule
 7.0	acetate
 300.0	acetate
 0.16	acetyl phosphate
@@ -3128,7 +3128,7 @@ GLYCL,GLYCL,Glycine Cleavage System,[c]: gly + nad + thf <=> co2 + mlthf + nadh 
 ","
 ","
 ",
-GLYCtex,,,glyc[c] <=> glyc[e],False,,,,"
+GLYCtex,GLYCtex,,glyc[c] <=> glyc[e],False,,,,"
 ","
 ","
 ","
@@ -5029,7 +5029,7 @@ UP_AC,,,[e]: <=> ac,False,,,,"
 ","
 ","
 ",
-UP_FOR,,,[e]: <=> for,False,,,,"
+UP_FOR,EX_for(e),,[e]: <=> for,False,,,,"
 ","
 ","
 ","
@@ -5039,7 +5039,7 @@ UP_GLU_L,,,[e]: <=> glu-L,False,,,,"
 ","
 ","
 ",
-UP_GLYC,,,[e]: <=> glyc,False,,,,"
+UP_GLYC,EX_glyc(e),,[e]: <=> glyc,False,,,,"
 ","
 ","
 ","
