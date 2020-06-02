@@ -640,7 +640,7 @@ class ReactionEquation(list):
         return self
 
     class ParseTreeTransformer(lark.Transformer):
-        """ Transforms parse trees into an instance of :obj:`ReactionEquation` 
+        """ Transforms parse trees into an instance of :obj:`ReactionEquation`
 
         Attributes:
             species (:obj:`dict`): dictionary that maps species ids to instances

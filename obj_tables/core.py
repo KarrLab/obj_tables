@@ -5853,7 +5853,7 @@ class RangeAttribute(LiteralAttribute):
 
 
 class ListAttribute(LiteralAttribute):
-    """ List attribute 
+    """ List attribute
 
     Attributes:
         type (:obj:`type`): type of elements
@@ -6825,7 +6825,7 @@ class ToManyAttribute(RelatedAttribute):
             deserialized_values = []
             attr_verbose_names = set(attr.verbose_name for attr in self.related_class.Meta.attributes.values())
             encoded = {}
-            for row in reader:                
+            for row in reader:
                 unknown_cols = set(row.keys()).difference(attr_verbose_names)
                 if unknown_cols:
                     return (None, InvalidAttribute(self, ['Value contains unknown columns: {}'.format(", ".join(unknown_cols))]))
@@ -6853,7 +6853,7 @@ class ToManyAttribute(RelatedAttribute):
 
                 if self.related_class not in objects:
                     objects[self.related_class] = {}
-                existing_deserialized_value = objects[self.related_class].get(serialized_value, None)                
+                existing_deserialized_value = objects[self.related_class].get(serialized_value, None)
                 if existing_deserialized_value:
                     for attr in self.related_class.Meta.local_attributes.values():
                         if attr.is_related_to_many:
