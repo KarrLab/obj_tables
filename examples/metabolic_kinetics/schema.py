@@ -97,14 +97,24 @@ class Reaction(obj_tables.Model):
     ec_number = obj_tables.RegexAttribute(pattern='\d+\.\d+\.\d+\.\d+', none=True, default=None,
                                           default_cleaned_value=None, verbose_name='EC number')
     gene_rule = obj_tables.StringAttribute(none=True, default=None, default_cleaned_value=None)
-    k_ms = obj_tables.ManyToManyAttribute(Kinetics, related_name='k_m_reactions',
-                                          verbose_name='Km (mM) [Ref2, Ref3]', cell_dialect='tsv')
-    k_cats = obj_tables.ManyToManyAttribute(Kinetics, related_name='k_cat_reactions',
-                                            verbose_name='kcat (s^-1) [Ref2, Ref3]', cell_dialect='tsv')
-    k_cat_k_ms = obj_tables.ManyToManyAttribute(Kinetics, related_name='k_cat_k_m_reactions',
-                                                verbose_name='kcat/Km (mM^-1 s^-1) [Ref2, Ref3]', cell_dialect='tsv')
-    k_is = obj_tables.ManyToManyAttribute(Kinetics, related_name='k_i_reactions',
-                                          verbose_name='Ki (mM) [Ref2, Ref3]', cell_dialect='tsv')
+    obs_k_ms = obj_tables.ManyToManyAttribute(Kinetics, related_name='k_m_reactions',
+                                          verbose_name='Measured Km (mM) [Ref2, Ref3]', cell_dialect='tsv')
+    obs_range_k_ms = obj_tables.LongStringAttribute(verbose_name='Measured Km range (mM) [Ref2, Ref3]')
+    est_range_k_ms = obj_tables.LongStringAttribute(verbose_name='Estimated Km range (mM)')
+    obs_k_cats = obj_tables.ManyToManyAttribute(Kinetics, related_name='k_cat_reactions',
+                                            verbose_name='Measured kcat (s^-1) [Ref2, Ref3]', cell_dialect='tsv')
+    min_obs_for_k_cat = obj_tables.FloatAttribute(verbose_name='Minimum measured forward kcat (s^-1) [Ref2, Ref3]')
+    max_obs_for_k_cat = obj_tables.FloatAttribute(verbose_name='Maximum measured forward kcat (s^-1) [Ref2, Ref3]')
+    min_obs_back_k_cat = obj_tables.FloatAttribute(verbose_name='Minimum measured backward kcat (s^-1) [Ref2, Ref3]')
+    max_obs_back_k_cat = obj_tables.FloatAttribute(verbose_name='Maximum measured backward kcat (s^-1) [Ref2, Ref3]')
+    min_est_for_k_cat = obj_tables.FloatAttribute(verbose_name='Minimum estimated forward kcat (s^-1)')
+    max_est_for_k_cat = obj_tables.FloatAttribute(verbose_name='Maximum estimated forward kcat (s^-1)')
+    min_est_back_k_cat = obj_tables.FloatAttribute(verbose_name='Minimum estimated backward kcat (s^-1)')
+    max_est_back_k_cat = obj_tables.FloatAttribute(verbose_name='Maximum estimated backward kcat (s^-1)')
+    obs_k_cat_k_ms = obj_tables.ManyToManyAttribute(Kinetics, related_name='k_cat_k_m_reactions',
+                                                verbose_name='Measured kcat/Km (mM^-1 s^-1) [Ref2, Ref3]', cell_dialect='tsv')
+    obs_k_is = obj_tables.ManyToManyAttribute(Kinetics, related_name='k_i_reactions',
+                                          verbose_name='Measured Ki (mM) [Ref2, Ref3]', cell_dialect='tsv')
     coupled_to_biomass = obj_tables.BooleanAttribute()
 
     class Meta(obj_tables.Model.Meta):
@@ -118,10 +128,20 @@ class Reaction(obj_tables.Model):
             'subsystem',
             'ec_number',
             'gene_rule',
-            'k_ms',
-            'k_cats',
-            'k_cat_k_ms',
-            'k_is',
+            'obs_k_ms',
+            'obs_range_k_ms',
+            'est_range_k_ms',
+            'obs_k_cats',
+            'min_obs_for_k_cat',
+            'max_obs_for_k_cat',
+            'min_obs_back_k_cat',
+            'max_obs_back_k_cat',
+            'min_est_for_k_cat',
+            'max_est_for_k_cat',
+            'min_est_back_k_cat',
+            'max_est_back_k_cat',
+            'obs_k_cat_k_ms',
+            'obs_k_is',
             'coupled_to_biomass',
         )
         verbose_name = 'Reaction'

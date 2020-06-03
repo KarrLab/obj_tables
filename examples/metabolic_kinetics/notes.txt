@@ -1,0 +1,31 @@
+- Errors/inconsistencies
+  - Col F: inconsistent reaction syntax; inconsistent species ids with the `Metabolite_List` worksheet
+  - Col J: inconsistent Km syntax
+  - H167, H171, D229, E229, E378, E79: wrong type of content (perhaps content has mistakenly been shifted to an adjacent cell)
+  - K83, K201, K430: typos
+  - G55, G190: unmormalized schema allows inconsistent values of the same information in the `Regulation_List` worksheet --> confusion about which value is correct (E273, E274)    
+
+- Compartments
+  - Explicitly defined compartments
+
+- Metabolites
+  - `toct2eACP_c` is repeated
+  - `Formula` heading is mispelled
+  - 1 instance of `acetylco` has wrong name and formula
+  - Undefined metabolites
+
+- Reactions
+  - Typos in column headings
+  - Typos in regulation type enumeratios
+  - Reaction ASPTA repeated
+  - Inconsistent syntax for equations
+  - Some reactions has missing or incomplete species compartmentalization
+  - Inconsistent syntax for species compartments
+  - Missing final cells in many of the kinetics tables
+
+- Regulations
+  - Imprecise metabolite regulations (acon vs acon_C; missing compartmentalization)
+  - 3 repeated regulations
+
+- Biomass coupled reactions
+  - Content repeated from Reaction worksheet

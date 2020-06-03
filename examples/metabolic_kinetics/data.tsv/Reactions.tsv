@@ -1,132 +1,132 @@
-!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reactions' date='2020-05-28 23:58:52' objTablesVersion='1.0.0' format='row'												
-!Id	!Id (iAF1260 [Ref1])	!Name	!Equation	!Reversible	!Subsystem	!EC number	!Gene rule	!Km (mM) [Ref2, Ref3]	!kcat (s^-1) [Ref2, Ref3]	!kcat/Km (mM^-1 s^-1) [Ref2, Ref3]	!Ki (mM) [Ref2, Ref3]	!Coupled to biomass
+!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reactions' date='2020-06-03 15:21:24' objTablesVersion='1.0.0'																						
+!Id	!Id (iAF1260 [Ref1])	!Name	!Equation	!Reversible	!Subsystem	!EC number	!Gene rule	!Measured Km (mM) [Ref2, Ref3]	!Measured Km range (mM) [Ref2, Ref3]	!Estimated Km range (mM)	!Measured kcat (s^-1) [Ref2, Ref3]	!Minimum measured forward kcat (s^-1) [Ref2, Ref3]	!Maximum measured forward kcat (s^-1) [Ref2, Ref3]	!Minimum measured backward kcat (s^-1) [Ref2, Ref3]	!Maximum measured backward kcat (s^-1) [Ref2, Ref3]	!Minimum estimated forward kcat (s^-1)	!Maximum estimated forward kcat (s^-1)	!Minimum estimated backward kcat (s^-1)	!Maximum estimated backward kcat (s^-1)	!Measured kcat/Km (mM^-1 s^-1) [Ref2, Ref3]	!Measured Ki (mM) [Ref2, Ref3]	!Coupled to biomass
 2DDA7Ptpp_ex	2DDA7Ptpp_ex		2dda7p[e] <=> 2dda7p[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD40	3HAD40	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C4:0)	[c]: 3haACP <=> but2eACP + h2o	False	Cell Envelope Biosynthesis	4.2.1.58	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD60	3HAD60	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C6:0)	[c]: 3hhexACP <=> h2o + thex2eACP	False	Cell Envelope Biosynthesis	4.2.1.58	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD80	3HAD80	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C8:0)	[c]: 3hoctACP <=> h2o + toct2eACP	False	Cell Envelope Biosynthesis	4.2.1.58	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD100	3HAD100	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C10:0)	[c]: 3hdecACP <=> h2o + tdec2eACP	False	Cell Envelope Biosynthesis	4.2.1.60	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD120	3HAD120	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C12:0)	[c]: 3hddecACP <=> h2o + tddec2eACP	False	Cell Envelope Biosynthesis	4.2.1.61	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD121	3HAD121	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C12:1)	[c]: 3hcddec5eACP <=> h2o + t3c5ddeceACP	False	Cell Envelope Biosynthesis	4.2.1.61	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD140	3HAD140	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C14:0)	[c]: 3hmrsACP <=> h2o + tmrs2eACP	False	Cell Envelope Biosynthesis	4.2.1.61	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD141	3HAD141	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C14:1)	[c]: 3hcmrs7eACP <=> h2o + t3c7mrseACP	False	Cell Envelope Biosynthesis	4.2.1.61	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD160	3HAD160	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C16:0)	[c]: 3hpalmACP <=> h2o + tpalm2eACP	False	Cell Envelope Biosynthesis	4.2.1.61	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 3HAD161	3HAD161	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C16:1)	[c]: 3hcpalm9eACP <=> h2o + t3c9palmeACP	False	Cell Envelope Biosynthesis	4.2.1.61	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3HAD180	3HAD180	3-hydroxyacyl-[acyl-carrier-protein] dehydratase (n-C18:0)	[c]: 3hoctaACP <=> h2o + toctd2eACP	False	Cell Envelope Biosynthesis	4.2.1.61	(b0954  or  b0180)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR40	3OAR40	3-oxoacyl-[acyl-carrier-protein] reductase (n-C4:0)	[c]: actACP + h + nadph <=> 3haACP + nadp	True	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR60	3OAR60	3-oxoacyl-[acyl-carrier-protein] reductase (n-C6:0)	[c]: 3ohexACP + h + nadph <=> 3hhexACP + nadp	True	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR80	3OAR80	3-oxoacyl-[acyl-carrier-protein] reductase (n-C8:0)	[c]: 3ooctACP + h + nadph <=> 3hoctACP + nadp	True	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR100	3OAR100	3-oxoacyl-[acyl-carrier-protein] reductase (n-C10:0)	[c]: 3odecACP + h + nadph <=> 3hdecACP + nadp	True	Cell Envelope Biosynthesis	1.1.1.100	b1093	"Value	Molecule	Organism	PubMed ids	Image
 0.127	ethyl acetoacetate	Escherichia coli	704337	2D-image
 0.01	NADPH	Escherichia coli		
-"	"Value	Molecule	Organism	PubMed ids	Image
+"			"Value	Molecule	Organism	PubMed ids	Image
 0.3	ethyl acetoacetate	Escherichia coli	704337	2D-image
 0.59	NADPH	Escherichia coli		
-"	"
+"									"
 "	"
 "	
 3OAR120	3OAR120	3-oxoacyl-[acyl-carrier-protein] reductase (n-C12:0)	[c]: 3oddecACP + h + nadph <=> 3hddecACP + nadp	True	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR121	3OAR121	3-oxoacyl-[acyl-carrier-protein] reductase (n-C12:1)	[c]: 3ocddec5eACP + h + nadph <=> 3hcddec5eACP + nadp	False	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR140	3OAR140	3-oxoacyl-[acyl-carrier-protein] reductase (n-C14:0)	[c]: 3omrsACP + h + nadph <=> 3hmrsACP + nadp	True	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR141	3OAR141	3-oxoacyl-[acyl-carrier-protein] reductase (n-C14:1)	[c]: 3ocmrs7eACP + h + nadph <=> 3hcmrs7eACP + nadp	False	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR160	3OAR160	3-oxoacyl-[acyl-carrier-protein] reductase (n-C16:0)	[c]: 3opalmACP + h + nadph <=> 3hpalmACP + nadp	True	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 3OAR161	3OAR161	3-oxoacyl-[acyl-carrier-protein] reductase (n-C16:1)	[c]: 3ocpalm9eACP + h + nadph <=> 3hcpalm9eACP + nadp	False	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAR180	3OAR180	3-oxoacyl-[acyl-carrier-protein] reductase (n-C18:0)	[c]: 3ooctdACP + h + nadph <=> 3hoctaACP + nadp	True	Cell Envelope Biosynthesis	1.1.1.100	b1093	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAS60	3OAS60	3-oxoacyl-[acyl-carrier-protein] synthase (n-C6:0)	[c]: butACP + h + malACP <=> 3ohexACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	(b2323  or  b1095)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAS80	3OAS80	3-oxoacyl-[acyl-carrier-protein] synthase (n-C8:0)	[c]: h + hexACP + malACP <=> 3ooctACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	(b2323  or  b1095)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAS100	3OAS100	3-oxoacyl-[acyl-carrier-protein] synthase (n-C10:0)	[c]: h + malACP + ocACP <=> 3odecACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	(b2323  or  b1095)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -151,7 +151,7 @@
 0.029	malonyl-phosphopantetheine-16-mer	Escherichia coli	wild type protein, donor lauroyl-ACP, 0.01 mM lauroyl-ACP, pH 6.5, 25°C	718888	
 0.0142	malonyl-phosphopantetheine-8-mer	Escherichia coli	wild type protein, donor lauroyl-ACP, 0.01 mM lauroyl-ACP, pH 6.5, 25°C	718888	
 0.025	malonyl-[acyl-carrier protein]	Escherichia coli	pH 7.0		
-"	"Value	Molecule	Organism	Comments	PubMed ids
+"			"Value	Molecule	Organism	Comments	PubMed ids
 0.025	lauroyl-ACP	Escherichia coli	K151Q mutant protein, acceptor malonyl-CoA, 0.2 mM malonyl-CoA, pH 6.5, 25°C	718888 2D-image
 0.033	lauroyl-ACP	Escherichia coli	wild type protein, acceptor malonyl-CoA, 0.2 mM malonyl-CoA, pH 6.5, 25°C	718888 2D-image
 0.053	lauroyl-ACP	Escherichia coli	R66Q mutant protein, acceptor malonyl-CoA, 0.2 mM malonyl-CoA, pH 6.5, 25°C	718888 2D-image
@@ -164,80 +164,66 @@
 0.04	malonyl-phosphopantetheine-14-mer	Escherichia coli	wild type protein, donor lauroyl-ACP, 0.01 mM lauroyl-ACP, pH 6.5, 25°C	718888
 0.11	malonyl-phosphopantetheine-16-mer	Escherichia coli	wild type protein, donor lauroyl-ACP, 0.01 mM lauroyl-ACP, pH 6.5, 25°C	718888
 0.018	malonyl-phosphopantetheine-8-mer	Escherichia coli		
-"	"
+"									"
 "	"
 "	
 3OAS120	3OAS120	3-oxoacyl-[acyl-carrier-protein] synthase (n-C12:0)	[c]: dcaACP + h + malACP <=> 3oddecACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	(b2323  or  b1095)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAS121	3OAS121	3-oxoacyl-[acyl-carrier-protein] synthase (n-C12:1)	[c]: cdec3eACP + h + malACP <=> 3ocddec5eACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	b2323	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAS140	3OAS140	3-oxoacyl-[acyl-carrier-protein] synthase (n-C14:0)	[c]: ddcaACP + h + malACP <=> 3omrsACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	(b2323  or  b1095)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAS141	3OAS141	3-oxoacyl-[acyl-carrier-protein] synthase (n-C14:1)	[c]: cddec5eACP + h + malACP <=> 3ocmrs7eACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	b2323	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAS160	3OAS160	3-oxoacyl-[acyl-carrier-protein] synthase (n-C16:0)	[c]: h + malACP + myrsACP <=> 3opalmACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	(b2323  or  b1095)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 3OAS161	3OAS161	3-oxoacyl-[acyl-carrier-protein] synthase (n-C16:1)	[c]: h + malACP + tdeACP <=> 3ocpalm9eACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	b2323	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3OAS180	3OAS180	3-oxoacyl-[acyl-carrier-protein] synthase (n-C18:0)	[c]: h + malACP + palmACP <=> 3ooctdACP + ACP + co2	False	Cell Envelope Biosynthesis	2.3.1.41	(b1095  or  b2323)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 3PGtpp_ex	3PGtpp_ex		3pg[e] <=> 3pg[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 5MTHF			[c]: (2) h + mlthf + nadh <=> 5mthf + nad	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 12PPDRtex and 12PPDRtpp	12PPDRtex	(R)-Propane-1,2-diol transport via diffusion (extracellular to periplasm)	12ppd-R[e] <=> 12ppd-R[p]	True	Transport, Outer Membrane Porin		(b0241  or  b0929  or  b1377  or  b2215)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 AACTOOR	AACTOOR	Aminoacetone:oxygen oxidoreductase(deaminating)(flavin-containing)	[c]: aact + h2o + o2 <=> h2o2 + mthgxl + nh4	False	Methylglyoxal Metabolism			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
-ABTA	ABTA	4-aminobutyrate transaminase	[c]: 4abut + akg <=> glu-L + sucsal	False	Arginine and Proline Metabolism	2.6.1.19	(b2662  or  b1302)	"Value	Molecule	Organism	Comments	PubMed ids	Image
-0.0021	2-oxoglutarate	Escherichia coli	mutant E211S, 25°C, pH 7.8	661189	2D-image
-0.063	2-oxoglutarate	Escherichia coli	mutant E211S/I50H/V80T, 25°C, pH 7.8	661189	2D-image
-0.13	2-oxoglutarate	Escherichia coli	mutant V241A, 25°C, pH 7.8	661189	2D-image
-0.72	2-oxoglutarate	Escherichia coli	mutant E211S/I50G/C77K, 25°C, pH 7.8	661189	2D-image
-0.78	2-oxoglutarate	Escherichia coli	mutant I50Q/G295Y, 25°C, pH 7.8	661189	2D-image
-1.07	2-oxoglutarate	Escherichia coli	wild-type, 25°C, pH 7.8	661189	2D-image
-46.0	2-oxoglutarate	Escherichia coli	mutant I50Q, 25°C, pH 7.8	661189	2D-image
-4.7	4-aminobutanoate	Escherichia coli	mutant I50Q/G295Y, 25°C, pH 7.8	661189	2D-image
-5.8	4-aminobutanoate	Escherichia coli	wild-type, 25°C, pH 7.8	661189	2D-image
-5.9	4-aminobutanoate	Escherichia coli	mutant E211S/I50G/C77K, 25°C, pH 7.8	661189	2D-image
-30.0	4-aminobutanoate	Escherichia coli	mutant V241A, 25°C, pH 7.8	661189	2D-image
-68.0	4-aminobutanoate	Escherichia coli	mutant I50Q, 25°C, pH 7.8	661189	2D-image
-86.0	4-aminobutanoate	Escherichia coli	mutant E211S, 25°C, pH 7.8	661189	2D-image
-146.0	4-aminobutanoate	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+ABTA	ABTA	4-aminobutyrate transaminase	[c]: 4abut + akg <=> glu-L + sucsal	False	Arginine and Proline Metabolism	2.6.1.19	(b2662  or  b1302)	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055b9c0a50>	<wc_utils.workbook.core.Formula object at 0x7f055c111ad0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.00023	4-aminobutanoate	Escherichia coli	mutant E211S/I50H/V80D, 25°C, pH 7.8	661189	2D-image
 0.0005	4-aminobutanoate	Escherichia coli	mutant E211S/I50G/C77R, 25°C, pH 7.8	661189	2D-image
 0.003	4-aminobutanoate	Escherichia coli	mutant E211S/I50G, 25°C, pH 7.8	661189	2D-image
@@ -251,7 +237,7 @@ ABTA	ABTA	4-aminobutyrate transaminase	[c]: 4abut + akg <=> glu-L + sucsal	False
 1.93	4-aminobutanoate	Escherichia coli	mutant V241A, 25°C, pH 7.8	661189	2D-image
 13.5	4-aminobutanoate	Escherichia coli	mutant I50Q, 25°C, pH 7.8	661189	2D-image
 47.4	4-aminobutanoate	Escherichia coli			
-"	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.24	Aminooxyacetate	Escherichia coli		661189	2D-image
 0.62	Aminooxyacetate	Escherichia coli	wild-type, pH 7.8, 25°C	661189	2D-image
@@ -274,10 +260,10 @@ ABUTD	ABUTD	Aminobutyraldehyde dehydrogenase	[c]: 4abutn + h2o + nad <=> (2) h +
 0.037	NAD+	Escherichia coli			288070	2D-image
 0.0538	NAD+	Escherichia coli			288063	2D-image
 0.0225	putrescine	Escherichia coli				
-"	"Value	Molecule	Organism	UniProt ids	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c111410>	<wc_utils.workbook.core.Formula object at 0x7f055c111fd0>	"Value	Molecule	Organism	UniProt ids	Comments	PubMed ids	Image
 7.7	4-Aminobutyraldehyde	Escherichia coli	P77674	0.1 M Tris-HCl pH 7.5, 1 mM NAD+, 25°C	661760	2D-image
 0.3	Butyraldehyde	Escherichia coli	P77674			
-"	"
+"									"
 "	"
 "	
 ACALD	ACALD	acetaldehyde dehydrogenase (acetylating)	[c]: acald + coa + nad <=> accoa + h + nadh	True	Pyruvate Metabolism	1.2.1.10	(b1241 or b0351)	"Value	Molecule
@@ -291,13 +277,13 @@ ACALD	ACALD	acetaldehyde dehydrogenase (acetylating)	[c]: acald + coa + nad <=> 
 0.08	NAD+
 0.025	NADH
 0.1	NADH
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c111e50>	<wc_utils.workbook.core.Formula object at 0x7f055c111d50>	"
+"									"
 "	"
 "	
 ACALDtpp_ex	ACALDtex, ACALDtpp	composed of acetaldehyde transport via diffusion (extracellular to periplasm) and acetaldehyde reversible transport (periplasm)	acald[e] <=> acald[c]	True	Transport, Outer Membrane Porin and inner membrane		((b0241 or b0929 or b1377 or b2215) and s0001)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACCOAC	ACCOAC	acetyl-CoA carboxylase	[c]: accoa + atp + hco3 <=> adp + h + malcoa + pi	False	Membrane Lipid Metabolism	6.4.1.2	(b0185  and  b2316  and  b3255  and  b3256)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -305,8 +291,8 @@ ACCOAC	ACCOAC	acetyl-CoA carboxylase	[c]: accoa + atp + hco3 <=> adp + h + malco
 0.1	biotin	Escherichia coli	isolated biotin carboxylase domain	664564	2D-image
 3.0	biotin	Escherichia coli	isolated carboxyltransferase domain	664564	2D-image
 0.1	malonyl-CoA	Escherichia coli	pH 8.0, recombinant subunits AccA and AccD	665526	2D-image
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c111650>	<wc_utils.workbook.core.Formula object at 0x7f055b559b50>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0012	heparin	Escherichia coli	versus malonyl-CoA	695014	2D-image
 0.0022	heparin	Escherichia coli	versus biocytin	695014	2D-image
@@ -315,8 +301,8 @@ ACCOAC	ACCOAC	acetyl-CoA carboxylase	[c]: accoa + atp + hco3 <=> adp + h + malco
 5e-06	moiramide B	Escherichia coli			
 "	
 ACCOAtpp_ex	ACCOAtpp_ex		accoa[e] <=> accoa[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACGK	ACGK	acetylglutamate kinase	[c]: acglu + atp <=> acg5p + adp	False	Arginine and Proline Metabolism	2.7.2.8	b3959	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -336,20 +322,20 @@ ACGK	ACGK	acetylglutamate kinase	[c]: acglu + atp <=> acg5p + adp	False	Arginine
 6.0	N-acetyl-L-glutamate	Escherichia coli	pH 5.5, 37°C	642354	2D-image
 600.0	N-acetyl-L-glutamate	Escherichia coli	mutant N158Q, pH 7.0, 25°C	659704	2D-image
 898.0	N-acetyl-L-glutamate	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055b640150>	<wc_utils.workbook.core.Formula object at 0x7f055bc74510>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 30.4	ATP	Escherichia coli	wild-type, pH 7.0, 25°C	659704	2D-image
 41.5	ATP	Escherichia coli			
 "	
 ACGS	ACGS	N-acetylglutamate synthase	[c]: accoa + glu-L <=> acglu + coa + h	False	Arginine and Proline Metabolism	2.3.1.1	b2818	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACHBS	ACHBS	2-aceto-2-hydroxybutanoate synthase	[c]: 2obut + h + pyr <=> 2ahbut + co2	False	Valine, Leucine, and Isoleucine Metabolism		((b3670  and  b3671)  or (b0077  and  b0078))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 ACKr	ACKr	acetate kinase	[c]: actp + adp <=> ac + atp	True	Pyruvate Metabolism	2.7.2.1	(b3115 or b2296 or b1849)	"Value	Molecule
@@ -363,60 +349,60 @@ ACKr	ACKr	acetate kinase	[c]: actp + adp <=> ac + atp	True	Pyruvate Metabolism	2
 0.94	ATP
 1.1	GTP
 0.78	ITP
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229b10>	<wc_utils.workbook.core.Formula object at 0x7f055c229a90>	"
+"									"
 "	"
 "	
 ACLS	ACLS	acetolactate synthase	[c]: (2) pyr + h <=> alac-S + co2	False	Valine, Leucine, and Isoleucine Metabolism	4.1.3.18	((b0077  and  b0078)  or (b3670  and  b3671))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 ACOAD1f	ACOAD1f	acyl-CoA dehydrogenase (butanoyl-CoA)	[c]: btcoa + fad <=> b2coa + fadh2	True	Membrane Lipid Metabolism	1.3.99.2	b0221	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACOAD2f	ACOAD2f	acyl-CoA dehydrogenase (hexanoyl-CoA)	[c]: fad + hxcoa <=> fadh2 + hx2coa	True	Membrane Lipid Metabolism	1.3.99.3	b0221	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACOAD3f	ACOAD3f	acyl-CoA dehydrogenase (octanoyl-CoA)	[c]: fad + occoa <=> fadh2 + oc2coa	True	Membrane Lipid Metabolism	1.3.99.3	b0221	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACOAD4f	ACOAD4f	acyl-CoA dehydrogenase (decanoyl-CoA)	[c]: dcacoa + fad <=> dc2coa + fadh2	True	Membrane Lipid Metabolism	1.3.99.3	b0221	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACOAD5f	ACOAD5f	acyl-CoA dehydrogenase (dodecanoyl-CoA)	[c]: ddcacoa + fad <=> dd2coa + fadh2	True	Membrane Lipid Metabolism	1.3.99.3	b0221	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACOAD6f	ACOAD6f	acyl-CoA dehydrogenase (tetradecanoyl-CoA)	[c]: fad + tdcoa <=> fadh2 + td2coa	True	Membrane Lipid Metabolism	1.3.99.3	b0221	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACOAD7f	ACOAD7f	acyl-CoA dehydrogenase (hexadecanoyl-CoA)	[c]: fad + pmtcoa <=> fadh2 + hdd2coa	True	Membrane Lipid Metabolism	1.3.99.3	b0221	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACOAD8f	ACOAD8f	acyl-CoA dehydrogenase (octadecanoyl-CoA)	[c]: fad + stcoa <=> fadh2 + od2coa	True	Membrane Lipid Metabolism	1.3.99.3	b0221	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACOATA	ACOATA	Acetyl-CoA ACP transacylase	[c]: ACP + accoa <=> acACP + coa	True	Membrane Lipid Metabolism	2.3.1.38	(b1094  and  b1091)	"Value	Molecule	Organism	PubMed ids	Image
 0.05	acetyl-CoA	Escherichia coli	486868	2D-image
 0.035	acyl-carrier protein	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229a50>	<wc_utils.workbook.core.Formula object at 0x7f055c229cd0>	"
+"									"
 "	"Value	Molecule	Organism	PubMed ids	Image
 0.03	CoA	Escherichia coli	486868	2D-image
 3.2	pantetheine	Escherichia coli		
@@ -444,7 +430,7 @@ ACODA	ACODA	acetylornithine deacetylase	[c]: acorn + h2o <=> ac + orn	False	Argi
 7.2	Nalpha-Acetyl-L-ornithine	Escherichia coli	in presence of Zn2+	171964	2D-image
 2.0	Nalpha-acetylformyl-L-methionine	Escherichia coli		171964	2D-image
 7.0	Nalpha-chloroacetylglycine	Escherichia coli		171964	
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229bd0>	<wc_utils.workbook.core.Formula object at 0x7f055c229790>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1600.0	N-acetyl-L-ornithine	Escherichia coli	in the presence of one equivalent of Zn(II), pH 7.5, 25°C	720166	2D-image
 3800.0	N-acetyl-L-ornithine	Escherichia coli	in the presence of one equivalent of Co(II), pH 7.5, 25°C	720166	2D-image
 550.0	N-alpha-acetyl-L-ornithine	Escherichia coli	in 50 mM Chelex-100 treated sodium phosphate buffer, pH 7.5, at 25°C, in the presence of Mn2+	687815	2D-image
@@ -452,7 +438,7 @@ ACODA	ACODA	acetylornithine deacetylase	[c]: acorn + h2o <=> ac + orn	False	Argi
 3800.0	N-alpha-acetyl-L-ornithine	Escherichia coli	in 50 mM Chelex-100 treated sodium phosphate buffer, pH 7.5, at 25°C, in the presence of Co2+	687815	2D-image
 1600.0	N2-Acetyl-L-ornithine	Escherichia coli	in the presence of Zn2+	669046	2D-image
 3800.0	N2-Acetyl-L-ornithine	Escherichia coli	in the presence of Co2+		
-"	"
+"									"
 "	"
 "	
 ACONTa	ACONTa	aconitase (half-reaction A, Citrate hydro-lyase)	[c]: cit <=> acon-C + h2o	True	Citric Acid Cycle	4.2.1.3	(b1276 or b0118)	"Value	Molecule
@@ -461,8 +447,8 @@ ACONTa	ACONTa	aconitase (half-reaction A, Citrate hydro-lyase)	[c]: cit <=> acon
 0.058	cis-aconitate
 1.16	citrate
 11.0	citrate
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229710>	<wc_utils.workbook.core.Formula object at 0x7f055c229690>	"
+"									"
 "	"
 "	
 ACONTb	ACONTb	aconitase (half-reaction B, Isocitrate hydro-lyase)	[c]: acon-C + h2o <=> icit	True	Citric Acid Cycle	4.2.1.3	(b0118 or b1276)	"Value	Molecule
@@ -471,8 +457,8 @@ ACONTb	ACONTb	aconitase (half-reaction B, Isocitrate hydro-lyase)	[c]: acon-C + 
 0.058	cis-aconitate
 1.16	citrate
 11.0	citrate
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229c10>	<wc_utils.workbook.core.Formula object at 0x7f055c229d50>	"
+"									"
 "	"
 "	
 ACOTA	ACOTA	acetylornithine transaminase	[c]: acorn + akg <=> acg5sa + glu-L	True	Arginine and Proline Metabolism	2.6.1.11	(b3359  or  b1748)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -483,18 +469,18 @@ ACOTA	ACOTA	acetylornithine transaminase	[c]: acorn + akg <=> acg5sa + glu-L	Tru
 1.54	N2-Acetyl-L-ornithine	Escherichia coli	arginine-inducible enzyme	644947	2D-image
 3.1	N2-Acetyl-L-ornithine	Escherichia coli	arginine-inducible enzyme	644948	2D-image
 2.5	2-oxoglutarate	Escherichia coli		644946	2D-image
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229c90>	<wc_utils.workbook.core.Formula object at 0x7f055c229b90>	"
+"									"
 "	"
 "	
 ACS	ACS	acetyl-CoA synthetase	[c]: ac + atp + coa <=> accoa + amp + ppi	False	Pyruvate Metabolism	6.2.1.1	b4069	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ACt2rpp_ex_H	ACt2rpp, ACtex, Htex	composed of acetate reversible transport via proton symport (periplasm) and Acetate transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	ac[e] + h[e] <=> ac[c] + h[c]	True	Transport, Outer Membrane Porin and inner membrane		((b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ADK1	ADK1	adenylate kinase	[c]: amp + atp <=> (2) adp	True	Nucleotide Salvage Pathway	2.7.4.3	b0474	"Value	Molecule
@@ -506,23 +492,23 @@ ADK1	ADK1	adenylate kinase	[c]: amp + atp <=> (2) adp	True	Nucleotide Salvage Pa
 0.048	ATP
 0.084	ATP
 0.27	ATP
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2297d0>	<wc_utils.workbook.core.Formula object at 0x7f055c229950>	"
+"									"
 "	"
 "	
 ADPGLCtpp_ex	ADPGLCtpp_ex		adpglc[e] <=> adpglc[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ADSL1r	ADSL1r	adenylsuccinate lyase	[c]: dcamp <=> amp + fum	True	Purine and Pyrimidine Biosynthesis	4.3.2.2	b1131	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ADSL2r	ADSL2r	adenylosuccinate lyase	[c]: 25aics <=> aicar + fum	True	Purine and Pyrimidine Biosynthesis	4.3.2.2	b1131	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ADSS	ADSS	adenylosuccinate synthase	[c]: asp-L + gtp + imp <=> (2) h + dcamp + gdp + pi	False	Purine and Pyrimidine Biosynthesis	6.3.4.4	b4177	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -685,7 +671,7 @@ ADSS	ADSS	adenylosuccinate synthase	[c]: asp-L + gtp + imp <=> (2) h + dcamp + g
 0.0331	XTP	Escherichia coli	mutant D333N	1561	2D-image
 0.388	XTP	Escherichia coli	wild-type	1561	2D-image
 9.0	L-aspartate	Escherichia coli	pH 7.7, 25°C, mutant V273N		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229810>	<wc_utils.workbook.core.Formula object at 0x7f055c229910>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.96	2'-dIMP	Escherichia coli	22°C	672068	2D-image
 0.0048	GTP	Escherichia coli	pH 7.7, 25°C, mutant N38A	651884	2D-image
 0.0095	GTP	Escherichia coli	pH 7.7, 25°C, mutant H41N 	651884	2D-image
@@ -720,7 +706,7 @@ ADSS	ADSS	adenylosuccinate synthase	[c]: asp-L + gtp + imp <=> (2) h + dcamp + g
 1.0	IMP	Escherichia coli	22°C	672068	2D-image
 0.96	L-Asp	Escherichia coli	22°C, cosubstrate: 2'-dIMP	672068	2D-image
 1.0	L-Asp Escherichia coli				
-"	"
+"	0.96	1.0	0.0	0.0	7.5751	163.7561	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0406	6-(4-bromo-2,3-dioxobutyl)thioadenosine 5'-monophosphate	Escherichia coli	pH 7.0, 25°C	649897	2D-image
 0.04	fumarate	Escherichia coli	pH 7.7, 25°C, mutant V273N	652356	2D-image
@@ -741,8 +727,8 @@ AGMT	AGMT	agmatinase	[c]: agm + h2o <=> ptrc + urea	False	Arginine and Proline M
 1.1	agmatine	Escherichia coli	wild type	649495	2D-image
 1.2	agmatine	Escherichia coli		246681	2D-image
 6.3	agmatine	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2298d0>	<wc_utils.workbook.core.Formula object at 0x7f055c229890>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 15.0	guanidinium ion	Escherichia coli	wild type	649495	2D-image
 44.2	guanidinium ion	Escherichia coli			
@@ -751,33 +737,33 @@ AGPR	AGPR	N-acetyl-g-glutamyl-phosphate reductase	[c]: acg5sa + nadp + pi <=> ac
 0.6	N-acetyl-L-glumate 5-semialdehyde	Escherichia coli	390280	2D-image
 0.17	NADP+	Escherichia coli	390280	2D-image
 3.0	phosphate	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229850>	<wc_utils.workbook.core.Formula object at 0x7f055c2299d0>	"
+"									"
 "	"
 "	
 AICART	AICART	phosphoribosylaminoimidazolecarboxamide formyltransferase	[c]: 10fthf + aicar <=> fprica + thf	True	Purine and Pyrimidine Biosynthesis	2.1.2.3	b4006	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 AIRC2	AIRC2	phosphoribosylaminoimidazole carboxylase	[c]: air + atp + hco3 <=> 5caiz + adp + h + pi	False	Purine and Pyrimidine Biosynthesis		b0522	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 AIRC3	AIRC3	phosphoribosylaminoimidazole carboxylase (mutase rxn)	[c]: 5aizc <=> 5caiz	True	Purine and Pyrimidine Biosynthesis		b0523	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 AKGDH	AKGDH	2-Oxogluterate dehydrogenase	[c]: akg + coa + nad <=> co2 + nadh + succoa	False	Citric Acid Cycle		(b0116 and b0726 and b0727)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 AKGt2rpp_ex	AKGt2rpp, AKGtex, Htex	composed of 2-oxoglutarate reversible transport via symport (periplasm) and alpha-ketoglutarate transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	akg[e] + h[e] <=> akg[c] + h[c]	True	Transport, Outer Membrane Porin and inner membrane		(b2587 and (b0241 or b0929 or b1377 or b2215))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ALAR	ALAR	alanine racemase	[c]: ala-L <=> ala-D	True	Alanine and Aspartate Metabolism	5.1.1.1	(b4053  or  b1190)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -803,7 +789,7 @@ ALAR	ALAR	alanine racemase	[c]: ala-L <=> ala-D	True	Alanine and Aspartate Metab
 3.03	L-alanine	Escherichia coli	+/-0.114, Alr D164A, 30°C, pH 8.0, spectrophotometrically measured at 340 nm	695001	2D-image
 3.603	L-alanine	Escherichia coli	+/-0.180, Alr D164K, 30°C, pH 8.0, spectrophotometrically measured at 340 nm	695001	2D-image
 17.4	L-alanine	Escherichia coli	in 50 mM potassium phosphate buffer pH 7.4, at 30°C		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229990>	<wc_utils.workbook.core.Formula object at 0x7f055c229650>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.333	D-alanine	Escherichia coli	+/-0.033, Alr D164K, 30°C, pH 8.0, spectrophotometrically measured at 340 nm	695001	2D-image
 1.317	D-alanine	Escherichia coli	+/-0.100, Alr E165K, 30°C, pH 8.0, spectrophotometrically measured at 340 nm	695001	2D-image
 2.0-8.0	D-alanine	Escherichia coli	pH 8.2, 37°C	661002	2D-image
@@ -824,53 +810,53 @@ ALAR	ALAR	alanine racemase	[c]: ala-L <=> ala-D	True	Alanine and Aspartate Metab
 67.07	L-alanine	Escherichia coli	+/-7.633, Alr E221P, 30°C, pH 8.0, spectrophotometrically measured at 340 nm	695001	2D-image
 68.23	L-alanine	Escherichia coli	+/-7.550, Alr E221K, 30°C, pH 8.0, spectrophotometrically measured at 340 nm	695001	2D-image
 70.92	L-alanine	Escherichia coli	+/-2.333, Alr E221A, 30°C, pH 8.0, spectrophotometrically measured at 340 nm		
-"	"
+"	8.278	76.398	0.753	8.037	0.025269	0.16597	0.00013367	0.26733	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1.2	D-cycloserine	Escherichia coli	pH 8.2, 25°C	662288	2D-image
 8.2	L-Cycloserine	Escherichia coli			
 "	
 ALAt2pp and ALAtex	ALAt2pp, ALAtex	L-alanine transport in via proton symport (periplasm)	ala-L[p] + h[p] <=> ala-L[c] + h[c]	False	Transport, Inner Membrane		b4208	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ALATA_L	ALATA_L	L-alanine transaminase	[c]: akg + ala-L <=> glu-L + pyr	True	Alanine and Aspartate Metabolism	2.6.1.2		"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ALCD2x	ALCD2x	alcohol dehydrogenase (ethanol)	[c]: etoh + nad <=> acald + h + nadh	True	Pyruvate Metabolism	1.1.1.1	(b0356 or b1478 or b1241)	"Value	Molecule
 10.6	ethonal
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229410>	<wc_utils.workbook.core.Formula object at 0x7f055c229510>	"
+"									"
 "	"Value	Molecule
 18.26	4-Methylpyrazole
 "	
 ALR2	ALR2	aldose reductase (methylglyoxal)	[c]: h + mthgxl + nadph <=> acetol + nadp	False	Methylglyoxal Metabolism		(b3012  or  b0207  or  b1781  or  b3001)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ALR4x	ALR4x	aldose reductase (acetol)	[c]: acetol + h + nadh <=> 12ppd-R + nad	False	Glycerophospholipid Metabolism		b3945	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ANPRT	ANPRT	anthranilate phosphoribosyltransferase	[c]: anth + prpp <=> ppi + pran	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	2.4.2.18	b1263	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.1	5-phospho-alpha-D-ribose 1-diphosphate	Escherichia coli	complex	638663	2D-image
 0.2	5-phospho-alpha-D-ribose 1-diphosphate				
-"	"Value	Molecule	Organism	PubMed ids	Image
+"			"Value	Molecule	Organism	PubMed ids	Image
 4.4	5-phospho-alpha-D-ribose 1-diphosphate	Escherichia coli	638667	2D-image
 4.4	anthranilate	Escherichia coli		
-"	"
+"	3.96	4.84	0.0	0.0	43.3648	2138.2107	0.0	0.0	"
 "	"
 "	
 ANS	ANS	anthranilate synthase	[c]: chor + gln-L <=> anth + glu-L + h + pyr	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	4.1.3.27	(b1263  and  b1264)	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0012	chorismate	Escherichia coli		33276	2D-image
 0.029	chorismate	Escherichia coli	pH 7.5	650373	2D-image
 0.36	glutamine	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229550>	<wc_utils.workbook.core.Formula object at 0x7f055c229490>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.4	3-carboxymethylaminomethyl-4-hydroxybenzoate	Escherichia coli	pH 7.5	650373	2D-image
 0.33	p-Hydroxybenzaldehyde	Escherichia coli	pH 7.5	650373	2D-image
@@ -878,8 +864,8 @@ ANS	ANS	anthranilate synthase	[c]: chor + gln-L <=> anth + glu-L + h + pyr	False
 0.26	vanillate	Escherichia coli			
 "	
 AOBUTDs	AOBUTDs	L-2-amino-3-oxobutanoate decarboxylation (spontaneous)	[c]: 2aobut + h <=> aact + co2	False	Threonine and Lysine Metabolism		s0001	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ARGDC	ARGDC	arginine decarboxylase	[c]: arg-L + h <=> agm + co2	False	Arginine and Proline Metabolism	4.1.1.19	b4117	"Value	Molecule	Organism	UniProt ids	Comments	PubMed ids	Image
@@ -887,23 +873,23 @@ ARGDC	ARGDC	arginine decarboxylase	[c]: arg-L + h <=> agm + co2	False	Arginine a
 0.03	L-arginine	Escherichia coli	P28629	pH 8.4, 37°C, constitutive ArgDC	680506	2D-image
 0.65	L-arginine	Escherichia coli	P28629	pH 5.2, 37°C, inducible ArgDC	680506	2D-image
 1.2	L-canavanine	Escherichia coli				
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229590>	<wc_utils.workbook.core.Formula object at 0x7f055c229450>	"
+"									"
 "	"
 "	
 ARGSL	ARGSL	argininosuccinate lyase	[c]: argsuc <=> arg-L + fum	True	Arginine and Proline Metabolism	4.3.2.1	b3960	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ARGSS	ARGSS	argininosuccinate synthase	[c]: asp-L + atp + citr-L <=> amp + argsuc + h + ppi	False	Arginine and Proline Metabolism	6.3.4.5	b3172	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ARGt3pp and ARGtex	ARGt3pp, ARGtex	L-arginine transport out via proton antiport (cytoplasm to periplasm)	arg-L[c] + h[p] <=> arg-L[p] + h[c]	False	Transport, Inner Membrane		b2923	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ASAD	ASAD	aspartate-semialdehyde dehydrogenase	[c]: aspsa + nadp + pi <=> 4pasp + h + nadph	True	Threonine and Lysine Metabolism	1.2.1.11	b3433	"Value	Molecule	Organism	PubMed ids	Image
@@ -914,8 +900,8 @@ ASAD	ASAD	aspartate-semialdehyde dehydrogenase	[c]: aspsa + nadp + pi <=> 4pasp 
 2.9	phosphate	Escherichia coli	390200	2D-image
 9.0	phosphate	Escherichia coli	390180	2D-image
 0.14	vanadate	Escherichia coli		
-"	"
-"	"
+"			"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1.2	(S)-2-amino-5-fluoro-4-oxo-5-phosphono-pentanoic acid	Escherichia coli	0.2 M Tris, 1 mM EDTA, pH 8.6, 15 mM phosphate, 0.15 mM NADP+, 37°C	673074	2D-image
 3.9	(S)-2-amino-5-phosphono-pent-4-ynoic acid	Escherichia coli	0.2 M Tris, 1 mM EDTA, pH 8.6, 15 mM phosphate, 0.15 mM NADP+, 37°C	673074	2D-image
@@ -966,7 +952,7 @@ ASNN	ASNN	L-asparaginase	[c]: asn-L + h2o <=> asp-L + nh4	False	Alanine and Aspa
 21.0	L-Gln	Escherichia coli	pH 7.0, 25°C, mutant enzyme N248Q	657311	2D-image
 50.0	L-Gln	Escherichia coli	pH 7.0, 25°C, mutant enzyme Q59G	657311	2D-image
 70.0	L-Gln	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229350>	<wc_utils.workbook.core.Formula object at 0x7f055c229390>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 7.0	Asn	Escherichia coli	pH 7.0, 25°C, mutant enzyme N248A	657311	2D-image
 24.0	Asn	Escherichia coli	pH 7.0, 25°C, wild-type enzyme	657311	2D-image
 0.0027	L-asparagine	Escherichia coli	37°C, pH 8.0, wild-type enzyme and mutant enzyme D178P	686454	2D-image
@@ -997,7 +983,7 @@ ASNN	ASNN	L-asparaginase	[c]: asn-L + h2o <=> asp-L + nh4	False	Alanine and Aspa
 0.032	L-Gln	Escherichia coli	pH 7.0, 25°C, mutant enzyme N248Q; pH 7.0, 25°C, mutant enzyme V27M	657311	2D-image
 0.091	L-Gln	Escherichia coli	pH 7.0, 25°C, mutant enzyme V27L	657311	2D-image
 0.33	L-Gln Escherichia coli				
-"	"
+"	0.0027	24.0	0.0	0.0	9.0519	76764.703	0.0	0.0	"
 "	"
 "	
 ASNS1	ASNS1	asparagine synthase (glutamine-hydrolysing)	[c]: asp-L + atp + gln-L + h2o <=> amp + asn-L + glu-L + h + ppi	False	Alanine and Aspartate Metabolism	6.3.5.4	b0674	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -1061,7 +1047,7 @@ ASNS1	ASNS1	asparagine synthase (glutamine-hydrolysing)	[c]: asp-L + atp + gln-L
 15.7	NH4+	Escherichia coli	wild-type enzyme	1697	2D-image
 17.0	NH4+	Escherichia coli	wild-type enzyme	1702	2D-image
 1.9	L-glutamine	Escherichia coli	glutaminase activity in the absence of ATP		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"			"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.52	Asp	Escherichia coli	C523A mutant	1698	2D-image
 0.57	Asp	Escherichia coli	wild-type	1700	2D-image
 0.77	Asp	Escherichia coli	C386A mutant	1698	2D-image
@@ -1123,19 +1109,19 @@ ASNS1	ASNS1	asparagine synthase (glutamine-hydrolysing)	[c]: asp-L + atp + gln-L
 0.59	NH4+	Escherichia coli	wild-type	1697	2D-image
 0.65	NH4+	Escherichia coli	mutant N74A	1697	2D-image
 6.08	L-glutamine	Escherichia coli	glutaminase activity in the presence of ATP; glutamine dependent asparagine synthetase activity	649262	
-"	"
+"									"
 "	"
 "	
 ASNS2	ASNS2	asparagine synthetase	[c]: asp-L + atp + nh4 <=> amp + asn-L + h + ppi	False	Alanine and Aspartate Metabolism	6.3.1.1	b3744	"Value	Molecule	Organism	PubMed ids
 0.27	ATP	Escherichia coli	860
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2293d0>	<wc_utils.workbook.core.Formula object at 0x7f055c2294d0>	"
+"									"
 "	"Value	Molecule
 6.7e-05	adenylated sulfoximine
 "	
 ASNt2rpp and ASNtex and EX_asn-L(e)	ASNt2rpp, ASNtex, EX_asn-L(e)	L-asparagine reversible transport via proton symport (periplasm)	asn-L[p] + h[p] <=> asn-L[c] + h[c]	True	Transport, Inner Membrane		b1453	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ASPK	ASPK	aspartate kinase	[c]: asp-L + atp <=> 4pasp + adp	True	Threonine and Lysine Metabolism	2.7.2.4	(b0002  or  b3940  or  b4024)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -1159,13 +1145,13 @@ ASPK	ASPK	aspartate kinase	[c]: asp-L + atp <=> 4pasp + adp	True	Threonine and L
 48.0	N-acetyl-L-aspartate	Escherichia coli	pH 8.0, 25°C, aspartokinase III	642329	2D-image
 68.0	N-Chloroacetyl-L-aspartate	Escherichia coli	pH 8.0, 25°C, aspartokinase III	642329	2D-image
 41.0	N-formyl-L-aspartate	Escherichia coli	pH 8.0, 25°C, aspartokinase III		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229610>	<wc_utils.workbook.core.Formula object at 0x7f055c2295d0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.16	L-aspartate	Escherichia coli	recombinant hybrid bifunctional holoenzyme AKIII-HDHI+ containing the interface region, asparate kinase activity	654640	2D-image
 0.39	L-aspartate	Escherichia coli	recombinant wild-type bifunctional holoenzyme, asparate kinase activity	654640	2D-image
 14.2	L-aspartate	Escherichia coli	aspartokinase II	642314	2D-image
 39.2	L-aspartate	Escherichia coli	aspartokinase III	642314	2D-image
 56.7	L-aspartate	Escherichia coli	aspartokinase I	642314	
-"	"
+"	0.0	50.4	0.0	0.0	14.5472	97.9386	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 87.0	D-aspartate beta-hydroxamate	Escherichia coli	pH 8.0, 25°C, aspartokinase III	642329	2D-image
 14.0	D-aspartic acid 1-benzyl ester	Escherichia coli	pH 8.0, 25°C, aspartokinase III	642329	2D-image
@@ -1203,12 +1189,12 @@ ASPT	ASPT	L-aspartase	[c]: asp-L <=> fum + nh4	False	Alanine and Aspartate Metab
 28.3	L-aspartic acid	Escherichia coli	pH 8.5, 30°C, mutant enzyme K327N	664298	2D-image
 20.0	NH4+	Escherichia coli		5998	2D-image
 1450.0	L-aspartic acid alpha-amide	Escherichia coli	pH 7.0, 30°C		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229310>	<wc_utils.workbook.core.Formula object at 0x7f055c2292d0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 163.0	L-aspartate	Escherichia coli	monomeric mutant enzyme maspase 1	664592	2D-image
 165.0	L-aspartate	Escherichia coli	dimeric mutant enzyme maspase 2	664592	2D-image
 170.0	L-aspartate	Escherichia coli	tetrameric mutant enzyme maspase 3	664592	2D-image
 180.0	L-aspartate Escherichia coli				
-"	"
+"	162.0	198.0	0.0	0.0	19.4168	45.4122	0.0	0.0	"
 "	"Value	Molecule	Organism	PubMed ids	Image
 1.1	2,3-diphosphoglycerate	Escherichia coli	649266	2D-image
 0.83	3-nitropropanoate	Escherichia coli	649266	2D-image
@@ -1217,18 +1203,18 @@ ASPT	ASPT	L-aspartase	[c]: asp-L <=> fum + nh4	False	Alanine and Aspartate Metab
 0.2	o-phospho-D-serine	Escherichia coli		
 "	
 ASPt2_2pp	ASPt2_2pp	Aspartate transport via proton symport (2 H) (periplasm)	(2) h[p] + asp-L[p] <=> (2) h[c] + asp-L[c]	False	Transport, Inner Membrane		b3528	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ASPt2_3pp	ASPt2_3pp	L-asparate transport via proton symport (3 H) (periplasm)	(3) h[p] + asp-L[p] <=> (3) h[c] + asp-L[c]	False	Transport, Inner Membrane		(b4138  or  b4123)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ASPt2pp and ASPtex	ASPt2pp, ASPtex	L-aspartate transport in via proton symport (periplasm)	asp-L[p] + h[p] <=> asp-L[c] + h[c]	False	Transport, Inner Membrane		b4077	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ASPTA	ASPTA	aspartate transaminase	[c]: akg + asp-L <=> glu-L + oaa	True	Alanine and Aspartate Metabolism	2.6.1.1	b0928	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -1257,7 +1243,7 @@ ASPTA	ASPTA	aspartate transaminase	[c]: akg + asp-L <=> glu-L + oaa	True	Alanine
 0.37	oxaloacetate	Escherichia coli	pH 7.6, 25°C	636643	2D-image
 0.00025	pyridoxyl 5'-phosphate	Escherichia coli	pH 7.6, 25°C	636643	2D-image
 1.43	L-tyrosine	Escherichia coli	pH 7.6, 25°C		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229090>	<wc_utils.workbook.core.Formula object at 0x7f055c229110>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.35	2-oxo-4-phenyl-butanoic acid	Escherichia coli	wild-type enzyme	658335	2D-image
 0.38	2-oxo-4-phenyl-butanoic acid	Escherichia coli	mutant enzyme R292E/L18H	658335	2D-image
 43.0	L-Asp	Escherichia coli	pH 8, mutant enzyme A12T/P13T/N34D/T109S/G261A/S285G/A293D/N297S	658035	2D-image
@@ -1269,27 +1255,27 @@ ASPTA	ASPTA	aspartate transaminase	[c]: akg + asp-L <=> glu-L + oaa	True	Alanine
 0.305	L-Lys	Escherichia coli	wild-type enzyme	658335	2D-image
 5.55	L-Lys	Escherichia coli	mutant enzyme R292E/L18H	658335	2D-image
 10.0	L-Phe	Escherichia coli	pH 8, mutant enzyme A12T/P13T/N34D/T109S/G261A/S285G/A293D/N297S	658035	
-"	"
+"	0.0	527.9783	0.0	0.0	0.0088509	0.20594	0.0	0.0	"
 "	"
 "	
 ASPtex	ASPtex	L-aspartate transport via diffusion (extracellular to periplasm)	asp-L[e] <=> asp-L[p]	True	Transport, Outer Membrane Porin		(b0241  or  b0929  or  b1377  or  b2215)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 AST	AST	Arginine succinyltransferase	[c]: arg-L + succoa <=> coa + h + sucarg	False	Arginine and Proline Metabolism	2.3.1.109	b1747	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ATPM	ATPM	ATP maintenance requirement	[c]: atp + h2o <=> adp + h + pi	False	Unassigned			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ATPPRT	ATPPRT	ATP phosphoribosyltransferase	[c]: atp + prpp <=> ppi + prbatp	False	Histidine Metabolism	2.4.2.17	b2019	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 ATPS4rpp	ATPS4rpp	ATP synthase (four protons for one ATP) (periplasm)	(4) h[e] + adp[c] + pi[c] <=> (3) h[c] + atp[c] + h2o[c]	True	Oxidative Phosphorylation		(((b3736 and b3737 and b3738) and (b3731 and b3732 and b3733 and b3734 and b3735)) or ((b3736 and b3737 and b3738) and (b3731 and b3732 and b3733 and b3734 and b3735) and b3739))	"Value	Molecule	PubMed ids
@@ -1302,14 +1288,14 @@ ATPS4rpp	ATPS4rpp	ATP synthase (four protons for one ATP) (periplasm)	(4) h[e] +
 3.2	phosphate	712371
 4.2	phosphate	712371
 0.6	ATP	210238
-"	"Value	Molecule	PubMed ids
+"			"Value	Molecule	PubMed ids
 16.0	ADP	712371
 55.0	ADP	712371
 285.0	ATP	712371
 539.0	ATP	712371
 20.0	phosphate	712371
 66.0	phosphate	712371
-"	"Value	Molecule	PubMed ids
+"									"Value	Molecule	PubMed ids
 160.0	ADP	712371
 2200.0	ADP	712371
 3800.0	ATP	712371
@@ -1319,23 +1305,23 @@ ATPS4rpp	ATPS4rpp	ATP synthase (four protons for one ATP) (periplasm)	(4) h[e] +
 "	"
 "	
 BUTCT	BUTCT	Acetyl-CoA:butyrate-CoA transferase	[c]: accoa + but <=> ac + btcoa	False	Alternate Carbon Metabolism	2.8.3.8	(b2221  and  b2222)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 BUTt2rpp	BUTt2rpp	Butyrate transport via proton symport, reversible (periplasm)	but[p] + h[p] <=> but[c] + h[c]	True	Transport, Inner Membrane		b2223	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 BUTtex	BUTtex	Butyrate transport via diffusion (extracellular to periplasm)	but[e] <=> but[p]	True	Transport, Outer Membrane Porin		(b0241  or  b0929  or  b1377  or  b2215)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 CADVtpp	CADVtpp	Lysine/Cadaverine antiporter (periplasm)	15dap[c] + h[p] + lys-L[p] <=> 15dap[p] + h[c] + lys-L[c]	False	Transport, Inner Membrane		b4132	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 CHORM	CHORM	chorismate mutase	[c]: chor <=> pphn	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	5.4.99.5	(b2599  or  b2600)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -1369,7 +1355,7 @@ CHORM	CHORM	chorismate mutase	[c]: chor <=> pphn	False	Tyrosine, Tryptophan, and
 0.47-1.0	prephenate	Escherichia coli		3574	2D-image
 0.549	prephenate	Escherichia coli	37°C, pH 7.8, in presence of P-protein	650528	2D-image
 2.547	chorismate	Escherichia coli	37°C, pH 7.8, DELTA102-285		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229210>	<wc_utils.workbook.core.Formula object at 0x7f055c229150>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.00983	chorismate	Escherichia coli	mutant enzyme Lys39Arg	3568	2D-image
 0.0492	chorismate	Escherichia coli	mutant enzyme Lys39Asn	3568	2D-image
 0.123	chorismate	Escherichia coli	mutant enzyme Lys39Arg	3568	2D-image
@@ -1406,35 +1392,35 @@ CHORM	CHORM	chorismate mutase	[c]: chor <=> pphn	False	Tyrosine, Tryptophan, and
 94100.0	prephenate	Escherichia coli	37°C, pH 7.8, in presence of P-protein	650528	2D-image
 94140.0	prephenate	Escherichia coli	37°C, pH 7.8, in presence of P-protein	650528	2D-image
 366000.0	chorismate	Escherichia coli			
-"	"
+"	0.0	351204.3919	0.0	0.0	5.3436	10687.2777	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0023	(1R,3R,5S)-3-carboxy-1-hydroxy-2-oxabicyclo[3.3.1]non-6-ene-5-carboxylate	Escherichia coli	30°C, pH 7.5, chorismate mutase domain of P-protein	651595	2D-image
 0.0076	(1S,3R,5R)-1-hydroxy-5-nitro-2-oxabicyclo[3.3.1]non-6-ene-3-carboxylic acid	Escherichia coli			
 "	True
 CHORS	CHORS	chorismate synthase	[c]: 3psme <=> chor + pi	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	4.2.3.5	b2329	"Value	Molecule
 0.0013-0.0022	O5-(1-carboxyvinyl)-3-phosphoshikimate
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2291d0>	<wc_utils.workbook.core.Formula object at 0x7f055c229190>	"
+"									"
 "	"
 "	
 CO2tpp_ex	CO2tex, CO2tpp	composed of CO2 transport via diffusion (periplasm and extracellular to periplasm)	co2[e] <=> co2[c]	True	Transport, Outer Membrane Porin and inner membrane		((b0241 or b0929 or b1377 or b2215) and s0001)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 COA			[c]: accoa <=> coa	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 CS	CS	citrate synthase	[c]: accoa + h2o + oaa <=> cit + coa + h	False	Citric Acid Cycle		b0720	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 CYSabcpp and CYStex and CYStpp	CYSabcpp, CYStex, CYStpp	L-cysteine uptake via ABC system (periplasm)	atp[c] + cys-L[p] + h2o[c] <=> adp[c] + cys-L[c] + h[c] + pi[c]	False	Transport, Inner Membrane			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 CYSDS	CYSDS	Cysteine Desulfhydrase	[c]: cys-L + h2o <=> h2s + nh4 + pyr	False	Cysteine Metabolism	4.1.99.1	(b3708  or  b3008)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -1469,7 +1455,7 @@ CYSDS	CYSDS	Cysteine Desulfhydrase	[c]: cys-L + h2o <=> h2s + nh4 + pyr	False	Cy
 10.0	S-methylcysteine	Escherichia coli	strain B/1t7-A, 37°C	37341	2D-image
 0.06	S-o-nitrophenyl-L-Cys	Escherichia coli		37335	2D-image
 0.347	L-tryptophan	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c229290>	<wc_utils.workbook.core.Formula object at 0x7f055c229250>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.22	beta-(benzimidazol-1-yl)-L-alanine	Escherichia coli	mutant H463F, pH 8.0, 25°C	727478	
 5.6	beta-(benzimidazol-1-yl)-L-alanine	Escherichia coli	wild-type enzyme, pH 8.0, 25°C	727478	
 12.4	beta-chloro-L-Ala	Escherichia coli	pH 8.0, 25°C	713955	2D-image
@@ -1479,7 +1465,7 @@ CYSDS	CYSDS	Cysteine Desulfhydrase	[c]: cys-L + h2o <=> h2s + nh4 + pyr	False	Cy
 5.2	S-benzyl-L-Cys	Escherichia coli	pH 8.0, 25°C	713955	2D-image
 6.0	S-ethyl-L-Cys	Escherichia coli	pH 8.0, 25°C	713955	2D-image
 5.0	S-Methyl-L-Cys	Escherichia coli			
-"	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 4.77	(2,3-di-O-methyl)-alpha-cyclodextrin	Escherichia coli		691648	2D-image
 11.94	(2,3-di-O-methyl)-beta-cyclodextrin	Escherichia coli		691648	2D-image
@@ -1505,8 +1491,8 @@ CYSDS	CYSDS	Cysteine Desulfhydrase	[c]: cys-L + h2o <=> h2s + nh4 + pyr	False	Cy
 52.0	L-tryptophan ethylester	Escherichia coli			
 "	
 CYSS	CYSS	cysteine synthase	[c]: acser + h2s <=> ac + cys-L + h	False	Cysteine Metabolism		(b2421  or  b2414)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 CYSTL	CYSTL	cystathionine b-lyase	[c]: cyst-L + h2o <=> hcys-L + nh4 + pyr	False	Methionine Metabolism	4.4.1.8	(b1622  or  b3008)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -1523,7 +1509,7 @@ CYSTL	CYSTL	cystathionine b-lyase	[c]: cyst-L + h2o <=> hcys-L + nh4 + pyr	False
 0.36	L-djenkolate	Escherichia coli		34686, 34690	2D-image
 4.5	L-homolanthionine	Escherichia coli		34686, 34690	2D-image
 0.83	L-meso-lanthionine	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22ffd0>	<wc_utils.workbook.core.Formula object at 0x7f055c22ff90>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 8.1	L-cystathionine	Escherichia coli	mutant enzyme R372K, at 25°C	710499	2D-image
 9.7	L-cystathionine	Escherichia coli	mutant enzyme R58A, at 25°C	710499	2D-image
 34.1	L-cystathionine	Escherichia coli	wild type enzyme, at 25°C	710499	2D-image
@@ -1532,7 +1518,7 @@ CYSTL	CYSTL	cystathionine b-lyase	[c]: cyst-L + h2o <=> hcys-L + nh4 + pyr	False
 41.9	L-cystathionine	Escherichia coli	mutant enzyme D116A, at 25°C	710499	2D-image
 45.8	L-cystathionine	Escherichia coli	mutant enzyme R59A, at 25°C	710499	2D-image
 79.0	L-cystathionine Escherichia coli 				
-"	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0019	aminoethoxyvinylglycine	Escherichia coli	wild type enzyme, at 25°C	710499	2D-image
 0.0027	aminoethoxyvinylglycine	Escherichia coli	mutant enzyme D116N, at 25°C; mutant enzyme R59A, at 25°C	710499	2D-image
@@ -1544,123 +1530,123 @@ CYSTL	CYSTL	cystathionine b-lyase	[c]: cyst-L + h2o <=> hcys-L + nh4 + pyr	False
 9.1	aminoethoxyvinylglycine	Escherichia coli	mutant enzyme R372K, at 25°C		
 "	True
 CYTBD2pp_H	CYTBD2pp, Htex	composed of cytochrome oxidase bd (menaquinol-8: 2 protons) (periplasm) and proton transport via diffusion (extracellular to periplasm)	(0.5) o2[c] + (2) h[c] + q8h2[c] <=> (2) h[e] + h2o[c] + q8[c]	False	Oxidative Phosphorylation		((b0978 and b0979) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 D-LACt2pp_ex_H	D-LACt2pp, D-LACtex, Htex	composed of D-lactate transport via diffusion (periplasm and extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	h[e] + lac-D[e] <=> h[c] + lac-D[c]	True	Transport, Outer Membrane Porin and inner membrane		((b3603 or b2975) and (b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DAAD	DAAD	D-Amino acid dehydrogenase	[c]: ala-D + fad + h2o <=> fadh2 + nh4 + pyr	False	Alanine and Aspartate Metabolism	1.4.99.1	b1189	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DAPDC	DAPDC	diaminopimelate decarboxylase	[c]: 26dap-M + h <=> co2 + lys-L	False	Threonine and Lysine Metabolism	4.1.1.20	b2838	"Value	Molecule	Organism
 1.7	meso-2,6-diamininoheptanedioate	Escherichia coli
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 DAPE	DAPE	diaminopimelate epimerase	[c]: 26dap-LL <=> 26dap-M	True	Threonine and Lysine Metabolism	5.1.1.7	b3809	"Value	Molecule	Organism	PubMed ids	Image
 0.16	LL-diaminoheptanedioate	Escherichia coli	2140, 2155	2D-image
 0.36	meso-diaminoheptanedioate	Escherichia coli	2140	2D-image
 0.36	meso-diaminoheptanedioate	Escherichia		
-"	"Value	Molecule	Organism	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fd50>	<wc_utils.workbook.core.Formula object at 0x7f055c22fd10>	"Value	Molecule	Organism	PubMed ids	Image
 84.0	LL-diaminoheptanedioate	Escherichia coli	2140, 2155	2D-image
 67.0	meso-diaminoheptanedioate Escherichia coli			
-"	"
+"									"
 "	"
 "	
 DCAtex	DCAtex	Decanoate  transport via diffusion (extracellular to periplasm)	dca[e] + h[e] <=> dca[c] + h[c]	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DDCAtex	DDCAtex	Dodecanoate transport via diffusion (extracellular to periplasm)	ddca[e] + h[e] <=> ddca[c] + h[c]	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DDPA	DDPA	3-deoxy-D-arabino-heptulosonate 7-phosphate synthetase	[c]: e4p + h2o + pep <=> 2dda7p + pi	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	4.1.2.15	(b2601 or b0754 or b1704)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DHAD1	DHAD1	dihydroxy-acid dehydratase (2,3-dihydroxy-3-methylbutanoate)	[c]: 23dhmb <=> 3mob + h2o	False	Valine, Leucine, and Isoleucine Metabolism	4.2.1.9	b3771	"Value	Molecule	Organism
 1.5	2,3-dihydroxyisovalerate	Escherichia coli
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fcd0>	<wc_utils.workbook.core.Formula object at 0x7f055c22fc90>	"
+"									"
 "	"
 "	True
 DHAD2	DHAD2	Dihydroxy-acid dehydratase (2,3-dihydroxy-3-methylpentanoate)	[c]: 23dhmp <=> 3mop + h2o	False	Valine, Leucine, and Isoleucine Metabolism		b3771	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 DHAPtpp_ex	DHAPtpp_ex		dhap[e] <=> dhap[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DHDPRy	DHDPRy	dihydrodipicolinate reductase (NADPH)	[c]: 23dhdp + h + nadph <=> nadp + thdp	False	Threonine and Lysine Metabolism	1.3.1.26	b0031	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DHDPS	DHDPS	dihydrodipicolinate synthase	[c]: aspsa + pyr <=> (2) h2o + 23dhdp + h	False	Threonine and Lysine Metabolism	4.2.1.52	b2478	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DHQS	DHQS	3-dehydroquinate synthase	[c]: 2dda7p <=> 3dhq + pi	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism		b3389	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 DHQTi	DHQTi	3-dehydroquinate dehydratase, irreversible	[c]: 3dhq <=> 3dhsk + h2o	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	4.2.1.10	b1693	"Value	Molecule	Organism	PubMed ids	Image
 0.015	3-dehydroquinate	Escherichia coli	5483	2D-image
 0.018	3-dehydroquinate	Escherichia coli	5473, 5474	2D-image
 0.44	3-dehydroquinate	Escherichia coli		
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 E4Ptpp_ex	E4Ptpp_ex		e4p[e] <=> e4p[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR40x	EAR40x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C4:0)	[c]: but2eACP + h + nadh <=> butACP + nad	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR40y	EAR40y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C4:0)	[c]: but2eACP + h + nadph <=> butACP + nadp	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR60x	EAR60x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C6:0)	[c]: h + nadh + thex2eACP <=> hexACP + nad	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR60y	EAR60y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C6:0)	[c]: h + nadph + thex2eACP <=> hexACP + nadp	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR80x	EAR80x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C8:0)	[c]: h + nadh + toct2eACP <=> nad + ocACP	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR80y	EAR80y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C8:0)	[c]: h + nadph + toct2eACP <=> nadp + ocACP	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR100x	EAR100x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C10:0)	[c]: h + nadh + tdec2eACP <=> dcaACP + nad	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -1679,7 +1665,7 @@ EAR100x	EAR100x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C10:0)	[c]: h +
 0.03	trans-2-dodecenoyl-CoA	Escherichia coli	25°C, pH 8.0	654701	2D-image
 0.035	trans-2-dodecenoyl-CoA	Escherichia coli	25°C, pH 8.0, F203L mutant	654701	2D-image
 0.079	trans-2-dodecenoyl-CoA	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fd90>	<wc_utils.workbook.core.Formula object at 0x7f055c22fed0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.00278	crotonyl CoA	Escherichia coli		390892	2D-image
 0.45	trans-2-dodecenoyl-CoA	Escherichia coli	25°C, pH 8.0, M159T mutant	654701	2D-image
 1.75	trans-2-dodecenoyl-CoA	Escherichia coli	25°C, pH 8.0, Y156F mutant	654701	2D-image
@@ -1687,7 +1673,7 @@ EAR100x	EAR100x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C10:0)	[c]: h +
 8.15	trans-2-dodecenoyl-CoA	Escherichia coli	25°C, pH 8.0, A197M mutant	654701	2D-image
 10.6	trans-2-dodecenoyl-CoA	Escherichia coli	25°C, pH 8.0, F203L mutant	654701	2D-image
 11.9	trans-2-dodecenoyl-CoA	Escherichia coli			
-"	"
+"	10.71	13.09	0.0	0.0	0.001421	547278.2471	0.0	0.0	"
 "	"Value	Molecule	Organism	UniProt ids	Comments	PubMed ids	Image
 1.6e-05	(2E)-3-(1,2,3,4,5,6-hexahydropyrido[2,3-b][1,5]diazocin-8-yl)-N-methyl-N-[(3-methyl-1-benzofuran-2-yl)methyl]prop-2-enamide	Escherichia coli			696692	2D-image
 5.5e-05	(2E)-N-(3-methoxy-2-propoxybenzyl)-N-methyl-3-(1'-methyl-2-oxo-1,4-dihydro-2H-spiro[1,8-naphthyridine-3,4'-piperidin]-6-yl)prop-2-enamide	Escherichia coli			696691	2D-image
@@ -1722,136 +1708,136 @@ EAR100x	EAR100x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C10:0)	[c]: h +
 0.0071	luteolin	Escherichia coli	P0AEK4			
 "	
 EAR100y	EAR100y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C10:0)	[c]: h + nadph + tdec2eACP <=> dcaACP + nadp	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR120x	EAR120x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C12:0)	[c]: h + nadh + tddec2eACP <=> ddcaACP + nad	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR120y	EAR120y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C12:0)	[c]: h + nadph + tddec2eACP <=> ddcaACP + nadp	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR121x	EAR121x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C12:1)	[c]: h + nadh + t3c5ddeceACP <=> cddec5eACP + nad	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR121y	EAR121y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C12:1)	[c]: h + nadph + t3c5ddeceACP <=> cddec5eACP + nadp	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR140x	EAR140x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C14:0)	[c]: h + nadh + tmrs2eACP <=> myrsACP + nad	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR140y	EAR140y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C14:0)	[c]: h + nadph + tmrs2eACP <=> myrsACP + nadp	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR141x	EAR141x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C14:1)	[c]: h + nadh + t3c7mrseACP <=> nad + tdeACP	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR141y	EAR141y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C14:1)	[c]: h + nadph + t3c7mrseACP <=> nadp + tdeACP	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR160x	EAR160x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C16:0)	[c]: h + nadh + tpalm2eACP <=> nad + palmACP	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR160y	EAR160y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C16:0)	[c]: h + nadph + tpalm2eACP <=> nadp + palmACP	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR161x	EAR161x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C16:1)	[c]: h + nadh + t3c9palmeACP <=> hdeACP + nad	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR161y	EAR161y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C16:1)	[c]: h + nadph + t3c9palmeACP <=> hdeACP + nadp	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR180x	EAR180x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C18:0)	[c]: h + nadh + toctd2eACP <=> nad + ocdcaACP	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR180y	EAR180y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C18:0)	[c]: h + nadph + toctd2eACP <=> nadp + ocdcaACP	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR181x	EAR181x	enoyl-[acyl-carrier-protein] reductase (NADH) (n-C18:1)	[c]: h + nadh + t3c11vaceACP <=> nad + octeACP	False	Cell Envelope Biosynthesis	1.3.1.9	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EAR181y	EAR181y	enoyl-[acyl-carrier-protein] reductase (NADPH) (n-C18:1)	[c]: h + nadph + t3c11vaceACP <=> nadp + octeACP	False	Cell Envelope Biosynthesis	1.3.1.10	b1288	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ECOAH1	ECOAH1	3-hydroxyacyl-CoA dehydratase (3-hydroxybutanoyl-CoA)	[c]: 3hbcoa <=> b2coa + h2o	True	Membrane Lipid Metabolism	4.2.1.17	(b3846  or  b2341)	"Value	Molecule	Organism	PubMed ids	Image
 0.008	2-decenoyl-CoA	Escherichia coli	700005	2D-image
 0.05	crotonyl-CoA	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fdd0>	<wc_utils.workbook.core.Formula object at 0x7f055c22fe90>	"
+"									"
 "	"
 "	
 ECOAH2	ECOAH2	3-hydroxyacyl-CoA dehydratase (3-hydroxyhexanoyl-CoA)	[c]: 3hhcoa <=> h2o + hx2coa	True	Membrane Lipid Metabolism	4.2.1.17	(b3846  or  b2341)	"Value	Molecule	Organism	PubMed ids	Image
 0.008	2-decenoyl-CoA	Escherichia coli	700005	2D-image
 0.05	crotonyl-CoA	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fe50>	<wc_utils.workbook.core.Formula object at 0x7f055c22fe10>	"
+"									"
 "	"
 "	
 ECOAH3	ECOAH3	3-hydroxyacyl-CoA dehydratase (3-hydroxyoctanoyl-CoA)	[c]: 3hocoa <=> h2o + oc2coa	True	Membrane Lipid Metabolism	4.2.1.17	(b3846  or  b2341)	"Value	Molecule	Organism	PubMed ids	Image
 0.008	2-decenoyl-CoA	Escherichia coli	700005	2D-image
 0.05	crotonyl-CoA	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22ff50>	<wc_utils.workbook.core.Formula object at 0x7f055c22ff10>	"
+"									"
 "	"
 "	
 ECOAH4	ECOAH4	3-hydroxyacyl-CoA dehydratase (3-hydroxydecanoyl-CoA)	[c]: 3hdcoa <=> dc2coa + h2o	True	Membrane Lipid Metabolism	4.2.1.17	(b3846  or  b2341)	"Value	Molecule	Organism	PubMed ids	Image
 0.008	2-decenoyl-CoA	Escherichia coli	700005	2D-image
 0.05	crotonyl-CoA	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fc50>	<wc_utils.workbook.core.Formula object at 0x7f055c22fc10>	"
+"									"
 "	"
 "	
 ECOAH5	ECOAH5	3-hydroxyacyl-CoA dehydratase (3-hydroxydodecanoyl-CoA)	[c]: 3hddcoa <=> dd2coa + h2o	True	Membrane Lipid Metabolism	4.2.1.17	(b3846  or  b2341)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ECOAH6	ECOAH6	3-hydroxyacyl-CoA dehydratase (3-hydroxytetradecanoyl-CoA)	[c]: 3htdcoa <=> h2o + td2coa	True	Membrane Lipid Metabolism	4.2.1.17	(b3846  or  b2341)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ECOAH7	ECOAH7	3-hydroxyacyl-CoA dehydratase (3-hydroxyhexadecanoyl-CoA)	[c]: 3hhdcoa <=> h2o + hdd2coa	True	Membrane Lipid Metabolism	4.2.1.17	(b3846  or  b2341)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ECOAH8	ECOAH8	3-hydroxyacyl-CoA dehydratase (3-hydroxyoctadecanoyl-CoA)	[c]: 3hodcoa <=> h2o + od2coa	True	Membrane Lipid Metabolism	4.2.1.17	(b3846  or  b2341)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EDA	EDA	2-dehydro-3-deoxy-phosphogluconate aldolase	[c]: 2ddg6p <=> g3p + pyr	False	Pentose Phosphate Pathway	4.1.2.14	b1850	"Value	Molecule	PubMed ids
@@ -1891,7 +1877,7 @@ EDA	EDA	2-dehydro-3-deoxy-phosphogluconate aldolase	[c]: 2ddg6p <=> g3p + pyr	Fa
 65.0	D-2-dehydro-deoxygluconate	650823
 285.0	D-2-dehydro-deoxygluconate	650823
 10.0	pyruvate	653924
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fbd0>	<wc_utils.workbook.core.Formula object at 0x7f055c22fb90>	"Value	Molecule	PubMed ids
 0.019	2-dehydro-3-deoxy-D-gluconate	682736
 0.04	2-dehydro-3-deoxy-D-gluconate	682736
 0.08	2-dehydro-3-deoxy-D-gluconate	682736
@@ -1934,427 +1920,427 @@ EDA	EDA	2-dehydro-3-deoxy-phosphogluconate aldolase	[c]: 2ddg6p <=> g3p + pyr	Fa
 6.08	D-2-dehydro-deoxygluconate	650823
 4.6e-06	pyruvate	653924
 0.0121	pyruvate	653924
-"	"
+"	0.0	193.9047	0.01089	0.01331	6.0372e-10	1.2074e-06	8.0247e-11	2.226e-08	"
 "	"
 "	
 EDD	EDD	6-phosphogluconate dehydratase	[c]: 6pgc <=> 2ddg6p + h2o	False	Pentose Phosphate Pathway	4.2.1.12	b1851	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ENO	ENO	enolase	[c]: 2pg <=> h2o + pep	True	Glycolysis/Gluconeogenesis	4.2.1.11	b2779	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ETOHt2rpp_ex_H	ETOHt2rpp, ETOHtex, Htex	composed of ethanol reversible transport via proton symport (periplasm) and ethanol transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	etoh[e] + h[e] <=> etoh[c] + h[c]	True	Transport, Outer Membrane Porin and inner membrane		((b0241 or b0929 or b1377 or b2215) and (b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_2DDA7P(e)	EX_2DDA7P(e)		[e]: 2dda7p <=>	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_3PG(e)	EX_3PG(e)		[c]: 3pg <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_12ppd-R(e)	EX_12ppd-R(e)	(R)-Propane-1,2-diol exchange	[e]: 12ppd-R <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_15dap(e) and DAPtex	DAPtex	1,5-Diaminopentane transport via diffusion (extracellular to periplasm)	15dap[e] <=> 15dap[p]	True	Transport, Outer Membrane Porin		(b0241  or  b0929  or  b1377  or  b2215)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ac(e)	EX_ac(e)	Acetate exchange	[e]: ac <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_acald(e)	EX_acald(e)	Acetaldehyde exchange	[e]: acald <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ACCOA(e)	EX_ACCOA(e)		[c]: accoa <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ADPGLC(e)	EX_ADPGLC(e)		[e]: adpglc <=>	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_akg(e)	EX_akg(e)	2-Oxoglutarate exchange	[e]: akg <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ala-L(e)	EX_ala-L(e)	L-Alanine exchange	[e]: ala-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_arg-L(e)	EX_arg-L(e)	L-Arginine exchange	[e]: arg-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_asp-L(e)	EX_asp-L(e)	L-Aspartate exchange	[e]: asp-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_but(e)	EX_but(e)	Butyrate (n-C4:0) exchange	[e]: but <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_co2(e)	EX_co2(e)	CO2 exchange	[e]: co2 <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_cys-L(e)	EX_cys-L(e)	L-Cysteine exchange	[e]: cys-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_dca(e)	EX_dca(e)	Decanoate (n-C10:0) exchange	[e]: dca <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ddca(e)	EX_ddca(e)	Dodecanoate (n-C12:0) exchange	[e]: ddca <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_DHAP(e)	EX_DHAP(e)		[c]: dhap <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_E4P(e)	EX_E4P(e)		[c]: e4p <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_etoh(e)	EX_etoh(e)	Ethanol exchange	[e]: etoh <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_F6P(e)	EX_F6P(e)		[c]: f6p <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_fum(e)	EX_fum(e)	Fumarate exchange	[e]: fum <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_G3P(e)	EX_G3P(e)		[c]: <=> g3p	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_glc(e)	EX_glc(e)	D-Glucose exchange	[e]: glc-D <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_gln_L(e)	EX_gln_L(e)	L-Glutamine exchange	[e]: gln-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_glu_L(e)	EX_glu_L(e)	L-Glutamate exchange	[e]: glu-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_gly(e)	EX_gly(e)	Glycine exchange	[e]: gly <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_h2o(e)	EX_h2o(e)	H2O exchange	[e]: h2o <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_h(e)	EX_h(e)	H2 exchange	[e]: h <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_hdca(e)	EX_hdca(e)	Hexadecanoate (n-C16:0) exchange	[e]: hdca <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_his-L(e)	EX_his-L(e)	L-Histidine exchange	[e]: his-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_hxa(e)	EX_hxa(e)	Hexanoate (n-C6:0) exchange	[e]: hxa <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ile-L(e)	EX_ile-L(e)	L-Isoleucine exchange	[e]: ile-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_lac_D(e)	EX_lac_D(e)	D-lactate exchange	[e]: lac-D <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_leu-L(e)	EX_leu-L(e)	L-Leucine exchange	[e]: leu-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_lys-L(e)	EX_lys-L(e)	L-Lysine exchange	[e]: lys-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_mal_L(e)	EX_mal_L(e)	L-Malate exchange	[e]: mal-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_met-L(e)	EX_met-L(e)	L-Methionine exchange	[e]: met-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_nh4(e)	EX_nh4(e)	Ammonia exchange	[e]: nh4 <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_o2(e)	EX_o2(e)	O2 exchange	[e]: o2 <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_OAA(e)	EX_OAA(e)		[c]: oaa <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ocdca(e)	EX_ocdca(e)	octadecanoate (n-C18:0) exchange	[e]: ocdca <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ocdcea(e)	EX_ocdcea(e)	octadecenoate (n-C18:1) exchange	[e]: ocdcea <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_octa(e)	EX_octa(e)	octanoate (n-C8:0) exchange	[e]: octa <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_OCTEACP			[c]: <=> octeACP	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_PEP(e)	EX_PEP(e)		[c]: pep <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_phe-L(e)	EX_phe-L(e)	L-Phenylalanine exchange	[e]: phe-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_pi(e)	EX_pi(e)	Phosphate exchange	[e]: pi <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_pro-L(e)	EX_pro-L(e)	L-Proline exchange	[e]: pro-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_pyr(e)	EX_pyr(e)	Pyruvate exchange	[e]: pyr <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_RIB_D(e)	EX_RIB_D(e)		[e]: rib-D <=>	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_RU5P(e)	EX_RU5P(e)		[c]: ru5p-D <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_S7P(e)	EX_S7P(e)		[c]: s7p <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ser-L(e)	EX_ser-L(e)	L-Serine exchange	[e]: ser-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_succ(e)	EX_succ(e)	Succinate exchange	[e]: succ <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_SUCCOA(e)	EX_SUCCOA(e)		[c]: succoa <=>	False	Transport reaction			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_thr-L(e)	EX_thr-L(e)	L-Threonine exchange	[e]: thr-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_trp-L(e)	EX_trp-L(e)	L-Tryptophan exchange	[e]: trp-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_ttdca(e)	EX_ttdca(e)	tetradecanoate (n-C14:0) exchange	[e]: ttdca <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_tyr-L(e)	EX_tyr-L(e)	L-Tyrosine exchange	[e]: tyr-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 EX_val-L(e)	EX_val-L(e)	L-Valine exchange	[e]: val-L <=>	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 F6Ptpp_ex	F6Ptpp_ex		f6p[e] <=> f6p[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FA80ACPHi	FA80ACPHi	fatty-acyl-ACP hydrolase	[c]: h2o + ocACP <=> ACP + h + octa	False	Cell Envelope Biosynthesis	3.1.2.14	b0404	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FA100ACPHi	FA100ACPHi	fatty-acyl-ACP hydrolase	[c]: dcaACP + h2o <=> ACP + dca + h	False	Cell Envelope Biosynthesis	3.1.2.14	b0404	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FA120ACPHi	FA120ACPHi	fatty-acyl-ACP hydrolase	[c]: ddcaACP + h2o <=> ACP + ddca + h	False	Cell Envelope Biosynthesis	3.1.2.14	b0404	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FA140ACPHi	FA140ACPHi	fatty-acyl-ACP hydrolase	[c]: h2o + myrsACP <=> ACP + h + ttdca	False	Cell Envelope Biosynthesis	3.1.2.14	b0404	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FA141ACPHi	FA141ACPHi	fatty-acyl-ACP hydrolase	[c]: h2o + tdeACP <=> ACP + h + ttdcea	False	Cell Envelope Biosynthesis	3.1.2.14	b0404	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FA160ACPHi	FA160ACPHi	fatty-acyl-ACP hydrolase	[c]: h2o + palmACP <=> ACP + h + hdca	False	Cell Envelope Biosynthesis	3.1.2.14	b0404	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FA161ACPHi	FA161ACPHi	fatty-acyl-ACP hydrolase	[c]: h2o + hdeACP <=> ACP + h + hdcea	False	Cell Envelope Biosynthesis	3.1.2.14	b0404	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE60	FACOAE60	fatty-acid-CoA thioesterase (hexanoate)	[c]: h2o + hxcoa <=> coa + h + hxa	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE80	FACOAE80	fatty-acid-CoA thioesterase (octanoate)	[c]: h2o + occoa <=> coa + h + octa	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE100	FACOAE100	fatty-acid-CoA thioesterase (decanoate)	[c]: dcacoa + h2o <=> coa + dca + h	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE120	FACOAE120	fatty-acid-CoA thioesterase (dodecanoate)	[c]: ddcacoa + h2o <=> coa + ddca + h	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE140	FACOAE140	fatty-acid-CoA thioesterase (tetradecanoate)	[c]: h2o + tdcoa <=> coa + h + ttdca	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE141	FACOAE141	fatty-acid-CoA thioesterase (tetradecenoate)	[c]: h2o + tdecoa <=> coa + h + ttdcea	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE160	FACOAE160	fatty-acid-CoA thioesterase (hexadecanoate)	[c]: h2o + pmtcoa <=> coa + h + hdca	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE161	FACOAE161	fatty-acid-CoA thioesterase (hexadecenoate)	[c]: h2o + hdcoa <=> coa + h + hdcea	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE180	FACOAE180	fatty-acid-CoA thioesterase (octadecanoate)	[c]: h2o + stcoa <=> coa + h + ocdca	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FACOAE181	FACOAE181	fatty-acid-CoA thioesterase (octadecenoate)	[c]: h2o + odecoa <=> coa + h + ocdcea	False	Cell Envelope Biosynthesis		b0452	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FADRx	FADRx	FAD reductase	[c]: fad + h + nadh <=> fadh2 + nad	False	Cofactor and Prosthetic Group Biosynthesis		b3844	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FADRx2	FADRx2	FAD reductase	[c]: fad + h + nadph <=> fadh2 + nadp	False	Cofactor and Prosthetic Group Biosynthesis		(b2763  and  b2764)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FBA	FBA	fructose-bisphosphate aldolase	[c]: fdp <=> dhap + g3p	True	Glycolysis/Gluconeogenesis	4.1.2.13	(b2097 or b2925 or b1773)	"Value	Molecule	PubMed ids
@@ -2378,7 +2364,7 @@ FBA	FBA	fructose-bisphosphate aldolase	[c]: fdp <=> dhap + g3p	True	Glycolysis/G
 1.0	D-fructose 1,6-bisphosphate	652787
 1.07	D-fructose 1,6-bisphosphate	652787
 2.7	D-fructose 1,6-bisphosphate	651065
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fb50>	<wc_utils.workbook.core.Formula object at 0x7f055c22f910>	"Value	Molecule	PubMed ids
 0.001	D-fructose 1,6-bisphosphate	652787
 0.0028	D-fructose 1,6-bisphosphate	652787
 0.013	D-fructose 1,6-bisphosphate	652876
@@ -2398,7 +2384,7 @@ FBA	FBA	fructose-bisphosphate aldolase	[c]: fdp <=> dhap + g3p	True	Glycolysis/G
 10.5	D-fructose 1,6-bisphosphate	651065, 652876
 12.3	D-fructose 1,6-bisphosphate	652787
 14.2	D-fructose 1,6-bisphosphate	666802
-"	"
+"	7.9667	13.9667	0.0	0.0	414.3814	87133.2859	0.0	0.0	"
 "	"
 "	
 FBP	FBP	fructose-bisphosphatase	[c]: fdp + h2o <=> f6p + pi	False	Glycolysis/Gluconeogenesis	3.1.3.11	(b4232 or b3925)	"Value	PubMed ids
@@ -2415,7 +2401,7 @@ FBP	FBP	fructose-bisphosphatase	[c]: fdp + h2o <=> f6p + pi	False	Glycolysis/Glu
 1.0	651666
 0.035	651666
 0.002	170730
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f890>	<wc_utils.workbook.core.Formula object at 0x7f055c22f990>	"Value	Molecule	PubMed ids
 1.1	D-fructose 1,6-bisphosphate	693243
 1.2	D-fructose 1,6-bisphosphate	693243
 5.4	D-fructose 1,6-bisphosphate	693243
@@ -2430,7 +2416,7 @@ FBP	FBP	fructose-bisphosphatase	[c]: fdp + h2o <=> f6p + pi	False	Glycolysis/Glu
 24.0	D-fructose 1,6-bisphosphate	680756
 26.0	D-fructose 1,6-bisphosphate	680756
 2.5	fructose 1,6-bisphosphate	693243
-"	"
+"	3.6	27.1	0.0	0.0	0.0030854	1297.5576	0.0	0.0	"
 "	"Value	Molecule	PubMed ids
 0.00062	AMP	665621
 3.0	AMP	665621
@@ -2454,7 +2440,7 @@ FBP_Glpx	FBP	fructose-bisphosphatase	[c]: fdp + h2o <=> f6p + pi	False	Glycolysi
 1.0	651666
 0.035	651666
 0.002	170730
-"	"Value	Molecule	PubMed ids
+"			"Value	Molecule	PubMed ids
 1.1	D-fructose 1,6-bisphosphate	693243
 1.2	D-fructose 1,6-bisphosphate	693243
 5.4	D-fructose 1,6-bisphosphate	693243
@@ -2469,7 +2455,7 @@ FBP_Glpx	FBP	fructose-bisphosphatase	[c]: fdp + h2o <=> f6p + pi	False	Glycolysi
 24.0	D-fructose 1,6-bisphosphate	680756
 26.0	D-fructose 1,6-bisphosphate	680756
 2.5	fructose 1,6-bisphosphate	693243
-"	"
+"									"
 "	"Value	Molecule	PubMed ids
 0.00062	AMP	665621
 3.0	AMP	665621
@@ -2480,17 +2466,17 @@ FBP_Glpx	FBP	fructose-bisphosphatase	[c]: fdp + h2o <=> f6p + pi	False	Glycolysi
 0.35	phosphate	651666
 "	
 FORtppi			for[c] <=> for[p]	False	Transport, Inner Membrane		(b0904  or  b2492)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 FRD2	FRD2	fumarate reductase	[c]: fum + q8h2 <=> q8 + succ	False	Citric Acid Cycle	1.3.99.1	(b4151 and b4152 and b4153 and b4154)	"Value	Molecule	PubMed ids
 0.3	ferricyanide 348059,	391154
 0.02	succinate	391171
 0.4	fumarate 391171,	391172
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fa90>	<wc_utils.workbook.core.Formula object at 0x7f055c22f9d0>	"Value	Molecule	PubMed ids
 167.0-217.0	succinate	348059, 391172
-"	"
+"	0.0	0.0	167.0	217.0	0.0	0.0	1.3498e-05	1.5411	"
 "	"
 "	
 FUM	FUM	fumarase	[c]: fum + h2o <=> mal-L	True	Citric Acid Cycle	4.2.1.2	(b1612 or b4122 or b1611)	"Value	Molecule	PubMed ids
@@ -2507,18 +2493,18 @@ FUM	FUM	fumarase	[c]: fum + h2o <=> mal-L	True	Citric Acid Cycle	4.2.1.2	(b1612 
 0.7	malate	33770
 0.7	malate	33771
 1.1	malate	33748
-"	"Value	Molecule	PubMed ids
+"			"Value	Molecule	PubMed ids
 51.7	fumarate	33771
 1149.0	fumarate	653794
 1150.0	fumarate	653794
 1.0	L-Malate	653794
 11.2	malate	33771
-"	"
+"	0.0	0.0	1.0	11.2	0.0	0.0	1.2697	18.1557	"
 "	"
 "	
 FUMt2_2pp_ex_H	FUMt2_2pp, FUMtex, Htex	composed of Fumarate transport via diffusion (extracellular to periplasm) and Fumarate transport via proton symport (2 H) (periplasm) and proton transport via diffusion (extracellular to periplasm)	(2) h[e] + fum[e] <=> (2) h[c] + fum[c]	False	Transport, Outer Membrane Porin and inner membrane		(b3528 and (b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 G3PD2			[c]: glyc3p + nadp <=> dhap + h + nadph	True	Alternate Carbon Metabolism	1.1.1.94	b3608	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -2530,8 +2516,8 @@ G3PD2			[c]: glyc3p + nadp <=> dhap + h + nadph	True	Alternate Carbon Metabolism
 0.01	NADPH	Escherichia coli		287523	2D-image
 0.005	reduced nicotinamide hypoxanthine dinucleotide	Escherichia coli	pH 7.4, 23°C, wild-type mutant enzyme and feedback-resistant mutant enzyme	669177	2D-image
 0.17	glycerone phosphate	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fa50>	<wc_utils.workbook.core.Formula object at 0x7f055c22fa10>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1.8	2',5'-ADP	Escherichia coli	pH 7.4, 23°C, wild-type enzyme	669177	2D-image
 2.0	2',5'-ADP	Escherichia coli	pH 7.4, 23°C, feedback-resistant mutant enzyme	669177	2D-image
@@ -2552,18 +2538,18 @@ G3PD2			[c]: glyc3p + nadp <=> dhap + h + nadph	True	Alternate Carbon Metabolism
 1.4	ethylene glycol phosphate	Escherichia coli			
 "	
 G3PT			[c]: glyc3p + h2o <=> glyc + pi	False	Alternate Carbon Metabolism		b0822	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 G3Ptpp_ex	G3Ptpp_ex		g3p[e] <=> g3p[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 G5SADs	G5SADs	L-glutamate 5-semialdehyde dehydratase (spontaneous)	[c]: glu5sa <=> 1pyr5c + h + h2o	False	Arginine and Proline Metabolism		s0001	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 G5SD	G5SD	glutamate-5-semialdehyde dehydrogenase	[c]: glu5p + h + nadph <=> glu5sa + nadp + pi	False	Arginine and Proline Metabolism	1.2.1.41	b0243	"Value	Molecule	Organism	PubMed ids	Image
@@ -2573,15 +2559,15 @@ G5SD	G5SD	glutamate-5-semialdehyde dehydrogenase	[c]: glu5p + h + nadph <=> glu5
 0.35	phosphate	Escherichia coli	390307	2D-image
 11.0	phosphate	Escherichia coli	390313	2D-image
 2.2	glutamic gamma-semialdehyde	Escherichia coli	390313	
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22fb10>	<wc_utils.workbook.core.Formula object at 0x7f055c22fad0>	"
+"									"
 "	"Value	Molecule	Organism	PubMed ids	Image
 22.5	3-(Phosphonoacetylamido)-L-alanine	Escherichia coli	390307	2D-image
 0.002	NADPH	Escherichia coli		
 "	
 G6PDH2r	G6PDH2r	glucose 6-phosphate dehydrogenase	[c]: g6p + nadp <=> 6pgl + h + nadph	True	Pentose Phosphate Pathway	1.1.1.49	b1852	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GAPD	GAPD	glyceraldehyde-3-phosphate dehydrogenase	[c]: g3p + nad + pi <=> 13dpg + h + nadh	True	Glycolysis/Gluconeogenesis	1.2.1.12	b1779	"Value	Molecule	PubMed ids
@@ -2599,8 +2585,8 @@ GAPD	GAPD	glyceraldehyde-3-phosphate dehydrogenase	[c]: g3p + nad + pi <=> 13dpg
 6.9	phosphate	287927
 20.0	phosphate	287927
 35.1	phosphate	287927
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f850>	<wc_utils.workbook.core.Formula object at 0x7f055c22f810>	"
+"									"
 "	"
 "	
 GARFT	GARFT	phosphoribosylglycinamide formyltransferase	[c]: 10fthf + gar <=> fgam + h + thf	True	Purine and Pyrimidine Biosynthesis	2.1.2.2	b2500	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -2650,7 +2636,7 @@ GARFT	GARFT	phosphoribosylglycinamide formyltransferase	[c]: 10fthf + gar <=> fg
 0.0167	N10-formyldideazafolate	Escherichia coli	pH 7.5	485718	2D-image
 0.0365	N10-formyldideazafolate	Escherichia coli	pH 8.5	485718	2D-image
 0.6	N10-formylfolate	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f7d0>	<wc_utils.workbook.core.Formula object at 0x7f055c22f790>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 13.5	(6R)-N10-formyltetrahydrofolate	Escherichia coli	pH 7.5	485718	2D-image
 20.7	(6R)-N10-formyltetrahydrofolate	Escherichia coli	pH 8.5	485718	2D-image
 33.0	carbocyclic glycinamide ribonucleotide	Escherichia coli		485718	2D-image
@@ -2659,29 +2645,29 @@ GARFT	GARFT	phosphoribosylglycinamide formyltransferase	[c]: 10fthf + gar <=> fg
 1.52	N10-formyl-5-deazafolate	Escherichia coli		485718	2D-image
 0.069	N10-Formyl-8-deazafolate	Escherichia coli		485718	2D-image
 0.016	N10-formylfolate Escherichia coli				
-"	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0019	10-trifluoroacetyl-DDACTHF	Escherichia coli	26°C, pH 7.5	672527	2D-image
 0.005	DDACTHF	Escherichia coli	26°C, pH 7.5		
 "	
 GGGABADr	GGGABADr	gamma-glutamyl-gamma aminobutyric acid dehydrogenase	[c]: ggbutal + h2o + nadp <=> (2) h + gg4abut + nadph	True	Alternate Carbon Metabolism		b1300	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GGGABAH	GGGABAH	gamma-glutamyl-gamma-aminobutyric acid hydrolase	[c]: gg4abut + h2o <=> 4abut + glu-L	False	Alternate Carbon Metabolism		b1298	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GGPTRCO	GGPTRCO	gamma glutamyl putrescine oxidase	[c]: ggptrc + h2o + o2 <=> ggbutal + h2o2 + nh4	False	Alternate Carbon Metabolism		b1301	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GGPTRCS	GGPTRCS	gamma glutamyl putrescine synthase	[c]: atp + glu-L + ptrc <=> adp + ggptrc + h + pi	False	Alternate Carbon Metabolism		b1297	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GHMT2r	GHMT2r	glycine hydroxymethyltransferase, reversible	[c]: ser-L + thf <=> gly + h2o + mlthf	True	Glycine and Serine Metabolism	2.1.2.1	b2551	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -2709,7 +2695,7 @@ GHMT2r	GHMT2r	glycine hydroxymethyltransferase, reversible	[c]: ser-L + thf <=> 
 0.08	tetrahydrofolate	Escherichia coli		441412	2D-image
 0.085	tetrahydrofolate	Escherichia coli	mutant enzyme P216G	659237	2D-image
 0.3	L-serine	Escherichia coli	wild-type enzyme, pH and temperature not specified in the publication	718984	2D-image
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f750>	<wc_utils.workbook.core.Formula object at 0x7f055c22f6d0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.12	L-Ser	Escherichia coli	mutant enzyme P264G	659237	2D-image
 0.6	L-Ser	Escherichia coli	mutant enzyme P216G	659237	2D-image
 1.6	L-Ser	Escherichia coli	mutant enzyme P264A	659237	2D-image
@@ -2727,12 +2713,12 @@ GHMT2r	GHMT2r	glycine hydroxymethyltransferase, reversible	[c]: ser-L + thf <=> 
 4.5	tetrahydrofolate	Escherichia coli	mutant enzyme P218A	659237	2D-image
 5.0	tetrahydrofolate	Escherichia coli	wild-type enzyme	659237	2D-image
 640.0	L-serine	Escherichia coli	wild-type enzyme, pH and temperature not specified in the publication		
-"	"
+"	0.08	4.96	0.0	0.0	0.05302	106.0404	0.0	0.0	"
 "	"
 "	
 GLCptspp_ex_exi	GLCptspp, GLCtex, GLCtexi	composed of glucose transport via diffusion (extracellular to periplasm) and D-glucoseMaltotriose transport via diffusion (extracellular to periplasm) irreversible and D-glucose transport via PEP:Pyr PTS (periplasm)	glc-D[e] + pep[c] <=> g6p[c] + pyr[c]	False	Transport, Outer Membrane Porin and inner membrane		(((b2417 and b1101 and b2415 and b2416) or (b1817 and b1818 and b1819 and b2415 and b2416) or (b2417 and b1621 and b2415 and b2416)) and (b0241 or b0929 or b1377 or b2215) and b4036)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GLCS1	GLCS1	glycogen synthase (ADPGlc)	[c]: adpglc <=> adp + glycogen + h	False	Glycolysis/Gluconeogenesis	2.4.1.21	b3429	"Value	Molecule	Organism	UniProt ids	Comments	PubMed ids	Image
@@ -2804,12 +2790,12 @@ GLCS1	GLCS1	glycogen synthase (ADPGlc)	[c]: adpglc <=> adp + glycogen + h	False	
 1.1	phytoglycogen	Zea saccharata			488919	
 2.7	UDPglucose	Escherichia coli			488903	2D-image
 16.6	maltotriose	Zea saccharata			488919	2D-image
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f150>	<wc_utils.workbook.core.Formula object at 0x7f055c22f110>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 235.0	ADP-glucose	Phaseolus vulgaris A4F2M4,	pH 8.0, 30°C, at 10 mg/ml amylopectin	686669	2D-image
 333.0	ADP-glucose	Phaseolus vulgaris A4F2M4,	pH 8.0, 30°C, at 10 mg/ml glycogen	686669	2D-image
 235.0	Amylopectin	Phaseolus vulgaris A4F2M4,	pH 8.0, 30°C	686669	2D-image
 412.0	glycogen	Phaseolus vulgaris A4F2M4,	pH 8.0, 30°C	686669	2D-image
-"	"
+"	238.1667	415.1667	370.8	453.2	7.7961	17280.9318	0.0036189	17990.094	"
 "	"Value	Molecule	Organism	PubMed ids	Image
 0.08	ADP	Arthrobacter sp.	488918	2D-image
 0.38	D-glucono-1,5-lactone	Escherichia coli		
@@ -2871,7 +2857,7 @@ GLGC	GLGC	glucose-1-phosphate adenylyltransferase	[c]: atp + g1p + h <=> adpglc 
 2.2	ATP	643148
 2.3	ATP	674737
 4.77	ATP	674737
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f0d0>	<wc_utils.workbook.core.Formula object at 0x7f055c22f090>	"Value	Molecule	PubMed ids
 0.36	ATP	674737
 0.37	ATP	674737
 0.52	ATP	674737
@@ -2896,7 +2882,7 @@ GLGC	GLGC	glucose-1-phosphate adenylyltransferase	[c]: atp + g1p + h <=> adpglc 
 371.2	ATP	674737
 384.0	ATP	674737
 487.0	ATP	674737
-"	"
+"									"
 "	"Value	Molecule	PubMed ids
 0.25	8-N3ADPglucose	643146
 1.25	8-N3ATP	643146
@@ -2916,8 +2902,8 @@ GLGC	GLGC	glucose-1-phosphate adenylyltransferase	[c]: atp + g1p + h <=> adpglc 
 9.0	AMP	643152
 "	
 GLNabcpp_ex	GLNabcpp, GLNtex	composed of L-glutamine transport via ABC system (periplasm) and L-glutamine transport via diffusion (extracellular to periplasm)	atp[c] + gln-L[e] + h2o[c] <=> adp[c] + gln-L[c] + h[c] + pi[c]	False	Transport, Outer Membrane Porin and inner membrane		((b0811 and b0810 and b0809) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GLNS	GLNS	glutamine synthetase	[c]: atp + glu-L + nh4 <=> adp + gln-L + h + pi	False	Glutamate metabolism	6.3.1.2	(b3870 or b1297)	"Value	Molecule	PubMed ids
@@ -2928,13 +2914,13 @@ GLNS	GLNS	glutamine synthetase	[c]: atp + glu-L + nh4 <=> adp + gln-L + h + pi	F
 3.3	L-Glu	660811
 6.0	L-Glu	660811
 7.0	L-Glu	660811
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f050>	<wc_utils.workbook.core.Formula object at 0x7f055c22f190>	"Value	Molecule	PubMed ids
 3.0	ATP	660811
 25.0	ATP	660811
 35.0	ATP	660811
 27.0	L-Glu	660811
 40.0	L-Glu	660811
-"	"
+"									"
 "	"
 "	
 GLU5K	GLU5K	glutamate 5-kinase	[c]: atp + glu-L <=> adp + glu5p	False	Arginine and Proline Metabolism	2.7.2.11	b0242	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -2954,8 +2940,8 @@ GLU5K	GLU5K	glutamate 5-kinase	[c]: atp + glu-L <=> adp + glu5p	False	Arginine a
 18.4	ATP	Escherichia coli	mutant T169A	679845	2D-image
 24.6	ATP	Escherichia coli	mutant K217A	679845	2D-image
 12.0	L-glutamate	Pseudomonas aeruginosa		642203	2D-image
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f310>	<wc_utils.workbook.core.Formula object at 0x7f055c22f1d0>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.06	ADP	Escherichia coli	pH 7.0, 37°C	642200	2D-image
 0.09	L-Pro	Solanum lycopersicum	wild-type enzyme	642208	2D-image
@@ -2982,7 +2968,7 @@ GLUDC	GLUDC	Glutamate Decarboxylase	[c]: glu-L + h <=> 4abut + co2	False	Glutama
 20.31	L-glutamate Escherichia coli	P69910	pH 4.6, 37°C, recombinant C-terminally His-tagged wild-type enzyme	728019	2D-image	
 25.09	L-glutamate	Escherichia coli	P69910	pH 4.6, 37°C, recombinant deletion mutant GadBDELTA1-14	728019	2D-image
 26.02	L-glutamate	Escherichia coli	P69910	pH 4.6, 37°C, recombinant mutant Q5D/V6I/T7E		
-"	"Value	Molecule	Organism	UniProt ids	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f2d0>	<wc_utils.workbook.core.Formula object at 0x7f055c22f290>	"Value	Molecule	Organism	UniProt ids	Comments	PubMed ids	Image
 9.53	L-alpha-Methylglutamate	Escherichia coli		pH 4.6, 25°C	649672	2D-image
 16.24	L-glutamate Escherichia coli	P69910	mutant enzyme DELTAHT, in 0.2 M pyridine/HCl buffer, pH 4.6, at 37°C	704569	2D-image	
 20.75	L-glutamate Escherichia coli	P69910	mutant enzyme H465A, in 0.2 M pyridine/HCl buffer, pH 4.6, at 37°C	704569	2D-image	
@@ -2990,7 +2976,7 @@ GLUDC	GLUDC	Glutamate Decarboxylase	[c]: glu-L + h <=> 4abut + co2	False	Glutama
 59.26	L-glutamate Escherichia coli	P69910	pH 4.6, 37°C, recombinant C-terminally His-tagged wild-type enzyme	728019	2D-image	
 73.35	L-glutamate Escherichia coli	P69910	pH 4.6, 37°C, recombinant deletion mutant GadBDELTA1-14	728019	2D-image	
 75.41	L-glutamate Escherichia coli	P69910				
-"	"
+"	27.8933	78.4533	0.0	0.0	0.31953	17674.2137	0.0	0.0	"
 "	"
 "	
 GLUDy	GLUDy	glutamate dehydrogenase (NADP)	[c]: glu-L + h2o + nadp <=> akg + h + nadph + nh4	True	Glutamate Metabolism	1.4.1.4	b1761	"Value	Molecule	PubMed ids
@@ -3029,8 +3015,8 @@ GLUDy	GLUDy	glutamate dehydrogenase (NADP)	[c]: glu-L + h2o + nadp <=> akg + h +
 36.0	NH4+	391662
 304.0	NH4+	701137
 2.5	NH4Cl	391643
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f250>	<wc_utils.workbook.core.Formula object at 0x7f055c22f210>	"
+"									"
 "	"
 "	
 GLUN	GLUN	glutaminase	[c]: gln-L + h2o <=> glu-L + nh4	False	Glutamate Metabolism	3.5.1.2	b2957	"Value	Molecule	PubMed ids
@@ -3046,7 +3032,7 @@ GLUN	GLUN	glutaminase	[c]: gln-L + h2o <=> glu-L + nh4	False	Glutamate Metabolis
 8.5	L-glutamine	696266
 23.7	L-glutamine	696266
 30.6	L-glutamine	696266
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f390>	<wc_utils.workbook.core.Formula object at 0x7f055c22f350>	"Value	Molecule	PubMed ids
 36.0	gamma-ethyl glutamate	209024
 14.0	gamma-glutamyl hydrazide	209024
 296.0	gamma-glutamyl methoxyamide	209024
@@ -3061,7 +3047,7 @@ GLUN	GLUN	glutaminase	[c]: gln-L + h2o <=> glu-L + nh4	False	Glutamate Metabolis
 79.9	L-glutamine	696266
 91.4	L-glutamine	696266
 101.0	L-glutamine	696266
-"	"
+"	0.0	1076.7667	4572.0	5588.0	37.5023	196395.7028	0.39945	22095.0975	"
 "	"
 "	
 GLUPRT	GLUPRT	glutamine phosphoribosyldiphosphate amidotransferase	[c]: gln-L + h2o + prpp <=> glu-L + ppi + pram	False	Purine and Pyrimidine Biosynthesis	2.4.2.14	b2312	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3087,8 +3073,8 @@ GLUPRT	GLUPRT	glutamine phosphoribosyldiphosphate amidotransferase	[c]: gln-L + 
 7.34	NH3	Escherichia coli		489767	2D-image
 8.8	NH3	Escherichia coli		489747	2D-image
 236.0	L-glutamine	Escherichia coli	D127A mutant enzyme, 5-phospho-alpha-D-ribose 1-diphosphate-dependent glutaminase activity		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f650>	<wc_utils.workbook.core.Formula object at 0x7f055c22f3d0>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.053	1-alpha-diphosphoryl-2-alpha,3-alpha-dihydroxy-4-beta-cyclopentane-methanol-5-phosphate	Escherichia coli	P410W mutant enzyme	489766	2D-image
 0.058	1-alpha-diphosphoryl-2-alpha,3-alpha-dihydroxy-4-beta-cyclopentane-methanol-5-phosphate	Escherichia coli		489766	2D-image
@@ -3103,13 +3089,13 @@ GLUSy	GLUSy	glutamate synthase (NADPH)	[c]: akg + gln-L + h + nadph <=> (2) glu-
 0.0022	NADPH	391442
 0.0077	NADPH	391438
 0.014	NADPH	391456
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f610>	<wc_utils.workbook.core.Formula object at 0x7f055c22f5d0>	"
+"									"
 "	"
 "	
 GLUt2rpp_ex_H	GLUt2rpp, GLUtex, Htex	composed of L-glutamate transport via proton symport, reversible (periplasm) and L-glutamate transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	glu-L[e] + h[e] <=> glu-L[c] + h[c]	True	Transport, Outer Membrane Porin and inner membrane		(b4077 and (b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GLYAT	GLYAT	glycine C-acetyltransferase	[c]: accoa + gly <=> 2aobut + coa	True	Glycine and Serine Metabolism	2.3.1.29	b3617	"Value	Molecule	Organism	PubMed ids	Image
@@ -3117,127 +3103,127 @@ GLYAT	GLYAT	glycine C-acetyltransferase	[c]: accoa + gly <=> 2aobut + coa	True	G
 12.0	Butyryl-CoA	Escherichia coli	486740	2D-image
 12.0	glycine	Escherichia coli	486741	2D-image
 0.08	propionyl-CoA	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f590>	<wc_utils.workbook.core.Formula object at 0x7f055c22f550>	"
+"									"
 "	"Value	Molecule	Organism	PubMed ids	Image
 0.14	Aminomalonic acid	Escherichia coli	486740	2D-image
 3.6	Aminomethylphosphonic acid	Escherichia coli		
 "	
 GLYCL	GLYCL	Glycine Cleavage System	[c]: gly + nad + thf <=> co2 + mlthf + nadh + nh4	False	Folate Metabolism		(b2904  and  b2903  and  b2905  and  b0116)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GLYCtex	GLYCtex		glyc[c] <=> glyc[e]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GLYOX	GLYOX	hydroxyacylglutathione hydrolase	[c]: h2o + lgt-S <=> gthrd + h + lac-D	False	Methylglyoxal Metabolism	3.1.2.6	b0212	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GLYOX3	GLYOX3	glyoxalase III	[c]: h2o + mthgxl <=> h + lac-D	False	Methylglyoxal Metabolism			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GLYt2pp and GLYtex	GLYt2pp, GLYtex	glycine transport in via proton symport (periplasm)	gly[p] + h[p] <=> gly[c] + h[c]	False	Transport, Inner Membrane		(b1801  or  b4208)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 GND	GND	phosphogluconate dehydrogenase	[c]: 6pgc + nadp <=> co2 + nadph + ru5p-D	False	Pentose Phosphate Pathway	1.1.1.44	b2029	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 H2Otpp_ex	H2Otex, H2Otpp	composed of H2O transport via diffusion (extracellular to periplasm) and H2O transport via diffusion (periplasm)	h2o[e] <=> h2o[c]	True	Transport, Outer Membrane Porin and inner membrane		((b1377 or b0929 or b2215 or b0241 or b3875 or b1319 or b0957 or s0001) and (b0875 or s0001))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HACD1i	HACD1i	3-hydroxyacyl-CoA dehydrogenase (acetoacetyl-CoA)	[c]: 3hbcoa + nad <=> aacoa + h + nadh	False	Membrane Lipid Metabolism	1.1.1.35	(b3846  or  b2341)	"Value	Molecule	Organism
 0.066	acetoacetyl-CoA	Escherichia coli
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HACD2i	HACD2i	3-hydroxyacyl-CoA dehydrogenase (3-oxohexanoyl-CoA)	[c]: 3hhcoa + nad <=> 3ohcoa + h + nadh	False	Membrane Lipid Metabolism	1.1.1.35	(b3846  or  b2341)	"Value	Molecule	Organism
 0.066	acetoacetyl-CoA	Escherichia coli
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HACD3i	HACD3i	3-hydroxyacyl-CoA dehydrogenase (3-oxooctanoyl-CoA)	[c]: 3hocoa + nad <=> 3oocoa + h + nadh	False	Membrane Lipid Metabolism	1.1.1.35	(b3846  or  b2341)	"Value	Molecule	Organism
 0.066	acetoacetyl-CoA	Escherichia coli
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HACD4i	HACD4i	3-hydroxyacyl-CoA dehydrogenase (3-oxodecanoyl-CoA)	[c]: 3hdcoa + nad <=> 3odcoa + h + nadh	False	Membrane Lipid Metabolism	1.1.1.35	(b3846  or  b2341)	"Value	Molecule	Organism
 0.066	acetoacetyl-CoA	Escherichia coli
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HACD5i	HACD5i	3-hydroxyacyl-CoA dehydrogenase (3-oxododecanoyl-CoA)	[c]: 3hddcoa + nad <=> 3oddcoa + h + nadh	False	Membrane Lipid Metabolism	1.1.1.35	(b3846  or  b2341)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HACD6i	HACD6i	3-hydroxyacyl-CoA dehydrogenase (3-oxotetradecanoyl-CoA)	[c]: 3htdcoa + nad <=> 3otdcoa + h + nadh	False	Membrane Lipid Metabolism	1.1.1.35	(b3846  or  b2341)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HACD7i	HACD7i	3-hydroxyacyl-CoA dehydrogenase (3-oxohexadecanoyl-CoA)	[c]: 3hhdcoa + nad <=> 3ohdcoa + h + nadh	False	Membrane Lipid Metabolism	1.1.1.35	(b3846  or  b2341)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HACD8i	HACD8i	3-hydroxyacyl-CoA dehydrogenase (3-oxooctadecanoyl-CoA)	[c]: 3hodcoa + nad <=> 3oodcoa + h + nadh	False	Membrane Lipid Metabolism	1.1.1.35	(b3846  or  b2341)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HDCAtex	HDCAtex	Hexadecanoate transport via diffusion (extracellular to periplasm)	h[e] + hdca[e] <=> h[c] + hdca[c]	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HDCOAI	HDCOAI	hexadecenoyl-coa cis-trans isomerization	[c]: hdcoa <=> hdd2coa	False	Membrane Lipid Metabolism	5.3.3.8	b3846	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HEXt2rpp	HEXt2rpp	hexanoate transport via proton symport, reversible (periplasm)	h[p] + hxa[p] <=> h[c] + hxa[c]	True	Transport, Inner Membrane		b2223	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HISt2rpp and HIStex	HISt2rpp, HIStex	L-histidine reversible transport via proton symport (periplasm)	h[p] + his-L[p] <=> h[c] + his-L[c]	True	Transport, Inner Membrane		b0112	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HISTD	HISTD	histidinol dehydrogenase	[c]: (2) nad + h2o + histd <=> (2) nadh + (3) h + his-L	False	Histidine Metabolism	1.1.1.23	b2020	"Value	Molecule	Organism
 0.57	NAD+	Escherichia coli
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 HISTP	HISTP	histidinol-phosphatase	[c]: h2o + hisp <=> histd + pi	False	Histidine Metabolism	3.1.3.15	b2022	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.041	L-Histidinol phosphate	Escherichia coli	in 25 mM Tris-HCl (pH 7.5), 70 nM enzyme, 0.025 mM Mg2+, and 0.2 mM histidinol phosphate, at 25°C, in the presence of 0.05 mM Zn2+	680722	2D-image
 0.052	L-Histidinol phosphate	Escherichia coli	in 25 mM Tris-HCl (pH 7.5), 70 nM enzyme, 0.025 mM Mg2+, and 0.2 mM histidinol phosphate, at 25°C, in the presence of 0.05 mM Mn2+	680722	2D-image
 0.054	L-Histidinol phosphate	Escherichia coli	in 25 mM Tris-HCl (pH 7.5), 70 nM enzyme, 0.025 mM Mg2+, and 0.2 mM histidinol phosphate, at 25°C, in the presence of 0.05 mM Co2+; in 25 mM Tris-HCl (pH 7.5), 70 nM enzyme, 0.025 mM Mg2+, and 0.2 mM histidinol phosphate, at 25°C, in the presence of 0.05 mM Mg2+		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f510>	<wc_utils.workbook.core.Formula object at 0x7f055c22f4d0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 20.0-50.0	L-Histidinol phosphate	Escherichia coli	in 25 mM Tris-HCl (pH 7.5), 70 nM enzyme, 0.025 mM Mg2+, and 0.2 mM histidinol phosphate, at 25°C, in the presence of 0.05 mM Co2+	680722	2D-image
 960.0	L-Histidinol phosphate	Escherichia coli	in 25 mM Tris-HCl (pH 7.5), 70 nM enzyme, 0.025 mM Mg2+, and 0.2 mM histidinol phosphate, at 25°C, in the presence of 0.05 mM Mn2+	680722	2D-image
 1410.0	L-Histidinol phosphate	Escherichia coli	in 25 mM Tris-HCl (pH 7.5), 70 nM enzyme, 0.025 mM Mg2+, and 0.2 mM histidinol phosphate, at 25°C, in the presence of 0.05 mM Zn2+	680722	2D-image
 2140.0	L-Histidinol phosphate	Escherichia coli	in 25 mM Tris-HCl (pH 7.5), 70 nM enzyme, 0.025 mM Mg2+, and 0.2 mM histidinol phosphate, at 25°C, in the presence of 0.05 mM Mg2+		
-"	"
+"	72.5	2192.5	0.0	0.0	0.054673	218692.9814	0.0	0.0	"
 "	"
 "	True
 HSDy	HSDy	homoserine dehydrogenase (NADPH)	[c]: hom-L + nadp <=> aspsa + h + nadph	True	Threonine and Lysine Metabolism	1.1.1.3	(b3940  or  b0002)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3249,12 +3235,12 @@ HSDy	HSDy	homoserine dehydrogenase (NADPH)	[c]: hom-L + nadp <=> aspsa + h + nad
 17.2	L-homoserine	Escherichia coli	recombinant isolated catalytic HDH-domain not containing the interface region, homoserine dehydrogenase activity	654640	2D-image
 0.073	NADP+	Escherichia coli		246387	2D-image
 0.09	NADPH	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f490>	<wc_utils.workbook.core.Formula object at 0x7f055c22f450>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.24	L-homoserine	Escherichia coli	recombinant wild-type bifunctional holoenzyme, homoserine dehydrogenase activity	654640	2D-image
 0.51	L-homoserine	Escherichia coli	recombinant isolated catalytic HDH-domain not containing the interface region, homoserine dehydrogenase activity	654640	2D-image
 3.3	L-homoserine	Escherichia coli	recombinant isolated catalytic HDH-domain containing the interface region, homoserine dehydrogenase activity	654640	2D-image
 24.0	L-homoserine	Escherichia coli			
-"	"
+"	0.0	18.8925	0.0	0.0	27.5584	36589.7735	0.0	0.0	"
 "	"
 "	
 HSK	HSK	homoserine kinase	[c]: atp + hom-L <=> adp + h + phom	False	Threonine and Lysine Metabolism	2.7.1.39	b0003	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3291,7 +3277,7 @@ HSK	HSK	homoserine kinase	[c]: atp + hom-L <=> adp + h + phom	False	Threonine an
 4.9	L-homoserine methyl ester	Escherichia coli	wild-type enzyme	641471	2D-image
 5.8	L-homoserine n-butyl ester	Escherichia coli	wild-type enzyme	641471	2D-image
 3.5	L-homoserine n-propyl ester	Escherichia coli	wild-type enzyme		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c22f410>	<wc_utils.workbook.core.Formula object at 0x7f055c223fd0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 3.3	D-homoserine	Escherichia coli	wild-type enzyme	641471	2D-image
 2.0	L-2-amino-1,4-butanediol	Escherichia coli	wild-type enzyme	641471	2D-image
 2.5	L-2-amino-5-hydroxyvalerate	Escherichia coli	wild-type enzyme	641471	2D-image
@@ -3313,7 +3299,7 @@ HSK	HSK	homoserine kinase	[c]: atp + hom-L <=> adp + h + phom	False	Threonine an
 14.0	L-homoserine n-propyl ester	Escherichia coli	wild-type enzyme	641471	2D-image
 0.0111	L-homoserine propyl ester	Escherichia coli	mutant R234L	641471	2D-image
 2.7	L-homoserine propyl ester	Escherichia coli	mutant H202L		
-"	"
+"	2.475	28.275	0.0	0.0	42.5353	119759.205	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.2-0.5	(4R)-4-hydroxypentan-2-one	Escherichia coli	wild-type enzyme	641471	2D-image
 0.3	2-amino-3-(phosphonoethyl)thiopropionate	Escherichia coli	wild-type enzyme	641471	2D-image
@@ -3384,7 +3370,7 @@ HSST	HSST	homoserine O-succinyltransferase	[c]: hom-L + succoa <=> coa + suchms	
 1.78	succinyl-CoA	Escherichia coli	pH 7.5, 25°C, recombinant mutant K46L	671625	2D-image
 2.9	succinyl-CoA	Escherichia coli	pH 7.5, 25°C, recombinant mutant K45L	671625	2D-image
 95.5	L-homoserine	Escherichia coli	pH 7.5, 25°C, recombinant mutant Y238F/E246A		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223f90>	<wc_utils.workbook.core.Formula object at 0x7f055c223f50>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 5.23	coenzyme A	Escherichia coli	recombinant protein	487046	2D-image
 12.0	D-homoserine	Escherichia coli	recombinant protein	487046	2D-image
 1.6	glutaryl-CoA	Escherichia coli	recombinant protein	487046	2D-image
@@ -3417,7 +3403,7 @@ HSST	HSST	homoserine O-succinyltransferase	[c]: hom-L + succoa <=> coa + suchms	
 37.0	succinyl-CoA	Escherichia coli	pH 7.2, 25°C, recombinant mutant K46R	672232	2D-image
 40.1	succinyl-CoA	Escherichia coli	pH 7.5, 25°C, recombinant mutant K45L	671625	2D-image
 130.0	succinyl-CoA	Escherichia coli	pH 7.2, 25°C, recombinant mutant C90S; pH 7.2, 25°C, recombinant wild-type enzyme		
-"	"
+"	0.0	93.4021	0.0	0.0	0.13563	5247.8792	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.00025	hydroxyethylvalclavam	Escherichia coli	dissociation constant of enzyme-substrate-inhibitor complex	487044	
 0.00092	hydroxyethylvalclavam	Escherichia coli		487044	
@@ -3425,28 +3411,28 @@ HSST	HSST	homoserine O-succinyltransferase	[c]: hom-L + succoa <=> coa + suchms	
 0.00089	Valclavam	Escherichia coli			
 "	True
 HSTPT	HSTPT	histidinol-phosphate transaminase	[c]: glu-L + imacp <=> akg + hisp	False	Histidine Metabolism	2.6.1.9	b2021	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 HXAtex	HXAtex	Hexanoate transport via diffusion (extracellular to periplasm)	h[e] + hxa[e] <=> h[c] + hxa[c]	True	Transport, Outer Membrane Porin			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 HXCT	HXCT	Acetyl-CoA:hexanoate-CoA transferase	[c]: accoa + hxa <=> ac + hxcoa	False	Alternate Carbon Metabolism	2.8.3.8	(b2221  and  b2222)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ICDHyr	ICDHyr	isocitrate dehydrogenase (NADP)	[c]: icit + nadp <=> akg + co2 + nadph	True	Citric Acid Cycle	1.1.1.42	b1136	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.029	Isocitrate	Escherichia coli		680481	2D-image
 0.0392	NADP+	Escherichia coli	40°C, pH 8.0	722205	2D-image
 0.0405	Isocitrate	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223f10>	<wc_utils.workbook.core.Formula object at 0x7f055c223ed0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 88.1	NADP+	Escherichia coli	40°C, pH 8.0	722205	2D-image
 106.4	Isocitrate Escherichia coli				
-"	"
+"	79.29	96.91	0.0	0.0	641.1406	30878.0	0.0	0.0	"
 "	"Value	Molecule
 0.31	phosphoenolpyruvate
 "	
@@ -3460,18 +3446,18 @@ ICL	ICL	Isocitrate lyase	[c]: icit <=> glx + succ	False	Anaplerotic Reactions	4.
 0.65	Isocitrate	666268
 0.59	succinate	33118
 0.008	threo-Ds-isocitrate	33115
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223e90>	<wc_utils.workbook.core.Formula object at 0x7f055c223e10>	"
+"									"
 "	"
 "	
 IG3PS	IG3PS	Imidazole-glycerol-3-phosphate synthase	[c]: gln-L + prlp <=> aicar + eig3p + glu-L + h	False	Histidine Metabolism		(b2023  and  b2025)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 IGPDH	IGPDH	imidazoleglycerol-phosphate dehydratase	[c]: eig3p <=> h2o + imacp	False	Histidine Metabolism	4.2.1.19	b2022	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 IGPS	IGPS	indole-3-glycerol-phosphate synthase	[c]: 2cpr5p + h <=> 3ig3p + co2 + h2o	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	4.1.1.48	b1262	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3486,7 +3472,7 @@ IGPS	IGPS	indole-3-glycerol-phosphate synthase	[c]: 2cpr5p + h <=> 3ig3p + co2 +
 0.0058	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose-5-phosphate	Escherichia coli		4598	2D-image
 0.013	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose-5-phosphate	Escherichia coli	genetically engineered monofunctional enzyme form IGPS[1-252FAG]	4611	2D-image
 0.54	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose-5-phosphate	Escherichia coli	mutant Lys55Ser		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223590>	<wc_utils.workbook.core.Formula object at 0x7f055c223550>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1.2	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose 5-phosphate	Escherichia coli	pH 7.5, 25°C	4615	2D-image
 4.1	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose 5-phosphate	Escherichia coli	at pH 7.5 and 25°C	726866	2D-image
 9.3	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose 5-phosphate	Escherichia coli	at pH 7.5 and 37°C	726866	2D-image
@@ -3497,27 +3483,27 @@ IGPS	IGPS	indole-3-glycerol-phosphate synthase	[c]: 2cpr5p + h <=> 3ig3p + co2 +
 3.6	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose-5-phosphate	Escherichia coli	bifunctional enzyme	4611	2D-image
 4.3	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose-5-phosphate	Escherichia coli	genetically engineered monofunctional enzyme form IGPS[1-252FAG]	4611	2D-image
 7.2	1-(2-carboxyphenylamino)-1-deoxy-D-ribulose-5-phosphate	Escherichia coli	wild-type enzyme		
-"	"
+"	0.0	8.312	0.0	0.0	0.0099204	39681.6505	0.0	0.0	"
 "	"
 "	
 ILEabcpp	ILEabcpp	L-isoleucine transport via ABC system (periplasm)	atp[c] + h2o[c] + ile-L[p] <=> adp[c] + h[c] + ile-L[c] + pi[c]	False	Transport, Inner Membrane		(b3454  and  b3455  and  b3457  and  b3460  and  b3456)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ILEt2rpp and ILEtex	ILEt2rpp, ILEtex	L-isoleucine reversible transport via proton symport (periplasm)	h[p] + ile-L[p] <=> h[c] + ile-L[c]	True	Transport, Inner Membrane		b0401	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ILETA	ILETA	isoleucine transaminase	[c]: akg + ile-L <=> 3mop + glu-L	True	Valine, Leucine, and Isoleucine Metabolism	2.6.1.42	b3770	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 IMPC	IMPC	IMP cyclohydrolase	[c]: h2o + imp <=> fprica	True	Purine and Pyrimidine Biosynthesis	3.5.4.10	b4006	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 IPMD	IPMD	3-isopropylmalate dehydrogenase	[c]: 3c2hmp + nad <=> 3c4mop + h + nadh	False	Valine, Leucine, and Isoleucine Metabolism	1.1.1.85	b0073	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3526,32 +3512,32 @@ IPMD	IPMD	3-isopropylmalate dehydrogenase	[c]: 3c2hmp + nad <=> 3c4mop + h + nad
 0.105	propylmalate	Escherichia coli	pH 7.6	639164	2D-image
 0.214	tert-butylmalate	Escherichia coli	pH 7.6	639164	2D-image
 0.105	isopropylmalate	Escherichia coli	pH 7.6, 40°C		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223510>	<wc_utils.workbook.core.Formula object at 0x7f055c2234d0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 70.0	ethylmalate	Escherichia coli	pH 7.6	639164	2D-image
 69.0	isopropylmalate	Escherichia coli	pH 7.6, 40°C	639164	2D-image
 69.0	NAD+	Escherichia coli	pH 7.6, 40°C, reaction with isopropylmalate	639164	2D-image
 6.0	tert-butylmalate	Escherichia coli			
-"	"
+"	62.1	75.9	0.0	0.0	0.75427	3812.9502	0.0	0.0	"
 "	"
 "	True
 IPPMIa	IPPMIa	3-isopropylmalate dehydratase	[c]: 3c2hmp <=> 2ippm + h2o	True	Valine, Leucine, and Isoleucine Metabolism	4.2.1.33	(b0071  and  b0072)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 IPPMIb	IPPMIb	2-isopropylmalate hydratase	[c]: 2ippm + h2o <=> 3c3hmp	True	Valine, Leucine, and Isoleucine Metabolism	4.2.1.33	(b0071  and  b0072)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 IPPS	IPPS	2-isopropylmalate synthase	[c]: 3mob + accoa + h2o <=> 3c3hmp + coa + h	False	Valine, Leucine, and Isoleucine Metabolism	4.1.3.12	b0074	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 KARA1	KARA1	ketol-acid reductoisomerase (2,3-dihydroxy-3-methylbutanoate)	[c]: 23dhmb + nadp <=> alac-S + h + nadph	True	Valine, Leucine, and Isoleucine Metabolism	1.1.1.86	b3774	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 KARA2	KARA2	ketol-acid reductoisomerase (2-Acetolactate)	[c]: 2ahbut + h + nadph <=> 23dhmp + nadp	True	Valine, Leucine, and Isoleucine Metabolism	1.1.1.86	b3774	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3618,7 +3604,7 @@ KARA2	KARA2	ketol-acid reductoisomerase (2-Acetolactate)	[c]: 2ahbut + h + nadph
 0.222	NADPH	Escherichia coli	pH 8, 22°C, mutant enzyme R68D/K69L/K75V/R76D	639183	2D-image
 0.401	NADPH	Escherichia coli	pH 8, 22°C, mutant enzyme R76D	639183	2D-image
 1.54	pyruvate	Escherichia coli	pH 8.0, 37°C, wild-type enzyme		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2235d0>	<wc_utils.workbook.core.Formula object at 0x7f055c223710>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.00417	2,3-Dihydroxy-3-methylbutanoate	Escherichia coli	pH 7.4, 25°C	639177	2D-image
 1.8	2-acetolactate	Escherichia coli	pH 7.4, 25°C	639177	2D-image
 2.231	2-acetolactate	Escherichia coli	pH 8.0, 37°C	655530	2D-image
@@ -3645,7 +3631,7 @@ KARA2	KARA2	ketol-acid reductoisomerase (2-Acetolactate)	[c]: 2ahbut + h + nadph
 0.12	NADPH	Escherichia coli	pH 8, 22°C, wild type enzyme	639183	2D-image
 0.212	NADPH	Escherichia coli	pH 8.0, 22°C, reaction with acetolactate, mutant enzyme K69L	639183	2D-image
 0.021	pyruvate	Escherichia coli	pH 8.0, 37°C		
-"	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0012	NADPH	Escherichia coli	pH 8.0, 22°C, wild-type enzyme	639183	2D-image
 0.0018	NADPH	Escherichia coli	pH 8.0, 22°C, mutant enzyme K69L	639183	2D-image
@@ -3654,62 +3640,62 @@ KARA2	KARA2	ketol-acid reductoisomerase (2-Acetolactate)	[c]: 2ahbut + h + nadph
 0.0226	NADPH	Escherichia coli			
 "	True
 KAS15	KAS15	beta-ketoacyl-ACP synthase (2)	[c]: accoa + h + malACP <=> actACP + co2 + coa	False	Membrane Lipid Metabolism		b1091	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 KAT1	KAT1	3-ketoacyl-CoA thiolase	[c]: aacoa + coa <=> (2) accoa	False	Membrane Lipid Metabolism	2.3.1.16	(b3845  or  b2342)	"Value	Molecule	Organism
 0.031	acetoacetyl-CoA	Escherichia coli
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223610>	<wc_utils.workbook.core.Formula object at 0x7f055c2236d0>	"
+"									"
 "	"
 "	
 KAT2	KAT2	3-ketoacyl-CoA thiolase	[c]: 3ohcoa + coa <=> accoa + btcoa	False	Membrane Lipid Metabolism	2.3.1.16	(b3845  or  b2342)	"Value	Molecule	Organism
 0.031	acetoacetyl-CoA	Escherichia coli
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223690>	<wc_utils.workbook.core.Formula object at 0x7f055c223650>	"
+"									"
 "	"
 "	
 KAT3	KAT3	3-ketoacyl-CoA thiolase	[c]: 3oocoa + coa <=> accoa + hxcoa	False	Membrane Lipid Metabolism	2.3.1.16	(b3845  or  b2342)	"Value	Molecule	Organism
 0.031	acetoacetyl-CoA	Escherichia coli
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 KAT4	KAT4	3-ketoacyl-CoA thiolase	[c]: 3odcoa + coa <=> accoa + occoa	False	Membrane Lipid Metabolism	2.3.1.16	(b3845  or  b2342)	"Value	Molecule	Organism
 0.031	acetoacetyl-CoA	Escherichia coli
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223850>	<wc_utils.workbook.core.Formula object at 0x7f055c223810>	"
+"									"
 "	"
 "	
 KAT5	KAT5	3-ketoacyl-CoA thiolase	[c]: 3oddcoa + coa <=> accoa + dcacoa	False	Membrane Lipid Metabolism	2.3.1.16	(b3845  or  b2342)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 KAT6	KAT6	3-ketoacyl-CoA thiolase	[c]: 3otdcoa + coa <=> accoa + ddcacoa	False	Membrane Lipid Metabolism	2.3.1.16	(b3845  or  b2342)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 KAT7	KAT7	3-ketoacyl-CoA thiolase	[c]: 3ohdcoa + coa <=> accoa + tdcoa	False	Membrane Lipid Metabolism	2.3.1.16	(b3845  or  b2342)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 KAT8	KAT8	3-ketoacyl-CoA thiolase	[c]: 3oodcoa + coa <=> accoa + pmtcoa	False	Membrane Lipid Metabolism	2.3.1.16	(b3845  or  b2342)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 LDH_D	LDH_D	D-lactate dehydrogenase	[c]: lac-D + nad <=> h + nadh + pyr	True	Pyruvate Metabolism	1.1.1.28	(b2133 or b1380)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 LEUt2rpp and LEUtex	LEUt2rpp, LEUtex	L-leucine reversible transport via proton symport (periplasm)	h[p] + leu-L[p] <=> h[c] + leu-L[c]	True	Transport, Inner Membrane		b0401	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 LEUTAi	LEUTAi	leucine transaminase (irreversible)	[c]: 4mop + glu-L <=> akg + leu-L	False	Valine, Leucine, and Isoleucine Metabolism	2.6.1.42	(b3770  or  b4054)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3742,7 +3728,7 @@ LEUTAi	LEUTAi	leucine transaminase (irreversible)	[c]: 4mop + glu-L <=> akg + le
 2.7	L-valine	Escherichia coli	pH 8.0, 25°C	640012	2D-image
 3.13	L-valine	Escherichia coli	pH 8.0, 37°C	640005	2D-image
 0.09	trimethylpyruvate	Escherichia coli	pH 8.0, 37°C		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2237d0>	<wc_utils.workbook.core.Formula object at 0x7f055c223790>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 4.11	2-(3-hydroxy-1-adamantyl)-2-oxoethanoic acid	Escherichia coli	pH 8.0, 37°C	722998	2D-image
 16.84	3-methyl-2-oxobutyric acid	Escherichia coli	pH 8.0, 37°C	722998	2D-image
 13.75	3-methyl-2-oxovaleric acid	Escherichia coli	pH 8.0, 37°C	722998	2D-image
@@ -3755,7 +3741,7 @@ LEUTAi	LEUTAi	leucine transaminase (irreversible)	[c]: 4mop + glu-L <=> akg + le
 2.2	L-tyrosine	Escherichia coli	pH 8.0, 25°C	640030	2D-image
 19.0	L-valine	Escherichia coli	pH 8.0, 25°C	640030	2D-image
 2.2	trimethylpyruvate Escherichia coli				
-"	"
+"	0.0	0.0	70.2	85.8	0.0	0.0	0.08057	70.5811	"
 "	"
 "	True
 LGTHL	LGTHL	lactoylglutathione lyase	[c]: gthrd + mthgxl <=> lgt-S	False	Methylglyoxal Metabolism	4.4.1.5	b1651	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3764,7 +3750,7 @@ LGTHL	LGTHL	lactoylglutathione lyase	[c]: gthrd + mthgxl <=> lgt-S	False	Methylg
 0.012	glutathione-methylglyoxal hemithioacetal	Escherichia coli	in the presence of Co+	649769	2D-image
 0.027	glutathione-methylglyoxal hemithioacetal	Escherichia coli	in the presence of Ni2+	649769	2D-image
 0.0272	methylglyoxal/glutathione hemithioacetal	Escherichia coli	P0AC81	37445	
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223750>	<wc_utils.workbook.core.Formula object at 0x7f055c223890>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1.5	glutathione-methylglyoxal hemithioacetal	Escherichia coli	in the presence of Fe2+	649769	2D-image
 8.0	glutathione-methylglyoxal hemithioacetal	Escherichia coli	in the presence of Mn2+	649769	2D-image
 21.4	glutathione-methylglyoxal hemithioacetal	Escherichia coli	in the presence of Cd2+	649769	2D-image
@@ -3773,7 +3759,7 @@ LGTHL	LGTHL	lactoylglutathione lyase	[c]: gthrd + mthgxl <=> lgt-S	False	Methylg
 106.0	glutathione-methylglyoxal hemithioacetal	Escherichia coli	in the presence of Co+	649769	2D-image
 338.0	glutathione-methylglyoxal hemithioacetal	Escherichia coli	in the presence of Ni2+	649769	2D-image
 338.0	methylglyoxal/glutathione hemithioacetal Escherichia coli	P0AC81			
-"	"
+"	0.0	252.65	0.0	0.0	0.00036946	1.2252	0.0	0.0	"
 "	"
 "	
 LYSDC	LYSDC	lysine decarboxylase	[c]: h + lys-L <=> 15dap + co2	False	Threonine and Lysine Metabolism	4.1.1.18	(b0186  or  b4131)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3782,32 +3768,32 @@ LYSDC	LYSDC	lysine decarboxylase	[c]: h + lys-L <=> 15dap + co2	False	Threonine 
 2.0	L-Lys	Escherichia coli		37286	2D-image
 0.42	L-lysine	Escherichia coli	at pH 6.5, between 4°C and 10°C	714832	2D-image
 3.4	S-aminoethyl-L-Cys	Escherichia coli			
-"	"Value	Molecule	Organism
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223a10>	<wc_utils.workbook.core.Formula object at 0x7f055c2238d0>	"Value	Molecule	Organism
 30.0	L-lysine	Escherichia coli
-"	"
+"	27.0	33.0	0.0	0.0	1.129	2752.2851	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0002377	ppGpp	Escherichia coli	uncompetitive inhibition, at pH 6.5, between 4°C and 10°C	714832	2D-image
 0.000374	ppGpp	Escherichia coli	noncompetitive inhibition, at pH 6.5, between 4°C and 10°C	714832	2D-image
 0.002791	ppGpp	Escherichia coli			
 "	
 LYSt3pp and LYStex	LYSt3pp, LYStex	L-lysine transport out via proton antiport (cytoplasm to periplasm)	h[p] + lys-L[c] <=> h[c] + lys-L[p]	False	Transport, Inner Membrane		b2923	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 MACPD	MACPD	Malonyl-ACP decarboxylase	[c]: h + malACP <=> acACP + co2	False	Membrane Lipid Metabolism		b2323	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 MALS	MALS	malate synthase	[c]: accoa + glx + h2o <=> coa + h + mal-L	False	Anaplerotic Reactions	4.1.3.2	(b4014 or b2976)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 MALt2_2pp_ex_H	MALt2_2pp, MALtex, Htex	composed of Malate transport via proton symport (2 H) (periplasm) and Malate transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	(2) h[e] + mal-L[e] <=> (2) h[c] + mal-L[c]	False	Transport, Outer Membrane Porin and inner membrane		(b3528 and (b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 MCOATA	MCOATA	Malonyl-CoA-ACP transacylase	[c]: ACP + malcoa <=> coa + malACP	True	Membrane Lipid Metabolism	2.3.1.39	(b1094  and  b1092)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3815,11 +3801,11 @@ MCOATA	MCOATA	Malonyl-CoA-ACP transacylase	[c]: ACP + malcoa <=> coa + malACP	Tr
 0.011	malonyl-CoA	Escherichia coli	wild-type and mutant	486900	2D-image
 0.049	malonyl-CoA	Escherichia coli	acyl carrier protein mutant Q66R, pH 7.5, 25°C; wild-type acyl carrier protein, pH 7.5, 25°C	705648	2D-image
 0.25	malonyl-CoA	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2239d0>	<wc_utils.workbook.core.Formula object at 0x7f055c223990>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1580.0	malonyl CoA	Escherichia coli	reaction with E. coli acyl-carrier-protein	486891	2D-image
 0.00047	malonyl-CoA	Escherichia coli	wild-type acyl carrier protein, pH 7.5, 25°C	705648	2D-image
 0.0015	malonyl-CoA Escherichia coli				
-"	"
+"									"
 "	"
 "	
 MDH	MDH	malate synthase	[c]: mal-L + nad <=> h + nadh + oaa	True	Citric Acid Cycle	1.1.1.37	b3236	"Value	Molecule	PubMed ids
@@ -3842,13 +3828,13 @@ MDH	MDH	malate synthase	[c]: mal-L + nad <=> h + nadh + oaa	True	Citric Acid Cyc
 0.34	oxaloacetate	286668
 0.58	oxaloacetate	286668
 3.0	oxaloacetate	689763
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223950>	<wc_utils.workbook.core.Formula object at 0x7f055c223910>	"
+"	0.0	0.0	837.9	1024.1	0.0	0.0	0.00013534	551.5878	"
 "	"
 "	
 MDH2	MDH2	Malate dehydrogenase (ubiquinone 8 as acceptor)	[c]: mal-L + q8 <=> oaa + q8h2	False	Citric Acid Cycle	1.1.99.16	b2210	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ME1	ME1	malic enzyme (NAD)	[c]: mal-L + nad <=> co2 + nadh + pyr	False	Anaplerotic Reactions	1.1.1.38	b1479	"Value	Molecule	PubMed ids
@@ -3857,21 +3843,21 @@ ME1	ME1	malic enzyme (NAD)	[c]: mal-L + nad <=> co2 + nadh + pyr	False	Anaplerot
 0.025	NADH	286689
 2.1	oxaloacetate	286689
 4.8	oxaloacetate	286689
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223a90>	<wc_utils.workbook.core.Formula object at 0x7f055c223a50>	"
+"									"
 "	"
 "	
 ME2	ME2	malic enzyme (NADP)	[c]: mal-L + nadp <=> co2 + nadph + pyr	False	Anaplerotic Reactions	1.1.1.40	b2463	"Value	Molecule	PubMed ids
 0.0415	NADP+	687388
 3.41	(S)-malate	687388
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223250>	<wc_utils.workbook.core.Formula object at 0x7f055c223210>	"Value	Molecule	PubMed ids
 66.6	NADP+	687388
-"	"
+"	59.94	73.26	0.0	0.0	16.0596	311.7241	0.0	0.0	"
 "	"
 "	
 METabcpp and METtex	METabcpp, METtex	L-methionine transport via ABC system (periplasm)	atp[c] + h2o[c] + met-L[p] <=> adp[c] + h[c] + met-L[c] + pi[c]	False	Transport, Inner Membrane		(b0198  and  b0199  and  b0197)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 METS	METS	methionine synthase	[c]: 5mthf + hcys-L <=> h + met-L + thf	False	Methionine Metabolism	2.1.1.13	(b4019  or  b3829)	"Value	Molecule	Organism	PubMed ids	Image
@@ -3883,11 +3869,11 @@ METS	METS	methionine synthase	[c]: 5mthf + hcys-L <=> h + met-L + thf	False	Meth
 0.0016	S-adenosyl-L-methionine	Escherichia coli	441183, 441188	2D-image
 0.035	S-methyltetrahydrofolate	Escherichia coli	441178	
 0.06	methyltetrahydrofolate	Escherichia coli		
-"	"Value	Molecule	Organism	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2231d0>	<wc_utils.workbook.core.Formula object at 0x7f055c223190>	"Value	Molecule	Organism	PubMed ids	Image
 8.33-13.0	5-methyltetrahydrofolate	Escherichia coli	441183	2D-image
 0.0217	S-adenosyl-L-methionine	Escherichia coli	441183	2D-image
 0.0367	S-adenosyl-L-methionine	Escherichia coli		
-"	"
+"	7.497	9.163	0.0	0.0	0.056357	3047.0677	0.0	0.0	"
 "	"
 "	True
 NADH16pp_H	NADH16pp, Htex	composed of NADH dehydrogenase (ubiquinone-8 & 3 protons) (periplasm) and proton transport via diffusion (extracellular to periplasm)	(4) h[c] + nadh[c] + q8[c] <=> (3) h[e] + nad[c] + q8h2[c]	False	Transport, Outer Membrane Porin and inner membrane	1.6.5.3	(b2276 and b2277 and b2278 and b2279 and b2280 and b2281 and b2282 and b2283 and b2284 and b2285 and b2286 and b2287 and b2288)	"Value	Molecule	PubMed ids
@@ -3909,37 +3895,37 @@ NADH16pp_H	NADH16pp, Htex	composed of NADH dehydrogenase (ubiquinone-8 & 3 proto
 1.8	NADPH	696147
 0.4	ubiquinone-1	392682
 0.083	ubiquinone-2	392682
-"	"Value	Molecule	PubMed ids
+"			"Value	Molecule	PubMed ids
 1500.0	hexaammineruthenium-III-chloride	672041
-"	"
+"									"
 "	"
 "	
 NADTRHD	NADTRHD	NAD transhydrogenase	[c]: nad + nadph <=> nadh + nadp	False	Oxidative Phosphorylation		(b3962 or (b1602 and b1603))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 NH4tpp_ex	NH4tex, NH4tpp	composed of ammonia transport via diffusion (extracellular to periplasm) and ammonia reversible transport (periplasm)	nh4[e] <=> nh4[c]	True	Transport, Outer Membrane Porin and inner membrane		((b0241 or b0929 or b1377 or b2215) and (b0451 or s0001))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 O2tpp_ex	O2tpp, O2tex	composed of oxygen transport via diffusion (extracellular to periplasm) and o2 transport via diffusion (periplasm)	o2[e] <=> o2[c]	True	Transport, Outer Membrane Porin and inner membrane		(s0001 and (b0241 or b0929 or b1377 or b2215))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 OAAtpp_ex	OAAtpp_ex		oaa[e] <=> oaa[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 OCBT	OCBT	ornithine carbamoyltransferase	[c]: cbp + orn <=> citr-L + h + pi	True	Arginine and Proline Metabolism	2.1.3.3	(b4254  or  b0273)	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.06	Carbamoyl phosphate	Escherichia coli	Q106E	665460	2D-image
 0.36	Carbamoyl phosphate	Escherichia coli	wild type	665460	2D-image
 0.85	ornithine	Escherichia coli		665460	
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223150>	<wc_utils.workbook.core.Formula object at 0x7f055c223290>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 7.0	2,4-diaminobutyrate	Escherichia coli		485898	2D-image
 15.0	glycine	Escherichia coli		485898	2D-image
@@ -3955,28 +3941,28 @@ OCBT	OCBT	ornithine carbamoyltransferase	[c]: cbp + orn <=> citr-L + h + pi	True
 0.0009	N-delta-(phosphosulfamyl)ornithylalanylhomoarginine	Escherichia coli	noncompetitive vs. ornithine	485920	
 "	
 OCDCAtex	OCDCAtex	octadecanoate transport via diffusion (extracellular to periplasm)	h[e] + ocdca[e] <=> h[c] + ocdca[c]	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 OCTAtex	OCTAtex	Octanoate transport via diffusion (extracellular to periplasm)	h[e] + octa[e] <=> h[c] + octa[c]	True	Transport, Outer Membrane Porin			"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 OCTEACP			[c]: h2o + ocdcaACP <=> ACP + h + octeACP	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 ODECOAI	ODECOAI	Octadecenoyl-coa cis-trans isomerization	[c]: odecoa <=> od2coa	False	Membrane Lipid Metabolism	5.3.3.8	b3846	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 OMCDC	OMCDC	2-Oxo-4-methyl-3-carboxypentanoate decarboxylation	[c]: 3c4mop + h <=> 4mop + co2	False	Valine, Leucine, and Isoleucine Metabolism		b0073	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 P5CR	P5CR	pyrroline-5-carboxylate reductase	[c]: (2) h + 1pyr5c + nadph <=> nadp + pro-L	False	Arginine and Proline Metabolism	1.5.1.2	b0386	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -3986,18 +3972,18 @@ P5CR	P5CR	pyrroline-5-carboxylate reductase	[c]: (2) h + 1pyr5c + nadph <=> nadp
 0.21-0.3	L-pyrroline-5-carboxylate	Escherichia coli	NADH	392126	2D-image
 0.23	NADH	Escherichia coli		392140	2D-image
 0.03	NADPH	Escherichia coli			
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PDH	PDH	pyruvate dehydrogenase	[c]: coa + nad + pyr <=> accoa + co2 + nadh	False	Glycolysis/Gluconeogenesis		(b0114 and b0115 and b0116)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PEPtpp_ex	PEPtpp_ex		pep[e] <=> pep[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PFKA	PFK	phosphofructokinase	[c]: atp + f6p <=> adp + fdp + h	False	Glycolysis/Gluconeogenesis	2.7.1.11	(b3916 or b1723)	"Value	Molecule	PubMed ids
@@ -4019,7 +4005,7 @@ PFKA	PFK	phosphofructokinase	[c]: atp + f6p <=> adp + fdp + h	False	Glycolysis/G
 4.3	GTP	640522
 5.1	UTP	640522
 2.2	ITP	640522
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223410>	<wc_utils.workbook.core.Formula object at 0x7f055c2232d0>	"Value	Molecule	PubMed ids
 0.016	D-fructose 6-phosphate	640526
 0.015	fructose 6-phosphate	640517
 0.3	fructose 6-phosphate	640490
@@ -4036,12 +4022,12 @@ PFKA	PFK	phosphofructokinase	[c]: atp + f6p <=> adp + fdp + h	False	Glycolysis/G
 111.0	fructose 6-phosphate	640490
 167.0	fructose 6-phosphate	640519
 185.0	fructose 6-phosphate	640491
-"	"
+"	0.0	148.8053	0.0	0.0	3661.3069	115262.1466	0.0	0.0	"
 "	"
 "	
 PFL			[c]: coa + pyr <=> accoa + for	False	Pyruvate Metabolism		(((b0902  and  b0903)  and  b2579)  or (b0902  and  b0903)  or (b0902  and  b3114)  or (b3951  and  b3952))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PGCD	PGCD	phosphoglycerate dehydrogenase	[c]: 3pg + nad <=> 3php + h + nadh	False	Glycine and Serine Metabolism	1.1.1.95	b2913	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -4092,7 +4078,7 @@ PGCD	PGCD	phosphoglycerate dehydrogenase	[c]: 3pg + nad <=> 3php + h + nadh	Fals
 1.1	D-3-phosphoglycerate	Escherichia coli		287530	2D-image
 0.0078	NAD+	Escherichia coli	Km at pH 7.5 is lower than at pH 8.8	287530	2D-image
 0.008	NAD+	Escherichia coli		287525	
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2233d0>	<wc_utils.workbook.core.Formula object at 0x7f055c223390>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 3.2	3-phospho-D-glycerate	Escherichia coli	pH 7.5, mutant K141A	667649	2D-image
 4.2	3-phospho-D-glycerate	Escherichia coli	pH 7.5, mutant S111A/K311A	667649	2D-image
 4.6	3-phospho-D-glycerate	Escherichia coli	pH 7.5, mutant D317A	667649	2D-image
@@ -4135,55 +4121,55 @@ PGCD	PGCD	phosphoglycerate dehydrogenase	[c]: 3pg + nad <=> 3php + h + nadh	Fals
 0.137	alpha-ketoglutarate	Escherichia coli	double mutant H344A/N364A	287548	2D-image
 0.32	alpha-ketoglutarate	Escherichia coli	mutant N346A 	87548	2D-image
 0.555	alpha-ketoglutarate	Escherichia coli	apparent	287546	2D-image
-"	"
+"									"
 "	"
 "	
 PGI	PGI	glucose-6-phosphate isomerase	[c]: g6p <=> f6p	True	Glycolysis/Gluconeogenesis	5.3.1.9	b4025	"Value	Molecule	PubMed ids
 0.147	D-fructose 6-phosphate	661902
 0.28	D-glucose 6-phosphate	661902
 0.2	fructose 6-phosphate	2841
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223350>	<wc_utils.workbook.core.Formula object at 0x7f055c223310>	"
+"									"
 "	"
 "	
 PGK	PGK	phosphoglycerate kinase	[c]: 3pg + atp <=> 13dpg + adp	True	Glycolysis/Gluconeogenesis	2.7.2.3	b2926	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PGL	PGL	6-phosphogluconolactonase	[c]: 6pgl + h2o <=> 6pgc + h	False	Pentose Phosphate Pathway	3.1.1.31	b0767	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PGL_spon	PGL	6-phosphogluconolactonase	[c]: 6pgl + h2o <=> 6pgc + h	False	Pentose Phosphate Pathway	3.1.1.31	b0767	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PGM	PGM	phosphoglycerate mutase	[c]: 2pg <=> 3pg	True	Glycolysis/Gluconeogenesis	5.4.2.1	(b3612 or b4395 or b0755)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PGMT	PGMT	phosphoglucomutase	[c]: g1p <=> g6p	True	Alternate Carbon Metabolism	5.4.2.2	(b2690 or b0688)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PHEt2rpp and PHEtex	PHEt2rpp, PHEtex	L-phenylalanine reversible transport via proton symport (periplasm)	h[p] + phe-L[p] <=> h[c] + phe-L[c]	True	Transport, Inner Membrane		(b0576  or  b0112)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PHETA1	PHETA1	phenylalanine transaminase	[c]: akg + phe-L <=> glu-L + phpyr	True	Tyrosine, Tryptophan, and Phenylalanine Metabolism	2.6.1.58	(b0928  or  b4054  or  b3770)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 PIt2rpp_ex_H	PIt2rpp, Pitex, Htex	composed of phosphate reversible transport via symport (periplasm) and phosphate transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	h[e] + pi[e] <=> h[c] + pi[c]	True	Transport, Outer Membrane Porin and inner membrane		((b2987 or b3493) and (b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PPA	PPA	inorganic diphosphatase	[c]: h2o + ppi <=> (2) h + (2) pi	False	Anaplerotic Reactions	3.6.1.1	(b4226  or  b2502  or  b2744)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -4217,7 +4203,7 @@ PPA	PPA	inorganic diphosphatase	[c]: h2o + ppi <=> (2) h + (2) pi	False	Anaplero
 0.198	Mg-diphosphate	Escherichia coli	pH 7.2, H136Q enzyme, trimeric	209816	2D-image
 0.44	Mg-diphosphate	Escherichia coli	pH 8, H140Q enzyme, trimeric	209816	2D-image
 4.2	Mg-diphosphate	Escherichia coli	pH 7.2, H140Q enzyme, trimeric	209816	2D-image
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223490>	<wc_utils.workbook.core.Formula object at 0x7f055c223450>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.34	diphosphate	Escherichia coli	pH 7.2, D97E, resynthesis of diphosphate	209822	2D-image
 0.67	diphosphate	Escherichia coli	pH 8, D97E, resynthesis of diphosphate	209822	2D-image
 7.7	diphosphate	Escherichia coli	E145Q mutant dimer, pH 7.5	654779	2D-image
@@ -4234,7 +4220,7 @@ PPA	PPA	inorganic diphosphatase	[c]: h2o + ppi <=> (2) h + (2) pi	False	Anaplero
 187.0	diphosphate	Escherichia coli	pH 8, wild type, hydrolysis of diphosphate	209822	2D-image
 390.0	diphosphate	Escherichia coli	wild type hexamer, pH 7.5	654779	2D-image
 390.0	diphosphate	Escherichia coli	pH 7.5, 25°C, wild-type enzyme, 5 mM Mg2+	667761	2D-image
-"	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0028	fluoride	Escherichia coli	pH 7.4, 25°C, with 0.05 mM Mn2+	688341	2D-image
 0.0358	fluoride	Escherichia coli	pH 7.4, 25°C, with 5 mM Mn2+	688341	2D-image
@@ -4249,14 +4235,14 @@ PPC	PPC	phosphoenolpyruvate carboxylase	[c]: co2 + h2o + pep <=> h + oaa + pi	Fa
 0.19	phosphoenolpyruvate	4333
 0.29	phosphoenolpyruvate	4333
 0.6	phosphoenolpyruvate	4286
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223090>	<wc_utils.workbook.core.Formula object at 0x7f055c223050>	"Value	Molecule	PubMed ids
 540.0	phosphoenolpyruvate	4333
-"	"
+"									"
 "	"
 "	
 PPCK	PPCK	phosphoenolpyruvate carboxykinase	[c]: atp + oaa <=> adp + co2 + pep	False	Anaplerotic Reactions	4.1.1.49	b3403	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PPND	PPND	prephenate dehydrogenase	[c]: nad + pphn <=> 34hpp + co2 + nadh	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	1.3.1.12	b2600	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -4270,7 +4256,7 @@ PPND	PPND	prephenate dehydrogenase	[c]: nad + pphn <=> 34hpp + co2 + nadh	False	
 0.11	prephenate	Escherichia coli	presence of bovine serum albumin	390530	2D-image
 0.35-0.37	prephenate	Escherichia coli		390537, 390539	2D-image
 5.0	prephenate	Escherichia coli	mutant form R294Q		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223110>	<wc_utils.workbook.core.Formula object at 0x7f055c2230d0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 5.83e-05	NAD+	Escherichia coli	mutant enzyme H197N	390552	2D-image
 0.367	NAD+	Escherichia coli	mutant enzyme K37Q	390552	2D-image
 0.417	NAD+	Escherichia coli	mutant form R294Q	390553	2D-image
@@ -4280,7 +4266,7 @@ PPND	PPND	prephenate dehydrogenase	[c]: nad + pphn <=> 34hpp + co2 + nadh	False	
 0.417	prephenate	Escherichia coli	mutant form R294Q	390553	2D-image
 0.45	prephenate	Escherichia coli	wild-type enzyme	390552, 390553	2D-image
 135.0	prephenate	Escherichia coli			
-"	"
+"	0.45	135.0	0.0	0.0	1.1656	5892.5015	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.17	2-hydroxyphenylacetate	Escherichia coli	pH 7.8, 37°C	654967	2D-image
 0.11	5,6-dihydro-5,6-dihydroxychorismate	Escherichia coli	pH 7.8, 37°C	654967	2D-image
@@ -4303,7 +4289,7 @@ PPNDH	PPNDH	prephenate dehydratase	[c]: h + pphn <=> co2 + h2o + phpyr	False	Tyr
 1.65	prephenate	Escherichia coli	mutant N160A, 37°C	649980	2D-image
 2.09	prephenate	Escherichia coli	mutant C216S, 37°C	649980	2D-image
 3.0	prephenate	Escherichia coli	above, mutant W226L, 37°		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223d90>	<wc_utils.workbook.core.Formula object at 0x7f055c223ad0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 13.0	prephenate	Escherichia coli	mutant N160A, 37°C	649980	2D-image
 24.6	prephenate	Escherichia coli	mutant T278S, 37°C	649980	2D-image
 1227.0	prephenate	Escherichia coli	mutant W226L, 37°C	649980	2D-image
@@ -4320,20 +4306,20 @@ PPNDH	PPNDH	prephenate dehydratase	[c]: h + pphn <=> co2 + h2o + phpyr	False	Tyr
 2530.0	prephenate	Escherichia coli	mutant E159A, 37°C	649980	2D-image
 2960.0	prephenate	Escherichia coli	mutant E159A/E232A, 37°C	649980	2D-image
 2962.0	prephenate	Escherichia coli	mutant E159A/E232A, 37°C		
-"	"
+"	1890.25	1932.25	0.0	0.0	0.024777	99108.8824	0.0	0.0	"
 "	"
 "	True
 PPS	PPS	phosphoenolpyruvate synthase	[c]: atp + h2o + pyr <=> (2) h + amp + pep + pi	False	Glycolysis/Gluconeogenesis	2.7.9.2	b1702	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PRAGSr	PRAGSr	phosphoribosylglycinamide synthase	[c]: atp + gly + pram <=> adp + gar + h + pi	True	Purine and Pyrimidine Biosynthesis	6.3.4.13	b4005	"Value	Molecule	Organism	PubMed ids	Image
 0.07	5'-phosphoribosylamine	Escherichia coli	1414	2D-image
 0.27	Gly	Escherichia coli	1414	2D-image
 0.17	MgATP2	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223d50>	<wc_utils.workbook.core.Formula object at 0x7f055c223d10>	"
+"									"
 "	"
 "	
 PRAIi	PRAIi	phosphoribosylanthranilate isomerase (irreversible)	[c]: pran <=> 2cpr5p	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	5.3.1.24	b1262	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -4344,7 +4330,7 @@ PRAIi	PRAIi	phosphoribosylanthranilate isomerase (irreversible)	[c]: pran <=> 2c
 0.0049	N-(5-phospho-beta-D-ribosyl)anthranilate	Escherichia coli		648868	2D-image
 0.0049	N-(5-phospho-beta-D-ribosyl)anthranilate	Escherichia coli	25°C, bifunctional IGPS:PRAI; pH 7.5	648873	2D-image
 0.007	N-(5-phospho-beta-D-ribosyl)anthranilate	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223cd0>	<wc_utils.workbook.core.Formula object at 0x7f055c223c90>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 32.0	N-(5-phospho-beta-D-ribosyl)anthranilate	Escherichia coli	25°C, monomeric domain PRAI[ML256-452]	4611	2D-image
 32.0	N-(5-phospho-beta-D-ribosyl)anthranilate	Escherichia coli	25°C, monomeric domain PRAI[ML256-452]; pH 7.5	648873	2D-image
 39.0	N-(5-phospho-beta-D-ribosyl)anthranilate	Escherichia coli	pH 7.5, 20°C	648872	2D-image
@@ -4352,7 +4338,7 @@ PRAIi	PRAIi	phosphoribosylanthranilate isomerase (irreversible)	[c]: pran <=> 2c
 40.0	N-(5-phospho-beta-D-ribosyl)anthranilate	Escherichia coli	bifunctional IGPS:PRAI	638666	2D-image
 40.0	N-(5-phospho-beta-D-ribosyl)anthranilate	Escherichia coli	bifunctional IGPS:PRAI; pH 7.5, 25°C	648873	2D-image
 50.0	N-(5-phospho-beta-D-ribosyl)anthranilate Escherichia coli				
-"	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids
 0.0065	Reduced 1-(2-carboxyphenylamino)-1-deoxy-D-ribulose 5-phosphate	Escherichia coli	25°C, bifunctional IGPS:PRAI	4611
 0.0065	Reduced 1-(2-carboxyphenylamino)-1-deoxy-D-ribulose 5-phosphate	Escherichia coli	25°C, bifunctional IGPS:PRAI; pH 7.5	648873
@@ -4367,22 +4353,22 @@ PRAIS	PRAIS	phosphoribosylaminoimidazole synthase	[c]: atp + pram <=> (2) h + ad
 0.073	ATP	Escherichia coli	P08178	pH 7.7, wild type enzyme	649909	2D-image
 0.172	ATPgammaS	Escherichia coli			1308	2D-image
 0.065	MgATP2-					
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223c50>	<wc_utils.workbook.core.Formula object at 0x7f055c223c10>	"
+"									"
 "	"Value	Molecule
 0.025	fluorosulfonylbenzoyl adenosine
 "	
 PRAMPC	PRAMPC	phosphoribosyl-AMP cyclohydrolase	[c]: h2o + prbamp <=> prfp	False	Histidine Metabolism	3.5.4.19	b2026	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 PRASCS	PRASCS	phosphoribosylaminoimidazolesuccinocarboxamide synthase	[c]: 5aizc + asp-L + atp <=> 25aics + adp + h + pi	False	Purine and Pyrimidine Biosynthesis	6.3.2.6	b2476	"Value	Molecule	Organism	PubMed ids	Image
 1.3	1-(5'-phosphoribosyl)-5-amino-4-carboxyimidazole	Escherichia coli	1268	2D-image
 0.036	Asp	Escherichia coli	1268	2D-image
 0.04	MgATP2-			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223bd0>	<wc_utils.workbook.core.Formula object at 0x7f055c223b90>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.26	adenosine 5'-(beta,gamma-imido)triphosphate	Escherichia coli	37°C, Kis, competitive versus ATP	661204	2D-image
 0.6	adenosine 5'-(beta,gamma-imido)triphosphate	Escherichia coli	37°C, Kii, noncompetitive versus L-Asp; 37°C, Kis, noncompetitive versus 1-(5'-phosphoribosyl)-5-amino-4-carboxyimidazole	661204	2D-image
@@ -4399,36 +4385,36 @@ PRASCS	PRASCS	phosphoribosylaminoimidazolesuccinocarboxamide synthase	[c]: 5aizc
 50.0	Maleate	Escherichia coli	37°C, Kii, noncompetitive versus ATP		
 "	
 PRATPP	PRATPP	phosphoribosyl-ATP pyrophosphatase	[c]: h2o + prbatp <=> h + ppi + prbamp	False	Histidine Metabolism	3.6.1.31	b2026	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 PRFGS	PRFGS	phosphoribosylformylglycinamidine synthase	[c]: atp + fgam + gln-L + h2o <=> adp + glu-L + h + pi + pram	False	Purine and Pyrimidine Biosynthesis	6.3.5.3	b2557	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0468	(-)carbocyclic-5'-phosphoribosylformylglycinamidine	Escherichia coli		1670	2D-image
 0.03	L-Gln	Escherichia coli	5'-phosphoribosylformylglycinamidine	1670	2D-image
 1.0	NH4+	Escherichia coli			
-"	"Value	Molecule
+"			"Value	Molecule
 0.05	NH4+
-"	"
+"									"
 "	"
 "	
 PRMICI	PRMICI	1-(5-phosphoribosyl)-5-[(5-phosphoribosylamino)methylideneamino)imidazole-4-carboxamide isomerase	[c]: prfp <=> prlp	True	Histidine Metabolism	5.3.1.16	b2024	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1.6	N'-[(5'-phosphoribosyl)formimino]-5-aminoimidazole-4-carboxamide ribonucleotide	Escherichia coli	25°C, pH 7.5	648892	2D-image
 1.8	N'-[(5'-phosphoribosyl)formimino]-5-aminoimidazole-4-carboxamide ribonucleotide	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"			"Value	Molecule	Organism	Comments	PubMed ids	Image
 4.9	N'-[(5'-phosphoribosyl)formimino]-5-aminoimidazole-4-carboxamide ribonucleotide	Escherichia coli	25°C, pH 7.5	648892	2D-image
 14.3	N'-[(5'-phosphoribosyl)formimino]-5-aminoimidazole-4-carboxamide ribonucleotide Escherichia coli				
-"	"
+"									"
 "	"
 "	True
 PROabcpp	PROabcpp	L-proline transport via ABC system (periplasm)	atp[c] + h2o[c] + pro-L[p] <=> adp[c] + h[c] + pi[c] + pro-L[c]	False	Transport, Inner Membrane		(b2677  and  b2678  and  b2679)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PROD2	PROD2	Proline dehydrogenase	[c]: fad + pro-L <=> 1pyr5c + fadh2 + h	False	Arginine and Proline Metabolism	1.5.99.8	b1014	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PRPPS	PRPPS	phosphoribosylpyrophosphate synthetase	[c]: atp + r5p <=> amp + h + prpp	True	Histidine Metabolism	2.7.6.1	b1207	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -4444,8 +4430,8 @@ PRPPS	PRPPS	phosphoribosylpyrophosphate synthetase	[c]: atp + r5p <=> amp + h + 
 0.19	D-ribose 5-phosphate	Escherichia coli	pH 8.0, 37ºC, phosphate 50 mM	642737	2D-image
 0.041	Mg2+	Escherichia coli	pH 8.0, 37ºC, phosphate 50 mM	642737	2D-image
 0.059	Mg2+	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c223b50>	<wc_utils.workbook.core.Formula object at 0x7f055c223b10>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.55	2',3'-dideoxy-2',3'-didehydro-adenosine-5'-monophosphate	Escherichia coli	pH 8.0, 37ºC	642724	2D-image
 1.4	9-(2-phosphonylmethoxyethoxy)adenine	Escherichia coli	pH 8.0, 37ºC	642724	2D-image
@@ -4564,8 +4550,8 @@ PSCVT	PSCVT	3-phosphoshikimate 1-carboxyvinyltransferase	[c]: pep + skm5p <=> 3p
 32.0	phosphoenolpyruvate	Escherichia coli	C-terminal His6-tagged AroA, 50 mM KCl, cosubstrate: 3-phosphoshikimate	702295	2D-image
 1.2e-05	5-enolpyruvylshikimate 3-phosphate	Escherichia coli	5-enpolpyruvylshikimate 3-phosphate ketal formation by hydrolysis of radiolabelled 5-enpolpyruvylshikimate 3-phosphate, pH 7.0, 25°C	678255	2D-image
 100.0	phosphoenolpyruvate	Escherichia coli	C-terminal His6-tagged AroA, 100 mM KCl, cosubstrate: 3-phosphoshikimate		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216f10>	<wc_utils.workbook.core.Formula object at 0x7f055c216ed0>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 3.9e-06	(3R,4S,5R)-4-hydroxy-5-[(2R)-1-hydroxy-1-oxo-2-phosphono-propan-2-yl]oxy-3-phosphonooxy-cyclohexene-1-carboxylic acid	Escherichia coli	+/-0.6 nM	690885	2D-image
 0.00076	(3R,4S,5R)-4-hydroxy-5-[(2S)-1-hydroxy-1-oxo-2-phosphono-propan-2-yl]oxy-3-phosphonooxy-cyclohexene-1-carboxylic acid	Escherichia coli	+/-200 nM	690885	2D-image
@@ -4598,97 +4584,97 @@ PSERT	PSERT	phosphoserine transaminase	[c]: 3php + glu-L <=> akg + pser-L	False	
 0.01	3-Phosphonooxypyruvate	Escherichia coli	MalE/PdxC(SerC) fusion protein, pH 8.2, 37°C	722253	2D-image
 0.015	3-Phosphonooxypyruvate	Escherichia coli	PdxC(SerC) protein, pH 8.2, 37°C	722253	2D-image
 0.11	4-(phosphonooxy)-L-threonine	Escherichia coli	MalE/PdxC(SerC) fusion protein, pH 8.2, 37°C; PdxC(SerC) protein, pH 8.2, 37°C		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216e90>	<wc_utils.workbook.core.Formula object at 0x7f055c216e50>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.39	3-O-phospho-L-serine	Escherichia coli	PdxC(SerC) protein, pH 8.2, 37°C	722253	2D-image
 0.63	3-O-phospho-L-serine	Escherichia coli	MalE/PdxC(SerC) fusion protein, pH 8.2, 37°C	722253	2D-image
 1.33	3-Phosphonooxypyruvate	Escherichia coli	MalE/PdxC(SerC) fusion protein, pH 8.2, 37°C	722253	2D-image
 1.75	3-Phosphonooxypyruvate	Escherichia coli	PdxC(SerC) protein, pH 8.2, 37°C	722253	2D-image
 0.08	4-(phosphonooxy)-L-threonine	Escherichia coli	MalE/PdxC(SerC) fusion protein, pH 8.2, 37°C	722253	2D-image
 0.15	4-(phosphonooxy)-L-threonine	Escherichia coli	PdxC(SerC) protein, pH 8.2, 37°C		
-"	"
+"	1.33	1.75	0.39	0.63	0.015053	4.1876	0.0022431	44.6311	"
 "	"
 "	
 PSP_L	PSP_L	phosphoserine phosphatase (L-serine)	[c]: h2o + pser-L <=> pi + ser-L	False	Glycine and Serine Metabolism	3.1.3.3	b4388	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PTAr	PTAr	phosphotransacetylase	[c]: accoa + pi <=> actp + coa	True	Pyruvate Metabolism	2.3.1.8	(b2458 or b2297)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PTRCTA	PTRCTA	Putrescine Transaminase	[c]: akg + ptrc <=> 4abutn + glu-L	False	Arginine and Proline Metabolism	2.6.1.29	b3073	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.88	2-oxoglutarate	Escherichia coli	pH 7.6, room temperature	639950, 639951	2D-image
 2.7	pyruvate	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216f50>	<wc_utils.workbook.core.Formula object at 0x7f055c216f90>	"
+"									"
 "	"
 "	
 PYKA	PYK	pyruvate kinase	[c]: adp + h + pep <=> atp + pyr	False	Glycolysis/Gluconeogenesis	2.7.1.40	(b1854 or b1676)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PYKF	PYK	pyruvate kinase	[c]: adp + h + pep <=> atp + pyr	False	Glycolysis/Gluconeogenesis	2.7.1.40	(b1854 or b1676)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PYRpp_ex	PYRpp_ex		pyr[e] <=> pyr[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 PYRt2rpp_ex_H	PYRt2rpp, PYRtex, Htex	composed of pyruvate reversible transport via proton symport (periplasm) and pyruvate transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	h[e] + pyr[e] <=> h[c] + pyr[c]	True	Transport, Outer Membrane Porin and inner membrane		((b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 R5PP	R5PP	ribose 5-phosphate phosphatase	[c]: h2o + r5p <=> pi + rib-D	False	Alternate Carbon Metabolism		b0822	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 RIB_Dtpp_ex	RIB_Dtpp_ex		rib-D[e] <=> rib-D[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 RPE	RPE	ribulose 5-phosphate 3-epimerase	[c]: ru5p-D <=> xu5p-D	True	Pentose Phosphate Pathway	5.1.3.1	(b4301 or b3386)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 RPI	RPI	ribose-5-phosphate isomerase	[c]: r5p <=> ru5p-D	True	Pentose Phosphate Pathway	5.3.1.6	(rpiA or rpiB)	"Value	Molecule	PubMed ids
 0.83	D-ribose 5-phosphate	2779
 3.1	D-ribose 5-phosphate	653911
 4.4	D-ribose 5-phosphate	2779
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216fd0>	<wc_utils.workbook.core.Formula object at 0x7f055c216bd0>	"Value	Molecule	PubMed ids
 2100.0	D-ribose 5-phosphate	653911
-"	"
+"	1890.0	2310.0	0.0	0.0	12.9019	104.8993	0.0	0.0	"
 "	"
 "	
 RU5Ptpp_ex	RU5Ptpp_ex		ru5p-D[e] <=> ru5p-D[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 S7Ptpp_ex	S7Ptpp_ex		s7p[e] <=> s7p[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SADH	SADH	Succinylarginine dihydrolase	[c]: (2) h + (2) h2o + sucarg <=> (2) nh4 + co2 + sucorn	False	Arginine and Proline Metabolism	2.6.1.69	b1745	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SDPDS	SDPDS	succinyl-diaminopimelate desuccinylase	[c]: h2o + sl26da <=> 26dap-LL + succ	False	Threonine and Lysine Metabolism	3.5.1.18	b2472	"Value	Molecule	Organism	Comments	PubMed ids	Image
 1.3	N-succinyl-LL-2,6-diaminoheptanedioate	Escherichia coli	37°C, pH 8.1	246563	2D-image
 1.5	N-succinyl-LL-2,6-diaminoheptanedioate	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216b90>	<wc_utils.workbook.core.Formula object at 0x7f055c216b50>	"
+"									"
 "	"
 "	
 SDPTA	SDPTA	succinyldiaminopimelate transaminase	[c]: akg + sl26da <=> glu-L + sl2a6o	True	Threonine and Lysine Metabolism	2.6.1.17	b3359	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -4696,8 +4682,8 @@ SDPTA	SDPTA	succinyldiaminopimelate transaminase	[c]: akg + sl26da <=> glu-L + s
 5.2	L-glutamate	Escherichia coli	pH 7.4	636965	2D-image
 0.18	N-Succinyl-2-amino-6-oxoheptanedioate	Escherichia coli	30°C, pH 8.0	636967	2D-image
 0.5	N-Succinyl-2-amino-6-oxoheptanedioate	Escherichia			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216b10>	<wc_utils.workbook.core.Formula object at 0x7f055c216ad0>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 4e-06	2-(N-(succinylamino))-6-hydrazinoheptane-1,7-dioic acid	Escherichia coli	30°C, pH 8	636967	2D-image
 5.4e-05	2-(N-Carbobenzoxy-amino)-6-hydrazinoheptane-1,7-dioic acid	Escherichia coli			
@@ -4705,9 +4691,9 @@ SDPTA	SDPTA	succinyldiaminopimelate transaminase	[c]: akg + sl26da <=> glu-L + s
 SERAT	SERAT	serine O-acetyltransferase	[c]: accoa + ser-L <=> acser + coa	True	Cysteine Metabolism	2.3.1.30	b3607	"Value	Molecule	Organism	PubMed ids	Image
 0.56	acetyl-CoA	Escherichia coli	486752	2D-image
 0.11	L-serine	Escherichia coli		
-"	"Value	Molecule
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216c10>	<wc_utils.workbook.core.Formula object at 0x7f055c216d90>	"Value	Molecule
 0.068	acetyl-CoA
-"	"
+"	0.0612	0.0748	0.0	0.0	2.0551e-06	9.5389e-05	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0006	L-Cys	Escherichia coli	25°C, pH 7.5, wild-type enzyme	676935	2D-image
 0.0034	L-Cys	Escherichia coli	25°C, pH 7.5, mutant enzyme A94T	676935	2D-image
@@ -4721,41 +4707,41 @@ SERAT	SERAT	serine O-acetyltransferase	[c]: accoa + ser-L <=> acser + coa	True	C
 0.95	L-Cys	Escherichia coli			
 "	
 SERD_D	SERD_D	D-serine deaminase	[c]: ser-D <=> nh4 + pyr	False	Glycine and Serine Metabolism		b2366	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SERD_L	SERD_L	L-serine deaminase	[c]: ser-L <=> nh4 + pyr	False	Glycine and Serine Metabolism	4.3.1.17	(b4471  or  b1814  or  b2797  or  b3708)	"Value	Molecule	Organism	Comments	PubMed ids	Image
 420.0	L-Ser	Escherichia coli		210775	2D-image
 2.67	L-serine	Escherichia coli	pH 8.0, 37°C	665546	2D-image
 4.8	L-serine	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216c50>	<wc_utils.workbook.core.Formula object at 0x7f055c216d50>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 436.0	L-serine	Escherichia coli	pH 8.0, 37°C	665546	2D-image
 544.0	L-serine Escherichia coli				
-"	"
+"	436.0	544.0	0.0	0.0	2.3297e-09	8.5628e-09	0.0	0.0	"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.7	CuCl2	Escherichia coli		210775	2D-image
 1.41	D-serine	Escherichia coli	pH 8.0, 37°C	665546	2D-image
 0.9	L-alanine	Escherichia coli			
 "	
 SERt2rpp and SERtex	SERt2rpp, SERtex	L-serine reversible transport via proton symport (periplasm)	h[p] + ser-L[p] <=> h[c] + ser-L[c]	True	Transport, Inner Membrane		(b2796  or  b3116)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SGDS	SGDS	Succinylglutamate desuccinylase	[c]: h2o + sucglu <=> glu-L + succ	False	Arginine and Proline Metabolism		b1744	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SGSAD	SGSAD	Succinylglutamic semialdehyde dehydrogenase	[c]: h2o + nad <=> (2) h + nadh + sucglu	False	Arginine and Proline Metabolism		b1746	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SHK3Dr	SHK3Dr	shikimate dehydrogenase	[c]: 3dhsk + h + nadph <=> nadp + skm	True	Tyrosine, Tryptophan, and Phenylalanine Metabolism	1.1.1.25	(b3281  or  b1692)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SHKK	SHKK	shikimate kinase	[c]: atp + skm <=> adp + h + skm5p	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	2.7.1.71	(b3390  or  b0388)	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -4765,68 +4751,68 @@ SHKK	SHKK	shikimate kinase	[c]: atp + skm <=> adp + h + skm5p	False	Tyrosine, Tr
 0.2	shikimate	Escherichia coli		641903, 673192	2D-image
 5.0	shikimate	Escherichia coli	above, isoenzyme SK1, at 5 mM	641897	2D-image
 20.0	shikimate	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216d10>	<wc_utils.workbook.core.Formula object at 0x7f055c216cd0>	"
+"									"
 "	"
 "	
 SHSL1	SHSL1	O-succinylhomoserine lyase (L-cysteine)	[c]: cys-L + suchms <=> cyst-L + h + succ	False	Methionine Metabolism	4.2.99.9	b3939	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 SOTA	SOTA	Succinylornithine transaminase	[c]: akg + sucorn <=> glu-L + sucsal	False	Arginine and Proline Metabolism		b1748	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SSALx	SSALx	succinate-semialdehyde dehydrogenase (NAD)	[c]: h2o + nad + sucsal <=> (2) h + nadh + succ	False	Arginine and Proline Metabolism	1.2.1.24		"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SSALy	SSALy	succinate-semialdehyde dehydrogenase (NADP)	[c]: h2o + nadp + sucsal <=> (2) h + nadph + succ	False	Arginine and Proline Metabolism	1.2.1.16	b2661	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.3	2-oxoglutarate semialdehyde	Escherichia coli	in 0.1 M HEPES/KOH (pH 6.5), at 70°C	722211	2D-image
 9.1	NAD+	Escherichia coli	in 0.1 M HEPES/KOH (pH 6.5), at 70°C	722211	2D-image
 0.03	Succinic semialdehyde	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216c90>	<wc_utils.workbook.core.Formula object at 0x7f055c216e10>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 7.1	2-oxoglutarate semialdehyde	Escherichia coli	in 0.1 M HEPES/KOH (pH 6.5), at 70°C	722211	2D-image
 69.0	NAD+	Escherichia coli	in 0.1 M HEPES/KOH (pH 6.5), at 70°C	722211	2D-image
 22.6	Succinic semialdehyde Escherichia coli				
-"	"
+"	20.34	24.86	0.0	0.0	0.0019104	10373.0059	0.0	0.0	"
 "	"
 "	
 SUCCOAtpp_ex	SUCCOAtpp_ex		succoa[e] <=> succoa[c]	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SUCCt2_2pp_ex_H	SUCCt2_2pp, SUCCtex, Htex	composed of succinate transport via proton symport (2 H) (periplasm) and succinate transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	(2) h[e] + succ[e] <=> (2) h[c] + succ[c]	False	Transport, Outer Membrane Porin and inner membrane		(b3528 and (b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SUCCt3pp_ex_H	SUCCt3pp, SUCCtex, Htex	composed of succinate transport out via proton antiport (periplasm) and succinate transport via diffusion (extracellular to periplasm) and proton transport via diffusion (extracellular to periplasm)	h[e] + succ[c] <=> h[c] + succ[e]	False	Transport, Outer Membrane Porin and inner membrane		((b0241 or b0929 or b1377 or b2215) and (b0929 or b1377 or b2215 or b0241))	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 SUCDi	SUCDi	succinate dehydrogenase (irreversible)	[c]: q8 + succ <=> fum + q8h2	False	Oxidative Phosphorylation	1.3.99.1	(b0721 and b0722 and b0723 and b0724)	"Value	Molecule	PubMed ids
 0.3	ferricyanide 348059,	391154
 0.02	succinate	391171
 0.4	fumarate 391171,	391172
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216dd0>	<wc_utils.workbook.core.Formula object at 0x7f055c216890>	"Value	Molecule	PubMed ids
 167.0	succinate	348059, 391172
-"	"
+"									"
 "	"
 "	
 SUCOAS	SUCOAS	succinyl-CoA synthetase (ADP-forming)	[c]: atp + coa + succ <=> adp + pi + succoa	True	Citric Acid Cycle	6.2.1.5	(b0728 and b0729)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 T2DECAI	T2DECAI	trans-2-decenoyl-ACP isomerase	[c]: tdec2eACP <=> cdec3eACP	True	Cell Envelope Biosynthesis		b0954	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 TALA	TALA	transaldolase	[c]: g3p + s7p <=> e4p + f6p	True	Pentose Phosphate Pathway	2.2.1.2	(b2464 or b0008)	"Value	Molecule	PubMed ids
@@ -4858,20 +4844,20 @@ TALA	TALA	transaldolase	[c]: g3p + s7p <=> e4p + f6p	True	Pentose Phosphate Path
 30.0	Dihydroxyacetone	687768
 0.038	glyceraldehyde 3-phosphate	486041
 0.285	sedoheptulose 7-phosphate	486041
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216850>	<wc_utils.workbook.core.Formula object at 0x7f055c216810>	"Value	Molecule	PubMed ids
 0.22	D-fructose 6-phosphate	687768
 8.8	D-fructose 6-phosphate	687768
 4.3	Dihydroxyacetone	687768
-"	"
+"	11.7	14.3	0.0	0.0	7.7727	269.5615	0.0	0.0	"
 "	"
 "	
 TDECOAI	TDECOAI	tetradecenoyl-coa cis-trans isomerization	[c]: tdecoa <=> td2coa	False	Membrane Lipid Metabolism	5.3.3.8	b3846	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.006	3-cis-Tetradecenoyl-CoA	Escherichia coli	wild-type enzyme complex	3012	2D-image
 0.089	3-cis-Tetradecenoyl-CoA	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"			"Value	Molecule	Organism	Comments	PubMed ids	Image
 25.0	3-cis-Tetradecenoyl-CoA	Escherichia coli	mutant enzyme complex alpha/Glu139Gln	3012	2D-image
 63.0	3-cis-Tetradecenoyl-CoA Escherichia coli				
-"	"
+"									"
 "	"
 "	
 THDPS	THDPS	tetrahydrodipicolinate succinylase	[c]: h2o + succoa + thdp <=> coa + sl2a6o	False	Threonine and Lysine Metabolism	2.3.1.117	b0166	"Value	Molecule	Organism	PubMed ids	Image
@@ -4880,45 +4866,45 @@ THDPS	THDPS	tetrahydrodipicolinate succinylase	[c]: h2o + succoa + thdp <=> coa 
 0.015	succinyl-CoA	Escherichia coli	486148	2D-image
 0.02	tetrahydrodipicolinate	Escherichia coli	486149	2D-image
 0.022	tetrahydrodipicolinate	Escherichia coli		
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2167d0>	<wc_utils.workbook.core.Formula object at 0x7f055c2168d0>	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 5.8e-05	2-Hydroxytetrahydropyran-2,6-dicarboxylic acid	Escherichia coli		486149	2D-image
 0.31	D-2-aminopimelate	Escherichia coli	vs. L-2-aminopimelate	486149	2D-image
 0.76	D-2-aminopimelate	Escherichia coli			
 "	
 THF			[c]: mlthf + nadp <=> nadph + thf	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 THRabcpp	THRabcpp	L-threonine transport via ABC system (periplasm)	atp[c] + h2o[c] + thr-L[p] <=> adp[c] + h[c] + pi[c] + thr-L[c]	False	Transport, Inner Membrane		(b3454  and  b3455  and  b3457  and  b3460  and  b3456)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 THRAi	THRAi	Threonine aldolase	[c]: thr-L <=> acald + gly	False	Threonine and Lysine Metabolism	4.1.2.5	(b2551  or  b0870)	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.19	L-allo-threonine	Escherichia coli	pH and temperature not specified in the publication	713884	2D-image
 10.0	L-threonine	Escherichia coli			
-"	"
-"	"
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216a10>	<wc_utils.workbook.core.Formula object at 0x7f055c216910>	"
+"									"
 "	"
 "	
 THRD	THRD	L-threonine dehydrogenase	[c]: nad + thr-L <=> 2aobut + h + nadh	False	Glycine and Serine Metabolism	1.1.1.103	b3616	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 THRD_L	THRD_L	L-threonine deaminase	[c]: thr-L <=> 2obut + nh4	False	Valine, Leucine, and Isoleucine Metabolism		(b3117  or  b1814  or  b2797  or  b3772)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	True
 THRS	THRS	threonine synthase	[c]: h2o + phom <=> pi + thr-L	False	Threonine and Lysine Metabolism	4.2.3.1	b0004	"Value	Molecule	Organism
 0.5	O-phosphohomoserine	Escherichia coli
-"	"Value	Molecule	Organism
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2169d0>	<wc_utils.workbook.core.Formula object at 0x7f055c216990>	"Value	Molecule	Organism
 7.33	O-phosphohomoserine	Escherichia coli
-"	"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.057	DL-2-amino-3[(phosphonomethyl)thio]propionic acid	Escherichia coli	kinact: 1.44 min-1	137560	2D-image
 0.54	DL-E-2-amino-5-phosphono-4-pentenoic acid	Escherichia coli		137560	2D-image
@@ -4929,8 +4915,8 @@ THRS	THRS	threonine synthase	[c]: h2o + phom <=> pi + thr-L	False	Threonine and 
 0.031	phosphonovaleric acid	Escherichia coli			
 "	
 THRt2rpp and THRtex	THRt2rpp, THRtex	L-threonine reversible transport via proton symport (periplasm)	h[p] + thr-L[p] <=> h[c] + thr-L[c]	True	Transport, Inner Membrane		b3116	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 TKT1	TKT1	transketolase	[c]: r5p + xu5p-D <=> g3p + s7p	True	Pentose Phosphate Pathway	2.2.1.1	(b2935 or b2465)	"Value	Molecule	PubMed ids
@@ -4952,9 +4938,9 @@ TKT1	TKT1	transketolase	[c]: r5p + xu5p-D <=> g3p + s7p	True	Pentose Phosphate P
 140.0	propionaldehyde	693291
 4.0	sedoheptulose 7-phosphate	486023
 26.0	lithium beta-hydroxypyruvate	696918
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216950>	<wc_utils.workbook.core.Formula object at 0x7f055c216a90>	"Value	Molecule	PubMed ids
 410000.0	lithium beta-hydroxypyruvate	696918
-"	"
+"									"
 "	"
 "	
 TKT2	TKT2	transketolase	[c]: e4p + xu5p-D <=> f6p + g3p	True	Pentose Phosphate Pathway	2.2.1.1	(b2935 or b2465)	"Value	Molecule	PubMed ids
@@ -4976,82 +4962,82 @@ TKT2	TKT2	transketolase	[c]: e4p + xu5p-D <=> f6p + g3p	True	Pentose Phosphate P
 140.0	propionaldehyde	693291
 4.0	sedoheptulose 7-phosphate	486023
 26.0	lithium beta-hydroxypyruvate	696918
-"	"Value	Molecule	PubMed ids
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216a50>	<wc_utils.workbook.core.Formula object at 0x7f055c216790>	"Value	Molecule	PubMed ids
 410000.0	lithium beta-hydroxypyruvate	696918
-"	"
+"									"
 "	"
 "	
 TPI	TPI	triose-phosphate isomerase	[c]: dhap <=> g3p	True	Glycolysis/Gluconeogenesis	5.3.1.1	b3919	"Value
 1.03
-"	"Value	Molecule
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216550>	<wc_utils.workbook.core.Formula object at 0x7f055c216510>	"Value	Molecule
 9000.0	g3p
-"	"
+"	0.0	0.0	8100.0	9900.0	0.0	0.0	126.7586	3529.3696	"
 "	"Value	Molecule
 6.0	2-Phosphoglycolate
 "	
 TRPS1	TRPS1	tryptophan synthase (indoleglycerol phosphate)	[c]: 3ig3p + ser-L <=> g3p + h2o + trp-L	False	Tyrosine, Tryptophan, and Phenylalanine Metabolism	4.2.1.20	(b1260  and  b1261)	"
-"	"
-"	"
+"			"
+"									"
 "	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.0011	indolebutanol phosphate	Escherichia coli	competitive in the catalysis of indoleglycerol phosphate cleavage	5559	2D-image
 0.05	indoleethanol phosphate	Escherichia coli	competitive in the catalysis of indoleglycerol phosphate cleavage	5559	2D-image
 0.004	indolepropanol phosphate	Escherichia coli			
 "	
 TRPt2rpp and TRPtex	TRPt2rpp, TRPtex	L-tryptophan reversible transport via proton symport (periplasm)	h[p] + trp-L[p] <=> h[c] + trp-L[c]	True	Transport, Inner Membrane		(b0112  or  b3161  or  b3709)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 TTDCAtex	TTDCAtex	tetradecanoate transport via diffusion (extracellular to periplasm)	h[e] + ttdca[e] <=> h[c] + ttdca[c]	True				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 TYRt2rpp and TYRtex	TYRt2rpp, TYRtex	L-tyrosine reversible transport via proton symport (periplasm)	h[p] + tyr-L[p] <=> h[c] + tyr-L[c]	True	Transport, Inner Membrane		(b1907  or  b0112  or  b0576)	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 TYRTA	TYRTA	tyrosine transaminase	[c]: akg + tyr-L <=> 34hpp + glu-L	True	Tyrosine, Tryptophan, and Phenylalanine Metabolism	2.6.1.5	(b4054  or  b0928)	"Value	Molecule	Organism	Comments	PubMed ids	Image
 0.21	L-tyrosine	Escherichia coli	aspartate aminotransferase with mutations HEX and I73V, A293D, pH 8.0, 25°C	660463	2D-image
 0.29	L-tyrosine	Escherichia coli	aspartate aminotransferase with mutations HEX and I73V, pH 8.0, 25°C	660463	2D-image
 0.33	L-tyrosine	Escherichia coli			
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c2164d0>	<wc_utils.workbook.core.Formula object at 0x7f055c216490>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 24.0	L-tyrosine	Escherichia coli	aspartate aminotransferase with mutations HEX, pH 8.0, 25°C	660463	2D-image
 25.6	L-tyrosine	Escherichia coli	aspartate aminotransferase with mutations HEX and I73V, pH 8.0, 25°C	660463	2D-image
 35.7	L-tyrosine	Escherichia coli	aspartate aminotransferase with mutations HEX and I73V, A293D, pH 8.0, 25°C	660463	2D-image
 39.0	L-tyrosine Escherichia coli				
-"	"
+"	35.1	42.9	0.0	0.0	2.8174	31.3918	0.0	0.0	"
 "	"
 "	True
 UP_AC			[e]: <=> ac	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 UP_FOR	EX_for(e)		[e]: <=> for	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 UP_GLU_L			[e]: <=> glu-L	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 UP_GLYC	EX_glyc(e)		[e]: <=> glyc	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 UP_PYR			[e]: <=> 1pyr5c	False				"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 VALt2rpp and VALtex	VALt2rpp, VALtex	L-valine reversible transport via proton symport (periplasm)	h[p] + val-L[p] <=> h[c] + val-L[c]	True	Transport, Inner Membrane		b0401	"
-"	"
-"	"
+"			"
+"									"
 "	"
 "	
 VALTA	VALTA	valine transaminase	[c]: akg + val-L <=> 3mob + glu-L	True	Valine, Leucine, and Isoleucine Metabolism	2.6.1.42	b3770	"Value	Molecule	Organism	Comments	PubMed ids	Image
@@ -5084,7 +5070,7 @@ VALTA	VALTA	valine transaminase	[c]: akg + val-L <=> 3mob + glu-L	True	Valine, L
 2.7	L-valine	Escherichia coli	pH 8.0, 25°C	640012	2D-image
 3.13	L-valine	Escherichia coli	pH 8.0, 37°C	640005	2D-image
 0.09	trimethylpyruvate	Escherichia coli	pH 8.0, 37°C		
-"	"Value	Molecule	Organism	Comments	PubMed ids	Image
+"	<wc_utils.workbook.core.Formula object at 0x7f055c216590>	<wc_utils.workbook.core.Formula object at 0x7f055c2166d0>	"Value	Molecule	Organism	Comments	PubMed ids	Image
 4.11	2-(3-hydroxy-1-adamantyl)-2-oxoethanoic acid	Escherichia coli	pH 8.0, 37°C	722998	2D-image
 16.84	3-methyl-2-oxobutyric acid	Escherichia coli	pH 8.0, 37°C	722998	2D-image
 13.75	3-methyl-2-oxovaleric acid	Escherichia coli	pH 8.0, 37°C	722998	2D-image
@@ -5097,6 +5083,6 @@ VALTA	VALTA	valine transaminase	[c]: akg + val-L <=> 3mob + glu-L	True	Valine, L
 2.2	L-tyrosine	Escherichia coli	pH 8.0, 25°C	640030	2D-image
 19.0	L-valine	Escherichia coli	pH 8.0, 25°C	640030	2D-image
 2.2	trimethylpyruvate Escherichia coli				
-"	"
+"	17.1	20.9	0.0	0.0	0.11817	23.6715	0.0	0.0	"
 "	"
 "	

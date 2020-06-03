@@ -11,6 +11,7 @@ from obj_tables import core
 from obj_tables import io
 from obj_tables import utils
 import glob
+import importlib
 import json
 import nbconvert.preprocessors
 import nbformat
@@ -131,7 +132,7 @@ class ExamplesTestCase(unittest.TestCase):
             'examples/metabolic_kinetics',
             'examples/metabolic_thermodynamics',
         ]
-        for dirname in dirnames:        
+        for dirname in dirnames:
             schema_filename_csv = os.path.join(dirname, 'schema.csv')
             schema_filename_tsv = os.path.join(dirname, 'schema.tsv')
             schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
@@ -153,7 +154,7 @@ class ExamplesTestCase(unittest.TestCase):
                 os.mkdir(os.path.dirname(data_filename_csv))
             if not os.path.isdir(os.path.dirname(data_filename_tsv)):
                 os.mkdir(os.path.dirname(data_filename_tsv))
-            
+
             with __main__.App(argv=['viz-schema', schema_filename_csv, schema_filename_svg]) as app:
                 app.run()
 
@@ -192,6 +193,13 @@ class ExamplesTestCase(unittest.TestCase):
             with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx,
                                     schema_data_filename_xlsx, '--write-toc', '--write-schema']) as app:
                 app.run()
+
+    def test_metabolomics_example_merging(self):
+        loader = importlib.machinery.SourceFileLoader('run', 'examples/metabolic_merged/run.py')
+        module = loader.load_module()
+        os.remove(module.PLOT_FILENAME)
+        module.plot_data()
+        self.assertTrue(os.path.isfile(module.PLOT_FILENAME))
 
     def test_other_examples(self):
         dirnames = [

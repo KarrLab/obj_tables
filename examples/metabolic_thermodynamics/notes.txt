@@ -1,0 +1,57 @@
+No explicit definition of compartments
+Missing several columns from metabolite and reaction tables
+Use different reaction ids in different workbooks
+
+All metabolites in ecoli457 except 5:
+    f1p
+    fru
+    gal
+    gal1p
+    glcn
+
+All reactions in ecoli457 except 12:
+    EX_fru(e)
+    EX_gal(e)
+    EX_glcn(e)
+    FRUK
+    FRUpts
+    G3PD5
+    GALabc
+    GALKr
+    GlcnUpt
+    GLYK
+    GNK
+    UGLT
+
+Reactions have same stoichiometry and directionality except 2:
+    ACS: (2) pi vs ppi
+    FUM_SEC: includes proton symport vs no symport
+
+Reactions have same reversibility except 5
+    ACKr
+    FUM
+    FUM_SEC
+    GlycUpt
+    PTAr
+
+Reversed direction of some reactions for consistency with Khodayari and Maranas
+    [e]: <=> glyc
+
+Mapped all but 14 fluxes to specific reactions:
+    PFK-FBP
+    Middle_EMP
+    Low_EMP
+    PYK-PPS
+    ED
+    PPP_ED_branch
+    Early_PPP
+    Non-ox_PPP
+    Early_TCA
+    Int_TCA
+    MDH+MQO
+    ME
+    Glx_Cycle
+    Growth_rate
+
+Mapped all ΔG to specific reactions
+

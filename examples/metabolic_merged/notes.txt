@@ -1,0 +1,16 @@
+I looked through Supplementary Data 1, focusing on `Reaction_List` worksheet
+- A case study could demonstrate (a) cleaning up the significant number syntactical inconsistencies and errors, (b) linking the various worksheets, and (c) calculating stats about the network (e.g., clustering coefficient, small world-ness, etc.)
+
+
+11 reactions have both predicted k_cats and ΔG
+    EDA
+    FBA
+    FBP
+    FUM
+    ICDHyr
+    MDH
+    ME2
+    PFKA
+    RPI
+    TALA
+    TPI
