@@ -824,12 +824,20 @@ def diff_workbooks(filename_1, filename_2, models, model_name, schema_name=None,
 
 
 def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_classes=None, extra_edges=None,
+               model_names=None,
                rank_sep=None,
                node_sep=None,
                node_width=None,
                node_height=None,
                node_margin=(0.0, 0.055),
+               node_edge_color=None,
+               node_fill_color=None,
+               node_font_color=None,
+               model_edge_colors=None,
+               model_fill_colors=None,
+               model_font_colors=None,
                arrow_size=None,
+               font_name=None,
                font_size=None):
     """ Visualize a schema
 
@@ -840,18 +848,30 @@ def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_class
         tail_labels (:obj:`bool`, optional): If :obj:`True`, display tail labels (`1` or `N`).
         hidden_classes (:obj:`list`, optional): list of classes to not display
         extra_edges (:obj:`list`, optional): list of additional edges to not display
+        model_names (:obj:`dict`, optional): dictionary that maps models to their display names
         rank_sep (:obj:`float`, optional): separation between node ranks
         node_sep (:obj:`float`, optional): separation within a node rank
         node_width (:obj:`float`, optional): node width
         node_height (:obj:`float`, optional): node height
         node_margin (:obj:`tuple` of :obj:`float`, optional): node margin
+        node_edge_color (:obj:`str`, optional): node edge color
+        node_fill_color (:obj:`str`, optional): node fill color
+        node_font_color (:obj:`str`, optional): node font color
+        model_edge_colors (:obj:`dict`, optional): dictionary that maps models to their edge color
+        model_fill_colors (:obj:`dict`, optional): dictionary that maps models to their fill color
+        model_font_colors (:obj:`dict`, optional): dictionary that maps models to their font color
         arrow_size (:obj:`float`, optional): relative arrow size
+        font_name (:obj:`str`, optional): font name
         font_size (:obj:`float`, optional): font size in points
     """
     import graphviz
 
     hidden_classes = hidden_classes or []
     extra_edges = extra_edges or []
+    model_names = model_names or {}
+    model_edge_colors = model_edge_colors or {}
+    model_fill_colors = model_fill_colors or {}
+    model_font_colors = model_font_colors or {}
 
     models = get_models(module)
     graph_attr = {}
@@ -864,8 +884,6 @@ def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_class
         graph_attr['ranksep'] = str(rank_sep)
     if node_sep is not None:
         graph_attr['nodesep'] = str(node_sep)
-    if font_size is not None:
-        graph_attr['fontsize'] = str(font_size)
 
     dot = graphviz.Digraph(comment='Schema', graph_attr=graph_attr)
 
@@ -873,7 +891,8 @@ def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_class
         if model in hidden_classes:
             continue
 
-        labels = [f'<TR><TD BGCOLOR="#FF8A5B" COLSPAN="2"><FONT POINT-SIZE="18"><B>{model.Meta.verbose_name}</B></FONT></TD></TR>']
+        model_label = model_names.get(model, model.Meta.verbose_name)
+        labels = [f'<TR><TD BGCOLOR="#FF8A5B" COLSPAN="2"><FONT POINT-SIZE="18"><B>{model_label}</B></FONT></TD></TR>']
 
         attr_names = get_attr_order(model)
 
@@ -908,6 +927,8 @@ def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_class
                 opts = {}
                 if arrow_size is not None:
                     opts['arrowsize'] = str(arrow_size)
+                if font_name is not None:
+                    opts['fontname'] = font_name
                 if font_size is not None:
                     opts['fontsize'] = str(font_size)
 
@@ -953,6 +974,18 @@ def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_class
             opts['height'] = str(node_height)
         if node_margin is not None:
             opts['margin'] = ",".join(str(val) for val in node_margin)
+        model_edge_color = model_edge_colors.get(model, node_edge_color)
+        if model_edge_color is not None:
+            opts['color'] = model_edge_color
+        model_fill_color = model_fill_colors.get(model, node_fill_color)
+        if model_fill_color is not None:
+            opts['fillcolor'] = model_fill_color
+            opts['style'] = 'filled'
+        model_font_color = model_font_colors.get(model, node_font_color)
+        if model_font_color is not None:
+            opts['fontcolor'] = model_font_color
+        if font_name is not None:
+            opts['fontname'] = font_name
         if font_size is not None:
             opts['fontsize'] = str(font_size)
 
@@ -965,7 +998,7 @@ def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_class
                      **opts)
         else:
             dot.node(model.__name__,
-                     label=model.Meta.verbose_name,
+                     label=model_label,
                      shape="box",
                      **opts)
 

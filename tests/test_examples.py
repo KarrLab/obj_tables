@@ -342,14 +342,25 @@ class ExamplesTestCase(unittest.TestCase):
                 'model': wc_lang.core.Evidence,
                 'related_model': wc_lang.core.Model,
             },
-        ], 
-        rank_sep=0.1,
-        node_sep=0.1,
-        node_width=0.5,
-        node_height=0.2,
-        node_margin=(0.01, 0.01),
-        arrow_size=0.5,
-        font_size=8.)
+        ],
+            model_names={
+            wc_lang.core.RateLawExpression: 'Rate law\nexpression',
+            wc_lang.core.SpeciesCoefficient: 'Species\ncoefficient',
+        },
+            rank_sep=0.1,
+            node_sep=0.1,
+            node_width=0.01,
+            node_height=0.01,
+            node_margin=(0.025, 0.025),
+            node_edge_color='#1565f9',
+            node_fill_color='#b3d2ff',
+            node_font_color='#1565f9',
+            model_edge_colors={wc_lang.core.Model: '#fa1515'},
+            model_fill_colors={wc_lang.core.Model: '#ffb3b3'},
+            model_font_colors={wc_lang.core.Model: '#fa1515'},
+            arrow_size=0.5,
+            font_name='arial',
+            font_size=8.)
         self.assertTrue(os.path.isfile(diagram_filename))
 
     def test_decode_data(self):
