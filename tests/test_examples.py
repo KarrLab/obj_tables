@@ -197,7 +197,8 @@ class ExamplesTestCase(unittest.TestCase):
     def test_metabolomics_example_merging(self):
         loader = importlib.machinery.SourceFileLoader('run', 'examples/metabolic_merged/run.py')
         module = loader.load_module()
-        os.remove(module.PLOT_FILENAME)
+        if os.path.isfile(module.PLOT_FILENAME):
+            os.remove(module.PLOT_FILENAME)
         module.plot_data()
         self.assertTrue(os.path.isfile(module.PLOT_FILENAME))
 
@@ -273,6 +274,28 @@ class ExamplesTestCase(unittest.TestCase):
             with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx,
                                     schema_data_filename_xlsx, '--write-toc', '--write-schema']) as app:
                 app.run()
+
+    def test_wc_kb_lang(self):
+        import wc_kb
+        import wc_lang
+
+        diagram_filename = os.path.join('examples', 'wc_kb.eukaryote.svg')
+        if os.path.isfile(diagram_filename):
+            os.remove(diagram_filename)
+        utils.viz_schema(wc_kb.eukaryote, diagram_filename)
+        self.assertTrue(os.path.isfile(diagram_filename))
+
+        diagram_filename = os.path.join('examples', 'wc_kb.prokaryote.svg')
+        if os.path.isfile(diagram_filename):
+            os.remove(diagram_filename)
+        utils.viz_schema(wc_kb.prokaryote, diagram_filename)
+        self.assertTrue(os.path.isfile(diagram_filename))
+
+        diagram_filename = os.path.join('examples', 'wc_lang.svg')
+        if os.path.isfile(diagram_filename):
+            os.remove(diagram_filename)
+        utils.viz_schema(wc_lang.core, diagram_filename)
+        self.assertTrue(os.path.isfile(diagram_filename))
 
     def test_decode_data(self):
         import decode_data
