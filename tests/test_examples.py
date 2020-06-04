@@ -22,6 +22,15 @@ import sys
 import tempfile
 import unittest
 
+try:
+    import wc_kb
+except ModuleNotFoundError:
+    wc_kb = None
+try:
+    import wc_lang
+except ModuleNotFoundError:
+    wc_lang = None
+
 
 class ExamplesTestCase(unittest.TestCase):
     def setUp(self):
@@ -275,10 +284,8 @@ class ExamplesTestCase(unittest.TestCase):
                                     schema_data_filename_xlsx, '--write-toc', '--write-schema']) as app:
                 app.run()
 
-    def test_wc_kb_lang(self):
-        import wc_kb
-        import wc_lang
-
+    @unittest.skipIf(wc_kb is None, "WC-KB must be installed")
+    def test_wc_kb(self):
         diagram_filename = os.path.join('examples', 'wc_kb.eukaryote.svg')
         if os.path.isfile(diagram_filename):
             os.remove(diagram_filename)
@@ -291,6 +298,8 @@ class ExamplesTestCase(unittest.TestCase):
         utils.viz_schema(wc_kb.prokaryote, diagram_filename)
         self.assertTrue(os.path.isfile(diagram_filename))
 
+    @unittest.skipIf(wc_lang is None, "WC-Lang must be installed")
+    def test_wc_lang(self):
         diagram_filename = os.path.join('examples', 'wc_lang.svg')
         if os.path.isfile(diagram_filename):
             os.remove(diagram_filename)
