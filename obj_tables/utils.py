@@ -823,20 +823,57 @@ def diff_workbooks(filename_1, filename_2, models, model_name, schema_name=None,
     return diffs
 
 
-def viz_schema(module, filename):
+def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_classes=None, extra_edges=None,
+               rank_sep=None,
+               node_sep=None,
+               node_width=None,
+               node_height=None,
+               node_margin=(0.0, 0.055),
+               arrow_size=None,
+               font_size=None):
     """ Visualize a schema
 
     Args:
         models (:obj:`types.ModuleType`): module with models
         filename (:obj:`str`): path to save visualization of schema
+        attributes (:obj:`bool`, optional): If :obj:`True`, display attributes. If :obj:`False`, only display classes.
+        tail_labels (:obj:`bool`, optional): If :obj:`True`, display tail labels (`1` or `N`).
+        hidden_classes (:obj:`list`, optional): list of classes to not display
+        extra_edges (:obj:`list`, optional): list of additional edges to not display
+        rank_sep (:obj:`float`, optional): separation between node ranks
+        node_sep (:obj:`float`, optional): separation within a node rank
+        node_width (:obj:`float`, optional): node width
+        node_height (:obj:`float`, optional): node height
+        node_margin (:obj:`tuple` of :obj:`float`, optional): node margin
+        arrow_size (:obj:`float`, optional): relative arrow size
+        font_size (:obj:`float`, optional): font size in points
     """
     import graphviz
 
+    hidden_classes = hidden_classes or []
+    extra_edges = extra_edges or []
+
     models = get_models(module)
-    dot = graphviz.Digraph(comment='Schema', graph_attr={'rankdir': 'LR'})
+    graph_attr = {}
+    if attributes:
+        graph_attr['rankdir'] = 'LR'
+    else:
+        graph_attr['rankdir'] = 'BT'
+
+    if rank_sep is not None:
+        graph_attr['ranksep'] = str(rank_sep)
+    if node_sep is not None:
+        graph_attr['nodesep'] = str(node_sep)
+    if font_size is not None:
+        graph_attr['fontsize'] = str(font_size)
+
+    dot = graphviz.Digraph(comment='Schema', graph_attr=graph_attr)
 
     for model in models.values():
-        labels = [f'<TR><TD BGCOLOR="#FF8A5B" COLSPAN="2"><FONT POINT-SIZE="18"><B>{model.__name__}</B></FONT></TD></TR>']
+        if model in hidden_classes:
+            continue
+
+        labels = [f'<TR><TD BGCOLOR="#FF8A5B" COLSPAN="2"><FONT POINT-SIZE="18"><B>{model.Meta.verbose_name}</B></FONT></TD></TR>']
 
         attr_names = get_attr_order(model)
 
@@ -845,6 +882,9 @@ def viz_schema(module, filename):
 
             if isinstance(attr, RelatedAttribute):
                 related_model = attr.related_class
+                if related_model in hidden_classes:
+                    continue
+
                 i_related_attr = len(related_model.Meta.attributes) + \
                     sorted(related_model.Meta.related_attributes.keys()).index(attr.related_name)
 
@@ -865,10 +905,24 @@ def viz_schema(module, filename):
                     headlabel = 'N'
                     taillabel = 'N'
 
-                dot.edge(f'{model.__name__}:{i_attr}',
-                         f'{related_model.__name__}:{i_related_attr}',
-                         headlabel=headlabel,
-                         taillabel=taillabel)
+                opts = {}
+                if arrow_size is not None:
+                    opts['arrowsize'] = str(arrow_size)
+                if font_size is not None:
+                    opts['fontsize'] = str(font_size)
+
+                if tail_labels:
+                    opts['headlabel'] = headlabel
+                    opts['taillabel'] = taillabel
+
+                if attributes:
+                    dot.edge(f'{model.__name__}:{i_attr}',
+                             f'{related_model.__name__}:{i_related_attr}',
+                             **opts)
+                else:
+                    dot.edge(f'{model.__name__}',
+                             f'{related_model.__name__}',
+                             **opts)
             else:
                 attr_type = attr.__class__.__name__.rpartition('Attribute')[0]
 
@@ -892,11 +946,33 @@ def viz_schema(module, filename):
                 bg = '#BFFFFF'
             labels.append(f'<TR><TD PORT="{i_row}" BGCOLOR="{bg}"><B>{attr_name}</B></TD><TD BGCOLOR="{bg}">{attr_type}</TD></TR>')
 
-        dot.node(model.__name__,
-                 label='<<TABLE CELLPADDING="4" CELLSPACING="0" BORDER="0" CELLBORDER="1">'
-                 + ''.join(labels)
-                 + '</TABLE>>',
-                 shape="none", margin="0.0,0.055")
+        opts = {}
+        if node_width is not None:
+            opts['width'] = str(node_width)
+        if node_height is not None:
+            opts['height'] = str(node_height)
+        if node_margin is not None:
+            opts['margin'] = ",".join(str(val) for val in node_margin)
+        if font_size is not None:
+            opts['fontsize'] = str(font_size)
+
+        if attributes:
+            dot.node(model.__name__,
+                     label='<<TABLE CELLPADDING="4" CELLSPACING="0" BORDER="0" CELLBORDER="1">'
+                     + ''.join(labels)
+                     + '</TABLE>>',
+                     shape="none",
+                     **opts)
+        else:
+            dot.node(model.__name__,
+                     label=model.Meta.verbose_name,
+                     shape="box",
+                     **opts)
+
+    for edge in extra_edges:
+        dot.edge(edge['model'].__name__,
+                 edge['related_model'].__name__,
+                 style='invis')
 
     root, ext = os.path.splitext(filename)
     dot.render(root, format=ext[1:], cleanup=True)

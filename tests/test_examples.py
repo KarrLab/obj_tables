@@ -306,6 +306,52 @@ class ExamplesTestCase(unittest.TestCase):
         utils.viz_schema(wc_lang.core, diagram_filename)
         self.assertTrue(os.path.isfile(diagram_filename))
 
+        diagram_filename = os.path.join('examples', 'wc_lang.core.svg')
+        if os.path.isfile(diagram_filename):
+            os.remove(diagram_filename)
+        utils.viz_schema(wc_lang.core, diagram_filename, False, False, [
+            wc_lang.core.Identifier,
+            wc_lang.core.Reference,
+            wc_lang.core.Taxon,
+            wc_lang.core.Environment,
+            wc_lang.core.StopCondition,
+            wc_lang.core.StopConditionExpression,
+            wc_lang.core.InitVolume,
+            wc_lang.core.Author,
+            wc_lang.core.Change,
+            wc_lang.core.Ph,
+            wc_lang.core.ChemicalStructure,
+            wc_lang.core.FluxBounds,
+            wc_lang.core.DfbaObjective,
+            wc_lang.core.DfbaObjectiveExpression,
+            wc_lang.core.DfbaObjReaction,
+            wc_lang.core.DfbaObjSpecies,
+            wc_lang.core.FunctionExpression,
+            wc_lang.core.Function,
+            wc_lang.core.Observable,
+            wc_lang.core.ObservableExpression,
+            wc_lang.core.Observation,
+            wc_lang.core.ObservationSet,
+            wc_lang.core.ObservationEnv,
+            wc_lang.core.ObservationGenotype,
+            wc_lang.core.Process,
+            wc_lang.core.DistributionInitConcentration,
+            wc_lang.core.Conclusion,
+        ], [
+            {
+                'model': wc_lang.core.Evidence,
+                'related_model': wc_lang.core.Model,
+            },
+        ], 
+        rank_sep=0.1,
+        node_sep=0.1,
+        node_width=0.5,
+        node_height=0.2,
+        node_margin=(0.01, 0.01),
+        arrow_size=0.5,
+        font_size=8.)
+        self.assertTrue(os.path.isfile(diagram_filename))
+
     def test_decode_data(self):
         import decode_data
 
