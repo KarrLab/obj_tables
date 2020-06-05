@@ -1,4 +1,4 @@
-# Schema automatically generated at 2020-05-29 00:18:59
+# Schema automatically generated at 2020-06-05 17:07:24
 
 import obj_tables
 
@@ -13,7 +13,7 @@ __all__ = [
 class Gene(obj_tables.Model):
     id = obj_tables.StringAttribute(primary=True, unique=True, verbose_name='Id')
     symbol = obj_tables.StringAttribute(verbose_name='Symbol')
-    location = obj_tables.ManyToOneAttribute('Location', related_name='genes', verbose_name='Location')
+    location = obj_tables.OneToOneAttribute('Location', related_name='genes', verbose_name='Location')
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.row
@@ -29,7 +29,7 @@ class Gene(obj_tables.Model):
 class Transcript(obj_tables.Model):
     id = obj_tables.StringAttribute(primary=True, unique=True, verbose_name='Id')
     gene = obj_tables.ManyToOneAttribute('Gene', related_name='transcripts', verbose_name='Gene')
-    location = obj_tables.ManyToOneAttribute('Location', related_name='transcripts', verbose_name='Location')
+    location = obj_tables.OneToOneAttribute('Location', related_name='transcripts', verbose_name='Location')
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.row

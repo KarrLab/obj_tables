@@ -3,11 +3,11 @@
 Gene,Class,,row,Gene
 id,Attribute,Gene,"String(primary=True, unique=True)",Id
 symbol,Attribute,Gene,String,Symbol
-location,Attribute,Gene,"ManyToOne('Location', related_name='genes')",Location
+location,Attribute,Gene,"OneToOne('Location', related_name='genes')",Location
 Transcript,Class,,row,Transcript
 id,Attribute,Transcript,"String(primary=True, unique=True)",Id
 gene,Attribute,Transcript,"ManyToOne('Gene', related_name='transcripts')",Gene
-location,Attribute,Transcript,"ManyToOne('Location', related_name='transcripts')",Location
+location,Attribute,Transcript,"OneToOne('Location', related_name='transcripts')",Location
 Location,Class,,multiple_cells,Location
 chromosome,Attribute,Location,String,Chromosome
 five_prime,Attribute,Location,"PositiveInteger(primary=True, unique=True)",5'

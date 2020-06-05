@@ -213,10 +213,10 @@ class ExamplesTestCase(unittest.TestCase):
 
     def test_other_examples(self):
         dirnames = [
-            'examples/address_book',
-            'examples/biochemical_model',
-            'examples/children_fav_games',
-            'examples/financial_transactions',
+            #'examples/address_book',
+            #'examples/biochemical_model',
+            #'examples/children_fav_games',
+            #'examples/financial_transactions',
             'examples/genomics',
         ]
         for dirname in dirnames:

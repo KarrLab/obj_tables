@@ -35,59 +35,59 @@ Location:
   chromosome: '19'
   five_prime: 44905791.0
   genes:
-  - __id: 0
+    __id: 0
     __type: Gene
     id: ENSG00000130203
   three_prime: 44909393.0
-  transcripts: []
+  transcripts: null
 - __id: 3
   __type: Location
   chromosome: '13'
   five_prime: 32315086.0
   genes:
-  - __id: 1
+    __id: 1
     __type: Gene
     id: ENSG00000139618
   three_prime: 32400266.0
-  transcripts: []
+  transcripts: null
 - __id: 4
   __type: Location
   chromosome: '19'
   five_prime: 44905796.0
-  genes: []
+  genes: null
   three_prime: 44909393.0
   transcripts:
-  - __id: 8
+    __id: 8
     __type: Transcript
     id: ENST00000252486.9
 - __id: 5
   __type: Location
   chromosome: '13'
   five_prime: 32315474.0
-  genes: []
+  genes: null
   three_prime: 32400266.0
   transcripts:
-  - __id: 9
+    __id: 9
     __type: Transcript
     id: ENST00000380152.7
 - __id: 6
   __type: Location
   chromosome: '19'
   five_prime: 44906360.0
-  genes: []
+  genes: null
   three_prime: 44908954.0
   transcripts:
-  - __id: 10
+    __id: 10
     __type: Transcript
     id: ENST00000425718.1
 - __id: 7
   __type: Location
   chromosome: '13'
   five_prime: 32315480.0
-  genes: []
+  genes: null
   three_prime: 32399668.0
   transcripts:
-  - __id: 11
+    __id: 11
     __type: Transcript
     id: ENST00000544455.5
 Transcript:
