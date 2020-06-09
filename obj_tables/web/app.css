@@ -135,7 +135,12 @@ a {
     height: 64px;
     margin-top: 0.5rem;
     margin-bottom: 1rem;
+    transition: all .5s
 }
+.icon img:hover {
+    transform: scale(1.08);
+}
+
 .icon h3 {    
     border-bottom: 0;
 }
