@@ -17,7 +17,7 @@ p {
 }
 
 .grid-container {
-    max-width: 95rem;
+    max-width: 97rem;
 }
 
 h2,
@@ -636,7 +636,7 @@ table.examples tr.indent-x2 td:first-child {
 .hide-for-extra-large {
     display: inline-block;
 }
-@media screen and (min-width: 81.5em) {
+@media screen and (min-width: 97em) {
     .show-for-extra-large {
         display: inline-block;
     }
