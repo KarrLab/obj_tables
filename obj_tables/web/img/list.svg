@@ -60,7 +60,7 @@
      d="M 38.125,3.69725 V 0 H 11.875 V 3.69725 H 0 V 64 H 50 V 3.69725 Z m -22.5,0.0528 h 18.75 V 7.4473 h -18.75 z m 30.625,56.5 H 3.75 V 7.4473 h 8.125 v 3.75 h 26.25 v -3.75 h 8.125 z" />
   <path
      inkscape:connector-curvature="0"
-     style="fill:#ffc306;fill-opacity:0.4;stroke-width:0.125"
+     style="fill:#ffc306;fill-opacity:1.0;stroke-width:0.125"
      id="path11898"
      d="M 18.75,15.57225 H 7.5 v 11.25 h 11.25 z m -3.75,7.5 h -3.75 v -3.75 H 15 Z" />
   <path
@@ -70,7 +70,7 @@
      d="M 24.984375,19.32225 H 42.5 v 3.75 H 24.984375 Z" />
   <path
      inkscape:connector-curvature="0"
-     style="fill:#ffc306;fill-opacity:0.4;stroke-width:0.125"
+     style="fill:#ffc306;fill-opacity:1.0;stroke-width:0.125"
      id="path11902"
      d="M 18.75,31.07225 H 7.5 v 11.25 h 11.25 z m -3.75,7.5 h -3.75 v -3.75 H 15 Z" />
   <path
