@@ -420,70 +420,100 @@ zuckerberg <span style="color: #666666">=</span> Person(
                   <div class="grid-x grid-padding-x">
                     <div class="large-6 cell">
                       <div class="subsection">
-                        <h3>Create Excel templates for building complex datasets</h3>
+                        <div class="icon">
+                          <img src="img/uml.svg" />
+                          <h3>Create Excel templates for building datasets</h3>
+                        </div>
                         <p>To make it easy to build datasets, the <i>ObjTables</i> software can generate template Excel workbooks for schemas with a table of contents, skeletons for the tables and columns, inline help, dropdown menus, and Excel validation.</p>
                       </div>
 
                       <div class="subsection">
-                        <h3>Use Excel as a GUI for viewing and editing complex datasets</h3>
-                        <p><i>ObjTables</i> enables users to leverage Excel as a graphical interface for viewing and editing complex datasets. <i>ObjTables</i> Excel datasets have the following features:</p>
+                        <div class="icon">
+                          <img src="img/uml.svg" />
+                          <h3>Use Excel as a GUI for viewing and editing datasets</h3>
+                        </div>
+                        <p><i>ObjTables</i> enables users to leverage Excel and similar programs as graphical interfaces for viewing and editing datasets. <i>ObjTables</i> uses following features:</p>
                         <ul class="vertically-spaced-list">
                           <li><b>Table of contents:</b> Datasets can include a worksheet that describes the data represented by each worksheet and provides hyperlinks to each worksheet.</li>
-                          <li><b>Formatted class titles:</b> Each worksheet includes a title bar that describes the data captured by the worksheet. The title bars are formatted, frozen, and protected from editing.</li>
-                          <li><b>Formatted attribute headings:</b> Each workbook includes headings for each column and group of columns. The headings are formatted, auto-filtered, frozen, and protected from editing.</li>
-                          <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses Excel comments to embed help information about each attribute into it's heading.</li>
-                          <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides dropdown menus for each attribute that represents an enumeration, a one-to-one relationship, or a many-to-one relationship.</li>
-                          <li><b>Instant validation:</b> <i>ObjTables</i> uses Excel to validate several basic properties of attributes. <i>Note, due to the limitations of Excel, this provides limited validation. The <i>ObjTables</i> software provides more extensive validation.</i></li>
+                          <li><b>Formatted table titles:</b> Each worksheet includes a formatted title bar that describes the data captured by the worksheet.</li>
+                          <li><b>Formatted attribute headings:</b> Each workbook includes formatted headings for each column. </li>
+                          <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses comments to embed help information about each attribute into it's heading.</li>
+                          <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides dropdown menus for attributes that represent enumerations and *-to-one relationships.</li>
+                          <li><b>Instant validation:</b> <i>ObjTables</i> can setup basic validation for attributes. <i>Note, the <i>ObjTables</i> software provides more extensive validation.</i></li>
                           <li><b>Hidden extra rows and columns:</b> To help users focus on their data, <i>ObjTables</i> hides all empty rows and columns.</li>
                           <li><b>Protection from unintentional editing:</b> To help users avoid mistakes, <i>ObjTables</i> protects worksheets.</li>
                         </ul>
                       </div>
 
                       <div class="subsection">
-                        <h3>Iteratively build and revision complex datasets</h3>
+                        <div class="icon">
+                          <img src="img/pencil.svg" />
+                          <h3>Iteratively build and revision datasets</h3>
+                        </div>
                         <p>The <i>ObjTables</i> software leverages Git to make it easy to build datasets iteratively, revision datasets, and track their provenance, including when each revision was made, who made it, and why it was made.</p>
                       </div>
 
                       <div class="subsection">
-                        <h3>Iteratively build schemas and migrate complex datasets</h3>
+                        <div class="icon">
+                          <img src="img/migrate.svg" />
+                          <h3>Iteratively build schemas and migrate datasets</h3>
+                        </div>
                         <p>To make it easy to build schemas iteratively, the <i>ObjTables</i> software can revision schemas, as well as migrate datasets between different versions of schemas (e.g., adding, removing, and renaming tables and columns).</p>
                       </div>
                     </div>
 
                     <div class="large-6 cell">
                       <div class="subsection">
-                        <h3>Rigorously validate and quickly debug complex datasets</h3>
+                        <div class="icon">
+                          <img src="img/badge.svg" />
+                          <h3>Rigorously validate and quickly debug datasets</h3>
+                        </div>
                         <p><i>ObjTables</i> makes it easy to validate and debug datasets at multiple levels:</p>
                         <ul class="vertically-spaced-list">
-                          <li><b>Attribute validation:</b> Validations of individual attributes can be defined declaratively. More complex validations can be defined by implementing using Python package.</li>
-                          <li><b>Instance validation:</b> Users can use the Python package to implement custom instance-level validation by customizing the `obj_tables.Model.validate` method of each class.</li>
-                          <li><b>Class-level validation:</b> Most attributes can be constrained to have unique values across all instances. Python modules that implement schemas can also capture tuples of attributes that must be unique across all instances of a class. See the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Model.Meta"><i class="fi-link"></i></a> for more information.</li>
+                          <li><b>Attribute validation:</b> Validations of individual attributes such as validating that molecular weights are non-negative.</li>
+                          <li><b>Object validation:</b> Validations of entire objects such validating that reactions are element-balanced.</li>
+                          <li><b>Class validation:</b> Validations of all of the instances of a classs such as validating that each reaction has a unique id.</li>
                         </ul>
                       </div>
 
                       <div class="subsection">
-                        <h3>Merge and split datasets</h3>
-                        <p>To help users build large datasets, the <i>ObjTables</i> software can merge datasets by identifying common objects, joining them, and concatenating their relationships to other objects. To help users break down datasets into smaller, more manageable pieces, the <i>ObjTables</i> software can split datasets by cutting relationships and identifying all of the resulting connected subsets of the dataset.</p>
+                        <div class="icon">
+                          <img src="img/merge.svg" />
+                          <h3>Merge and split datasets</h3>
+                        </div>
+                        <p>To help users build large datasets, the <i>ObjTables</i> software can merge datasets by identifying and fusing common objects. <i>ObjTables</i> can also decompose datasets into smaller, more manageable pieces by cutting relationships.</p>
                       </div>
 
                       <div class="subsection">
-                        <h3>Compare/difference datasets</h3>
+                        <div class="icon">
+                          <img src="img/difference.svg" />
+                          <h3>Compare/difference datasets</h3>
+                        </div>
                         <p>To help users compare and review changes to datasets, the <i>ObjTables</i> software can determine if datasets are semantically equal and identify their differences.</p>
                       </div>
 
                       <div class="subsection">
-                        <h3>Query and analyze complex datasets</h3>
+                        <div class="icon">
+                          <img src="img/search.svg" />
+                          <h3>Query and analyze datasets</h3>
+                        </div>
                         <p>The <i>ObjTables</i> Python package makes it easy to find objects in datasets and use Python to conduct complex analyses of datasets such as numerical simulations.</p>
                       </div>
 
                       <div class="subsection">
-                        <h3>Pretty print datasets for publication</h3>
-                        <p>To make it easy to create files suitable for supplementary materials of journal articles, <i>ObjTables</i> can pretty print datasets with tables of contents, formatted table titles and column headings, and inline help.</p>
+                        <div class="icon">
+                          <img src="img/book.svg" />
+                          <h3>Pretty print datasets for publication</h3>
+                        </div>
+                        <p><i>ObjTables</i> can pretty print datasets with tables of contents, formatted table titles and column headings, and inline help.</p>
                       </div>
 
                       <div class="subsection">
-                        <h3>Visualize schemas for datasets</h3>
-                        <p>To help users understand schemas, <i>ObjTables</i> can generate UML diagrams of schemas.</p>
+                        <div class="icon">
+                          <img src="img/uml.svg" />
+                          <h3>Visualize schemas for datasets</h3>
+                        </div>
+                        <p>To help users understand schemas, <i>ObjTables</i> can generate UML diagrams.</p>
                       </div>
                     </div>
                   </div>
