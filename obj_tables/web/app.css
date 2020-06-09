@@ -372,6 +372,10 @@ table:last-child {
     width: 65%;
     margin-top: 1rem;
     margin-bottom: 2rem;
+     transition: all .5s;
+}
+.splash img:hover {
+    transform: scale(1.05);
 }
 
 .splash h1 {
