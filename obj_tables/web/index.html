@@ -232,40 +232,43 @@
                   <div class="grid-x grid-padding-x section-content">
 
                     <div class="large-6 cell">
-                      <div class="subsection">
+                      <div class="subsection icon">
+                        <img src="img/beaker.svg" />
                         <h3>Use cases</h3>
                         <ul>
                           <li>Integrating heterogeneous data.</li>
-                          <li>Collaboratively and iteratively building complex datasets and models.</li>
-                          <li>Defining formats for new types of data and models.</li>
+                          <li>Collaboratively building complex datasets and models.</li>                          
                           <li>Publishing re-usable supplementary materials to journal articles.</li>
                           <li>Sharing re-usable data with collaborators.</li>
+                          <li>Defining formats for new types of data and models.</li>
                         </ul>
                       </div>
 
-                      <div class="subsection">
+                      <div class="subsection icon">
+                        <img src="img/lego.svg" />
                         <h3>Components of the <i>ObjTables</i> toolkit</h3>
                         <ul>
-                          <li>Format for schemas for tabular datasets.</li>
-                          <li>Numerous data types for mathematics, science, chemistry, and biology.</li>
-                          <li>Markup format for tabular datasets (e.g., Excel workbooks or collections of CSV/TSV files).</li>
-                          <li>Software tools for working with tabular datasets.</li>
-                          <li>Python package for additional flexibility and more complex analyses.</li>
+                          <li>Format for schemas for spreadsheets.</li>
+                          <li>Numerous data types for science.</li>
+                          <li>Markup syntax for spreadsheets</li>
+                          <li>Software tools for validating, comparing, merging, and analyzing spreadsheets.</li>
+                          <li>Python package for additional flexibility.</li>
                         </ul>
                       </div>
                     </div>
 
-                    <div class="large-6 cell">
-                      <h3>Benefits</h3>
+                    <div class="large-6 cell icon">
+                      <img src="img/star.svg" />
+                      <h3>Features</h3>
                       <ul>
-                        <li>Use collections of tables (e.g., an Excel workbook) to represent complex data consisting of multiple related objects of multiple types (e.g., rows of worksheets), each with multiple attributes (e.g., columns).</li>
-                        <li>Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables.</li>
-                        <li>Use Excel as a graphical interface for viewing and editing complex datasets.</li>
-                        <li>Use embedded tables and grammars to encode relational information into columns and groups of columns of tables.</li>
-                        <li>Define clear schemas for tabular datasets.</li>
-                        <li>Use schemas to rigorously validate tabular datasets.</li>
-                        <li>Use schemas to parse tabular datasets into data structures for further analysis in languages such as Python.</li>
-                        <li>Compare, merge, split, revision, and migrate tabular datasets.</li>
+                        <li>Use spreadsheets to represent complex data consisting of multiple rows of multiple tables.</li>
+                        <li>Use complex data types (e.g., mathematical expressions, DNA sequences, chemical formulae, reaction equations) within tables.</li>                        
+                        <li>Use foreign keys, embedded tables, and grammars to systematically encode relationships into spreadsheets.</li>
+                        <li>Use spreadsheets programs such as Microsoft Excel and LibreOffice Calc as a graphical interface for viewing and editing datasets.</li>
+                        <li>Define clear, explicit schemas for spreadsheets that describe the class and attribute represented by each table and column.</li>
+                        <li>Use schemas to rigorously validate the syntax and semantics of complex spreadsheets.</li>
+                        <li>Use schemas to systematically compare, merge, split, revision, and migrate spreadsheets.</li>
+                        <li>Use schemas to parse spreadsheets into object-oriented data structures for analysis in languages such as Python.</li>
                       </ul>
                     </div>
                   </div>
@@ -275,9 +278,23 @@
               <div id="what-is-objtables" data-magellan-target="what-is-objtables">
                 <h2>What is an <i>ObjTables</i> schema and dataset?</h2>
                 <div class="section-content">
-                  <p>A <b>schema</b> defines the types of objects that the spreadsheet can represent (the tables of the spreadsheet), their attributes (the columns of each table), the type of each attribute (e.g., Boolean, integer, float, string, etc.), and the possible relationships between the instances of the objects (rows of the tables). Optionally, schemas can also define which attributes are required and how each attribute, object, and the entire dataset should validated. As illustrated below, schemas can be defined using our simple tabular format, or as a Python module.</p>
+                  <div class="grid-x grid-padding-x subsection">
+                    <div class="large-6 cell">
+                      <div class="icon">
+                        <img src="img/schema.svg" />
+                        <h3>Schema</h3>
+                      </div>
+                      <p>A schema defines the types of objects that the spreadsheet can represent (the tables of the spreadsheet), their attributes (the columns of each table), the type of each attribute (e.g., Boolean, integer, float, string, etc.), and the possible relationships between the instances of the objects (rows of the tables). Optionally, schemas can also define which attributes are required and how each attribute, object, and the entire dataset should validated. As illustrated below, schemas can be defined using our simple tabular format, or as a Python module.</p>
+                    </div>
 
-                  <p>A <b>dataset</b> is a spreadsheet or collection of tables. The spreadsheet defines the objects that constitute the dataset (the rows of the tables), the attributes of each object (the values of the cells), and the relationships between the objects (the values of the cells that represent relationships). As illustrated below, each table must be marked with a statement that begins with <span class="monospace">!!</span> that indicates the class represented by the table. Similarly, each column must be marked with a statement that begins with <span class="monospace">!</span> that indicates the attribute represented the column. These statements describe the link between workbooks and their schemas.</p>
+                    <div class="large-6 cell">
+                      <div class="icon">
+                        <img src="img/spreadsheet.svg" />
+                        <h3>Dataset</h3>
+                      </div>
+                      <p>A dataset is a spreadsheet, or collection of tables, that defines a set of objects (the rows of the tables), the attributes of each object (the values of the cells), and the relationships among the objects (values of cells that represent relationships). Each table must begin with a statement <span class="monospace">!!...</span> that indicates the class represented by the table. Similarly, each column must begin with a statement <span class="monospace">!</span> that indicates the attribute represented by the column. These statements describe the link between spreadsheets and their schemas.</p>
+                    </div>
+                  </div>
 
                   <div class="subsection">
                     <h3 id="example">Example: Address book of CEOs</h3>

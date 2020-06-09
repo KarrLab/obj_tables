@@ -128,6 +128,24 @@ a {
 }
 
 
+.icon {
+    text-align: center;
+}
+.icon img {
+    height: 64px;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+.icon h3 {    
+    border-bottom: 0;
+}
+.icon ul {
+    list-style-type: none;
+}
+.icon li:not(:first-child) {
+    margin-top: 0.5rem;
+}
+
 /* top bar */
 
 .page-title {
