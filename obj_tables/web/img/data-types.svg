@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="153.45146"
+   height="64"
+   viewBox="0 0 40.600698 16.933333"
+   version="1.1"
+   id="svg16438"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="data-types.svg">
+  <defs
+     id="defs16432" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="30.080502"
+     inkscape:cy="-6.9547538"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1920"
+     inkscape:window-height="910"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata16435">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-1.0519932,-274.2269)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90793467px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffc306;fill-opacity:1;stroke:none;stroke-width:0.12269837"
+       x="21.4482"
+       y="277.86951"
+       id="text16450"><tspan
+         sodipodi:role="line"
+         x="21.4482"
+         y="277.86951"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90793467px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffc306;fill-opacity:1;stroke-width:0.12269837"
+         id="tspan16460"><tspan
+           style="fill:#ffc306;fill-opacity:1;stroke-width:0.12269837"
+           id="tspan16472">Structure: </tspan><tspan
+           style="fill:#ffc306;fill-opacity:1;stroke-width:0.12269837"
+           id="tspan16484">C1=...</tspan></tspan><tspan
+         sodipodi:role="line"
+         x="21.4482"
+         y="284.00443"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90793467px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffc306;fill-opacity:1;stroke-width:0.12269837"
+         id="tspan16456"><tspan
+           style="fill:#ffc306;fill-opacity:1;stroke-width:0.12269837"
+           id="tspan16474">Formula: </tspan><tspan
+           style="fill:#ffc306;fill-opacity:1;stroke-width:0.12269837"
+           id="tspan16482">CH4</tspan></tspan><tspan
+         sodipodi:role="line"
+         x="21.4482"
+         y="290.13934"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90793467px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#ffc306;fill-opacity:1;stroke-width:0.12269837"
+         id="tspan16458">Sequence: <tspan
+   style="fill:#ffc306;fill-opacity:1;stroke-width:0.12269837"
+   id="tspan16480">TGAC</tspan></tspan></text>
+  </g>
+</svg>

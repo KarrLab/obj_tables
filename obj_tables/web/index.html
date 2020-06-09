@@ -498,34 +498,41 @@ zuckerberg <span style="color: #666666">=</span> Person(
 
                   <div class="grid-x grid-padding-x">
                     <div class="large-6 cell">
-                      <h3>Format for schemas for tabular datasets</h3>
+                      <div class="subsection icon">
+                        <img src="img/document.svg" />
+                        <h3>Format for schemas for spreadsheets</h3>
 
-                      <p><i>ObjTables</i> schemas capture the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cell. <i>ObjTables</i> supports three modes of encoding relationships into cells in tables.</p>
+                        <p><i>ObjTables</i> schemas capture the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cell. <i>ObjTables</i> supports three modes of encoding relationships into cells in tables.</p>
 
-                      <ul class="vertically-spaced-list">
-                        <li><b>Columns for relationships among objects represented by entries in tables:</b> Relationships from one (primary) object to other (related) objects can be captured by (a) incorporating a column that represents a unique <i>key</i> for each related object into the table that represents the related objects and (b) encoding the keys for the related objects as a comma-separated list into a column in the table that represents the primary objects.</li>
-                        <li><b>Embedded tables for *-to-one relationships:</b> To help users encode complex datasets into a minimal number of tables, <i>ObjTables</i> can also encode instances of related classes into groups of columns. <i>ObjTables</i> uses merged headings to distinguish these columns.</li>
-                        <li><b>Embedded grammars for relationships:</b> To help users encode complex datasets into a minimal number of tables, grammars can be used to encode instances of related classes into a single column. These grammars can be defined declaratively in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
-                      </ul>
-                    </div>
+                        <ul class="vertically-spaced-list">
+                          <li><b>Foreign keys:</b> Relationships from one object to other objects can be captured by columns that represents the <i>keys</i> of the related objects.</li>
+                          <li><b>Embedded tables for *-to-one relationships:</b> <i>ObjTables</i> can also encode instances of related classes into groups of columns.</li>
+                          <li><b>Embedded grammars for *-to-many relationships:</b> Grammars can also be used to encode instances of related classes into a single column. Grammars can be defined in EBNF format using Lark <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
+                        </ul>
+                      </div>
 
-                    <div class="large-6 cell">
-                      <div class="subsection">
+                      <div class="subsection icon">
+                        <img src="img/data-types.svg" />
                         <h3>Numerous data types</h3>
                         <i>ObjTables</i> provides numerous data types, including for mathematics, science, chemoinformatics, and genomics.
                       </div>
+                    </div>
 
-                      <div class="subsection">
-                        <h3>Markup format for tabular datasets (e.g., Excel workbooks)</h3>
+                    <div class="large-6 cell">
+                      <div class="subsection icon">
+                        <img src="img/markup.svg" />
+                        <h3>Markup format for spreadsheets</h3>
                         The format includes syntax for declaring which cells represent each table, instance, and attribute; declaring which entries represent metadata such as the date that a table was updated; and declaring which entries represent comments.
                       </div>
 
-                      <div class="subsection">
-                        <h3>Software tools for working with tabular datasets</h3>
+                      <div class="subsection icon">
+                        <img src="img/gears.svg" />
+                        <h3>High-level software tools for working with spreadsheets</h3>
                         <i>ObjTables</i> includes a web application, a REST API, a command-line program, and a Python package for working with datasets. These tools can be used to pretty print, validate, compare, revision, and migrate datasets.
                       </div>
 
-                      <div class="subsection">
+                      <div class="subsection icon">
+                        <img src="img/python.svg" />
                         <h3>Python package for additional flexibility</h3>
                         For more flexibility, the Python package can be used to incorporate custom data types, define custom validation, query, and analyze datasets.
                       </div>
