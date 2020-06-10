@@ -9,9 +9,9 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="Capa_1"
    enable-background="new 0 0 467.765 467.765"
-   height="64.000008"
-   viewBox="0 0 93.553678 58.470632"
-   width="102.40074"
+   height="63.999714"
+   viewBox="0 0 58.470625 58.470364"
+   width="64"
    version="1.1"
    sodipodi:docname="code.svg"
    inkscape:version="0.92.3 (2405546, 2018-03-11)">
@@ -42,25 +42,25 @@
      inkscape:window-height="910"
      id="namedview12626"
      showgrid="false"
-     fit-margin-top="0"
+     fit-margin-top="12"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0"
+     fit-margin-bottom="12"
      inkscape:zoom="1.4101562"
-     inkscape:cx="256"
-     inkscape:cy="159.99884"
+     inkscape:cx="255.99327"
+     inkscape:cy="30.155816"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="Capa_1" />
   <path
-     d="M 29.235212,0 0,29.23542 29.235212,58.47063 37.503273,50.20257 16.53632,29.23542 37.503273,8.26807 Z"
+     d="M 18.271875,10.963242 0,29.235247 18.271875,47.50712 l 5.1675,-5.1675 -13.10425,-13.104373 13.10425,-13.104499 z"
      id="path12621"
-     style="fill:#ffc306;fill-opacity:1;stroke-width:0.20000145"
+     style="fill:#ffc306;fill-opacity:1;stroke-width:0.125"
      inkscape:connector-curvature="0" />
   <path
-     d="M 64.318468,0 56.050407,8.26807 77.01736,29.23542 56.050407,50.20237 64.318468,58.47043 93.55368,29.23522 Z"
+     d="m 40.19875,10.963242 -5.1675,5.167506 13.10425,13.104499 -13.10425,13.104248 5.1675,5.1675 18.271875,-18.271873 z"
      id="path12623"
-     style="fill:#ffc306;fill-opacity:1;stroke-width:0.20000145"
+     style="fill:#ffc306;fill-opacity:1;stroke-width:0.125"
      inkscape:connector-curvature="0" />
 </svg>
