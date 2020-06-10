@@ -22,7 +22,7 @@ p {
 
 h2,
 .h2 {
-    color: #ffc306;
+    color: #1890ff;
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
     padding: 0rem;
@@ -116,11 +116,11 @@ ol:last-child {
 }
 
 .green {
-    color: #149048;
+    color: #18ae57;
 }
 
 .orange {
-    color: #FF7900;
+    color: #6d59e4;
 }
 
 a {
@@ -372,7 +372,7 @@ table:last-child {
     width: 65%;
     margin-top: 1rem;
     margin-bottom: 2rem;
-     transition: all .5s;
+    transition: all .5s;
 }
 .splash img:hover {
     transform: scale(1.05);

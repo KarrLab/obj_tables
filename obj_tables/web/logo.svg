@@ -6,12 +6,12 @@
 	.st2{fill:#1890ff;}
 	.st3{fill:#c5e3ff;}
 
-	.st0{fill:#FF7900;}
-	.st5{fill:#ffddbf;}
+	.st0{fill:#6d59e4;}
+	.st5{fill:#afb5ff;}
 
-	.st1{fill:#149048;}	
-	.st11{fill:#b3f4ce;stroke:#149048;stroke-width:5;stroke-miterlimit:10;}
-	.st12{fill:none;stroke:#149048;stroke-width:5;stroke-miterlimit:10;}
+	.st1{fill:#18ae57;}	
+	.st11{fill:#baf5d3;stroke:#18ae57;stroke-width:5;stroke-miterlimit:10;}
+	.st12{fill:none;stroke:#18ae57;stroke-width:5;stroke-miterlimit:10;}
 
 	.st4{fill:none;}	
 	.st6{fill:none;stroke:url(#SVGID_1_);stroke-width:10;stroke-miterlimit:10;}
