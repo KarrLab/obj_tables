@@ -1,6 +1,6 @@
 downstream_dependencies:
   - datanator
-  - obj_tables_migration_test_repo
+  - obj_tables_test_migration_repo
   - wc_kb
   - wc_lang
   - wc_rules
