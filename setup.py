@@ -41,7 +41,7 @@ setuptools.setup(
     url='https://github.com/KarrLab/' + name,
     download_url='https://github.com/KarrLab/' + name,
 
-    author='Karr Lab',
+    author='ObjTables developers',
     author_email='info@objtables.org',
 
     license='MIT',

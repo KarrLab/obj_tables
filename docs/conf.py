@@ -77,8 +77,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ObjTables'
-copyright = u'{}, Karr Lab'.format(datetime.datetime.now().year)
-author = 'Jonathan Karr, Arthur Goldberg'
+copyright = u'{}, ObjTables developers'.format(datetime.datetime.now().year)
+author = 'ObjTables developers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

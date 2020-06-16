@@ -50,4 +50,4 @@ Please see the [user documentation](https://www.objtables.org), [developer docum
 * [Bilal Shaikh](https://www.bshaikh.com)
 
 ## Questions and comments
-Please contact the [Karr Lab](mailto:info@objtables.org) with any questions or comments.
+Please contact the [developers](mailto:info@objtables.org) with any questions or comments.
