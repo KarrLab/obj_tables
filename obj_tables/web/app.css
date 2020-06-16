@@ -42,9 +42,16 @@ h3,
 h4,
 .h4 {
     font-size: 1.0rem;
-    margin-top: 1.5rem;
     margin-bottom: 0.2em;
     font-weight: bold;
+}
+
+h4:first-child {
+    margin-top: 0.5rem;
+}
+
+h4:not(:first-child) {
+    margin-top: 1.5rem;
 }
 
 p,
@@ -102,7 +109,6 @@ ol:last-child {
     margin-bottom: 0;
 }
 
-
 :focus {
     outline: none;
 }
@@ -127,16 +133,17 @@ a {
     color: #1890ff;
 }
 
-
 .icon {
     text-align: center;
 }
+
 .icon img {
     height: 64px;
     margin-top: 0.5rem;
     margin-bottom: 0.25rem;
     transition: all .5s
 }
+
 .icon img:hover {
     transform: scale(1.08);
 }
@@ -145,12 +152,15 @@ a {
     border-bottom: 0;
     margin-bottom: 0rem;
 }
+
 .icon ul {
     list-style-type: none;
 }
+
 .icon li:not(:first-child) {
     margin-top: 0.5rem;
 }
+
 
 /* top bar */
 
@@ -288,7 +298,7 @@ a {
 }
 
 #offCanvasLeft li.accordion-item {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 #offCanvasLeft .accordion-title {
@@ -336,6 +346,7 @@ a {
     color: #333;
 }
 
+
 /* content */
 
 .content,
@@ -356,7 +367,7 @@ table:last-child {
 /* splash */
 
 .splash {
-    background: linear-gradient(0deg,rgba(24,144,255,.1),rgba(24,144,255,.4));
+    background: linear-gradient(0deg, rgba(24, 144, 255, .1), rgba(24, 144, 255, .4));
     padding-top: calc(-1rem + 3rem + 3rem);
     padding-bottom: 3rem;
     margin-bottom: 3rem;
@@ -374,6 +385,7 @@ table:last-child {
     margin-bottom: 2rem;
     transition: all .5s;
 }
+
 .splash img:hover {
     transform: scale(1.05);
 }
@@ -399,6 +411,7 @@ table:last-child {
 .toc h2 {
     color: #5c5c5c;
 }
+
 .toc a {
     color: #333;
 }
@@ -420,6 +433,7 @@ table:last-child {
     line-height: 120%;
     text-indent: 0.25rem;
 }
+
 .toc ul li a {
     margin-left: -0.25rem;
 }
@@ -444,6 +458,7 @@ table:last-child {
 .grid-padding-x .grid-padding-x>.cell:first-child {
     padding-left: 0;
 }
+
 .grid-padding-x .grid-padding-x>.cell:last-child {
     padding-right: 0;
 }
@@ -461,6 +476,7 @@ table:last-child {
 .subsection:not(:first-child) {
     margin-top: 1.5rem;
 }
+
 
 /* lists */
 
@@ -634,12 +650,15 @@ table.examples tr.indent-x2 td:first-child {
 
 
 /* large screens */
+
 .show-for-extra-large {
     display: none;
 }
+
 .hide-for-extra-large {
     display: inline-block;
 }
+
 @media screen and (min-width: 99.5em) {
     .show-for-extra-large {
         display: inline-block;
@@ -648,6 +667,7 @@ table.examples tr.indent-x2 td:first-child {
         display: none;
     }
 }
+
 
 /* mobile */
 
