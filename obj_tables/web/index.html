@@ -49,17 +49,12 @@
 
         <!-- Menu -->
         <ul class="accordion" data-accordion data-allow-all-closed="true">
-          <li class="accordion-item is-active" data-accordion-item>
-            <a class="accordion-title">Home</a>
+          <li class="accordion-item" data-accordion-item>
+            <a class="accordion-title">Getting started</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="#overview">Overview</a></li>
-              <li><a href="#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
-              <li><a href="#motivation">Motivation</a></li>
-              <li><a href="#features">Features</a></li>
-              <li><a href="#components">Components of the toolkit</a></li>
-              <li><a href="#software">Software tools</a></li>
-              <li><a href="#use-cases">Use cases</a></li>
-              <li><a href="#help">Examples, tutorials, docs &amp; help</a></li>
+              <li><a href="getting-started#authors">Authors</a></li>
+              <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
+              <li><a href="getting-started#readers">Readers</a></li>
             </ul>
           </li>
           <li class="accordion-item" data-accordion-item>
@@ -123,16 +118,12 @@
               </div>
               <div class="large-4 medium-6 hide-for-small-only cell links">
                 <ul class="dropdown menu" data-dropdown-menu>
-                  <li class="active-page"><a>Home</a>
+                  <li>
+                    <a>Getting started</a>
                     <ul class="menu">
-                      <li><a href="#overview">Overview</a></li>
-                      <li><a href="#what-is-objtables">What is an <i>ObjTables</i> schema and dataset?</a></li>
-                      <li><a href="#motivation">Motivation</a></li>
-                      <li><a href="#features">Features</a></li>
-                      <li><a href="#components">Components of the toolkit</a></li>
-                      <li><a href="#software">Software tools</a></li>
-                      <li><a href="#use-cases">Use cases</a></li>
-                      <li><a href="#help">Examples, tutorials, docs &amp; help</a></li>
+                      <li><a href="getting-started#authors">Authors</a></li>
+                      <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
+                      <li><a href="getting-started#readers">Readers</a></li>
                     </ul>
                   </li>
                   <li>
@@ -374,7 +365,7 @@
                       <table>
                         <thead>
                           <tr class="class-head">
-                            <th colspan="4">!!ObjTables type='Data' tableFormat='row' id='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
+                            <th colspan="4">!!ObjTables type='Data' tableFormat='row' class='Person' name='People' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
                           </tr>
                           <tr class="col-head">
                             <th>!Name</th>
@@ -685,53 +676,60 @@ zuckerberg <span style="color: #666666">=</span> Person(
 
                   <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell icon">
+                      <img src="img/steps.svg" />
+                      <h3>Getting started</h3>
+                      <p>The getting started page <a href="getting-started"><i class="fi-link"></i></a> contains quick guides for (a) authors for creating reusable spreadsheets and (b) readers for reusing spreadsheets from other investigators.</p>
+                    </div>
+                    <div class="large-4 cell icon">
                       <img src="img/spreadsheet.svg" />
                       <h3>Examples</h3>
-                      The documentation contains several example schemas and datasets <a href="docs#examples"><i class="fi-link"></i></a>.
+                      <p>The documentation contains several example schemas and datasets <a href="docs#examples"><i class="fi-link"></i></a>.</p>
                     </div>
                     <div class="large-4 cell icon">
                       <img src="img/terminal.svg" />
                       <h3>Command-line program installation</h3>
-                      Installation instructions for the command-line program are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available here <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
-                    </div>
-                    <div class="large-4 cell icon">
-                      <img src="img/python.svg" />
-                      <h3>Python package installation</h3>
-                      Installation instructions for the Python package are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available here <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.
+                      <p>Installation instructions for the command-line program are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available here <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.</p>
                     </div>
                   </div>
                   <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell icon">
+                      <img src="img/python.svg" />
+                      <h3>Python package installation</h3>
+                      <p>Installation instructions for the Python package are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available here <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.</p>
+                    </div>
+                    <div class="large-4 cell icon">
                       <img src="img/tutorial.svg" />
                       <h3>Tutorials for the Python package</h3>
-                      A Jupyter notebook with interactive tutorials is available at <a href="https://sandbox.karrlab.org/tree/obj_tables">sandbox.karrlab.org</a>.
+                      <p>A Jupyter notebook with interactive tutorials is available at <a href="https://sandbox.karrlab.org/tree/obj_tables">sandbox.karrlab.org</a>.</p>
                     </div>
                     <div class="large-4 cell icon">
                       <img src="img/manual.svg" />
                       <h3>Docs for the schema &amp; dataset formats</h3>
-                      Documentation for the formats for schemas and the formats for datasets is available at <a href="docs">objtables.org/docs</a>.
-                    </div>
-                    <div class="large-4 cell icon">
-                      <img src="img/manual.svg" />
-                      <h3>Docs for the REST API</h3>
-                      Documentation for the REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
+                      <p>Documentation for the formats for schemas and the formats for datasets is available at <a href="docs">objtables.org/docs</a>.</p>
                     </div>
                   </div>
                   <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell icon">
                       <img src="img/manual.svg" />
+                      <h3>Docs for the REST API</h3>
+                      <p>Documentation for the REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.</p>
+                    </div>
+                    <div class="large-4 cell icon">
+                      <img src="img/manual.svg" />
                       <h3>Docs for the command-line program</h3>
-                      Documentation for the command-line program is available inline by running <span class="monospace">obj-tables --help</span>.
+                      <p>Documentation for the command-line program is available inline by running <span class="monospace">obj-tables --help</span>.</p>
                     </div>
                     <div class="large-4 cell icon">
                       <img src="img/manual.svg" />
                       <h3>Docs for the Python package</h3>
-                      An introduction to the Python package is available at <a href="docs">objtables.org/docs</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables">docs.karrlab.org</a>.
+                      <p>An introduction to the Python package is available at <a href="docs">objtables.org/docs</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables">docs.karrlab.org</a>.</p>
                     </div>
+                  </div>
+                  <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell icon">
                       <img src="img/question.svg" />
                       <h3>Further help</h3>
-                      Please contact the developers <a href="mailto:info@objtables.org"><i class="fi-mail"></i></a> with any questions.
+                      <p>Please contact the developers <a href="mailto:info@objtables.org"><i class="fi-mail"></i></a> with any questions.</p>
                     </div>
                   </div>
                 </div>

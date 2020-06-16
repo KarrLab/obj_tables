@@ -17,7 +17,7 @@ p {
 }
 
 .grid-container {
-    max-width: 97rem;
+    max-width: 99.5rem;
 }
 
 h2,
@@ -141,7 +141,7 @@ a {
     transform: scale(1.08);
 }
 
-.icon h3 {    
+.icon h3 {
     border-bottom: 0;
     margin-bottom: 0rem;
 }
@@ -418,13 +418,14 @@ table:last-child {
 .toc ul li {
     font-size: 0.9rem;
     line-height: 120%;
+    text-indent: 0.25rem;
 }
 .toc ul li a {
     margin-left: -0.25rem;
 }
 
 .toc ul li:not(:first-child) {
-    margin-top: 0.5rem;    
+    margin-top: 0.5rem;
 }
 
 .toc ul ul li {
@@ -640,7 +641,7 @@ table.examples tr.indent-x2 td:first-child {
 .hide-for-extra-large {
     display: inline-block;
 }
-@media screen and (min-width: 97em) {
+@media screen and (min-width: 99.5em) {
     .show-for-extra-large {
         display: inline-block;
     }

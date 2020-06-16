@@ -49,12 +49,12 @@
 
         <!-- Menu -->
         <ul class="accordion" data-accordion data-allow-all-closed="true">
-          <li class="accordion-item" data-accordion-item>
+          <li class="accordion-item is-active" data-accordion-item>
             <a class="accordion-title">Getting started</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="getting-started#authors">Authors</a></li>
-              <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
-              <li><a href="getting-started#readers">Readers</a></li>
+              <li><a href="#authors">Authors</a></li>
+              <li><a href="#reviewers">Reviewers and editors</a></li>
+              <li><a href="#readers">Readers</a></li>
             </ul>
           </li>
           <li class="accordion-item" data-accordion-item>
@@ -88,7 +88,7 @@
               <li class="separator"><a href="docs#help">More help</a></li>
             </ul>
           </li>
-          <li class="accordion-item is-active" data-accordion-item>
+          <li class="accordion-item" data-accordion-item>
             <a class="accordion-title">About</a>
             <ul class="accordion-content" data-tab-content>
               <li><a href="#license">License</a></li>
@@ -119,12 +119,12 @@
               </div>
               <div class="large-4 medium-6 hide-for-small-only cell links">
                 <ul class="dropdown menu" data-dropdown-menu>
-                  <li>
+                  <li class="active-page">
                     <a>Getting started</a>
                     <ul class="menu">
-                      <li><a href="getting-started#authors">Authors</a></li>
-                      <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
-                      <li><a href="getting-started#readers">Readers</a></li>
+                      <li><a href="#authors">Authors</a></li>
+                      <li><a href="#reviewers">Reviewers and editors</a></li>
+                      <li><a href="#readers">Readers</a></li>
                     </ul>
                   </li>
                   <li>
@@ -158,7 +158,7 @@
                       <li class="separator"><a href="docs#help">More help</a></li>
                     </ul>
                   </li>
-                  <li class="active-page">
+                  <li>
                     <a>About</a>
                     <ul class="menu">
                       <li><a href="#license">License</a></li>
@@ -183,12 +183,9 @@
                   <h2>Contents</h2>
                   <div class="section-content">
                     <ul data-magellan>
-                      <li><a href="#license">License</a></li>
-                      <li><a href="#citation">Citing <i>ObjTables</i></a></li>
-                      <li><a href="#contribute">Contributing to <i>ObjTables</i></a></li>
-                      <li><a href="#team">Development team</a></li>
-                      <li><a href="#funding">Funding</a></li>
-                      <li><a href="#contact">Contact information</a></li>
+                      <li><a href="#authors">Guide for authors</a></li>
+                      <li><a href="#reviewers">Guide for reviewers and editors</a></li>
+                      <li><a href="#readers">Guide for readers</a></li>
                     </ul>
                   </div>
                 </div>
@@ -196,53 +193,86 @@
             </div>
 
             <div class="large-10 cell content-container">
-              <div id="license" data-magellan-target="license">
-                <h2>License</h2>
+              <div id="authors" data-magellan-target="authors">
+                <h2>Quick start guide for authors</h2>
                 <div class="section-content">
-                  <i>ObjTables</i> is released under the MIT license <a href="https://github.com/KarrLab/obj_tables/blob/master/LICENSE"><i class="fi-link"></i></a>.
+                  <p>We recommend that authors follow these steps to create reusable spreadsheets:</p>
+                  <ol class="vertically-spaced-list">
+                    <li><b>Encode your data into a spreadsheet:</b> Use LibreOffice Calc, Microsoft Excel, OpenOffice Calc, WPS Spreadsheets, or a similar program to encode your data into a spreadsheet:
+                      <ol style="list-style-type: lower-roman;">
+                        <li>Encode each distinct type of object into a separate worksheet.</li>
+                        <li>Encode each distinct object into a separate row of a worksheet.</li>
+                        <li>Encode an identifier for each object into the first column of each worksheet.</li>
+                        <li>Encode each additional attribute of each object into additional columns.</li>
+                        <li>Use the identifiers of each object to encode relationships between objects into cells.</li>
+                        <li>Encode each Boolean-valued attribute into <span class="monospace">TRUE</span> or <span class="monospace">FALSE</span>. Encode each numeric-valued attribute into a number. Encode all other attributes into strings.</li>
+                        <li>Prepend <span class="monospace">!!</span> to the title of each worksheet.</li>
+                        <li>Add a row that begins with <span class="monospace">!!ObjTables type='Data' class='&lt;class-name&gt;' description='&lt;brief description of the data represented by the table&gt;' tableFormat='row' date='&lt;YYYY-MM-DD&gt;'</span> to the top of each worksheet.</li>
+                        <li>Add a row of column headings to each worksheet. Optionally, add headings for groups of columns to an additional row.</li>
+                        <li>Prepend <span class="monospace">!</span> to each column heading.</li>
+                      </ol>
+
+                      <p>See the documentation <a href="docs"><i class="fi-link"></i></a> for examples of spreadsheets, additional options for encoding data into spreadsheets, and more information about the markup syntax for indicating the class and attribute represented by each worksheet and column.</p>
+                    </li>
+                    <li><b>Design a schema for your spreadsheet:</b> Use LibreOffice Calc, Microsoft Excel, OpenOffice Calc, WPS Spreadsheets, or a similar program to describe the schema for your spreadsheet in an additional worksheet:
+                      <ol style="list-style-type: lower-roman;">
+                        <li>Add an additional worksheet with the title <span class="monospace">!!_Schema</span>.</li>
+                        <li>Set the first cell of the first row equal to <span class="monospace">!!!ObjTables description='&lt;brief description of the dataset&gt;' date='&lt;YYYY-MM-DD&gt;'</span>.</li>
+                        <li>Set the first cell of the second row equal to <span class="monospace">!!ObjTables type='Schema' tableFormat='row' date='&lt;YYYY-MM-DD&gt;'</span>.</li>
+                        <li>Set the first six columns of the third row equal to <span class="monospace">!Name</span>, <span class="monospace">!Type</span>, <span class="monospace">!Parent</span>, <span class="monospace">!Format</span>, <span class="monospace">!Verbose name</span>, and <span class="monospace">!Verbose name plural</span>.</li>
+                        <li>Add a row for each distinct type of object:
+                          <ul>
+                            <li>The first cell should declare the name of the type.</li>
+                            <li>The second cell should be equal to <span class="monospace">Class</span>.</li>
+                            <li>The third cell should be empty.</li>
+                            <li>The fourth cell should be equal to <span class="monospace">row</span>.</li>
+                            <li>The sixth cell should be the name of title of the corresponding worksheet, which should be plural.</li>
+                            <li>The fifth cell should be the singular form of the title.</li>
+                          </ul>
+                        </li>
+                        <li>Add a row for each attribute of each object:
+                          <ul>
+                            <li>The first cell should declare the name of the attribute.</li>
+                            <li>The second cell should be equal to <span class="monospace">Attribute</span>.</li>
+                            <li>The third cell should be the name of the parent class of the attribute.</li>
+                            <li>The fourth cell should indicate the data type of the attribute. For example, Boolean-valued attributes should have the value <span class="monospace">Boolean</span>, float-valued attributes should have the value <span class="monospace">Float</span>, string-valued attributes should have the value <span class="monospace">String</span>, and attributes that represent relationships should have one of the values <span class="monospace">OneToOne</span>, <span class="monospace">OneToMany</span>, <span class="monospace">ManyToOne</span>, or <span class="monospace">ManyToMany</span>.</li>
+                            <li>The fifth cell should contain the heading of the column that corresponds to the attribute.</li>
+                          </ul>
+                        <li>Set the first arguments of each related attribute to the name of the related class and the name of the reverse attribute in the related class (e.g., <span class="monospace">ManyToMany('Parent', related_name='children')</span>).</li>
+                        <li>Optionally, use arguments to define constraints on the values of the attributes. For example, use the <span class="monospace">min</span> argument to define the minimum allowed value of a float-valued attribute.</li>
+                      </ol>
+
+                      <p>See the documentation <a href="docs#examples"><i class="fi-link"></i></a> for examples of schemas, additional options for encoding data into spreadsheets, information about the available types of attributes, and information about the available constraints on the value of each attribute.</p>
+                    </li>
+                    <li><b>Validate your spreadsheet:</b> Use the <i>ObjTables</i> web application <a href="app"><i class="fi-link"></i></a> to validate that your spreadsheet is consistent with your schema. The <i>ObjTables</i> software will report any errors. If necessary, iteratively correct these errors and re-validate your spreadsheet. Once your spreadsheet is valid, other researchers will be able to use <i>ObjTables</i> to re-use and compose your data.</li>
+                    <li><b>Pretty-print your spreadsheet:</b> Prior to publication, we recommend using the <i>ObjTables</i> web application <a href="app"><i class="fi-link"></i></a> to pretty-print your spreadsheet. This will add a table of contents, highlight and freeze the column headings, and add inline help information about each column.</li>
+                    <li><b>Publish your spreadsheet and its schema:</b> When you publish your spreadsheet, make sure to also include its schema as an additional worksheet so that other researchers can reuse your data.</li>
+                  </ol>
                 </div>
               </div>
 
-              <div id="citation" data-magellan-target="citation">
-                <h2>Citing <i>ObjTables</i></h2>
+              <div id="reviewers" data-magellan-target="reviewers">
+                <h2>Quick start guide for reviewers and editors</h2>
                 <div class="section-content">
-                  Jonathan R. Karr, Wolfram Liebermeister, Arthur P. Goldberg, John A. P. Sekar &amp; Bilal Shaikh. Structured spreadsheets with ObjTables enable data reuse and integration. <a href="https://arxiv.org/abs/2005.05227">arXiv:2005.05227</a>.
+                  <p>We recommend that reviewers and editors follow these steps to ensure that authors publish reusable spreadsheets:</p>
+                  <ol class="vertically-spaced-list">
+                    <li><b>Validate each spreadsheet:</b> Use the <i>ObjTables</i> web application <a href="app"><i class="fi-link"></i></a> to validate that each spreadsheet is consistent with its schema.</li>
+                    <li><b>Report any errors to the authors:</b> Copy any errors identified by the web application to your critique.</li>
+                    <li><b>Request that the authors provide reusable spreadsheets:</b> If the submitted spreadsheets are not reusable, ask the authors to revise their spreadsheets so that they can be reused by other investigators.</li>
+                  </ol>
                 </div>
               </div>
 
-              <div id="contribute" data-magellan-target="contribute">
-                <h2>Contributing to <i>ObjTables</i></h2>
+              <div id="readers" data-magellan-target="readers">
+                <h2>Quick start guide for readers</h2>
                 <div class="section-content">
-                  We welcome contributions to <i>ObjTables</i>! To contribute, please submit a GitHub pull request <a href="https://github.com/karrlab/obj_tables/pulls"><i class="fi-link"></i></a> or contact us by email <a href="mailto:info@objtables.org"><i class="fi-mail"></i></a>.
-                </div>
-              </div>
-
-              <div id="team" data-magellan-target="team">
-                <h2>Development team</h2>
-                <div class="section-content">
-                  <p class="before-list" style="margin-top: 1rem"><i>ObjTables</i> was developed by the Karr Lab <a href="https://www.karrlab.org"><i class="fi-link"></i></a> at the Icahn School of Medicine at Mount Sinai <a href="https://www.mssm.edu/"><i class="fi-link"></i></a> in New York, US and the Applied Mathematics and Computer Science, from Genomes to the Environment research unit <a href="https://maiage.inra.fr/"><i class="fi-link"></i></a> at the National Research Institute for Agriculture, Food and Environment <a href="https://www.inrae.fr/en/centres/ile-france-jouy-josas-antony/"><i class="fi-link"></i></a> in Jouy en Josas, FR.</p>
-
-                  <ul>
-                    <li>Jonathan Karr <a href="https://www.karrlab.org/"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/jonrkarr/"><i class="fi-social-linkedin"></i></a></li>
-                    <li>Arthur Goldberg <a href="https://www.mountsinai.org/profiles/arthur-p-goldberg"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/arthurgoldberg/"><i class="fi-social-linkedin"></i></a></li>
-                    <li>Wolfram Liebermeister <a href="http://genome.jouy.inra.fr/~wliebermeis/index_en.html"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/wolfram-liebermeister-28264226/"><i class="fi-social-linkedin"></i></a></li>
-                    <li>John Sekar <a href="https://www.linkedin.com/in/john-sekar/"><i class="fi-social-linkedin"></i></a></li>
-                    <li>Bilal Shaikh <a href="https://www.bshaikh.com"><i class="fi-link"></i></a> <a href="https://www.linkedin.com/in/bilalshaikh42/"><i class="fi-social-linkedin"></i></a></li>
+                  <p>We recommend that readers follow these steps to reuse published spreadsheets:</p>
+                  <ul class="vertically-spaced-list">
+                    <li><b>Visualizing schemas:</b> Use the <i>ObjTables</i> web application to generate UML diagrams for schemas. A UML diagram can be a useful tool for understanding the structure of a spreadsheet.</li>
+                    <li><b>Comparing spreadsheets:</b> Use the <i>ObjTables</i> web application to compare spreadsheets that are encoded into the same schema. The web application will determine if the spreadsheets are equivalent. If the spreadsheets are different, the web application will describe the differences between the spreadsheets.</li>
+                    <li><b>Merging spreadsheets:</b> Use the <i>ObjTables</i> web application to merge spreadsheets that are encoded with the same or overlapping schemas. The web application will return a single spreadsheet that contains the combined content of the individual spreadsheets.</li>
+                    <li><b>Analyzing the content of a spreadsheet:</b> Use the <i>ObjTables</i> Python package to parse a spreadsheet into a high-level data structure, and use packages such as Pandas, scikit-learn, and SciPy or custom code to analyze this data structure.</li>
                   </ul>
-                </div>
-              </div>
-
-              <div id="funding" data-magellan-target="funding">
-                <h2>Funding</h2>
-                <div class="section-content">
-                  <i>ObjTables</i> was supported by a National Institute of Health P41 award <a href="https://projectreporter.nih.gov/project_info_details.cfm?aid=9460251"><i class="fi-link"></i></a>, a National Institute of Health MIRA R35 award <a href="https://projectreporter.nih.gov/project_info_details.cfm?aid=9509480"><i class="fi-link"></i></a>, a National Science Foundation INSPIRE award <a href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1649014"><i class="fi-link"></i></a>, and a German Research Foundation grant <a href="https://gepris.dfg.de/gepris/projekt/201064029"><i class="fi-link"></i></a>.
-                </div>
-              </div>
-
-              <div id="contact" data-magellan-target="contact">
-                <h2>Contact information</h2>
-                <div class="section-content">
-                  Please contact the developers <a href="mailto:info@objtables.org"><i class="fi-mail"></i></a> with any questions or comments.
                 </div>
               </div>
             </div>
