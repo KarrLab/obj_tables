@@ -88,7 +88,8 @@
               <li class="separator"><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
               <li><a href="#other-resources">Resources for working with <i>ObjTables</i></a></li>
               <li><a href="#comparison">Comparison with other tools</a></li>
-              <li><a href="#roadmap">Limitations and future directions</a></li>
+              <li><a href="#limitations">Known limitations</a></li>
+              <li><a href="#roadmap">Future directions</a></li>
               <li class="separator"><a href="#help">More help</a></li>
             </ul>
           </li>
@@ -161,7 +162,8 @@
                       <li class="separator"><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                       <li><a href="#other-resources">Resources for working with <i>ObjTables</i></a></li>
                       <li><a href="#comparison">Comparison with other tools</a></li>
-                      <li><a href="#roadmap">Limitations and future directions</a></li>
+                      <li><a href="#limitations">Known limitations</a></li>
+                      <li><a href="#roadmap">Future directions</a></li>
                       <li class="separator"><a href="#help">More help</a></li>
                     </ul>
                   </li>
@@ -213,7 +215,8 @@
                       </li>
                       <li><a href="#other-resources">Related resources for working with <i>ObjTables</i></a></li>
                       <li><a href="#comparison">Comparison with other tools</a></li>
-                      <li><a href="#roadmap">Limitations and future directions</a></li>
+                      <li><a href="#limitations">Known limitations</a></li>
+                      <li><a href="#roadmap">Future directions</a></li>
                       <li><a href="#help">Further help</a></li>
                     </ul>
                   </div>
@@ -2024,8 +2027,8 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                 </div>
               </div>
 
-              <div id="roadmap" data-magellan-target="roadmap">
-                <h2>Known limitations and future directions</h2>
+              <div id="limitations" data-magellan-target="limitations">
+                <h2>Known limitations</h2>
                 <div class="section-content">
                   <p class="before-list"><i>ObjTables</i> is under active development. Below are several open issues that we intend to address going forward. Please see the GitHub issue list <a href="https://github.com/KarrLab/obj_tables/issues"><i class="fi-link"></i></a> for more information.</p>
                   <ul>
@@ -2036,6 +2039,23 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                     <li>Currently, <i>ObjTables</i> datasets can be exported to JSON and YAML. To facilitate use with other tools, we aim to also convert datasets to an SQL format such as SQLite.</li>
                     <li>Due to the limitations of the pint package, datasets that use <span class="monospace">Unit</span> attributes cannot be pickled.</li>
                     <li><i>ObjTables</i> is still somewhat memory and CPU-inefficient. In particular, the importing and exporting of datasets is inefficient. Going forward, we aim to improve the performance of <i>ObjTables</i>.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div id="roadmap" data-magellan-target="roadmap">
+                <h2>Future directions</h2>
+                <div class="section-content">
+                  <p>Going forward, we hope that the community will adopt <i>ObjTables</i> as a standard for supplementary spreadsheets. Toward a community standard, we invite feedback and contributions. Please contact the developers <a href="mailto:info@objtable.org"><i class="fi-mail"></i></a> to share feedback or get involved.</p>
+
+                  <p class="before-list">Guided by community input, potential directions include:</p>
+                  <ul>
+                    <li>Develop additional data types to better support specific fields of science. Examples include data types for genetic variants, alleles, and geographic and spatial coordinates.</li>
+                    <li>Support additional layout conventions such as multi-level headings.</li>
+                    <li>Develop libraries for additional languages such as Java, MATLAB, and R.</li>
+                    <li>Develop a registry of schemas to make it easier for communities to share schemas.</li>
+                    <li>Encourage data registries such as Dryad, FigShare, GitHub, and Zenodo to support <i>ObjTables</i>.</li>
+                    <li>Lobby journals to encourage authors to publish reusable supplementary tables and to encourage reviewers to verify the reusability of supplementary tables.</li>
                   </ul>
                 </div>
               </div>
