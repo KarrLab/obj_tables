@@ -42,7 +42,7 @@ setuptools.setup(
     download_url='https://github.com/KarrLab/' + name,
 
     author='Karr Lab',
-    author_email='info@karrlab.org',
+    author_email='info@objtables.org',
 
     license='MIT',
 

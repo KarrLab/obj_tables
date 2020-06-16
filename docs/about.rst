@@ -33,4 +33,4 @@ This work was supported by a National Institute of Health P41 award (P41EB023912
 Questions and comments
 ----------------------
 
-Please contact the `Karr Lab <info@karrlab.org>`_ with any questions or comments.
+Please contact the `Karr Lab <info@objtables.org>`_ with any questions or comments.

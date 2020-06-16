@@ -53,7 +53,7 @@ app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/api')
 api = flask_restplus.Api(app,
                          title='ObjTables REST API',
                          description='REST API for generating and working with schemas for tabular-formatted datasets',
-                         contact='info@karrlab.org',
+                         contact='info@objtables.org',
                          version=obj_tables.__version__,
                          license='MIT',
                          license_url='https://github.com/KarrLab/obj_tables/blob/master/LICENSE',
