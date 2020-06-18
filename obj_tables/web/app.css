@@ -376,11 +376,12 @@ table:last-child {
 
 .splash-container {
     margin: auto;
-    max-width: 70rem;
+    max-width: 68rem;
+    font-size: 18px;
 }
 
 .splash img {
-    width: 65%;
+    width: 85%;
     margin-top: 1rem;
     margin-bottom: 2rem;
     transition: all .5s;
@@ -391,7 +392,7 @@ table:last-child {
 }
 
 .splash h1 {
-    font-size: 1.75rem;
+    font-size: 1.6rem;
     font-weight: bold;
     margin-bottom: 1rem;
     color: #33333377;
@@ -613,8 +614,7 @@ tbody.data-type-section td .monospace {
 }
 
 .example-tabular-dataset .col-head:nth-child(2) th:not(.empty) {
-    border-bottom: 1px solid #999;
-    text-align: center;
+
 }
 
 .example-tabular-dataset tbody th {
