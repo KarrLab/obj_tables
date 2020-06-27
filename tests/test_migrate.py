@@ -1706,7 +1706,7 @@ class AutoMigrationFixtures(unittest.TestCase):
         cls.schema_changes_file = SchemaChanges.find_file(cls.test_repo, cls.known_hash_ba1f9d3)
 
         cls.migration_test_repo_url = 'https://github.com/KarrLab/obj_tables_test_migration_repo'
-        cls.migration_test_repo_old_url = 'https://github.com/KarrLab/migration_test_repo'
+        cls.migration_test_repo_old_url = 'https://github.com/KarrLab/obj_tables_test_migration_repo'
         cls.migration_test_repo_known_hash = '820a5d1ac8b660b9bdf609b6b71be8b5fdbf8bd3'
         cls.git_migration_test_repo = GitRepo(cls.migration_test_repo_url)
         cls.clean_schema_changes_file = SchemaChanges.find_file(cls.git_migration_test_repo,
@@ -2115,7 +2115,7 @@ class TestGitRepo(AutoMigrationFixtures):
 
         # test search_parent_directories
         git_repo_from_root = GitRepo(repo_location=self.git_migration_test_repo.repo_dir)
-        repo_child_dir = os.path.join(self.git_migration_test_repo.repo_dir, 'migration_test_repo')
+        repo_child_dir = os.path.join(self.git_migration_test_repo.repo_dir, 'obj_tables_test_migration_repo')
         git_repo_from_child = GitRepo(repo_location=repo_child_dir, search_parent_directories=True)
         self.assertEqual(git_repo_from_root.repo_dir, git_repo_from_child.repo_dir)
 
@@ -2477,7 +2477,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
     def setUp(self):
         self.clean_data_schema_migration = DataSchemaMigration(
             **dict(data_repo_location=self.migration_test_repo_url,
-                   data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
+                   data_config_file_basename='data_schema_migration_conf-obj_tables_test_migration_repo.yaml'))
         self.clean_data_schema_migration.validate()
         self.migration_test_repo_fixtures = self.clean_data_schema_migration.data_git_repo.fixtures_dir()
         self.migration_test_repo_data_file_1 = os.path.join(self.migration_test_repo_fixtures,
@@ -2493,7 +2493,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
                                         '../tests/fixtures//file2.xlsx'],
                       schema_repo_url='https://github.com//KarrLab/obj_tables_test_migration_repo',
                       branch='master',
-                      schema_file='../migration_test_repo/core.py',
+                      schema_file='../obj_tables_test_migration_repo/core.py',
                       )
         path = DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo_2',
                                                               **kwargs)
@@ -2520,7 +2520,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         os.chdir(test_repo_copy.repo_dir)
         config_file_path = DataSchemaMigration.make_data_schema_migration_conf_file_cmd(
             '.',
-            'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/migration_test_repo/core.py',
+            'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/obj_tables_test_migration_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx',
                 os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
         self.assertTrue(os.path.isfile(config_file_path))
@@ -2530,7 +2530,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
 
         config_file_path = DataSchemaMigration.make_data_schema_migration_conf_file_cmd(
             test_repo_copy.repo_dir,
-            'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/migration_test_repo/core.py',
+            'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/obj_tables_test_migration_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx',
                 os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
         self.assertTrue(os.path.isfile(config_file_path))
@@ -2538,7 +2538,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
 
         config_file_path = DataSchemaMigration.make_data_schema_migration_conf_file_cmd(
             test_repo_copy.repo_dir,
-            'https://github.com/KarrLab/wc_lang/blob/test_branch/migration_test_repo/core.py',
+            'https://github.com/KarrLab/wc_lang/blob/test_branch/obj_tables_test_migration_repo/core.py',
             ['tests/fixtures/data_file_1.xlsx'])
         data = yaml.load(open(config_file_path, 'r'), Loader=yaml.FullLoader)
         self.assertEqual(data['branch'], 'test_branch')
@@ -2565,12 +2565,12 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
     def test_load_config_file(self):
         # read config file with initialized values
         pathname = os.path.join(self.git_migration_test_repo.migrations_dir(),
-                                'data_schema_migration_conf-migration_test_repo.yaml')
+                                'data_schema_migration_conf-obj_tables_test_migration_repo.yaml')
         data_schema_migration_conf = DataSchemaMigration.load_config_file(pathname)
         expected_data_schema_migration_conf = dict(
             files_to_migrate=['../tests/fixtures/data_file_1.xlsx'],
-            schema_file='../migration_test_repo/core.py',
-            schema_repo_url='https://github.com/KarrLab/migration_test_repo',
+            schema_file='../obj_tables_test_migration_repo/core.py',
+            schema_repo_url='https://github.com/KarrLab/obj_tables_test_migration_repo',
             branch='master'
         )
         self.assertEqual(data_schema_migration_conf, expected_data_schema_migration_conf)
@@ -2614,14 +2614,14 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         remove_silently(config_file)
 
     def test_init(self):
-        config_basename = 'data_schema_migration_conf-migration_test_repo.yaml'
+        config_basename = 'data_schema_migration_conf-obj_tables_test_migration_repo.yaml'
         data_schema_migration = DataSchemaMigration(
             **dict(data_repo_location=self.migration_test_repo_url, data_config_file_basename=config_basename))
         self.assertEqual(data_schema_migration.data_repo_location, self.migration_test_repo_url)
         self.assertEqual(data_schema_migration.data_config_file_basename, config_basename)
         self.assertEqual(data_schema_migration.data_git_repo.repo_name(), 'obj_tables_test_migration_repo')
         self.assertIsInstance(data_schema_migration.migration_config_data, dict)
-        self.assertEqual(data_schema_migration.schema_git_repo.repo_name(), 'migration_test_repo')
+        self.assertEqual(data_schema_migration.schema_git_repo.repo_name(), 'obj_tables_test_migration_repo')
 
         # test branch that isn't 'master'
         data_schema_migration_2 = DataSchemaMigration(
@@ -2649,7 +2649,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         self.assertEqual(expected_files_to_migrate, self.clean_data_schema_migration.migration_config_data[
             'files_to_migrate'])
         self.assertEqual(self.clean_data_schema_migration.migration_config_data['schema_repo_url'],
-                         'https://github.com/KarrLab/migration_test_repo')
+                         'https://github.com/KarrLab/obj_tables_test_migration_repo')
         loaded_schema_changes = self.clean_data_schema_migration.loaded_schema_changes
         self.assertEqual(len(loaded_schema_changes), 2)
         for change in loaded_schema_changes:
@@ -2670,7 +2670,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             self.clean_data_schema_migration.validate()
 
     def test_get_name(self):
-        self.assertIn('data_schema_migration_conf--obj_tables_test_migration_repo--migration_test_repo--',
+        self.assertIn('data_schema_migration_conf--obj_tables_test_migration_repo--obj_tables_test_migration_repo--',
                       self.clean_data_schema_migration.get_name())
 
         self.clean_data_schema_migration.data_git_repo = None
@@ -2800,17 +2800,17 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         with TemporaryDirectory() as tmp_dir_name:
             data_schema_migration_from_url = DataSchemaMigration(
                 **dict(data_repo_location=self.migration_test_repo_url,
-                       data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
+                       data_config_file_basename='data_schema_migration_conf-obj_tables_test_migration_repo.yaml'))
             migrated_files, temp_dir = data_schema_migration_from_url.automated_migrate(tmp_dir=tmp_dir_name)
             for migrated_file in migrated_files:
                 self.assertTrue(os.path.isfile(migrated_file))
             self.assertEqual(temp_dir, tmp_dir_name)
 
         # test with previously cloned data and schema repos
-        migration_test_repo = self.git_migration_test_repo.copy()
+        obj_tables_test_migration_repo = self.git_migration_test_repo.copy()
         data_schema_migration_existing_repo = DataSchemaMigration(
-            **dict(data_repo_location=migration_test_repo.repo_dir,
-                   data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
+            **dict(data_repo_location=obj_tables_test_migration_repo.repo_dir,
+                   data_config_file_basename='data_schema_migration_conf-obj_tables_test_migration_repo.yaml'))
         migrated_files, _ = data_schema_migration_existing_repo.automated_migrate()
         for migrated_file in migrated_files:
             self.assertTrue(os.path.isfile(migrated_file))
@@ -2820,11 +2820,11 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             self.assertEqual(metadata.schema_repo_metadata.revision,
                              self.hash_of_commit_of_last_schema_changes)
 
-        # test different data and schema repos: data repo = test_repo, schema repo = migration_test_repo
+        # test different data and schema repos: data repo = test_repo, schema repo = obj_tables_test_migration_repo
         test_repo_copy = self.test_repo.copy()
         data_schema_migration_separate_data_n_schema_repos = DataSchemaMigration(
             **dict(data_repo_location=test_repo_copy.repo_dir,
-                   data_config_file_basename='data_schema_migration_conf-migration_test_repo.yaml'))
+                   data_config_file_basename='data_schema_migration_conf-obj_tables_test_migration_repo.yaml'))
         data_schema_migration_separate_data_n_schema_repos.prepare()
         self.round_trip_automated_migrate(data_schema_migration_separate_data_n_schema_repos)
 
@@ -2880,7 +2880,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         test_repo_copy = self.test_repo.copy()
         os.chdir(test_repo_copy.repo_dir)
         migrated_files = DataSchemaMigration.migrate_files(
-            'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/migration_test_repo/core.py',
+            'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/obj_tables_test_migration_repo/core.py',
             '.',
             [os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
         file_copy = os.path.join(os.path.dirname(migrated_files[0]), 'data_file_1_copy.xlsx')
@@ -2897,7 +2897,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
 
         test_repo_copy = self.test_repo.copy()
         migrated_files = DataSchemaMigration.migrate_files(
-            'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/migration_test_repo/core.py',
+            'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/obj_tables_test_migration_repo/core.py',
             test_repo_copy.repo_dir,
             ['tests/fixtures/data_file_1.xlsx',
                 os.path.join(test_repo_copy.repo_dir, 'tests/fixtures/data_file_2_same_as_1.xlsx')])
@@ -2991,7 +2991,7 @@ class TestCementControllers(AutoMigrationFixtures):
             cwd = os.getcwd()
             os.chdir(self.nearly_empty_git_repo.repo_dir)
             argv = ['make-data-schema-migration-config-file',
-                    'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/migration_test_repo/core.py',
+                    'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/obj_tables_test_migration_repo/core.py',
                     str(Path(data_file_path).relative_to(self.nearly_empty_git_repo.repo_dir))]
             with DataRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
@@ -2999,7 +2999,7 @@ class TestCementControllers(AutoMigrationFixtures):
                     self.assertIn('Data-schema migration config file created: ', captured.get_text())
 
             argv = ['make-data-schema-migration-config-file',
-                    'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/migration_test_repo/core.py',
+                    'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/obj_tables_test_migration_repo/core.py',
                     'no_such_file']
             with DataRepoMigrate(argv=argv) as app:
                 with self.assertRaisesRegex(MigratorError, "cannot find data file: 'no_such_file'"):
@@ -3014,14 +3014,14 @@ class TestCementControllers(AutoMigrationFixtures):
     @unittest.skip('Fixture must be updated due to changes to obj_tables')
     def test_do_configured_migration(self):
         # use a clone of https://github.com/KarrLab/obj_tables_test_migration_repo and migrate
-        # data_schema_migration_conf-migration_test_repo.yaml
+        # data_schema_migration_conf-obj_tables_test_migration_repo.yaml
         try:
             # working directory must be in self.nearly_empty_git_repo
             # save cwd so it can be restored
             cwd = os.getcwd()
             os.chdir(self.git_migration_test_repo.repo_dir)
             argv = ['do-configured-migration',
-                    'migrations/data_schema_migration_conf-migration_test_repo.yaml']
+                    'migrations/data_schema_migration_conf-obj_tables_test_migration_repo.yaml']
             with DataRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:
                     app.run()
@@ -3042,14 +3042,14 @@ class TestCementControllers(AutoMigrationFixtures):
     @unittest.skip('Fixture must be updated due to changes to obj_tables')
     def test_migrate_data(self):
         try:
-            # do round-trip migration of file in test_repo, with schema from migration_test_repo
+            # do round-trip migration of file in test_repo, with schema from obj_tables_test_migration_repo
             test_repo_copy = self.test_repo.copy()
             # working directory must be in test_repo
             # save cwd so it can be restored
             cwd = os.getcwd()
             os.chdir(test_repo_copy.repo_dir)
             argv = ['migrate-data',
-                    'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/migration_test_repo/core.py',
+                    'https://github.com/KarrLab/obj_tables_test_migration_repo/blob/master/obj_tables_test_migration_repo/core.py',
                     'tests/fixtures/data_file_1.xlsx']
             with DataRepoMigrate(argv=argv) as app:
                 with capturer.CaptureOutput(relay=False) as captured:

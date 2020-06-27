@@ -269,7 +269,7 @@ own :obj:`Reader` or  :obj:`Writer` classes for data file IO.
 This example *data-schema migration configuration* file configures the migration of one file,
 :obj:`data_file_1.xlsx`.
 
-.. literalinclude:: migration/data_schema_migration_conf-migration_test_repo.yaml
+.. literalinclude:: migration/data_schema_migration_conf-obj_tables_test_migration_repo.yaml
   :language: YAML
 
 All data-schema migration config files contain four fields:

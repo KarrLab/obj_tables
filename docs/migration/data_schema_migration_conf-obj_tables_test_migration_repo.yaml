@@ -6,6 +6,6 @@
 # 'branch' contains the schema's branch
 # 'schema_file' contains the relative path to the schema file in the schema repo
 files_to_migrate: [../data/data_file_1.xlsx]
-schema_file: '../migration_test_repo/core.py'
-schema_repo_url: 'https://github.com/KarrLab/migration_test_repo'
+schema_file: '../obj_tables_test_migration_repo/core.py'
+schema_repo_url: 'https://github.com/KarrLab/obj_tables_test_migration_repo'
 branch: 'master'
