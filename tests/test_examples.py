@@ -180,6 +180,8 @@ class ExamplesTestCase(unittest.TestCase):
             with __main__.App(argv=['validate', schema_filename_py, data_filename_xlsx]) as app:
                 app.run()
 
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_xlsx]) as app:
+                app.run()
             with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_csv]) as app:
                 app.run()
             with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_tsv]) as app:
@@ -213,10 +215,10 @@ class ExamplesTestCase(unittest.TestCase):
 
     def test_other_examples(self):
         dirnames = [
-            #'examples/address_book',
-            #'examples/biochemical_model',
-            #'examples/children_fav_games',
-            #'examples/financial_transactions',
+            'examples/address_book',
+            'examples/biochemical_model',
+            'examples/children_fav_games',
+            'examples/financial_transactions',
             'examples/genomics',
         ]
         for dirname in dirnames:
@@ -261,6 +263,8 @@ class ExamplesTestCase(unittest.TestCase):
             with __main__.App(argv=['validate', schema_filename_py, data_filename_xlsx]) as app:
                 app.run()
 
+            with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_xlsx]) as app:
+                app.run()
             with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_csv]) as app:
                 app.run()
             with __main__.App(argv=['convert', schema_filename_csv, data_filename_xlsx, data_filename_tsv]) as app:
