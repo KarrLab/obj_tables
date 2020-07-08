@@ -4860,6 +4860,44 @@ class TestCore(unittest.TestCase):
         _, error = attr.deserialize(serialized_val, {})
         self.assertNotEqual(error, None)
 
+    def test_split_separated_list(self):
+        self.assertEqual(core.split_separated_list(''), [])
+        self.assertEqual(core.split_separated_list('  '), [])
+        self.assertEqual(core.split_separated_list('a'), ['a'])
+        self.assertEqual(core.split_separated_list(' a'), ['a'])
+        self.assertEqual(core.split_separated_list('a '), ['a'])
+        self.assertEqual(core.split_separated_list('  a '), ['a'])
+        self.assertEqual(core.split_separated_list('abc'), ['abc'])
+        self.assertEqual(core.split_separated_list(',abc'), ['', 'abc'])
+        self.assertEqual(core.split_separated_list('abc,'), ['abc', ''])
+        self.assertEqual(core.split_separated_list('abc,def'), ['abc', 'def'])
+        self.assertEqual(core.split_separated_list('abc, def'), ['abc', 'def'])
+        self.assertEqual(core.split_separated_list('abc  , 123'), ['abc', '123'])
+        self.assertEqual(core.split_separated_list('abc, def, ghi'), ['abc', 'def', 'ghi'])
+        self.assertEqual(core.split_separated_list('abc, "def", ghi'), ['abc', 'def', 'ghi'])
+        self.assertEqual(core.split_separated_list('abc, "\\"def\\"", ghi'), ['abc', '"def"', 'ghi'])
+        self.assertEqual(core.split_separated_list('"\\"abc\\"", "\\"def\\"", ghi'), ['"abc"', '"def"', 'ghi'])
+        self.assertEqual(core.split_separated_list('"\\"abc\\"", "\\"def\\"", "\\"ghi\\""'), ['"abc"', '"def"', '"ghi"'])
+        self.assertEqual(core.split_separated_list('abc, ",def,", ghi'), ['abc', ',def,', 'ghi'])
+        self.assertEqual(core.split_separated_list('abc, ,",def,", ghi'), ['abc', '', ',def,', 'ghi'])
+
+        self.assertEqual(core.split_separated_list(core.join_separated_list([])), [])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['a'])), ['a'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['abc'])), ['abc'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['', 'abc'])), ['', 'abc'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['abc', ''])), ['abc', ''])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['abc', 'def'])), ['abc', 'def'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['abc', '123'])), ['abc', '123'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['abc', 'def', 'ghi'])), ['abc', 'def', 'ghi'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['abc', '"def"', 'ghi'])), ['abc', '"def"', 'ghi'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['"abc"', '"def"', 'ghi'])), ['"abc"', '"def"', 'ghi'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['"abc"', '"def"', '"ghi"'])), ['"abc"', '"def"', '"ghi"'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['abc', ',def,', 'ghi'])), ['abc', ',def,', 'ghi'])
+        self.assertEqual(core.split_separated_list(core.join_separated_list(['abc', '', ',def,', 'ghi'])), ['abc', '', ',def,', 'ghi'])
+
+        with self.assertRaises(ValueError):
+            core.split_separated_list('"\\"abc\\"", "\\"def\\"", "\\"ghi\\"')
+
 
 class ContextTestCase(unittest.TestCase):
     def test(self):

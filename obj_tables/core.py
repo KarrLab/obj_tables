@@ -3765,7 +3765,7 @@ class EnumAttribute(LiteralAttribute):
             args.append("none=True")
 
         return "{}({})".format(self.__class__.__name__.rpartition('Attribute')[0],
-                                 ", ".join(args))
+                               ", ".join(args))
 
 
 class BooleanAttribute(LiteralAttribute):
@@ -5674,7 +5674,8 @@ class RangeAttribute(LiteralAttribute):
         type (:obj:`type`): type of elements
     """
 
-    def __init__(self, type=float, separator='-', separator_pattern=r'(?<!e) *- *', none=True, default=None, none_value=None, verbose_name='',
+    def __init__(self, type=float, separator='-', separator_pattern=r'(?<!e) *- *',
+                 none=True, default=None, none_value=None, verbose_name='',
                  description="A range of values"):
         """
         Args:
@@ -5858,16 +5859,14 @@ class ListAttribute(LiteralAttribute):
     Attributes:
         type (:obj:`type`): type of elements
         separator (:obj:`str`): element separator for serialization
-        separator_pattern (:obj:`str`): element separator for deserialization
     """
 
-    def __init__(self, type=str, separator=', ', separator_pattern=', *', default=[], none_value=[], verbose_name='',
+    def __init__(self, type=str, separator=',', default=[], none_value=[], verbose_name='',
                  description="A list of values"):
         """
         Args:
             type (:obj:`type`, optional): type of elements
             separator (:obj:`str`, optional): element separator for serialization
-            separator_pattern (:obj:`str`, optional): element separator for deserialization
             default (:obj:`list`, optional): default value
             none_value (:obj:`list`, optional): none value
             verbose_name (:obj:`str`, optional): verbose name
@@ -5881,7 +5880,6 @@ class ListAttribute(LiteralAttribute):
                                             description=description)
         self.type = type
         self.separator = separator
-        self.separator_pattern = separator_pattern
 
     def clean(self, value):
         """ Deserialize value
@@ -5899,7 +5897,7 @@ class ListAttribute(LiteralAttribute):
             return (value, None)
         elif isinstance(value, str):
             try:
-                return ([self.type(el) for el in re.split(self.separator_pattern, value)], None)
+                return ([self.type(el) for el in split_separated_list(value, separator=self.separator)], None)
             except ValueError as error:
                 return (None, InvalidAttribute(self, [str(error)]))
         else:
@@ -5937,7 +5935,7 @@ class ListAttribute(LiteralAttribute):
         Returns:
             :obj:`str`: simple Python representation
         """
-        return self.separator.join(str(el) for el in value)
+        return join_separated_list(value, separator=self.separator)
 
     def to_builtin(self, value):
         """ Encode a value of the attribute using a simple Python representation (dict, list, str, float, bool, None)
@@ -5978,8 +5976,8 @@ class ListAttribute(LiteralAttribute):
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 
-        input_message = ['Enter an "{}"-separated list (e.g. "A{}B").'.format(self.separator, self.separator)]
-        error_message = ['Value must be a "{}"-separated list (e.g. "A{}B").'.format(self.separator, self.separator)]
+        input_message = ['Enter an "{}"-separated list (e.g. "A{} B").'.format(self.separator, self.separator)]
+        error_message = ['Value must be a "{}"-separated list (e.g. "A{} B").'.format(self.separator, self.separator)]
 
         if validation.input_message:
             validation.input_message += '\n\n'
@@ -6755,6 +6753,7 @@ class ToManyAttribute(RelatedAttribute):
     Attributes:
         cell_dialect (:obj:`CellDialect`): dialect for serializing values to a cell
     """
+
     def serialize_to_cell(self, values, encoded=None):
         """ Serialize related object
 
@@ -6817,7 +6816,7 @@ class ToManyAttribute(RelatedAttribute):
             deserialized_values = []
             for value in json.loads(values):
                 deserialized_values.append(self.related_class.from_dict(value, [self.related_class], decode_primary_objects=False,
-                                                         primary_objects=objects, decoded=decoded))
+                                                                        primary_objects=objects, decoded=decoded))
             return (deserialized_values, None)
 
         else:
@@ -7150,7 +7149,7 @@ class OneToOneAttribute(RelatedAttribute):
             :obj:`Model`
         """
         return (self.related_class.from_dict(json.loads(value), [self.related_class], decode_primary_objects=False,
-                                            primary_objects=objects, decoded=decoded), None)
+                                             primary_objects=objects, decoded=decoded), None)
 
     def merge(self, left, right, right_objs_in_left, left_objs_in_right):
         """ Merge an attribute of elements of two models
@@ -7541,7 +7540,7 @@ class ManyToOneAttribute(RelatedAttribute):
             :obj:`Model`
         """
         return (self.related_class.from_dict(json.loads(value), [self.related_class], decode_primary_objects=False,
-                                            primary_objects=objects, decoded=decoded), None)
+                                             primary_objects=objects, decoded=decoded), None)
 
     def merge(self, left, right, right_objs_in_left, left_objs_in_right):
         """ Merge an attribute of elements of two models
@@ -7665,6 +7664,7 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
 
     def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
                  related_default=None, none_value=list,
+                 separator=',',
                  min_related=0, max_related=float('inf'), min_related_rev=0,
                  verbose_name='', verbose_related_name='', description='',
                  related_manager=OneToManyRelatedManager, cell_dialect=CellDialect.json):
@@ -7678,6 +7678,7 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): function which returns the default related value
             none_value (:obj:`object`, optional): none value
+            separator (:obj:`str`, optional): element separator for serialization
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
@@ -7693,6 +7694,7 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
             related_init_value=None, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=1,
             verbose_name=verbose_name, description=description, verbose_related_name=verbose_related_name)
+        self.separator = separator
         self.type = RelatedManager
         if min_related_rev:
             self.related_type = Model
@@ -7861,7 +7863,7 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
                     getattr(v, primary_attr.name)))
 
             serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
-            return ', '.join(serialized_vals)
+            return join_separated_list(serialized_vals, separator=self.separator)
 
     def deserialize(self, values, objects, decoded=None):
         """ Deserialize value
@@ -7888,7 +7890,8 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
         else:
             deserialized_values = list()
             errors = []
-            for value in values.split(','):
+
+            for value in split_separated_list(values, separator=self.separator):
                 value = value.strip()
 
                 related_objs = set()
@@ -7981,7 +7984,7 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
 
         default = self.get_default_cleaned_value()
         if default:
-            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
+            input_message.append('Default: {}.'.format(join_separated_list([v.serialize() for v in default], separator=self.separator)))
 
         if validation.input_message:
             validation.input_message += '\n\n'
@@ -8006,6 +8009,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
 
     def __init__(self, related_class, related_name='', default=list(), default_cleaned_value=list(),
                  related_default=list(), none_value=list,
+                 separator=',',
                  min_related=0, max_related=float('inf'), min_related_rev=0, max_related_rev=float('inf'),
                  verbose_name='', verbose_related_name='', description='',
                  related_manager=ManyToManyRelatedManager, cell_dialect=CellDialect.json):
@@ -8019,6 +8023,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
                 which computes the value to replace :obj:`None` values
             related_default (:obj:`callable`, optional): function which returns the default related values
             none_value (:obj:`object`, optional): none value
+            separator (:obj:`str`, optional): element separator for serialization
             min_related (:obj:`int`, optional): minimum number of related objects in the forward direction
             max_related (:obj:`int`, optional): maximum number of related objects in the forward direction
             min_related_rev (:obj:`int`, optional): minimum number of related objects in the reverse direction
@@ -8035,6 +8040,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
             related_init_value=related_manager, related_default=related_default, none_value=none_value,
             min_related=min_related, max_related=max_related, min_related_rev=min_related_rev, max_related_rev=max_related_rev,
             verbose_name=verbose_name, description=description, verbose_related_name=verbose_related_name)
+        self.separator = separator
         self.type = RelatedManager
         self.related_type = RelatedManager
         self.related_manager = related_manager
@@ -8219,7 +8225,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
                     getattr(v, primary_attr.name)))
 
             serialized_vals.sort(key=natsort_keygen(alg=ns.IGNORECASE))
-            return ', '.join(serialized_vals)
+            return join_separated_list(serialized_vals, separator=self.separator)
 
     def deserialize(self, values, objects, decoded=None):
         """ Deserialize value
@@ -8246,7 +8252,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
         else:
             deserialized_values = list()
             errors = []
-            for value in values.split(','):
+            for value in split_separated_list(values, separator=self.separator):
                 value = value.strip()
 
                 related_objs = set()
@@ -8332,7 +8338,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
 
         default = self.get_default_cleaned_value()
         if default:
-            input_message.append('Default: {}.'.format(', '.join([v.serialize() for v in default])))
+            input_message.append('Default: {}.'.format(join_separated_list([v.serialize() for v in default], separator=self.separator)))
 
         if validation.input_message:
             validation.input_message += '\n\n'
@@ -8709,5 +8715,64 @@ class ObjTablesWarning(UserWarning):
 class SchemaWarning(ObjTablesWarning):
     """ Schema warning """
     pass
+
+
+def join_separated_list(values, separator=','):
+    """ Parse a separator list of values into a list of values
+
+    Args:        
+        values (:obj:`list` of :obj:`str`): values
+        separator (:obj:`str`, optional): separator
+
+    Returns:        
+        :obj:`str`: seperator-separated list of values
+    """
+    delimited_values = []
+    for val in values:
+        if ',' in val or '"' in val:
+            delimited_values.append('"{}"'.format(val.replace('"', '\\"')))
+        else:
+            delimited_values.append(val)
+    return (separator + ' ').join(delimited_values)
+
+
+def split_separated_list(joined_values, separator=','):
+    """ Parse a separator list of values into a list of values
+
+    Args:
+        joined_values (:obj:`str`): seperator-separated list of values
+        separator (:obj:`str`, optional): separator
+
+    Returns:
+        :obj:`list` of :obj:`str`: values
+    """
+    if not joined_values or not joined_values.strip():
+        return []
+
+    values = []
+
+    value_pattern = r'(?:"((?:[^"\\]|\\.)*)"|([^{0}"]*))'.format(separator)
+    pattern = r'^ *{0}((?: *{1} *{0})*) *$'.format(value_pattern, separator)
+    match = re.match(pattern, joined_values)
+    if not match:
+        raise ValueError("Value must be a {}-separated list: {}".format(separator, joined_values))
+    if match.group(1) is not None:
+        values.append(match.group(1).replace('\\"', '"'))
+    else:
+        values.append(match.group(2).strip())
+
+    remainder = match.group(3)
+    pattern = r'^ *{1} *{0}( *{1} *{0})*$'.format(value_pattern, separator)
+    while remainder:
+        match = re.match(pattern, remainder)
+        if match.group(1) is not None:
+            values.append(match.group(1).replace('\\"', '"'))
+            remainder = remainder[match.end(1) + 1:]
+        else:
+            values.append(match.group(2).strip())
+            remainder = remainder[match.end(2):]
+
+    return values
+
 
 from .utils import get_related_models, get_attr_order

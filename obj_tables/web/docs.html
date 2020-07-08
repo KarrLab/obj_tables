@@ -283,7 +283,7 @@
                       </table>
                     </div>
 
-                    <h4>Schema defined as a Python module</h4>
+                    <h4 id="example-python-schema">Schema defined as a Python module</h4>
                     <p>A more complete example is available in Python format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.py"><i class="fi-link"></i></a>.</p>
 
                     <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables</span>
@@ -316,6 +316,10 @@
         verbose_name <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Address&#39;</span>
         verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Addresses&#39;</span>
 
+<span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">PersonType</span>(enum<span style="color: #666666">.</span>Enum):
+    family <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;family&#39;</span>
+    friend <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;friend&#39;</span>
+    business <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;business&#39;</span>
 
 <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Person</span>(obj_tables<span style="color: #666666">.</span>Model):
     name <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>StringAttribute(
@@ -323,7 +327,7 @@
         unique<span style="color: #666666">=</span><span style="color: #008000">True</span>,
         verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Name&#39;</span>)
     <span style="color: #008000">type</span> <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>EnumAttribute(
-        [<span style="color: #BA2121">&#39;family&#39;</span>, <span style="color: #BA2121">&#39;friend&#39;</span>, <span style="color: #BA2121">&#39;business&#39;</span>],
+        PersonType,
         verbose_name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Type&#39;</span>)
     company <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>ManyToOneAttribute(
         <span style="color: #BA2121">&#39;Company&#39;</span>,
@@ -1607,7 +1611,7 @@
                     </ul>
 
                     <h4>Class/table declaration: declaring the class represented by each table</h4>
-                    <p>Each table must declare the class that it represents by including a line that begins with <span class="monospace">!!ObjTables type='Data' class='&lt;class_name&gt;' ...</span>). The value of <span class="monospace">id</span> should be the name of a class in the schema.</p>
+                    <p>Each table must declare the class that it represents by including a line that begins with <span class="monospace">!!ObjTables type='Data' class='&lt;class_name&gt;' ...</span>). The value of <span class="monospace">class</span> should be the name of a class in the schema.</p>
 
                     <h4>Class/table-level metadata</h4>
                     <p class="before-list">Optionally, table declarations can capture key-value pairs of class/table-level metadata. Each key and value should be a string. At a minimum, we recommend using the keys below. The <i>ObjTables</i> software automatically generates these keys when datasets are exported to files.</p>
@@ -1893,43 +1897,40 @@ obj-tables diff /path/to/schema.xlsx /path/to/dataset-1.xlsx /path/to/dataset-2.
 
                       <p>Additional and more extensive tutorials are available as interactive Jupyter notebooks at <a href="https://sandbox.karrlab.org/tree/obj_tables">sandbox.karrlab.org</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.grammar">docs.karrlab.org</a>. Documentation for each module, class, and function can also be obtained by executing <span class="monospace">help(&lt;module/class/function&gt;)</span> (e.g., <span class="monospace">help(obj_tables.io.validate)</span>).</p>
 
-                      <h4>Import schema</h4>
-                      <pre><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">schema</span> <span style="color: #008000; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">address_book</span>
-PersonType <span style="color: #666666">=</span> address_book<span style="color: #666666"> \
-                                 .</span>Person<span style="color: #666666"> \
-                                 .</span>type<span style="color: #666666">.</span>enum_class</pre>
+                      <h4>Define schema</h4>
+                      Please see the example above <a href="#example-python-schema"><i class="fi-arrow-up"></i></a>.
 
                       <h4>Create companies</h4>
-                      <pre>apple <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Company(
+                      <pre>apple <span style="color: #666666">=</span> Company(
     name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Apple&#39;</span>,
     url<span style="color: #666666">=</span><span style="color: #BA2121">&#39;https://apple.com/&#39;</span>,
-    address<span style="color: #666666">=</span>address_book<span style="color: #666666">.</span>Address(
+    address<span style="color: #666666">=</span>Address(
         street<span style="color: #666666">=</span><span style="color: #BA2121">&#39;10600 N Tantau Ave&#39;</span>,
         city<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Cupertino&#39;</span>,
         state<span style="color: #666666">=</span><span style="color: #BA2121">&#39;CA&#39;</span>,
         zip_code<span style="color: #666666">=</span><span style="color: #BA2121">&#39;95014&#39;</span>,
         country<span style="color: #666666">=</span><span style="color: #BA2121">&#39;US&#39;</span>))
-facebook <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Company(
+facebook <span style="color: #666666">=</span> Company(
     name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Facebook&#39;</span>,
     url<span style="color: #666666">=</span><span style="color: #BA2121">&#39;https://facebook.com/&#39;</span>,
-    address<span style="color: #666666">=</span>address_book<span style="color: #666666">.</span>Address(
+    address<span style="color: #666666">=</span>Address(
         street<span style="color: #666666">=</span><span style="color: #BA2121">&#39;1 Hacker Way #15&#39;</span>,
         city<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Menlo Park&#39;</span>, state<span style="color: #666666">=</span><span style="color: #BA2121">&#39;CA&#39;</span>,
         zip_code<span style="color: #666666">=</span><span style="color: #BA2121">&#39;94025&#39;</span>,
         country<span style="color: #666666">=</span><span style="color: #BA2121">&#39;US&#39;</span>))
-google <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Company(
+google <span style="color: #666666">=</span> Company(
     name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Google&#39;</span>,
     url<span style="color: #666666">=</span><span style="color: #BA2121">&#39;https://google.com/&#39;</span>,
-    address<span style="color: #666666">=</span>address_book<span style="color: #666666">.</span>Address(
+    address<span style="color: #666666">=</span>Address(
         street<span style="color: #666666">=</span><span style="color: #BA2121">&#39;1600 Amphitheatre Pkwy&#39;</span>,
         city<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Mountain View&#39;</span>,
         state<span style="color: #666666">=</span><span style="color: #BA2121">&#39;CA&#39;</span>,
         zip_code<span style="color: #666666">=</span><span style="color: #BA2121">&#39;94043&#39;</span>,
         country<span style="color: #666666">=</span><span style="color: #BA2121">&#39;US&#39;</span>))
-netflix <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Company(
+netflix <span style="color: #666666">=</span> Company(
     name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Netflix&#39;</span>,
     url<span style="color: #666666">=</span><span style="color: #BA2121">&#39;https://netflix.com/&#39;</span>,
-    address<span style="color: #666666">=</span>address_book<span style="color: #666666">.</span>Address(
+    address<span style="color: #666666">=</span>Address(
         street<span style="color: #666666">=</span><span style="color: #BA2121">&#39;100 Winchester Cir&#39;</span>,
         city<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Los Gatos&#39;</span>,
         state<span style="color: #666666">=</span><span style="color: #BA2121">&#39;CA&#39;</span>,
@@ -1943,28 +1944,28 @@ companies <span style="color: #666666">=</span> [
 ]</pre>
 
                       <h4>Create CEOs</h4>
-                      <pre>cook <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person(
+                      <pre>cook <span style="color: #666666">=</span> Person(
     name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Tim Cook&#39;</span>,
     type<span style="color: #666666">=</span>PersonType<span style="color: #666666">.</span>business,
     company<span style="color: #666666">=</span>apple,
     email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;tcook@apple.com&#39;</span>,
     phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;408-996-1010&#39;</span>,
     address<span style="color: #666666">=</span>apple<span style="color: #666666">.</span>address)
-hastings <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person(
+hastings <span style="color: #666666">=</span> Person(
     name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Reed Hastings&#39;</span>,
     type<span style="color: #666666">=</span>PersonType<span style="color: #666666">.</span>business,
     company<span style="color: #666666">=</span>netflix,
     email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;reed.hastings@netflix.com&#39;</span>,
     phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;408-540-3700&#39;</span>,
     address<span style="color: #666666">=</span>netflix<span style="color: #666666">.</span>address)
-pichai <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person(
+pichai <span style="color: #666666">=</span> Person(
     name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Sundar Pichai&#39;</span>,
     type<span style="color: #666666">=</span>PersonType<span style="color: #666666">.</span>business,
     company<span style="color: #666666">=</span>google,
     email_address<span style="color: #666666">=</span><span style="color: #BA2121">&#39;sundar@google.com&#39;</span>,
     phone_number<span style="color: #666666">=</span><span style="color: #BA2121">&#39;650-253-0000&#39;</span>,
     address<span style="color: #666666">=</span>google<span style="color: #666666">.</span>address)
-zuckerberg <span style="color: #666666">=</span> address_book<span style="color: #666666">.</span>Person(
+zuckerberg <span style="color: #666666">=</span> Person(
     name<span style="color: #666666">=</span><span style="color: #BA2121">&#39;Mark Zuckerberg&#39;</span>,
     type<span style="color: #666666">=</span>PersonType<span style="color: #666666">.</span>family,
     company<span style="color: #666666">=</span>facebook,
@@ -2004,8 +2005,8 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
     filename_xlsx,
     companies <span style="color: #666666">+</span> ceos,
     models<span style="color: #666666">=</span>[
-        address_book<span style="color: #666666">.</span>Company,
-        address_book<span style="color: #666666">.</span>Person,
+        Company,
+        Person,
     ]
 )</pre>
 
@@ -2014,8 +2015,8 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                       <pre>objects <span style="color: #666666">=</span> obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.</span>Reader()<span style="color: #666666">.</span>run(
     filename_xlsx,
     models<span style="color: #666666">=</span>[
-        address_book<span style="color: #666666">.</span>Company,
-        address_book<span style="color: #666666">.</span>Person,
+        Company,
+        Person,
     ],
     group_objects_by_model<span style="color: #666666">=</span><span style="color: #008000">False</span>,
     ignore_sheet_order<span style="color: #666666">=</span><span style="color: #008000">True</span>
@@ -2024,7 +2025,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                       <h4>Check if two CEOs are semantically equivalent</h4>
                       <pre>zuckerberg_copy <span style="color: #666666">=</span> <span style="color: #008000">next</span>(
     el <span style="color: #008000; font-weight: bold">for</span> el <span style="color: #AA22FF; font-weight: bold">in</span> objects <span style="color: #008000; font-weight: bold">
-         if</span> <span style="color: #008000">isinstance</span>(el, address_book<span style="color: #666666">.</span>Person) \
+         if</span> <span style="color: #008000">isinstance</span>(el, Person) \
       <span style="color: #AA22FF; font-weight: bold">and</span> el<span style="color: #666666">.</span>name <span style="color: #666666">==</span> <span style="color: #BA2121">&#39;Mark Zuckerberg&#39;</span>)
 <span style="color: #008000; font-weight: bold">assert</span> zuckerberg_copy<span style="color: #666666">.</span>is_equal(
     zuckerberg)
