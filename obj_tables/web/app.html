@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ObjTables: Toolkit for working with complex data with the ease of spreadsheets, the rigor of schemas, and the power of object-oriented programming</title>
+    <title>ObjTables: Toolkit for structured spreadsheets that are human- and machine-readable</title>
     <meta name="description" content="ObjTables is a free, open-source toolkit for systematically building, annotating, validating, and parsing complex datasets with the ease of spreadsheets (e.g., Excel), the rigor of schemas, and the power of object-oriented programming. ObjTables makes it easy to design schemas for datasets, generate template spreadsheets with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in languages such as Python. The ObjTables software is available through four interfaces: a web application, a REST API, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
     <meta name="keywords" content="data, table, schema, data model, meta model, data type, validate, Python"/>
     <meta name="language" content="EN">
@@ -50,19 +50,19 @@
         <!-- Menu -->
         <ul class="accordion" data-accordion data-allow-all-closed="true">
           <li class="accordion-item" data-accordion-item>
-            <a class="accordion-title">Getting started</a>
+            <a class="accordion-title">Guide</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="getting-started#authors">Authors</a></li>
-              <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
-              <li><a href="getting-started#readers">Readers</a></li>
+              <li><a href="guide#authors">Authors</a></li>
+              <li><a href="guide#reviewers">Reviewers and editors</a></li>
+              <li><a href="guide#readers">Readers</a></li>
             </ul>
           </li>
           <li class="accordion-item is-active" data-accordion-item>
             <a class="accordion-title">Software</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="app">Web application</a></li>
-              <li><a href="api">REST API</a></li>
+              <li><a href="app">Web application</a></li>              
               <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+              <li><a href="api">REST API</a></li>
               <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
               <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
               <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
@@ -76,8 +76,10 @@
               <li><a href="docs#data-types">Data types</a></li>
               <li><a href="docs#dataset-formats">Dataset formats</a></li>
               <li><a href="docs#validation">Data validation</a></li>
-              <li class="separator"><a href="api">REST API</a></li>
-              <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+              <li class="separator"><a href="app">Web application</a></li>
+              <li><a href="docs#cli">Command-line program</a></li>
+              <li><a href="api">REST API</a></li>
+              <li><a href="docs#python">Python package: introduction</a></li>
               <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
               <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
               <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
@@ -111,27 +113,27 @@
                 <a href="/">
                   <span class="title"><i>ObjTables</i><span class="show-for-large">:</span></span>
                   <span class="subtitle show-for-large">
-                    <span class="show-for-extra-large">Working with complex data with the ease of spreadsheets, rigor of schemas &amp; power of object-oriented programming</span>
-                    <span class="hide-for-extra-large">The ease of spreadsheets, rigor of schemas &amp; power of OOP</span>
+                    Structured spreadsheets that are human- and machine-readable
                   </span>
                 </a>
               </div>
               <div class="large-4 medium-6 hide-for-small-only cell links">
                 <ul class="dropdown menu" data-dropdown-menu>
                   <li>
-                    <a>Getting started</a>
+                    <a class="show-for-extra-large">Guide</a>
+                    <a class="hide-for-extra-large">Start</a>
                     <ul class="menu">
-                      <li><a href="getting-started#authors">Authors</a></li>
-                      <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
-                      <li><a href="getting-started#readers">Readers</a></li>
+                      <li><a href="guide#authors">Authors</a></li>
+                      <li><a href="guide#reviewers">Reviewers and editors</a></li>
+                      <li><a href="guide#readers">Readers</a></li>
                     </ul>
                   </li>
                   <li class="active-page">
                     <a>Software</a>
                     <ul class="menu">
-                      <li><a href="app">Web application</a></li>
-                      <li><a href="api">REST API</a></li>
+                      <li><a href="app">Web application</a></li>                      
                       <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+                      <li><a href="api">REST API</a></li>
                       <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
                       <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
                       <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
@@ -145,8 +147,10 @@
                       <li><a href="docs#data-types">Data types</a></li>
                       <li><a href="docs#dataset-formats">Dataset formats</a></li>
                       <li><a href="docs#validation">Data validation</a></li>
-                      <li class="separator"><a href="api">REST API</a></li>
-                      <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+                      <li class="separator"><a href="app">Web application</a></li>
+                      <li><a href="docs#cli">Command-line program</a></li>
+                      <li><a href="api">REST API</a></li>
+                      <li><a href="docs#python">Python package: introduction</a></li>
                       <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
                       <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
                       <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
@@ -180,7 +184,8 @@
               <h2>Upload schema and dataset</h2>
               <a id="form"></a>
               <form>
-                <label>Select an operation
+                <label>
+                  <b>Select an operation</b>
                   <select id="method" name="method">
                     <option value="convert">Convert: convert a dataset to another format according to a schema</option>
                     <option value="diff">Difference: compare the semantic meaning two datasets according to a schema</option>
@@ -192,23 +197,33 @@
                   </select>
                 </label>
 
-                <label>Upload an <i>ObjTables</i> schema (.csv, .tsv, .xlsx). See the documentation <a href="docs#schema-formats"><i class="fi-link"></i></a> for information about the format for schemas.
+                <label>
+                  <b>Upload an <i>ObjTables</i> schema (.csv, .tsv, .xlsx)</b>
+                  <p>Example: <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/schema.xlsx">Address book schema</a></p>
+                  <p>If the .multi.csv, .multi.tsv, or .xslx file contains both a schema and dataset, select the file twice: once for its schema here and again for its dataset below. See the documentation <a href="docs#schema-formats"><i class="fi-link"></i></a> for information about the format for schemas.</p>
                   <input type="file" id="schema" name="schema" accept=".csv,.tsv,.xlsx" />
                 </label>
 
-                <label id="label_model">Enter the name of a class to difference or normalize
+                <label id="label_model">
+                  <b>Enter the name of a class to difference or normalize</b>
                   <input type="text" id="model" name="model" />
                 </label>
 
-                <label id="label_workbook">Upload an <i>ObjTables</i>-formatted dataset. See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.
+                <label id="label_workbook">
+                  <b>Upload an <i>ObjTables</i>-formatted dataset (.multi.csv, .multi.tsv, .xlsx, .zip of .csv, .zip of .tsv)</b>
+                  <p>Example: <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/data.xlsx">Address book of technology companies and their CEOs</a></p>
+                  <p>If the .multi.csv, .multi.tsv, or .xslx file contains both a schema and dataset, select the file twice: once for its schema above and again for its dataset here. See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.</p>
                   <input type="file" id="workbook" name="workbook" accept=".csv,.tsv,.xlsx,.zip" />
                 </label>
 
-                <label id="label_workbook-2">Upload a second <i>ObjTables</i>-formatted dataset. See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.
+                <label id="label_workbook-2">
+                  <b>Upload a second <i>ObjTables</i>-formatted dataset (.multi.csv, .multi.tsv, .xlsx, .zip of .csv, .zip of .tsv)</b>
+                  <p>See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.</p>
                   <input type="file" id="workbook-2" name="workbook-2" accept=".csv,.tsv,.xlsx,.zip" />
                 </label>
 
-                <label id="label_format">Select an output format
+                <label id="label_format">
+                  <b>Select an output format</b>
                   <select id="format" name="format">
                     <option value="xlsx" selected>Excel workbook</option>
                     <option value="csv">Zip archive of comma-separated tables</option>
@@ -216,7 +231,8 @@
                   </select>
                 </label>
 
-                <label id="label_viz_format">Select an output format
+                <label id="label_viz_format">
+                  <b>Select an output format</b>
                   <select id="viz_format" name="viz_format">
                     <!--
                     <option value="gif">GIF</option>

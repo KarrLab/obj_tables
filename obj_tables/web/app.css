@@ -64,8 +64,8 @@ form {
     text-align: left;
 }
 
-label {
-    font-weight: bold;
+label p:not(:last-child) {
+    margin-bottom: 0.25rem;
 }
 
 textarea {
@@ -376,7 +376,7 @@ table:last-child {
 
 .splash-container {
     margin: auto;
-    max-width: 68rem;
+    max-width: 70rem;
     font-size: 18px;
 }
 
@@ -395,7 +395,7 @@ table:last-child {
     font-size: 1.6rem;
     font-weight: bold;
     margin-bottom: 1rem;
-    color: #33333377;
+    color: #333333cc;
 }
 
 .splash h1 .title {
@@ -503,6 +503,14 @@ tbody td {
     padding: .2rem .3125rem .3125rem;
 }
 
+.worksheet-title {
+    margin-bottom: 0;
+    font-style: italic;
+}
+
+.worksheet {
+    border: 1px solid rgb(150, 150, 150);
+}
 
 /* example schema */
 
@@ -601,20 +609,16 @@ tbody.data-type-section td .monospace {
 
 /* example dataset */
 
-.example-tabular-dataset .doc-head th {
+.doc-head th {
     background: rgb(180, 180, 180);
 }
 
-.example-tabular-dataset .class-head th {
+.class-head th {
     background: rgb(200, 200, 200);
 }
 
-.example-tabular-dataset .col-head th {
+.col-head th {
     background: rgb(220, 220, 220);
-}
-
-.example-tabular-dataset .col-head:nth-child(2) th:not(.empty) {
-
 }
 
 .example-tabular-dataset tbody th {
@@ -651,37 +655,22 @@ table.examples tr.indent-x2 td:first-child {
 
 /* large screens */
 
-.show-for-extra-large {
-    display: none;
-}
-
-.hide-for-extra-large {
-    display: inline-block;
-}
-
-@media screen and (min-width: 99.5em) {
-    .show-for-extra-large {
-        display: inline-block;
-    }
+@media screen and (min-width: 99.5em) {    
     .hide-for-extra-large {
-        display: none;
+        display: none!important;
+    }
+}
+
+@media screen and (max-width: 99.49875em) {        
+    .show-for-extra-large {
+        display: none!important;
     }
 }
 
 
 /* mobile */
 
-@media screen and (max-width: 39.9375em) {
-    .grid-container {
-        overflow-x: hidden;
-    }
-    .page-title .title {
-        font-size: 1.5rem;
-    }
-    .dropdown.menu>li>a {
-        margin-left: 0.6rem;
-        font-size: 0.75rem
-    }
+@media screen and (max-width: 63.99875em) {
     .sticky-container {
         height: auto !important;
         position: unset;
@@ -696,6 +685,19 @@ table.examples tr.indent-x2 td:first-child {
     .toc {
         margin-bottom: 4rem;
     }
+}
+
+@media screen and (max-width: 39.9375em) {
+    .grid-container {
+        overflow-x: hidden;
+    }
+    .page-title .title {
+        font-size: 1.5rem;
+    }
+    .dropdown.menu>li>a {
+        margin-left: 0.6rem;
+        font-size: 0.75rem
+    }    
     table.examples {
         font-size: 0.8rem;
     }

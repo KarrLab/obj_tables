@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ObjTables: Toolkit for working with complex data with the ease of spreadsheets, the rigor of schemas, and the power of object-oriented programming</title>
+    <title>ObjTables: Toolkit for structured spreadsheets that are human- and machine-readable</title>
     <meta name="description" content="ObjTables is a free, open-source toolkit for systematically building, annotating, validating, and parsing complex datasets with the ease of spreadsheets (e.g., Excel), the rigor of schemas, and the power of object-oriented programming. ObjTables makes it easy to design schemas for datasets, generate template spreadsheets with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in languages such as Python. The ObjTables software is available through four interfaces: a web application, a REST API, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
     <meta name="keywords" content="data, table, schema, data model, meta model, data type, validate, Python"/>
     <meta name="language" content="EN">
@@ -50,19 +50,19 @@
         <!-- Menu -->
         <ul class="accordion" data-accordion data-allow-all-closed="true">
           <li class="accordion-item" data-accordion-item>
-            <a class="accordion-title">Getting started</a>
+            <a class="accordion-title">Guide</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="getting-started#authors">Authors</a></li>
-              <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
-              <li><a href="getting-started#readers">Readers</a></li>
+              <li><a href="guide#authors">Authors</a></li>
+              <li><a href="guide#reviewers">Reviewers and editors</a></li>
+              <li><a href="guide#readers">Readers</a></li>
             </ul>
           </li>
           <li class="accordion-item" data-accordion-item>
             <a class="accordion-title">Software</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="app">Web application</a></li>
-              <li><a href="api">REST API</a></li>
+              <li><a href="app">Web application</a></li>              
               <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+              <li><a href="api">REST API</a></li>
               <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
               <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
               <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
@@ -76,8 +76,10 @@
               <li><a href="#data-types">Data types</a></li>
               <li><a href="#dataset-formats">Dataset formats</a></li>
               <li><a href="#validation">Data validation</a></li>
-              <li class="separator"><a href="api">REST API</a></li>
-              <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+              <li class="separator"><a href="app">Web application</a></li>
+              <li><a href="#cli">Command-line program</a></li>
+              <li><a href="api">REST API</a></li>
+              <li><a href="#python">Python package: introduction</a></li>
               <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
               <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
               <li class="separator"><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
@@ -112,27 +114,27 @@
                 <a href="/">
                   <span class="title"><i>ObjTables</i><span class="show-for-large">:</span></span>
                   <span class="subtitle show-for-large">
-                    <span class="show-for-extra-large">Working with complex data with the ease of spreadsheets, rigor of schemas &amp; power of object-oriented programming</span>
-                    <span class="hide-for-extra-large">The ease of spreadsheets, rigor of schemas &amp; power of OOP</span>
+                    Structured spreadsheets that are human- and machine-readable
                   </span>
                 </a>
               </div>
               <div class="large-4 medium-6 hide-for-small-only cell links">
                 <ul class="dropdown menu" data-dropdown-menu>
                   <li>
-                    <a>Getting started</a>
+                    <a class="show-for-extra-large">Guide</a>
+                    <a class="hide-for-extra-large">Start</a>
                     <ul class="menu">
-                      <li><a href="getting-started#authors">Authors</a></li>
-                      <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
-                      <li><a href="getting-started#readers">Readers</a></li>
+                      <li><a href="guide#authors">Authors</a></li>
+                      <li><a href="guide#reviewers">Reviewers and editors</a></li>
+                      <li><a href="guide#readers">Readers</a></li>
                     </ul>
                   </li>
                   <li>
                     <a>Software</a>
                     <ul class="menu">
-                      <li><a href="app">Web application</a></li>
-                      <li><a href="api">REST API</a></li>
+                      <li><a href="app">Web application</a></li>                      
                       <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+                      <li><a href="api">REST API</a></li>
                       <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
                       <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
                       <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
@@ -146,8 +148,10 @@
                       <li><a href="#data-types">Data types</a></li>
                       <li><a href="#dataset-formats">Dataset formats</a></li>
                       <li><a href="#validation">Data validation</a></li>
-                      <li class="separator"><a href="api">REST API</a></li>
-                      <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+                      <li class="separator"><a href="app">Web application</a></li>
+                      <li><a href="#cli">Command-line program</a></li>
+                      <li><a href="api">REST API</a></li>
+                      <li><a href="#python">Python package: introduction</a></li>
                       <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
                       <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
                       <li class="separator"><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
@@ -200,6 +204,9 @@
                       <li><a href="#tools">Software tools</a>
                         <ul>
                           <li><a href="#interfaces">Interfaces</a></li>
+                          <li><a href="#web-app">Web application</a></li>
+                          <li><a href="#cli">Command-line program</a></li>
+                          <li><a href="#rest-api">REST API</a></li>
                           <li><a href="#python">Python package</a></li>
                           <li><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                         </ul>
@@ -224,12 +231,17 @@
                     <h3 id="address-book" data-magellan-target="address-book">Address book of the CEOs of technology companies</h3>
                     <p>The following illustrates a schema for an address book of people, the companies that they work for, and their addresses, and an example address book of the CEOs of several technology companies.</p>
 
-                    <p>Address books are implemented using three classes to represent people (<span class="monospace">Person</span>), the companies that they work for (<span class="monospace">Company</span>), and their addresses (<span class="monospace">Address</span>). To capture address books with a minimal number of tables, each person and company's address is encoded into a range of cells within the row/column which represents each person and each company. This is achieved by embedding instances of the <span class="monospace">Address</span> class within the tables for the <span class="monospace">Company</span> and <span class="monospace">Person</span> classes. This makes the tables more human-readable, and it enables Python to encapsulate related information into distinct objects.</p>
+                    <p>Address books are implemented using three classes to represent people (<span class="monospace">Person</span>), the companies that they work for (<span class="monospace">Company</span>), and their addresses (<span class="monospace">Address</span>).</p>
+
+                    <p>The many-to-one relationship between companies and their employees (<span class="monospace">Person.company</span>) and the one-to-one relationships between company and people and their addresses (<span class="monospace">Company.address</span>, <span class="monospace">Person.address</span>) are represented by <span class="monospace">ManyToOne</span> and <span class="monospace">OneToOne</span> attributes. The required argument <span class="monospace">related_name</span> defines the name of the reverse relationship from the related class (<span class="monospace">Company.employees</span>, <span class="monospace">Address.company</span>, <span class="monospace">Address.person</span>). This makes each relationship bidirectional.</p>
+
+                    <p>To capture address books with a minimal number of tables, the address of each company and person is captured by a range of rows within the companies and people worksheets. This makes the tables more human-readable, and it enables Python to encapsulate related information into distinct objects.</p>
 
                     <h4>Tabular-formatted schema</h4>
-                    <p>The example is available in TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.tsv"><i class="fi-link"></i></a>.</p>
+                    <p>A more complete example is available in TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.tsv"><i class="fi-link"></i></a>.</p>
 
-                    <div class="table-scroll">
+                    <div class="worksheet-title">Worksheet: !!_Schema</div>
+                    <div class="table-scroll worksheet">
                       <table class="example-tabular-schema">
                         <thead>
                           <tr>
@@ -242,7 +254,7 @@
 
                         <tbody>
                           <tr><td colspan="7" class="separator">&nbsp;</td></tr>
-                          <tr><td>Company</td><td>Class</td><td></td><td>column</td><td>Company</td><td>Companies</td><td></td></tr>
+                          <tr><td>Company</td><td>Class</td><td></td><td>row</td><td>Company</td><td>Companies</td><td></td></tr>
                           <tr><td>name</td><td>Attribute</td><td>Company</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td><td></td></tr>
                           <tr><td>url</td><td>Attribute</td><td>Company</td><td>Url</td><td>URL</td><td></td><td></td></tr>
                           <tr><td>address</td><td>Attribute</td><td>Company</td><td>OneToOne('Address', related_name='company')</td><td>Address</td><td></td><td></td></tr>
@@ -272,7 +284,7 @@
                     </div>
 
                     <h4>Schema defined as a Python module</h4>
-                    <p>The example is available in Python format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.py"><i class="fi-link"></i></a>.</p>
+                    <p>A more complete example is available in Python format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.py"><i class="fi-link"></i></a>.</p>
 
                     <pre style="margin: 0; line-height: 125%"><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">obj_tables</span>
 
@@ -355,7 +367,7 @@
 
     <span style="color: #008000; font-weight: bold">class</span> <span style="color: #0000FF; font-weight: bold">Meta</span>(obj_tables<span style="color: #666666">.</span>Model<span style="color: #666666">.</span>Meta):
         table_format <span style="color: #666666">=</span> \
-            obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>column
+            obj_tables<span style="color: #666666">.</span>TableFormat<span style="color: #666666">.</span>row
         attribute_order <span style="color: #666666">=</span> (
             <span style="color: #BA2121">&#39;name&#39;</span>,
             <span style="color: #BA2121">&#39;url&#39;</span>,
@@ -365,42 +377,98 @@
         verbose_name_plural <span style="color: #666666">=</span> <span style="color: #BA2121">&#39;Companies&#39;</span></pre>
 
                     <h4 id="example-tabular-dataset">Tabular-formatted dataset</h4>
-                    <p>The following example illustrates an address book of the CEOs of several major technology companies, the companies that they lead, and their addresses. The example is available in merged-TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/schema_and_data.multi.tsv"><i class="fi-link"></i></a>.</p>
+                    <p>The following example illustrates an address book of the CEOs of several major technology companies, the companies that they lead, and their addresses. A more complete example is available in merged-TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/schema_and_data.multi.tsv"><i class="fi-link"></i></a>.</p>
 
-                    <div class="table-scroll">
+                    <div class="worksheet-title">Worksheet: !!_Table of contents</div>
+                    <div class="table-scroll worksheet">
                       <table>
                         <thead>
                           <tr class="doc-head">
-                            <th>!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:19:04'</th>
+                            <th colspan="3">!!!ObjTables objTablesVersion='0.0.8' date='2020-03-14 13:19:04'</th>
                           </tr>
-                        </thead>
-                      </table>
-                    </div>
-
-                    <br/>
-
-                    <div class="table-scroll">
-                      <table>
-                        <thead>
-                          <tr class="class-head">
-                            <th colspan="6">!!ObjTables type='Data' tableFormat='column' class='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
+                          <tr class="col-head">
+                            <th>!Table</th>
+                            <th>!Description</th>
+                            <th>!Number of objects</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr><th></th><th>!Name</th><td>Apple</td><td>Facebook</td><td>Google</td><td>Netflix</td></tr>
-                          <tr><th></th><th>!URL</th><td>https://www.apple.com/</td><td>https://www.facebook.com/</td><td>https://www.google.com/</td><td>https://www.netflix.com/</td></tr>
-                          <tr><th rowspan="5"><div>!Address</div></th><th>!Street</th><td>10600 N Tantau Ave</td><td>1 Hacker Way #15</td><td>1600 Amphitheatre Pkwy</td><td>100 Winchester Cir</td></tr>
-                          <tr><th>!City</th><td>Cupertino</td><td>Menlo Park</td><td>Mountain View</td><td>Los Gatos</td></tr>
-                          <tr><th>!State</th><td>CA</td><td>CA</td><td>CA</td><td>CA</td></tr>
-                          <tr><th>!Zip code</th><td>95014</td><td>94025</td><td>94043</td><td>95032</td></tr>
-                          <tr><th>!Country</th><td>US</td><td>US</td><td>US</td><td>US</td></tr>
+                          <tr>
+                            <td>Schema</td>
+                            <td>Table/model and column/attribute definitions</td>
+                            <td></td>
+                          </tr>
+                          <tr>
+                            <td>Companies</td>
+                            <td></td>
+                            <td>4</td>
+                          </tr>
+                          <tr>
+                            <td>People</td>
+                            <td></td>
+                            <td>4</td>
+                          </tr>
                         </tbody>
                       </table>
                     </div>
 
                     <br/>
 
-                    <div class="table-scroll">
+                    <div class="worksheet-title">Worksheet: !!Companies</div>
+                    <div class="table-scroll worksheet">
+                      <table>
+                        <thead>
+                          <tr class="class-head">
+                            <th colspan="7">!!ObjTables type='Data' tableFormat='row' class='Company' name='Companies' date='2020-03-14 13:19:04' objTablesVersion='0.0.8'</th>
+                          </tr>
+                          <tr class="col-head"><th class="empty"></th><th class="empty"></th><th colspan="5">!Address</th></tr>
+                          <tr class="col-head"><th>!Name</th><th>!URL</th><th>!Street</th><th>!City</th><th>!State</th><th>!Zip code</th><th>!Country</th></tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>Apple</td>
+                            <td>https://www.apple.com/</td>
+                            <td>10600 N Tantau Ave</td>
+                            <td>Cupertino</td>
+                            <td>CA</td>
+                            <td>95014</td>
+                            <td>US</td>
+                          </tr>
+                          <tr>
+                            <td>Facebook</td>
+                            <td>https://www.facebook.com/</td>
+                            <td>1 Hacker Way #15</td>
+                            <td>Menlo Park</td>
+                            <td>CA</td>
+                            <td>94025</td>
+                            <td>US</td>
+                          </tr>
+                          <tr>
+                            <td>Google</td>
+                            <td>https://www.google.com/</td>
+                            <td>1600 Amphitheatre Pkwy</td>
+                            <td>Mountain View</td>
+                            <td>CA</td>
+                            <td>94043</td>
+                            <td>US</td>
+                          </tr>
+                          <tr>
+                            <td>Netflix</td>
+                            <td>https://www.netflix.com/</td>
+                            <td>100 Winchester Cir</td>
+                            <td>Los Gatos</td>
+                            <td>CA</td>
+                            <td>95032</td>
+                            <td>US</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <br/>
+
+                    <div class="worksheet-title">Worksheet: !!People</div>
+                    <div class="table-scroll worksheet">
                       <table>
                         <thead>
                           <tr class="class-head">
@@ -437,7 +505,7 @@
                         </thead>
                         <tbody>
                           <tr>
-                            <td>Address book</td>
+                            <td>Address book (more complete example with a transposed table)</td>
                             <td>
                               <span class="hide-for-medium">Schema: </span>
                               <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.tsv">tsv</a>,
@@ -1529,7 +1597,7 @@
                     <p>Each collection of tables must declare that the tables are encoded in <i>ObjTables</i>'s tabular format by including the line <span class="monospace">!!!ObjTables ...</span> before one of the tables.</p>
 
                     <h4>Dataset/document-level metadata</h4>
-                    <p class="before-list">Optionally, document declarations can capture key-value pairs of document-level metadata. Each key and value should be a string. At a minimum, we recommend using the keys below. The <i>ObjTables</i> software automatically generates these keys when datasets are exported to files.
+                    <p class="before-list">Optionally, document declarations (<span class="monospace">!!!ObjTables ...</span>) can capture key-value pairs of document-level metadata. Each key and value should be a string. At a minimum, we recommend using the keys below. The <i>ObjTables</i> software automatically generates these keys when datasets are exported to files.
                     </p>
                     <ul class="vertically-spaced-list">
                       <li><span class="monospace">id</span>: Use this key to provide a unique identifier for the dataset.</li>
@@ -1557,22 +1625,22 @@
                     <ul class="vertically-spaced-list">
                       <li><span class="monospace">row</span>-formatted classes: After the class/table declaration, the cells in the first row of the table should declare the attributes represented by each column. Each cell should begin with <span class="monospace">!</span> followed by the name of the attribute as defined in the schema (e.g., <span class="monospace">!Id</span>).</li>
                       <li><span class="monospace">column</span>-formatted classes: Similarly, after the class declaration, the cells in the first column of the table should declare the attributes represented by each row.</li>
-                      <li><span class="monospace">multiple_cells</span>-formatted classes: After the declaration of the table of the parent class, the cells in the second row/column of the table should declare the attributes represented by each range of columns/rows.</li>
+                      <li><span class="monospace">multiple_cells</span>-formatted classes: After the declaration of the table of the parent class, the cells in the second row of the table should declare the attributes represented by each range of columns/rows.</li>
                     </ul>
 
                     <h4>Class instances</h4>
                     <p class="before-list">Class instances can be encoded into tables as follows:</p>
                     <ul class="vertically-spaced-list">
                       <li><span class="monospace">row</span>-formatted classes: Each instance is encoded into a row of the table.</li>
-                      <li><span class="monospace">column</span>-formatted classes: Each instance is encoded into a column of the table.</li>
-                      <li><span class="monospace">multiple_cells</span>-formatted classes: Each instance is encoded into a range of cells within the row/column of its parent instance.</li>
-                      <li><span class="monospace">cell</span>-formatted classes: Each instance is encoded into a cell in the row/column of its parent instance.</li>
+                      <li><span class="monospace">column</span>-formatted classes: Each instance is encoded into a column of the table. This can be used to encode a classes into a transposed table.</li>
+                      <li><span class="monospace">multiple_cells</span>-formatted classes: Each instance is encoded into a range of cells within the row of its parent instance.</li>
+                      <li><span class="monospace">cell</span>-formatted classes: Each instance is encoded into a cell in the row of its parent instance.</li>
                     </ul>
 
                     <h4>Attributes of class instances</h4>
                     <p class="before-list">The value of each attribute of each instance should be encoded into cells as follows:</p>
                     <ul class="vertically-spaced-list">
-                      <li><b>Non-relational attributes:</b> Each value should be serialized into a Boolean, number, or string that can be deserialized by the attribute's <span class="monospace">deserialize</span> method. For example, dates can be deserialized into the format <span class="monospace">YYYY-MM-DD</span>, and times can be serialized into the format <span class="monospace">hh:mm:ss</span>. Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information about how each attribute should be serialized.</li>
+                      <li><b>Non-relational attributes:</b> Each value should be serialized into a Boolean, number, or string that can be deserialized by the attribute's <span class="monospace">deserialize</span> method. For example, dates can be serialized into the format <span class="monospace">YYYY-MM-DD</span>, and times can be serialized into the format <span class="monospace">hh:mm:ss</span>. Please see the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information about how each attribute should be serialized.</li>
                       <li><b>Relational (*-to-one) attributes:</b> Each value should be represented by the serialized value of the primary attribute of the related instance. For example, a value of an attribute, which is an instance of a class <span class="monospace">CreditCard</span>, which has a primary attribute <span class="monospace">number</span>, should be serialized to the number of the credit card. See above <a href="#primary-attributes"><i class="fi-arrow-up"></i></a> for more information about how to set the primary attribute of a class.</li>
                       <li><b>Relational (*-to-many) attributes:</b> Each value should be represented as a comma-separated list of the serialized value of the primary attributes of the related instances. For example, a value of an attribute which is a list of instances of <span class="monospace">CreditCard</span> should be serialized to a comma-separated list of the numbers of the credit cards. See above <a href="#primary-attributes"><i class="fi-arrow-up"></i></a> for more information about how to set the primary attribute of a class.</li>
                     </ul>
@@ -1791,12 +1859,39 @@
                     <p>We recommend beginning with the web application, REST API, or command-line program. We recommend using the Python package when more flexibility is required, such as a custom data type, or to analyze datasets with Python tools such as NumPy, Pandas, scikit-learn, or SciPy.</p>
                   </div>
 
+                  <div class="subsection" id="web-app" data-magellan-target="web-app">
+                    <h3>Web application</h3>
+                    <div>
+                      <p>The web application is available at <a href="app">objtables.org/app</a>.</p>
+                    </div>
+                  </div>
+
+                  <div class="subsection" id="cli" data-magellan-target="cli">
+                    <h3>Command-line program</h3>
+                    <div>
+                      <p>The following example illustrates how to use the command-line program to generate a template spreadsheet for a dataset, validate a dataset, and compare two datasets.</p>
+                      <pre>obj-tables gen-template /path/to/schema.xlsx /path/to/template.xlsx
+obj-tables validate /path/to/schema.xlsx /path/to/dataset.xlsx
+obj-tables diff /path/to/schema.xlsx /path/to/dataset-1.xlsx /path/to/dataset-2.xlsx</pre>
+                      <p>Installation instructions for the command-line program are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. Documentation for the command-line program is available inline by running <span class="monospace">obj-tables --help</span>.</p>
+                    </div>
+                  </div>
+
+                  <div class="subsection" id="rest-api" data-magellan-target="rest-api">
+                    <h3>REST API</h3>
+                    <div>
+                      <p>Documentation for the REST API is available at <a href="api">objtables.org/api</a>.</p>
+                    </div>
+                  </div>
+
                   <div class="subsection" id="python" data-magellan-target="python">
                     <h3>Python package</h3>
                     <div>
                       <p>As described above, the Python package has significantly more capabilities than the web application, REST API, and command-line program.</p>
 
-                      <p>The following example briefly introduces the API by illustrating how to use the API to programmatically create, manipulate, analyze, and export the same address book of tech CEOs described above <a href="#address-book"><i class="fi-arrow-up"></i></a>. Additional and more extensive tutorials are available as interactive Jupyter notebooks at sandbox.karrlab.org <a href="https://sandbox.karrlab.org/tree/obj_tables"><i class="fi-link"></i></a>.</p>
+                      <p>The following example briefly introduces the API by illustrating how to use the API to programmatically create, manipulate, analyze, and export the same address book of tech CEOs described above <a href="#address-book"><i class="fi-arrow-up"></i></a>.</p>
+
+                      <p>Additional and more extensive tutorials are available as interactive Jupyter notebooks at <a href="https://sandbox.karrlab.org/tree/obj_tables">sandbox.karrlab.org</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.grammar">docs.karrlab.org</a>. Documentation for each module, class, and function can also be obtained by executing <span class="monospace">help(&lt;module/class/function&gt;)</span> (e.g., <span class="monospace">help(obj_tables.io.validate)</span>).</p>
 
                       <h4>Import schema</h4>
                       <pre><span style="color: #008000; font-weight: bold">import</span> <span style="color: #0000FF; font-weight: bold">schema</span> <span style="color: #008000; font-weight: bold">as</span> <span style="color: #0000FF; font-weight: bold">address_book</span>
@@ -2044,10 +2139,17 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                   <p>Going forward, we hope that the community will adopt <i>ObjTables</i> as a standard for supplementary spreadsheets. Toward a community standard, we invite feedback and contributions. Please contact the developers <a href="mailto:info@objtable.org"><i class="fi-mail"></i></a> to share feedback or get involved.</p>
 
                   <p class="before-list">Guided by community input, potential directions include:</p>
-                  <ul>
+                  <ul class="vertically-spaced-list">
                     <li>Develop additional data types to better support specific fields of science. Examples include data types for genetic variants, alleles, and geographic and spatial coordinates.</li>
                     <li>Support additional layout conventions such as multi-level headings.</li>
                     <li>Develop libraries for additional languages such as Java, MATLAB, and R.</li>
+                    <li>Develop a graphical user interface for editing schemas and structured spreadsheets. Several possibilities include
+                      <ul>
+                        <li>Web application for designing schemas.</li>
+                        <li>Plugins for Microsoft Excel, Apple Numbers, and LibreOffice Calc.</li>
+                        <li>Extension for Google Sheets.</li>
+                      </ul>
+                    </li>
                     <li>Develop a registry of schemas to make it easier for communities to share schemas.</li>
                     <li>Encourage data registries such as Dryad, FigShare, GitHub, and Zenodo to support <i>ObjTables</i>.</li>
                     <li>Lobby journals to encourage authors to publish reusable supplementary tables and to encourage reviewers to verify the reusability of supplementary tables.</li>

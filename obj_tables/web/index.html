@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ObjTables: Toolkit for working with complex data with the ease of spreadsheets, the rigor of schemas, and the power of object-oriented programming</title>
+    <title>ObjTables: Toolkit for structured spreadsheets that are human- and machine-readable</title>
     <meta name="description" content="ObjTables is a free, open-source toolkit for systematically building, annotating, validating, and parsing complex datasets with the ease of spreadsheets (e.g., Excel), the rigor of schemas, and the power of object-oriented programming. ObjTables makes it easy to design schemas for datasets, generate template spreadsheets with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in languages such as Python. The ObjTables software is available through four interfaces: a web application, a REST API, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
     <meta name="keywords" content="data, table, schema, data model, meta model, data type, validate, Python"/>
     <meta name="language" content="EN">
@@ -50,19 +50,19 @@
         <!-- Menu -->
         <ul class="accordion" data-accordion data-allow-all-closed="true">
           <li class="accordion-item" data-accordion-item>
-            <a class="accordion-title">Getting started</a>
+            <a class="accordion-title">Guide</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="getting-started#authors">Authors</a></li>
-              <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
-              <li><a href="getting-started#readers">Readers</a></li>
+              <li><a href="guide#authors">Authors</a></li>
+              <li><a href="guide#reviewers">Reviewers and editors</a></li>
+              <li><a href="guide#readers">Readers</a></li>
             </ul>
           </li>
           <li class="accordion-item" data-accordion-item>
             <a class="accordion-title">Software</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="app">Web application</a></li>
-              <li><a href="api">REST API</a></li>
+              <li><a href="app">Web application</a></li>              
               <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+              <li><a href="api">REST API</a></li>
               <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
               <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
               <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
@@ -76,8 +76,10 @@
               <li><a href="docs#data-types">Data types</a></li>
               <li><a href="docs#dataset-formats">Dataset formats</a></li>
               <li><a href="docs#validation">Data validation</a></li>
-              <li class="separator"><a href="api">REST API</a></li>
-              <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+              <li class="separator"><a href="app">Web application</a></li>
+              <li><a href="docs#cli">Command-line program</a></li>
+              <li><a href="api">REST API</a></li>
+              <li><a href="docs#python">Python package: introduction</a></li>
               <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
               <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
               <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
@@ -111,27 +113,27 @@
                 <a href="#top">
                   <span class="title"><i>ObjTables</i><span class="show-for-large">:</span></span>
                   <span class="subtitle show-for-large">
-                    <span class="show-for-extra-large">Working with complex data with the ease of spreadsheets, rigor of schemas &amp; power of object-oriented programming</span>
-                    <span class="hide-for-extra-large">The ease of spreadsheets, rigor of schemas &amp; power of OOP</span>
+                    Structured spreadsheets that are human- and machine-readable
                   </span>
                 </a>
               </div>
               <div class="large-4 medium-6 hide-for-small-only cell links">
                 <ul class="dropdown menu" data-dropdown-menu>
                   <li>
-                    <a>Getting started</a>
+                    <a class="show-for-extra-large">Guide</a>
+                    <a class="hide-for-extra-large">Start</a>
                     <ul class="menu">
-                      <li><a href="getting-started#authors">Authors</a></li>
-                      <li><a href="getting-started#reviewers">Reviewers and editors</a></li>
-                      <li><a href="getting-started#readers">Readers</a></li>
+                      <li><a href="guide#authors">Authors</a></li>
+                      <li><a href="guide#reviewers">Reviewers and editors</a></li>
+                      <li><a href="guide#readers">Readers</a></li>
                     </ul>
                   </li>
                   <li>
                     <a>Software</a>
                     <ul class="menu">
-                      <li><a href="app">Web application</a></li>
-                      <li><a href="api">REST API</a></li>
+                      <li><a href="app">Web application</a></li>                      
                       <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
+                      <li><a href="api">REST API</a></li>
                       <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
                       <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
                       <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
@@ -145,8 +147,10 @@
                       <li><a href="docs#data-types">Data types</a></li>
                       <li><a href="docs#dataset-formats">Dataset formats</a></li>
                       <li><a href="docs#validation">Data validation</a></li>
-                      <li class="separator"><a href="api">REST API</a></li>
-                      <li><a href="https://pypi.org/pypi/obj_tables">Command-line program</a></li>
+                      <li class="separator"><a href="app">Web application</a></li>
+                      <li><a href="docs#cli">Command-line program</a></li>
+                      <li><a href="api">REST API</a></li>
+                      <li><a href="docs#python">Python package: introduction</a></li>
                       <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
                       <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
                       <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
@@ -178,7 +182,11 @@
           <div class="splash-container">
             <img src="logo.svg" alt="ObjTables logo" />
 
-            <h1><span class="title"><i>ObjTables</i>:</span> open-source toolkit for quality controlling, reusing, and composing data with the ease of spreadsheets, the rigor of schemas &amp; the power of object-oriented programming.</h1>
+            <h1>Open-source toolkit for structured spreadsheets that are both human- and machine-readable.</h1>
+
+            <p><i>ObjTables</i> combines the ease of use of spreadsheets with the rigor of schemas and the power of object-oriented programming.</p>
+
+            <p><i>ObjTables</i> is ideal for supplementary spreadsheets to journal articles. <i>ObjTables</i> makes it easy for both experimentalists to build and quality control spreadsheets and for computational scientists to reanalyze, compare, and compose spreadsheets.</p>            
 
             <p><i>ObjTables</i> builds on a community initiative to make supplementary spreadsheets more reusable. The long-term goal is to create an ecosystem of reusable data for comparative and integrative research. We invite the community to share feedback or get involved.</div>
           </div>
@@ -193,12 +201,14 @@
                   <div class="section-content">
                     <ul data-magellan>
                       <li><a href="#overview">Overview</a></li>
-                      <li><a href="#guide">Getting started</a></li>
                       <li><a href="#features">Features</a></li>
                       <li><a href="#components">Components of the toolkit</a></li>
                       <li><a href="#software">Software tools</a></li>
                       <li><a href="#use-cases">Use cases</a></li>
-                      <li><a href="#help">Examples, tutorials, docs &amp; help</a></li>
+                      <li><a href="#workflow">Workflow</a></li>
+                      <li><a href="#getting-started">Examples and tutorials</a></li>
+                      <li><a href="#docs">Documentation</a></li>
+                      <li><a href="#help">Help</a></li>
                       <li><a href="#contributing">Getting involved</a></li>
                     </ul>
                   </div>
@@ -208,7 +218,7 @@
 
             <div class="large-10 cell content-container">
               <div id="overview" data-magellan-target="overview">
-                <h2>How does <i>ObjTables</i> make spreadsheets reusable?</h2>
+                <h2>How does <i>ObjTables</i> make spreadsheets human- and machine-readable?</h2>
                 <div class="section-content">
                   <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell">
@@ -237,19 +247,38 @@
                         <h3>Example: Address book of CEOs</h3>
                       </div>
 
-                      <div class="table-scroll">
+                      <div class="worksheet-title">Worksheet: !!_Table of contents</div>
+                      <div class="table-scroll worksheet">
                         <table class="example-tabular-dataset">
                           <thead>
                             <tr class="doc-head">
-                              <th>!!!ObjTables objTablesVersion='1.0.0' date='2020-03-14 13:19:04'</th>
+                              <th colspan="3">!!!ObjTables objTablesVersion='1.0.0' date='2020-03-14 13:19:04'</th>
+                            </tr>
+                            <tr class="col-head">
+                              <th>!Table</th>
+                              <th>!Description</th>
+                              <th>!Number of objects</th>
                             </tr>
                           </thead>
+                          <tbody>
+                            <tr>
+                              <td>Schema</td>
+                              <td>Table/model and column/attribute definitions</td>
+                              <td></td>
+                            </tr>
+                            <tr>
+                              <td>People</td>
+                              <td></td>
+                              <td>2</td>
+                            </tr>
+                          </tbody>
                         </table>
                       </div>
 
                       <br/>
 
-                      <div class="table-scroll">
+                      <div class="worksheet-title">Worksheet: !!People</div>
+                      <div class="table-scroll worksheet">
                         <table class="example-tabular-dataset">
                           <thead>
                             <tr class="class-head">
@@ -259,19 +288,19 @@
                               <th>!Name</th>
                               <th>!Company</th>
                               <th>!Email address</th>
-                              <th>!Phone number</th>
                             </tr>
                           </thead>
                           <tbody>
-                            <tr><td>Mark Zuckerberg</td><td>Facebook</td><td>zuck@fb.com</td><td>650-543-4800</td></tr>
-                            <tr><td>Reed Hastings</td><td>Netflix</td><td>reed.hastings@netflix.com</td><td>408-540-3700</td></tr>
+                            <tr><td>Mark Zuckerberg</td><td>Facebook</td><td>zuck@fb.com</td></tr>
+                            <tr><td>Reed Hastings</td><td>Netflix</td><td>reed.hastings@netflix.com</td></tr>
                           </tbody>
                         </table>
                       </div>
 
                       <br/>
 
-                      <div class="table-scroll">
+                      <div class="worksheet-title">Worksheet: !!_Schema</div>
+                      <div class="table-scroll worksheet">
                         <table class="example-tabular-dataset">
                           <thead>
                             <tr class="class-head">
@@ -287,45 +316,9 @@
                             <tr><td>name</td><td>Attribute</td><td>Person</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td></tr>
                             <tr><td>company</td><td>Attribute</td><td>Person</td><td>String</td><td>Company</td><td></td></tr>
                             <tr><td>email_address</td><td>Attribute</td><td>Person</td><td>Email</td><td>Email address</td><td></td></tr>
-                            <tr><td>phone_number</td><td>Attribute</td><td>Person</td><td>String</td><td>Phone number</td><td></td></tr>
                           </tbody>
                         </table>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="grid-x grid-padding-x" id="guide" data-magellan-target="guide">
-                <div class="large-12 cell">
-                  <h2>Getting started</h2>
-
-                  <div class="grid-x grid-padding-x section-content">
-
-                    <div class="large-6 cell icon">
-                      <img src="img/writer.svg" />
-                      <h3>Authors</h3>
-                      <ul>
-                        <li>Use Excel and similar programs as graphical interfaces for complex datasets that consist of multiple distinct types of objects.</li>
-                        <li>Use complex data types (e.g., reaction equations) within tables.</li>
-                        <li>Use foreign keys, column groups, and grammars to encode relationships.</li>
-                        <li>Define schemas that describe the class represented by each table.</li>
-                        <li>Use schemas and the <i>ObjTables</i> software to debug, revision, and migrate tables.</li>
-                      </ul>
-                    </div>
-
-                    <div class="large-6 cell icon">
-                      <img src="img/reader.svg" />
-                      <h3>Reviewers and editors</h3>
-                      <ul>
-                        <li>Use schemas and the <i>ObjTables</i> software to verify that tables are free of errors, and that they can be re-used by other investigators.</li>
-                      </ul>
-
-                      <h3>Readers</h3>
-                      <ul>
-                        <li>Use schemas and the <i>ObjTables</i> software to compare and merge spreadsheets.</li>
-                        <li>Use schemas and the <i>ObjTables</i> software to parse spreadsheets into object-oriented data structures for analysis with tools such as Python.</li>
-                      </ul>
                     </div>
                   </div>
                 </div>
@@ -342,16 +335,13 @@
                           <img src="img/computer.svg" />
                           <h3>Use Excel as a GUI for viewing and editing datasets</h3>
                         </div>
-                        <p><i>ObjTables</i> enables users to leverage programs such as Microsoft Excel and LibreOffice Calc as graphical interfaces for viewing and editing datasets. <i>ObjTables</i> uses following features:</p>
+                        <p><i>ObjTables</i> enables users to use tools such as Excel and LibreOffice as graphical interfaces for viewing and editing datasets. <i>ObjTables</i> uses following features:</p>
                         <ul class="vertically-spaced-list">
                           <li><b>Table of contents:</b> Datasets can include a worksheet that describes the data represented by each worksheet.</li>
-                          <li><b>Formatted table titles:</b> Each worksheet includes a formatted title bar that describes the data captured by the worksheet.</li>
-                          <li><b>Formatted attribute headings:</b> Each worksheet includes formatted headings for each column. </li>
+                          <li><b>Formatted table titles:</b> Each worksheet includes a title bar that describes the data captured by the worksheet and each column.</li>
                           <li><b>Inline help for attributes:</b> <i>ObjTables</i> uses comments to embed help information about each attribute into it's heading.</li>
                           <li><b>Select menus for enumerations and relationships:</b> <i>ObjTables</i> provides dropdown menus for attributes that represent enumerations and *-to-one relationships.</li>
                           <li><b>Instant validation:</b> <i>ObjTables</i> can setup basic validation for attributes. <i>Note, the <i>ObjTables</i> software provides more extensive validation.</i></li>
-                          <li><b>Hidden extra rows and columns:</b> To help users focus on their data, <i>ObjTables</i> hides all empty rows and columns.</li>
-                          <li><b>Protection from unintentional editing:</b> To help users avoid mistakes, <i>ObjTables</i> protects worksheets.</li>
                         </ul>
                       </div>
 
@@ -360,54 +350,15 @@
                           <img src="img/spreadsheet.svg" />
                           <h3>Create template spreadsheets for building datasets</h3>
                         </div>
-                        <p>To make it easy to build datasets, the <i>ObjTables</i> software can generate template spreadsheets for schemas with a table of contents, skeletons for the tables and columns, inline help, dropdown menus, and basic validation.</p>
+                        <p>To make it easy to build datasets, the <i>ObjTables</i> can generate template spreadsheets for schemas with inline help, dropdown menus, and basic validation.</p>
                       </div>
 
                       <div class="subsection">
                         <div class="icon">
                           <img src="img/revision.svg" />
-                          <h3>Iteratively build and revision datasets</h3>
+                          <h3>Iteratively build schemas and datasets</h3>
                         </div>
-                        <p>The <i>ObjTables</i> software leverages Git to make it easy to build datasets iteratively, revision datasets, and track their provenance, including when each revision was made, who made it, and why it was made.</p>
-                      </div>
-
-                      <div class="subsection">
-                        <div class="icon">
-                          <img src="img/migrate.svg" />
-                          <h3>Iteratively build schemas and migrate datasets</h3>
-                        </div>
-                        <p>To make it easy to build schemas iteratively, the <i>ObjTables</i> software can revision schemas, as well as migrate datasets between different versions of schemas (e.g., adding, removing, and renaming tables and columns).</p>
-                      </div>
-                    </div>
-
-                    <div class="large-6 cell">
-                      <div class="subsection">
-                        <div class="icon">
-                          <img src="img/bug.svg" />
-                          <h3>Rigorously validate and quickly debug datasets</h3>
-                        </div>
-                        <p><i>ObjTables</i> makes it easy to validate and debug datasets at multiple levels:</p>
-                        <ul class="vertically-spaced-list">
-                          <li><b>Attribute validation:</b> Validations of individual attributes such as validating that molecular weights are non-negative.</li>
-                          <li><b>Object validation:</b> Validations of entire objects such validating that reactions are element-balanced.</li>
-                          <li><b>Class validation:</b> Validations of all of the instances of a class such as validating that each reaction has a unique id.</li>
-                        </ul>
-                      </div>
-
-                      <div class="subsection">
-                        <div class="icon">
-                          <img src="img/merge.svg" />
-                          <h3>Merge and split datasets</h3>
-                        </div>
-                        <p>To help users build large datasets, the <i>ObjTables</i> software can merge datasets by identifying and fusing common objects. <i>ObjTables</i> can also decompose datasets into smaller, more manageable pieces by cutting relationships.</p>
-                      </div>
-
-                      <div class="subsection">
-                        <div class="icon">
-                          <img src="img/difference.svg" />
-                          <h3>Compare/difference datasets</h3>
-                        </div>
-                        <p>To help users compare and review changes to datasets, the <i>ObjTables</i> software can determine if datasets are semantically equal and identify their differences.</p>
+                        <p><i>ObjTables</i> can use Git to revision schemas and datasets and migrate datasets between different versions of schemas (e.g., adding, removing, and renaming tables).</p>
                       </div>
 
                       <div class="subsection">
@@ -417,13 +368,39 @@
                         </div>
                         <p>The <i>ObjTables</i> Python package makes it easy to find objects in datasets and use Python to conduct complex analyses of datasets such as numerical simulations.</p>
                       </div>
+                    </div>
+
+                    <div class="large-6 cell">
+                      <div class="subsection">
+                        <div class="icon">
+                          <img src="img/bug.svg" />
+                          <h3>Rigorously validate and quickly debug datasets</h3>
+                        </div>
+                        <p><i>ObjTables</i> makes it easy to validate datasets at multiple levels: individual atributes, individual objects, and classes of objects</p>                        
+                      </div>
+
+                      <div class="subsection">
+                        <div class="icon">
+                          <img src="img/merge.svg" />
+                          <h3>Merge datasets</h3>
+                        </div>
+                        <p>To help users build large datasets, the <i>ObjTables</i> software can merge datasets by identifying and fusing common objects.</p>
+                      </div>
+
+                      <div class="subsection">
+                        <div class="icon">
+                          <img src="img/difference.svg" />
+                          <h3>Compare/difference datasets</h3>
+                        </div>
+                        <p>To help users compare and review changes to datasets, the <i>ObjTables</i> software can determine if datasets are semantically equal and identify their differences.</p>
+                      </div>                      
 
                       <div class="subsection">
                         <div class="icon">
                           <img src="img/clean.svg" />
                           <h3>Pretty print datasets for publication</h3>
                         </div>
-                        <p><i>ObjTables</i> can pretty print datasets with tables of contents, formatted table titles and column headings, and inline help.</p>
+                        <p><i>ObjTables</i> can generate pretty XLSX files with tables of contents, formatted table titles and column headings, and inline help.</p>
                       </div>
 
                       <div class="subsection">
@@ -443,18 +420,12 @@
 
                 <div class="section-content">
                   <div class="grid-x grid-padding-x">
-                    <div class="large-6 cell">
+                    <div class="large-4 cell">
                       <div class="subsection icon">
                         <img src="img/document.svg" />
                         <h3>Format for schemas for spreadsheets</h3>
 
-                        <p><i>ObjTables</i> schemas capture the format of each table, including the name and data type of each column, which cells represent relationships among the entries in the tables, and constraints on the value of each cell. <i>ObjTables</i> supports three modes of encoding relationships into cells in tables.</p>
-
-                        <ul class="vertically-spaced-list">
-                          <li><b>Foreign keys:</b> Relationships from one object to other objects can be captured by columns that represents the <i>keys</i> of the related objects.</li>
-                          <li><b>Embedded tables for *-to-one relationships:</b> <i>ObjTables</i> can also encode instances of related classes into groups of columns.</li>
-                          <li><b>Embedded grammars for *-to-many relationships:</b> Grammars can also be used to encode instances of related classes into a single column. Grammars can be defined in EBNF format <a href="https://lark-parser.readthedocs.io"><i class="fi-link"></i></a>.</li>
-                        </ul>
+                        <p>Schemas capture how classes, instances, attributes, and relationships are encoded into worksheets, rows, and columns. <i>ObjTables</i> supports three ways of encoding relationships: foreign keys, groups of columns, and grammars. Schemas also capture constraints on the value of each attribute.</p>
                       </div>
 
                       <div class="subsection icon">
@@ -464,19 +435,21 @@
                       </div>
                     </div>
 
-                    <div class="large-6 cell">
+                    <div class="large-4 cell">
                       <div class="subsection icon">
                         <img src="img/markup.svg" />
                         <h3>Markup syntax for spreadsheets</h3>
-                        <i>ObjTables</i> provides syntax for declaring which cells represent each table, instance, and attribute; declaring which entries represent metadata such as the date that a table was updated; and declaring which entries represent comments.
+                        <i>ObjTables</i> provides syntax for indicating which cells represent each class, instance, and attribute (e.g., worksheet title <span class="monospace">!!People</span>); declaring which cells represent metadata such as the date that a table was updated (<span class="monospace">!!ObjTables ...</span>); and declaring which entries represent comments (<span class="monospace">%/ ... /%</span>).
                       </div>
 
                       <div class="subsection icon">
                         <img src="img/gears.svg" />
-                        <h3>High-level software tools for working with spreadsheets</h3>
+                        <h3>High-level software for spreadsheets</h3>
                         <i>ObjTables</i> includes a web application, a REST API, a command-line program, and a Python package for working with datasets. These tools can be used to pretty print, validate, compare, revision, and migrate datasets.
                       </div>
+                    </div>
 
+                    <div class="large-4 cell">
                       <div class="subsection icon">
                         <img src="img/python.svg" />
                         <h3>Python package for additional flexibility</h3>
@@ -575,10 +548,10 @@
                     <div class="large-6 cell">
                       <div class="icon">
                         <img src="img/list.svg" />
-                        <h3>Defining formats for new types of data and models</h3>
+                        <h3>Defining formats for new types of data and predictive computational models</h3>
                       </div>
 
-                      <p>New areas of science often require new types of data and new kinds of models. In turn, this often requires new formats to capture these data and models and new software for working with these formats. Creating these formats is often an obstacle for new domains that have limited resources. Furthermore, evolving these formats as new approaches emerge is challenging because this often requires updating the software tools and converting old files to the new format.</p>
+                      <p>New areas of science often require new types of data and new kinds of predictive computational models. In turn, this often requires new formats to capture these data and models, and new software for working with these formats. Creating these formats is often an obstacle for new domains that have limited resources. Furthermore, evolving these formats as new approaches emerge is challenging because this often requires updating the software tools and converting old files to the new format.</p>
 
                       <p><i>ObjTables</i> addresses this issue by making it easy to define schemas for domain-specific data and providing software tools for parsing, manipulating, and validating data encoded in these schemas. For example, we have used <i>ObjTables</i> to create, WC-KB <a href="https://github.com/KarrLab/wc_kb"><i class="fi-link"></i></a>, a format for the experimental omics, biochemical, and physiological data needed to model cellular biochemistry. We have also used <i>ObjTables</i> to create, WC-Lang <a href="https://github.com/KarrLab/wc_lang"><i class="fi-link"></i></a>, a format for whole-cell models of all of the biochemical activity in a cell. Creating these formats required minimal code.</p>
                     </div>
@@ -586,18 +559,49 @@
                 </div>
               </div>
 
-              <div id="help" data-magellan-target="help">
-                <h2>Examples, tutorials, documentation, and help</h2>
-                <div class="section-content">
-                  <p>
-                    Extensive examples, interactive tutorials, and documentation for the <i>ObjTables</i> formats and software tools are available through the links below.
-                  </p>
+              <div class="grid-x grid-padding-x" id="workflow" data-magellan-target="workflow">
+                <div class="large-12 cell">
+                  <h2>Workflow: How can I use <i>ObjTables</i>?</h2>
 
+                  <div class="grid-x grid-padding-x section-content">
+
+                    <div class="large-6 cell icon">
+                      <img src="img/writer.svg" />
+                      <h3>Authors</h3>
+                      <ul>
+                        <li>Use Excel and similar programs as graphical interfaces for complex datasets that consist of multiple distinct types of objects.</li>
+                        <li>Use complex data types (e.g., reaction equations) within tables.</li>
+                        <li>Use foreign keys, column groups, and grammars to encode relationships.</li>
+                        <li>Define schemas that describe the class represented by each table.</li>
+                        <li>Use schemas and the <i>ObjTables</i> software to debug, revision, and migrate tables.</li>
+                      </ul>
+                    </div>
+
+                    <div class="large-6 cell icon">
+                      <img src="img/reader.svg" />
+                      <h3>Reviewers and editors</h3>
+                      <ul>
+                        <li>Use schemas and the <i>ObjTables</i> software to verify that tables are free of errors, and that they can be re-used by other investigators.</li>
+                      </ul>
+
+                      <h3>Readers</h3>
+                      <ul>
+                        <li>Use schemas and the <i>ObjTables</i> software to compare and merge spreadsheets.</li>
+                        <li>Use schemas and the <i>ObjTables</i> software to parse spreadsheets into object-oriented data structures for analysis with tools such as Python.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="getting-started" data-magellan-target="getting-started">
+                <h2>Getting started: examples and tutorials</h2>
+                <div class="section-content">
                   <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell icon">
                       <img src="img/steps.svg" />
-                      <h3>Getting started</h3>
-                      <p>The getting started page <a href="getting-started"><i class="fi-link"></i></a> contains quick guides for (a) authors for creating reusable spreadsheets and (b) readers for reusing spreadsheets from other investigators.</p>
+                      <h3>Guides</h3>
+                      <p>The guide page <a href="guide"><i class="fi-link"></i></a> contains guides for (a) authors for creating reusable spreadsheets, (b) reviewers for verifying that spreadsheets are reusable, and (c) readers for reusing spreadsheets.</p>
                     </div>
                     <div class="large-4 cell icon">
                       <img src="img/spreadsheet.svg" />
@@ -605,21 +609,27 @@
                       <p>The documentation contains several example schemas and datasets <a href="docs#examples"><i class="fi-link"></i></a>.</p>
                     </div>
                     <div class="large-4 cell icon">
+                      <img src="img/tutorial.svg" />
+                      <h3>Tutorials for the Python package</h3>
+                      <p>Interactive tutorials are available as Jupyter notebooks at <a href="https://sandbox.karrlab.org/tree/obj_tables">sandbox.karrlab.org</a>.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="docs" data-magellan-target="docs">
+                <h2>Documentation</h2>
+                <div class="section-content">
+                  <div class="grid-x grid-padding-x subsection">                   
+                    <div class="large-4 cell icon">
                       <img src="img/terminal.svg" />
                       <h3>Command-line program installation</h3>
                       <p>Installation instructions for the command-line program are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available here <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.</p>
                     </div>
-                  </div>
-                  <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell icon">
                       <img src="img/python.svg" />
                       <h3>Python package installation</h3>
                       <p>Installation instructions for the Python package are available at <a href="https://docs.karrlab.org/obj_tables/installation.html">docs.karrlab.org</a>. A Dockerfile for building an Ubuntu Linux image with <i>ObjTables</i> is available here <a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile"><i class="fi-link"></i></a>.</p>
-                    </div>
-                    <div class="large-4 cell icon">
-                      <img src="img/tutorial.svg" />
-                      <h3>Tutorials for the Python package</h3>
-                      <p>A Jupyter notebook with interactive tutorials is available at <a href="https://sandbox.karrlab.org/tree/obj_tables">sandbox.karrlab.org</a>.</p>
                     </div>
                     <div class="large-4 cell icon">
                       <img src="img/manual.svg" />
@@ -630,27 +640,28 @@
                   <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell icon">
                       <img src="img/manual.svg" />
-                      <h3>Docs for the REST API</h3>
-                      <p>Documentation for the REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.</p>
-                    </div>
-                    <div class="large-4 cell icon">
-                      <img src="img/manual.svg" />
                       <h3>Docs for the command-line program</h3>
                       <p>Documentation for the command-line program is available inline by running <span class="monospace">obj-tables --help</span>.</p>
                     </div>
+                    <div class="large-4 cell icon">
+                      <img src="img/manual.svg" />
+                      <h3>Docs for the REST API</h3>
+                      <p>Documentation for the REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.</p>
+                    </div>                    
                     <div class="large-4 cell icon">
                       <img src="img/manual.svg" />
                       <h3>Docs for the Python package</h3>
                       <p>An introduction to the Python package is available at <a href="docs">objtables.org/docs</a>. Detailed documentation is available at <a href="https://docs.karrlab.org/obj_tables">docs.karrlab.org</a>.</p>
                     </div>
                   </div>
-                  <div class="grid-x grid-padding-x subsection">
-                    <div class="large-4 cell icon">
-                      <img src="img/question.svg" />
-                      <h3>Further help</h3>
-                      <p>Please contact the developers <a href="mailto:info@objtables.org"><i class="fi-mail"></i></a> with any questions.</p>
-                    </div>
-                  </div>
+                  
+                </div>
+              </div>
+
+               <div id="help" data-magellan-target="help">
+                <h2>Help</h2>
+                <div class="section-content">
+                  <p>Please contact the developers <a href="mailto:info@objtables.org"><i class="fi-mail"></i></a> with any questions or suggestions.</p>
                 </div>
               </div>
 
