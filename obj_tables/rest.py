@@ -250,6 +250,7 @@ class GenTemplate(flask_restplus.Resource):
             shutil.rmtree(schema_dir)
 
         kw_args = copy.copy(DEFAULT_WRITER_ARGS)
+        kw_args['write_empty_models'] = True
         kw_args['write_empty_cols'] = True
         out_wb_dir, out_wb_filename, out_wb_mimetype = save_out_workbook(
             format, [], schema_name, {}, {}, models=models,
@@ -617,7 +618,8 @@ def read_workbook(filename, models, schema_name=None):
 
 
 def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, models,
-                      write_toc=False, write_schema=False, write_empty_cols=True, protected=True):
+                      write_toc=False, write_schema=False, write_empty_models=True, write_empty_cols=True,
+                      protected=True):
     """
     Args:
         format (:obj:`str`): format (.csv, .tsv, .xlsx)
@@ -630,6 +632,7 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
             a table of contents with the file
         write_schema (:obj:`bool`, optional): if :obj:`True`, write
             schema with file
+        write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
         write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
         protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
 

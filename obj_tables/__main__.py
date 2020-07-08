@@ -16,6 +16,7 @@ import os.path
 import types  # noqa: F401
 
 DEFAULT_WRITER_ARGS = {
+    'write_empty_models': False,
     'write_empty_cols': False,
 }
 
@@ -168,6 +169,7 @@ class GenTemplateController(cement.Controller):
         args = self.app.pargs
         schema_name, schema, models = get_schema_models(args.schema_file)
         kw_args = copy.copy(DEFAULT_WRITER_ARGS)
+        kw_args['write_empty_models'] = True
         kw_args['write_empty_cols'] = True
         io.Writer().run(args.template_file, [], schema_name=schema_name, models=models,
                         write_toc=args.write_toc, write_schema=args.write_schema,

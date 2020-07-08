@@ -61,7 +61,7 @@ class WriterBase(object, metaclass=abc.ABCMeta):
     def run(self, path, objects, schema_name=None, doc_metadata=None, model_metadata=None, models=None,
             get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_toc=True, write_schema=False, write_empty_cols=True,
+            write_toc=True, write_schema=False, write_empty_models=True, write_empty_cols=True,
             extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
             protected=True):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
@@ -88,6 +88,7 @@ class WriterBase(object, metaclass=abc.ABCMeta):
             creator (:obj:`str`, optional): creator
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
+            write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
             write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
             extra_entries (:obj:`int`, optional): additional entries to display
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
@@ -170,7 +171,8 @@ class JsonWriter(WriterBase):
     def run(self, path, objects, schema_name=None, doc_metadata=None, model_metadata=None,
             models=None, get_related=True, include_all_attributes=True,
             validate=True, title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_toc=False, write_schema=False, write_empty_cols=True, extra_entries=0, group_objects_by_model=True,
+            write_toc=False, write_schema=False, write_empty_models=True, write_empty_cols=True,
+            extra_entries=0, group_objects_by_model=True,
             data_repo_metadata=False, schema_package=None, protected=False):
         """ Write a list of model classes to a JSON or YAML file
 
@@ -195,6 +197,7 @@ class JsonWriter(WriterBase):
             creator (:obj:`str`, optional): creator
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
+            write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
             write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
             extra_entries (:obj:`int`, optional): additional entries to display
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
@@ -307,7 +310,7 @@ class WorkbookWriter(WriterBase):
     def run(self, path, objects, schema_name=None, doc_metadata=None, model_metadata=None,
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_toc=True, write_schema=False, write_empty_cols=True,
+            write_toc=True, write_schema=False, write_empty_models=True, write_empty_cols=True,
             extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
             protected=True):
         """ Write a list of model instances to an Excel file, with one worksheet for each model class,
@@ -336,6 +339,7 @@ class WorkbookWriter(WriterBase):
             creator (:obj:`str`, optional): creator
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
+            write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
             write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
             extra_entries (:obj:`int`, optional): additional entries to display
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
@@ -453,7 +457,8 @@ class WorkbookWriter(WriterBase):
 
             self.write_model(writer, model, objects, schema_name, date, doc_metadata, doc_metadata_model, model_metadata.get(model, {}),
                              sheet_models, include_all_attributes=include_all_attributes, encoded=encoded,
-                             write_empty_cols=write_empty_cols, extra_entries=extra_entries, protected=protected)
+                             write_empty_models=write_empty_models, write_empty_cols=write_empty_cols,
+                             extra_entries=extra_entries, protected=protected)
             doc_metadata = None
 
         # finalize workbook
@@ -634,7 +639,8 @@ class WorkbookWriter(WriterBase):
         writer.write_worksheet(sheet_name, content, style=style, protected=protected)
 
     def write_model(self, writer, model, objects, schema_name, date, doc_metadata, doc_metadata_model, model_metadata, sheet_models,
-                    include_all_attributes=True, encoded=None, write_empty_cols=True, extra_entries=0, protected=True):
+                    include_all_attributes=True, encoded=None, write_empty_models=True, write_empty_cols=True,
+                    extra_entries=0, protected=True):
         """ Write a list of model objects to a file
 
         Args:
@@ -651,10 +657,14 @@ class WorkbookWriter(WriterBase):
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
                 including those not explictly included in `Model.Meta.attribute_order`
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
+            write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
             write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
             extra_entries (:obj:`int`, optional): additional entries to display
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
+        if not write_empty_models and not objects:
+            return
+
         attrs, _, headings, merge_ranges, field_validations, metadata_headings = get_fields(
             model, schema_name, date, doc_metadata, doc_metadata_model, model_metadata,
             include_all_attributes=include_all_attributes,
@@ -918,7 +928,7 @@ class MultiSeparatedValuesWriter(WriterBase):
     def run(self, path, objects, schema_name=None, doc_metadata=None, model_metadata=None,
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_toc=True, write_schema=False, write_empty_cols=True,
+            write_toc=True, write_schema=False, write_empty_models=True, write_empty_cols=True,
             extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
             protected=False):
         """ Write model objects to a single text file which contains multiple
@@ -946,6 +956,7 @@ class MultiSeparatedValuesWriter(WriterBase):
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
+            write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
             write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
@@ -988,6 +999,7 @@ class MultiSeparatedValuesWriter(WriterBase):
                              language=language, creator=creator,
                              write_toc=write_toc,
                              write_schema=write_schema,
+                             write_empty_models=write_empty_models,
                              write_empty_cols=write_empty_cols,
                              extra_entries=extra_entries,
                              data_repo_metadata=data_repo_metadata,
@@ -1054,7 +1066,7 @@ class Writer(WriterBase):
     def run(self, path, objects, schema_name=None, doc_metadata=None, model_metadata=None,
             models=None, get_related=True, include_all_attributes=True, validate=True,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
-            write_toc=True, write_schema=False, write_empty_cols=True,
+            write_toc=True, write_schema=False, write_empty_models=True, write_empty_cols=True,
             extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
             protected=True):
         """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
@@ -1082,6 +1094,7 @@ class Writer(WriterBase):
             language (:obj:`str`, optional): language
             creator (:obj:`str`, optional): creator
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
+            write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
             write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
             write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
             extra_entries (:obj:`int`, optional): additional entries to display
@@ -1101,6 +1114,7 @@ class Writer(WriterBase):
                      title=title, description=description, keywords=keywords,
                      language=language, creator=creator,
                      write_toc=write_toc, write_schema=write_schema,
+                     write_empty_models=write_empty_models,
                      write_empty_cols=write_empty_cols, extra_entries=extra_entries,
                      group_objects_by_model=group_objects_by_model,
                      data_repo_metadata=data_repo_metadata, schema_package=schema_package,
@@ -2408,7 +2422,7 @@ def convert(source, destination, schema_name=None, models=None,
 
 def create_template(path, schema_name, models, title=None, description=None, keywords=None,
                     version=None, language=None, creator=None,
-                    write_toc=True, write_schema=False, write_empty_cols=True,
+                    write_toc=True, write_schema=False, write_empty_models=True, write_empty_cols=True,
                     extra_entries=10, group_objects_by_model=True, protected=True):
     """ Create a template for a model
 
@@ -2425,6 +2439,7 @@ def create_template(path, schema_name, models, title=None, description=None, key
         language (:obj:`str`, optional): language
         creator (:obj:`str`, optional): creator
         write_schema (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with schema
+        write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
         write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
         write_toc (:obj:`bool`, optional): if :obj:`True`, include additional worksheet with table of contents
         extra_entries (:obj:`int`, optional): additional entries to display
@@ -2434,7 +2449,8 @@ def create_template(path, schema_name, models, title=None, description=None, key
     Writer.get_writer(path)().run(path, [], schema_name=schema_name, models=models,
                                   title=title, description=description, keywords=keywords,
                                   version=version, language=language, creator=creator,
-                                  write_toc=write_toc, write_schema=write_schema, write_empty_cols=write_empty_cols,
+                                  write_toc=write_toc, write_schema=write_schema,
+                                  write_empty_models=write_empty_models, write_empty_cols=write_empty_cols,
                                   extra_entries=extra_entries, group_objects_by_model=group_objects_by_model,
                                   protected=protected)
 

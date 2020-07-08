@@ -1023,6 +1023,42 @@ class TestIo(unittest.TestCase):
         objs = obj_tables.io.Reader().run(filename, models=[NodeTranspose], group_objects_by_model=False)
         self.assertEqual(len(objs), 3)
 
+    def test_not_write_empty_models(self):
+        class Node1(core.Model):
+            id = core.SlugAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
+        class Node2(core.Model):
+            id = core.SlugAttribute()
+
+            class Meta(core.Model.Meta):
+                attribute_order = ('id',)
+
+        objs_1 = [
+            Node1(id='n_1_0'),
+            Node1(id='n_1_1'),
+        ]
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_tables.io.Writer().run(filename, objs_1, models=[Node1, Node2], write_empty_models=True)
+        wb = read_workbook(filename)
+        self.assertIn('!!Node1s', wb)
+        self.assertIn('!!Node2s', wb)
+        objs_2 = obj_tables.io.Reader().run(filename, models=[Node1, Node2], group_objects_by_model=False, ignore_missing_models=True)
+        for obj_1, obj_2 in zip(objs_1, objs_2):
+            self.assertTrue(obj_2.is_equal(obj_1))
+
+        filename = os.path.join(self.tmp_dirname, 'test.xlsx')
+        obj_tables.io.Writer().run(filename, objs_1, models=[Node1, Node2], write_empty_models=False)
+        wb = read_workbook(filename)
+        self.assertIn('!!Node1s', wb)
+        self.assertNotIn('!!Node2s', wb)
+        objs_2 = obj_tables.io.Reader().run(filename, models=[Node1, Node2], group_objects_by_model=False, ignore_missing_models=True)
+        for obj_1, obj_2 in zip(objs_1, objs_2):
+            self.assertTrue(obj_2.is_equal(obj_1))
+
     def test_not_write_empty_cols(self):
         class Node(core.Model):
             id = core.SlugAttribute()
