@@ -2,6 +2,8 @@ abduct
 attrdict
 capturer
 configobj
+jupyter_client
+matplotlib
 mock
 nbconvert
 nbformat
