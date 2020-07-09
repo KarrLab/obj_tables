@@ -7,6 +7,7 @@ matplotlib
 mock
 nbconvert
 nbformat
+notebook
 objsize
 openpyxl <= 3.0.1
 psutil
