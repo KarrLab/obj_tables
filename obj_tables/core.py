@@ -2911,27 +2911,29 @@ class Model(object, metaclass=ModelMeta):
 
         return self
 
-    def cut_relations(self, objs):
+    def cut_relations(self, objs_to_keep=None):
         """ Cut relations to objects not in :obj:`objs`.
 
         Args:
-            objs (:obj:`set` of :obj:`Model`): objects to retain relations to
+            objs_to_keep (:obj:`set` of :obj:`Model`, optional): objects to retain relations to
         """
+        objs_to_keep = objs_to_keep or []
+
         # iterate over related attributes
         for attr in self.Meta.local_attributes.values():
             if attr.is_related:
                 # get value
                 val = getattr(self, attr.name)
 
-                # cut relationships to objects not in `objs`
+                # cut relationships to objects not in `objs_to_keep`
                 if isinstance(val, list):
                     # *ToManyAttribute
                     for v in list(val):
-                        if v not in objs:
+                        if v not in objs_to_keep:
                             val.remove(v)
                 else:
                     # *ToOneAttribute
-                    if val and val not in objs:
+                    if val and val not in objs_to_keep:
                         setattr(self, attr.name, None)
 
     def merge(self, other, normalize=True, validate=True):
