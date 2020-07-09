@@ -14,7 +14,7 @@ uncertainties
 [chem]
 bcforms
 bpforms
-openbabel
+openbabel < 3
 
 [bio]
 biopython >= 1.75
