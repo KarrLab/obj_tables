@@ -20,15 +20,19 @@
 #        [[bioportal]]
 #            key = <key>
 #
-# 8. Build with `docker build -f Dockerfile Dockerfile_assets --tag karrlab/obj_tables:latest`
+# 8. Pull the Ubuntu image via `docker pull ubuntu:latest`
+# 9. Build with `docker build -f Dockerfile Dockerfile_assets --tag karrlab/obj_tables:latest`
 
-# Start from Ubuntu (e.g., bionic - 18.04.4)
-FROM ubuntu
+# Start from Ubuntu (e.g., focal - 20.04)
+FROM ubuntu:latest
 
 # Set default language to UTF-8 US English
+ENV TZ=America/New_York \
+    DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y \
     && apt-get install --no-install-recommends -y \
         locales \
+        tzdata \
     && rm -rf /var/lib/apt/lists/* \
     && locale-gen en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
@@ -61,6 +65,13 @@ RUN apt-get update -y \
         python3 \
         python3-pip \
     && pip3 install -U pip setuptools \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install GraphViz
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+        graphviz \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
@@ -106,13 +117,14 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Open Babel Python interface
+ARG py_openbabel_version=2.4.1
 RUN apt-get update -y \
     && apt-get install --no-install-recommends -y \
         build-essential \
         libpython3-dev \
         swig \
     \
-    && pip3 install openbabel \
+    && pip3 install openbabel==${py_openbabel_version} \
     \
     && apt-get remove -y \
           build-essential \
@@ -138,13 +150,6 @@ RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/*
 ENV JAVA_HOME=/usr/lib/jvm/default-java \
     CLASSPATH=${CLASSPATH}:/opt/chemaxon/marvinsuite/lib/MarvinBeans.jar
-
-# Install GraphViz
-RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends \
-        graphviz \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
 
 # Install ObjTables
 RUN pip3 install obj_tables[grammar,math,sci,chem,bio,revisioning,viz,rest]
