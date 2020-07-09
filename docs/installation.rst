@@ -66,16 +66,19 @@ Configuring access to GitHub
 ----------------------------
 To use the revisioning and migration features, developers must configure `ObjTables` to access GitHub.
 
-* Generate an API token for GitHub, and save it to `~./wc/wc_utils.cfg` in the following format::
+* Install the revisioning features by running `pip install obj_tables[revisioning]`.
+* `Generate an API token for GitHub <https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token>`_.
+* Create the directory `~/.wc/` (Ubuntu: `/home/<username>/.wc`, Windows: `c:\Users\<username>\.wc\`).
+* Create the file `~./wc/wc_utils.cfg` with the following content::
 
     [wc_utils]
         [[github]]
-            github_api_token = <token>
+            github_api_token = <GitHub API token>
 
-* Follow these steps to configure SSH access Github:
+* Follow these steps to configure SSH access GitHub:
 
     * Follow these `instructions <https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent>`_ to generate an SSH key and add it to your GitHub account
-    * Save the following to `~/.gitconfig`::
+    * Create the file `~/.gitconfig` (Ubuntu: `/home/<username>/.gitconfig`, Windows: `c:\Users\<username>\.gitconfig\`) with the following content::
 
         [url "ssh://git@github.com/"]
             insteadOf = https://github.com/
