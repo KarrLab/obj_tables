@@ -60,7 +60,7 @@
           <li class="accordion-item" data-accordion-item>
             <a class="accordion-title">Software</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="app">Web application</a></li>              
+              <li><a href="app">Web application</a></li>
               <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
               <li><a href="api">REST API</a></li>
               <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
@@ -132,7 +132,7 @@
                   <li>
                     <a>Software</a>
                     <ul class="menu">
-                      <li><a href="app">Web application</a></li>                      
+                      <li><a href="app">Web application</a></li>
                       <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
                       <li><a href="api">REST API</a></li>
                       <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
@@ -231,11 +231,13 @@
                     <h3 id="address-book" data-magellan-target="address-book">Address book of the CEOs of technology companies</h3>
                     <p>The following illustrates a schema for an address book of people, the companies that they work for, and their addresses, and an example address book of the CEOs of several technology companies.</p>
 
-                    <p>Address books are implemented using three classes to represent people (<span class="monospace">Person</span>), the companies that they work for (<span class="monospace">Company</span>), and their addresses (<span class="monospace">Address</span>).</p>
+                    <p>Address books are represented using three classes to represent people (<span class="monospace">Person</span>), the companies that they work for (<span class="monospace">Company</span>), and their addresses (<span class="monospace">Address</span>).</p>
 
                     <p>The many-to-one relationship between companies and their employees (<span class="monospace">Person.company</span>) and the one-to-one relationships between company and people and their addresses (<span class="monospace">Company.address</span>, <span class="monospace">Person.address</span>) are represented by <span class="monospace">ManyToOne</span> and <span class="monospace">OneToOne</span> attributes. The required argument <span class="monospace">related_name</span> defines the name of the reverse relationship from the related class (<span class="monospace">Company.employees</span>, <span class="monospace">Address.company</span>, <span class="monospace">Address.person</span>). This makes each relationship bidirectional.</p>
 
-                    <p>To capture address books with a minimal number of tables, the address of each company and person is captured by a range of rows within the companies and people worksheets. This makes the tables more human-readable, and it enables Python to encapsulate related information into distinct objects.</p>
+                    <p>Address books are encoded into two worksheets for companies and their employees, with groups of columns that represent the address of each company and employee. Encoding companies and their addresses and people and their addresses into the same worksheet, rather than encoding addresses into a separate worksheet, makes address books easier for human to read.</p>
+
+                    <p>The <i>ObjTables</i> software provides an object-relational mapping system (ORM) that can automatically map between the object-oriented and spreadsheet representations. This makes it easy for authors to create datasets with high-level data structures and export them to human-readable spreadsheets, and this makes it easy for other investigators to parse human-readable spreadsheets into convenient data structures for comparison and re-analysis. Similar to other ORMs, <i>ObjTables</i> makes it easy to define constraints on the value of each attribute (e.g., an attribute that represents molecular weights must be positive), <i>ObjTables</i> makes it easy to implement custom validations of each object and entire datasets, and <i>ObjTables</i> automatically generates APIs for constructing objects and querying their relationships. See below for more information.</p>
 
                     <h4>Tabular-formatted schema</h4>
                     <p>A more complete example is available in TSV format from GitHub <a href="https://github.com/KarrLab/obj_tables/tree/master/examples/address_book/schema.tsv"><i class="fi-link"></i></a>.</p>
