@@ -141,11 +141,6 @@ a {
     height: 64px;
     margin-top: 0.5rem;
     margin-bottom: 0.25rem;
-    transition: all .5s
-}
-
-.icon img:hover {
-    transform: scale(1.08);
 }
 
 .icon h3 {
@@ -153,8 +148,12 @@ a {
     margin-bottom: 0rem;
 }
 
+.icon p {
+    text-align: left;
+}
+
 .icon ul {
-    list-style-type: none;
+    text-align: left;
 }
 
 .icon li:not(:first-child) {
@@ -381,14 +380,9 @@ table:last-child {
 }
 
 .splash img {
-    width: 85%;
+    width: 65%;
     margin-top: 1rem;
     margin-bottom: 2rem;
-    transition: all .5s;
-}
-
-.splash img:hover {
-    transform: scale(1.05);
 }
 
 .splash h1 {
@@ -509,17 +503,17 @@ tbody td {
 }
 
 .worksheet {
-    border: 1px solid rgb(150, 150, 150);
+    border: 1px solid rgb(120, 120, 120);
 }
 
 /* example schema */
 
 table.example-tabular-schema thead tr:first-child {
-    background-color: rgb(180, 180, 180);
+    background-color: rgb(160, 160, 160);
 }
 
 table.example-tabular-schema thead tr:nth-child(2) {
-    background-color: rgb(220, 220, 220);
+    background-color: rgb(200, 200, 200);
 }
 
 table.example-tabular-schema tbody {
@@ -534,7 +528,7 @@ table.example-tabular-schema tbody tr:first-child td {
 
 table.example-tabular-schema tbody tr:nth-child(2) {
     border-top: 1px solid #f1f1f1;
-    background-color: rgb(220, 220, 220);
+    background-color: rgb(200, 200, 200);
     font-weight: bold;
 }
 
@@ -547,7 +541,7 @@ table.example-tabular-schema tbody tr:not(:first-child) {
 /* data types */
 
 thead.data-type-title tr {
-    background-color: rgb(180, 180, 180);
+    background-color: rgb(160, 160, 160);
 }
 
 thead.data-type-title th {
@@ -564,7 +558,7 @@ thead.data-type-section-head tr:first-child th {
 }
 
 thead.data-type-section-head tr:nth-child(2) {
-    background-color: rgb(220, 220, 220);
+    background-color: rgb(200, 200, 200);
     border: 1px solid #f1f1f1;
 }
 
@@ -609,21 +603,26 @@ tbody.data-type-section td .monospace {
 
 /* example dataset */
 
+tbody tr:nth-child(even) {
+    background-color: #f3f3f3;
+}
+
 .doc-head th {
-    background: rgb(180, 180, 180);
+    background: #333;
+    color: #fff;
 }
 
 .class-head th {
-    background: rgb(200, 200, 200);
+    background: rgb(160, 160, 160);
 }
 
 .col-head th {
-    background: rgb(220, 220, 220);
+    background: rgb(200, 200, 200);
 }
 
 .example-tabular-dataset tbody th {
     text-align: left;
-    background: rgb(220, 220, 220);
+    background: rgb(200, 200, 200);
 }
 
 .example-tabular-dataset tbody th[rowspan="5"] {

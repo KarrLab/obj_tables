@@ -115,7 +115,7 @@
                 <a href="#top">
                   <span class="title"><i>ObjTables</i><span class="show-for-large">:</span></span>
                   <span class="subtitle show-for-large">
-                    Structured spreadsheets that are human- and machine-readable
+                    Tools for spreadsheets that are human- &amp; machine-readable
                   </span>
                 </a>
               </div>
@@ -186,13 +186,13 @@
           <div class="splash-container">
             <img src="logo.svg" alt="ObjTables logo" />
 
-            <h1>Open-source toolkit for structured spreadsheetsthat are both human- and machine-readable.</h1>
+            <h1>Open-source toolkit for structured spreadsheets that are both human- and machine-readable.</h1>
 
             <p><i>ObjTables</i> combines the ease of use of spreadsheets (XLSX file or set of CSV or TSV files) with the rigor of schemas and the power of object-oriented programming.</p>
 
             <p><i>ObjTables</i> is ideal for exchanging scientific data such as supplementary spreadsheets to journal articles. <i>ObjTables</i> makes it easy for both authors to build and quality control spreadsheets and for other investigators to reanalyze, compare, and compose their spreadsheets.</p>
 
-            <p><i>ObjTables</i> builds on a community initiative to make supplementary spreadsheets more reusable. The long-term goal is to create an ecosystem of reusable data for comparative and integrative research. We invite the community to share feedback or get involved.</div>
+            <p><i>ObjTables</i> builds on a community initiative to make supplementary spreadsheets more reusable. Our goal is to create an ecosystem of reusable data for comparative and integrative research. We invite the community to share feedback or get involved.</div>
           </div>
         </div>
 
@@ -204,8 +204,8 @@
                   <h2>Contents</h2>
                   <div class="section-content">
                     <ul data-magellan>
-                      <li><a href="#overview">Overview</a></li>
-                      <li><a href="#features">Features</a></li>
+                      <li><a href="#overview">How <i>ObjTables</i> facilitates reuse</a></li>
+                      <li><a href="#features">How <i>ObjTables</i> helps researchers</a></li>
                       <li><a href="#components">Components of the toolkit</a></li>
                       <li><a href="#software">Software tools</a></li>
                       <li><a href="#use-cases">Use cases</a></li>
@@ -213,7 +213,7 @@
                       <li><a href="#getting-started">Examples and tutorials</a></li>
                       <li><a href="#docs">Documentation</a></li>
                       <li><a href="#help">Help</a></li>
-                      <li><a href="#contributing">Getting involved</a></li>
+                      <li><a href="#contributing">Joining the <i>ObjTables</i> team</a></li>
                     </ul>
                   </div>
                 </div>
@@ -248,7 +248,7 @@
                     <div class="large-8 cell">
                       <div class="icon">
                         <img src="img/spreadsheet.svg" />
-                        <h3>Example: Address book of CEOs</h3>
+                        <h3>Example: <i>Escherichia coli</i> metabolism</h3>
                       </div>
 
                       <div class="worksheet-title">Worksheet: !!_Table of contents</div>
@@ -257,6 +257,9 @@
                           <thead>
                             <tr class="doc-head">
                               <th colspan="3">!!!ObjTables objTablesVersion='1.0.0' date='2020-03-14 13:19:04'</th>
+                            </tr>
+                            <tr class="class-head">
+                              <th colspan="3">!!ObjTables type='TableOfContents'</th>
                             </tr>
                             <tr class="col-head">
                               <th>!Table</th>
@@ -271,8 +274,8 @@
                               <td></td>
                             </tr>
                             <tr>
-                              <td>People</td>
-                              <td></td>
+                              <td>Reactions</td>
+                              <td>Metabolic reactions</td>
                               <td>2</td>
                             </tr>
                           </tbody>
@@ -281,22 +284,33 @@
 
                       <br/>
 
-                      <div class="worksheet-title">Worksheet: !!People</div>
+                      <div class="worksheet-title">Worksheet: !!Reactions</div>
                       <div class="table-scroll worksheet">
                         <table class="example-tabular-dataset">
                           <thead>
                             <tr class="class-head">
-                              <th colspan="4">!!ObjTables type='Data' class='Person' tableFormat='row'</th>
+                              <th colspan="4">!!ObjTables type='Data' class='Reaction' tableFormat='row'</th>
                             </tr>
                             <tr class="col-head">
+                              <th>!Id</th>
                               <th>!Name</th>
-                              <th>!Company</th>
-                              <th>!Email address</th>
+                              <th>!Equation</th>
+                              <th>!&Delta;G (kJ mol^-1)</th>
                             </tr>
                           </thead>
                           <tbody>
-                            <tr><td>Mark Zuckerberg</td><td>Facebook</td><td>zuck@fb.com</td></tr>
-                            <tr><td>Reed Hastings</td><td>Netflix</td><td>reed.hastings@netflix.com</td></tr>
+                            <tr>
+                              <td>fbp</td>
+                              <td>fructose-bisphosphatase</td>
+                              <td>[c]: fdp + h2o <=> f6p + pi</td>
+                              <td>-45.4</td>
+                            </tr>
+                            <tr>
+                              <td>fum</td>
+                              <td>fumarase</td>
+                              <td>[c]: fum + h2o <=> mal-L</td>
+                              <td>-2.6</td>
+                            </tr>
                           </tbody>
                         </table>
                       </div>
@@ -316,10 +330,11 @@
                           </thead>
 
                           <tbody>
-                            <tr><td>Person</td><td>Class</td><td></td><td>row</td><td>Person</td><td>People</td></tr>
-                            <tr><td>name</td><td>Attribute</td><td>Person</td><td>String(primary=True, unique=True)</td><td>Name</td><td></td></tr>
-                            <tr><td>company</td><td>Attribute</td><td>Person</td><td>String</td><td>Company</td><td></td></tr>
-                            <tr><td>email_address</td><td>Attribute</td><td>Person</td><td>Email</td><td>Email address</td><td></td></tr>
+                            <tr><td>Reaction</td><td>Class</td><td></td><td>row</td><td>Reaction</td><td>Reactions</td></tr>
+                            <tr><td>id</td><td>Attribute</td><td>Reaction</td><td>String(primary=True, unique=True)</td><td>Id</td><td></td></tr>
+                            <tr><td>name</td><td>Attribute</td><td>Reaction</td><td>String</td><td>Name</td><td></td></tr>
+                            <tr><td>equation</td><td>Attribute</td><td>Reaction</td><td>ReactionEquation</td><td>Equation</td><td></td></tr>
+                            <tr><td>delta_g</td><td>Attribute</td><td>Reaction</td><td>Float</td><td>&Delta;G (kJ mol^-1)</td><td></td></tr>
                           </tbody>
                         </table>
                       </div>
@@ -329,7 +344,7 @@
               </div>
 
               <div id="features" data-magellan-target="features">
-                <h2>Features</h2>
+                <h2>How does <i>ObjTables</i> help researchers create and reuse high-quality spreadsheets?</h2>
 
                 <div class="section-content">
                   <div class="grid-x grid-padding-x">
@@ -435,7 +450,7 @@
                       <div class="subsection icon">
                         <img src="img/data-types.svg" />
                         <h3>Numerous data types</h3>
-                        <i>ObjTables</i> provides numerous data types, including for mathematics, science, chemoinformatics, and genomics.
+                        <p><i>ObjTables</i> provides numerous data types, including for mathematics, science, chemoinformatics, and genomics.</p>
                       </div>
                     </div>
 
@@ -443,13 +458,13 @@
                       <div class="subsection icon">
                         <img src="img/markup.svg" />
                         <h3>Markup syntax for spreadsheets</h3>
-                        <i>ObjTables</i> provides syntax for indicating which cells represent each class, instance, and attribute (e.g., worksheet title <span class="monospace">!!People</span>); declaring which cells represent metadata such as the date that a table was updated (<span class="monospace">!!ObjTables ...</span>); and declaring which entries represent comments (<span class="monospace">%/ ... /%</span>).
+                        <p><i>ObjTables</i> provides syntax for indicating which cells represent each class, instance, and attribute (e.g., worksheet title <span class="monospace">!!Reactions</span>); declaring which cells represent metadata such as the date that a table was updated (<span class="monospace">!!ObjTables ...</span>); and declaring which entries represent comments (<span class="monospace">%/ ... /%</span>).</p>
                       </div>
 
                       <div class="subsection icon">
                         <img src="img/gears.svg" />
                         <h3>High-level software for spreadsheets</h3>
-                        <i>ObjTables</i> includes a web application, a REST API, a command-line program, and a Python package for working with datasets. These tools can be used to pretty print, validate, compare, revision, and migrate datasets.
+                        <p><i>ObjTables</i> includes a web application, a REST API, a command-line program, and a Python package for working with datasets. These tools can be used to pretty print, validate, compare, revision, and migrate datasets.</p>
                       </div>
                     </div>
 
@@ -457,7 +472,7 @@
                       <div class="subsection icon">
                         <img src="img/python.svg" />
                         <h3>Python package for additional flexibility</h3>
-                        For more flexibility, the Python package can be used to implement custom data types, define custom validation, query, and analyze datasets.
+                        <p>For more flexibility, the Python package can be used to implement custom data types, define custom validation, query, and analyze datasets.</p>
                       </div>
                     </div>
                   </div>
@@ -472,17 +487,17 @@
                     <div class="large-4 cell icon">
                       <img src="img/browser.svg" />
                       <h3>Web application</h3>
-                      A web application is available at <a href="app">objtables.org/app</a>.
+                      <p>A web application is available at <a href="app">objtables.org/app</a>.</p>
                     </div>
                     <div class="large-4 cell icon">
                       <img src="img/api.svg" />
                       <h3>REST API</h3>
-                      A REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.
+                      <p>A REST API is available at <a href="https://www.objtables.org/api">objtables.org/api</a>.</p>
                     </div>
                     <div class="large-4 cell icon">
                       <img src="img/terminal.svg" />
                       <h3>Command-line program</h3>
-                      A command-line program is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.
+                      <p>A command-line program is available from PyPI <a href="https://pypi.org/pypi/obj_tables"><i class="fi-link"></i></a>.</p>
                     </div>
                   </div>
                   <div class="grid-x grid-padding-x subsection">
@@ -676,7 +691,7 @@
               </div>
 
               <div id="contributing" data-magellan-target="contributing">
-                <h2>Getting involved</h2>
+                <h2>Getting involved: Joining the <i>ObjTables</i> team</h2>
 
                 <div class="section-content">
                   <i>ObjTables</i> is a community initiative to make supplementary spreadsheets more reusable. The long-term goal is to create an ecosystem of reusable data for comparative and integrative research. We invite the community to join us in this endeavour. Please contact the developers <a href="mailto:info@objtables.org"><i class="fi-mail"></i></a> to share feedback or get involved.
