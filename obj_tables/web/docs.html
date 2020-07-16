@@ -85,8 +85,10 @@
               <li class="separator"><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
               <li><a href="#other-resources">Resources for working with <i>ObjTables</i></a></li>
               <li><a href="#comparison">Comparison with other tools</a></li>
+              <li><a href="#design-choices">Design choices</a></li>
               <li><a href="#limitations">Known limitations</a></li>
               <li><a href="#roadmap">Future directions</a></li>
+              <li><a href="#faq">FAQ</a></li>
               <li class="separator"><a href="#help">More help</a></li>
             </ul>
           </li>
@@ -157,8 +159,10 @@
                       <li class="separator"><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                       <li><a href="#other-resources">Resources for working with <i>ObjTables</i></a></li>
                       <li><a href="#comparison">Comparison with other tools</a></li>
+                      <li><a href="#design-choices">Design choices</a></li>
                       <li><a href="#limitations">Known limitations</a></li>
                       <li><a href="#roadmap">Future directions</a></li>
+                      <li><a href="#faq">FAQ</a></li>
                       <li class="separator"><a href="#help">More help</a></li>
                     </ul>
                   </li>
@@ -193,7 +197,7 @@
                           <li><a href="#more-examples">Additional examples</a></li>
                         </ul>
                       </li>
-                      <li><a href="#formats">Formats for datasets</a>
+                      <li><a href="#formats">Formats</a>
                         <ul>
                           <li><a href="#schema-formats">Formats for schemas</a></li>
                           <li><a href="#data-types">Data types</a></li>
@@ -213,8 +217,10 @@
                       </li>
                       <li><a href="#other-resources">Related resources for working with <i>ObjTables</i></a></li>
                       <li><a href="#comparison">Comparison with other tools</a></li>
+                      <li><a href="#design-choices">Design choices</a></li>
                       <li><a href="#limitations">Known limitations</a></li>
                       <li><a href="#roadmap">Future directions</a></li>
+                      <li><a href="#faq">FAQ</a></li>
                       <li><a href="#help">Further help</a></li>
                     </ul>
                   </div>
@@ -874,7 +880,7 @@
                 <div class="section-content">
                   <p><i>ObjTables</i> schemas can either be defined using the tabular format described below or using the <i>ObjTables</i> Python package. The tabular format is easy to use, and requires no programming. The tabular format supports most of the features of <i>ObjTables</i>, including a wide range of data types, relationships, transposed and embedded tables, single inheritance, and basic validation.</p>
 
-                  <p>The <i>ObjTables</i> Python package is more flexible. In addition to the features of the tabular schema format, the Python package supports abstract classes and methods, custom data types, custom validation, custom Excel formatting, and more. The Python package can also be used to encapsulate methods for manipulating data inside schemas.</p>
+                  <p>The <i>ObjTables</i> Python package is more flexible. In addition to the features of the tabular schema format, the Python package supports abstract classes and methods, custom data types, custom validation, custom XSLX formatting, and more. The Python package can also be used to encapsulate methods for manipulating data inside schemas.</p>
 
                   <p>We recommend that developers begin with the tabular format, and transition to the Python format when more capabilities are needed. When more capabilities are required, we recommend that developers use the <i>ObjTables</i> software tools to convert their initial tabular-formatted schema into a Python module. This workflow provides a quick path to developing a custom schema.</p>
 
@@ -914,7 +920,7 @@
                       <li><b><span class="monospace">!Description</span></b> (Optional): Description of the component.</li>
                     </ul>
 
-                    <p>Tabular-formatted schemas can be saved in comma-separated (.csv), tab-separated (.tsv), or Excel (.xlsx) format.</p>
+                    <p>Tabular-formatted schemas can be saved in comma-separated (.csv), tab-separated (.tsv), or XSLX (.xlsx) format.</p>
                   </div>
 
                   <div class="subsection">
@@ -936,7 +942,7 @@
                           <li><span class="monospace">table_format</span>: Indicates how the class should be formatted: <span class="monospace">obj_tables.TableFormat.row</span> (normal table), <span class="monospace">obj_tables.TableFormat.column</span> (transposed table), <span class="monospace">obj_tables.TableFormat.multiple_cells</span> (inline as a set of columns/rows within the tables of related classes), or <span class="monospace">obj_tables.TableFormat.cell</span> (inline encoded into a column or row of the tables of the related classes).</li>
                           <li><span class="monospace">attribute_order</span>: List of the names of the attributes of the class in the order they should be printed in its table.</li>
                           <li><span class="monospace">ordering</span>: Defines the default sorting for the instances of the class. This should be a list of strings of the names of attributes, in the order in which the values of the attributes should be sorted. Optionally, the prefix <span class="monospace">-</span> can be used to indicate that instances should be sorted in reverse order of the values of the attribute.</li>
-                          <li><span class="monospace">frozen_columns</span>: Number of columns to freeze when the class is printed to an Excel worksheet.</li>
+                          <li><span class="monospace">frozen_columns</span>: Number of columns to freeze when the class is printed to an XLSX worksheet.</li>
                           <li><span class="monospace">merge</span>: Indicates how semantically-equivalent instances of the class should be merged when two datasets are merged: <span class="monospace">obj_tables.ModelMerge.join</span> (concatenate their *-to-many relationships) or <span class="monospace">obj_tables.ModelMerge.append</span> (throw an error if datasets contain semantically equivalent instances).</li>
                         </ul>
                       </li>
@@ -983,14 +989,14 @@
                       <li>uncertainties <a href="https://uncertainties-python-package.readthedocs.io"><i class="fi-link"></i></a>: values and their uncertainty</li>
                     </ul>
 
-                    <p>The following table lists the attribute types currently available in <i>ObjTables</i>. The first column indicates the names that should be used in conjunction with the tabular schema format. The second column indicates the Python class which implements each type, and which should be used to define schemas with the Python package. The third column indicates the data type used to encode each attribute into an Excel cell. The fourth column indicates the Python data type used to represent each attribute in the <i>ObjTables</i> software tools.</p>
+                    <p>The following table lists the attribute types currently available in <i>ObjTables</i>. The first column indicates the names that should be used in conjunction with the tabular schema format. The second column indicates the Python class which implements each type, and which should be used to define schemas with the Python package. The third column indicates the data type used to encode each attribute into an spreadsheet cell. The fourth column indicates the Python data type used to represent each attribute in the <i>ObjTables</i> software tools.</p>
 
                     <table class="stack">
                       <thead class="data-type-title">
                         <tr>
                           <th>Format</th>
                           <th>Python class</th>
-                          <th>Excel type</th>
+                          <th>XLSX type</th>
                           <th>Python type</th>
                         </tr>
                       </thead>
@@ -1003,7 +1009,7 @@
                         <tr>
                           <td>Boolean</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.BooleanAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>Boolean</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>Boolean</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">bool</span></td>
                         </tr>
                         <tr>
@@ -1013,7 +1019,7 @@
                         <tr>
                           <td>Enum</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.EnumAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">enum.Enum</span></td>
                         </tr>
                         <tr>
@@ -1023,7 +1029,7 @@
                         <tr>
                           <td>Integer</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.IntegerAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>Number</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>Number</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">int</span></td>
                         </tr>
                         <tr>
@@ -1033,7 +1039,7 @@
                         <tr>
                           <td>PositiveInteger</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.PositiveIntegerAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>Number</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>Number</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">int</span></td>
                         </tr>
                         <tr>
@@ -1043,7 +1049,7 @@
                         <tr>
                           <td>Float</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.FloatAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>Number</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>Number</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">float</span></td>
                         </tr>
                         <tr>
@@ -1053,7 +1059,7 @@
                         <tr>
                           <td>PositiveFloat</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.PositiveFloatAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>Number</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>Number</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">float</span></td>
                         </tr>
                         <tr>
@@ -1063,7 +1069,7 @@
                         <tr>
                           <td>String</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.StringAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">str</span></td>
                         </tr>
                         <tr>
@@ -1073,7 +1079,7 @@
                         <tr>
                           <td>LongString</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.LongStringAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">str</span></td>
                         </tr>
                         <tr>
@@ -1083,7 +1089,7 @@
                         <tr>
                           <td>Regex</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.RegexAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">str</span></td>
                         </tr>
                         <tr>
@@ -1093,7 +1099,7 @@
                         <tr>
                           <td>Email</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.EmailAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">str</span></td>
                         </tr>
                         <tr>
@@ -1103,7 +1109,7 @@
                         <tr>
                           <td>LocalPath</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.LocalPathAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">pathlib.Path</span></td>
                         </tr>
                         <tr>
@@ -1113,7 +1119,7 @@
                         <tr>
                           <td>Url</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.UrlAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">str</span></td>
                         </tr>
                         <tr>
@@ -1123,7 +1129,7 @@
                         <tr>
                           <td>Date</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.DateAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">datetime.date</span></td>
                         </tr>
                         <tr>
@@ -1133,7 +1139,7 @@
                         <tr>
                           <td>DateTime</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.DateTimeAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">datetime.datetime</span></td>
                         </tr>
                         <tr>
@@ -1143,7 +1149,7 @@
                         <tr>
                           <td>Time</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.TimeAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">datetime.time</span></td>
                         </tr>
                         <tr>
@@ -1153,7 +1159,7 @@
                         <tr>
                           <td>Range</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.RangeAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.Range</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.Range"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1163,7 +1169,7 @@
                         <tr>
                           <td>List</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.ListAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">list</span></td>
                         </tr>
                         <tr>
@@ -1179,7 +1185,7 @@
                         <tr>
                           <td>OneToOne</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.OneToOneAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.Model</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.OneToOneAttribute"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1189,7 +1195,7 @@
                         <tr>
                           <td>OneToMany</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.OneToManyAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">list</span> of <span class="monospace">obj_tables.Model</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.OneToManyAttribute"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1199,7 +1205,7 @@
                         <tr>
                           <td>ManyToOne</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.ManyToOneAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.Model</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.ManyToOneAttribute"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1209,7 +1215,7 @@
                         <tr>
                           <td>ManyToMany</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.ManyToManyAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">list</span> of <span class="monospace">obj_tables.Model</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.core.ManyToManyAttribute"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1225,7 +1231,7 @@
                         <tr>
                           <td>grammar.ToManyGrammar</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.grammar.ToManyGrammarAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">list</span> of <span class="monospace">obj_tables.Model</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.grammar.ToManyGrammarAttribute"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1241,7 +1247,7 @@
                         <tr>
                           <td>math.Array</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.math.ArrayAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">numpy.ndarray</span> <a href="https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1251,7 +1257,7 @@
                         <tr>
                           <td>math.Table</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.math.TableAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">pandas.DataFrame</span> <a href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1261,7 +1267,7 @@
                         <tr>
                           <td>math.ManyToOneExpression</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.math.ManyToOneExpressionAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.math.expression.Expression</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1271,7 +1277,7 @@
                         <tr>
                           <td>math.OneToOneExpression</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.math.OneToOneExpressionAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.math.expression.Expression</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1281,7 +1287,7 @@
                         <tr>
                           <td>math.SymbolicExpr</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.math.SymbolicExprAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">sympy.Expr</span> <a href="https://docs.sympy.org/latest/_modules/sympy/core/expr.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1291,7 +1297,7 @@
                         <tr>
                           <td>math.SymbolicSymbol</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.math.SymbolicSymbolAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">sympy.Symbol</span> <a href="https://docs.sympy.org/latest/_modules/sympy/core/symbol.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1307,7 +1313,7 @@
                         <tr>
                           <td>sci.Unit</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.UnitAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">pint.unit._Unit</span> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1317,7 +1323,7 @@
                         <tr>
                           <td>sci.Quantity</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.QuantityAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">pint.quantity._Quantity</span> <a href="https://pint.readthedocs.io"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1327,7 +1333,7 @@
                         <tr>
                           <td>sci.UncertainFloat</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.UncertainFloatAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">uncertainties.core.Variable</span> <a href="https://uncertainties-python-package.readthedocs.io/"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1337,7 +1343,7 @@
                         <tr>
                           <td>sci.Doi</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.DoiAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">str</span></td>
                         </tr>
                         <tr>
@@ -1347,7 +1353,7 @@
                         <tr>
                           <td>sci.Dois</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.DoisAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">list</span> of <span class="monospace">str</span></td>
                         </tr>
                         <tr>
@@ -1357,7 +1363,7 @@
                         <tr>
                           <td>sci.Identifier</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.IdentifierAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.sci.Identifer</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.sci.IdentifierAttribute"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1367,7 +1373,7 @@
                         <tr>
                           <td>sci.Identifiers</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.IdentifiersAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">list</span> of <span class="monospace">obj_tables.sci.Identifer</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.sci.IdentifierAttribute"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1377,7 +1383,7 @@
                         <tr>
                           <td>sci.OntoTerm</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.OntoTermAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">pronto.Term</span> <a href="https://pronto.readthedocs.io/en/latest/pronto/pronto.Term.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1387,7 +1393,7 @@
                         <tr>
                           <td>sci.PubMedId</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.PubMedIdAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>Number</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>Number</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">int</span></td>
                         </tr>
                         <tr>
@@ -1397,7 +1403,7 @@
                         <tr>
                           <td>sci.PubMedIds</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.sci.PubMedIdsAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">list</span> of <span class="monospace">int</span></td>
                         </tr>
                         <tr>
@@ -1413,7 +1419,7 @@
                         <tr>
                           <td>chem.ChemicalStructure</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.chem.ChemicalStructureAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">wc_utils.utils.chem.Structure <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></span></td>
                         </tr>
                         <tr><td colspan="3">Chemical structure</td>
@@ -1423,7 +1429,7 @@
                         <tr>
                           <td>chem.ChemicalFormula</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.chem.ChemicalFormulaAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">wc_utils.utils.chem.EmpiricalFormula</span> <a href="https://docs.karrlab.org/wc_utils"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1433,7 +1439,7 @@
                         <tr>
                           <td>chem.ReactionEquation</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.chem.ReactionEquationAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">obj_tables.chem.ReactionEquation</span> <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html#obj_tables.chem.core.ReactionEquation"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1449,7 +1455,7 @@
                         <tr>
                           <td>bio.DnaSeq</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.bio.DnaSeqAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">Bio.Seq.Seq</span> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1459,7 +1465,7 @@
                         <tr>
                           <td>bio.ProteinSeq</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.bio.ProteinSeqAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">Bio.Seq.Seq</span> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1469,7 +1475,7 @@
                         <tr>
                           <td>bio.RnaSeq</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.bio.RnaSeqAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">Bio.Seq.Seq</span> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1479,7 +1485,7 @@
                         <tr>
                           <td>bio.Seq</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.bio.SeqAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">Bio.Seq.Seq</span> <a href="https://biopython.org/DIST/docs/api/Bio.Seq.Seq-class.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1489,7 +1495,7 @@
                         <tr>
                           <td>bio.FeatureLoc</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.bio.FeatureLocAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">Bio.SeqFeature.FeatureLocation</span> <a href="https://biopython.org/DIST/docs/api/Bio.SeqFeature.FeatureLocation-class.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1499,7 +1505,7 @@
                         <tr>
                           <td>bio.FreqPosMatrix</td>
                           <td><span class="hide-for-medium">Python class: </span>obj_tables.bio.FreqPosMatrixAttribute</td>
-                          <td><span class="hide-for-medium">Excel type: </span>String</td>
+                          <td><span class="hide-for-medium">XLSX type: </span>String</td>
                           <td><span class="hide-for-medium">Python type: </span><span class="monospace">Bio.motif.matrix.FrequencyPositionMatrix</span> <a href="https://biopython.org/DIST/docs/api/Bio.motifs.matrix.FrequencyPositionMatrix-class.html"><i class="fi-link"></i></a></td>
                         </tr>
                         <tr>
@@ -1526,7 +1532,7 @@
                     <p>Most of the attributes also have optional arguments that can be used to control how values of the attribute are validated. For example, the <span class="monospace">Integer</span> and <span class="monospace">Float</span> attributes have optional <span class="monospace">min</span> and <span class="monospace">max</span> arguments which can be used to indicate the minimum and maximum valid values. The <span class="monospace">String</span> and <span class="monospace">LongString</span> attributes have optional <span class="monospace">min_length</span> and <span class="monospace">max_length</span> attributes which can be used to indicate the minimum and maximum valid lengths of each value.</p>
 
                     <h4>Specifying required and optional attributes</h4>
-                    <p class="before-list" id="required-attributes">The <span class="monospace">none</span> argument controls whether an attribute is required (its value must be defined) or optional (its value can be undefined &ndash; <span class="monospace">null</span> in Excel, <span class="monospace">null</span> in JSON and YAML, <span class="monospace">None</span> in Python):</p>
+                    <p class="before-list" id="required-attributes">The <span class="monospace">none</span> argument controls whether an attribute is required (its value must be defined) or optional (its value can be undefined &ndash; <span class="monospace">null</span> in XLSX, <span class="monospace">null</span> in JSON and YAML, <span class="monospace">None</span> in Python):</p>
                     <ul>
                       <li><span class="monospace">none=False</span> means that the value of an attribute must be defined. This makes an attribute required.</li>
                       <li><span class="monospace">none=True</span> means that the value of an attribute can be undefined. This makes an attribute optional.</li>
@@ -1552,10 +1558,10 @@
 
                 <div class="section-content">
                   <div class="subsection">
-                    <p class="before-list"><i>ObjTables</i> can encode and decode datasets into and from the file formats outlined below. We recommend using Excel for viewing and editing datasets. We recommend using CSV or TSV to store datasets because these formats are conducive to revisioning with version control systems such as Git. We recommend using JSON for working with <i>ObjTables</i> in other programming languages beyond Python.</p>
+                    <p class="before-list"><i>ObjTables</i> can encode and decode datasets into and from the file formats outlined below. We recommend using programs such as Microsoft Excel or LibreOffice Calc for viewing and editing datasets. We recommend using CSV or TSV to store datasets because these formats are conducive to revisioning with version control systems such as Git. We recommend using JSON for working with <i>ObjTables</i> in other programming languages beyond Python.</p>
 
                     <ul class="vertically-spaced-list">
-                      <li><b>Tabular formats:</b> Collections of tables in comma-separated (CSV), tab-separated (TSV), or Excel format.
+                      <li><b>Tabular formats:</b> Collections of tables in comma-separated (CSV), tab-separated (TSV), or XLSX format.
                         <ul class="vertically-spaced-list">
                           <li><b>Set of CSV or TSV files (<span class="monospace">.csv</span>, <span class="monospace">.tsv</span>)</b>
                             <ul>
@@ -1575,8 +1581,9 @@
                             </ul>
                           </li>
 
-                          <li><b>Excel workbook (<span class="monospace">.xlsx</span>)</b>
+                          <li><b>XLSX workbook (<span class="monospace">.xlsx</span>)</b>
                             <ul>
+                              <li>Open standard: ECMA-376 <a href="https://www.ecma-international.org/publications/standards/Ecma-376.htm"><i class="fi-link"></i></a>, ISO/IEC 29500 <a href="https://www.iso.org/standard/71691.html"><i class="fi-link"></i></a>.</li>
                               <li>This format is also similar to a set of CSV or TSV files, except that each table is contained in a worksheet in a workbook rather than in a separate text file.</li>
                               <li>The title of each worksheet should be <span class="monospace">!!</span> followed by the name of the class in the schema (e.g., <span class="monospace">!!Name</span>) encoded into the worksheet.</li>
                               <li>Optionally, workbooks can include a table of contents worksheet that summarizes and provides hyperlinks to the data tables. This should have the title <span class="monospace">!!_Table of contents</span>.</li>
@@ -1840,7 +1847,7 @@
                     <ul class="vertically-spaced-list optional">
                       <li>Generate a Python module that implements a tabular-formatted schema.</li>
                       <li>Generate a UML diagram for a schema.</li>
-                      <li>Generate a template CSV, TSV, or Excel file(s) for a schema.</li>
+                      <li>Generate a template CSV, TSV, or XLSX file(s) for a schema.</li>
                       <li class="optional">Programmatically construct or edit a dataset.</li>
                       <li class="optional">Merge multiple datasets into a single dataset.</li>
                       <li class="optional">Partition a dataset into multiple datasets.</li>
@@ -2047,7 +2054,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
 
                           <li>
                             <b>Generating a template for a dataset of a schema:</b>
-                            Use the <span class="monospace">gen-template</span> endpoint to generate a template for a dataset in CSV, TSV, merged CSV, merged TSV, or Excel format.
+                            Use the <span class="monospace">gen-template</span> endpoint to generate a template for a dataset in CSV, TSV, merged CSV, merged TSV, or XLSX format.
                           </li>
 
                           <li>
@@ -2072,12 +2079,12 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
 
                           <li>
                             <b>Pretty printing a dataset:</b>
-                            Use the <span class="monospace">normalize</span> endpoint to pretty print a dataset in Excel format. This will print the classes and attributes in their canonical orders, highlight and freeze the headings of each table, embed help information about each column into comments, setup Excel validation for each cell, and protect each worksheet. Optionally, pretty printed datasets can include an additional worksheet with a table of contents that summarizes and provides hyperlinks to each class, as well as an additional worksheet that summarizes the schema. We recommend embedding schemas with datasets when sharing datasets with others or publishing datasets.
+                            Use the <span class="monospace">normalize</span> endpoint to pretty print a dataset in XLSX format. This will print the classes and attributes in their canonical orders, highlight and freeze the headings of each table, embed help information about each column into comments, setup XLSX validation for each cell, and protect each worksheet. Optionally, pretty printed datasets can include an additional worksheet with a table of contents that summarizes and provides hyperlinks to each class, as well as an additional worksheet that summarizes the schema. We recommend embedding schemas with datasets when sharing datasets with others or publishing datasets.
                           </li>
 
                           <li>
                             <b>Converting a dataset to other formats:</b>
-                            Use the <span class="monospace">convert</span> endpoint to convert a dataset among CSV, TSV, merged CSV, merged TSV, Excel, JSON, and YAML formats.
+                            Use the <span class="monospace">convert</span> endpoint to convert a dataset among CSV, TSV, merged CSV, merged TSV, XLSX, JSON, and YAML formats.
                           </li>
                         </ul>
 
@@ -2109,7 +2116,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                 <div class="section-content">
                   <p class="before-list">While <i>ObjTables</i> has many similarities to other toolkits, <i>ObjTables</i>'s unique combination of features provides some advantages for some use cases. Below, we outline the advantages and disadvantages of <i>ObjTables</i> of over several other types of tools.</p>
                   <ul class="vertically-spaced-list">
-                    <li><b>Workbook editors with validation</b> such as Microsoft Excel: Workbook editors are user-friendly tools for quickly viewing and editing datasets, including relatively large datasets. However, workbook editors have limited data types, limited support for relationships, and limited support for validation. In addition, workbook editors do not separate workbooks from schemas such that schemas can be applied to multiple workbooks. As a result, tools for programmatically reading workbooks such as openpxyl cannot link related records across multiple worksheets into a connected object graph. <i>ObjTables</i> leverages the user-friendliness of workbook editors and adds the abilities to parse and validate workbooks with schemas that support many data types and rich validation at multiple levels. Consequently, <i>ObjTables</i> makes it easy to interact with datasets both as workbooks (with tools such as Excel) and as data structures (with languages such as Python).</li>
+                    <li><b>Workbook editors with validation</b> such as Microsoft Excel or LibreOffice Calc: Workbook editors are user-friendly tools for quickly viewing and editing datasets, including relatively large datasets. However, workbook editors have limited data types, limited support for relationships, and limited support for validation. In addition, workbook editors do not separate workbooks from schemas such that schemas can be applied to multiple workbooks. As a result, tools for programmatically reading workbooks such as openpxyl cannot link related records across multiple worksheets into a connected object graph. <i>ObjTables</i> leverages the user-friendliness of workbook editors and adds the abilities to parse and validate workbooks with schemas that support many data types and rich validation at multiple levels. Consequently, <i>ObjTables</i> makes it easy to interact with datasets both as workbooks (with tools such as Excel) and as data structures (with languages such as Python).</li>
 
                     <li><b>Alternative spreadsheet schemas</b> such as Table Schema <a href="https://specs.frictionlessdata.io/table-schema/"><i class="fi-link"></i></a>: Table Schema also combines the ease of use of spreadsheets with the rigor of schemas. One advantage of Table Schema is that is more formally defined than <i>ObjTables</i>. However, Table Schema provides limited support for scientific data types such as chemical formulae and reaction equations; Table Schema doesn't support common spreadsheet design patterns such as encoding relationships into groups of columns and grammars; Table Schema doesn't support advanced validations such as checking that each reaction is mass balanced or that a network is acyclic; Table Schema doesn't provide an ORM for manipulating datasets with high-level data structures; and Table Schema doesn't leverage XLSX formatting to provide inline help and validation.</li>
 
@@ -2121,6 +2128,27 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
 
                     <li><b>Relational databases and querying tools</b> such as MySQL Workbench <a href="https://www.mysql.com/products/workbench/"><i class="fi-link"></i></a> for MySQL: Relational databases make it easy to define schemas and conduct arbitrary queries of datasets. However, querying tools such as MySQL Workbench provide cumbersome interfaces for viewing and editing large datasets, relational databases support limited data types, and it is difficult to validate relational databases without ORMs. Furthermore, using a relational database typically requires significant knowledge of its schema. <i>ObjTables</i> improves over these tools by leveraging workbooks and workbook editors for viewing and editing datasets, by supporting more data types, by using nested tables and grammars to simplify the representation of relationships, and by supporting validation.</li>
                   </ul>
+                </div>
+              </div>
+
+              <div id="design-choices" data-magellan-target="design-choices">
+                <h2>Design choices</h2>
+                <div class="section-content">
+                  <p>We designed <i>ObjTables</i> as a complement to the Open Office Spreadsheet XML format (XLSX; ECMA-376 <a href="https://www.ecma-international.org/publications/standards/Ecma-376.htm"><i class="fi-link"></i></a>; ISO/IEC 29500 <a href="https://www.iso.org/standard/71691.html"><i class="fi-link"></i></a>) for several reasons.</p>
+                  
+                  <h4>Expand the capabilities of an easily readable and popular open file format</h4>
+                  <p>To make <i>ObjTables</i> an appealing option for supplementary datasets to journal articles, we wanted to base <i>ObjTables</i> on a file format that is easy for many researchers to read, and which is already a popular format for supplementary data. Furthermore, we wanted to base <i>ObjTables</i> on an open-source format. This narrowed our choices to the XLSX format or text-based formats such as CSV or TSV. While data serialization formats such as JSON, XML, and YAML provide some of the benefits of <i>ObjTables</i>, we did not want to base <i>ObjTables</i> on these formats because the GUI tools for these files do not make datasets as easy to read as spreadsheets programs such as Excel.</p>
+
+                  <p>Although databases and ORMs also provide some of the benefits of <i>ObjTables</i>, we did not want to base <i>ObjTables</i> on a traditional relational database or a low-code database such as Airtable <a href="https://airtable.com/"><i class="fi-link"></i></a> because we wanted journals to be able to archive datasets as a file, and we wanted readers to be able to use simple tools to read these files. Relational databases are too complex for many researchers, and commercial low-code tools are not designed to export and import datasets to and from files, which is critical for journal archiving. Another reason why we chose to base <i>ObjTables</i> on a file format rather than a database is that we wanted <i>ObjTables</i> to be compatible with asynchronous collaboration workflows with version control systems such as Git.</p>
+
+                  <p>As a result, we chose to base <i>ObjTables</i> on top of the XLSX format, a popular and open format for spreadsheets.</p>
+                        
+                  <h4>Develop software tools that complement existing spreadsheet programs</h4>
+                  <p>Due to the popularity and significant capabilities of existing spreadsheet programs such as Excel, we wanted to enable users to continue to use their favorite programs on their favorite operating systems as much as possible. In particular, we wanted peer reviewers, editors, and readers of journal articles to be able to read <i>ObjTables</i>-encoded spreadsheets with their existing spreadsheet programs rather than have to install an additional program. We also wanted authors to be able to continue to do the majority of their work (e.g., combine data from multiple sources, munge each source, perform calculations, make charts) with their favorite spreadsheet program and only briefly have to use a new program for advanced features such as validation that are not available in programs such as Excel.</p>
+
+                  <p>We did not want to develop an extension for a spreadsheet program such as Excel or Google Sheets because this would only benefit users of that one program as there is no universal format for extensions. In addition, an extension would only benefit users of specific versions of that program on specific operating systems because the interfaces for extensions change over time. We also did not want to build the <i>ObjTables</i> software as an extension of Excel or Google Sheets because we wanted researchers to be able to use <i>ObjTables</i> with free, open-source tools. We did not want to build the <i>ObjTables</i> software as an extension of an open-source spreadsheet tool such as LibreOffice Calc because these tools are much less popular than Excel.</p>
+
+                  <p>As a result, we chose to develop the <i>ObjTables</i> software as a separate, OS-independent program from spreadsheet programs such as Excel. Furthermore, we tried to make the software as accessible as possible by providing it as a web application, command-line program, REST API, and Python package.</p>
                 </div>
               </div>
 
@@ -2150,6 +2178,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                     <li>Develop additional data types to better support specific fields of science. Examples include data types for genetic variants, alleles, and geographic and spatial coordinates.</li>
                     <li>Support additional layout conventions such as multi-level headings.</li>
                     <li>Develop libraries for additional languages such as Java, MATLAB, and R.</li>
+                    <li>Develop a registry of schemas to make it easier for communities to share schemas.</li>
                     <li>Develop a graphical user interface for editing schemas and structured spreadsheets. Several possibilities include
                       <ul>
                         <li>Web application for designing schemas.</li>
@@ -2157,12 +2186,37 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                         <li>Extension for Google Sheets.</li>
                       </ul>
                     </li>
-                    <li>Develop a registry of schemas to make it easier for communities to share schemas.</li>
                     <li>Encourage data registries such as Dryad, FigShare, GitHub, and Zenodo to support <i>ObjTables</i>.</li>
                     <li>Lobby journals to encourage authors to publish reusable supplementary tables and to encourage reviewers to verify the reusability of supplementary tables.</li>
                   </ul>
                 </div>
               </div>
+
+              <div id="faq" data-magellan-target="faq">
+                <h2>FAQ</h2>
+                <div class="section-content">
+                    <ul class="vertically-spaced-list qa">
+                        <li>
+                            <div class="qa-q">Why are <i>ObjTables</i> worksheets protected?</div>
+                            <div class="qa-a">
+                                <p><i>ObjTables</i> worksheets are protected to help users use programs such as Microsoft Excel and LibreOffice Calc as graphical user interfaces for editing datasets. Specifically, <i>ObjTables</i> protects the elements of spreadsheets which encode the schema (worksheets, column headings, etc.) to help researchers focus on editing their data without unintentionally changing the schema. This is designed to help researchers separate the development of schemas from the development of datasets, and adhere to schemas as they edit their datasets.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="qa-q">How can I un-protect a worksheet?</div>
+                            <div class="qa-a">
+                                <p class="before-list">Microsoft Excel users can un-protect a worksheet by following these steps:</p>
+                                <ul>
+                                    <li>Navigate to the worksheet</li>
+                                    <li>Open the 'Review' tab</li>
+                                    <li>Click the 'Unprotect Sheet' button</li>
+                                </ul>
+                                <p>More detailed instructions are available here <a href="https://www.ablebits.com/office-addins-blog/2016/02/10/protect-unprotect-excel-sheet-password/#unlock-excel-spreadsheet"><i class="fi-link"></i></a>.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
 
               <div id="help" data-magellan-target="help">
                 <h2>Further help</h2>

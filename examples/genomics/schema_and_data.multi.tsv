@@ -2,8 +2,8 @@
 !!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-05-14 17:04:33' objTablesVersion='1.0.0'		
 !Table	!Description	!Number of objects
 Schema	Table/model and column/attribute definitions	
-Genes		2
-Transcripts		4
+Genes	Genes in the genome	2
+Transcripts	Splice variants expressed from the genome	4
 
 !!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-05-14 17:04:33' objTablesVersion='1.0.0'						
 !Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural	!Description

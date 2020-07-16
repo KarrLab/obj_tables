@@ -85,8 +85,10 @@
               <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
               <li><a href="docs#other-resources">Resources for working with <i>ObjTables</i></a></li>
               <li><a href="docs#comparison">Comparison with other tools</a></li>
+              <li><a href="docs#design-choices">Design choices</a></li>
               <li><a href="docs#limitations">Known limitations</a></li>
               <li><a href="docs#roadmap">Future directions</a></li>
+              <li><a href="docs#faq">FAQ</a></li>
               <li class="separator"><a href="docs#help">More help</a></li>
             </ul>
           </li>
@@ -156,8 +158,10 @@
                       <li class="separator"><a href="docs#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                       <li><a href="docs#other-resources">Resources for working with <i>ObjTables</i></a></li>
                       <li><a href="docs#comparison">Comparison with other tools</a></li>
+                      <li><a href="docs#design-choices">Design choices</a></li>
                       <li><a href="docs#limitations">Known limitations</a></li>
                       <li><a href="docs#roadmap">Future directions</a></li>
+                      <li><a href="docs#faq">FAQ</a></li>
                       <li class="separator"><a href="docs#help">More help</a></li>
                     </ul>
                   </li>
@@ -182,9 +186,9 @@
           <div class="splash-container">
             <img src="logo.svg" alt="ObjTables logo" />
 
-            <h1>Open-source toolkit for structured spreadsheets that are both human- and machine-readable.</h1>
+            <h1>Open-source toolkit for structured spreadsheetsthat are both human- and machine-readable.</h1>
 
-            <p><i>ObjTables</i> combines the ease of use of spreadsheets with the rigor of schemas and the power of object-oriented programming.</p>
+            <p><i>ObjTables</i> combines the ease of use of spreadsheets (XLSX file or set of CSV or TSV files) with the rigor of schemas and the power of object-oriented programming.</p>
 
             <p><i>ObjTables</i> is ideal for exchanging scientific data such as supplementary spreadsheets to journal articles. <i>ObjTables</i> makes it easy for both authors to build and quality control spreadsheets and for other investigators to reanalyze, compare, and compose their spreadsheets.</p>
 
@@ -218,7 +222,7 @@
 
             <div class="large-10 cell content-container">
               <div id="overview" data-magellan-target="overview">
-                <h2>How does <i>ObjTables</i> make spreadsheets human- and machine-readable?</h2>
+                <h2>How does <i>ObjTables</i> make spreadsheets (XLSX file or set of CSV or TSV files) human- and machine-readable?</h2>
                 <div class="section-content">
                   <div class="grid-x grid-padding-x subsection">
                     <div class="large-4 cell">
@@ -226,7 +230,7 @@
                         <img src="img/markup.svg" />
                         <h3>Markup syntax for spreadsheets</h3>
                       </div>
-                      <p><i>ObjTables</i> provides simple markup for indicating the class and attribute encoded into each worksheet and column.</p>
+                      <p><i>ObjTables</i> provides simple markup for indicating the class and attribute encoded into each worksheet and column of each worksheet (XLSX file or collection of CSV or TSV files).</p>
 
                       <div class="icon">
                         <img src="img/schema.svg" />
@@ -333,9 +337,9 @@
                       <div class="subsection">
                         <div class="icon">
                           <img src="img/computer.svg" />
-                          <h3>Use Excel as a GUI for viewing and editing datasets</h3>
+                          <h3>Use Excel &amp; similar programs as GUIs for viewing/editing datasets</h3>
                         </div>
-                        <p><i>ObjTables</i> enables users to use tools such as Excel and LibreOffice as graphical interfaces for viewing and editing datasets. <i>ObjTables</i> uses following features:</p>
+                        <p><i>ObjTables</i> enables users to use tools such as Excel and LibreOffice Calc as graphical interfaces for viewing and editing datasets. This makes it easy to get started, and enables users to leverage the features of these tools. <i>ObjTables</i> leverages the XLSX format to provide the following features within programs such as Excel:</p>
                         <ul class="vertically-spaced-list">
                           <li><b>Table of contents:</b> Datasets can include a worksheet that describes the data represented by each worksheet.</li>
                           <li><b>Formatted table titles:</b> Each worksheet includes a title bar that describes the data captured by the worksheet and each column.</li>
@@ -569,7 +573,7 @@
                       <img src="img/writer.svg" />
                       <h3>Authors</h3>
                       <ul>
-                        <li>Use Excel and similar programs as graphical interfaces for complex datasets that consist of multiple distinct types of objects.</li>
+                        <li>Use Microsoft Excel and similar programs as graphical interfaces for complex datasets that consist of multiple distinct types of objects.</li>
                         <li>Use complex data types (e.g., reaction equations) within tables.</li>
                         <li>Use foreign keys, column groups, and grammars to encode relationships.</li>
                         <li>Define schemas that describe the class represented by each table.</li>
@@ -658,7 +662,7 @@
                     <div class="large-4 cell icon">
                       <img src="img/balance.svg" />
                       <h3>Comparison with other tools</h3>
-                      <p>The documentation compares <i>ObjTables</i> with workbook editors such as Excel, other spreadsheet schemas such as Table Schema <a href="https://specs.frictionlessdata.io/table-schema/"><i class="fi-link"></i></a>, low code databases such as Airtable <a href="https://airtable.com/"><i class="fi-link"></i></a>, object-relational mapping tools such as Django <a href="https://www.djangoproject.com/"><i class="fi-link"></i></a>, schemas for data serialization formats such as JSON Schema <a href="https://json-schema.org/"><i class="fi-link"></i></a>, and relational database querying tools such as MySQL Workbench <a href="https://www.mysql.com/products/workbench/"><i class="fi-link"></i></a>.</p>
+                      <p>The documentation compares <i>ObjTables</i> with workbook editors such as Microsoft Excel, other spreadsheet schemas such as Table Schema <a href="https://specs.frictionlessdata.io/table-schema/"><i class="fi-link"></i></a>, low code databases such as Airtable <a href="https://airtable.com/"><i class="fi-link"></i></a>, object-relational mapping tools such as Django <a href="https://www.djangoproject.com/"><i class="fi-link"></i></a>, schemas for data serialization formats such as JSON Schema <a href="https://json-schema.org/"><i class="fi-link"></i></a>, and relational database querying tools such as MySQL Workbench <a href="https://www.mysql.com/products/workbench/"><i class="fi-link"></i></a>.</p>
                     </div>
                   </div>
                 </div>

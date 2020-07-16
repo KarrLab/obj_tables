@@ -489,7 +489,7 @@ li.optional {
     list-style-type: circle;
 }
 
-.vertically-spaced-list>li {
+.vertically-spaced-list>li:not(:first-child) {
     margin-top: 0.5rem;
 }
 
@@ -650,6 +650,30 @@ table.examples tr.indent td:first-child {
 
 table.examples tr.indent-x2 td:first-child {
     padding-left: 2.325rem;
+}
+
+/* Q&A */
+.qa li {
+    margin-top: 0;
+}
+
+.qa>ul>li:not(:first-child) {
+    margin-top: 0.5rem;
+}
+
+.qa p:not(:last-child) {
+    margin-bottom: 0.25rem;
+}
+.qa p.before-list {
+    margin-bottom: 0;
+}
+
+.qa-q {
+    font-weight: bold;    
+}
+
+.qa-a ul:not(:last-child), .qa-a ol:not(:last-child) {
+    margin-bottom: 0.25rem;
 }
 
 
