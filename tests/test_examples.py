@@ -157,6 +157,13 @@ class ExamplesTestCase(unittest.TestCase):
                                         full_convert_filename, ]) as app:
                     app.run()
 
+        if action == 'validate':
+            with __main__.App(argv=['validate',
+                                    schema_filename.replace('.tsv', '.xlsx'),
+                                    os.path.join(dirname, data_filenames[0]),
+                                    ]) as app:
+                app.run()
+
     def test_metabolomics_examples(self):
         dirnames = [
             'examples/metabolic_kinetics',
