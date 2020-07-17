@@ -26,8 +26,7 @@ class TestCli(unittest.TestCase):
         self.tempdir = tempfile.mkdtemp()
 
     def tearDown(self):
-        # shutil.rmtree(self.tempdir)
-        print(self.tempdir)
+        shutil.rmtree(self.tempdir)
 
     def test_raw_cli(self):
         with mock.patch('sys.argv', ['obj-tables', '--help']):
