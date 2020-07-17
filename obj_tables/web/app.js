@@ -78,6 +78,7 @@ $(document).ready(changeMethod(null))
 
 $('#submit').click(function (evt) {
     setResults('');
+    $(".loader").show();
 
     var schema_files = $('#schema')[0].files;
     var model = $('#model').val();
@@ -90,7 +91,7 @@ $('#submit').click(function (evt) {
     var data = new FormData();
     if (schema_files == 0) {
         setError('Select a schema');
-        return;
+        //return;
     }
     var schema = schema_files[0];
     data.append('schema', schema);
@@ -184,7 +185,7 @@ $('#submit').click(function (evt) {
         case 'validate':
             if (workbook_files.length == 0) {
                 setError('Select a dataset');
-                return;
+                //return;
             }
             data.append('workbook', workbook_files[0]);
             successFunc = function(request) {
@@ -267,11 +268,13 @@ function downloadFile(request) {
 }
 
 function setResults(msg) {
+    $(".loader").hide();
     $("#errors").css('color', 'rgb(10, 10, 10)');
     $("#errors").html(msg);
 }
 
 function setError(msg) {
+    $(".loader").hide();
     $("#errors").css('color', '#da3b60');
     $("#errors").html(msg);
 }
