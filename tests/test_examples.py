@@ -10,6 +10,7 @@ from obj_tables import __main__
 from obj_tables import core
 from obj_tables import io
 from obj_tables import utils
+from obj_tables.__main__ import DEFAULT_READER_ARGS
 import glob
 import importlib
 import json
@@ -69,7 +70,7 @@ class ExamplesTestCase(unittest.TestCase):
 
     def do_sbtab_sbml_examples(self, action):
         dirname = os.path.join('examples', 'sbtab')
-        schema_filename = os.path.join(dirname, 'SBtab.csv')
+        schema_filename = os.path.join(dirname, 'SBtab.tsv')
 
         # Initalize Python module which implements schema
         py_module_filename = os.path.join(dirname, 'SBtab.py')
@@ -99,15 +100,15 @@ class ExamplesTestCase(unittest.TestCase):
             'kegg_reactions_cc_ph70_quantity.tsv',
             'yeast_transcription_network_chang_2008_relationship.tsv',
             'simple_examples/1.tsv',
-            'simple_examples/2.csv',
-            'simple_examples/3.csv',
-            'simple_examples/4.csv',
-            'simple_examples/5.csv',
-            'simple_examples/6.csv',
-            'simple_examples/7.csv',
-            'simple_examples/8.csv',
-            'simple_examples/9.csv',
-            'simple_examples/10.csv',
+            'simple_examples/2.tsv',
+            'simple_examples/3.tsv',
+            'simple_examples/4.tsv',
+            'simple_examples/5.tsv',
+            'simple_examples/6.tsv',
+            'simple_examples/7.tsv',
+            'simple_examples/8.tsv',
+            'simple_examples/9.tsv',
+            'simple_examples/10.tsv',
             'teusink_data.tsv',
             'teusink_model.tsv',
             'jiang_data.tsv',
@@ -119,6 +120,10 @@ class ExamplesTestCase(unittest.TestCase):
             'sigurdsson_model.tsv',
             'layout_model.tsv',
         ]
+
+        schema, _ = utils.init_schema(schema_filename)
+        models = list(utils.get_models(schema).values())
+
         for data_filename in data_filenames:
             full_data_filename = os.path.join(dirname, data_filename)
 
@@ -126,10 +131,26 @@ class ExamplesTestCase(unittest.TestCase):
                 with __main__.App(argv=['validate', schema_filename, full_data_filename]) as app:
                     app.run()
 
+                if not data_filename.endswith('.xlsx'):
+                    with __main__.App(argv=['validate',
+                                            schema_filename.replace('.tsv', '.csv'),
+                                            full_data_filename.replace('.tsv', '.csv'),
+                                            ]) as app:
+                        app.run()
+
+                    objs_tsv = io.Reader().run(full_data_filename,
+                                               models=models,
+                                               **DEFAULT_READER_ARGS)
+                    objs_csv = io.Reader().run(full_data_filename.replace('.tsv', '.csv'),
+                                               models=models,
+                                               **DEFAULT_READER_ARGS)
+                    for cls in objs_tsv.keys():
+                        for obj_tsv, obj_csv in zip(objs_tsv[cls], objs_csv[cls]):
+                            self.assertTrue(obj_tsv.is_equal(obj_csv))
+
             if action == 'convert' and not data_filename.endswith('.xlsx'):
                 convert_filename = data_filename \
                     .replace('/*', '') \
-                    .replace('.csv', '.xlsx') \
                     .replace('.tsv', '.xlsx')
                 full_convert_filename = os.path.join('examples', 'sbtab', convert_filename)
                 with __main__.App(argv=['convert', schema_filename, full_data_filename,

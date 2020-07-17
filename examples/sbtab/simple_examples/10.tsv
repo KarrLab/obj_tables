@@ -1,0 +1,6 @@
+!!ObjTables objTablesVersion='0.0.8' schema='SBtab' type='Data' class='Quantity' description='Ex 22 - Timepoint'			
+!ID	!Time	!Unit	!ValueType
+t0:mean	0	s	Mean
+t0:std	0	s	Std
+t1:mean	0.5	s	Mean
+t1:std	0.5	s	Std
