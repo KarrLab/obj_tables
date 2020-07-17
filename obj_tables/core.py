@@ -3620,22 +3620,25 @@ class EnumAttribute(LiteralAttribute):
             try:
                 value = self.enum_class[value]
             except KeyError:
-                error = 'Value "{}" is not convertible to an instance of {} which contains {}'.format(
-                    value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))
+                error = 'Value {}: "{}" is not convertible to an instance of {} which contains {}'.format(
+                    value.__class__.__name__, value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))
 
         elif isinstance(value, (int, float)):
             try:
                 value = self.enum_class(value)
             except ValueError:
-                error = 'Value "{}" is not convertible to an instance of {}'.format(
-                    value, self.enum_class.__name__)
+                try:
+                    value = self.enum_class[str(value)]
+                except KeyError:
+                    error = 'Value {}: "{}" is not convertible to an instance of {}'.format(
+                        value.__class__.__name__, value, self.enum_class.__name__)
 
         elif value is None or value == '':
             value = self.get_default_cleaned_value()
 
         elif not isinstance(value, self.enum_class):
-            error = "Value '{}' must be an instance of `{}` which contains {}".format(
-                value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))
+            error = "Value {}: '{}' must be an instance of `{}` which contains {}".format(
+                value.__class__.__name__, value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))
 
         if error:
             return (value, InvalidAttribute(self, [error]))
@@ -3657,8 +3660,8 @@ class EnumAttribute(LiteralAttribute):
                 return InvalidAttribute(self, ['Value cannot be `None`'])
 
         elif not isinstance(value, self.enum_class):
-            return InvalidAttribute(self, ["Value '{}' must be an instance of `{}` which contains {}".format(
-                value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))])
+            return InvalidAttribute(self, ["Value {}: '{}' must be an instance of `{}` which contains {}".format(
+                value.__class__.__name__, value, self.enum_class.__name__, list(self.enum_class.__members__.keys()))])
 
         return None
 
