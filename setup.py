@@ -48,17 +48,29 @@ setuptools.setup(
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+
+        'Natural Language :: English',
+
+        'Topic :: Database',
         'Topic :: Database :: Database Engines/Servers',
+        'Topic :: Office/Business :: Financial :: Spreadsheet',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Topic :: Software Development :: Object Brokering',
+        'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
 
         'License :: OSI Approved :: MIT License',
 
+        'Operating System :: OS Independent',
+
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 
     keywords='object model, schema, workbook, XLSX, Excel, validation',
