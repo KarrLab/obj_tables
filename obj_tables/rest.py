@@ -656,7 +656,7 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
                     models=models, write_toc=write_toc, write_schema=write_schema,
                     write_empty_models=write_empty_models,
                     write_empty_cols=write_empty_cols,
-                    write_protected=protected)
+                    protected=protected)
 
     if format in ['csv', 'tsv']:
         filename = os.path.join(dir, 'workbook.{}.zip'.format(format))
