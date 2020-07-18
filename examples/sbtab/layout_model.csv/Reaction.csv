@@ -1,0 +1,4 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Reaction' name='Reaction' date='2018-11-23' objTablesVersion='1.0.5' document='TestModel layout',,,,,,,,,
+!ID,!ReactionFormula,!IsComplete,!IsReversible,!IsInEquilibrium,!IsExchangeReaction,!IsNonEnzymatic,!BuildReaction,!BuildEnzyme,!BuildEnzymeProduction
+Reaction_1,1 Species_1 <=> 1 Species_2 <=> ,False,False,False,False,False,False,False,False
+Reaction_2,1 Species_2 <=> 1 Species_1 <=> ,False,False,False,False,False,False,False,False

@@ -1,0 +1,27 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2020-07-18 12:14:02' objTablesVersion='1.0.5' document='BIOMD0000000061',,,,,,,
+!Name,!ID,!InitialConcentration,!Location,!Charge,!IsConstant,!Identifiers:kegg.compound,!HasOnlySubstanceUnits
+Extracellular glucose,GlcX,6.7,extracellular,0.0,False,C00293,False
+Cytosolic glucose,Glc,0.573074,cytosol,0.0,False,C00293,False
+ATP,ATP,2.1,cytosol,0.0,False,C00002,False
+Glucose-6-Phosphate,G6P,4.2,cytosol,0.0,False,C00092,False
+ADP,ADP,1.5,cytosol,0.0,False,C00008,False
+Fructose-6-Phosphate,F6P,0.49,cytosol,0.0,False,C00085,False
+"Fructose 1,6-bisphosphate",FBP,4.64,cytosol,0.0,False,C00354,False
+Glyceraldehyde 3-phosphate,GAP,0.115,cytosol,0.0,False,C00118,False
+Dihydroxyacetone phosphate,DHAP,2.95,cytosol,0.0,False,C00111,False
+NAD,NAD,0.65,cytosol,0.0,False,C00003,False
+"1,3-Bisphosphoglycerate",BPG,0.00027,cytosol,0.0,False,C00236,False
+NADH,NADH,0.33,cytosol,0.0,False,C00004,False
+Phosphoenolpyruvate,PEP,0.04,cytosol,0.0,False,C00074,False
+Pyruvate,Pyr,8.7,cytosol,0.0,False,C00022,False
+Acetaldehyde,ACA,1.48153,cytosol,0.0,False,C00084,False
+,EtOH,19.2379,cytosol,0.0,False,C00469,False
+Extracellular ethanol,EtOHX,16.4514,extracellular,0.0,False,C000469,False
+Glycerol,Glyc,4.196,cytosol,0.0,False,C00116,False
+Extracellular glycerol,GlycX,1.68478,extracellular,0.0,False,C00116,False
+Extracellular acetaldehyde,ACAX,1.28836,extracellular,0.0,False,C00084,False
+Extracellular cyanide,CNX,5.20358,extracellular,0.0,False,C00177,False
+AMP,AMP,0.33,cytosol,0.0,False,C00020,False
+,P,0.0,extracellular,0.0,False,,False
+Mixed flow cyanide ,CNX0,5.6,extracellular,0.0,False,C00177,False
+Mixed flow glucose,GlcX0,24.0,extracellular,0.0,False,C00293,False

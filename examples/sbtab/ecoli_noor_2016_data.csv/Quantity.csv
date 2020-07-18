@@ -1,0 +1,229 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:19:16' objTablesVersion='1.0.5' document='E. coli central carbon metabolism - unbalanced kinetic data',,,,,,,,,
+!QuantityType,!Mean,!Std,!Sign,!Unit,!Compound:SBML:species:id,!Reaction:SBML:reaction:id,!Reaction:Identifiers:kegg.reaction,!Compound:Identifiers:kegg.compound,!UseAsPriorInformation
+equilibrium constant,57262184.0,57262184.0,0,dimensionless,,PTS_RPTSsy,RPTSsy,,False
+equilibrium constant,0.36350845,0.36350845,0,dimensionless,,PGI_R02740,R02740,,False
+equilibrium constant,1764.8694,1764.8694,0,dimensionless,,PFK_R04779,R04779,,False
+equilibrium constant,0.1889019,0.1889019,0,dimensionless,,ALD_R01070,R01070,,False
+equilibrium constant,0.10733371,0.10733371,0,dimensionless,,TIM_R01015,R01015,,False
+equilibrium constant,0.000351805,0.000351805,0,dimensionless,,GAP_R01061,R01061,,False
+equilibrium constant,1883.7137,1883.7137,0,dimensionless,,PGK_R01512,R01512,,False
+equilibrium constant,0.1881272,0.1881272,0,dimensionless,,PGM_R01518,R01518,,False
+equilibrium constant,5.202263,5.202263,0,dimensionless,,PGH_R00658,R00658,,False
+equilibrium constant,22335814.0,22335814.0,0,dimensionless,,PYK_R00200,R00200,,False
+equilibrium constant,1670759.7,1670759.7,0,dimensionless,,PDH_R00209,R00209,,False
+equilibrium constant,12.916734,12.916734,0,dimensionless,,ZWF_R00835,R00835,,False
+equilibrium constant,20744.52,20744.52,0,dimensionless,,GLH_R02035,R02035,,False
+equilibrium constant,12.330424,12.330424,0,dimensionless,,PGD_R01528,R01528,,False
+equilibrium constant,2.264296,2.264296,0,dimensionless,,RPI_R01056,R01056,,False
+equilibrium constant,3.9024941,3.9024941,0,dimensionless,,RPE_R01529,R01529,,False
+equilibrium constant,4.7316932,4.7316932,0,dimensionless,,TXT_R01641,R01641,,False
+equilibrium constant,1.3194676,1.3194676,0,dimensionless,,TAL_R08575,R08575,,False
+equilibrium constant,59.621212,59.621212,0,dimensionless,,TXT_R01067,R01067,,False
+equilibrium constant,49007074.0,49007074.0,0,dimensionless,,FBP_R00762,R00762,,False
+equilibrium constant,5416530.1,5416530.1,0,dimensionless,,CSN_R00351,R00351,,False
+equilibrium constant,0.034861263,0.034861263,0,dimensionless,,ACN_R01325,R01325,,False
+equilibrium constant,1.3190957,1.3190957,0,dimensionless,,ACN_R01900,R01900,,False
+equilibrium constant,100.21644,100.21644,0,dimensionless,,ICD_R00709,R00709,,False
+equilibrium constant,92567323.0,92567323.0,0,dimensionless,,KGD_R08549,R08549,,False
+equilibrium constant,0.58290232,0.58290232,0,dimensionless,,SCS_R00405,R00405,,False
+equilibrium constant,6026.7589,6026.7589,0,dimensionless,,SDH_R02164,R02164,,False
+equilibrium constant,4.0148279,4.0148279,0,dimensionless,,FUM_R01082,R01082,,False
+equilibrium constant,1.94e-05,1.94e-05,0,dimensionless,,MDH_R00342,R00342,,False
+equilibrium constant,3.72e-07,3.72e-07,0,dimensionless,,PPC_R00345,R00345,,False
+catalytic rate constant geometric mean,,,0,1/s,,PTS_RPTSsy,RPTSsy,,False
+catalytic rate constant geometric mean,,,0,1/s,,PGI_R02740,R02740,,False
+catalytic rate constant geometric mean,,,0,1/s,,PFK_R04779,R04779,,False
+catalytic rate constant geometric mean,,,0,1/s,,ALD_R01070,R01070,,False
+catalytic rate constant geometric mean,1060.6602,1060.6602,0,1/s,,TIM_R01015,R01015,,False
+catalytic rate constant geometric mean,172.08719,172.08719,0,1/s,,GAP_R01061,R01061,,False
+catalytic rate constant geometric mean,236.52354,236.52354,0,1/s,,PGK_R01512,R01512,,False
+catalytic rate constant geometric mean,117.66974,117.66974,0,1/s,,PGM_R01518,R01518,,False
+catalytic rate constant geometric mean,,,0,1/s,,PGH_R00658,R00658,,False
+catalytic rate constant geometric mean,,,0,1/s,,PYK_R00200,R00200,,False
+catalytic rate constant geometric mean,1.7083033,1.7083033,0,1/s,,PDH_R00209,R00209,,False
+catalytic rate constant geometric mean,315.2047,315.2047,0,1/s,,ZWF_R00835,R00835,,False
+catalytic rate constant geometric mean,,,0,1/s,,GLH_R02035,R02035,,False
+catalytic rate constant geometric mean,51.87217,51.87217,0,1/s,,PGD_R01528,R01528,,False
+catalytic rate constant geometric mean,1128.6376,1128.6376,0,1/s,,RPI_R01056,R01056,,False
+catalytic rate constant geometric mean,487.01987,487.01987,0,1/s,,RPE_R01529,R01529,,False
+catalytic rate constant geometric mean,,,0,1/s,,TXT_R01641,R01641,,False
+catalytic rate constant geometric mean,,,0,1/s,,TAL_R08575,R08575,,False
+catalytic rate constant geometric mean,,,0,1/s,,TXT_R01067,R01067,,False
+catalytic rate constant geometric mean,,,0,1/s,,FBP_R00762,R00762,,False
+catalytic rate constant geometric mean,69.518014,69.518014,0,1/s,,CSN_R00351,R00351,,False
+catalytic rate constant geometric mean,,,0,1/s,,ACN_R01325,R01325,,False
+catalytic rate constant geometric mean,,,0,1/s,,ACN_R01900,R01900,,False
+catalytic rate constant geometric mean,56.471232,56.471232,0,1/s,,ICD_R00709,R00709,,False
+catalytic rate constant geometric mean,,,0,1/s,,KGD_R08549,R08549,,False
+catalytic rate constant geometric mean,95.468278,95.468278,0,1/s,,SCS_R00405,R00405,,False
+catalytic rate constant geometric mean,82.509888,82.509888,0,1/s,,SDH_R02164,R02164,,False
+catalytic rate constant geometric mean,217.26756,217.26756,0,1/s,,FUM_R01082,R01082,,False
+catalytic rate constant geometric mean,485.6488,485.6488,0,1/s,,MDH_R00342,R00342,,False
+catalytic rate constant geometric mean,,,0,1/s,,PPC_R00345,R00345,,False
+Michaelis constant,0.64666009,0.64666009,0,mM,_S__Malate,FUM_R01082,R01082,C00149,False
+Michaelis constant,0.59870169,0.59870169,0,mM,_S__Malate,MDH_R00342,R00342,C00149,False
+Michaelis constant,0.030581258,0.030581258,0,mM,Acetyl_CoA,PDH_R00209,R00209,C00024,False
+Michaelis constant,0.050864382,0.050864382,0,mM,Acetyl_CoA,CSN_R00351,R00351,C00024,False
+Michaelis constant,0.10381729,0.10381729,0,mM,Fumarate,SDH_R02164,R02164,C00122,False
+Michaelis constant,0.18043722,0.18043722,0,mM,Fumarate,FUM_R01082,R01082,C00122,False
+Michaelis constant,0.016657922,0.016657922,0,mM,cis_Aconitate,ACN_R01325,R01325,C00417,False
+Michaelis constant,0.016657922,0.016657922,0,mM,cis_Aconitate,ACN_R01900,R01900,C00417,False
+Michaelis constant,0.02,0.02,0,mM,_6_Phospho_D_gluconate,GLH_R02035,R02035,C00345,False
+Michaelis constant,0.017811853,0.017811853,0,mM,_6_Phospho_D_gluconate,PGD_R01528,R01528,C00345,False
+Michaelis constant,1.0,1.0,0,mM,Orthophosphate,GAP_R01061,R01061,C00009,False
+Michaelis constant,,,0,mM,Orthophosphate,FBP_R00762,R00762,C00009,False
+Michaelis constant,1.003992,1.003992,0,mM,Orthophosphate,SCS_R00405,R00405,C00009,False
+Michaelis constant,,,0,mM,Orthophosphate,PPC_R00345,R00345,C00009,False
+Michaelis constant,,,0,mM,Pyruvate,PTS_RPTSsy,RPTSsy,C00022,False
+Michaelis constant,0.31,0.31,0,mM,Pyruvate,PYK_R00200,R00200,C00022,False
+Michaelis constant,0.01,0.01,0,mM,Pyruvate,PDH_R00209,R00209,C00022,False
+Michaelis constant,7.0,7.0,0,mM,NADPplus,ZWF_R00835,R00835,C00006,False
+Michaelis constant,0.016784756,0.016784756,0,mM,NADPplus,PGD_R01528,R01528,C00006,False
+Michaelis constant,7.0,7.0,0,mM,NADPH,ZWF_R00835,R00835,C00005,False
+Michaelis constant,0.000663325,0.000663325,0,mM,NADPH,PGD_R01528,R01528,C00005,False
+Michaelis constant,59.0,59.0,0,mM,NADH,GAP_R01061,R01061,C00004,False
+Michaelis constant,,,0,mM,NADH,PDH_R00209,R00209,C00004,False
+Michaelis constant,,,0,mM,NADH,ICD_R00709,R00709,C00004,False
+Michaelis constant,,,0,mM,NADH,KGD_R08549,R08549,C00004,False
+Michaelis constant,0.027138618,0.027138618,0,mM,NADH,MDH_R00342,R00342,C00004,False
+Michaelis constant,0.09,0.09,0,mM,NADplus,GAP_R01061,R01061,C00003,False
+Michaelis constant,0.041024383,0.041024383,0,mM,NADplus,PDH_R00209,R00209,C00003,False
+Michaelis constant,0.08,0.08,0,mM,NADplus,ICD_R00709,R00709,C00003,False
+Michaelis constant,,,0,mM,NADplus,KGD_R08549,R08549,C00003,False
+Michaelis constant,0.12812311,0.12812311,0,mM,NADplus,MDH_R00342,R00342,C00003,False
+Michaelis constant,0.12,0.12,0,mM,ATP,PFK_R04779,R04779,C00002,False
+Michaelis constant,0.48,0.48,0,mM,ATP,PGK_R01512,R01512,C00002,False
+Michaelis constant,0.25,0.25,0,mM,ATP,PYK_R00200,R00200,C00002,False
+Michaelis constant,0.090092484,0.090092484,0,mM,ATP,SCS_R00405,R00405,C00002,False
+Michaelis constant,,,0,mM,_2_Oxoglutarate,ICD_R00709,R00709,C00026,False
+Michaelis constant,4.0,4.0,0,mM,_2_Oxoglutarate,KGD_R08549,R08549,C00026,False
+Michaelis constant,0.033920097,0.033920097,0,mM,Oxaloacetate,CSN_R00351,R00351,C00036,False
+Michaelis constant,0.034479991,0.034479991,0,mM,Oxaloacetate,MDH_R00342,R00342,C00036,False
+Michaelis constant,,,0,mM,Oxaloacetate,PPC_R00345,R00345,C00036,False
+Michaelis constant,0.037084298,0.037084298,0,mM,Ubiquinone,SDH_R02164,R02164,C00399,False
+Michaelis constant,0.031862242,0.031862242,0,mM,D_Erythrose_4_phosphate,TAL_R08575,R08575,C00279,False
+Michaelis constant,0.36,0.36,0,mM,D_Erythrose_4_phosphate,TXT_R01067,R01067,C00279,False
+Michaelis constant,,,0,mM,Ubiquinol,SDH_R02164,R02164,C00390,False
+Michaelis constant,0.82825117,0.82825117,0,mM,ADP,PFK_R04779,R04779,C00008,False
+Michaelis constant,0.2,0.2,0,mM,ADP,PGK_R01512,R01512,C00008,False
+Michaelis constant,0.25,0.25,0,mM,ADP,PYK_R00200,R00200,C00008,False
+Michaelis constant,0.061357924,0.061357924,0,mM,ADP,SCS_R00405,R00405,C00008,False
+Michaelis constant,0.19745878,0.19745878,0,mM,Isocitrate,ACN_R01900,R01900,C00311,False
+Michaelis constant,2.4,2.4,0,mM,Isocitrate,ICD_R00709,R00709,C00311,False
+Michaelis constant,0.14142136,0.14142136,0,mM,D_Ribulose_5_phosphate,PGD_R01528,R01528,C00199,False
+Michaelis constant,3.1464265,3.1464265,0,mM,D_Ribulose_5_phosphate,RPI_R01056,R01056,C00199,False
+Michaelis constant,0.86969557,0.86969557,0,mM,D_Ribulose_5_phosphate,RPE_R01529,R01529,C00199,False
+Michaelis constant,,,0,mM,D_Xylulose_5_phosphate,RPE_R01529,R01529,C00231,False
+Michaelis constant,0.49,0.49,0,mM,D_Xylulose_5_phosphate,TXT_R01641,R01641,C00231,False
+Michaelis constant,0.49,0.49,0,mM,D_Xylulose_5_phosphate,TXT_R01067,R01067,C00231,False
+Michaelis constant,,,0,mM,D_Glucose_6_phosphate,PTS_RPTSsy,RPTSsy,C00092,False
+Michaelis constant,,,0,mM,D_Glucose_6_phosphate,PGI_R02740,R02740,C00092,False
+Michaelis constant,174.0,174.0,0,mM,D_Glucose_6_phosphate,ZWF_R00835,R00835,C00092,False
+Michaelis constant,0.05,0.05,0,mM,_3_Phospho_D_glyceroyl_phosphate,GAP_R01061,R01061,C00236,False
+Michaelis constant,0.0018,0.0018,0,mM,_3_Phospho_D_glyceroyl_phosphate,PGK_R01512,R01512,C00236,False
+Michaelis constant,0.003464102,0.003464102,0,mM,CoA,PDH_R00209,R00209,C00010,False
+Michaelis constant,,,0,mM,CoA,CSN_R00351,R00351,C00010,False
+Michaelis constant,,,0,mM,CoA,KGD_R08549,R08549,C00010,False
+Michaelis constant,0.086881013,0.086881013,0,mM,CoA,SCS_R00405,R00405,C00010,False
+Michaelis constant,,,0,mM,CO2,PDH_R00209,R00209,C00011,False
+Michaelis constant,41.231056,41.231056,0,mM,CO2,PGD_R01528,R01528,C00011,False
+Michaelis constant,,,0,mM,CO2,ICD_R00709,R00709,C00011,False
+Michaelis constant,,,0,mM,CO2,KGD_R08549,R08549,C00011,False
+Michaelis constant,0.19,0.19,0,mM,CO2,PPC_R00345,R00345,C00011,False
+Michaelis constant,2.2,2.2,0,mM,D_Ribose_5_phosphate,RPI_R01056,R01056,C00117,False
+Michaelis constant,0.53,0.53,0,mM,D_Ribose_5_phosphate,TXT_R01641,R01641,C00117,False
+Michaelis constant,0.16124515,0.16124515,0,mM,Glycerone_phosphate,ALD_R01070,R01070,C00111,False
+Michaelis constant,1.0,1.0,0,mM,Glycerone_phosphate,TIM_R01015,R01015,C00111,False
+Michaelis constant,,,0,mM,D_Glucose,PTS_RPTSsy,RPTSsy,C00031,False
+Michaelis constant,,,0,mM,D_Fructose_1_6_bisphosphate,PFK_R04779,R04779,C00354,False
+Michaelis constant,,,0,mM,D_Fructose_1_6_bisphosphate,ALD_R01070,R01070,C00354,False
+Michaelis constant,0.013652535,0.013652535,0,mM,D_Fructose_1_6_bisphosphate,FBP_R00762,R00762,C00354,False
+Michaelis constant,0.13076697,0.13076697,0,mM,D_Glyceraldehyde_3_phosphate,ALD_R01070,R01070,C00118,False
+Michaelis constant,1.0,1.0,0,mM,D_Glyceraldehyde_3_phosphate,TIM_R01015,R01015,C00118,False
+Michaelis constant,0.21,0.21,0,mM,D_Glyceraldehyde_3_phosphate,GAP_R01061,R01061,C00118,False
+Michaelis constant,4.9,4.9,0,mM,D_Glyceraldehyde_3_phosphate,TXT_R01641,R01641,C00118,False
+Michaelis constant,0.084433137,0.084433137,0,mM,D_Glyceraldehyde_3_phosphate,TAL_R08575,R08575,C00118,False
+Michaelis constant,4.9,4.9,0,mM,D_Glyceraldehyde_3_phosphate,TXT_R01067,R01067,C00118,False
+Michaelis constant,,,0,mM,Phosphoenolpyruvate,PTS_RPTSsy,RPTSsy,C00074,False
+Michaelis constant,0.3,0.3,0,mM,Phosphoenolpyruvate,PGH_R00658,R00658,C00074,False
+Michaelis constant,0.31,0.31,0,mM,Phosphoenolpyruvate,PYK_R00200,R00200,C00074,False
+Michaelis constant,0.38431493,0.38431493,0,mM,Phosphoenolpyruvate,PPC_R00345,R00345,C00074,False
+Michaelis constant,1.0,1.0,0,mM,Citrate,CSN_R00351,R00351,C00158,False
+Michaelis constant,0.73118139,0.73118139,0,mM,Citrate,ACN_R01325,R01325,C00158,False
+Michaelis constant,0.077459667,0.077459667,0,mM,Succinyl_CoA,KGD_R08549,R08549,C00091,False
+Michaelis constant,0.027912311,0.027912311,0,mM,Succinyl_CoA,SCS_R00405,R00405,C00091,False
+Michaelis constant,0.69,0.69,0,mM,_3_Phospho_D_glycerate,PGK_R01512,R01512,C00197,False
+Michaelis constant,0.65,0.65,0,mM,_3_Phospho_D_glycerate,PGM_R01518,R01518,C00197,False
+Michaelis constant,174.0,174.0,0,mM,D_Glucono_1_5_lactone_6_phosphate,ZWF_R00835,R00835,C01236,False
+Michaelis constant,0.02,0.02,0,mM,D_Glucono_1_5_lactone_6_phosphate,GLH_R02035,R02035,C01236,False
+Michaelis constant,,,0,mM,D_Fructose_6_phosphate,PGI_R02740,R02740,C00085,False
+Michaelis constant,,,0,mM,D_Fructose_6_phosphate,PFK_R04779,R04779,C00085,False
+Michaelis constant,0.49559808,0.49559808,0,mM,D_Fructose_6_phosphate,TAL_R08575,R08575,C00085,False
+Michaelis constant,7.0,7.0,0,mM,D_Fructose_6_phosphate,TXT_R01067,R01067,C00085,False
+Michaelis constant,,,0,mM,D_Fructose_6_phosphate,FBP_R00762,R00762,C00085,False
+Michaelis constant,41.0,41.0,0,mM,_2_Phospho_D_glycerate,PGM_R01518,R01518,C00631,False
+Michaelis constant,0.3,0.3,0,mM,_2_Phospho_D_glycerate,PGH_R00658,R00658,C00631,False
+Michaelis constant,2.2969796,2.2969796,0,mM,Succinate,SCS_R00405,R00405,C00042,False
+Michaelis constant,0.11895397,0.11895397,0,mM,Succinate,SDH_R02164,R02164,C00042,False
+Michaelis constant,4.0,4.0,0,mM,Sedoheptulose_7_phosphate,TXT_R01641,R01641,C05382,False
+Michaelis constant,0.28683033,0.28683033,0,mM,Sedoheptulose_7_phosphate,TAL_R08575,R08575,C05382,False
+substrate catalytic rate constant,15.0,15.0,0,1/s,,PTS_RPTSsy,RPTSsy,,False
+substrate catalytic rate constant,125.62172,125.62172,0,1/s,,PGI_R02740,R02740,,False
+substrate catalytic rate constant,41.75,41.75,0,1/s,,PFK_R04779,R04779,,False
+substrate catalytic rate constant,,,0,1/s,,ALD_R01070,R01070,,False
+substrate catalytic rate constant,4500.0,4500.0,0,1/s,,TIM_R01015,R01015,,False
+substrate catalytic rate constant,134.0,134.0,0,1/s,,GAP_R01061,R01061,,False
+substrate catalytic rate constant,67.158925,67.158925,0,1/s,,PGK_R01512,R01512,,False
+substrate catalytic rate constant,530.0,530.0,0,1/s,,PGM_R01518,R01518,,False
+substrate catalytic rate constant,197.83576,197.83576,0,1/s,,PGH_R00658,R00658,,False
+substrate catalytic rate constant,67.0,67.0,0,1/s,,PYK_R00200,R00200,,False
+substrate catalytic rate constant,37.9,37.9,0,1/s,,PDH_R00209,R00209,,False
+substrate catalytic rate constant,174.0,174.0,0,1/s,,ZWF_R00835,R00835,,False
+substrate catalytic rate constant,468.0,468.0,0,1/s,,GLH_R02035,R02035,,False
+substrate catalytic rate constant,27.456347,27.456347,0,1/s,,PGD_R01528,R01528,,False
+substrate catalytic rate constant,1405.8805,1405.8805,0,1/s,,RPI_R01056,R01056,,False
+substrate catalytic rate constant,1300.0,1300.0,0,1/s,,RPE_R01529,R01529,,False
+substrate catalytic rate constant,45.0,45.0,0,1/s,,TXT_R01641,R01641,,False
+substrate catalytic rate constant,6.44,6.44,0,1/s,,TAL_R08575,R08575,,False
+substrate catalytic rate constant,69.0,69.0,0,1/s,,TXT_R01067,R01067,,False
+substrate catalytic rate constant,,,0,1/s,,FBP_R00762,R00762,,False
+substrate catalytic rate constant,40.499408,40.499408,0,1/s,,CSN_R00351,R00351,,False
+substrate catalytic rate constant,3.3,3.3,0,1/s,,ACN_R01325,R01325,,False
+substrate catalytic rate constant,3.3,3.3,0,1/s,,ACN_R01900,R01900,,False
+substrate catalytic rate constant,106.3,106.3,0,1/s,,ICD_R00709,R00709,,False
+substrate catalytic rate constant,,,0,1/s,,KGD_R08549,R08549,,False
+substrate catalytic rate constant,201.0,201.0,0,1/s,,SCS_R00405,R00405,,False
+substrate catalytic rate constant,85.572486,85.572486,0,1/s,,SDH_R02164,R02164,,False
+substrate catalytic rate constant,409.59643,409.59643,0,1/s,,FUM_R01082,R01082,,False
+substrate catalytic rate constant,1034.7807,1034.7807,0,1/s,,MDH_R00342,R00342,,False
+substrate catalytic rate constant,270.0,270.0,0,1/s,,PPC_R00345,R00345,,False
+product catalytic rate constant,,,0,1/s,,PTS_RPTSsy,RPTSsy,,False
+product catalytic rate constant,,,0,1/s,,PGI_R02740,R02740,,False
+product catalytic rate constant,,,0,1/s,,PFK_R04779,R04779,,False
+product catalytic rate constant,,,0,1/s,,ALD_R01070,R01070,,False
+product catalytic rate constant,250.0,250.0,0,1/s,,TIM_R01015,R01015,,False
+product catalytic rate constant,221.0,221.0,0,1/s,,GAP_R01061,R01061,,False
+product catalytic rate constant,833.0,833.0,0,1/s,,PGK_R01512,R01512,,False
+product catalytic rate constant,26.124843,26.124843,0,1/s,,PGM_R01518,R01518,,False
+product catalytic rate constant,,,0,1/s,,PGH_R00658,R00658,,False
+product catalytic rate constant,,,0,1/s,,PYK_R00200,R00200,,False
+product catalytic rate constant,77.0,77.0,0,1/s,,PDH_R00209,R00209,,False
+product catalytic rate constant,571.0,571.0,0,1/s,,ZWF_R00835,R00835,,False
+product catalytic rate constant,,,0,1/s,,GLH_R02035,R02035,,False
+product catalytic rate constant,98.0,98.0,0,1/s,,PGD_R01528,R01528,,False
+product catalytic rate constant,906.06764,906.06764,0,1/s,,RPI_R01056,R01056,,False
+product catalytic rate constant,182.45258,182.45258,0,1/s,,RPE_R01529,R01529,,False
+product catalytic rate constant,,,0,1/s,,TXT_R01641,R01641,,False
+product catalytic rate constant,,,0,1/s,,TAL_R08575,R08575,,False
+product catalytic rate constant,,,0,1/s,,TXT_R01067,R01067,,False
+product catalytic rate constant,23.4,23.4,0,1/s,,FBP_R00762,R00762,,False
+product catalytic rate constant,119.32901,119.32901,0,1/s,,CSN_R00351,R00351,,False
+product catalytic rate constant,,,0,1/s,,ACN_R01325,R01325,,False
+product catalytic rate constant,,,0,1/s,,ACN_R01900,R01900,,False
+product catalytic rate constant,30.0,30.0,0,1/s,,ICD_R00709,R00709,,False
+product catalytic rate constant,,,0,1/s,,KGD_R08549,R08549,,False
+product catalytic rate constant,45.344239,45.344239,0,1/s,,SCS_R00405,R00405,,False
+product catalytic rate constant,79.556898,79.556898,0,1/s,,SDH_R02164,R02164,,False
+product catalytic rate constant,115.24806,115.24806,0,1/s,,FUM_R01082,R01082,,False
+product catalytic rate constant,227.92729,227.92729,0,1/s,,MDH_R00342,R00342,,False
+product catalytic rate constant,,,0,1/s,,PPC_R00345,R00345,,False

@@ -1,0 +1,5 @@
+!!!ObjTables schema='SBtab' objTablesVersion='1.0.5' date='2020-07-18 12:18:29'	
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compartment' name='Compartment' date='2020-07-18 12:18:29' objTablesVersion='1.0.5' document='BIOMD0000000064'	
+!ID	!Size
+extracellular	1.0
+cytosol	1.0

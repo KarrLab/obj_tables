@@ -1,0 +1,4 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='QuantityMatrix' name='QuantityMatrix' date='2020-07-18 12:17:42' objTablesVersion='1.0.5',,,,
+!Time,!ID,!Sign,!>Concentration:Glucose,!>Concentration:Fructose
+0.0,T0,0,1.1,1.4
+0.5,T1,0,1.2,0.9

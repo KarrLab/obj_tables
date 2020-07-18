@@ -1,0 +1,4 @@
+!!!ObjTables schema='SBtab' objTablesVersion='1.0.5' date='2020-07-18 12:21:42',
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compartment' name='Compartment' date='2018-11-23' objTablesVersion='1.0.5' document='TestModel layout',
+!Name,!ID
+Compartment_1,Compartment_1

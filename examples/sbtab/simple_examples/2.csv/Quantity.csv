@@ -1,0 +1,6 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:17:38' objTablesVersion='1.0.5',,,,,,,
+!ID,!QuantityType,!Value,!Sign,!Unit,!Compound:SBML:species:id,!Reaction:SBML:reaction:id,!UseAsPriorInformation
+MyData 1,equilibrium constant,156.0,0,dimensionless,atp,r1,False
+MyData 2,Michaelis constant,0.96,0,mM,atp,r1,False
+MyData 3,inhibition constant,0.13,0,mM,atp,r1,False
+MyData 4,concentration,1.5,0,mM,...,...,False

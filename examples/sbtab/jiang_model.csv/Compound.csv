@@ -1,0 +1,61 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2020-07-18 12:19:10' objTablesVersion='1.0.5' document='BIOMD0000000239',,,,,,,
+!Name,!ID,!InitialConcentration,!Location,!Charge,!IsConstant,!Identifiers:kegg.compound,!HasOnlySubstanceUnits
+glucose,GLC,0.0,CYTOPLASM,0.0,False,C00267,False
+fructose-6-phosphate,F6P,0.0,CYTOPLASM,0.0,False,C00085,False
+"fructose-1,6-bisphosphate",FBP,0.0,CYTOPLASM,0.0,False,C00354,False
+glyceraldehyde 3-phosphate,GAP,0.0,CYTOPLASM,0.0,False,C00118,False
+"1,2-bisphospho-D-glycerate",DPG,0.0,CYTOPLASM,0.0,False,C00236,False
+phosphoenolpyruvate,PEP,0.0,CYTOPLASM,0.0,False,C00074,False
+pyruvate,PYR_cyt,0.0,CYTOPLASM,0.0,False,C00022,False
+adenine monophosphate,AMP,0.0,CYTOPLASM,0.0,False,C00020,False
+lactate,LAC,0.0,CYTOPLASM,0.0,False,C00186,False
+glycerol-3-phosphate,G3P,0.0,CYTOPLASM,0.0,False,C00093,False
+dihydrohxyacetone-phosphate,DHAP,0.0,CYTOPLASM,0.0,False,C00111,False
+oxaloacetate,OXA_cyt,0.0,CYTOPLASM,0.0,False,C00036,False
+aspartate,Asp_cyt,0.0,CYTOPLASM,0.0,False,C00049,False
+glutamate,Glu_cyt,0.0,CYTOPLASM,0.0,False,C00025,False
+oxoglutarate,OG_cyt,0.0,CYTOPLASM,0.0,False,C00026,False
+malate,Mal_cyt,0.0,CYTOPLASM,0.0,False,C00149,False
+acetyl CoA,Acetyl_CoA_cyt,0.0,CYTOPLASM,0.0,False,C00024,False
+coenzyme A,CoA_cyt,0.0,CYTOPLASM,0.0,False,C00010,False
+isocitrate,IsoCitcyt,0.0,CYTOPLASM,0.0,False,C00311,False
+citrate,Cit_cyt,0.0,CYTOPLASM,0.0,False,C00158,False
+adenine triphosphate,ATP_cyt,0.0,CYTOPLASM,0.0,False,C0002,False
+adenine diphosphate,ADP_cyt,0.0,CYTOPLASM,0.0,False,C0008,False
+NAD,NAD,0.0,CYTOPLASM,0.0,False,C00003,False
+NADH,NADH_cyt,0.0,CYTOPLASM,0.0,False,C00004,False
+NADP,NADP_cyt,0.0,CYTOPLASM,0.0,False,C00006,False
+NADPH,NADPH_cyt,0.0,CYTOPLASM,0.0,False,C00005,False
+pyruvate,Pyr,0.0,MATRIX,0.0,False,C00022,False
+carbon dioxide,CO2,0.0,MATRIX,0.0,False,C00011,False
+coenzyme A,CoA,0.0,MATRIX,0.0,False,C00010,False
+acetyl CoA,Acetyl_CoA,0.0,MATRIX,0.0,False,C00024,False
+phosphate,Pi,0.0,MATRIX,0.0,False,C00009,False
+fumarate,Fum,0.0,MATRIX,0.0,False,C00122,False
+succinyl-CoA,SCoA,0.0,MATRIX,0.0,False,C00091,False
+succinate,Suc,0.0,MATRIX,0.0,False,C00042,False
+guanosine triphosphate,GTP,0.0,MATRIX,0.0,False,C00044,False
+guanosine diphosphate,GDP,0.0,MATRIX,0.0,False,C00035,False
+slanine,Ala,0.0,MATRIX,0.0,False,C00041,False
+aspartate,Asp,0.0,MATRIX,0.0,False,C00049,False
+glutamate,Glu,0.0,MATRIX,0.0,False,C00025,False
+water,H2O,0.0,MATRIX,0.0,False,C00001,False
+electron transfer flavoprotein (reduced form),ETFred,0.0,MATRIX,0.0,False,C04570,False
+electron transfer flavoprotein (oxidised form),ETFox,0.0,MATRIX,0.0,False,C04253,False
+FADH2,FADH2,0.0,MATRIX,0.0,False,C01352,False
+FAD,FAD,0.0,MATRIX,0.0,False,C00016,False
+oxoglutarate,OG,0.0,MATRIX,0.0,False,C00026,False
+malate,Mal,0.0,MATRIX,0.0,False,C00149,False
+oxaloacetate,OXA,0.0,MATRIX,0.0,False,C00036,False
+citrate,Cit,0.0,MATRIX,0.0,False,C00158,False
+isocitrate,IsoCit,0.0,MATRIX,0.0,False,C00311,False
+adenine triphosphate,ATP,0.0,MATRIX,0.0,False,C0002,False
+adenine diphosphate,ADP,0.0,MATRIX,0.0,False,C0008,False
+NADP+,NADP_p,0.0,MATRIX,0.0,False,C00006,False
+NADPH,NADPH,0.0,MATRIX,0.0,False,C00005,False
+NAD+,NAD_p,0.0,MATRIX,0.0,False,C00003,False
+NADH,NADH,0.0,MATRIX,0.0,False,C00004,False
+ubiquinone,Q,0.0,MT_IMS,0.0,False,C00399,False
+ubiquinol,QH2,0.0,MT_IMS,0.0,False,C00390,False
+ferrocytochrome c,Cytc3p,0.0,MT_IMS,0.0,False,C00126,False
+ferricytochrome c,Cytc2p,0.0,MT_IMS,0.0,False,C00125,False

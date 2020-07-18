@@ -199,8 +199,8 @@ class IdentifierAttribute(core.LiteralAttribute):
             return Identifier().from_dict(json)
         return None
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -209,7 +209,7 @@ class IdentifierAttribute(core.LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(IdentifierAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(IdentifierAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                            doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
@@ -323,8 +323,8 @@ class IdentifiersAttribute(core.LiteralAttribute):
         """
         return [Identifier().from_dict(v) for v in json]
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -333,7 +333,7 @@ class IdentifiersAttribute(core.LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(IdentifiersAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(IdentifiersAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                             doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
@@ -471,8 +471,8 @@ class DoisAttribute(core.LiteralAttribute):
         """
         return json
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -481,7 +481,7 @@ class DoisAttribute(core.LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(DoisAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(DoisAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                      doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
@@ -626,8 +626,8 @@ class PubMedIdsAttribute(core.LiteralAttribute):
         """
         return json
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -636,7 +636,7 @@ class PubMedIdsAttribute(core.LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(PubMedIdsAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(PubMedIdsAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                           doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any

@@ -1,0 +1,7 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Relationship' name='Relationship' date='2020-07-18 12:17:34' objTablesVersion='1.0.5'					
+!FromObject	!ToObject	!Value	!IsSymmetric	!Sign	!Relation
+A	A	1.0	False	0	regulates
+A	B	-1.0	False	0	regulates
+B	A	1.0	False	0	regulates
+B	C	2.0	False	0	regulates
+C	D	1.0	False	0	regulates

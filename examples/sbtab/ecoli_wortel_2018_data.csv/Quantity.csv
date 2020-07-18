@@ -1,0 +1,160 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:19:38' objTablesVersion='1.0.5',,,,,,,
+!QuantityType,!Mean,!Std,!Sign,!Unit,!Compound:SBML:species:id,!Reaction:SBML:reaction:id,!UseAsPriorInformation
+Michaelis constant,0.12,0.141421,0,mM,GLU_ext,R1,False
+Michaelis constant,0.4085,0.559386,0,mM,GLU_6_P,R10a,False
+Michaelis constant,1.3595,2.20547,0,mM,NAD,R10a,False
+Michaelis constant,2.77667,1.80683,0,mM,RIBOSE_5_P,R12r,False
+Michaelis constant,0.161667,0.115578,0,mM,ERYTH_4_P,R14r,False
+Michaelis constant,1.11333,0.150111,0,mM,FRU_6_P,R14r,False
+Michaelis constant,0.969,1.31663,0,mM,GA_3P,R14r,False
+Michaelis constant,2.21,0.226274,0,mM,PYR,R20,False
+Michaelis constant,0.38795,0.179676,0,mM,PYR,R21,False
+Michaelis constant,0.08,0.0424264,0,mM,ACETYL_CoA,R22,False
+Michaelis constant,0.0215,0.000707107,0,mM,OXALO,R22,False
+Michaelis constant,6.20167,6.97443,0,mM,CITRATE,R23r,False
+Michaelis constant,4.84927,9.79702,0,mM,ISOCIT,R23r,False
+Michaelis constant,0.01952,0.0144814,0,mM,ISOCIT,R24,False
+Michaelis constant,1.89464,2.56095,0,mM,NAD,R24,False
+Michaelis constant,0.06305,0.0408706,0,mM,AKG,R25,False
+Michaelis constant,0.056,0.0763675,0,mM,SUCC,R27,False
+Michaelis constant,0.0127,0.0103238,0,mM,FUMARATE,R27b,False
+Michaelis constant,0.27575,0.387848,0,mM,SUCC,R27b,False
+Michaelis constant,0.375,0.318198,0,mM,FUMARATE,R28r,False
+Michaelis constant,0.9,0.282843,0,mM,MALATE,R28r,False
+Michaelis constant,0.2095,0.0883883,0,mM,FRU_6_P,R2r,False
+Michaelis constant,0.154,0.0502991,0,mM,ATP,R3,False
+Michaelis constant,0.1225,0.0330404,0,mM,FRU_6_P,R3,False
+Michaelis constant,0.0126333,0.0193717,0,mM,FRU_BIS_P,R4,False
+Michaelis constant,0.395,0.289914,0,mM,PEP,R40,False
+Michaelis constant,0.01,0.00424264,0,mM,ACETYL_CoA,R54ra,False
+Michaelis constant,0.009,0.00141421,0,mM,CoASH,R54ra,False
+Michaelis constant,5.75,6.01041,0,mM,ACALD,R54ra,False
+Michaelis constant,0.065,0.0212132,0,mM,NAD,R54ra,False
+Michaelis constant,0.0625,0.053033,0,mM,NADH,R54ra,False
+Michaelis constant,0.19825,0.0718256,0,mM,FRU_BIS_P,R5r,False
+Michaelis constant,0.112,0.0169706,0,mM,PG,R8r,False
+Michaelis constant,0.093,,0,mM,GLUCO_6_P,R10c,False
+Michaelis constant,0.049,,0,mM,NAD,R10c,False
+Michaelis constant,2.1,,0,mM,GA_3P,R13r,False
+Michaelis constant,1.4,,0,mM,RIBOSE_5_P,R13r,False
+Michaelis constant,4.0,,0,mM,SED_7_P,R13r,False
+Michaelis constant,0.16,,0,mM,XYL_5_P,R13r,False
+Michaelis constant,0.285,,0,mM,SED_7_P,R14r,False
+Michaelis constant,0.09,,0,mM,ERYTH_4_P,R15r,False
+Michaelis constant,1.1,,0,mM,FRU_6_P,R15r,False
+Michaelis constant,2.1,,0,mM,GA_3P,R15r,False
+Michaelis constant,0.16,,0,mM,XYL_5_P,R15r,False
+Michaelis constant,0.051,,0,mM,ACETYL_CoA,R20,False
+Michaelis constant,0.0068,,0,mM,CoASH,R20,False
+Michaelis constant,24.5,,0,mM,FORMATE,R20,False
+Michaelis constant,0.57,,0,mM,AKG,R24,False
+Michaelis constant,3.13,,0,mM,CO2,R24,False
+Michaelis constant,0.007,,0,mM,NADH,R24,False
+Michaelis constant,0.07,,0,mM,ATP,R26r,False
+Michaelis constant,0.004,,0,mM,CoASH,R26r,False
+Michaelis constant,0.25,,0,mM,SUCC,R26r,False
+Michaelis constant,0.00765,,0,mM,SUCC_CoA,R26r,False
+Michaelis constant,0.1,,0,mM,FUMARATE,R27,False
+Michaelis constant,2.6,,0,mM,MALATE,R29r,False
+Michaelis constant,0.26,,0,mM,NAD,R29r,False
+Michaelis constant,0.061,,0,mM,NADH,R29r,False
+Michaelis constant,0.0525,,0,mM,OXALO,R29r,False
+Michaelis constant,0.28,,0,mM,GLU_6_P,R2r,False
+Michaelis constant,0.1,,0,mM,CO2,R40,False
+Michaelis constant,0.45,,0,mM,MALATE,R41,False
+Michaelis constant,0.063,,0,mM,NAD,R41,False
+Michaelis constant,0.05,,0,mM,ADP,R42,False
+Michaelis constant,0.06,,0,mM,ATP,R42,False
+Michaelis constant,13.0,,0,mM,CO2,R42,False
+Michaelis constant,0.67,,0,mM,OXALO,R42,False
+Michaelis constant,0.07,,0,mM,PEP,R42,False
+Michaelis constant,10.6,,0,mM,ETOH,R54rb,False
+Michaelis constant,0.0449,,0,mM,ACETYL_CoA,R55a,False
+Michaelis constant,0.3117,,0,mM,ACETYL_P,R55a,False
+Michaelis constant,0.0672,,0,mM,CoASH,R55a,False
+Michaelis constant,0.16,,0,mM,ACETYL_P,R55b,False
+Michaelis constant,0.5,,0,mM,ADP,R55b,False
+Michaelis constant,0.07,,0,mM,ATP,R55b,False
+Michaelis constant,7.0,,0,mM,ACETATE,R55b,False
+Michaelis constant,0.088,,0,mM,DHAP,R5r,False
+Michaelis constant,0.088,,0,mM,GA_3P,R5r,False
+Michaelis constant,1.03,,0,mM,GA_3P,R6r,False
+Michaelis constant,0.606,,0,mM,ACETYL_CoA,R70,False
+Michaelis constant,0.443,,0,mM,AKG,R70,False
+Michaelis constant,1.37,,0,mM,CoASH,R70,False
+Michaelis constant,0.01,,0,mM,ERYTH_4_P,R70,False
+Michaelis constant,8.75,,0,mM,GLU_6_P,R70,False
+Michaelis constant,2.55,,0,mM,NAD,R70,False
+Michaelis constant,0.0832,,0,mM,NADH,R70,False
+Michaelis constant,0.01,,0,mM,NH3,R70,False
+Michaelis constant,0.004,,0,mM,OXALO,R70,False
+Michaelis constant,0.184,,0,mM,PEP,R70,False
+Michaelis constant,0.39,,0,mM,PYR,R70,False
+Michaelis constant,1.32,,0,mM,RIBOSE_5_P,R70,False
+Michaelis constant,0.89,,0,mM,GA_3P,R7ra,False
+Michaelis constant,0.045,,0,mM,NAD,R7ra,False
+Michaelis constant,0.135,,0,mM,PEP,R8r,False
+Michaelis constant,0.22,,0,mM,ADP,R9,False
+Michaelis constant,22.45,,0,mM,ATP,R9,False
+Michaelis constant,0.31,,0,mM,PEP,R9,False
+Michaelis constant,0.028,,0,mM,ATP,RR9,False
+Michaelis constant,0.083,,0,mM,PYR,RR9,False
+Michaelis constant,0.04,,0,mM,GLUCO_6_P,R60,False
+Michaelis constant,0.35,,0,mM,KDPG,R61r,False
+substrate catalytic rate constant,231.0,80.6102,0,1/s,,R10a,False
+substrate catalytic rate constant,122.667,79.8231,0,1/s,,R10c,False
+substrate catalytic rate constant,33.395,6.37103,0,1/s,,R21,False
+substrate catalytic rate constant,390.5,437.699,0,1/s,,R22,False
+substrate catalytic rate constant,92.9107,70.3045,0,1/s,,R24,False
+substrate catalytic rate constant,92.0,13.8804,0,1/s,,R27,False
+substrate catalytic rate constant,219.0,37.7227,0,1/s,,R27b,False
+substrate catalytic rate constant,538.0,503.107,0,1/s,,R29r,False
+substrate catalytic rate constant,399.25,405.413,0,1/s,,R2r,False
+substrate catalytic rate constant,112.005,38.6592,0,1/s,,R3,False
+substrate catalytic rate constant,22.0,2.82843,0,1/s,,R4,False
+substrate catalytic rate constant,9.33333,1.64992,0,1/s,,R5r,False
+substrate catalytic rate constant,209.0,106.302,0,1/s,,R8r,False
+substrate catalytic rate constant,623.75,241.01,0,1/s,,R9,False
+substrate catalytic rate constant,472.0,,0,1/s,,R10b,False
+substrate catalytic rate constant,2100.0,,0,1/s,,R12r,False
+substrate catalytic rate constant,13.0,,0,1/s,,R14r,False
+substrate catalytic rate constant,9550.0,,0,1/s,,R20,False
+substrate catalytic rate constant,149.0,,0,1/s,,R25,False
+substrate catalytic rate constant,78.3333,,0,1/s,,R26r,False
+substrate catalytic rate constant,300.0,,0,1/s,,R28r,False
+substrate catalytic rate constant,150.0,,0,1/s,,R40,False
+substrate catalytic rate constant,96.6667,,0,1/s,,R53r,False
+substrate catalytic rate constant,74.7,,0,1/s,,R55a,False
+substrate catalytic rate constant,148.933,,0,1/s,,R61r,False
+substrate catalytic rate constant,9000.0,,0,1/s,,R6r,False
+substrate catalytic rate constant,268.0,,0,1/s,,R7ra,False
+substrate catalytic rate constant,329.0,,0,1/s,,R7rb,False
+substrate catalytic rate constant,13.0,,0,1/s,,RR9,False
+product catalytic rate constant,979.667,112.216,0,1/s,,R29r,False
+product catalytic rate constant,321.55,132.865,0,1/s,,R55a,False
+product catalytic rate constant,380.0,,0,1/s,,R20,False
+product catalytic rate constant,44.7333,,0,1/s,,R26r,False
+product catalytic rate constant,1.7,,0,1/s,,R27,False
+product catalytic rate constant,0.666667,,0,1/s,,R42,False
+product catalytic rate constant,15.7,,0,1/s,,R54ra,False
+product catalytic rate constant,0.0121,,0,1/s,,R61r,False
+equilibrium constant,0.361009,,0,dimensionless,,R2r,False
+equilibrium constant,0.000205531,,0,dimensionless,,R5r,False
+equilibrium constant,9.17058,,0,dimensionless,,R6r,False
+equilibrium constant,0.0925742,,0,dimensionless,,R7ra,False
+equilibrium constant,1738.93,,0,dimensionless,,R7rb,False
+equilibrium constant,0.183977,,0,dimensionless,,R7rc,False
+equilibrium constant,5.20844,,0,dimensionless,,R8r,False
+equilibrium constant,3.90244,,0,dimensionless,,R11r,False
+equilibrium constant,2.2071,,0,dimensionless,,R12r,False
+equilibrium constant,4.62899,,0,dimensionless,,R13r,False
+equilibrium constant,1.34182,,0,dimensionless,,R14r,False
+equilibrium constant,57.1984,,0,dimensionless,,R15r,False
+equilibrium constant,0.0459076,,0,dimensionless,,R23r,False
+equilibrium constant,0.448339,,0,dimensionless,,R26r,False
+equilibrium constant,4.02687,,0,dimensionless,,R28r,False
+equilibrium constant,6.08e-06,,0,dimensionless,,R29r,False
+equilibrium constant,52000.6,,0,dimensionless,,R53r,False
+equilibrium constant,0.00083365,,0,dimensionless,,R54ra,False
+equilibrium constant,4993.03,,0,dimensionless,,R54rb,False
+equilibrium constant,0.00191867,,0,dimensionless,,R61r,False

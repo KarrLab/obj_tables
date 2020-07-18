@@ -1,0 +1,5 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:17:49' objTablesVersion='1.0.5'					
+!ID	!Sign	!Unit	!Reaction	!UseAsPriorInformation	!SBO:equilibrium_constant
+keq R1	0	dimensionless	R1	False	0.0984
+keq R2	0	dimensionless	R2	False	10.0
+keq R3	0	dimensionless	R3	False	100.0

@@ -3252,11 +3252,11 @@ class TestCore(unittest.TestCase):
             + '      {}'.format(msg.replace('\n', '\n      '))
         ))
 
-    def test_excel_col_name(self):
-        self.assertRaises(ValueError, lambda: core.excel_col_name(0))
-        self.assertRaises(ValueError, lambda: core.excel_col_name(''))
-        self.assertEqual(core.excel_col_name(5), 'E')
-        self.assertEqual(core.excel_col_name(2**14), 'XFD')
+    def test_xlsx_col_name(self):
+        self.assertRaises(ValueError, lambda: core.xlsx_col_name(0))
+        self.assertRaises(ValueError, lambda: core.xlsx_col_name(''))
+        self.assertEqual(core.xlsx_col_name(5), 'E')
+        self.assertEqual(core.xlsx_col_name(2**14), 'XFD')
 
     def test_manager_small_methods(self):
 
@@ -4722,8 +4722,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.from_builtin(None), None)
         self.assertEqual(attr.from_builtin('LICENSE'), pathlib.Path('LICENSE'))
 
-        attr.get_excel_validation()
-        none_attr.get_excel_validation()
+        attr.get_xlsx_validation()
+        none_attr.get_xlsx_validation()
 
     def test_Range(self):
         self.assertTrue(core.Range(1.1, 1.2).is_equal(core.Range(1.1, 1.2)))
@@ -4774,8 +4774,8 @@ class TestCore(unittest.TestCase):
         self.assertTrue(attr.value_equal(attr.from_builtin(1.1), core.Range(1.1, 1.1)))
         self.assertTrue(attr.value_equal(attr.from_builtin({'min': 1.1, 'max': 2.2}), core.Range(1.1, 2.2)))
 
-        attr.get_excel_validation()
-        int_attr.get_excel_validation()
+        attr.get_xlsx_validation()
+        int_attr.get_xlsx_validation()
 
     def test_ListAttribute(self):
         attr = core.ListAttribute()
@@ -4812,8 +4812,8 @@ class TestCore(unittest.TestCase):
         self.assertEqual(attr.from_builtin([]), [])
         self.assertEqual(attr.from_builtin(['A', 'B', 'C']), ['A', 'B', 'C'])
 
-        attr.get_excel_validation()
-        int_attr.get_excel_validation()
+        attr.get_xlsx_validation()
+        int_attr.get_xlsx_validation()
 
     def test_ManyToManySeparatedValuesTableAttribute(self):
         class Row(core.Model):

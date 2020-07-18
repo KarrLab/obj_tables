@@ -1,0 +1,7 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:17:46' objTablesVersion='1.0.5',,,,,,,
+!ID,!Value,!Sign,!Unit,!Compound,!Reaction,!UseAsPriorInformation,!SBO:Identifiers:obo.sbo
+kcrf R1,200.0,0,1/s,C1,R1,False,SBO:0000320
+keq R1,0.0984,0,dimensionless,C2,R1,False,SBO:0000281
+kmc R1 C1,0.96,0,mM,C3,R1,False,SBO:0000027
+kic R1 C2,0.13,0,mM,,R1,False,SBO:0000261
+con C3,203.0,0,mM,,,False,SBO:0000196

@@ -1,0 +1,11 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='ReactionStoichiometry' name='ReactionStoichiometry' date='2020-07-18 12:17:34' objTablesVersion='1.0.5'				
+!Stoichiometry	!Substrate	!Product	!Location	!Reaction
+1	Glc		Extracellular	glycolysis
+2	ATP		Cytosol	glycolysis
+4	ADP		Cytosol	glycolysis
+2	Pi		Cytosol	glycolysis
+2	NAD		Cytosol	glycolysis
+2		Pyr	Extracellular	glycolysis
+4		ATP	Cytosol	glycolysis
+2		ADP	Cytosol	glycolysis
+1		NADH	Cytosol	glycolysis

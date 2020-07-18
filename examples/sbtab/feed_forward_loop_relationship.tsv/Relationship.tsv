@@ -1,0 +1,5 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Relationship' name='Relationship' date='2020-07-18 12:14:07' objTablesVersion='1.0.5' document='Boolean_example'					
+!ID	!FromObject	!ToObject	!Value	!IsSymmetric	!Sign
+R1	A	B	1.0	False	+
+R2	B	C	1.0	False	+
+R3	C	A	1.0	False	-

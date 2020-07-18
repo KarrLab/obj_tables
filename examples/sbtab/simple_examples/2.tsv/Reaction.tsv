@@ -1,0 +1,5 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Reaction' name='Reaction' date='2020-07-18 12:17:37' objTablesVersion='1.0.5'											
+!ID	!SBML:reaction:id	!ReactionFormula	!IsComplete	!IsReversible	!IsInEquilibrium	!IsExchangeReaction	!IsNonEnzymatic	!BuildReaction	!BuildEnzyme	!BuildEnzymeProduction	!Identifiers:kegg.reaction
+R1	r1	ATP + F6P <=> ADP + F16P	False	False	False	False	False	False	False	False	R00658
+R2	r2	F16P + H2O <=> F6P + Pi	False	False	False	False	False	False	False	False	R01015
+% That's a comment.			False	False	False	False	False	False	False	False	

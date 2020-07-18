@@ -149,22 +149,22 @@ class UnitAttributeTestCase(unittest.TestCase):
 
         self.assertEqual(set(units.get_obj_units(model)), set([units_g, units_l]))
 
-    def test_get_excel_validation(self):
+    def test_get_xlsx_validation(self):
         registry = pint.UnitRegistry()
 
         attr = units.UnitAttribute(registry, none=True, unique=True,
                                    default_cleaned_value=registry.parse_units('g'), choices=[registry.parse_units('g')])
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
         attr = units.UnitAttribute(registry, none=False, unique=True,
                                    default_cleaned_value=registry.parse_units('g'), choices=[registry.parse_units('g')])
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
         attr = units.UnitAttribute(registry, none=True, unique=True)
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
         attr = units.UnitAttribute(registry, none=False, unique=False)
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
 
 class QuantityAttributeTestCase(unittest.TestCase):
@@ -288,11 +288,11 @@ class QuantityAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(None), None)
         self.assertEqual(attr.from_builtin({'magnitude': 1, 'units': 's'}), registry.parse_expression('s'))
 
-    def test_get_excel_validation(self):
+    def test_get_xlsx_validation(self):
         registry = pint.UnitRegistry()
 
         attr = units.QuantityAttribute(registry, none=True, unique=True, default_cleaned_value=registry.parse_expression('1 g'))
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
         attr = units.QuantityAttribute(registry, none=False, unique=False)
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()

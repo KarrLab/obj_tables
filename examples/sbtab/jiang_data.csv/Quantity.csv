@@ -1,0 +1,1327 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:18:44' objTablesVersion='1.0.5' level='1.0' version='0.1',,,,,,,,,,,
+!Reference,!QuantityType,!Mean,!Std,!Sign,!Unit,!Compound:SBML:species:id,!Reaction:SBML:reaction:id,!Organism,!Reaction:Identifiers:kegg.reaction,!Compound:Identifiers:kegg.compound,!UseAsPriorInformation
+yeastGFP,concentration of enzyme,169000.0,,0,molecules/cell,nan,v4,Saccharomyces cerevisiae,R01061,nan,False
+yeastGFP,concentration of enzyme,120000.0,,0,molecules/cell,nan,v4,Saccharomyces cerevisiae,R01061,nan,False
+yeastGFP,concentration of enzyme,121000.0,,0,molecules/cell,nan,v4,Saccharomyces cerevisiae,R01061,nan,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.3,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.4,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.4,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.4,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.4,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.4,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.4,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.5,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.5,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.8,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.9,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,1.0,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,1.3,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,1.4,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v4,nan,R01061,nan,False
+NIST,equilibrium constant,17.0,,0,dimensionless,nan,v4,nan,R01061,nan,False
+yeastGFP,concentration of enzyme,4670.0,,0,molecules/cell,nan,v29,Saccharomyces cerevisiae,R01324,nan,False
+yeastGFP,concentration of enzyme,96700.0,,0,molecules/cell,nan,v29,Saccharomyces cerevisiae,R01324,nan,False
+Brenda,inhibitory constant,0.4,,0,mM,Fum,v29,Rattus rattus,R01324,C00122,False
+Brenda,inhibitory constant,0.5,,0,mM,Fum,v29,Rattus rattus,R01324,C00122,False
+Brenda,inhibitory constant,2.8,,0,mM,OXA,v29,Rattus rattus,R01324,C00036,False
+Brenda,inhibitory constant,0.3,,0,mM,Suc,v29,Rattus rattus,R01324,C00042,False
+Brenda,inhibitory constant,0.6,,0,mM,Suc,v29,Rattus rattus,R01324,C00042,False
+Brenda,inhibitory constant,1.0,,0,mM,OXA,v29,Rattus rattus,R01324,C00036,False
+yeastGFP,concentration of enzyme,14300.0,,0,molecules/cell,nan,v14,Saccharomyces cerevisiae,R01700,nan,False
+Brenda,inhibitory constant,0.0,,0,mM,NADH,v14,Dictyostelium discoideum,R01700,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,SCoA,v14,Dictyostelium discoideum,R01700,C00091,False
+Brenda,inhibitory constant,0.0,,0,mM,NADH,v14,Gluconacetobacter xylinus,R01700,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,SCoA,v14,Gluconacetobacter xylinus,R01700,C00091,False
+Brenda,inhibitory constant,0.1,,0,mM,DHAP,v3,Escherichia coli,R01068,C00111,False
+Brenda,inhibitory constant,1.7,,0,mM,DHAP,v3,Escherichia coli,R01068,C00111,False
+Brenda,inhibitory constant,0.0,,0,mM,Pi,v3,Spermophilus lateralis,R01068,C00009,False
+Brenda,inhibitory constant,0.0,,0,mM,Pi,v3,Spermophilus lateralis,R01068,C00009,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v3,nan,R01068,nan,False
+yeastGFP,concentration of enzyme,2910.0,,0,molecules/cell,nan,v32,Saccharomyces cerevisiae,R00355,nan,False
+yeastGFP,concentration of enzyme,7700.0,,0,molecules/cell,nan,v32,Saccharomyces cerevisiae,R00355,nan,False
+Brenda,inhibitory constant,0.0,,0,mM,Pi,v32,Ovis aries,R00355,C00009,False
+Brenda,inhibitory constant,0.0,,0,mM,Pi,v32,Ovis aries,R00355,C00009,False
+Brenda,inhibitory constant,30.0,,0,mM,OG_cyt,v32,Trichomonas vaginalis,R00355,C00026,False
+Brenda,inhibitory constant,6.8,,0,mM,Glu_cyt,v32,Trichomonas vaginalis,R00355,C00025,False
+Brenda,inhibitory constant,2.8,,0,mM,Glu_cyt,v32,Trichomonas vaginalis,R00355,C00025,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v32,Lupinus albus,R00355,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v32,Lupinus albus,R00355,C00036,False
+Brenda,inhibitory constant,30.0,,0,mM,Glu_cyt,v32,Lupinus albus,R00355,C00025,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v32,Lupinus albus,R00355,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v32,Lupinus albus,R00355,C00036,False
+Brenda,inhibitory constant,10.5,,0,mM,Glu_cyt,v32,Lupinus albus,R00355,C00025,False
+Brenda,inhibitory constant,16.0,,0,mM,Glu_cyt,v32,Lupinus albus,R00355,C00025,False
+Brenda,inhibitory constant,11.1,,0,mM,Glu_cyt,v32,Lupinus albus,R00355,C00025,False
+Brenda,inhibitory constant,8.9,,0,mM,Suc,v32,Lupinus albus,R00355,C00042,False
+Brenda,inhibitory constant,10.7,,0,mM,Suc,v32,Lupinus albus,R00355,C00042,False
+Brenda,inhibitory constant,36.9,,0,mM,Suc,v32,Lupinus albus,R00355,C00042,False
+Brenda,inhibitory constant,16.8,,0,mM,Suc,v32,Lupinus albus,R00355,C00042,False
+Brenda,inhibitory constant,6.8,,0,mM,Fum,v32,Lupinus albus,R00355,C00122,False
+Brenda,inhibitory constant,24.6,,0,mM,Fum,v32,Lupinus albus,R00355,C00122,False
+Brenda,inhibitory constant,33.7,,0,mM,Fum,v32,Lupinus albus,R00355,C00122,False
+Brenda,inhibitory constant,44.1,,0,mM,Fum,v32,Lupinus albus,R00355,C00122,False
+Brenda,inhibitory constant,1.9,,0,mM,OG_cyt,v32,Rattus norvegicus,R00355,C00026,False
+Brenda,inhibitory constant,17.0,,0,mM,OG_cyt,v32,Rattus norvegicus,R00355,C00026,False
+Brenda,inhibitory constant,2.5,,0,mM,OG_cyt,v32,Rattus norvegicus,R00355,C00026,False
+Brenda,inhibitory constant,21.0,,0,mM,Asp_cyt,v32,Rattus norvegicus,R00355,C00049,False
+Brenda,inhibitory constant,1.0,,0,mM,OG_cyt,v32,Rattus norvegicus,R00355,C00026,False
+Brenda,inhibitory constant,263.0,,0,mM,Asp_cyt,v32,Rattus norvegicus,R00355,C00049,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.3,,0,dimensionless,nan,v32,nan,R00355,nan,False
+NIST,equilibrium constant,0.3,,0,dimensionless,nan,v32,nan,R00355,nan,False
+yeastGFP,concentration of enzyme,2020.0,,0,molecules/cell,nan,v5,Saccharomyces cerevisiae,R01518,nan,False
+yeastGFP,concentration of enzyme,172000.0,,0,molecules/cell,nan,v5,Saccharomyces cerevisiae,R01518,nan,False
+yeastGFP,concentration of enzyme,3730.0,,0,molecules/cell,nan,v5,Saccharomyces cerevisiae,R01518,nan,False
+NIST,equilibrium constant,8.7,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,9.8,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.0,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.3,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.4,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.4,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.5,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.5,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.6,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.7,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.7,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.8,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.8,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,10.9,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.0,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.1,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.1,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.1,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.3,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.3,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.3,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.4,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.4,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.5,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.6,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.6,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.7,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,11.7,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,4.9,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,5.0,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,5.1,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,5.3,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,5.3,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,5.4,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,5.8,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,6.0,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,6.1,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,6.2,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,6.3,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,6.6,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,6.8,,0,dimensionless,nan,v5,nan,R01518,nan,False
+NIST,equilibrium constant,9.8,,0,dimensionless,nan,v5,nan,R01518,nan,False
+yeastGFP,concentration of enzyme,291000.0,24100.0,0,molecules/cell,nan,v6,Saccharomyces cerevisiae,R00200,nan,False
+yeastGFP,concentration of enzyme,2130.0,,0,molecules/cell,nan,v6,Saccharomyces cerevisiae,R00200,nan,False
+Brenda,inhibitory constant,0.8,,0,mM,Cit_cyt,v6,Plasmodium falciparum,R00200,C00158,False
+Brenda,inhibitory constant,3.7,,0,mM,Glu_cyt,v6,nan,R00200,C00025,False
+Brenda,inhibitory constant,4.4,,0,mM,Glu_cyt,v6,nan,R00200,C00025,False
+Brenda,inhibitory constant,13.6,,0,mM,Glu_cyt,v6,nan,R00200,C00025,False
+Brenda,inhibitory constant,19.2,,0,mM,Glu_cyt,v6,nan,R00200,C00025,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v6,nan,R00200,nan,False
+yeastGFP,concentration of enzyme,7130.0,,0,molecules/cell,nan,v24,Saccharomyces cerevisiae,R00331,nan,False
+Brenda,inhibitory constant,1.9,,0,mM,GDP,v24,Mycobacterium tuberculosis,R00331,C00035,False
+yeastGFP,concentration of enzyme,123000.0,,0,molecules/cell,nan,hidden_1,Saccharomyces cerevisiae,R00127,nan,False
+yeastGFP,concentration of enzyme,704.0,,0,molecules/cell,nan,hidden_1,Saccharomyces cerevisiae,R00127,nan,False
+Brenda,inhibitory constant,3.3,,0,mM,AMP,hidden_1,Oryctolagus cuniculus,R00127,C00020,False
+Brenda,inhibitory constant,0.6,,0,mM,AMP,hidden_1,Mycobacterium tuberculosis,R00127,C00020,False
+yeastGFP,concentration of enzyme,3300.0,,0,molecules/cell,nan,v31,Saccharomyces cerevisiae,R00342,nan,False
+yeastGFP,concentration of enzyme,28100.0,,0,molecules/cell,nan,v31,Saccharomyces cerevisiae,R00342,nan,False
+yeastGFP,concentration of enzyme,5260.0,,0,molecules/cell,nan,v31,Saccharomyces cerevisiae,R00342,nan,False
+Brenda,product catalytic rate constant,2.6,,0,1/s,nan,v31,Sulfolobus acidocaldarius,R00342,C00036,False
+Brenda,product catalytic rate constant,1.8,,0,1/s,nan,v31,Thermoplasma acidophilum,R00342,C00036,False
+Brenda,inhibitory constant,1.0,,0,mM,AMP,v31,Sus scrofa,R00342,C00020,False
+Brenda,inhibitory constant,3.7,,0,mM,Mal_cyt,v31,Beggiatoa leptomitiformis,R00342,C00149,False
+Brenda,inhibitory constant,0.6,,0,mM,OXA_cyt,v31,Aptenia cordifolia,R00342,C00036,False
+Brenda,inhibitory constant,0.2,,0,mM,OXA_cyt,v31,Aptenia cordifolia,R00342,C00036,False
+Brenda,inhibitory constant,0.2,,0,mM,OXA_cyt,v31,Mesembryanthemum crystallinum,R00342,C00036,False
+Brenda,inhibitory constant,0.8,,0,mM,OXA_cyt,v31,Mesembryanthemum crystallinum,R00342,C00036,False
+Brenda,substrate catalytic rate constant,76.7,,0,1/s,Mal_cyt,nan,Sus scrofa,R00342,C00149,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v31,nan,R00342,nan,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,nan,R00342,C00036,False
+Brenda,Michaelis constant,4.0,,0,mM,Mal_cyt,v31,nan,R00342,C00149,False
+Brenda,Michaelis constant,1.1,,0,mM,NAD,v31,nan,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Aquaspirillum arcticum,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Aquaspirillum arcticum,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Trichomonas gallinae,R00342,C00003,False
+Brenda,Michaelis constant,0.2,,0,mM,Mal_cyt,v31,Trichomonas gallinae,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Trichomonas gallinae,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sus scrofa,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Sus scrofa,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Sus scrofa,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sus scrofa,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sus scrofa,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sus scrofa,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sus scrofa,R00342,C00036,False
+Brenda,Michaelis constant,0.7,,0,mM,Mal_cyt,v31,Beggiatoa leptomitiformis,R00342,C00149,False
+Brenda,Michaelis constant,0.5,,0,mM,NAD,v31,Beggiatoa leptomitiformis,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Beggiatoa leptomitiformis,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Salinibacter ruber,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Plasmodium falciparum,R00342,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,NAD,v31,Plasmodium falciparum,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Hoplias malabaricus,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Aptenia cordifolia,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Aptenia cordifolia,R00342,C00004,False
+Brenda,Michaelis constant,2.3,,0,mM,Mal_cyt,v31,Aptenia cordifolia,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Aptenia cordifolia,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Aptenia cordifolia,R00342,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Aptenia cordifolia,R00342,C00003,False
+Brenda,Michaelis constant,2.1,,0,mM,Mal_cyt,v31,Aptenia cordifolia,R00342,C00149,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Corynebacterium glutamicum,R00342,C00004,False
+Brenda,Michaelis constant,0.6,,0,mM,OXA_cyt,v31,Corynebacterium glutamicum,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Corynebacterium glutamicum,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Corynebacterium glutamicum,R00342,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,OXA_cyt,v31,Corynebacterium glutamicum,R00342,C00036,False
+Brenda,Michaelis constant,0.4,,0,mM,NAD,v31,Corynebacterium glutamicum,R00342,C00003,False
+Brenda,Michaelis constant,0.3,,0,mM,NADPH,v31,Corynebacterium glutamicum,R00342,C00005,False
+Brenda,Michaelis constant,0.8,,0,mM,Mal_cyt,v31,Corynebacterium glutamicum,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Talaromyces emersonii,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Talaromyces emersonii,R00342,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Talaromyces emersonii,R00342,C00003,False
+Brenda,Michaelis constant,1.3,,0,mM,Mal_cyt,v31,Talaromyces emersonii,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sphyraena idiastes,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Sphyraena idiastes,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Sphyraena idiastes,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sphyraena idiastes,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sphyraena idiastes,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Sphyraena idiastes,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Sphyraena idiastes,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Sphyraena idiastes,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Saccharomyces cerevisiae,R00342,C00003,False
+Brenda,Michaelis constant,0.3,,0,mM,Mal_cyt,v31,Saccharomyces cerevisiae,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,Mal_cyt,v31,Saccharomyces cerevisiae,R00342,C00149,False
+Brenda,Michaelis constant,0.1,,0,mM,Mal_cyt,v31,Saccharomyces cerevisiae,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,Mal_cyt,v31,Saccharomyces cerevisiae,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Saccharomyces cerevisiae,R00342,C00036,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD,v31,Saccharomyces cerevisiae,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Saccharomyces cerevisiae,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Saccharomyces cerevisiae,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Moritella sp.,R00342,C00004,False
+Brenda,Michaelis constant,0.4,,0,mM,NADH_cyt,v31,Triticum aestivum,R00342,C00004,False
+Brenda,Michaelis constant,0.7,,0,mM,NAD,v31,Triticum aestivum,R00342,C00003,False
+Brenda,Michaelis constant,3.2,,0,mM,OXA_cyt,v31,Triticum aestivum,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Euglena gracilis,R00342,C00036,False
+Brenda,Michaelis constant,0.7,,0,mM,NAD,v31,Euglena gracilis,R00342,C00003,False
+Brenda,Michaelis constant,0.7,,0,mM,Mal_cyt,v31,Euglena gracilis,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Euglena gracilis,R00342,C00004,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Aspergillus niger,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Aspergillus niger,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Aspergillus niger,R00342,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,NADH_cyt,v31,Aspergillus niger,R00342,C00004,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Dictyostelium discoideum,R00342,C00003,False
+Brenda,Michaelis constant,0.2,,0,mM,OXA_cyt,v31,Dictyostelium discoideum,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Dictyostelium discoideum,R00342,C00004,False
+Brenda,Michaelis constant,1.3,,0,mM,Mal_cyt,v31,Dictyostelium discoideum,R00342,C00149,False
+Brenda,Michaelis constant,0.3,,0,mM,OXA_cyt,v31,Dictyostelium discoideum,R00342,C00036,False
+Brenda,Michaelis constant,5.0,,0,mM,Mal_cyt,v31,Dictyostelium discoideum,R00342,C00149,False
+Brenda,Michaelis constant,0.2,,0,mM,NADPH,v31,Sulfolobus acidocaldarius,R00342,C00005,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Sulfolobus acidocaldarius,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Sulfolobus acidocaldarius,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Thermoplasma acidophilum,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Thermoplasma acidophilum,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Trichomonas vaginalis,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v31,Trichomonas vaginalis,R00342,C00003,False
+Brenda,Michaelis constant,1.4,,0,mM,Mal_cyt,v31,Trichomonas vaginalis,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Trichomonas vaginalis,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Trichomonas vaginalis,R00342,C00036,False
+Brenda,Michaelis constant,1.2,,0,mM,Mal_cyt,v31,Trichomonas vaginalis,R00342,C00149,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Trichomonas vaginalis,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Trichomonas vaginalis,R00342,C00004,False
+Brenda,Michaelis constant,1.0,,0,mM,Mal_cyt,v31,Trichomonas vaginalis,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Trichomonas vaginalis,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Mal_cyt,v31,Thermus thermophilus,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Thermus thermophilus,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Thermus thermophilus,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v31,Thermus thermophilus,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,Mal_cyt,v31,Thermus thermophilus,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Thermus thermophilus,R00342,C00004,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Rhodobacter capsulatus,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v31,Rhodobacter capsulatus,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Rhodobacter capsulatus,R00342,C00004,False
+Brenda,Michaelis constant,2.1,,0,mM,Mal_cyt,v31,Rhodobacter capsulatus,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Haloarcula marismortui,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Mycobacterium phlei,R00342,C00004,False
+Brenda,Michaelis constant,0.8,,0,mM,Mal_cyt,v31,Mycobacterium phlei,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Mycobacterium phlei,R00342,C00036,False
+Brenda,Michaelis constant,0.5,,0,mM,NAD,v31,Mycobacterium phlei,R00342,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Physarum polycephalum,R00342,C00036,False
+Brenda,Michaelis constant,0.2,,0,mM,NADH_cyt,v31,Physarum polycephalum,R00342,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,NAD,v31,Physarum polycephalum,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Physarum polycephalum,R00342,C00004,False
+Brenda,Michaelis constant,0.8,,0,mM,NAD,v31,Physarum polycephalum,R00342,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Physarum polycephalum,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Comamonas testosteroni,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Comamonas testosteroni,R00342,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,NAD,v31,Comamonas testosteroni,R00342,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Comamonas testosteroni,R00342,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,Mal_cyt,v31,Comamonas testosteroni,R00342,C00149,False
+Brenda,Michaelis constant,0.3,,0,mM,Mal_cyt,v31,Comamonas testosteroni,R00342,C00149,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Comamonas testosteroni,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Echinococcus granulosus,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Echinococcus granulosus,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Echinococcus granulosus,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v31,Echinococcus granulosus,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Echinococcus granulosus,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,Mal_cyt,v31,Echinococcus granulosus,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v31,Echinococcus granulosus,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v31,Echinococcus granulosus,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Echinococcus granulosus,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,Mal_cyt,v31,Echinococcus granulosus,R00342,C00149,False
+Brenda,Michaelis constant,0.1,,0,mM,Mal_cyt,v31,Echinococcus granulosus,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Echinococcus granulosus,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Mesembryanthemum crystallinum,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Mesembryanthemum crystallinum,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Mal_cyt,v31,Mesembryanthemum crystallinum,R00342,C00149,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD,v31,Mesembryanthemum crystallinum,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Mesembryanthemum crystallinum,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Methanospirillum hungatei,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Methanospirillum hungatei,R00342,C00004,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Methanospirillum hungatei,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v31,nan,R00342,C00003,False
+Brenda,Michaelis constant,5.6,,0,mM,Mal_cyt,v31,nan,R00342,C00149,False
+Brenda,Michaelis constant,0.2,,0,mM,NADP_p,v31,nan,R00342,C00006,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Bacillus subtilis,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Bacillus subtilis,R00342,C00004,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Bacillus subtilis,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Bacillus subtilis,R00342,C00003,False
+Brenda,Michaelis constant,0.9,,0,mM,Mal_cyt,v31,Bacillus subtilis,R00342,C00149,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD,v31,Ananas comosus,R00342,C00003,False
+Brenda,Michaelis constant,0.2,,0,mM,NAD,v31,Ananas comosus,R00342,C00003,False
+Brenda,Michaelis constant,0.5,,0,mM,Mal_cyt,v31,Ananas comosus,R00342,C00149,False
+Brenda,Michaelis constant,0.3,,0,mM,OXA_cyt,v31,Ananas comosus,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Ananas comosus,R00342,C00004,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Ananas comosus,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Ananas comosus,R00342,C00004,False
+Brenda,Michaelis constant,0.6,,0,mM,NAD,v31,Anthocidaris crassispina,R00342,C00003,False
+Brenda,Michaelis constant,7.0,,0,mM,Mal_cyt,v31,Anthocidaris crassispina,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,nan,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,nan,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Gallus sp.,R00342,C00036,False
+Brenda,Michaelis constant,8.0,,0,mM,Mal_cyt,v31,Drosophila virilis,R00342,C00149,False
+Brenda,Michaelis constant,20.0,,0,mM,Mal_cyt,v31,Drosophila virilis,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Drosophila virilis,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Haemophilus parasuis,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Haemophilus parasuis,R00342,C00004,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v31,Haemophilus parasuis,R00342,C00003,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD,v31,Escherichia coli,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Escherichia coli,R00342,C00036,False
+Brenda,Michaelis constant,0.5,,0,mM,NAD,v31,Escherichia coli,R00342,C00003,False
+Brenda,Michaelis constant,5.3,,0,mM,Mal_cyt,v31,Escherichia coli,R00342,C00149,False
+Brenda,Michaelis constant,0.3,,0,mM,OXA_cyt,v31,Escherichia coli,R00342,C00036,False
+Brenda,Michaelis constant,6.8,,0,mM,Mal_cyt,v31,Escherichia coli,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Escherichia coli,R00342,C00036,False
+Brenda,Michaelis constant,0.4,,0,mM,NAD,v31,Escherichia coli,R00342,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Escherichia coli,R00342,C00004,False
+Brenda,Michaelis constant,0.6,,0,mM,OXA_cyt,v31,Escherichia coli,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v31,Escherichia coli,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Escherichia coli,R00342,C00004,False
+Brenda,Michaelis constant,2.6,,0,mM,Mal_cyt,v31,Escherichia coli,R00342,C00149,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Escherichia coli,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Escherichia coli,R00342,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Escherichia coli,R00342,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v31,Escherichia coli,R00342,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,Mal_cyt,v31,Acinetobacter lwoffii,R00342,C00149,False
+Brenda,Michaelis constant,0.4,,0,mM,NAD,v31,Acinetobacter lwoffii,R00342,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v31,Acinetobacter lwoffii,R00342,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v31,Acinetobacter lwoffii,R00342,C00004,False
+yeastGFP,concentration of enzyme,3320.0,,0,molecules/cell,nan,v34,Saccharomyces cerevisiae,R04433,nan,False
+Brenda,substrate catalytic rate constant,6.6,,0,1/s,nan,v34,Homo sapiens,R04433,C05377,False
+Brenda,substrate catalytic rate constant,74.3,,0,1/s,nan,v34,Homo sapiens,R04433,C15494,False
+Brenda,substrate catalytic rate constant,59.9,,0,1/s,nan,v34,Homo sapiens,R04433,C15494,False
+Brenda,substrate catalytic rate constant,33.5,,0,1/s,nan,v34,Homo sapiens,R04433,C00399,False
+Brenda,substrate catalytic rate constant,21.4,,0,1/s,nan,v34,Homo sapiens,R04433,C04253,False
+Brenda,substrate catalytic rate constant,35.5,,0,1/s,nan,v34,Homo sapiens,R04433,C00399,False
+Brenda,substrate catalytic rate constant,81.4,,0,1/s,nan,v34,Homo sapiens,R04433,C04253,False
+Brenda,substrate catalytic rate constant,84.0,,0,1/s,nan,v34,Sus scrofa,R04433,C00399,False
+Brenda,substrate catalytic rate constant,115.0,,0,1/s,nan,v34,Sus scrofa,R04433,C00399,False
+Brenda,substrate catalytic rate constant,182.0,,0,1/s,nan,v34,Sus scrofa,R04433,C00399,False
+Brenda,substrate catalytic rate constant,162.0,,0,1/s,nan,v34,Sus scrofa,R04433,C00399,False
+Brenda,substrate catalytic rate constant,90.0,,0,1/s,nan,v34,Sus scrofa,R04433,C04253,False
+Brenda,substrate catalytic rate constant,200.0,,0,1/s,nan,v34,Sus scrofa,R04433,C04253,False
+Brenda,substrate catalytic rate constant,132.0,,0,1/s,nan,v34,Sus scrofa,R04433,C00399,False
+Brenda,substrate catalytic rate constant,210.0,,0,1/s,nan,v34,Sus scrofa,R04433,C00399,False
+Brenda,substrate catalytic rate constant,78.0,,0,1/s,nan,v34,Sus scrofa,R04433,C04253,False
+Brenda,substrate catalytic rate constant,246.0,,0,1/s,nan,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Homo sapiens,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Homo sapiens,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Homo sapiens,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Homo sapiens,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Homo sapiens,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Sus scrofa,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Sus scrofa,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Sus scrofa,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Sus scrofa,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Sus scrofa,R04433,C04253,False
+Brenda,Michaelis constant,0.1,,0,mM,Q,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Sus scrofa,R04433,C04253,False
+Brenda,Michaelis constant,0.0,,0,mM,ETFox,v34,Sus scrofa,R04433,C04253,False
+Brenda,Michaelis constant,6900.0,,0,mM,Q,v34,Sus scrofa,R04433,C00399,False
+Brenda,Michaelis constant,5400.0,,0,mM,ETFox,v34,Sus scrofa,R04433,C04253,False
+yeastGFP,concentration of enzyme,10500.0,,0,molecules/cell,nan,v44,Saccharomyces cerevisiae,R00216,nan,False
+Brenda,inhibitory constant,2.6,,0,mM,Pyr,v44,Zea mays,R00216,C00022,False
+Brenda,inhibitory constant,4.7,,0,mM,Mal,v44,Zea mays,R00216,C00149,False
+Brenda,inhibitory constant,1.3,,0,mM,Pyr,v44,Zea mays,R00216,C00022,False
+Brenda,inhibitory constant,0.3,,0,mM,AMP,v44,Zea mays,R00216,C00020,False
+Brenda,inhibitory constant,0.4,,0,mM,AMP,v44,Zea mays,R00216,C00020,False
+Brenda,inhibitory constant,0.0,,0,mM,NADPH,v44,Ricinus communis,R00216,C00005,False
+Brenda,inhibitory constant,0.0,,0,mM,Pyr,v44,Ricinus communis,R00216,C00022,False
+Brenda,inhibitory constant,0.8,,0,mM,CO2,v44,Ricinus communis,R00216,C00011,False
+Brenda,inhibitory constant,0.4,,0,mM,CO2,v44,Ricinus communis,R00216,C00011,False
+Brenda,inhibitory constant,0.5,,0,mM,NADPH,v44,Ricinus communis,R00216,C00005,False
+Brenda,inhibitory constant,80.0,,0,mM,Asp_cyt,v44,Ascaris suum,R00216,C00049,False
+Brenda,inhibitory constant,58.0,,0,mM,Asp_cyt,v44,Ascaris suum,R00216,C00049,False
+Brenda,inhibitory constant,2.4,,0,mM,CoA_cyt,v44,Corynebacterium glutamicum,R00216,C00010,False
+Brenda,inhibitory constant,28.0,,0,mM,PEP,v44,Rattus norvegicus,R00216,C00074,False
+Brenda,inhibitory constant,1.3,,0,mM,Pyr,v44,Klebsiella aerogenes,R00216,C00022,False
+Brenda,inhibitory constant,2.1,,0,mM,Pyr,v44,Pseudomonas stutzeri,R00216,C00022,False
+Brenda,inhibitory constant,7.8,,0,mM,PEP,v44,Pseudomonas stutzeri,R00216,C00074,False
+yeastGFP,concentration of enzyme,35500.0,,0,molecules/cell,nan,v26,Saccharomyces cerevisiae,R00081,nan,False
+yeastGFP,concentration of enzyme,9410.0,,0,molecules/cell,nan,v26,Saccharomyces cerevisiae,R00081,nan,False
+yeastGFP,concentration of enzyme,12500.0,,0,molecules/cell,nan,v26,Saccharomyces cerevisiae,R00081,nan,False
+yeastGFP,concentration of enzyme,2250.0,,0,molecules/cell,nan,v26,Saccharomyces cerevisiae,R00081,nan,False
+yeastGFP,concentration of enzyme,1390.0,,0,molecules/cell,nan,v26,Saccharomyces cerevisiae,R00081,nan,False
+yeastGFP,concentration of enzyme,672.0,,0,molecules/cell,nan,v26,Saccharomyces cerevisiae,R00081,nan,False
+yeastGFP,concentration of enzyme,639.0,,0,molecules/cell,nan,v26,Saccharomyces cerevisiae,R00081,nan,False
+yeastGFP,concentration of enzyme,3670.0,,0,molecules/cell,nan,v26,Saccharomyces cerevisiae,R00081,nan,False
+Brenda,substrate catalytic rate constant,24.3,,0,1/s,nan,v26,Micrococcus luteus,R00081,C00200,False
+Brenda,inhibitory constant,0.0,,0,mM,Cytc2p,v26,Eukaryota,R00081,C00125,False
+Brenda,inhibitory constant,0.0,,0,mM,Cytc2p,v26,Eukaryota,R00081,C00125,False
+Brenda,inhibitory constant,0.0,,0,mM,Cytc2p,v26,Eukaryota,R00081,C00125,False
+Brenda,substrate catalytic rate constant,53.0,,0,1/s,nan,v26,nan,R00081,C00524,False
+Brenda,substrate catalytic rate constant,3.9,,0,1/s,nan,v26,nan,R00081,C00524,False
+Brenda,substrate catalytic rate constant,8.3,,0,1/s,nan,v26,nan,R00081,C00524,False
+Brenda,substrate catalytic rate constant,30.0,,0,1/s,nan,v26,Homo sapiens,R00081,C00524,False
+Brenda,substrate catalytic rate constant,80.0,,0,1/s,nan,v26,Homo sapiens,R00081,C00524,False
+Brenda,substrate catalytic rate constant,120.0,,0,1/s,nan,v26,Rattus norvegicus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,200.0,,0,1/s,nan,v26,Rattus norvegicus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,133.0,,0,1/s,nan,v26,Rattus norvegicus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,500.0,,0,1/s,nan,v26,Sus scrofa,R00081,C00524,False
+Brenda,substrate catalytic rate constant,540.0,,0,1/s,nan,v26,Sus scrofa,R00081,C00524,False
+Brenda,substrate catalytic rate constant,520.0,,0,1/s,nan,v26,Sus scrofa,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1500.0,,0,1/s,nan,v26,Saccharomyces cerevisiae,R00081,C00524,False
+Brenda,substrate catalytic rate constant,400.0,,0,1/s,nan,v26,Bos taurus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1000.0,,0,1/s,nan,v26,Triticum aestivum,R00081,C00524,False
+Brenda,substrate catalytic rate constant,300.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,91.0,,0,1/s,nan,v26,Pseudomonas sp.,R00081,C00524,False
+Brenda,substrate catalytic rate constant,158.0,,0,1/s,nan,v26,Dictyostelium discoideum,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1.6,,0,1/s,nan,v26,Nitrosomonas europaea,R00081,C00524,False
+Brenda,substrate catalytic rate constant,0.6,,0,1/s,nan,v26,Nitrosomonas europaea,R00081,C00524,False
+Brenda,substrate catalytic rate constant,14.0,,0,1/s,nan,v26,Nitrosomonas europaea,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1.8,,0,1/s,nan,v26,Nitrosomonas europaea,R00081,C00524,False
+Brenda,substrate catalytic rate constant,32.0,,0,1/s,nan,v26,Nitrosomonas europaea,R00081,C00524,False
+Brenda,substrate catalytic rate constant,336.0,,0,1/s,nan,v26,Nitrosomonas europaea,R00081,C00524,False
+Brenda,substrate catalytic rate constant,111.0,,0,1/s,nan,v26,Crithidia fasciculata,R00081,C00524,False
+Brenda,substrate catalytic rate constant,9.4,,0,1/s,nan,v26,Micrococcus luteus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,11.0,,0,1/s,nan,v26,Squalus acanthias,R00081,C00524,False
+Brenda,substrate catalytic rate constant,40.0,,0,1/s,nan,v26,Starkeya novella,R00081,C00524,False
+Brenda,substrate catalytic rate constant,90.0,,0,1/s,nan,v26,Paracoccus denitrificans,R00081,C00524,False
+Brenda,substrate catalytic rate constant,6.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,54.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1300.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,50.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,230.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,700.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,100.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,270.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1100.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,2000.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,180.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1400.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1200.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,220.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,400.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,600.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,590.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1600.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,1700.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,980.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,290.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,260.0,,0,1/s,nan,v26,Rhodobacter sphaeroides,R00081,C00524,False
+Brenda,substrate catalytic rate constant,160.0,,0,1/s,nan,v26,Nitrobacter winogradskyi,R00081,C00524,False
+Brenda,substrate catalytic rate constant,187.0,,0,1/s,nan,v26,Magnetospirillum magnetotacticum,R00081,C00524,False
+Brenda,substrate catalytic rate constant,66.0,,0,1/s,nan,v26,Erythrobacter longus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,24.0,,0,1/s,nan,v26,Erythrobacter longus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,36.0,,0,1/s,nan,v26,Sphyrna lewini,R00081,C00524,False
+Brenda,substrate catalytic rate constant,350.0,,0,1/s,nan,v26,Carcharhinus limbatus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,380.0,,0,1/s,nan,v26,Rhizoprionodon terraenovae,R00081,C00524,False
+Brenda,substrate catalytic rate constant,410.0,,0,1/s,nan,v26,Rhizoprionodon terraenovae,R00081,C00524,False
+Brenda,substrate catalytic rate constant,360.0,,0,1/s,nan,v26,Carcharhinus acronotus,R00081,C00524,False
+Brenda,substrate catalytic rate constant,30.0,,0,1/s,nan,v26,Eukaryota,R00081,C00524,False
+Brenda,substrate catalytic rate constant,50.0,,0,1/s,nan,v26,Eukaryota,R00081,C00524,False
+Brenda,substrate catalytic rate constant,2.1,,0,1/s,nan,v26,Bacillus subtilis,R00081,C00524,False
+Brenda,substrate catalytic rate constant,13.3,,0,1/s,nan,v26,Bacillus subtilis,R00081,C00524,False
+Brenda,substrate catalytic rate constant,8.0,,0,1/s,nan,v26,Bacillus subtilis,R00081,C00524,False
+Brenda,substrate catalytic rate constant,4.0,,0,1/s,nan,v26,Bacillus subtilis,R00081,C00524,False
+Brenda,substrate catalytic rate constant,5.0,,0,1/s,nan,v26,Bacillus subtilis,R00081,C00524,False
+Brenda,Michaelis constant,0.0,,0,mM,Cytc3p,v26,Bos taurus,R00081,C00126,False
+Brenda,Michaelis constant,0.0,,0,mM,Cytc3p,v26,Bos taurus,R00081,C00126,False
+Brenda,Michaelis constant,0.1,,0,mM,Cytc3p,v26,Sulfolobus acidocaldarius,R00081,C00126,False
+Brenda,Michaelis constant,0.1,,0,mM,Cytc3p,v26,Nitrobacter winogradskyi,R00081,C00126,False
+Brenda,Michaelis constant,0.0,,0,mM,Cytc3p,v26,Nitrobacter winogradskyi,R00081,C00126,False
+yeastGFP,concentration of enzyme,2620.0,,0,molecules/cell,nan,v41,Saccharomyces cerevisiae,R00267,nan,False
+Brenda,inhibitory constant,0.4,,0,mM,OXA,v41,Chlorobium limicola,R00267,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,NADPH_cyt,v41,Pisum sativum,R00267,C00005,False
+Brenda,inhibitory constant,0.1,,0,mM,NADH_cyt,v41,Pisum sativum,R00267,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,NADP_cyt,v41,Pisum sativum,R00267,C00006,False
+Brenda,inhibitory constant,0.0,,0,mM,IsoCitcyt,v41,Pisum sativum,R00267,C00311,False
+Brenda,inhibitory constant,1.0,,0,mM,OG_cyt,v41,Pisum sativum,R00267,C00026,False
+Brenda,inhibitory constant,0.0,,0,mM,NADPH_cyt,v41,Pisum sativum,R00267,C00005,False
+Brenda,inhibitory constant,0.0,,0,mM,IsoCitcyt,v41,Pisum sativum,R00267,C00311,False
+Brenda,inhibitory constant,0.1,,0,mM,NADH_cyt,v41,Pisum sativum,R00267,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,NADP_cyt,v41,Pisum sativum,R00267,C00006,False
+Brenda,inhibitory constant,0.1,,0,mM,OG_cyt,v41,Fomitopsis palustris,R00267,C00026,False
+Brenda,inhibitory constant,11.0,,0,mM,NAD,v41,Sus scrofa,R00267,C00003,False
+Brenda,inhibitory constant,12.0,,0,mM,NAD,v41,Sus scrofa,R00267,C00003,False
+Brenda,inhibitory constant,8.0,,0,mM,NAD,v41,Sus scrofa,R00267,C00003,False
+yeastGFP,concentration of enzyme,450.0,,0,molecules/cell,nan,v28,Saccharomyces cerevisiae,R00085,nan,False
+yeastGFP,concentration of enzyme,17000.0,,0,molecules/cell,nan,v36,Saccharomyces cerevisiae,R00344,nan,False
+yeastGFP,concentration of enzyme,12500.0,,0,molecules/cell,nan,v36,Saccharomyces cerevisiae,R00344,nan,False
+Brenda,substrate catalytic rate constant,0.1,,0,1/s,nan,v36,Saccharomyces cerevisiae,R00344,C00169,False
+Brenda,substrate catalytic rate constant,0.1,,0,1/s,nan,v36,Saccharomyces cerevisiae,R00344,C00169,False
+Brenda,substrate catalytic rate constant,0.0,,0,1/s,nan,v36,Saccharomyces cerevisiae,R00344,C00169,False
+Brenda,inhibitory constant,0.2,,0,mM,OXA,v36,Sinorhizobium meliloti,R00344,C00036,False
+Brenda,Michaelis constant,0.5,,0,mM,Pyr,v36,Gallus gallus,R00344,C00022,False
+Brenda,Michaelis constant,0.3,,0,mM,Pyr,v36,Gallus gallus,R00344,C00022,False
+Brenda,Michaelis constant,0.3,,0,mM,Pyr,v36,Mycobacterium smegmatis,R00344,C00022,False
+Brenda,Michaelis constant,0.1,,0,mM,Pyr,v36,Geobacillus stearothermophilus,R00344,C00022,False
+Brenda,Michaelis constant,0.1,,0,mM,Pyr,v36,Phycomyces blakesleeanus,R00344,C00022,False
+Brenda,Michaelis constant,0.2,,0,mM,Pyr,v36,Pseudomonas fluorescens,R00344,C00022,False
+Brenda,Michaelis constant,1.9,,0,mM,Pyr,v36,Arthrobacter globiformis,R00344,C00022,False
+Brenda,Michaelis constant,0.2,,0,mM,Pyr,v36,nan,R00344,C00022,False
+Brenda,Michaelis constant,0.3,,0,mM,Pyr,v36,Apis mellifera,R00344,C00022,False
+Brenda,Michaelis constant,0.5,,0,mM,Pyr,v36,Methanocaldococcus jannaschii,R00344,C00022,False
+Brenda,Michaelis constant,0.3,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,0.4,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,0.5,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,0.3,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,0.3,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,1.2,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,0.6,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,0.4,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,0.0,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,1.2,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,1.6,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,16.2,,0,mM,Pyr,v36,Geobacillus thermodenitrificans,R00344,C00022,False
+Brenda,Michaelis constant,0.1,,0,mM,Pyr,v36,Homo sapiens,R00344,C00022,False
+Brenda,Michaelis constant,0.2,,0,mM,Pyr,v36,Homo sapiens,R00344,C00022,False
+Brenda,Michaelis constant,0.2,,0,mM,Pyr,v36,Homo sapiens,R00344,C00022,False
+Brenda,Michaelis constant,0.1,,0,mM,Pyr,v36,Homo sapiens,R00344,C00022,False
+Brenda,Michaelis constant,0.5,,0,mM,Pyr,v36,Saccharomyces cerevisiae,R00344,C00022,False
+Brenda,Michaelis constant,0.5,,0,mM,Pyr,v36,Saccharomyces cerevisiae,R00344,C00022,False
+Brenda,Michaelis constant,0.5,,0,mM,Pyr,v36,Saccharomyces cerevisiae,R00344,C00022,False
+yeastGFP,concentration of enzyme,89800.0,,0,molecules/cell,nan,v2,Saccharomyces cerevisiae,R00756,nan,False
+yeastGFP,concentration of enzyme,90200.0,,0,molecules/cell,nan,v2,Saccharomyces cerevisiae,R00756,nan,False
+Brenda,inhibitory constant,0.4,,0,mM,Cit_cyt,v2,Aspergillus niger,R00756,C00158,False
+Brenda,inhibitory constant,0.3,,0,mM,Cit_cyt,v2,Aspergillus niger,R00756,C00158,False
+Brenda,inhibitory constant,0.2,,0,mM,PEP,v2,Aspergillus niger,R00756,C00074,False
+Brenda,inhibitory constant,0.8,,0,mM,PEP,v2,Mus musculus,R00756,C00074,False
+Brenda,inhibitory constant,1.3,,0,mM,Cit_cyt,v2,Citrus x paradisi,R00756,C00158,False
+Brenda,inhibitory constant,3.9,,0,mM,OG_cyt,v2,Citrus x paradisi,R00756,C00026,False
+Brenda,inhibitory constant,3.2,,0,mM,Suc,v2,Citrus x paradisi,R00756,C00042,False
+Brenda,inhibitory constant,3.6,,0,mM,IsoCitcyt,v2,Citrus x paradisi,R00756,C00311,False
+Brenda,inhibitory constant,0.2,,0,mM,IsoCitcyt,v2,Rattus norvegicus,R00756,C00311,False
+Brenda,inhibitory constant,1.5,,0,mM,Suc,v2,Rattus norvegicus,R00756,C00042,False
+Brenda,inhibitory constant,0.0,,0,mM,Cit_cyt,v2,Rattus norvegicus,R00756,C00158,False
+Brenda,inhibitory constant,0.8,,0,mM,PEP,v2,nan,R00756,C00074,False
+Brenda,inhibitory constant,2.4,,0,mM,Cit_cyt,v2,nan,R00756,C00158,False
+NIST,equilibrium constant,1000.0,,0,dimensionless,nan,v2,nan,R00756,nan,False
+NIST,equilibrium constant,150.0,,0,dimensionless,nan,v2,nan,R00756,nan,False
+NIST,equilibrium constant,2290.0,,0,dimensionless,nan,v2,nan,R00756,nan,False
+NIST,equilibrium constant,2700.0,,0,dimensionless,nan,v2,nan,R00756,nan,False
+NIST,equilibrium constant,2800.0,,0,dimensionless,nan,v2,nan,R00756,nan,False
+NIST,equilibrium constant,2900.0,,0,dimensionless,nan,v2,nan,R00756,nan,False
+NIST,equilibrium constant,4800.0,,0,dimensionless,nan,v2,nan,R00756,nan,False
+NIST,equilibrium constant,800.0,,0,dimensionless,nan,v2,nan,R00756,nan,False
+yeastGFP,concentration of enzyme,3480.0,,0,molecules/cell,nan,v20,Saccharomyces cerevisiae,R00258,nan,False
+yeastGFP,concentration of enzyme,9960.0,,0,molecules/cell,nan,v20,Saccharomyces cerevisiae,R00258,nan,False
+Brenda,inhibitory constant,17.0,,0,mM,Suc,v20,Trichoderma viride,R00258,C00042,False
+NIST,equilibrium constant,0.5,,0,dimensionless,nan,v20,nan,R00258,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v20,nan,R00258,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v20,nan,R00258,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v20,nan,R00258,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v20,nan,R00258,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v20,nan,R00258,nan,False
+NIST,equilibrium constant,0.8,,0,dimensionless,nan,v20,nan,R00258,nan,False
+NIST,equilibrium constant,1.0,,0,dimensionless,nan,v20,nan,R00258,nan,False
+NIST,equilibrium constant,2.2,,0,dimensionless,nan,v20,nan,R00258,nan,False
+Brenda,Michaelis constant,0.1,,0,mM,OG,v20,Chlamydomonas reinhardtii,R00258,C00026,False
+Brenda,Michaelis constant,2.7,,0,mM,Ala,v20,Chlamydomonas reinhardtii,R00258,C00041,False
+Brenda,Michaelis constant,0.2,,0,mM,Pyr,v20,Chlamydomonas reinhardtii,R00258,C00022,False
+Brenda,Michaelis constant,0.5,,0,mM,Glu,v20,Chlamydomonas reinhardtii,R00258,C00025,False
+Brenda,Michaelis constant,1.6,,0,mM,OG,v20,Schistocerca gregaria,R00258,C00026,False
+Brenda,Michaelis constant,19.1,,0,mM,Ala,v20,Schistocerca gregaria,R00258,C00041,False
+Brenda,Michaelis constant,0.2,,0,mM,OG,v20,nan,R00258,C00026,False
+Brenda,Michaelis constant,6.9,,0,mM,Ala,v20,nan,R00258,C00041,False
+Brenda,Michaelis constant,0.1,,0,mM,Pyr,v20,Lycopersicon esculentum,R00258,C00022,False
+Brenda,Michaelis constant,0.3,,0,mM,OG,v20,Lycopersicon esculentum,R00258,C00026,False
+Brenda,Michaelis constant,0.2,,0,mM,Pyr,v20,Candida maltosa,R00258,C00022,False
+Brenda,Michaelis constant,0.4,,0,mM,OG,v20,Candida maltosa,R00258,C00026,False
+Brenda,Michaelis constant,2.6,,0,mM,Ala,v20,Candida maltosa,R00258,C00041,False
+Brenda,Michaelis constant,6.3,,0,mM,Glu,v20,Candida maltosa,R00258,C00025,False
+Brenda,Michaelis constant,0.2,,0,mM,OG,v20,Panicum miliaceum,R00258,C00026,False
+Brenda,Michaelis constant,0.3,,0,mM,Pyr,v20,Panicum miliaceum,R00258,C00022,False
+Brenda,Michaelis constant,0.3,,0,mM,OG,v20,Clarias batrachus,R00258,C00026,False
+Brenda,Michaelis constant,18.5,,0,mM,Ala,v20,Clarias batrachus,R00258,C00041,False
+Brenda,Michaelis constant,0.2,,0,mM,OG,v20,Homo sapiens,R00258,C00026,False
+Brenda,Michaelis constant,0.2,,0,mM,OG,v20,Homo sapiens,R00258,C00026,False
+Brenda,Michaelis constant,5.1,,0,mM,Ala,v20,Homo sapiens,R00258,C00041,False
+Brenda,Michaelis constant,8.3,,0,mM,Ala,v20,Trichoderma viride,R00258,C00041,False
+Brenda,Michaelis constant,1.9,,0,mM,OG,v20,Trichoderma viride,R00258,C00026,False
+Brenda,Michaelis constant,0.3,,0,mM,OG,v20,Atriplex spongiosa,R00258,C00026,False
+Brenda,Michaelis constant,0.0,,0,mM,Pyr,v20,Atriplex spongiosa,R00258,C00022,False
+Brenda,Michaelis constant,0.0,,0,mM,Pyr,v20,Atriplex spongiosa,R00258,C00022,False
+Brenda,Michaelis constant,0.1,,0,mM,OG,v20,Atriplex spongiosa,R00258,C00026,False
+Brenda,Michaelis constant,0.5,,0,mM,Pyr,v20,Atriplex spongiosa,R00258,C00022,False
+Brenda,Michaelis constant,0.0,,0,mM,OG,v20,Atriplex spongiosa,R00258,C00026,False
+Brenda,Michaelis constant,0.9,,0,mM,Pyr,v20,Lagenorhynchus obliquidens,R00258,C00022,False
+Brenda,Michaelis constant,0.5,,0,mM,OG,v20,Lagenorhynchus obliquidens,R00258,C00026,False
+Brenda,Michaelis constant,8.2,,0,mM,Ala,v20,Lagenorhynchus obliquidens,R00258,C00041,False
+Brenda,Michaelis constant,0.9,,0,mM,OG,v20,Pyrococcus furiosus,R00258,C00026,False
+Brenda,Michaelis constant,1.1,,0,mM,OG,v20,Pyrococcus furiosus,R00258,C00026,False
+Brenda,Michaelis constant,5.4,,0,mM,Pyr,v20,Pyrococcus furiosus,R00258,C00022,False
+Brenda,Michaelis constant,5.6,,0,mM,Pyr,v20,Pyrococcus furiosus,R00258,C00022,False
+Brenda,Michaelis constant,3.2,,0,mM,Ala,v20,Pyrococcus furiosus,R00258,C00041,False
+Brenda,Michaelis constant,0.3,,0,mM,OG,v20,Labeo rohita,R00258,C00026,False
+Brenda,Michaelis constant,23.6,,0,mM,Ala,v20,Labeo rohita,R00258,C00041,False
+Brenda,Michaelis constant,0.4,,0,mM,OG,v20,Sus scrofa,R00258,C00026,False
+Brenda,Michaelis constant,0.4,,0,mM,Pyr,v20,Sus scrofa,R00258,C00022,False
+Brenda,Michaelis constant,0.5,,0,mM,Pyr,v20,Bos taurus,R00258,C00022,False
+Brenda,Michaelis constant,0.0,,0,mM,OG,v20,Bos taurus,R00258,C00026,False
+Brenda,Michaelis constant,0.7,,0,mM,OG,v20,Bos taurus,R00258,C00026,False
+Brenda,Michaelis constant,0.6,,0,mM,Ala,v20,Bos taurus,R00258,C00041,False
+Brenda,Michaelis constant,6.6,,0,mM,Glu,v20,Bos taurus,R00258,C00025,False
+Brenda,Michaelis constant,30.3,,0,mM,Ala,v20,Bos taurus,R00258,C00041,False
+Brenda,Michaelis constant,0.2,,0,mM,OG,v20,Bombyx mori,R00258,C00026,False
+Brenda,Michaelis constant,1.4,,0,mM,OG,v20,Oryctolagus cuniculus,R00258,C00026,False
+Brenda,Michaelis constant,0.5,,0,mM,OG,v20,Oryctolagus cuniculus,R00258,C00026,False
+Brenda,Michaelis constant,0.1,,0,mM,Pyr,v20,Hordeum vulgare,R00258,C00022,False
+Brenda,Michaelis constant,5.0,,0,mM,OG,v20,Hordeum vulgare,R00258,C00026,False
+yeastGFP,concentration of enzyme,2310.0,,0,molecules/cell,nan,v27,Saccharomyces cerevisiae,R00351,nan,False
+Brenda,product catalytic rate constant,78.0,,0,1/s,nan,v27,Acinetobacter calcoaceticus subsp. anitratus,R00351,C00024,False
+Brenda,product catalytic rate constant,0.2,,0,1/s,nan,v27,Thermoplasma acidophilum,R00351,C00024,False
+Brenda,product catalytic rate constant,0.0,,0,1/s,nan,v27,Thermoplasma acidophilum,R00351,C00024,False
+Brenda,product catalytic rate constant,170.0,,0,1/s,nan,v27,Azotobacter vinelandii,R00351,C00036,False
+Brenda,product catalytic rate constant,174.0,,0,1/s,nan,v27,Azotobacter vinelandii,R00351,C00024,False
+Brenda,product catalytic rate constant,111.0,,0,1/s,nan,v27,Azotobacter vinelandii,R00351,C00036,False
+Brenda,product catalytic rate constant,18.0,,0,1/s,nan,v27,Arthrobacter sp.,R00351,C00024,False
+Brenda,product catalytic rate constant,15.0,,0,1/s,nan,v27,Arthrobacter sp.,R00351,C00024,False
+Brenda,product catalytic rate constant,7.0,,0,1/s,nan,v27,Arthrobacter sp.,R00351,C00024,False
+Brenda,product catalytic rate constant,13.0,,0,1/s,nan,v27,Arthrobacter sp.,R00351,C00024,False
+Brenda,product catalytic rate constant,21.0,,0,1/s,nan,v27,nan,R00351,C00024,False
+Brenda,product catalytic rate constant,22.0,,0,1/s,nan,v27,nan,R00351,C00024,False
+Brenda,product catalytic rate constant,3.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,3.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,81.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,81.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,84.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,84.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,67.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,67.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,121.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,121.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,54.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,54.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,95.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,95.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,118.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,118.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,108.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,108.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,124.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00024,False
+Brenda,product catalytic rate constant,124.0,,0,1/s,nan,v27,Escherichia coli,R00351,C00036,False
+Brenda,product catalytic rate constant,167.0,,0,1/s,nan,v27,Sus scrofa,R00351,C00036,False
+Brenda,product catalytic rate constant,0.3,,0,1/s,nan,v27,Sus scrofa,R00351,C00036,False
+Brenda,substrate catalytic rate constant,6.0,,0,1/s,nan,v27,Arthrobacter sp.,R00351,C00100,False
+Brenda,substrate catalytic rate constant,8.0,,0,1/s,nan,v27,Arthrobacter sp.,R00351,C00100,False
+Brenda,substrate catalytic rate constant,4.0,,0,1/s,nan,v27,Arthrobacter sp.,R00351,C00100,False
+Brenda,substrate catalytic rate constant,12.0,,0,1/s,nan,v27,nan,R00351,C00100,False
+Brenda,inhibitory constant,0.3,,0,mM,OG_cyt,v27,Methanosarcina barkeri,R00351,C00026,False
+Brenda,inhibitory constant,0.1,,0,mM,NADH_cyt,v27,Methanosarcina barkeri,R00351,C00004,False
+Brenda,inhibitory constant,0.1,,0,mM,CoA_cyt,v27,Dictyostelium discoideum,R00351,C00010,False
+Brenda,inhibitory constant,10.0,,0,mM,NADH_cyt,v27,Halobacterium salinarum,R00351,C00004,False
+Brenda,inhibitory constant,20.0,,0,mM,OG_cyt,v27,Haloferax volcanii,R00351,C00026,False
+Brenda,inhibitory constant,5.2,,0,mM,NADH_cyt,v27,Natronomonas pharaonis,R00351,C00004,False
+Brenda,inhibitory constant,0.4,,0,mM,OG_cyt,v27,Drosophila melanogaster,R00351,C00026,False
+Brenda,inhibitory constant,3.2,,0,mM,NADH_cyt,v27,Natronobacterium gregoryi,R00351,C00004,False
+Brenda,inhibitory constant,2.2,,0,mM,OG_cyt,v27,Sulfolobus acidocaldarius,R00351,C00026,False
+Brenda,inhibitory constant,4.4,,0,mM,NADH_cyt,v27,Sulfolobus acidocaldarius,R00351,C00004,False
+Brenda,inhibitory constant,0.8,,0,mM,NADPH,v27,Sulfolobus acidocaldarius,R00351,C00005,False
+Brenda,inhibitory constant,4.6,,0,mM,NADH_cyt,v27,Sulfolobus acidocaldarius,R00351,C00004,False
+Brenda,inhibitory constant,5.4,,0,mM,OG_cyt,v27,Thermoplasma acidophilum,R00351,C00026,False
+Brenda,inhibitory constant,5.4,,0,mM,NADH_cyt,v27,Thermoplasma acidophilum,R00351,C00004,False
+Brenda,inhibitory constant,4.9,,0,mM,NADPH,v27,Thermoplasma acidophilum,R00351,C00005,False
+Brenda,inhibitory constant,10.4,,0,mM,NADH_cyt,v27,Thermoplasma acidophilum,R00351,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,NADH_cyt,v27,Azotobacter vinelandii,R00351,C00004,False
+Brenda,inhibitory constant,0.7,,0,mM,NADH_cyt,v27,Azotobacter vinelandii,R00351,C00004,False
+Brenda,inhibitory constant,0.4,,0,mM,NADH_cyt,v27,Hyphomicrobium sp.,R00351,C00004,False
+Brenda,inhibitory constant,3.5,,0,mM,NADH_cyt,v27,Sulfolobus solfataricus,R00351,C00004,False
+Brenda,inhibitory constant,3.0,,0,mM,NADH_cyt,v27,Sulfolobus solfataricus,R00351,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.4,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.1,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.2,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.8,,0,mM,OG_cyt,v27,Escherichia coli,R00351,C00026,False
+Brenda,inhibitory constant,0.0,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.1,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,inhibitory constant,0.6,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.8,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.1,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.2,,0,mM,NADH_cyt,v27,Escherichia coli,R00351,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,NADH_cyt,v27,Mesorhizobium ciceri,R00351,C00004,False
+Brenda,substrate catalytic rate constant,942.0,,0,1/s,nan,v27,Acinetobacter calcoaceticus subsp. anitratus,R00351,C00158,False
+Brenda,substrate catalytic rate constant,2100.0,,0,1/s,nan,v27,Azotobacter vinelandii,R00351,C00158,False
+Brenda,substrate catalytic rate constant,117.0,,0,1/s,nan,v27,Sus scrofa,R00351,C00158,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v27,nan,R00351,nan,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Methanosarcina barkeri,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Methanosarcina barkeri,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Saccharomyces cerevisiae,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Saccharomyces cerevisiae,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Saccharomyces cerevisiae,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Saccharomyces cerevisiae,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Tetrahymena pyriformis,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Tetrahymena pyriformis,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Pisum sativum,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Pisum sativum,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Pyrococcus furiosus,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Pyrococcus furiosus,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Bacillus megaterium,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Bacillus megaterium,R00351,C00036,False
+Brenda,Michaelis constant,0.9,,0,mM,Acetyl_CoA_cyt,v27,Pseudomonas aeruginosa,R00351,C00024,False
+Brenda,Michaelis constant,1.0,,0,mM,OXA_cyt,v27,Pseudomonas aeruginosa,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Pseudomonas aeruginosa,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Pseudomonas aeruginosa,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v27,Pseudomonas sp.,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Pseudomonas sp.,R00351,C00024,False
+Brenda,Michaelis constant,0.5,,0,mM,Acetyl_CoA_cyt,v27,Pseudomonas sp.,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Acinetobacter calcoaceticus subsp. anitratus,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Acinetobacter calcoaceticus subsp. anitratus,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Acinetobacter calcoaceticus subsp. anitratus,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Dictyostelium discoideum,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v27,Halobacterium salinarum,R00351,C00036,False
+Brenda,Michaelis constant,0.2,,0,mM,Acetyl_CoA_cyt,v27,Halobacterium salinarum,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Haloferax volcanii,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Haloferax volcanii,R00351,C00024,False
+Brenda,Michaelis constant,0.2,,0,mM,OXA_cyt,v27,Natronomonas pharaonis,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Drosophila melanogaster,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Drosophila melanogaster,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v27,Natronobacterium gregoryi,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Thermoplasma acidophilum,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Thermoplasma acidophilum,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Thermoplasma acidophilum,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Thermoplasma acidophilum,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Thermoplasma acidophilum,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Azotobacter vinelandii,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Lycopersicon esculentum,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Lycopersicon esculentum,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Arthrobacter sp.,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Arthrobacter sp.,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Arthrobacter sp.,R00351,C00024,False
+Brenda,Michaelis constant,1.2,,0,mM,Acetyl_CoA_cyt,v27,Arthrobacter sp.,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Arthrobacter sp.,R00351,C00036,False
+Brenda,Michaelis constant,0.2,,0,mM,Acetyl_CoA_cyt,v27,Arthrobacter sp.,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,nan,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Cupriavidus necator,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v27,Cupriavidus necator,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Hyphomicrobium sp.,R00351,C00024,False
+Brenda,Michaelis constant,0.6,,0,mM,Acetyl_CoA_cyt,v27,Bacillus subtilis,R00351,C00024,False
+Brenda,Michaelis constant,0.4,,0,mM,Acetyl_CoA_cyt,v27,Nitrobacter winogradskyi,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Nitrobacter winogradskyi,R00351,C00036,False
+Brenda,Michaelis constant,10.0,,0,mM,Acetyl_CoA_cyt,v27,Yarrowia lipolytica,R00351,C00024,False
+Brenda,Michaelis constant,5.0,,0,mM,OXA_cyt,v27,Yarrowia lipolytica,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Methylobacterium extorquens,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Anthocidaris crassispina,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Anthocidaris crassispina,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.2,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.2,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.7,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Escherichia coli,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.2,,0,mM,Acetyl_CoA_cyt,v27,Escherichia coli,R00351,C00024,False
+Brenda,Michaelis constant,0.3,,0,mM,Acetyl_CoA_cyt,v27,Halobacterium salinarum,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v27,Agave americana,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,nan,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,OXA_cyt,v27,nan,R00351,C00036,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Gluconacetobacter europaeus,R00351,C00024,False
+Brenda,Michaelis constant,0.2,,0,mM,Acetyl_CoA_cyt,v27,Nitrosomonas sp.,R00351,C00024,False
+Brenda,Michaelis constant,0.2,,0,mM,Acetyl_CoA_cyt,v27,Mesorhizobium ciceri,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Mesorhizobium ciceri,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Emericella nidulans,R00351,C00024,False
+Brenda,Michaelis constant,0.6,,0,mM,OXA_cyt,v27,Emericella nidulans,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Geobacter sulfurreducens,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Geobacter sulfurreducens,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Geobacter sulfurreducens,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Geobacter sulfurreducens,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,Sus scrofa,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Sus scrofa,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,Sus scrofa,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,Acetyl_CoA_cyt,v27,Sus scrofa,R00351,C00024,False
+Brenda,Michaelis constant,0.1,,0,mM,Acetyl_CoA_cyt,v27,nan,R00351,C00024,False
+Brenda,Michaelis constant,0.0,,0,mM,CoA_cyt,v27,nan,R00351,C00010,False
+Brenda,Michaelis constant,0.0,,0,mM,OXA_cyt,v27,nan,R00351,C00036,False
+Brenda,Michaelis constant,0.0,,0,mM,CoA_cyt,v27,nan,R00351,C00010,False
+yeastGFP,concentration of enzyme,6920.0,,0,molecules/cell,nan,v17,Saccharomyces cerevisiae,R01082,nan,False
+Brenda,product catalytic rate constant,690.0,,0,1/s,nan,v17,nan,R01082,C00122,False
+Brenda,product catalytic rate constant,51.7,,0,1/s,nan,v17,Escherichia coli,R01082,C00122,False
+Brenda,substrate catalytic rate constant,540.0,,0,1/s,nan,v17,nan,R01082,C00711,False
+Brenda,substrate catalytic rate constant,11.2,,0,1/s,nan,v17,Escherichia coli,R01082,C00711,False
+NIST,equilibrium constant,0.5,,0,dimensionless,nan,v17,nan,R01082,nan,False
+NIST,equilibrium constant,0.4,,0,dimensionless,nan,v17,nan,R01082,nan,False
+NIST,equilibrium constant,0.3,,0,dimensionless,nan,v17,nan,R01082,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v17,nan,R01082,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,v17,nan,R01082,nan,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v17,nan,R01082,nan,False
+Brenda,Michaelis constant,0.3,,0,mM,Fum,v17,nan,R01082,C00122,False
+Brenda,Michaelis constant,2.4,,0,mM,Mal,v17,nan,R01082,C00149,False
+Brenda,Michaelis constant,0.1,,0,mM,Fum,v17,Sulfolobus solfataricus,R01082,C00122,False
+Brenda,Michaelis constant,0.1,,0,mM,Mal,v17,Escherichia coli,R01082,C00149,False
+Brenda,Michaelis constant,0.6,,0,mM,Fum,v17,Escherichia coli,R01082,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Mal,v17,Escherichia coli,R01082,C00149,False
+Brenda,Michaelis constant,1.7,,0,mM,Fum,v17,Escherichia coli,R01082,C00122,False
+Brenda,Michaelis constant,0.2,,0,mM,Fum,v17,Escherichia coli,R01082,C00122,False
+Brenda,Michaelis constant,0.4,,0,mM,Fum,v17,Escherichia coli,R01082,C00122,False
+Brenda,Michaelis constant,2.9,,0,mM,Mal,v17,Escherichia coli,R01082,C00149,False
+Brenda,Michaelis constant,8.8,,0,mM,Fum,v17,Campylobacter jejuni,R01082,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Fum,v17,Rattus norvegicus,R01082,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Fum,v17,Sus scrofa,R01082,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Fum,v17,Sus scrofa,R01082,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Mal,v17,Sus scrofa,R01082,C00149,False
+Brenda,Michaelis constant,0.1,,0,mM,Fum,v17,Sus scrofa,R01082,C00122,False
+Brenda,Michaelis constant,0.1,,0,mM,Fum,v17,Sus scrofa,R01082,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Fum,v17,Euglena gracilis,R01082,C00122,False
+yeastGFP,concentration of enzyme,7600.0,,0,molecules/cell,nan,v35,Saccharomyces cerevisiae,R00115,nan,False
+Brenda,inhibitory constant,0.1,,0,mM,NADP_p,v35,Homo sapiens,R00115,C00006,False
+Brenda,inhibitory constant,0.1,,0,mM,FAD,v35,Homo sapiens,R00115,C00016,False
+Brenda,inhibitory constant,0.1,,0,mM,NADP_p,v35,Homo sapiens,R00115,C00006,False
+Brenda,inhibitory constant,0.5,,0,mM,NADH_cyt,v35,Homo sapiens,R00115,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,NADP_p,v35,Homo sapiens,R00115,C00006,False
+Brenda,inhibitory constant,0.0,,0,mM,NADP_p,v35,Homo sapiens,R00115,C00006,False
+Brenda,inhibitory constant,0.0,,0,mM,NADPH,v35,Homo sapiens,R00115,C00005,False
+Brenda,inhibitory constant,0.1,,0,mM,NADP_p,v35,Homo sapiens,R00115,C00006,False
+Brenda,inhibitory constant,0.0,,0,mM,NADP_p,v35,Homo sapiens,R00115,C00006,False
+NIST,equilibrium constant,0.1,,0,dimensionless,nan,v35,nan,R00115,nan,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v35,nan,R00115,nan,False
+yeastGFP,concentration of enzyme,21100.0,,0,molecules/cell,nan,v1,Saccharomyces cerevisiae,R00299,nan,False
+yeastGFP,concentration of enzyme,40800.0,,0,molecules/cell,nan,v1,Saccharomyces cerevisiae,R00299,nan,False
+yeastGFP,concentration of enzyme,114000.0,,0,molecules/cell,nan,v1,Saccharomyces cerevisiae,R00299,nan,False
+Brenda,inhibitory constant,0.2,,0,mM,Cit_cyt,v1,Aspergillus niger,R00299,C00158,False
+Brenda,inhibitory constant,0.0,,0,mM,AMP,v1,Entamoeba histolytica,R00299,C00020,False
+Brenda,inhibitory constant,0.0,,0,mM,AMP,v1,Entamoeba histolytica,R00299,C00020,False
+Brenda,inhibitory constant,0.9,,0,mM,F6P,v1,Bubalus bubalis,R00299,C00085,False
+Brenda,inhibitory constant,17.9,,0,mM,Pi,v1,Bubalus bubalis,R00299,C00009,False
+Brenda,inhibitory constant,33.0,,0,mM,Pi,v1,Homo sapiens,R00299,C00009,False
+Brenda,inhibitory constant,35.0,,0,mM,Pi,v1,Rattus norvegicus,R00299,C00009,False
+Brenda,inhibitory constant,6.0,,0,mM,Pi,v1,Rattus norvegicus,R00299,C00009,False
+Brenda,inhibitory constant,5.3,,0,mM,Pi,v1,Rattus norvegicus,R00299,C00009,False
+Brenda,inhibitory constant,17.0,,0,mM,Pi,v1,Rattus norvegicus,R00299,C00009,False
+Brenda,inhibitory constant,18.0,,0,mM,Pi,v1,Rattus norvegicus,R00299,C00009,False
+Brenda,inhibitory constant,15.0,,0,mM,Pi,v1,Rattus norvegicus,R00299,C00009,False
+Brenda,inhibitory constant,13.0,,0,mM,Pi,v1,Rattus norvegicus,R00299,C00009,False
+Brenda,inhibitory constant,60.0,,0,mM,Pi,v1,Rattus norvegicus,R00299,C00009,False
+Brenda,inhibitory constant,0.5,,0,mM,F6P,v1,Sus scrofa,R00299,C00085,False
+Brenda,inhibitory constant,8.0,,0,mM,PEP,v1,Sus scrofa,R00299,C00074,False
+Brenda,inhibitory constant,7.8,,0,mM,Pi,v1,Sus scrofa,R00299,C00009,False
+NIST,equilibrium constant,123.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,1310.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,139.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,154.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,172.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,186.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,193.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,203.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,205.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,222.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,230.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,245.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,249.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,277.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,286.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,300.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,304.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,340.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,430.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,618.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+NIST,equilibrium constant,88.0,,0,dimensionless,nan,v1,nan,R00299,nan,False
+yeastGFP,concentration of enzyme,9970.0,,0,molecules/cell,nan,v9,Saccharomyces cerevisiae,R01699,nan,False
+yeastGFP,concentration of enzyme,100000.0,,0,molecules/cell,nan,v9,Saccharomyces cerevisiae,R01699,nan,False
+Brenda,inhibitory constant,0.3,,0,mM,nan,v9,Saccharomyces pastorianus,R01699,C00048,False
+Brenda,inhibitory constant,0.0,,0,mM,NADH,v9,Ricinus communis,R01699,C00004,False
+Brenda,inhibitory constant,0.0,,0,mM,Acetyl_CoA,v9,Ricinus communis,R01699,C00024,False
+Brenda,inhibitory constant,31.0,,0,mM,Pyr,v9,Azotobacter vinelandii,R01699,C00022,False
+Brenda,inhibitory constant,37.0,,0,mM,Pyr,v9,Azotobacter vinelandii,R01699,C00022,False
+Brenda,inhibitory constant,0.0,,0,mM,Pyr,v9,nan,R01699,C00022,False
+Brenda,inhibitory constant,1.0,,0,mM,Pyr,v9,nan,R01699,C00022,False
+Brenda,inhibitory constant,0.0,,0,mM,Pyr,v9,nan,R01699,C00022,False
+Brenda,inhibitory constant,0.0,,0,mM,Pyr,v9,nan,R01699,C00022,False
+Brenda,inhibitory constant,8.6,,0,mM,Cit_cyt,v9,Sus scrofa,R01699,C00158,False
+yeastGFP,concentration of enzyme,10500.0,,0,molecules/cell,nan,v12,Saccharomyces cerevisiae,R00709,nan,False
+yeastGFP,concentration of enzyme,43100.0,,0,molecules/cell,nan,v12,Saccharomyces cerevisiae,R00709,nan,False
+Brenda,substrate catalytic rate constant,21.3,,0,1/s,NADP_p,v12,nan,R00709,C00006,False
+Brenda,inhibitory constant,0.3,,0,mM,NADPH,v12,nan,R00709,C00005,False
+Brenda,inhibitory constant,0.2,,0,mM,NADH,v12,nan,R00709,C00004,False
+Brenda,inhibitory constant,0.1,,0,mM,NADH,v12,Yarrowia lipolytica,R00709,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,NAD_p,v12,nan,R00709,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,IsoCit,v12,nan,R00709,C00311,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD_p,v12,nan,R00709,C00003,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD_p,v12,Pseudomonas sp.,R00709,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,IsoCit,v12,Cupriavidus necator,R00709,C00311,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD_p,v12,Cupriavidus necator,R00709,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD_p,v12,Yarrowia lipolytica,R00709,C00003,False
+Brenda,Michaelis constant,0.6,,0,mM,IsoCit,v12,Yarrowia lipolytica,R00709,C00311,False
+Brenda,Michaelis constant,0.2,,0,mM,NAD_p,v12,nan,R00709,C00003,False
+Brenda,Michaelis constant,6.6,,0,mM,NADP_p,v12,nan,R00709,C00006,False
+Brenda,Michaelis constant,0.0,,0,mM,NADP_p,v12,Escherichia coli,R00709,C00006,False
+Brenda,Michaelis constant,5.8,,0,mM,NADP_p,v12,Escherichia coli,R00709,C00006,False
+Brenda,Michaelis constant,4.7,,0,mM,NAD_p,v12,Escherichia coli,R00709,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD_p,v12,Escherichia coli,R00709,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD_p,v12,Homo sapiens,R00709,C00003,False
+Brenda,Michaelis constant,2.0,,0,mM,IsoCit,v12,Homo sapiens,R00709,C00311,False
+Brenda,Michaelis constant,0.9,,0,mM,IsoCit,v12,Homo sapiens,R00709,C00311,False
+Brenda,Michaelis constant,2.2,,0,mM,IsoCit,v12,Homo sapiens,R00709,C00311,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD_p,v12,Homo sapiens,R00709,C00003,False
+Brenda,Michaelis constant,1.8,,0,mM,IsoCit,v12,Homo sapiens,R00709,C00311,False
+Brenda,Michaelis constant,0.3,,0,mM,IsoCit,v12,Homo sapiens,R00709,C00311,False
+Brenda,Michaelis constant,0.8,,0,mM,IsoCit,v12,Homo sapiens,R00709,C00311,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD_p,v12,Homo sapiens,R00709,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,IsoCit,v12,Saccharomyces cerevisiae,R00709,C00311,False
+Brenda,Michaelis constant,0.5,,0,mM,IsoCit,v12,Bos taurus,R00709,C00311,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD_p,v12,Bos taurus,R00709,C00003,False
+yeastGFP,concentration of enzyme,19300.0,,0,molecules/cell,nan,v25,Saccharomyces cerevisiae,R02161,nan,False
+yeastGFP,concentration of enzyme,10100.0,,0,molecules/cell,nan,v25,Saccharomyces cerevisiae,R02161,nan,False
+yeastGFP,concentration of enzyme,4490.0,,0,molecules/cell,nan,v25,Saccharomyces cerevisiae,R02161,nan,False
+yeastGFP,concentration of enzyme,4550.0,,0,molecules/cell,nan,v25,Saccharomyces cerevisiae,R02161,nan,False
+yeastGFP,concentration of enzyme,5590.0,,0,molecules/cell,nan,v25,Saccharomyces cerevisiae,R02161,nan,False
+yeastGFP,concentration of enzyme,6140.0,,0,molecules/cell,nan,v25,Saccharomyces cerevisiae,R02161,nan,False
+yeastGFP,concentration of enzyme,39900.0,,0,molecules/cell,nan,v25,Saccharomyces cerevisiae,R02161,nan,False
+yeastGFP,concentration of enzyme,35700.0,,0,molecules/cell,nan,v25,Saccharomyces cerevisiae,R02161,nan,False
+Brenda,substrate catalytic rate constant,3.3,,0,1/s,nan,v25,Saccharomyces cerevisiae,R02161,C02021,False
+Brenda,substrate catalytic rate constant,3.7,,0,1/s,nan,v25,Saccharomyces cerevisiae,R02161,C02021,False
+Brenda,substrate catalytic rate constant,66.7,,0,1/s,nan,v25,Bos taurus,R02161,C02021,False
+Brenda,substrate catalytic rate constant,0.3,,0,1/s,nan,v25,Neurospora crassa,R02161,C02021,False
+Brenda,substrate catalytic rate constant,1.1,,0,1/s,nan,v25,Rhodobacter capsulatus,R02161,C02021,False
+Brenda,substrate catalytic rate constant,0.8,,0,1/s,nan,v25,Bacillus sp.,R02161,C02021,False
+Brenda,substrate catalytic rate constant,3.9,,0,1/s,nan,v25,Rhodospirillum rubrum,R02161,C02021,False
+Brenda,substrate catalytic rate constant,1.3,,0,1/s,nan,v25,Rhodospirillum rubrum,R02161,C02021,False
+Brenda,substrate catalytic rate constant,0.1,,0,1/s,nan,v25,Rhodobacter sphaeroides,R02161,C02021,False
+Brenda,substrate catalytic rate constant,2.1,,0,1/s,nan,v25,Rhodobacter sphaeroides,R02161,C02021,False
+Brenda,substrate catalytic rate constant,82.0,,0,1/s,nan,v25,Saccharomyces cerevisiae,R02161,C00524,False
+Brenda,substrate catalytic rate constant,10.3,,0,1/s,nan,v25,Bos taurus,R02161,C00524,False
+Brenda,substrate catalytic rate constant,13.3,,0,1/s,nan,v25,Bos taurus,R02161,C00524,False
+Brenda,substrate catalytic rate constant,10.2,,0,1/s,nan,v25,Bos taurus,R02161,C00524,False
+Brenda,substrate catalytic rate constant,25.0,,0,1/s,nan,v25,Bos taurus,R02161,C00524,False
+Brenda,substrate catalytic rate constant,7.8,,0,1/s,nan,v25,Paracoccus denitrificans,R02161,C00524,False
+Brenda,substrate catalytic rate constant,8.3,,0,1/s,nan,v25,Paracoccus denitrificans,R02161,C00524,False
+Brenda,substrate catalytic rate constant,25.0,,0,1/s,nan,v25,Rhodobacter sphaeroides,R02161,C00524,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Saccharomyces cerevisiae,R02161,C00390,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Saccharomyces cerevisiae,R02161,C00390,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Bos taurus,R02161,C00390,False
+Brenda,Michaelis constant,0.0,,0,mM,nan,v25,Bos taurus,R02161,C00524,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Bos taurus,R02161,C00390,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Bos taurus,R02161,C00390,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Bos taurus,R02161,C00390,False
+Brenda,Michaelis constant,0.1,,0,mM,QH2,v25,Bos taurus,R02161,C00390,False
+Brenda,Michaelis constant,0.1,,0,mM,QH2,v25,Rhodopseudomonas palustris,R02161,C00390,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Helianthus tuberosus,R02161,C00390,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Rhodobacter sphaeroides,R02161,C00390,False
+Brenda,Michaelis constant,0.0,,0,mM,QH2,v25,Homo sapiens,R02161,C00390,False
+yeastGFP,concentration of enzyme,18400.0,,0,molecules/cell,nan,v15,Saccharomyces cerevisiae,R00432,nan,False
+NIST,equilibrium constant,0.5,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.5,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.5,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.6,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.7,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.8,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.8,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,0.8,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,1.0,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,1.3,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,1.5,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,1.6,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,1.7,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,1.7,,0,dimensionless,nan,v15,nan,R00432,nan,False
+NIST,equilibrium constant,1.7,,0,dimensionless,nan,v15,nan,R00432,nan,False
+Brenda,inhibitory constant,57.0,,0,mM,PYR_cyt,v7,Plasmodium falciparum,R00703,C00022,False
+Brenda,inhibitory constant,66.0,,0,mM,PYR_cyt,v7,Plasmodium berghei,R00703,C00022,False
+Brenda,inhibitory constant,1.6,,0,mM,PYR_cyt,v7,Gadus morhua,R00703,C00022,False
+Brenda,inhibitory constant,0.4,,0,mM,NADPH,v7,Thermoanaerobacter ethanolicus,R00703,C00005,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v7,nan,R00703,nan,False
+yeastGFP,concentration of enzyme,7920.0,,0,molecules/cell,nan,v16,Saccharomyces cerevisiae,R02164,nan,False
+yeastGFP,concentration of enzyme,9540.0,,0,molecules/cell,nan,v16,Saccharomyces cerevisiae,R02164,nan,False
+yeastGFP,concentration of enzyme,238.0,,0,molecules/cell,nan,v16,Saccharomyces cerevisiae,R02164,nan,False
+yeastGFP,concentration of enzyme,10400.0,,0,molecules/cell,nan,v16,Saccharomyces cerevisiae,R02164,nan,False
+Brenda,product catalytic rate constant,20.0,,0,1/s,nan,v16,Wolinella succinogenes,R02164,C00122,False
+Brenda,product catalytic rate constant,133.0,,0,1/s,nan,v16,Wolinella succinogenes,R02164,C00122,False
+Brenda,substrate catalytic rate constant,0.3,,0,1/s,nan,v16,Bos taurus,R02164,C00497,False
+Brenda,substrate catalytic rate constant,0.1,,0,1/s,Mal,v16,Bos taurus,R02164,C00149,False
+Brenda,substrate catalytic rate constant,3.6,,0,1/s,nan,v16,Saccharomyces cerevisiae,R02164,C15494,False
+Brenda,substrate catalytic rate constant,60.0,,0,1/s,nan,v16,Saccharomyces cerevisiae,R02164,C15494,False
+Brenda,inhibitory constant,0.0,,0,mM,Fum,v16,Bos taurus,R02164,C00122,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA,v16,Bos taurus,R02164,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA,v16,Glycine max,R02164,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,OXA,v16,Vigna radiata,R02164,C00036,False
+Brenda,inhibitory constant,0.0,,0,mM,QH2,v16,Escherichia coli,R02164,C00390,False
+Brenda,substrate catalytic rate constant,28.3,,0,1/s,nan,v16,Bos taurus,R02164,C00042,False
+Brenda,substrate catalytic rate constant,167.0,,0,1/s,nan,v16,Bos taurus,R02164,C00399,False
+Brenda,substrate catalytic rate constant,83.3,,0,1/s,nan,v16,Bos taurus,R02164,C00042,False
+Brenda,substrate catalytic rate constant,10.0,,0,1/s,nan,v16,Paracoccus denitrificans,R02164,C00042,False
+Brenda,substrate catalytic rate constant,260.0,,0,1/s,nan,v16,Paracoccus denitrificans,R02164,C00042,False
+Brenda,substrate catalytic rate constant,13.0,,0,1/s,nan,v16,Wolinella succinogenes,R02164,C00042,False
+Brenda,substrate catalytic rate constant,90.0,,0,1/s,nan,v16,Escherichia coli,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Suc,v16,Bos taurus,R02164,C00042,False
+Brenda,Michaelis constant,0.1,,0,mM,Suc,v16,Bos taurus,R02164,C00042,False
+Brenda,Michaelis constant,0.3,,0,mM,Suc,v16,Bos taurus,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Bos taurus,R02164,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Suc,v16,Bos taurus,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Fum,v16,Bos taurus,R02164,C00122,False
+Brenda,Michaelis constant,2.2,,0,mM,Mal,v16,Bos taurus,R02164,C00149,False
+Brenda,Michaelis constant,0.2,,0,mM,Fum,v16,Bos taurus,R02164,C00122,False
+Brenda,Michaelis constant,1.5,,0,mM,nan,v16,Bos taurus,R02164,C00497,False
+Brenda,Michaelis constant,1.5,,0,mM,Suc,v16,Bos taurus,R02164,C00042,False
+Brenda,Michaelis constant,0.1,,0,mM,Suc,v16,Bos taurus,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Paracoccus denitrificans,R02164,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Paracoccus denitrificans,R02164,C00399,False
+Brenda,Michaelis constant,0.3,,0,mM,Suc,v16,Paracoccus denitrificans,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Ascaris suum,R02164,C00399,False
+Brenda,Michaelis constant,0.1,,0,mM,Fum,v16,Ascaris suum,R02164,C00122,False
+Brenda,Michaelis constant,0.6,,0,mM,Suc,v16,Ascaris suum,R02164,C00042,False
+Brenda,Michaelis constant,0.2,,0,mM,Suc,v16,Ascaris suum,R02164,C00042,False
+Brenda,Michaelis constant,0.5,,0,mM,Fum,v16,Ascaris suum,R02164,C00122,False
+Brenda,Michaelis constant,2.2,,0,mM,Fum,v16,Helicobacter pylori,R02164,C00122,False
+Brenda,Michaelis constant,0.8,,0,mM,Fum,v16,Helicobacter pylori,R02164,C00122,False
+Brenda,Michaelis constant,0.2,,0,mM,Suc,v16,Rhodospirillum rubrum,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Sulfolobus sp.,R02164,C00399,False
+Brenda,Michaelis constant,0.3,,0,mM,Suc,v16,Sulfolobus sp.,R02164,C00042,False
+Brenda,Michaelis constant,0.4,,0,mM,Fum,v16,Wolinella succinogenes,R02164,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Suc,v16,Desulfobulbus elongatus,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Fum,v16,Desulfobulbus elongatus,R02164,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Suc,v16,Escherichia coli,R02164,C00042,False
+Brenda,Michaelis constant,2.0,,0,mM,Suc,v16,Escherichia coli,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Escherichia coli,R02164,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Suc,v16,Escherichia coli,R02164,C00042,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Escherichia coli,R02164,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Escherichia coli,R02164,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Escherichia coli,R02164,C00399,False
+Brenda,Michaelis constant,0.4,,0,mM,Fum,v16,Escherichia coli,R02164,C00122,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Escherichia coli,R02164,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Escherichia coli,R02164,C00399,False
+Brenda,Michaelis constant,0.0,,0,mM,Q,v16,Escherichia coli,R02164,C00399,False
+yeastGFP,concentration of enzyme,807.0,,0,molecules/cell,nan,v38,Saccharomyces cerevisiae,R00842,nan,False
+yeastGFP,concentration of enzyme,8970.0,,0,molecules/cell,nan,v38,Saccharomyces cerevisiae,R00842,nan,False
+Brenda,product catalytic rate constant,188.0,,0,1/s,nan,v38,Ceratitis capitata,R00842,C00111,False
+NIST,equilibrium constant,0.0,,0,dimensionless,nan,v38,nan,R00842,nan,False
+Brenda,Michaelis constant,0.5,,0,mM,NAD,v38,Gallus gallus,R00842,C00003,False
+Brenda,Michaelis constant,2.0,,0,mM,G3P,v38,Gallus gallus,R00842,C00093,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Gallus gallus,R00842,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,DHAP,v38,Gallus gallus,R00842,C00111,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v38,Oryctolagus cuniculus,R00842,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Oryctolagus cuniculus,R00842,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,DHAP,v38,Oryctolagus cuniculus,R00842,C00111,False
+Brenda,Michaelis constant,0.3,,0,mM,DHAP,v38,Oryctolagus cuniculus,R00842,C00111,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v38,Oryctolagus cuniculus,R00842,C00003,False
+Brenda,Michaelis constant,0.2,,0,mM,DHAP,v38,Oryctolagus cuniculus,R00842,C00111,False
+Brenda,Michaelis constant,0.1,,0,mM,DHAP,v38,Oryctolagus cuniculus,R00842,C00111,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Oryctolagus cuniculus,R00842,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v38,Oryctolagus cuniculus,R00842,C00003,False
+Brenda,Michaelis constant,0.5,,0,mM,DHAP,v38,Oryctolagus cuniculus,R00842,C00111,False
+Brenda,Michaelis constant,0.9,,0,mM,G3P,v38,Oryctolagus cuniculus,R00842,C00093,False
+Brenda,Michaelis constant,0.3,,0,mM,DHAP,v38,Spinacia oleracea,R00842,C00111,False
+Brenda,Michaelis constant,0.2,,0,mM,NAD,v38,Spinacia oleracea,R00842,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,DHAP,v38,Trypanosoma brucei,R00842,C00111,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD,v38,Trypanosoma brucei,R00842,C00003,False
+Brenda,Michaelis constant,2.3,,0,mM,G3P,v38,Trypanosoma brucei,R00842,C00093,False
+Brenda,Michaelis constant,1.7,,0,mM,G3P,v38,Leishmania mexicana,R00842,C00093,False
+Brenda,Michaelis constant,0.1,,0,mM,DHAP,v38,Leishmania mexicana,R00842,C00111,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Leishmania mexicana,R00842,C00004,False
+Brenda,Michaelis constant,0.4,,0,mM,NAD,v38,Leishmania mexicana,R00842,C00003,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD,v38,Ceratitis capitata,R00842,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Ceratitis capitata,R00842,C00004,False
+Brenda,Michaelis constant,0.3,,0,mM,DHAP,v38,Ceratitis capitata,R00842,C00111,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD,v38,Debaryomyces hansenii,R00842,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,DHAP,v38,Debaryomyces hansenii,R00842,C00111,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Debaryomyces hansenii,R00842,C00004,False
+Brenda,Michaelis constant,1.9,,0,mM,G3P,v38,Drosophila virilis,R00842,C00093,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Drosophila virilis,R00842,C00004,False
+Brenda,Michaelis constant,0.2,,0,mM,DHAP,v38,Drosophila virilis,R00842,C00111,False
+Brenda,Michaelis constant,0.1,,0,mM,NAD,v38,Drosophila virilis,R00842,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Jaculus orientalis,R00842,C00004,False
+Brenda,Michaelis constant,0.3,,0,mM,NAD,v38,Jaculus orientalis,R00842,C00003,False
+Brenda,Michaelis constant,0.5,,0,mM,G3P,v38,Jaculus orientalis,R00842,C00093,False
+Brenda,Michaelis constant,0.3,,0,mM,DHAP,v38,Eidolon helvum,R00842,C00111,False
+Brenda,Michaelis constant,0.2,,0,mM,NAD,v38,Eidolon helvum,R00842,C00003,False
+Brenda,Michaelis constant,0.7,,0,mM,NAD,v38,Eidolon helvum,R00842,C00003,False
+Brenda,Michaelis constant,0.1,,0,mM,NADH_cyt,v38,Drosophila melanogaster,R00842,C00004,False
+Brenda,Michaelis constant,0.6,,0,mM,G3P,v38,Drosophila melanogaster,R00842,C00093,False
+Brenda,Michaelis constant,0.5,,0,mM,DHAP,v38,Drosophila melanogaster,R00842,C00111,False
+Brenda,Michaelis constant,0.4,,0,mM,NAD,v38,Drosophila melanogaster,R00842,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,DHAP,v38,Chlamydomonas reinhardtii,R00842,C00111,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Chlamydomonas reinhardtii,R00842,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,DHAP,v38,Homo sapiens,R00842,C00111,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v38,Homo sapiens,R00842,C00003,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Homo sapiens,R00842,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NAD,v38,Rattus norvegicus,R00842,C00003,False
+Brenda,Michaelis constant,0.2,,0,mM,DHAP,v38,Rattus norvegicus,R00842,C00111,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Rattus norvegicus,R00842,C00004,False
+Brenda,Michaelis constant,0.0,,0,mM,NADH_cyt,v38,Saccharomyces cerevisiae,R00842,C00004,False
+Brenda,Michaelis constant,0.5,,0,mM,DHAP,v38,Saccharomyces cerevisiae,R00842,C00111,False
+Brenda,Michaelis constant,34.0,,0,mM,G3P,v38,Saccharomyces cerevisiae,R00842,C00093,False
+nan,concentration,17.4,,0,mM,Glu_cyt,nan,Escherichia coli,nan,C00025,False
+nan,concentration,1.2,,0,mM,Glu_cyt,nan,Dictyostelium discoideum,nan,C00025,False
+nan,concentration,3.5,,0,mM,Glu_cyt,nan,Rattus sp.,nan,C00025,False
+nan,concentration,2.1,,0,mM,Glu_cyt,nan,Rattus sp.,nan,C00025,False
+nan,concentration,331.0,298.0,0,mM,Glu_cyt,nan,nan,nan,C00025,False
+nan,concentration,25.0,10.0,0,mM,Glu_cyt,nan,Saccharomyces cerevisiae,nan,C00025,False
+nan,concentration,5.3,0.8,0,mM,Glu_cyt,nan,Rattus sp.,nan,C00025,False
+Alberty,standard chemical potential,-372.9,,0,kJ/mol,Glu_cyt,nan,nan,nan,C00025,False
+nan,concentration,0.4,,0,mM,Acetyl_CoA_cyt,nan,Escherichia coli,nan,C00024,False
+nan,concentration,0.0,,0,mM,Acetyl_CoA_cyt,nan,Dictyostelium discoideum,nan,C00024,False
+nan,concentration,0.0,,0,mM,Acetyl_CoA_cyt,nan,Rattus sp.,nan,C00024,False
+nan,concentration,0.0,,0,mM,Acetyl_CoA_cyt,nan,Rattus sp.,nan,C00024,False
+nan,concentration,0.0,,0,mM,Acetyl_CoA_cyt,nan,Rattus sp.,nan,C00024,False
+nan,concentration,15.8,14.2,0,mM,Acetyl_CoA_cyt,nan,nan,nan,C00024,False
+Alberty,standard chemical potential,-58.4,,0,kJ/mol,Acetyl_CoA_cyt,nan,nan,nan,C00024,False
+nan,concentration,0.0,,0,mM,Fum,nan,Dictyostelium discoideum,nan,C00122,False
+nan,concentration,0.1,,0,mM,Fum,nan,Rattus sp.,nan,C00122,False
+nan,concentration,0.1,,0,mM,Fum,nan,Rattus sp.,nan,C00122,False
+nan,concentration,111.0,99.9,0,mM,Fum,nan,nan,nan,C00122,False
+Alberty,standard chemical potential,-523.4,,0,kJ/mol,Fum,nan,nan,nan,C00122,False
+Alberty,standard chemical potential,-682.9,,0,kJ/mol,Mal,nan,nan,nan,C00149,False
+nan,concentration,0.2,,0,mM,AMP,nan,Escherichia coli,nan,C00020,False
+nan,concentration,0.1,,0,mM,AMP,nan,Homo sapiens,nan,C00020,False
+nan,concentration,0.0,,0,mM,AMP,nan,Vigna radiata var. radiata,nan,C00020,False
+nan,concentration,0.1,,0,mM,AMP,nan,Rattus sp.,nan,C00020,False
+nan,concentration,0.1,,0,mM,AMP,nan,Oryctolagus cuniculus,nan,C00020,False
+nan,concentration,193.0,174.0,0,mM,AMP,nan,nan,nan,C00020,False
+nan,concentration,0.2,0.1,0,mM,AMP,nan,Saccharomyces cerevisiae,nan,C00020,False
+Alberty,standard chemical potential,-555.8,,0,kJ/mol,AMP,nan,nan,nan,C00020,False
+nan,concentration,22.0,,0,mM,Pi,nan,Saccharomyces cerevisiae,nan,C00009,False
+nan,concentration,5.5,,0,mM,Pi,nan,Rattus sp.,nan,C00009,False
+nan,concentration,4.3,,0,mM,Pi,nan,Rattus sp.,nan,C00009,False
+nan,concentration,0.1,,0,mM,Pi,nan,Oryctolagus cuniculus,nan,C00009,False
+nan,concentration,79.2,71.3,0,mM,Pi,nan,nan,nan,C00009,False
+nan,concentration,16.5,13.5,0,mM,Pi,nan,Dictyostelium discoideum,nan,C00009,False
+nan,concentration,5.3,0.4,0,mM,Pi,nan,Rattus sp.,nan,C00009,False
+Alberty,standard chemical potential,-1059.3,,0,kJ/mol,Pi,nan,nan,nan,C00009,False
+nan,concentration,0.7,,0,mM,Cit_cyt,nan,Saccharomyces cerevisiae,nan,C00158,False
+nan,concentration,13.0,,0,mM,Cit_cyt,nan,Escherichia coli,nan,C00158,False
+nan,concentration,0.1,,0,mM,Cit_cyt,nan,Dictyostelium discoideum,nan,C00158,False
+nan,concentration,0.4,,0,mM,Cit_cyt,nan,Rattus sp.,nan,C00158,False
+nan,concentration,0.1,,0,mM,Cit_cyt,nan,Oryctolagus cuniculus,nan,C00158,False
+nan,concentration,138.0,125.0,0,mM,Cit_cyt,nan,nan,nan,C00158,False
+nan,concentration,0.2,0.2,0,mM,Cit_cyt,nan,Rattus sp.,nan,C00158,False
+Alberty,standard chemical potential,-965.8,,0,kJ/mol,Cit_cyt,nan,nan,nan,C00158,False
+nan,concentration,0.0,,0,mM,NADP_p,nan,Dictyostelium discoideum,nan,C00006,False
+nan,concentration,0.1,,0,mM,NADP_p,nan,Rattus sp.,nan,C00006,False
+nan,concentration,0.0,,0,mM,NADP_p,nan,Rattus sp.,nan,C00006,False
+nan,concentration,0.0,,0,mM,NADP_p,nan,Oryctolagus cuniculus,nan,C00006,False
+nan,concentration,0.1,0.1,0,mM,NADP_p,nan,Saccharomyces cerevisiae,nan,C00006,False
+Alberty,standard chemical potential,174.9,,0,kJ/mol,NADP_p,nan,nan,nan,C00006,False
+nan,concentration,0.0,,0,mM,NADPH,nan,Dictyostelium discoideum,nan,C00005,False
+nan,concentration,0.4,,0,mM,NADPH,nan,Rattus sp.,nan,C00005,False
+nan,concentration,0.1,,0,mM,NADPH,nan,Rattus sp.,nan,C00005,False
+nan,concentration,82.1,73.9,0,mM,NADPH,nan,nan,nan,C00005,False
+nan,concentration,0.1,0.1,0,mM,NADPH,nan,Saccharomyces cerevisiae,nan,C00005,False
+Alberty,standard chemical potential,236.1,,0,kJ/mol,NADPH,nan,nan,nan,C00005,False
+nan,concentration,341.0,307.0,0,mM,NADH_cyt,nan,nan,nan,C00004,False
+Alberty,standard chemical potential,1117.5,,0,kJ/mol,NADH_cyt,nan,nan,nan,C00004,False
+nan,concentration,0.0,,0,mM,NAD,nan,Dictyostelium discoideum,nan,C00003,False
+nan,concentration,1.1,,0,mM,NAD,nan,Rattus sp.,nan,C00003,False
+nan,concentration,0.3,,0,mM,NAD,nan,Rattus sp.,nan,C00003,False
+nan,concentration,0.4,,0,mM,NAD,nan,Rattus sp.,nan,C00003,False
+nan,concentration,1.3,0.3,0,mM,NAD,nan,Saccharomyces cerevisiae,nan,C00003,False
+nan,concentration,1.7,0.4,0,mM,NAD,nan,Escherichia coli,nan,C00003,False
+Alberty,standard chemical potential,1056.3,,0,kJ/mol,NAD,nan,nan,nan,C00003,False
+Alberty,standard chemical potential,-155.9,,0,kJ/mol,H2O,nan,nan,nan,C00001,False
+nan,concentration,0.5,,0,mM,OG_cyt,nan,Escherichia coli,nan,C00026,False
+nan,concentration,0.0,,0,mM,OG_cyt,nan,Dictyostelium discoideum,nan,C00026,False
+nan,concentration,0.2,,0,mM,OG_cyt,nan,Rattus sp.,nan,C00026,False
+nan,concentration,0.1,,0,mM,OG_cyt,nan,Rattus sp.,nan,C00026,False
+nan,concentration,91.0,81.9,0,mM,OG_cyt,nan,nan,nan,C00026,False
+nan,concentration,2.6,2.4,0,mM,OG_cyt,nan,Saccharomyces cerevisiae,nan,C00026,False
+nan,concentration,0.1,0.0,0,mM,OG_cyt,nan,Rattus sp.,nan,C00026,False
+Alberty,standard chemical potential,-633.6,,0,kJ/mol,OG_cyt,nan,nan,nan,C00026,False
+nan,concentration,0.0,,0,mM,OXA,nan,Dictyostelium discoideum,nan,C00036,False
+nan,concentration,0.0,,0,mM,OXA,nan,Rattus sp.,nan,C00036,False
+nan,concentration,0.0,,0,mM,OXA,nan,Rattus sp.,nan,C00036,False
+nan,concentration,88.6,79.7,0,mM,OXA,nan,nan,nan,C00036,False
+Alberty,standard chemical potential,-714.8,,0,kJ/mol,OXA,nan,nan,nan,C00036,False
+Alberty,standard chemical potential,3658.8,,0,kJ/mol,Q,nan,nan,nan,C00399,False
+Alberty,standard chemical potential,3650.2,,0,kJ/mol,QH2,nan,nan,nan,C00390,False
+Alberty,standard chemical potential,1299.9,,0,kJ/mol,FADH2,nan,nan,nan,C01352,False
+nan,concentration,0.0,,0,mM,IsoCitcyt,nan,Rattus sp.,nan,C00311,False
+nan,concentration,0.0,,0,mM,IsoCitcyt,nan,Rattus sp.,nan,C00311,False
+nan,concentration,138.0,124.0,0,mM,IsoCitcyt,nan,nan,nan,C00311,False
+Alberty,standard chemical potential,-959.2,,0,kJ/mol,IsoCitcyt,nan,nan,nan,C00311,False
+Alberty,standard chemical potential,-347.8,,0,kJ/mol,SCoA,nan,nan,nan,C00091,False
+nan,concentration,0.2,,0,mM,G3P,nan,Escherichia coli,nan,C00093,False
+nan,concentration,0.2,,0,mM,G3P,nan,Rattus sp.,nan,C00093,False
+nan,concentration,0.1,,0,mM,G3P,nan,Rattus sp.,nan,C00093,False
+nan,concentration,50.3,45.2,0,mM,G3P,nan,nan,nan,C00093,False
+nan,concentration,0.6,0.4,0,mM,G3P,nan,Rattus sp.,nan,C00093,False
+Alberty,standard chemical potential,-1077.5,,0,kJ/mol,G3P,nan,nan,nan,C00093,False
+nan,concentration,9.6,8.7,0,mM,DPG,nan,nan,nan,C00236,False
+Alberty,standard chemical potential,-2206.4,,0,kJ/mol,DPG,nan,nan,nan,C00236,False
+nan,concentration,0.0,,0,mM,CoA_cyt,nan,Rattus sp.,nan,C00010,False
+nan,concentration,19.0,17.1,0,mM,CoA_cyt,nan,nan,nan,C00010,False
+nan,concentration,0.2,0.0,0,mM,CoA_cyt,nan,Rattus sp.,nan,C00010,False
+nan,concentration,0.1,0.0,0,mM,CoA_cyt,nan,Rattus sp.,nan,C00010,False
+Alberty,standard chemical potential,-7.4,,0,kJ/mol,CoA_cyt,nan,nan,nan,C00010,False
+nan,concentration,69.6,62.6,0,mM,CO2,nan,nan,nan,C00011,False
+Alberty,standard chemical potential,-394.4,,0,kJ/mol,CO2,nan,nan,nan,C00011,False
+Alberty,standard chemical potential,-547.1,,0,kJ/mol,CO2,nan,nan,nan,C00011,False
+nan,concentration,146.0,132.0,0,mM,GDP,nan,nan,nan,C00035,False
+nan,concentration,0.3,,0,mM,DHAP,nan,Saccharomyces cerevisiae,nan,C00111,False
+nan,concentration,0.2,,0,mM,DHAP,nan,Escherichia coli,nan,C00111,False
+nan,concentration,0.1,,0,mM,DHAP,nan,Dictyostelium discoideum,nan,C00111,False
+nan,concentration,0.0,,0,mM,DHAP,nan,Homo sapiens,nan,C00111,False
+nan,concentration,0.0,,0,mM,DHAP,nan,Vigna radiata var. radiata,nan,C00111,False
+nan,concentration,0.0,,0,mM,DHAP,nan,Rattus sp.,nan,C00111,False
+nan,concentration,0.0,,0,mM,DHAP,nan,Oryctolagus cuniculus,nan,C00111,False
+nan,concentration,32.8,29.5,0,mM,DHAP,nan,nan,nan,C00111,False
+nan,concentration,0.0,0.0,0,mM,DHAP,nan,Rattus sp.,nan,C00111,False
+nan,concentration,0.0,0.0,0,mM,DHAP,nan,Rattus sp.,nan,C00111,False
+Alberty,standard chemical potential,-1095.8,,0,kJ/mol,DHAP,nan,nan,nan,C00111,False
+Alberty,standard chemical potential,1257.5,,0,kJ/mol,FAD,nan,nan,nan,C00016,False
+nan,concentration,1.9,,0,mM,FBP,nan,Escherichia coli,nan,C00354,False
+nan,concentration,0.1,,0,mM,FBP,nan,Dictyostelium discoideum,nan,C00354,False
+nan,concentration,0.0,,0,mM,FBP,nan,Rattus sp.,nan,C00354,False
+nan,concentration,0.0,,0,mM,FBP,nan,Homo sapiens,nan,C00354,False
+nan,concentration,0.0,,0,mM,FBP,nan,Vigna radiata var. radiata,nan,C00354,False
+nan,concentration,0.0,,0,mM,FBP,nan,Rattus sp.,nan,C00354,False
+nan,concentration,0.0,,0,mM,FBP,nan,Oryctolagus cuniculus,nan,C00354,False
+nan,concentration,19.7,17.8,0,mM,FBP,nan,nan,nan,C00354,False
+nan,concentration,3.1,1.4,0,mM,FBP,nan,Saccharomyces cerevisiae,nan,C00354,False
+nan,concentration,0.0,0.0,0,mM,FBP,nan,Rattus sp.,nan,C00354,False
+Alberty,standard chemical potential,-2206.1,,0,kJ/mol,FBP,nan,nan,nan,C00354,False
+Alberty,standard chemical potential,-1088.2,,0,kJ/mol,GAP,nan,nan,nan,C00118,False
+nan,concentration,0.1,,0,mM,PEP,nan,Rattus sp.,nan,C00074,False
+nan,concentration,0.0,,0,mM,PEP,nan,Rattus sp.,nan,C00074,False
+nan,concentration,0.0,,0,mM,PEP,nan,Homo sapiens,nan,C00074,False
+nan,concentration,0.0,,0,mM,PEP,nan,Rattus sp.,nan,C00074,False
+nan,concentration,0.0,,0,mM,PEP,nan,Oryctolagus cuniculus,nan,C00074,False
+nan,concentration,32.8,29.5,0,mM,PEP,nan,nan,nan,C00074,False
+nan,concentration,0.2,0.1,0,mM,PEP,nan,Escherichia coli,nan,C00074,False
+Alberty,standard chemical potential,-1189.0,,0,kJ/mol,PEP,nan,nan,nan,C00074,False
+nan,concentration,2.3,,0,mM,LAC,nan,Rattus sp.,nan,C00186,False
+nan,concentration,4.8,,0,mM,LAC,nan,Rattus sp.,nan,C00186,False
+nan,concentration,3.8,,0,mM,LAC,nan,Oryctolagus cuniculus,nan,C00186,False
+nan,concentration,4.7,2.0,0,mM,LAC,nan,Rattus sp.,nan,C00186,False
+Alberty,standard chemical potential,-314.2,,0,kJ/mol,LAC,nan,nan,nan,C00186,False
+nan,concentration,0.7,,0,mM,F6P,nan,Saccharomyces cerevisiae,nan,C00085,False
+nan,concentration,0.1,,0,mM,F6P,nan,Dictyostelium discoideum,nan,C00085,False
+nan,concentration,0.4,,0,mM,F6P,nan,Rattus sp.,nan,C00085,False
+nan,concentration,0.0,,0,mM,F6P,nan,Homo sapiens,nan,C00085,False
+nan,concentration,0.0,,0,mM,F6P,nan,Vigna radiata var. radiata,nan,C00085,False
+nan,concentration,0.0,,0,mM,F6P,nan,Rattus sp.,nan,C00085,False
+nan,concentration,0.0,,0,mM,F6P,nan,Oryctolagus cuniculus,nan,C00085,False
+nan,concentration,82.1,73.9,0,mM,F6P,nan,nan,nan,C00085,False
+nan,concentration,0.1,0.0,0,mM,F6P,nan,Rattus sp.,nan,C00085,False
+Alberty,standard chemical potential,-1316.6,,0,kJ/mol,F6P,nan,nan,nan,C00085,False
+nan,concentration,341.0,307.0,0,mM,GLC,nan,nan,nan,C00267,False
+Alberty,standard chemical potential,-428.1,,0,kJ/mol,GLC,nan,nan,nan,C00267,False
+nan,concentration,1.7,,0,mM,Suc,nan,Dictyostelium discoideum,nan,C00042,False
+nan,concentration,1.1,,0,mM,Suc,nan,Rattus sp.,nan,C00042,False
+nan,concentration,0.5,,0,mM,Suc,nan,Rattus sp.,nan,C00042,False
+nan,concentration,112.0,101.0,0,mM,Suc,nan,nan,nan,C00042,False
+Alberty,standard chemical potential,-530.7,,0,kJ/mol,Suc,nan,nan,nan,C00042,False
+nan,concentration,1.0,,0,mM,Ala,nan,Dictyostelium discoideum,nan,C00041,False
+nan,concentration,323.0,291.0,0,mM,Ala,nan,nan,nan,C00041,False
+nan,concentration,16.0,9.0,0,mM,Ala,nan,Saccharomyces cerevisiae,nan,C00041,False
+nan,concentration,1.5,0.2,0,mM,Ala,nan,Rattus sp.,nan,C00041,False
+nan,concentration,1.7,0.7,0,mM,Ala,nan,Rattus sp.,nan,C00041,False
+Alberty,standard chemical potential,-86.4,,0,kJ/mol,Ala,nan,nan,nan,C00041,False
+nan,concentration,0.7,,0,mM,GTP,nan,Escherichia coli,nan,C00044,False
+nan,concentration,0.2,,0,mM,GTP,nan,Oryctolagus cuniculus,nan,C00044,False
+nan,concentration,140.0,126.0,0,mM,GTP,nan,nan,nan,C00044,False
+nan,concentration,1.6,,0,mM,Pyr,nan,Saccharomyces cerevisiae,nan,C00022,False
+nan,concentration,0.4,,0,mM,Pyr,nan,Escherichia coli,nan,C00022,False
+nan,concentration,0.1,,0,mM,Pyr,nan,Dictyostelium discoideum,nan,C00022,False
+nan,concentration,0.2,,0,mM,Pyr,nan,Rattus sp.,nan,C00022,False
+nan,concentration,0.1,,0,mM,Pyr,nan,Rattus sp.,nan,C00022,False
+nan,concentration,0.1,,0,mM,Pyr,nan,Oryctolagus cuniculus,nan,C00022,False
+nan,concentration,88.9,80.0,0,mM,Pyr,nan,nan,nan,C00022,False
+nan,concentration,0.1,0.1,0,mM,Pyr,nan,Rattus sp.,nan,C00022,False
+Alberty,standard chemical potential,-351.0,,0,kJ/mol,Pyr,nan,nan,nan,C00022,False
+nan,concentration,322.0,289.0,0,mM,Asp_cyt,nan,nan,nan,C00049,False
+Alberty,standard chemical potential,-452.7,,0,kJ/mol,Asp_cyt,nan,nan,nan,C00049,False

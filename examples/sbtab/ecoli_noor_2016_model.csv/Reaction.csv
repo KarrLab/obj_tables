@@ -1,0 +1,33 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Reaction' name='Reaction' date='2020-07-18 12:19:27' objTablesVersion='1.0.5' document='E. coli central carbon metabolism - unbalanced kinetic data',,,,,,,,,,,,
+!ID,!ReactionFormula,!IsComplete,!IsReversible,!IsInEquilibrium,!IsExchangeReaction,!IsNonEnzymatic,!Gene,!BuildReaction,!BuildEnzyme,!BuildEnzymeProduction,!Identifiers:kegg.reaction,!NameForPlots
+PTS_RPTSsy,D_Glucose + Phosphoenolpyruvate <=> Pyruvate + D_Glucose_6_phosphate,False,True,False,False,False,PTS,False,False,False,RPTSsy,pts
+PGI_R02740,D_Glucose_6_phosphate <=> D_Fructose_6_phosphate,False,True,False,False,False,PGI,False,False,False,R02740,pgi
+PFK_R04779,ATP + D_Fructose_6_phosphate <=> ADP + D_Fructose_1_6_bisphosphate,False,True,False,False,False,PFK,False,False,False,R04779,pfk
+ALD_R01070,D_Fructose_1_6_bisphosphate <=> Glycerone_phosphate + D_Glyceraldehyde_3_phosphate,False,True,False,False,False,FBA,False,False,False,R01070,fba
+TIM_R01015,Glycerone_phosphate <=> D_Glyceraldehyde_3_phosphate,False,True,False,False,False,TPI,False,False,False,R01015,tpi
+GAP_R01061,Orthophosphate + NADplus + D_Glyceraldehyde_3_phosphate <=> NADH + _3_Phospho_D_glyceroyl_phosphate,False,True,False,False,False,GAP,False,False,False,R01061,gap
+PGK_R01512,ADP + _3_Phospho_D_glyceroyl_phosphate <=> ATP + _3_Phospho_D_glycerate,False,True,False,False,False,PGK,False,False,False,R01512,pgk
+PGM_R01518,_3_Phospho_D_glycerate <=> _2_Phospho_D_glycerate,False,True,False,False,False,GPM,False,False,False,R01518,gpm
+PGH_R00658,_2_Phospho_D_glycerate <=> Phosphoenolpyruvate,False,True,False,False,False,ENO,False,False,False,R00658,eno
+PYK_R00200,ADP + Phosphoenolpyruvate <=> Pyruvate + ATP,False,True,False,False,False,PYK,False,False,False,R00200,pyk
+PDH_R00209,Pyruvate + NADplus + CoA <=> Acetyl_CoA + NADH + CO2,False,True,False,False,False,PDH,False,False,False,R00209,pdh
+ZWF_R00835,NADPplus + D_Glucose_6_phosphate <=> NADPH + D_Glucono_1_5_lactone_6_phosphate,False,True,False,False,False,ZWF,False,False,False,R00835,zwf
+GLH_R02035,D_Glucono_1_5_lactone_6_phosphate <=> _6_Phospho_D_gluconate,False,True,False,False,False,PGL,False,False,False,R02035,pgl
+PGD_R01528,_6_Phospho_D_gluconate + NADPplus <=> NADPH + D_Ribulose_5_phosphate + CO2,False,True,False,False,False,GND,False,False,False,R01528,gnd
+RPI_R01056,D_Ribulose_5_phosphate <=> D_Ribose_5_phosphate,False,True,False,False,False,RPI,False,False,False,R01056,rpi
+RPE_R01529,D_Ribulose_5_phosphate <=> D_Xylulose_5_phosphate,False,True,False,False,False,RPE,False,False,False,R01529,rpe
+TXT_R01641,D_Xylulose_5_phosphate + D_Ribose_5_phosphate <=> D_Glyceraldehyde_3_phosphate + Sedoheptulose_7_phosphate,False,True,False,False,False,TKT1,False,False,False,R01641,tkt1
+TAL_R08575,D_Glyceraldehyde_3_phosphate + Sedoheptulose_7_phosphate <=> D_Erythrose_4_phosphate + D_Fructose_6_phosphate,False,True,False,False,False,TAL,False,False,False,R08575,tal
+TXT_R01067,D_Erythrose_4_phosphate + D_Xylulose_5_phosphate <=> D_Glyceraldehyde_3_phosphate + D_Fructose_6_phosphate,False,True,False,False,False,TKT2,False,False,False,R01067,tkt2
+FBP_R00762,D_Fructose_1_6_bisphosphate <=> Orthophosphate + D_Fructose_6_phosphate,False,True,False,False,False,FBP,False,False,False,R00762,fbp
+CSN_R00351,Acetyl_CoA + Oxaloacetate <=> CoA + Citrate,False,True,False,False,False,CSN,False,False,False,R00351,csn
+ACN_R01325,Citrate <=> cis_Aconitate,False,True,False,False,False,ACN1,False,False,False,R01325,acn1
+ACN_R01900,cis_Aconitate <=> Isocitrate,False,True,False,False,False,ACN2,False,False,False,R01900,acn2
+ICD_R00709,NADplus + Isocitrate <=> NADH + _2_Oxoglutarate + CO2,False,True,False,False,False,ICD,False,False,False,R00709,icd
+KGD_R08549,NADplus + _2_Oxoglutarate + CoA <=> NADH + CO2 + Succinyl_CoA,False,True,False,False,False,KGD,False,False,False,R08549,kgd
+SCS_R00405,Orthophosphate + ADP + Succinyl_CoA <=> ATP + CoA + Succinate,False,True,False,False,False,SCS,False,False,False,R00405,scs
+SDH_R02164,Ubiquinone + Succinate <=> Fumarate + Ubiquinol,False,True,False,False,False,SDH,False,False,False,R02164,sdh
+FUM_R01082,Fumarate <=> _S__Malate,False,True,False,False,False,FUM,False,False,False,R01082,fum
+MDH_R00342,_S__Malate + NADplus <=> NADH + Oxaloacetate,False,True,False,False,False,MDH,False,False,False,R00342,mdh
+PPC_R00345,Orthophosphate + Oxaloacetate <=> CO2 + Phosphoenolpyruvate,False,True,False,False,False,PPC,False,False,False,R00345,ppc
+%,,False,,False,False,False,,False,False,False,,

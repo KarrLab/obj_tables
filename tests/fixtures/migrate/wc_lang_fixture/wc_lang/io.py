@@ -3,8 +3,10 @@
 Supported file types:
 
 * Comma separated values (.csv)
-* Excel (.xlsx)
+* JSON (.json)
 * Tab separated values (.tsv)
+* XLSX (.xlsx)
+* YAML (.yml)
 
 :Author: Jonathan Karr <karr@mssm.edu>
 :Date: 2016-12-05
@@ -37,7 +39,7 @@ class Writer(obj_tables.io.Writer):
     def run(self, path, model, models=None, get_related=True, include_all_attributes=False, validate=None,
             title=None, description=None, keywords=None, version=None, language=None, creator=None,
             extra_entries=0, set_repo_metadata_from_path=True):
-        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
+        """ Write a list of model classes to an XLSX file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
         Args:
@@ -227,7 +229,7 @@ class Reader(obj_tables.io.Reader):
 
 
 def convert(source, destination):
-    """ Convert among Excel (.xlsx), comma separated (.csv), and tab separated (.tsv) file formats
+    """ Convert among comma separated (.csv), JSON (.jso), tab separated (.tsv), XLSX (.xlsx), and YAML (.yml) file formats
 
     Read a model from the `source` files(s) and write it to the `destination` files(s). A path to a
     delimiter separated set of models must be represented by a Unix glob pattern (with a \\*) that

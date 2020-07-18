@@ -1,0 +1,444 @@
+Compartment: []
+Compound: []
+Definition: []
+Enzyme: []
+FbcObjective: []
+Gene: []
+Layout: []
+Measurement: []
+PbConfig: []
+Position: []
+Protein: []
+Quantity:
+- __id: 0
+  __type: Quantity
+  abbreviation: ''
+  biological_element: ''
+  comment: ''
+  compound: C1
+  compound_identifiers_kegg_compound: ''
+  compound_s_b_m_l_species_id: ''
+  concentration_max: .nan
+  concentration_min: .nan
+  condition: ''
+  data_geometric_std: .nan
+  data_std: .nan
+  dependence: ''
+  description: ''
+  enyzme: ''
+  enyzme_s_b_m_l_parameter_id: ''
+  enyzme_s_b_m_l_species_id: ''
+  gene: ''
+  geometric_mean: .nan
+  i_d: c C1
+  identifiers: ''
+  identifiers_kegg_compound: ''
+  identifiers_kegg_reaction: ''
+  identifiers_obo_chebi: ''
+  location: ''
+  location_s_b_m_l_compartment_id: ''
+  lower_bound: .nan
+  mathematical_type: ''
+  matrix_info: ''
+  max: .nan
+  mean: .nan
+  median: .nan
+  min: .nan
+  miriam_annotations: ''
+  name: ''
+  organism: ''
+  p_h: .nan
+  parameter_s_b_m_l_parameter_id: ''
+  physical_type: ''
+  position_x: .nan
+  position_y: .nan
+  prior_geometric_std: .nan
+  prior_median: .nan
+  prior_std: .nan
+  prob_dist: ''
+  provenance: ''
+  quantity: ''
+  quantity_name: ''
+  quantity_type: ''
+  reaction: ''
+  reaction_identifiers_kegg_reaction: ''
+  reaction_s_b_m_l_reaction_id: ''
+  reference: ''
+  reference_d_o_i: ''
+  reference_name: ''
+  reference_pub_med: ''
+  s_b_m_l_element: ''
+  s_b_m_l_parameter_id: ''
+  s_b_o_concentration: .nan
+  s_b_o_concentration_m_m_log10_median: 1.0
+  s_b_o_equilibrium_constant: .nan
+  s_b_o_identifiers_obo_sbo: ''
+  s_b_o_term: ''
+  scale: ''
+  sign: '0'
+  std: .nan
+  symbol: ''
+  temperature: .nan
+  time: .nan
+  time_point: ''
+  type: ''
+  unit: ''
+  upper_bound: .nan
+  use_as_prior_information: false
+  value: .nan
+  value_type: ''
+- __id: 1
+  __type: Quantity
+  abbreviation: ''
+  biological_element: ''
+  comment: ''
+  compound: C2
+  compound_identifiers_kegg_compound: ''
+  compound_s_b_m_l_species_id: ''
+  concentration_max: .nan
+  concentration_min: .nan
+  condition: ''
+  data_geometric_std: .nan
+  data_std: .nan
+  dependence: ''
+  description: ''
+  enyzme: ''
+  enyzme_s_b_m_l_parameter_id: ''
+  enyzme_s_b_m_l_species_id: ''
+  gene: ''
+  geometric_mean: .nan
+  i_d: c C2
+  identifiers: ''
+  identifiers_kegg_compound: ''
+  identifiers_kegg_reaction: ''
+  identifiers_obo_chebi: ''
+  location: ''
+  location_s_b_m_l_compartment_id: ''
+  lower_bound: .nan
+  mathematical_type: ''
+  matrix_info: ''
+  max: .nan
+  mean: .nan
+  median: .nan
+  min: .nan
+  miriam_annotations: ''
+  name: ''
+  organism: ''
+  p_h: .nan
+  parameter_s_b_m_l_parameter_id: ''
+  physical_type: ''
+  position_x: .nan
+  position_y: .nan
+  prior_geometric_std: .nan
+  prior_median: .nan
+  prior_std: .nan
+  prob_dist: ''
+  provenance: ''
+  quantity: ''
+  quantity_name: ''
+  quantity_type: ''
+  reaction: ''
+  reaction_identifiers_kegg_reaction: ''
+  reaction_s_b_m_l_reaction_id: ''
+  reference: ''
+  reference_d_o_i: ''
+  reference_name: ''
+  reference_pub_med: ''
+  s_b_m_l_element: ''
+  s_b_m_l_parameter_id: ''
+  s_b_o_concentration: .nan
+  s_b_o_concentration_m_m_log10_median: 0.0
+  s_b_o_equilibrium_constant: .nan
+  s_b_o_identifiers_obo_sbo: ''
+  s_b_o_term: ''
+  scale: ''
+  sign: '0'
+  std: .nan
+  symbol: ''
+  temperature: .nan
+  time: .nan
+  time_point: ''
+  type: ''
+  unit: ''
+  upper_bound: .nan
+  use_as_prior_information: false
+  value: .nan
+  value_type: ''
+- __id: 2
+  __type: Quantity
+  abbreviation: ''
+  biological_element: ''
+  comment: ''
+  compound: C3
+  compound_identifiers_kegg_compound: ''
+  compound_s_b_m_l_species_id: ''
+  concentration_max: .nan
+  concentration_min: .nan
+  condition: ''
+  data_geometric_std: .nan
+  data_std: .nan
+  dependence: ''
+  description: ''
+  enyzme: ''
+  enyzme_s_b_m_l_parameter_id: ''
+  enyzme_s_b_m_l_species_id: ''
+  gene: ''
+  geometric_mean: .nan
+  i_d: c C3
+  identifiers: ''
+  identifiers_kegg_compound: ''
+  identifiers_kegg_reaction: ''
+  identifiers_obo_chebi: ''
+  location: ''
+  location_s_b_m_l_compartment_id: ''
+  lower_bound: .nan
+  mathematical_type: ''
+  matrix_info: ''
+  max: .nan
+  mean: .nan
+  median: .nan
+  min: .nan
+  miriam_annotations: ''
+  name: ''
+  organism: ''
+  p_h: .nan
+  parameter_s_b_m_l_parameter_id: ''
+  physical_type: ''
+  position_x: .nan
+  position_y: .nan
+  prior_geometric_std: .nan
+  prior_median: .nan
+  prior_std: .nan
+  prob_dist: ''
+  provenance: ''
+  quantity: ''
+  quantity_name: ''
+  quantity_type: ''
+  reaction: ''
+  reaction_identifiers_kegg_reaction: ''
+  reaction_s_b_m_l_reaction_id: ''
+  reference: ''
+  reference_d_o_i: ''
+  reference_name: ''
+  reference_pub_med: ''
+  s_b_m_l_element: ''
+  s_b_m_l_parameter_id: ''
+  s_b_o_concentration: .nan
+  s_b_o_concentration_m_m_log10_median: 0.1
+  s_b_o_equilibrium_constant: .nan
+  s_b_o_identifiers_obo_sbo: ''
+  s_b_o_term: ''
+  scale: ''
+  sign: '0'
+  std: .nan
+  symbol: ''
+  temperature: .nan
+  time: .nan
+  time_point: ''
+  type: ''
+  unit: ''
+  upper_bound: .nan
+  use_as_prior_information: false
+  value: .nan
+  value_type: ''
+QuantityInfo: []
+QuantityMatrix:
+- __id: 3
+  __type: QuantityMatrix
+  _concentration_fructose: .nan
+  _concentration_glucose: .nan
+  _document_table_column: ''
+  _sample_t0: .nan
+  _sample_t1: .nan
+  _t_p_t0_mean: 1.1
+  _t_p_t0_std: 1.2
+  _t_p_t1_mean: 0.5
+  _t_p_t1_std: 0.5
+  _table_column: ''
+  comment: ''
+  compound: ''
+  compound_s_b_m_l_species_id: ''
+  description: ''
+  enyzme: ''
+  enyzme_s_b_m_l_parameter_id: ''
+  enyzme_s_b_m_l_species_id: ''
+  gene: ''
+  geometric_mean: .nan
+  i_d: Glucose
+  identifiers_obo_chebi: CHEBI:17234
+  max: .nan
+  mean: .nan
+  median: .nan
+  min: .nan
+  miriam_annotations: ''
+  name: ''
+  position_x: .nan
+  position_y: .nan
+  prob_dist: ''
+  protein: ''
+  protein_s_b_m_l_species_id: ''
+  quantity_name: ''
+  quantity_type: ''
+  reaction: ''
+  reaction_s_b_m_l_reaction_id: ''
+  reference_d_o_i: ''
+  reference_name: ''
+  reference_pub_med: ''
+  s_b_m_l_parameter_id: ''
+  scale: ''
+  sign: '0'
+  std: .nan
+  symbol: ''
+  time: .nan
+  time_point: ''
+  type: ''
+  unit: ''
+  value: .nan
+- __id: 4
+  __type: QuantityMatrix
+  _concentration_fructose: .nan
+  _concentration_glucose: .nan
+  _document_table_column: ''
+  _sample_t0: .nan
+  _sample_t1: .nan
+  _t_p_t0_mean: 1.4
+  _t_p_t0_std: 0.9
+  _t_p_t1_mean: 0.5
+  _t_p_t1_std: 0.5
+  _table_column: ''
+  comment: ''
+  compound: ''
+  compound_s_b_m_l_species_id: ''
+  description: ''
+  enyzme: ''
+  enyzme_s_b_m_l_parameter_id: ''
+  enyzme_s_b_m_l_species_id: ''
+  gene: ''
+  geometric_mean: .nan
+  i_d: Fructose
+  identifiers_obo_chebi: CHEBI:15824
+  max: .nan
+  mean: .nan
+  median: .nan
+  min: .nan
+  miriam_annotations: ''
+  name: ''
+  position_x: .nan
+  position_y: .nan
+  prob_dist: ''
+  protein: ''
+  protein_s_b_m_l_species_id: ''
+  quantity_name: ''
+  quantity_type: ''
+  reaction: ''
+  reaction_s_b_m_l_reaction_id: ''
+  reference_d_o_i: ''
+  reference_name: ''
+  reference_pub_med: ''
+  s_b_m_l_parameter_id: ''
+  scale: ''
+  sign: '0'
+  std: .nan
+  symbol: ''
+  time: .nan
+  time_point: ''
+  type: ''
+  unit: ''
+  value: .nan
+Reaction: []
+ReactionStoichiometry: []
+Regulator: []
+Relation: []
+Relationship: []
+SparseMatrix: []
+SparseMatrixColumn: []
+SparseMatrixOrdered: []
+SparseMatrixRow: []
+StoichiometricMatrix: []
+_classMetadata:
+  Compartment:
+    class: Compartment
+    name: Compartment
+  Compound:
+    class: Compound
+    name: Compound
+  Definition:
+    class: Definition
+    name: Definition
+  Enzyme:
+    class: Enzyme
+    name: Enzyme
+  FbcObjective:
+    class: FbcObjective
+    name: FbcObjective
+  Gene:
+    class: Gene
+    name: Gene
+  Layout:
+    class: Layout
+    name: Layout
+  Measurement:
+    class: Measurement
+    name: Measurement
+  PbConfig:
+    class: PbConfig
+    name: PbConfig
+  Position:
+    class: Position
+    name: Position
+  Protein:
+    class: Protein
+    name: Protein
+  Quantity:
+    class: Quantity
+    description: Ex 14 - Quantity
+    name: Quantity
+  QuantityInfo:
+    class: QuantityInfo
+    name: QuantityInfo
+  QuantityMatrix:
+    class: QuantityMatrix
+    description: Ex 22 - Timepoint
+    name: QuantityMatrix
+  Reaction:
+    class: Reaction
+    name: Reaction
+  ReactionStoichiometry:
+    class: ReactionStoichiometry
+    name: ReactionStoichiometry
+  Regulator:
+    class: Regulator
+    name: Regulator
+  Relation:
+    class: Relation
+    name: Relation
+  Relationship:
+    class: Relationship
+    name: Relationship
+  SparseMatrix:
+    class: SparseMatrix
+    name: SparseMatrix
+  SparseMatrixColumn:
+    class: SparseMatrixColumn
+    name: SparseMatrixColumn
+  SparseMatrixOrdered:
+    class: SparseMatrixOrdered
+    name: SparseMatrixOrdered
+  SparseMatrixRow:
+    class: SparseMatrixRow
+    name: SparseMatrixRow
+  StoichiometricMatrix:
+    class: StoichiometricMatrix
+    name: StoichiometricMatrix
+  rxnconContingencyList:
+    class: rxnconContingencyList
+    name: rxnconContingencyList
+  rxnconReactionList:
+    class: rxnconReactionList
+    name: rxnconReactionList
+_documentMetadata:
+  date: '2020-07-18 12:17:56'
+  objTablesVersion: 1.0.5
+  schema: SBtab
+rxnconContingencyList: []
+rxnconReactionList: []

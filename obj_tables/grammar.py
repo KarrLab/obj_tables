@@ -1,5 +1,5 @@
 """ Attributes for embedding domain-specific langauges for describing \*-to-many relationships
-into Excel cell
+into XLSX cell
 
 :Author: Jonathan Karr <karr@mssm.edu>
 :Date: 2019-09-23

@@ -1,0 +1,53 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2019-01-04' objTablesVersion='1.0.5' document='ecoli_wortel_2018'					
+!Name	!ID	!InitialConcentration	!Location	!IsConstant	!HasOnlySubstanceUnits
+acetate	ACETATE	0.0	Cell	False	False
+extracellular acetate	ACETATE_ext	0.0	external	False	False
+acetyl-coenzyme A	ACETYL_CoA	0.0	Cell	False	False
+acetaldehyde	ACALD	0.0	Cell	False	False
+acetyl-phosphate	ACETYL_P	0.0	Cell	False	False
+adenosine diphosphate	ADP	0.0	Cell	False	False
+alpha-ketoglutarate	AKG	0.0	Cell	False	False
+adenosine triphosphate	ATP	0.0	Cell	False	False
+maintenance energy	ATP_main	0.0	external	False	False
+biomass	BIOMASS	0.0	external	False	False
+citrate	CITRATE	0.0	Cell	False	False
+carbon dioxyde	CO2	0.0	Cell	False	False
+extracellular carbon dioxyde	CO2_ext	0.0	external	False	False
+coenzyme A	CoASH	0.0	Cell	False	False
+dihydroxyacetone phosphate	DHAP	0.0	Cell	False	False
+erythrose-4-phosphate	ERYTH_4_P	0.0	Cell	False	False
+ethanol	ETOH	0.0	Cell	False	False
+extracellular ethanol	ETOH_ext	0.0	external	False	False
+formate	FORMATE	0.0	Cell	False	False
+extracellular formate	FORMATE_ext	0.0	external	False	False
+fructose-6-phosphate	FRU_6_P	0.0	Cell	False	False
+fructose bi-phosphate	FRU_BIS_P	0.0	Cell	False	False
+fumarate	FUMARATE	0.0	Cell	False	False
+1,3-bisphospho-D-glycerate	DPG	0.0	Cell	False	False
+3-phospho-D-glycerate	PG3	0.0	Cell	False	False
+glyceraldehyde-3-phosphate	GA_3P	0.0	Cell	False	False
+glucose-6-phosphate	GLU_6_P	0.0	Cell	False	False
+6-Phosphogluconolactonase	GLU_LAC_6_P	0.0	Cell	False	False
+6-phosphogluconate	GLUCO_6_P	0.0	Cell	False	False
+2-keto-3-deoxy-6-phosphogluconate	KDPG	0.0	Cell	False	False
+extracellular glucose	GLU_ext	0.0	external	False	False
+isocitrate	ISOCIT	0.0	Cell	False	False
+lactate	LACTATE	0.0	Cell	False	False
+extracellular lactate	LACTATE_ext	0.0	external	False	False
+malate	MALATE	0.0	Cell	False	False
+nicotinamide adenine dinucleotide	NAD	0.0	Cell	False	False
+nicotinamide adenine dinucleotide	NADH	0.0	Cell	False	False
+ammonium	NH3	0.0	Cell	False	False
+extracellular ammonium	NH3_ext	0.0	external	False	False
+oxaloacetate	OXALO	0.0	Cell	False	False
+extracellular monooxygen	OXY_ext	0.0	external	False	False
+phosphoenolpyruvate	PEP	0.0	Cell	False	False
+phosphoglycerate	PG	0.0	Cell	False	False
+pyruvate	PYR	0.0	Cell	False	False
+ribose-5-phosphate	RIBOSE_5_P	0.0	Cell	False	False
+ribulose-5-phosphate	RIBULOSE_5_P	0.0	Cell	False	False
+sedoheptulose-7-phosphate	SED_7_P	0.0	Cell	False	False
+succinate	SUCC	0.0	Cell	False	False
+succinyl-coenzyme A	SUCC_CoA	0.0	Cell	False	False
+extracellular succinate	SUCC_ext	0.0	external	False	False
+xylulose-5-phosphate	XYL_5_P	0.0	Cell	False	False

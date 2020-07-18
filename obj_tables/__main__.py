@@ -1,4 +1,4 @@
-""" Command line utilities for modeling data in tables (Excel, CSV, TSV)
+""" Command line utilities for modeling data in tables (XLSX, CSV, TSV)
 
 :Author: Jonathan Karr <karr@mssm.edu>
 :Date: 2019-09-11
@@ -34,8 +34,8 @@ class BaseController(cement.Controller):
 
     class Meta:
         label = 'base'
-        description = "Command line utilities for modeling data in tables (Excel, CSV, TSV)"
-        help = "Command line utilities for modeling data in tables (Excel, CSV, TSV)"
+        description = "Command line utilities for modeling data in tables (XLSX, CSV, TSV)"
+        help = "Command line utilities for modeling data in tables (XLSX, CSV, TSV)"
         arguments = [
             (['-v', '--version'], dict(action='version', version=obj_tables.__version__)),
         ]
@@ -46,11 +46,11 @@ class BaseController(cement.Controller):
 
 
 class ConvertController(cement.Controller):
-    """ Convert a schema-encoded workbook to another format (CSV, Excel, JSON, TSV, YAML) """
+    """ Convert a schema-encoded workbook to another format (CSV, XLSX, JSON, TSV, YAML) """
     class Meta:
         label = 'convert'
-        description = 'Convert a schema-encoded workbook to another format (CSV, Excel, JSON, TSV, YAML)'
-        help = 'Convert a schema-encoded workbook to another format (CSV, Excel, JSON, TSV, YAML)'
+        description = 'Convert a schema-encoded workbook to another format (CSV, XLSX, JSON, TSV, YAML)'
+        help = 'Convert a schema-encoded workbook to another format (CSV, XLSX, JSON, TSV, YAML)'
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [
@@ -122,11 +122,11 @@ class DiffController(cement.Controller):
 
 
 class InitSchemaController(cement.Controller):
-    """ Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV) """
+    """ Initialize a Python schema from a declarative description of the schema in a table (XLSX, CSV, TSV) """
     class Meta:
         label = 'init-schema'
-        description = 'Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'
-        help = 'Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'
+        description = 'Initialize a Python schema from a declarative description of the schema in a table (XLSX, CSV, TSV)'
+        help = 'Initialize a Python schema from a declarative description of the schema in a table (XLSX, CSV, TSV)'
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [
@@ -144,11 +144,11 @@ class InitSchemaController(cement.Controller):
 
 
 class GenTemplateController(cement.Controller):
-    """ Generate a template workbook (Excel, CSV, TSV) for a schema or declarative description of a schema """
+    """ Generate a template workbook (XLSX, CSV, TSV) for a schema or declarative description of a schema """
     class Meta:
         label = 'gen-template'
-        description = 'Generate a template workbook (Excel, CSV, TSV) for a schema or declarative description of a schema'
-        help = 'Generate a template workbook (Excel, CSV, TSV) for a schema or declarative description of a schema'
+        description = 'Generate a template workbook (XLSX, CSV, TSV) for a schema or declarative description of a schema'
+        help = 'Generate a template workbook (XLSX, CSV, TSV) for a schema or declarative description of a schema'
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [

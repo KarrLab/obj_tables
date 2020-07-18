@@ -1,13 +1,13 @@
 `ObjTables` documentation
 ================================================
 
-`ObjTables` is a toolkit which makes it easy to use spreadsheets (e.g., Excel workbooks) to work with complex datasets by combining spreadsheets with rigorous schemas and an object-relational mapping system (ORM; similar to Active Record (Ruby), Django (Python), Doctrine (PHP), Hibernate (Java), Propel (PHP), SQLAlchemy (Python), etc.). This combination enables users to use programs such as Microsoft Excel, LibreOffice Calc, and OpenOffice Calc to view and edit spreadsheets and use schemas and the `ObjTables` software to validate the syntax and semantics of datasets, compare and merge datasets, and parse datasets into object-oriented data structures for further querying and analysis with languages such as Python.
+`ObjTables` is a toolkit which makes it easy to use spreadsheets (e.g., XLSX workbooks) to work with complex datasets by combining spreadsheets with rigorous schemas and an object-relational mapping system (ORM; similar to Active Record (Ruby), Django (Python), Doctrine (PHP), Hibernate (Java), Propel (PHP), SQLAlchemy (Python), etc.). This combination enables users to use programs such as Microsoft Excel, LibreOffice Calc, and OpenOffice Calc to view and edit spreadsheets and use schemas and the `ObjTables` software to validate the syntax and semantics of datasets, compare and merge datasets, and parse datasets into object-oriented data structures for further querying and analysis with languages such as Python.
 
 `ObjTables` makes it easy to:
 
-* Use collections of tables (e.g., an Excel workbook) to represent complex data consisting of multiple related objects of multiple types (e.g., rows of worksheets), each with multiple attributes (e.g., columns).
+* Use collections of tables (e.g., an XLSX workbook) to represent complex data consisting of multiple related objects of multiple types (e.g., rows of worksheets), each with multiple attributes (e.g., columns).
 * Use complex data types (e.g., numbers, strings, numerical arrays, symbolic mathematical expressions, chemical structures, biological sequences, etc.) within tables.
-* Use Excel as a graphical interface for viewing and editing complex datasets.
+* Use programs such as Excel and LibreOffice as a graphical interface for viewing and editing complex datasets.
 * Use embedded tables and grammars to encode relational information into columns and groups of columns of tables.
 * Define clear schemas for tabular datasets.
 * Use schemas to rigorously validate tabular datasets.

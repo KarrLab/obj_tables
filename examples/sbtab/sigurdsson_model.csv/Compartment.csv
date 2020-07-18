@@ -1,0 +1,12 @@
+!!!ObjTables schema='SBtab' objTablesVersion='1.0.5' date='2020-07-18 12:20:25',
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compartment' name='Compartment' date='2020-07-18 12:20:25' objTablesVersion='1.0.5' document='MODEL1507180055',
+!Name,!ID
+cytosol,c
+extracellular,e
+Golgi,g
+Mitochondria,m
+l,l
+Nucleus,n
+periplasm,p
+Endoplasmic reticulum,r
+Glyoxysome,x

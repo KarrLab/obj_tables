@@ -1,0 +1,5 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2020-07-18 12:17:42' objTablesVersion='1.0.5',,,,
+!ID,!IsConstant,!Identifiers:kegg.compound,!Identifiers:obo.chebi,!HasOnlySubstanceUnits
+water,False,C00001,CHEBI:15377,False
+ATP,False,C00002,CHEBI:15422,False
+phosphate,False,...,CHEBI:18367,False

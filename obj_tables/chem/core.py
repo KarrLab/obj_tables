@@ -154,8 +154,8 @@ class ChemicalFormulaAttribute(core.LiteralAttribute):
             return chem.EmpiricalFormula(json)
         return None
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -164,7 +164,7 @@ class ChemicalFormulaAttribute(core.LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ChemicalFormulaAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(ChemicalFormulaAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                                 doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
@@ -516,8 +516,8 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
             return ChemicalStructure().from_dict(json)
         return None
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -526,7 +526,7 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ChemicalStructureAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(ChemicalStructureAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                                   doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
@@ -1022,8 +1022,8 @@ class ReactionEquationAttribute(core.BaseRelatedAttribute, core.LiteralAttribute
         """
         raise NotImplementedError('Cannot be converted from JSON')
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -1032,7 +1032,7 @@ class ReactionEquationAttribute(core.BaseRelatedAttribute, core.LiteralAttribute
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ReactionEquationAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(ReactionEquationAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                                  doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any

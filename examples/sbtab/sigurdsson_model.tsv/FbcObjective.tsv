@@ -1,0 +1,3 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='FbcObjective' name='FbcObjective' date='2020-07-18 12:20:12' objTablesVersion='1.0.5' document='MODEL1507180055'				
+!ID	!SBML:fbc:type	!SBML:fbc:active	!SBML:fbc:objective	!SBML:fbc:reaction
+obj	maximize	True	1	R_biomass_mm_1_no_glygln

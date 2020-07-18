@@ -70,7 +70,7 @@ class RefsAttributeTestCase(unittest.TestCase):
         self.assertEqual(id.id, 'id')
         self.assertEqual(attr.from_builtin(None), None)
 
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
     def test_IdentifiersAttribute(self):
         attr = refs.IdentifiersAttribute()
@@ -121,7 +121,7 @@ class RefsAttributeTestCase(unittest.TestCase):
         self.assertEqual(ids[1].namespace, 'ns2')
         self.assertEqual(ids[1].id, 'id2')
 
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
     def test_DoiAttribute(self):
         doi = "10.1016/j.mib.2015.06.004"
@@ -149,7 +149,7 @@ class RefsAttributeTestCase(unittest.TestCase):
 
         self.assertEqual(attr.from_builtin(doi), doi)
 
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
         self.assertEqual(refs.DoiAttribute.get_url('doi'),
                          'https://doi.org/doi')
@@ -180,7 +180,7 @@ class RefsAttributeTestCase(unittest.TestCase):
 
         self.assertEqual(attr.from_builtin(dois), dois)
 
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
     def test_PubMedIdAttribute(self):
         pmid = 1234
@@ -208,7 +208,7 @@ class RefsAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(pmid), pmid)
         self.assertEqual(attr.from_builtin(None), None)
 
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
         self.assertEqual(refs.PubMedIdAttribute.get_url('pmid'),
                          'https://www.ncbi.nlm.nih.gov/pubmed/pmid')
@@ -241,4 +241,4 @@ class RefsAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(pmids), pmids)
         self.assertEqual(attr.from_builtin([]), [])
 
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()

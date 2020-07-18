@@ -1,0 +1,4 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:18:06' objTablesVersion='1.0.5',,,,
+!ID,!Sign,!Unit,!Time,!UseAsPriorInformation
+t0,0,s,0.0,False
+t1,0,s,0.5,False

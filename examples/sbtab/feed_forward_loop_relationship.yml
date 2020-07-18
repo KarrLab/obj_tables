@@ -1,0 +1,137 @@
+Compartment: []
+Compound: []
+Definition: []
+Enzyme: []
+FbcObjective: []
+Gene: []
+Layout: []
+Measurement: []
+PbConfig: []
+Position: []
+Protein: []
+Quantity: []
+QuantityInfo: []
+QuantityMatrix: []
+Reaction: []
+ReactionStoichiometry: []
+Regulator: []
+Relation: []
+Relationship:
+- __id: 0
+  __type: Relationship
+  from_object: A
+  i_d: R1
+  is_symmetric: false
+  relation: ''
+  sign: +
+  to_object: B
+  value: 1.0
+- __id: 1
+  __type: Relationship
+  from_object: B
+  i_d: R2
+  is_symmetric: false
+  relation: ''
+  sign: +
+  to_object: C
+  value: 1.0
+- __id: 2
+  __type: Relationship
+  from_object: C
+  i_d: R3
+  is_symmetric: false
+  relation: ''
+  sign: '-'
+  to_object: A
+  value: 1.0
+SparseMatrix: []
+SparseMatrixColumn: []
+SparseMatrixOrdered: []
+SparseMatrixRow: []
+StoichiometricMatrix: []
+_classMetadata:
+  Compartment:
+    class: Compartment
+    name: Compartment
+  Compound:
+    class: Compound
+    name: Compound
+  Definition:
+    class: Definition
+    name: Definition
+  Enzyme:
+    class: Enzyme
+    name: Enzyme
+  FbcObjective:
+    class: FbcObjective
+    name: FbcObjective
+  Gene:
+    class: Gene
+    name: Gene
+  Layout:
+    class: Layout
+    name: Layout
+  Measurement:
+    class: Measurement
+    name: Measurement
+  PbConfig:
+    class: PbConfig
+    name: PbConfig
+  Position:
+    class: Position
+    name: Position
+  Protein:
+    class: Protein
+    name: Protein
+  Quantity:
+    class: Quantity
+    name: Quantity
+  QuantityInfo:
+    class: QuantityInfo
+    name: QuantityInfo
+  QuantityMatrix:
+    class: QuantityMatrix
+    name: QuantityMatrix
+  Reaction:
+    class: Reaction
+    name: Reaction
+  ReactionStoichiometry:
+    class: ReactionStoichiometry
+    name: ReactionStoichiometry
+  Regulator:
+    class: Regulator
+    name: Regulator
+  Relation:
+    class: Relation
+    name: Relation
+  Relationship:
+    class: Relationship
+    document: Boolean_example
+    name: Relationship
+  SparseMatrix:
+    class: SparseMatrix
+    name: SparseMatrix
+  SparseMatrixColumn:
+    class: SparseMatrixColumn
+    name: SparseMatrixColumn
+  SparseMatrixOrdered:
+    class: SparseMatrixOrdered
+    name: SparseMatrixOrdered
+  SparseMatrixRow:
+    class: SparseMatrixRow
+    name: SparseMatrixRow
+  StoichiometricMatrix:
+    class: StoichiometricMatrix
+    name: StoichiometricMatrix
+  rxnconContingencyList:
+    class: rxnconContingencyList
+    name: rxnconContingencyList
+  rxnconReactionList:
+    class: rxnconReactionList
+    name: rxnconReactionList
+_documentMetadata:
+  date: '2020-07-18 12:14:09'
+  objTablesVersion: 1.0.5
+  schema: SBtab
+rxnconContingencyList: []
+rxnconReactionList: []

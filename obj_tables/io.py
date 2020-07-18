@@ -1,7 +1,7 @@
 """ Reading/writing schema objects to/from files
 
 * Comma separated values (.csv)
-* Excel (.xlsx)
+* XLSX (.xlsx)
 * JavaScript Object Notation (.json)
 * Tab separated values (.tsv)
 * Yet Another Markup Language (.yaml, .yml)
@@ -35,7 +35,7 @@ from os.path import basename, splitext
 from warnings import warn
 from obj_tables import utils
 from obj_tables.core import (Model, Attribute, BaseRelatedAttribute, RelatedAttribute, Validator, TableFormat,
-                             InvalidObject, excel_col_name,
+                             InvalidObject, xlsx_col_name,
                              InvalidAttribute, ObjTablesWarning,
                              DOC_TABLE_TYPE,
                              SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME,
@@ -64,7 +64,7 @@ class WriterBase(object, metaclass=abc.ABCMeta):
             write_toc=True, write_schema=False, write_empty_models=True, write_empty_cols=True,
             extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
             protected=True):
-        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
+        """ Write a list of model classes to an XLSX file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
         Args:
@@ -304,7 +304,7 @@ class JsonWriter(WriterBase):
 
 
 class WorkbookWriter(WriterBase):
-    """ Write model objects to an Excel file or CSV or TSV file(s)
+    """ Write model objects to an XLSX file or CSV or TSV file(s)
     """
 
     def run(self, path, objects, schema_name=None, doc_metadata=None, model_metadata=None,
@@ -313,7 +313,7 @@ class WorkbookWriter(WriterBase):
             write_toc=True, write_schema=False, write_empty_models=True, write_empty_cols=True,
             extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
             protected=True):
-        """ Write a list of model instances to an Excel file, with one worksheet for each model class,
+        """ Write a list of model instances to an XLSX file, with one worksheet for each model class,
             or to a set of .csv or .tsv files, with one file for each model class
 
         Args:
@@ -1069,7 +1069,7 @@ class Writer(WriterBase):
             write_toc=True, write_schema=False, write_empty_models=True, write_empty_cols=True,
             extra_entries=0, group_objects_by_model=True, data_repo_metadata=False, schema_package=None,
             protected=True):
-        """ Write a list of model classes to an Excel file, with one worksheet for each model, or to
+        """ Write a list of model classes to an XLSX file, with one worksheet for each model, or to
             a set of .csv or .tsv files, with one file for each model.
 
         Args:
@@ -1274,7 +1274,7 @@ class JsonReader(ReaderBase):
 
 
 class WorkbookReader(ReaderBase):
-    """ Read model objects from an Excel file or CSV and TSV files """
+    """ Read model objects from an XLSX file or CSV and TSV files """
 
     DOC_METADATA_PATTERN = r"^!!!ObjTables( +(.*?)=('((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\"))* *$"
     MODEL_METADATA_PATTERN = r"^!!ObjTables( +(.*?)=('((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\"))* *$"
@@ -1288,7 +1288,7 @@ class WorkbookReader(ReaderBase):
             group_objects_by_model=True, validate=True):
         """ Read a list of model objects from file(s) and, optionally, validate them
 
-        File(s) may be a single Excel workbook with multiple worksheets or a set of delimeter
+        File(s) may be a single XLSX workbook with multiple worksheets or a set of delimeter
         separated files encoded by a single path with a glob pattern.
 
         Args:
@@ -2113,7 +2113,7 @@ class WorkbookReader(ReaderBase):
         else:
             row, col, hdr_entries = (index, 1, 'row')
         if 'xlsx' in file_ext:
-            col = excel_col_name(col)
+            col = xlsx_col_name(col)
         return (row, col, hdr_entries)
 
     @classmethod
@@ -2371,7 +2371,7 @@ def convert(source, destination, schema_name=None, models=None,
             ignore_sheet_order=False,
             include_all_attributes=True, ignore_missing_attributes=False, ignore_extra_attributes=False,
             ignore_attribute_order=False, ignore_empty_rows=True, protected=True):
-    """ Convert among comma-separated (.csv), Excel (.xlsx), JavaScript Object Notation (.json),
+    """ Convert among comma-separated (.csv), XLSX (.xlsx), JavaScript Object Notation (.json),
     tab-separated (.tsv), and Yet Another Markup Language (.yaml, .yml) formats
 
     Args:
@@ -2469,7 +2469,7 @@ def get_fields(cls, schema_name, date, doc_metadata, doc_metadata_model, model_m
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
             not explictly included in `Model.Meta.attribute_order`
         sheet_models (:obj:`list` of :obj:`Model`, optional): list of models encoded as separate worksheets; used
-            to setup Excel validation for related attributes
+            to setup XLSX validation for related attributes
 
     Returns:
         :obj:`tuple`:
@@ -2563,14 +2563,14 @@ def get_fields(cls, schema_name, date, doc_metadata, doc_metadata_model, model_m
             attr_headings.extend(['!' + sub_attr.verbose_name for sub_attr in this_sub_attrs])
             merge_ranges.append((i_row, i_col, i_row, i_col + len(this_sub_attrs) - 1))
             i_col += len(this_sub_attrs)
-            field_validations.extend([sub_attr.get_excel_validation(sheet_models=sheet_models,
+            field_validations.extend([sub_attr.get_xlsx_validation(sheet_models=sheet_models,
                                                                     doc_metadata_model=doc_metadata_model) for sub_attr in this_sub_attrs])
         else:
             sub_attrs.append((None, attr))
             group_headings.append(None)
             attr_headings.append('!' + attr.verbose_name)
             i_col += 1
-            field_validations.append(attr.get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model))
+            field_validations.append(attr.get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model))
 
     header_map = collections.defaultdict(list)
     for group_heading, attr_heading in zip(group_headings, attr_headings):

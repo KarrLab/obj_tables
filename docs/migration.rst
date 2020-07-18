@@ -14,7 +14,7 @@ Many systems, including database systems and web software frameworks, provide to
 so that users can avoid the tedious and error-prone manual effort that's usually required when a schema is changed
 and large amounts of data must be migrated.
 
-Packages that use `ObjTables` (:obj:`obj_tables`) store data in CSV, TSV, or Excel files. The structure of
+Packages that use `ObjTables` (:obj:`obj_tables`) store data in CSV, TSV, or XLSX files. The structure of
 the data in a file is defined by a schema that uses :obj:`obj_tables`. `ObjTables` *migration* enables automated
 migration of these data files.
 
@@ -289,17 +289,17 @@ Each data file in the *data repo* must contain a *Model* that documents the vers
 upon which the file depends.
 For migration to work properly this version must be a sentinel commit in the schema repo.
 This Git metadata is stored in a *SchemaRepoMetadata* *Model*
-(which will be in a *Schema repo metadata* worksheet in an Excel file). The metadata specifies the schema's
+(which will be in a *Schema repo metadata* worksheet in an XLSX file). The metadata specifies the schema's
 version with its URL, branch, and commit hash.
 A migration of the data file will start at the specified commit in the *schema repo*. An example
-Schema repo metadata worksheet in an Excel file is illustrated below:
+Schema repo metadata worksheet in an XLSX file is illustrated below:
 
 .. _figure_schema_git_metadata:
 .. figure:: migration/figures/schema_git_metadata.png
     :width: 400
-    :alt: Example Schema repo metadata worksheet in an Excel data file
+    :alt: Example Schema repo metadata worksheet in an XLSX data file
 
-    Example Schema repo metadata worksheet in an Excel data file.
+    Example Schema repo metadata worksheet in an XLSX data file.
     This schema repo metadata provides the point in the schema's commit history
     at which migration of the data file would start.
 

@@ -94,8 +94,8 @@ class OneToOneExpressionAttribute(OneToOneAttribute):
             return self.related_class.deserialize(value, objects)
         return (None, None)
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -104,7 +104,7 @@ class OneToOneExpressionAttribute(OneToOneAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(OneToOneAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(OneToOneAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                          doc_metadata_model=doc_metadata_model)
 
         if self.related_class.Meta.expression_is_linear:
@@ -173,8 +173,8 @@ class ManyToOneExpressionAttribute(ManyToOneAttribute):
             return self.related_class.deserialize(value, objects)
         return (None, None)
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -183,7 +183,7 @@ class ManyToOneExpressionAttribute(ManyToOneAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ManyToOneAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(ManyToOneAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                           doc_metadata_model=doc_metadata_model)
 
         if self.related_class.Meta.expression_is_linear:

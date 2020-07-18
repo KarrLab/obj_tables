@@ -1,0 +1,43 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2020-07-18 12:19:27' objTablesVersion='1.0.5' document='E. coli central carbon metabolism - unbalanced kinetic data',,,,,
+!Name,!ID,!IsConstant,!Identifiers:kegg.compound,!HasOnlySubstanceUnits,!NameForPlots
+(S)-Malate,_S__Malate,False,C00149,False,(S)-Malate
+Acetyl-CoA,Acetyl_CoA,False,C00024,False,Acetyl-CoA
+Fumarate,Fumarate,False,C00122,False,Fumarate
+cis-Aconitate,cis_Aconitate,False,C00417,False,cis-Aconitate
+6-Phospho-D-gluconate,_6_Phospho_D_gluconate,False,C00345,False,6-Phospho-D-gluconate
+Orthophosphate,Orthophosphate,True,C00009,False,Orthophosphate
+Pyruvate,Pyruvate,False,C00022,False,Pyruvate
+NADP+,NADPplus,True,C00006,False,NADP+
+NADPH,NADPH,True,C00005,False,NADPH
+NADH,NADH,True,C00004,False,NADH
+NAD+,NADplus,True,C00003,False,NAD+
+ATP,ATP,True,C00002,False,ATP
+H2O,H2O,True,C00001,False,H2O
+2-Oxoglutarate,_2_Oxoglutarate,False,C00026,False,2-Oxoglutarate
+Oxaloacetate,Oxaloacetate,True,C00036,False,Oxaloacetate
+Ubiquinone,Ubiquinone,True,C00399,False,Ubiquinone
+D-Erythrose 4-phosphate,D_Erythrose_4_phosphate,False,C00279,False,D-Erythrose 4-phosphate
+Ubiquinol,Ubiquinol,True,C00390,False,Ubiquinol
+ADP,ADP,True,C00008,False,ADP
+Isocitrate,Isocitrate,False,C00311,False,Isocitrate
+D-Ribulose 5-phosphate,D_Ribulose_5_phosphate,False,C00199,False,D-Ribulose 5-phosphate
+D-Xylulose 5-phosphate,D_Xylulose_5_phosphate,False,C00231,False,D-Xylulose 5-phosphate
+D-Glucose 6-phosphate,D_Glucose_6_phosphate,True,C00092,False,D-Glucose 6-phosphate
+3-Phospho-D-glyceroyl phosphate,_3_Phospho_D_glyceroyl_phosphate,False,C00236,False,3-Phospho-D-glyceroyl phosphate
+CoA,CoA,False,C00010,False,CoA
+CO2,CO2,True,C00011,False,CO2
+D-Ribose 5-phosphate,D_Ribose_5_phosphate,False,C00117,False,D-Ribose 5-phosphate
+Glycerone phosphate,Glycerone_phosphate,False,C00111,False,Glycerone phosphate
+D-Glucose,D_Glucose,True,C00031,False,D-Glucose
+"D-Fructose 1,6-bisphosphate",D_Fructose_1_6_bisphosphate,True,C00354,False,"D-Fructose 1,6-bisphosphate"
+D-Glyceraldehyde 3-phosphate,D_Glyceraldehyde_3_phosphate,True,C00118,False,D-Glyceraldehyde 3-phosphate
+Phosphoenolpyruvate,Phosphoenolpyruvate,True,C00074,False,Phosphoenolpyruvate
+Citrate,Citrate,False,C00158,False,Citrate
+Succinyl-CoA,Succinyl_CoA,False,C00091,False,Succinyl-CoA
+3-Phospho-D-glycerate,_3_Phospho_D_glycerate,False,C00197,False,3-Phospho-D-glycerate
+"D-Glucono-1,5-lactone 6-phosphate",D_Glucono_1_5_lactone_6_phosphate,False,C01236,False,"D-Glucono-1,5-lactone 6-phosphate"
+D-Fructose 6-phosphate,D_Fructose_6_phosphate,True,C00085,False,D-Fructose 6-phosphate
+2-Phospho-D-glycerate,_2_Phospho_D_glycerate,False,C00631,False,2-Phospho-D-glycerate
+Succinate,Succinate,False,C00042,False,Succinate
+Sedoheptulose 7-phosphate,Sedoheptulose_7_phosphate,False,C05382,False,Sedoheptulose 7-phosphate
+,%,,,False,

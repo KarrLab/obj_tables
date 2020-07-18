@@ -82,9 +82,9 @@ class ChemicalFormulaAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin({'C': 1, 'H': 1, 'O': 2}), chem.EmpiricalFormula('CHO2'))
         self.assertEqual(attr.from_builtin({'C': 1, 'H': 1, 'O': 2}), chem.EmpiricalFormula('C1HO2'))
 
-        # get_excel_validation
-        attr.get_excel_validation()
-        primary_attr.get_excel_validation()
+        # get_xlsx_validation
+        attr.get_xlsx_validation()
+        primary_attr.get_xlsx_validation()
 
 
 class ChemicalStructureTestCase(unittest.TestCase):
@@ -473,12 +473,12 @@ class ChemicalStructureAttributeTestCase(unittest.TestCase):
         self.assertEqual(attr.from_builtin(None), None)
         self.assertEqual(attr.from_builtin(''), None)
 
-    def test_get_excel_validation(self):
+    def test_get_xlsx_validation(self):
         attr = obj_tables.chem.ChemicalStructureAttribute()
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
         attr = obj_tables.chem.ChemicalStructureAttribute(primary=True, unique=True)
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
 
 class ReactionEquationAttributeTestCase(unittest.TestCase):
@@ -733,5 +733,5 @@ class ReactionEquationAttributeTestCase(unittest.TestCase):
         with self.assertRaisesRegex(NotImplementedError, 'Cannot be converted from JSON'):
             attr.from_builtin(None)
 
-        attr.get_excel_validation()
-        not_none_attr.get_excel_validation()
+        attr.get_xlsx_validation()
+        not_none_attr.get_xlsx_validation()

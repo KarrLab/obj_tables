@@ -1,0 +1,3 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Reaction' name='Reaction' date='2020-07-18 12:17:41' objTablesVersion='1.0.5'										
+!Name	!ID	!ReactionFormula	!IsComplete	!IsReversible	!IsInEquilibrium	!IsExchangeReaction	!IsNonEnzymatic	!BuildReaction	!BuildEnzyme	!BuildEnzymeProduction
+Glycolysis	glycolysis	Glc + 2 ATP + 4 ADP + 2 Pi + 2 NAD <=> 2 Pyr + 4 ATP + 2 ADP + NADH	False	False	False	False	False	False	False	False

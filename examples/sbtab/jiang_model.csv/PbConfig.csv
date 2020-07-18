@@ -1,0 +1,13 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='PbConfig' name='PbConfig' date='2020-07-18 12:19:10' objTablesVersion='1.0.5' document='BIOMD0000000239',
+!Option,!Value
+use_pseudo_values,TRUE
+ph,7
+temperature,298.15
+overwrite_kinetics,TRUE
+cell_volume,43
+parametrisation,hal
+enzyme_prefactor,TRUE
+default_inhibition,complete
+default_activation,complete
+model_name,outputname
+boundary_values,ignore

@@ -1,0 +1,10 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2020-07-18 12:17:34' objTablesVersion='1.0.5'				
+!Name	!ID	!IsConstant	!Identifiers:kegg.compound	!HasOnlySubstanceUnits
+Fructose 6-phosphate	F6P	False	C05345	False
+ATP	ATP	False	C00002	False
+ADP	ADP	False	C00008	False
+Fructose 16-bisphosphate	F16P	False	C00354	False
+Water	H2O	False	C00001	False
+Inorganic phosphate	Pi	False	C00009	False
+Phosphoenolpyruvate	PEP	False	C00074	False
+AMP	AMP	False	C00020	False

@@ -426,7 +426,7 @@ class InitSchemaTestCase(unittest.TestCase):
 
         self.assertTrue(p_0_b.is_equal(p_0))
 
-    def test_init_schema_from_excel(self):
+    def test_init_schema_from_xlsx(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
         schema_csv = 'tests/fixtures/declarative_schema/schema*.csv'
         schema_xl = os.path.join(self.tmp_dirname, 'schema.xlsx')
@@ -830,7 +830,7 @@ class InitSchemaTestCase(unittest.TestCase):
         p_1.children.create(id='c_1', name='c 1')
         p_1.children.create(id='c_2', name='c 2')
 
-        # to excel
+        # to XLSX
         filename = os.path.join(self.tmp_dirname, 'test.xlsx')
 
         obj_tables.io.WorkbookWriter().run(

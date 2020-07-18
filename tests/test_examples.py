@@ -93,32 +93,30 @@ class ExamplesTestCase(unittest.TestCase):
         # Validate that documents adhere to the schema
         data_filenames = [
             'template.xlsx',
-            'hynne/*.tsv',
-            'hynne.tsv',
-            'lac_operon/*.tsv',
-            'feed_forward_loop_relationship.tsv',
-            'kegg_reactions_cc_ph70_quantity.tsv',
-            'yeast_transcription_network_chang_2008_relationship.tsv',
-            'simple_examples/1.tsv',
-            'simple_examples/2.tsv',
-            'simple_examples/3.tsv',
-            'simple_examples/4.tsv',
-            'simple_examples/5.tsv',
-            'simple_examples/6.tsv',
-            'simple_examples/7.tsv',
-            'simple_examples/8.tsv',
-            'simple_examples/9.tsv',
-            'simple_examples/10.tsv',
-            'teusink_data.tsv',
-            'teusink_model.tsv',
-            'jiang_data.tsv',
-            'jiang_model.tsv',
-            'ecoli_noor_2016_data.tsv',
-            'ecoli_noor_2016_model.tsv',
-            'ecoli_wortel_2018_data.tsv',
-            'ecoli_wortel_2018_model.tsv',
-            'sigurdsson_model.tsv',
-            'layout_model.tsv',
+            'hynne.multi.tsv',
+            'feed_forward_loop_relationship.multi.tsv',
+            'kegg_reactions_cc_ph70_quantity.multi.tsv',
+            'yeast_transcription_network_chang_2008_relationship.multi.tsv',
+            'simple_examples/1.multi.tsv',
+            'simple_examples/2.multi.tsv',
+            'simple_examples/3.multi.tsv',
+            'simple_examples/4.multi.tsv',
+            'simple_examples/5.multi.tsv',
+            'simple_examples/6.multi.tsv',
+            'simple_examples/7.multi.tsv',
+            'simple_examples/8.multi.tsv',
+            'simple_examples/9.multi.tsv',
+            'simple_examples/10.multi.tsv',
+            'teusink_data.multi.tsv',
+            'teusink_model.multi.tsv',
+            'jiang_data.multi.tsv',
+            'jiang_model.multi.tsv',
+            'ecoli_noor_2016_data.multi.tsv',
+            'ecoli_noor_2016_model.multi.tsv',
+            'ecoli_wortel_2018_data.multi.tsv',
+            'ecoli_wortel_2018_model.multi.tsv',
+            'sigurdsson_model.multi.tsv',
+            'layout_model.multi.tsv',
         ]
 
         schema, _ = utils.init_schema(schema_filename)
@@ -134,14 +132,14 @@ class ExamplesTestCase(unittest.TestCase):
                 if not data_filename.endswith('.xlsx'):
                     with __main__.App(argv=['validate',
                                             schema_filename.replace('.tsv', '.csv'),
-                                            full_data_filename.replace('.tsv', '.csv'),
+                                            full_data_filename.replace('.multi.tsv', '.multi.csv'),
                                             ]) as app:
                         app.run()
 
                     objs_tsv = io.Reader().run(full_data_filename,
                                                models=models,
                                                **DEFAULT_READER_ARGS)
-                    objs_csv = io.Reader().run(full_data_filename.replace('.tsv', '.csv'),
+                    objs_csv = io.Reader().run(full_data_filename.replace('.multi.tsv', '.multi.csv'),
                                                models=models,
                                                **DEFAULT_READER_ARGS)
                     for cls in objs_tsv.keys():
@@ -150,8 +148,39 @@ class ExamplesTestCase(unittest.TestCase):
 
             if action == 'convert' and not data_filename.endswith('.xlsx'):
                 convert_filename = data_filename \
-                    .replace('/*', '') \
-                    .replace('.tsv', '.xlsx')
+                    .replace('.multi.tsv', '.xlsx')
+                full_convert_filename = os.path.join('examples', 'sbtab', convert_filename)
+                with __main__.App(argv=['convert', schema_filename, full_data_filename,
+                                        full_convert_filename, ]) as app:
+                    app.run()
+
+                convert_filename = data_filename \
+                    .replace('.multi.tsv', '.tsv/*.tsv')                
+                full_convert_filename = os.path.join('examples', 'sbtab', convert_filename)
+                if not os.path.isdir(os.path.dirname(full_convert_filename)):
+                    os.mkdir(os.path.dirname(full_convert_filename))
+                with __main__.App(argv=['convert', schema_filename, full_data_filename,
+                                        full_convert_filename, ]) as app:
+                    app.run()
+
+                convert_filename = data_filename \
+                    .replace('.multi.tsv', '.csv/*.csv')
+                full_convert_filename = os.path.join('examples', 'sbtab', convert_filename)
+                if not os.path.isdir(os.path.dirname(full_convert_filename)):
+                    os.mkdir(os.path.dirname(full_convert_filename))
+                with __main__.App(argv=['convert', schema_filename, full_data_filename,
+                                        full_convert_filename, ]) as app:
+                    app.run()
+
+                convert_filename = data_filename \
+                    .replace('.multi.tsv', '.json')
+                full_convert_filename = os.path.join('examples', 'sbtab', convert_filename)
+                with __main__.App(argv=['convert', schema_filename, full_data_filename,
+                                        full_convert_filename, ]) as app:
+                    app.run()
+
+                convert_filename = data_filename \
+                    .replace('.multi.tsv', '.yml')
                 full_convert_filename = os.path.join('examples', 'sbtab', convert_filename)
                 with __main__.App(argv=['convert', schema_filename, full_data_filename,
                                         full_convert_filename, ]) as app:

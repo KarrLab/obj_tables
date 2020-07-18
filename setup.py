@@ -61,7 +61,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3.6',
     ],
 
-    keywords='object model, schema, workbook, Excel, validation',
+    keywords='object model, schema, workbook, XLSX, Excel, validation',
 
     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
     package_data=package_data,

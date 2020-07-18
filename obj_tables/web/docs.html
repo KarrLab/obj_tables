@@ -5,7 +5,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ObjTables: Toolkit for structured spreadsheets that are human- and machine-readable</title>
-    <meta name="description" content="ObjTables is a free, open-source toolkit for systematically building, annotating, validating, and parsing complex datasets with the ease of spreadsheets (e.g., Excel), the rigor of schemas, and the power of object-oriented programming. ObjTables makes it easy to design schemas for datasets, generate template spreadsheets with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in languages such as Python. The ObjTables software is available through four interfaces: a web application, a REST API, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
+    <meta name="description" content="ObjTables is a free, open-source toolkit for systematically building, annotating, validating, and parsing complex datasets with the ease of spreadsheets (e.g., XLSX), the rigor of schemas, and the power of object-oriented programming. ObjTables makes it easy to design schemas for datasets, generate template spreadsheets with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in languages such as Python. The ObjTables software is available through four interfaces: a web application, a REST API, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
     <meta name="keywords" content="data, table, schema, data model, meta model, data type, validate, Python"/>
     <meta name="language" content="EN">
     <meta name="copyright" content="ObjTables developers"/>
@@ -71,7 +71,8 @@
           <li class="accordion-item is-active" data-accordion-item>
             <a class="accordion-title">Docs</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="#examples">Examples</a></li>
+              <li><a href="#examples">Detailed example</a></li>
+              <li><a href="#more-examples">Additional examples</a></li>
               <li class="separator"><a href="#schema-formats">Schema formats</a></li>
               <li><a href="#data-types">Data types</a></li>
               <li><a href="#dataset-formats">Dataset formats</a></li>
@@ -123,8 +124,7 @@
               <div class="large-4 medium-6 hide-for-small-only cell links">
                 <ul class="dropdown menu" data-dropdown-menu>
                   <li>
-                    <a class="show-for-extra-large">Guide</a>
-                    <a class="hide-for-extra-large">Start</a>
+                    <a>Guide</a>
                     <ul class="menu">
                       <li><a href="guide#authors">Authors</a></li>
                       <li><a href="guide#reviewers">Reviewers and editors</a></li>
@@ -145,7 +145,8 @@
                   <li class="active-page">
                     <a>Docs</a>
                     <ul class="menu">
-                      <li><a href="#examples">Examples</a></li>
+                      <li><a href="#examples">Detailed example</a></li>
+                      <li><a href="#more-examples">Additional examples</a></li>
                       <li class="separator"><a href="#schema-formats">Schema formats</a></li>
                       <li><a href="#data-types">Data types</a></li>
                       <li><a href="#dataset-formats">Dataset formats</a></li>
@@ -194,7 +195,7 @@
                       <li><a href="#examples">Example schema and dataset files</a>
                         <ul>
                           <li><a href="#address-book">Address book</a></li>
-                          <li><a href="#more-examples">Additional examples</a></li>
+                          <li><a href="#more-examples">Download additional examples</a></li>
                         </ul>
                       </li>
                       <li><a href="#formats">Formats</a>
@@ -503,7 +504,7 @@
                   </div>
 
                   <div class="subsection">
-                    <h3 id="more-examples" data-magellan-target="more-examples">Additional examples</h3>
+                    <h3 id="more-examples" data-magellan-target="more-examples">Download additional examples</h3>
 
                     <div style="margin-top: 1rem">
                       <p>Below are several examples of <i>ObjTables</i> schemas and datasets in all of the supported formats.</p>
@@ -695,8 +696,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/hynne.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/hynne.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/hynne.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/hynne.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/hynne.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/hynne.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -706,8 +711,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_model.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_model.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_model.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_model.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_model.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_model.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -717,8 +726,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_data.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_data.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_data.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_data.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_data.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_data.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -728,8 +741,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_model.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_model.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_model.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_model.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_model.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_model.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -739,8 +756,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_data.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_data.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_data.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_data.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_data.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_data.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -750,8 +771,12 @@
                             <td></td>
                             <td></td>
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/sigurdsson_model.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/sigurdsson_model.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/sigurdsson_model.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/sigurdsson_model.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/sigurdsson_model.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/sigurdsson_model.yml">yml</a>
                             </td>
                             <td></td>                            
                           </tr>
@@ -761,8 +786,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_model.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_model.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_model.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_model.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_model.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_model.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -772,8 +801,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_data.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_data.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_data.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_data.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_data.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_data.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -783,8 +816,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_model.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_model.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_model.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_model.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_model.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_model.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -794,8 +831,12 @@
                             <td></td>
                             <td></td>                            
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_data.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_data.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_data.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_data.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_data.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_data.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -805,8 +846,12 @@
                             <td></td>
                             <td></td>
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/kegg_reactions_cc_ph70_quantity.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/kegg_reactions_cc_ph70_quantity.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/kegg_reactions_cc_ph70_quantity.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/kegg_reactions_cc_ph70_quantity.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/kegg_reactions_cc_ph70_quantity.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/kegg_reactions_cc_ph70_quantity.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>
@@ -816,8 +861,12 @@
                             <td></td>
                             <td></td>
                             <td>
-                              <span class="hide-for-medium">Schema &amp; dataset: </span>
-                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/yeast_transcription_network_chang_2008_relationship.xlsx">xlsx</a>
+                              <span class="hide-for-medium">Dataset: </span>
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/yeast_transcription_network_chang_2008_relationship.tsv/">tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/yeast_transcription_network_chang_2008_relationship.multi.tsv">multi.tsv</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/yeast_transcription_network_chang_2008_relationship.xlsx">xlsx</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/yeast_transcription_network_chang_2008_relationship.json">json</a>,
+                              <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/yeast_transcription_network_chang_2008_relationship.yml">yml</a>
                             </td>
                             <td></td>
                           </tr>

@@ -448,7 +448,7 @@ class ModelMeta(type):
             pass  # pragma: no cover
 
     def init_attribute_order(cls):
-        """ Initialize the order in which the attributes should be printed across Excel columns """
+        """ Initialize the order in which the attributes should be printed across XLSX columns """
         cls.Meta.attribute_order = tuple(cls.Meta.attribute_order) or ()
 
     def init_ordering(cls):
@@ -1003,9 +1003,9 @@ class Model(object, metaclass=ModelMeta):
             attribute_order (:obj:`tuple` of :obj:`str`): tuple of attribute names, in the order in which they should be displayed
             verbose_name (:obj:`str`): verbose name to refer to an instance of the model
             verbose_name_plural (:obj:`str`): plural verbose name for multiple instances of the model
-            description (:obj:`str`): description of the model (e.g., to print in the table of contents in Excel)
-            table_format (:obj:`TableFormat`): orientation of model objects in table (e.g. Excel)
-            frozen_columns (:obj:`int`): number of Excel columns to freeze
+            description (:obj:`str`): description of the model (e.g., to print in the table of contents in XLSX)
+            table_format (:obj:`TableFormat`): orientation of model objects in table (e.g. XLSX)
+            frozen_columns (:obj:`int`): number of XLSX columns to freeze
             inheritance (:obj:`tuple` of `class`): tuple of all superclasses
             ordering (:obj:`tuple` of attribute names): controls the order in which objects should be printed when serialized
             children (:obj:`dict` that maps :obj:`str` to :obj:`tuple` of :obj:`str`): dictionary that maps types of children to
@@ -1734,7 +1734,7 @@ class Model(object, metaclass=ModelMeta):
         """ Get file location of attribute with name `attr_name`
 
         Provide the type, filename, worksheet, row, and column of `attr_name`. Row and column use
-        1-based counting. Column is provided in Excel format if the file was a spreadsheet.
+        1-based counting. Column is provided in XLSX format if the file was a spreadsheet.
 
         Args:
             attr_name (:obj:`str`): attribute name
@@ -1762,7 +1762,7 @@ class Model(object, metaclass=ModelMeta):
         _, ext = splitext(path)
         ext = ext.split('.')[-1]
         if 'xlsx' in ext:
-            col = excel_col_name(column)
+            col = xlsx_col_name(column)
             return (ext, quote(basename(path)), quote(sheet_name), row, col)
         else:
             return (ext, quote(basename(path)), quote(sheet_name), row, column)
@@ -3325,8 +3325,8 @@ class Attribute(object, metaclass=abc.ABCMeta):
         """
         pass  # pragma: no cover
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -3706,8 +3706,8 @@ class EnumAttribute(LiteralAttribute):
             return self.enum_class[json]
         return None
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -3716,7 +3716,7 @@ class EnumAttribute(LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(EnumAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(EnumAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         allowed_values = [val.name for val in self.enum_class]
         if len(','.join(allowed_values)) <= 255:
@@ -3855,8 +3855,8 @@ class BooleanAttribute(LiteralAttribute):
 
         return None
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -3865,7 +3865,7 @@ class BooleanAttribute(LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(BooleanAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(BooleanAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         allowed_values = [True, False]
         validation.type = wc_utils.workbook.io.FieldValidationType.list
@@ -4035,8 +4035,8 @@ class FloatAttribute(NumericAttribute):
         if (not isnan(left_val) or not isnan(right_val)) and left_val != right_val:
             raise ValueError('{}.{} must be equal'.format(left.__class__.__name__, self.name))
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -4045,7 +4045,7 @@ class FloatAttribute(NumericAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(FloatAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(FloatAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.decimal
         validation.ignore_blank = self.nan
@@ -4144,8 +4144,8 @@ class PositiveFloatAttribute(FloatAttribute):
             return InvalidAttribute(self, errors)
         return None
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -4154,7 +4154,7 @@ class PositiveFloatAttribute(FloatAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(FloatAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(FloatAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.decimal
         validation.ignore_blank = self.nan
@@ -4344,8 +4344,8 @@ class IntegerAttribute(NumericAttribute):
             return None
         return int(json)
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -4354,7 +4354,7 @@ class IntegerAttribute(NumericAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(IntegerAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(IntegerAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.integer
         input_message = ['Enter an integer.']
@@ -4450,8 +4450,8 @@ class PositiveIntegerAttribute(IntegerAttribute):
             return InvalidAttribute(self, errors)
         return None
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -4460,7 +4460,7 @@ class PositiveIntegerAttribute(IntegerAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(IntegerAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(IntegerAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.integer
         input_message = ['Enter an integer.']
@@ -4611,8 +4611,8 @@ class StringAttribute(LiteralAttribute):
         """
         return value
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -4621,7 +4621,7 @@ class StringAttribute(LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(StringAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(StringAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         input_message = ['Enter a string.']
         error_message = ['Value must be a string.']
@@ -4940,8 +4940,8 @@ class LocalPathAttribute(LongStringAttribute):
             return None
         return pathlib.Path(json)
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -4950,7 +4950,7 @@ class LocalPathAttribute(LongStringAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(LocalPathAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(LocalPathAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         if self.none:
             validation.type = wc_utils.workbook.io.FieldValidationType.any
@@ -5216,8 +5216,8 @@ class DateAttribute(LiteralAttribute):
             return None
         return datetime.strptime(json, '%Y-%m-%d').date()
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -5226,7 +5226,7 @@ class DateAttribute(LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(DateAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(DateAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.date
         validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
@@ -5398,8 +5398,8 @@ class TimeAttribute(LiteralAttribute):
             return None
         return datetime.strptime(json, '%H:%M:%S').time()
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -5408,7 +5408,7 @@ class TimeAttribute(LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(TimeAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(TimeAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.time
         validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
@@ -5597,8 +5597,8 @@ class DateTimeAttribute(LiteralAttribute):
             return None
         return datetime.strptime(json, '%Y-%m-%d %H:%M:%S')
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -5607,7 +5607,7 @@ class DateTimeAttribute(LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(DateTimeAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(DateTimeAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.date
         validation.criterion = wc_utils.workbook.io.FieldValidationCriterion.between
@@ -5823,8 +5823,8 @@ class RangeAttribute(LiteralAttribute):
         else:
             return None
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -5833,7 +5833,7 @@ class RangeAttribute(LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(RangeAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(RangeAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                       doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
@@ -5966,8 +5966,8 @@ class ListAttribute(LiteralAttribute):
         """
         return json
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -5976,7 +5976,7 @@ class ListAttribute(LiteralAttribute):
         Returns:
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
-        validation = super(ListAttribute, self).get_excel_validation(sheet_models=sheet_models,
+        validation = super(ListAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
                                                                      doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
@@ -7190,8 +7190,8 @@ class OneToOneAttribute(RelatedAttribute):
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -7201,7 +7201,7 @@ class OneToOneAttribute(RelatedAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         sheet_models = sheet_models or []
-        validation = super(OneToOneAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(OneToOneAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         if self.related_class in sheet_models:
             if self.related_class.Meta.primary_attribute:
@@ -7575,8 +7575,8 @@ class ManyToOneAttribute(RelatedAttribute):
         setattr(right, self.name, None)
         setattr(left, self.name, new_left_child)
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -7586,7 +7586,7 @@ class ManyToOneAttribute(RelatedAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         sheet_models = sheet_models or []
-        validation = super(ManyToOneAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(ManyToOneAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         if self.related_class in sheet_models:
             if self.related_class.Meta.primary_attribute:
@@ -7948,8 +7948,8 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
             right_children.remove(right_child)
             left_children.append(left_child)
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -7959,7 +7959,7 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         sheet_models = sheet_models or []
-        validation = super(OneToManyAttribute, self).get_excel_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
+        validation = super(OneToManyAttribute, self).get_xlsx_validation(sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         if self.related_class in sheet_models:
             if self.related_class.Meta.table_format == TableFormat.row:
@@ -8301,8 +8301,8 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
             right_children.remove(right_child)
             left_children.append(left_child)
 
-    def get_excel_validation(self, sheet_models=None, doc_metadata_model=None):
-        """ Get Excel validation
+    def get_xlsx_validation(self, sheet_models=None, doc_metadata_model=None):
+        """ Get XLSX validation
 
         Args:
             sheet_models (:obj:`list` of :obj:`Model`, optional): models encoded as separate sheets
@@ -8312,7 +8312,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         sheet_models = sheet_models or []
-        validation = super(ManyToManyAttribute, self).get_excel_validation(
+        validation = super(ManyToManyAttribute, self).get_xlsx_validation(
             sheet_models=sheet_models, doc_metadata_model=doc_metadata_model)
 
         if self.related_class in sheet_models:
@@ -8686,8 +8686,8 @@ class Validator(object):
         return None
 
 
-def excel_col_name(col):
-    """ Convert column number to an Excel-style string.
+def xlsx_col_name(col):
+    """ Convert column number to an XLSX-style string.
 
     From http://stackoverflow.com/a/19169180/509882
 
@@ -8703,7 +8703,7 @@ def excel_col_name(col):
     LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     if not isinstance(col, int) or col < 1:
         raise ValueError(
-            "excel_col_name: col ({}) must be a positive integer".format(col))
+            "xlsx_col_name: col ({}) must be a positive integer".format(col))
 
     result = []
     while col:

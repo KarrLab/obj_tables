@@ -1,0 +1,5 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2020-07-18 12:17:37' objTablesVersion='1.0.5'					
+!Name	!ID	!SBML:species:id	!IsConstant	!Identifiers:kegg.compound	!HasOnlySubstanceUnits
+Fructose 6-phosphate	F6P	f6p	False	C05345	False
+ATP	ATP	atp	False	C00002	False
+ADP	ADP	adp	False	C00008	False

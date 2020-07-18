@@ -1,0 +1,6 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:17:41' objTablesVersion='1.0.5'							
+!ID	!QuantityType	!Value	!Sign	!Unit	!Identifiers:kegg.reaction	!Identifiers:kegg.compound	!UseAsPriorInformation
+keq R1	equilibrium constant	0.0984	0	dimensionless	R01061	C00003	False
+kmc R1 C1	Michaelis constant	0.96	0	mM	R01061	C00111	False
+kic R1 C1	inhibition constant	0.13	0	mM	R01070	C00118	False
+con C1	concentration	203.0	0	mM			False

@@ -1,0 +1,28 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2020-07-18 12:18:29' objTablesVersion='1.0.5' document='BIOMD0000000064'							
+!Name	!ID	!InitialConcentration	!Location	!Charge	!IsConstant	!Identifiers:kegg.compound	!HasOnlySubstanceUnits
+Glucose in Cytosol	GLCi	0.1	cytosol	0.0	False	C00293	False
+Glucose 6 Phosphate	G6P	2.5	cytosol	0.0	False	C00668	False
+Fructose 6 Phosphate	F6P	0.6	cytosol	0.0	False	C05345	False
+Fructose-1,6 bisphosphate	F16P	5.5	cytosol	0.0	False	C00354	False
+Triose-phosphate	TRIO	1.0	cytosol	0.0	False	C00118	False
+1,3-bisphosphoglycerate	BPG	0.0	cytosol	0.0	False	C00236	False
+3-phosphoglycerate	P3G	0.9	cytosol	0.0	False	C00197	False
+2-phosphoglycerate	P2G	0.1	cytosol	0.0	False	C00631	False
+Phosphoenolpyruvate	PEP	0.1	cytosol	0.0	False	C00074	False
+Pyruvate	PYR	1.9	cytosol	0.0	False	C00022	False
+Acetaldehyde	ACE	0.2	cytosol	0.0	False	C00084	False
+High energy phosphates	P	6.3	cytosol	0.0	False	C00008	False
+NAD	NAD	1.2	cytosol	0.0	False	C00003	False
+NADH	NADH	0.4	cytosol	0.0	False	C00004	False
+Glycogen	Glyc	0.0	cytosol	0.0	False	C00182	False
+Trehalose	Trh	0.0	cytosol	0.0	False	C01083	False
+CO2	CO2	1.0	cytosol	0.0	False	C00011	False
+Succinate	SUCC	0.0	cytosol	0.0	False		False
+Extracellular Glucose	GLCo	50.0	extracellular	0.0	False	C00293	False
+Ethanol	ETOH	50.0	cytosol	0.0	False	C00469	False
+Glycerol	GLY	0.2	cytosol	0.0	False	C00116	False
+ATP concentration	ATP	0.0	cytosol	0.0	False	C00002	False
+ADP concentration	ADP	0.0	cytosol	0.0	False	C00008	False
+AMP concentration	AMP	0.0	cytosol	0.0	False	C00020	False
+sum of AXP conc	SUM_P	4.1	cytosol	0.0	True	C00002	False
+F2,6P	F26BP	0.0	cytosol	0.0	True	C00665	False

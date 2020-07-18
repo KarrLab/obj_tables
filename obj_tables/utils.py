@@ -403,7 +403,7 @@ def get_attrs():
 
 def init_schema(filename, out_filename=None):
     """ Initialize an `obj_tables` schema from a tabular declarative specification in
-    :obj:`filename`. :obj:`filename` can be a Excel, CSV, or TSV file.
+    :obj:`filename`. :obj:`filename` can be a XLSX, CSV, or TSV file.
 
     Schemas (classes and attributes) should be defined using the following tabular format.
     Classes and their attributes can be defined in any order.
@@ -448,7 +448,7 @@ def init_schema(filename, out_filename=None):
 
     Raises:
         :obj:`ValueError`: if schema specification is not in a supported format,
-            an Excel schema file does not contain a worksheet with the name `!!_Schema` which specifies the schema,
+            an XLSX schema file does not contain a worksheet with the name `!!_Schema` which specifies the schema,
             the class inheritance structure is cyclic,
             or the schema specification is invalid (e.g., a class is defined multiple defined)
     """

@@ -15,7 +15,7 @@ from .core import (Model, Attribute,  # noqa: F401
                    InvalidObjectSet, InvalidModel, InvalidObject, InvalidAttribute, Validator,
                    ObjTablesWarning, SchemaWarning,
                    ModelSource, TableFormat,
-                   get_models, get_model, excel_col_name,
+                   get_models, get_model, xlsx_col_name,
                    ModelMerge,
                    TOC_TABLE_TYPE, TOC_SHEET_NAME,
                    SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)

@@ -1,0 +1,4 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:18:01' objTablesVersion='1.0.5'					
+!ID	!QuantityType	!Sign	!Unit	!Identifiers:obo.chebi	!UseAsPriorInformation
+Glucose	concentration	0	mM	CHEBI:17234	False
+Fructose	concentration	0	mM	CHEBI:15824	False

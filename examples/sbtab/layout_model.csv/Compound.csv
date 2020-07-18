@@ -1,0 +1,4 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2018-11-23' objTablesVersion='1.0.5' document='TestModel layout',,,
+!ID,!Location,!IsConstant,!HasOnlySubstanceUnits
+Species_1,Compartment_1,False,False
+Species_2,Compartment_1,False,False

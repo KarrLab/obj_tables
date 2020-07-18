@@ -1,0 +1,7 @@
+!!!ObjTables schema='SBtab' objTablesVersion='1.0.5' date='2020-07-18 12:19:09'		
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compartment' name='Compartment' date='2020-07-18 12:19:09' objTablesVersion='1.0.5' document='BIOMD0000000239'		
+!Name	!ID	!Size
+cytoplasm	CYTOPLASM	1.0
+mitochondrial intermembrane space	MT_IMS	1.0
+mitochondrial inner membrane	MT_IM	1.0
+mitochondrial matrix	MATRIX	1.0

@@ -159,7 +159,7 @@ class TestIo(unittest.TestCase):
                 self.assertEqual(row.leaf, leaf)
 
     def test_write_read(self):
-        # write/read to/from Excel
+        # write/read to/from XLSX
         root = self.root
         objects = list(set([root] + root.get_related()))
         objects = utils.group_objects_by_model(objects)
@@ -3390,7 +3390,7 @@ class UtilsTestCase(unittest.TestCase):
         obj_tables.io.get_ordered_attributes(Unit)
 
 
-class ExcelValidationTestCase(unittest.TestCase):
+class XlsxValidationTestCase(unittest.TestCase):
     def setUp(self):
         self.dirname = tempfile.mkdtemp()
 
@@ -3709,7 +3709,7 @@ class ExcelValidationTestCase(unittest.TestCase):
         filename = os.path.join(self.dirname, 'test.xlsx')
         WorkbookWriter().run(filename, objects, models=[TestParent, TestChild1, TestChild2])
 
-    def test_one_to_one_get_excel_validation(self):
+    def test_one_to_one_get_xlsx_validation(self):
         class Parent(core.Model):
             id = core.SlugAttribute()
 
@@ -3717,12 +3717,12 @@ class ExcelValidationTestCase(unittest.TestCase):
             id = core.SlugAttribute()
             parent = core.OneToOneAttribute(Parent, min_related=1, related_name='child')
 
-        validation = Child.parent.get_excel_validation()
+        validation = Child.parent.get_xlsx_validation()
         self.assertNotEqual(validation.criterion, None)
         self.assertEqual(validation.allowed_scalar_value, 1)
         self.assertEqual(validation.ignore_blank, False)
 
-    def test_one_to_one_get_excel_validation_with_multiple_cells(self):
+    def test_one_to_one_get_xlsx_validation_with_multiple_cells(self):
         class Parent(core.Model):
             id = core.SlugAttribute()
             other_child = core.ManyToOneAttribute('OtherChild', related_name='parents')
@@ -3744,12 +3744,12 @@ class ExcelValidationTestCase(unittest.TestCase):
                 attribute_order = ('id',)
                 table_format = core.TableFormat.multiple_cells
 
-        validation = Child.parent.get_excel_validation(sheet_models=[Parent])
+        validation = Child.parent.get_xlsx_validation(sheet_models=[Parent])
         self.assertEqual(validation.criterion, None)
         self.assertEqual(validation.allowed_scalar_value, None)
         self.assertEqual(validation.ignore_blank, False)
 
-    def test_many_to_one_get_excel_validation(self):
+    def test_many_to_one_get_xlsx_validation(self):
         class Parent(core.Model):
             id = core.SlugAttribute()
 
@@ -3757,7 +3757,7 @@ class ExcelValidationTestCase(unittest.TestCase):
             id = core.SlugAttribute()
             parent = core.ManyToOneAttribute(Parent, min_related=1, related_name='children')
 
-        validation = Child.parent.get_excel_validation()
+        validation = Child.parent.get_xlsx_validation()
         self.assertNotEqual(validation.criterion, None)
         self.assertEqual(validation.allowed_scalar_value, 1)
         self.assertEqual(validation.ignore_blank, False)

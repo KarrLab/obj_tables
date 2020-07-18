@@ -1,0 +1,4 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='QuantityMatrix' name='QuantityMatrix' date='2020-07-18 12:17:34' objTablesVersion='1.0.5',,
+!ID,!Sign,!Identifiers:obo.chebi
+Glucose,0,CHEBI:17234
+Fructose,0,CHEBI:15824

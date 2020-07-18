@@ -61,6 +61,42 @@ class RestTestCase(unittest.TestCase):
                                         ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
+        client = rest.app.test_client()
+        with open(schema_filename, 'rb') as schema_file:
+            with open(workbook_filename_1, 'rb') as workbook_file:
+                rv = client.post('/api/convert/', data={
+                    'schema': (schema_file, os.path.basename(schema_filename)),
+                    'workbook': (workbook_file, os.path.basename(workbook_filename_1)),
+                    'format': 'multi.csv',
+                })
+        self.assertEqual(rv.status_code, 200)
+        workbook_filename_3 = os.path.join(self.tempdir, 'file3.csv')
+        with open(workbook_filename_3, 'wb') as file:
+            file.write(rv.data)
+
+        p_0_c = io.MultiSeparatedValuesReader().run(workbook_filename_3,
+                                models=models,
+                                ignore_missing_attributes=True)[schema.Parent][0]
+        self.assertTrue(p_0_c.is_equal(p_0))
+
+        client = rest.app.test_client()
+        with open(schema_filename, 'rb') as schema_file:
+            with open(workbook_filename_1, 'rb') as workbook_file:
+                rv = client.post('/api/convert/', data={
+                    'schema': (schema_file, os.path.basename(schema_filename)),
+                    'workbook': (workbook_file, os.path.basename(workbook_filename_1)),
+                    'format': 'json',
+                })
+        self.assertEqual(rv.status_code, 200)
+        workbook_filename_4 = os.path.join(self.tempdir, 'file3.json')
+        with open(workbook_filename_4, 'wb') as file:
+            file.write(rv.data)
+
+        p_0_d = io.JsonReader().run(workbook_filename_4,
+                                models=models,
+                                ignore_missing_attributes=True)[schema.Parent][0]
+        self.assertTrue(p_0_d.is_equal(p_0))
+
         # invalid schema
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
         with open(schema_filename, 'rb') as schema_file:
@@ -299,7 +335,7 @@ class RestTestCase(unittest.TestCase):
         schema, _ = utils.init_schema(schema_filename)
         models = list(utils.get_models(schema).values())
 
-        # valid Excel file
+        # valid XLSX file
         wb_filename = os.path.join(self.tempdir, 'wb.xlsx')
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')

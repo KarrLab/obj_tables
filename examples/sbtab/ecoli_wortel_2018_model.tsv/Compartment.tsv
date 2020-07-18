@@ -1,0 +1,5 @@
+!!!ObjTables schema='SBtab' objTablesVersion='1.0.5' date='2020-07-18 12:19:44'		
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compartment' name='Compartment' date='2019-01-04' objTablesVersion='1.0.5' document='ecoli_wortel_2018'		
+!Name	!ID	!Size
+Cell	Cell	1.0
+external	external	1.0

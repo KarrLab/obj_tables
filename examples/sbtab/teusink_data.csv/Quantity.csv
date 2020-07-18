@@ -1,0 +1,476 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Quantity' name='Quantity' date='2020-07-18 12:18:19' objTablesVersion='1.0.5' level='1.0' version='0.1',,,,,,,,,,,
+!Reference,!QuantityType,!Mean,!Std,!Sign,!Unit,!Compound:SBML:species:id,!Reaction:SBML:reaction:id,!Organism,!Reaction:Identifiers:kegg.reaction,!Compound:Identifiers:kegg.compound,!UseAsPriorInformation
+yeastGFP,concentration of enzyme,169000.0,,0,molecules/cell,nan,vGAPDH,Saccharomyces cerevisiae,R01061,nan,False
+yeastGFP,concentration of enzyme,120000.0,,0,molecules/cell,nan,vGAPDH,Saccharomyces cerevisiae,R01061,nan,False
+yeastGFP,concentration of enzyme,121000.0,,0,molecules/cell,nan,vGAPDH,Saccharomyces cerevisiae,R01061,nan,False
+NIST,equilibrium constant,0.0984,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.156,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.17,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.187,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.193,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.205,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.337,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.36,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.41,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.42,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.43,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.433,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.44,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.45,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.487,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.55,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.58,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.616,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.62,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.64,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.69,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.71,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.789,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.92,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,1.015,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,1.3,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,1.4,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,0.042,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+NIST,equilibrium constant,17.0,,0,dimensionless,nan,vGAPDH,nan,R01061,nan,False
+yeastGFP,concentration of enzyme,89800.0,,0,molecules/cell,nan,vPFK,Saccharomyces cerevisiae,R00756,nan,False
+yeastGFP,concentration of enzyme,90200.0,,0,molecules/cell,nan,vPFK,Saccharomyces cerevisiae,R00756,nan,False
+Brenda,inhibitory constant,2.5,,0,mM,ATP,vPFK,Oryctolagus cuniculus,R00756,C00002,False
+Brenda,inhibitory constant,0.15,,0,mM,PEP,vPFK,Aspergillus niger,R00756,C00074,False
+Brenda,inhibitory constant,0.83,,0,mM,PEP,vPFK,Mus musculus,R00756,C00074,False
+Brenda,inhibitory constant,0.8,,0,mM,ATP,vPFK,Ascaris suum,R00756,C00002,False
+Brenda,inhibitory constant,0.5,,0,mM,ATP,vPFK,Fasciola hepatica,R00756,C00002,False
+Brenda,inhibitory constant,1.4,,0,mM,ATP,vPFK,Fasciola hepatica,R00756,C00002,False
+Brenda,inhibitory constant,0.25,,0,mM,ATP,vPFK,Sus scrofa,R00756,C00002,False
+Brenda,inhibitory constant,0.8,,0,mM,PEP,vPFK,nan,R00756,C00074,False
+Brenda,inhibitory constant,1.75,,0,mM,ADP,vPFK,nan,R00756,C00008,False
+NIST,equilibrium constant,1000.0,,0,dimensionless,nan,vPFK,nan,R00756,nan,False
+NIST,equilibrium constant,150.0,,0,dimensionless,nan,vPFK,nan,R00756,nan,False
+NIST,equilibrium constant,2290.0,,0,dimensionless,nan,vPFK,nan,R00756,nan,False
+NIST,equilibrium constant,2700.0,,0,dimensionless,nan,vPFK,nan,R00756,nan,False
+NIST,equilibrium constant,2800.0,,0,dimensionless,nan,vPFK,nan,R00756,nan,False
+NIST,equilibrium constant,2900.0,,0,dimensionless,nan,vPFK,nan,R00756,nan,False
+NIST,equilibrium constant,4800.0,,0,dimensionless,nan,vPFK,nan,R00756,nan,False
+NIST,equilibrium constant,800.0,,0,dimensionless,nan,vPFK,nan,R00756,nan,False
+yeastGFP,concentration of enzyme,91600.0,34200.0,0,molecules/cell,nan,vPGI,Saccharomyces cerevisiae,R00771,nan,False
+Brenda,inhibitory constant,12.0,,0,mM,F16P,vPGI,Thermococcus litoralis,R00771,C00354,False
+NIST,equilibrium constant,0.19,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.2,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.214,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.22,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.24,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.25,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.26,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.264,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.27,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.28,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.287,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.29,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.293,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.298,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.299,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.3,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.302,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.308,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.31,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.32,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.327,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.329,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.33,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.34,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.357,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.36,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.37,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.38,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.41,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.45,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.54,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+NIST,equilibrium constant,0.67,,0,dimensionless,nan,vPGI,nan,R00771,nan,False
+yeastGFP,concentration of enzyme,2020.0,,0,molecules/cell,nan,vPGM,Saccharomyces cerevisiae,R01518,nan,False
+yeastGFP,concentration of enzyme,172000.0,,0,molecules/cell,nan,vPGM,Saccharomyces cerevisiae,R01518,nan,False
+yeastGFP,concentration of enzyme,3730.0,,0,molecules/cell,nan,vPGM,Saccharomyces cerevisiae,R01518,nan,False
+NIST,equilibrium constant,8.65,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,9.81,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.02,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.3,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.4,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.43,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.45,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.5,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.6,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.7,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.72,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.8,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.84,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,10.9,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.0,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.1,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.11,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.14,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.28,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.3,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.31,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.36,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.4,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.47,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.59,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.64,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.65,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,11.74,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,4.9,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,5.0,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,5.1,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,5.25,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,5.3,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,5.35,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,5.8,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,6.0,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,6.1,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,6.2,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,6.3,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,6.6,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,6.8,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+NIST,equilibrium constant,9.8,,0,dimensionless,nan,vPGM,nan,R01518,nan,False
+yeastGFP,concentration of enzyme,1020000.0,358000.0,0,molecules/cell,nan,vALD,Saccharomyces cerevisiae,R01070,nan,False
+Brenda,inhibitory constant,0.13,,0,mM,TRIO,vALD,Escherichia coli,R01070,C00111,False
+Brenda,inhibitory constant,1.7,,0,mM,TRIO,vALD,Escherichia coli,R01070,C00111,False
+yeastGFP,concentration of enzyme,21100.0,,0,molecules/cell,nan,vGLK,Saccharomyces cerevisiae,R00299,nan,False
+yeastGFP,concentration of enzyme,40800.0,,0,molecules/cell,nan,vGLK,Saccharomyces cerevisiae,R00299,nan,False
+yeastGFP,concentration of enzyme,114000.0,,0,molecules/cell,nan,vGLK,Saccharomyces cerevisiae,R00299,nan,False
+Brenda,inhibitory constant,0.04,,0,mM,ADP,vGLK,Solanum tuberosum,R00299,C00008,False
+Brenda,inhibitory constant,0.108,,0,mM,ADP,vGLK,Solanum tuberosum,R00299,C00008,False
+Brenda,inhibitory constant,0.031,,0,mM,AMP,vGLK,Entamoeba histolytica,R00299,C00020,False
+Brenda,inhibitory constant,0.036,,0,mM,ADP,vGLK,Entamoeba histolytica,R00299,C00008,False
+Brenda,inhibitory constant,0.00065,,0,mM,AMP,vGLK,Entamoeba histolytica,R00299,C00020,False
+Brenda,inhibitory constant,0.193,,0,mM,ADP,vGLK,Entamoeba histolytica,R00299,C00008,False
+Brenda,inhibitory constant,0.13,,0,mM,ADP,vGLK,Trypanosoma cruzi,R00299,C00008,False
+Brenda,inhibitory constant,7.0,,0,mM,ADP,vGLK,Trypanosoma cruzi,R00299,C00008,False
+Brenda,inhibitory constant,1.5,,0,mM,ADP,vGLK,Trypanosoma cruzi,R00299,C00008,False
+Brenda,inhibitory constant,3.6,,0,mM,ATP,vGLK,Bubalus bubalis,R00299,C00002,False
+Brenda,inhibitory constant,3.6,,0,mM,ADP,vGLK,Bubalus bubalis,R00299,C00008,False
+Brenda,inhibitory constant,1.3,,0,mM,ADP,vGLK,Trypanosoma cruzi,R00299,C00008,False
+Brenda,inhibitory constant,3.5,,0,mM,ADP,vGLK,Rattus norvegicus,R00299,C00008,False
+Brenda,inhibitory constant,4.5,,0,mM,ATP,vGLK,Rattus norvegicus,R00299,C00002,False
+Brenda,inhibitory constant,0.5,,0,mM,ADP,vGLK,Sus scrofa,R00299,C00008,False
+Brenda,inhibitory constant,0.5,,0,mM,ATP,vGLK,Sus scrofa,R00299,C00002,False
+Brenda,inhibitory constant,8.0,,0,mM,PEP,vGLK,Sus scrofa,R00299,C00074,False
+Brenda,inhibitory constant,0.122,,0,mM,ADP,vGLK,Saccharomyces cerevisiae,R00299,C00008,False
+Brenda,inhibitory constant,1.5,,0,mM,ATP,vGLK,Oryctolagus cuniculus,R00299,C00002,False
+Brenda,inhibitory constant,3.0,,0,mM,ADP,vGLK,Oryctolagus cuniculus,R00299,C00008,False
+Brenda,inhibitory constant,7.8,,0,mM,ADP,vGLK,Oryctolagus cuniculus,R00299,C00008,False
+NIST,equilibrium constant,123.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,1310.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,139.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,154.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,172.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,186.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,193.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,203.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,205.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,222.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,230.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,245.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,249.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,277.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,286.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,300.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,304.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,340.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,430.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,618.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+NIST,equilibrium constant,88.0,,0,dimensionless,nan,vGLK,nan,R00299,nan,False
+yeastGFP,concentration of enzyme,76700.0,,0,molecules/cell,nan,vENO,Saccharomyces cerevisiae,R00658,nan,False
+yeastGFP,concentration of enzyme,2610.0,,0,molecules/cell,nan,vENO,Saccharomyces cerevisiae,R00658,nan,False
+NIST,equilibrium constant,1.43,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,2.35,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,2.45,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,2.63,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,2.76,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,2.83,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,2.84,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.17,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.19,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.21,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.27,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.4,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.5,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.54,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.8,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,3.92,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,4.29,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,4.41,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,4.52,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,4.55,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,4.6,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,4.68,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+NIST,equilibrium constant,5.15,,0,dimensionless,nan,vENO,nan,R00658,nan,False
+yeastGFP,concentration of enzyme,291000.0,24100.0,0,molecules/cell,nan,vPYK,Saccharomyces cerevisiae,R00200,nan,False
+yeastGFP,concentration of enzyme,2130.0,,0,molecules/cell,nan,vPYK,Saccharomyces cerevisiae,R00200,nan,False
+Brenda,inhibitory constant,1.77,,0,mM,ATP,vPYK,Toxoplasma gondii,R00200,C00002,False
+Brenda,inhibitory constant,10.0,,0,mM,ATP,vPYK,nan,R00200,C00002,False
+Brenda,inhibitory constant,4.0,,0,mM,ATP,vPYK,nan,R00200,C00002,False
+Brenda,inhibitory constant,3.9,,0,mM,ATP,vPYK,nan,R00200,C00002,False
+Brenda,inhibitory constant,9.6,,0,mM,ATP,vPYK,nan,R00200,C00002,False
+NIST,equilibrium constant,0.0011,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.00152,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.000155,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.000179,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.00208,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.00272,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.000386,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.0003,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.00413,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.000429,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.00045,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.000451,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.00049,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.00495,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.000552,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.000685,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+NIST,equilibrium constant,0.000735,,0,dimensionless,nan,vPYK,nan,R00200,nan,False
+yeastGFP,concentration of enzyme,2140.0,,0,molecules/cell,nan,vPDC,Saccharomyces cerevisiae,R00224,nan,False
+yeastGFP,concentration of enzyme,6560.0,,0,molecules/cell,nan,vPDC,Saccharomyces cerevisiae,R00224,nan,False
+yeastGFP,concentration of enzyme,1520.0,,0,molecules/cell,nan,vPDC,Saccharomyces cerevisiae,R00224,nan,False
+yeastGFP,concentration of enzyme,8970.0,,0,molecules/cell,nan,vPDC,Saccharomyces cerevisiae,R00224,nan,False
+yeastGFP,concentration of enzyme,471000.0,,0,molecules/cell,nan,vPDC,Saccharomyces cerevisiae,R00224,nan,False
+Brenda,inhibitory constant,1.45,,0,mM,PYR,vPDC,Saccharomyces cerevisiae,R00224,C00022,False
+Brenda,inhibitory constant,3.75,,0,mM,PYR,vPDC,Saccharomyces cerevisiae,R00224,C00022,False
+Brenda,inhibitory constant,3.04,,0,mM,PYR,vPDC,Saccharomyces cerevisiae,R00224,C00022,False
+Brenda,inhibitory constant,136.0,,0,mM,PYR,vPDC,Saccharomyces cerevisiae,R00224,C00022,False
+Brenda,inhibitory constant,433.0,,0,mM,PYR,vPDC,Saccharomyces cerevisiae,R00224,C00022,False
+Brenda,inhibitory constant,112.2,,0,mM,PYR,vPDC,Saccharomyces cerevisiae,R00224,C00022,False
+Brenda,inhibitory constant,1200.0,,0,mM,PYR,vPDC,Kluyveromyces lactis,R00224,C00022,False
+yeastGFP,concentration of enzyme,314000.0,132000.0,0,molecules/cell,nan,vPGK,Saccharomyces cerevisiae,R01512,nan,False
+Brenda,substrate catalytic rate constant,10.0,,0,1/s,nan,vPGK,Homo sapiens,R01512,C00063,False
+Brenda,inhibitory constant,1.5,,0,mM,AMP,vPGK,Saccharomyces cerevisiae,R01512,C00020,False
+Brenda,inhibitory constant,0.17,,0,mM,ADP,vPGK,Saccharomyces cerevisiae,R01512,C00008,False
+Brenda,inhibitory constant,2.0,,0,mM,AMP,vPGK,Saccharomyces cerevisiae,R01512,C00020,False
+Brenda,inhibitory constant,0.22,,0,mM,ADP,vPGK,Saccharomyces cerevisiae,R01512,C00008,False
+Brenda,inhibitory constant,0.08,,0,mM,ADP,vPGK,Mus musculus,R01512,C00008,False
+Brenda,inhibitory constant,0.175,,0,mM,ADP,vPGK,Mus musculus,R01512,C00008,False
+Brenda,inhibitory constant,0.039,,0,mM,ADP,vPGK,Sus scrofa,R01512,C00008,False
+Brenda,substrate catalytic rate constant,570.0,,0,1/s,P3G,vPGK,Hippoglossus stenolepis,R01512,C00197,False
+Brenda,substrate catalytic rate constant,570.0,,0,1/s,ATP,vPGK,Hippoglossus stenolepis,R01512,C00002,False
+Brenda,substrate catalytic rate constant,411.0,,0,1/s,ATP,vPGK,Pseudomonas sp.,R01512,C00002,False
+Brenda,substrate catalytic rate constant,500.0,,0,1/s,ATP,vPGK,Pseudomonas sp.,R01512,C00002,False
+Brenda,substrate catalytic rate constant,540.0,,0,1/s,P3G,vPGK,Pseudomonas sp.,R01512,C00197,False
+Brenda,substrate catalytic rate constant,519.0,,0,1/s,ATP,vPGK,Pseudomonas sp.,R01512,C00002,False
+Brenda,substrate catalytic rate constant,362.0,,0,1/s,P3G,vPGK,Pseudomonas sp.,R01512,C00197,False
+Brenda,substrate catalytic rate constant,537.0,,0,1/s,P3G,vPGK,Pseudomonas sp.,R01512,C00197,False
+Brenda,substrate catalytic rate constant,500.0,,0,1/s,ATP,vPGK,Homo sapiens,R01512,C00002,False
+Brenda,substrate catalytic rate constant,100.0,,0,1/s,ATP,vPGK,Homo sapiens,R01512,C00002,False
+NIST,equilibrium constant,0.00102,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.00143,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.00015,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000225,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000241,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000242,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000251,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000272,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000274,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000278,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.0003,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000318,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.00031,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000349,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000392,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.0004,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000529,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000548,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,0.000549,,0,dimensionless,nan,vPGK,nan,R01512,nan,False
+NIST,equilibrium constant,8e-05,,0,nan,nan,vPGK,nan,R01512,nan,False
+Brenda,Michaelis constant,0.04,,0,mM,ATP,vPGK,Saccharomyces cerevisiae,R01512,C00002,False
+Brenda,Michaelis constant,0.2,,0,mM,ADP,vPGK,Saccharomyces cerevisiae,R01512,C00008,False
+Brenda,Michaelis constant,2.5,,0,mM,P3G,vPGK,Saccharomyces cerevisiae,R01512,C00197,False
+Brenda,Michaelis constant,1.28,,0,mM,P3G,vPGK,Saccharomyces cerevisiae,R01512,C00197,False
+Brenda,Michaelis constant,1.25,,0,mM,ATP,vPGK,Saccharomyces cerevisiae,R01512,C00002,False
+Brenda,Michaelis constant,3.45,,0,mM,ATP,vPGK,Saccharomyces cerevisiae,R01512,C00002,False
+Brenda,Michaelis constant,0.33,,0,mM,ATP,vPGK,Saccharomyces cerevisiae,R01512,C00002,False
+Brenda,Michaelis constant,0.77,,0,mM,P3G,vPGK,Saccharomyces cerevisiae,R01512,C00197,False
+Brenda,Michaelis constant,0.48,,0,mM,ATP,vPGK,Saccharomyces cerevisiae,R01512,C00002,False
+Brenda,Michaelis constant,0.35,,0,mM,ATP,vPGK,Oryctolagus cuniculus,R01512,C00002,False
+Brenda,Michaelis constant,0.0022,,0,mM,P3G,vPGK,Oryctolagus cuniculus,R01512,C00197,False
+Brenda,Michaelis constant,0.095,,0,mM,ATP,vPGK,Ovis aries,R01512,C00002,False
+Brenda,Michaelis constant,0.09,,0,mM,ATP,vPGK,Ovis aries,R01512,C00002,False
+Brenda,Michaelis constant,0.3,,0,mM,ATP,vPGK,Spinacia oleracea,R01512,C00002,False
+Brenda,Michaelis constant,0.27,,0,mM,ADP,vPGK,Spinacia oleracea,R01512,C00008,False
+Brenda,Michaelis constant,4.1,,0,mM,ATP,vPGK,Pisum sativum,R01512,C00002,False
+Brenda,Michaelis constant,7.6,,0,mM,P3G,vPGK,Pisum sativum,R01512,C00197,False
+Brenda,Michaelis constant,2.0,,0,mM,P3G,vPGK,Trypanosoma brucei,R01512,C00197,False
+Brenda,Michaelis constant,0.12,,0,mM,ATP,vPGK,Trypanosoma brucei,R01512,C00002,False
+Brenda,Michaelis constant,0.29,,0,mM,ATP,vPGK,Trypanosoma brucei,R01512,C00002,False
+Brenda,Michaelis constant,2.4,,0,mM,P3G,vPGK,Trypanosoma brucei,R01512,C00197,False
+Brenda,Michaelis constant,0.46,,0,mM,ATP,vPGK,Trypanosoma brucei,R01512,C00002,False
+Brenda,Michaelis constant,11.9,,0,mM,P3G,vPGK,Trypanosoma brucei,R01512,C00197,False
+Brenda,Michaelis constant,1.25,,0,mM,P3G,vPGK,Trypanosoma brucei,R01512,C00197,False
+Brenda,Michaelis constant,1.55,,0,mM,P3G,vPGK,Trypanosoma brucei,R01512,C00197,False
+Brenda,Michaelis constant,0.21,,0,mM,ATP,vPGK,Trypanosoma brucei,R01512,C00002,False
+Brenda,Michaelis constant,0.52,,0,mM,P3G,vPGK,Plasmodium falciparum,R01512,C00197,False
+Brenda,Michaelis constant,0.63,,0,mM,ATP,vPGK,Plasmodium falciparum,R01512,C00002,False
+Brenda,Michaelis constant,1.1,,0,mM,ATP,vPGK,Zymomonas mobilis,R01512,C00002,False
+Brenda,Michaelis constant,1.5,,0,mM,P3G,vPGK,Zymomonas mobilis,R01512,C00197,False
+Brenda,Michaelis constant,0.32,,0,mM,ATP,vPGK,Selenastrum minutum,R01512,C00002,False
+Brenda,Michaelis constant,0.46,,0,mM,P3G,vPGK,Selenastrum minutum,R01512,C00197,False
+Brenda,Michaelis constant,0.73,,0,mM,ATP,vPGK,Methanothermus fervidus,R01512,C00002,False
+Brenda,Michaelis constant,0.75,,0,mM,P3G,vPGK,Methanothermus fervidus,R01512,C00197,False
+Brenda,Michaelis constant,0.6,,0,mM,P3G,vPGK,Beta vulgaris,R01512,C00197,False
+Brenda,Michaelis constant,0.15,,0,mM,ATP,vPGK,Beta vulgaris,R01512,C00002,False
+Brenda,Michaelis constant,0.9,,0,mM,ATP,vPGK,Fasciola hepatica,R01512,C00002,False
+Brenda,Michaelis constant,1.26,,0,mM,P3G,vPGK,Fasciola hepatica,R01512,C00197,False
+Brenda,Michaelis constant,2.2,,0,mM,P3G,vPGK,nan,R01512,C00197,False
+Brenda,Michaelis constant,2.9,,0,mM,ATP,vPGK,nan,R01512,C00002,False
+Brenda,Michaelis constant,0.038,,0,mM,ATP,vPGK,Mus musculus,R01512,C00002,False
+Brenda,Michaelis constant,0.11,,0,mM,ATP,vPGK,Mus musculus,R01512,C00002,False
+Brenda,Michaelis constant,0.2,,0,mM,P3G,vPGK,Mus musculus,R01512,C00197,False
+Brenda,Michaelis constant,0.19,,0,mM,ADP,vPGK,Mus musculus,R01512,C00008,False
+Brenda,Michaelis constant,0.22,,0,mM,ATP,vPGK,Mus musculus,R01512,C00002,False
+Brenda,Michaelis constant,0.23,,0,mM,ADP,vPGK,Mus musculus,R01512,C00008,False
+Brenda,Michaelis constant,0.028,,0,mM,P3G,vPGK,Mus musculus,R01512,C00197,False
+Brenda,Michaelis constant,0.15,,0,mM,P3G,vPGK,Mus musculus,R01512,C00197,False
+Brenda,Michaelis constant,0.42,,0,mM,ATP,vPGK,Mus musculus,R01512,C00002,False
+Brenda,Michaelis constant,0.039,,0,mM,ADP,vPGK,Mus musculus,R01512,C00008,False
+Brenda,Michaelis constant,0.37,,0,mM,ATP,vPGK,Mus musculus,R01512,C00002,False
+Brenda,Michaelis constant,1.79,,0,mM,P3G,vPGK,nan,R01512,C00197,False
+Brenda,Michaelis constant,0.28,,0,mM,ATP,vPGK,nan,R01512,C00002,False
+Brenda,Michaelis constant,4.8,,0,mM,ATP,vPGK,Pyrococcus woesei,R01512,C00002,False
+Brenda,Michaelis constant,4.05,,0,mM,ATP,vPGK,Pyrococcus woesei,R01512,C00002,False
+Brenda,Michaelis constant,0.89,,0,mM,P3G,vPGK,Pseudomonas sp.,R01512,C00197,False
+Brenda,Michaelis constant,0.38,,0,mM,ATP,vPGK,Pseudomonas sp.,R01512,C00002,False
+Brenda,Michaelis constant,0.53,,0,mM,P3G,vPGK,Pseudomonas sp.,R01512,C00197,False
+Brenda,Michaelis constant,0.48,,0,mM,P3G,vPGK,Pseudomonas sp.,R01512,C00197,False
+Brenda,Michaelis constant,0.7,,0,mM,ATP,vPGK,Lactobacillus delbrueckii subsp. lactis,R01512,C00002,False
+Brenda,Michaelis constant,2.6,,0,mM,P3G,vPGK,Lactobacillus delbrueckii subsp. lactis,R01512,C00197,False
+Brenda,Michaelis constant,0.59,,0,mM,ATP,vPGK,Nitrosospira sp. TYM9,R01512,C00002,False
+Brenda,Michaelis constant,0.72,,0,mM,P3G,vPGK,Nitrosospira sp. TYM9,R01512,C00197,False
+Brenda,Michaelis constant,2.11,,0,mM,ATP,vPGK,Nitrosospira sp. PJA1,R01512,C00002,False
+Brenda,Michaelis constant,0.57,,0,mM,P3G,vPGK,Nitrosospira sp. PJA1,R01512,C00197,False
+Brenda,Michaelis constant,0.8,,0,mM,P3G,vPGK,Nitrosospira sp. TCH716,R01512,C00197,False
+Brenda,Michaelis constant,0.57,,0,mM,ATP,vPGK,Nitrosospira sp. TCH716,R01512,C00002,False
+Brenda,Michaelis constant,0.76,,0,mM,ATP,vPGK,Nitrosospira sp. KAN8,R01512,C00002,False
+Brenda,Michaelis constant,1.02,,0,mM,P3G,vPGK,Nitrosospira sp. KAN8,R01512,C00197,False
+Brenda,Michaelis constant,0.5,,0,mM,P3G,vPGK,nan,R01512,C00197,False
+Brenda,Michaelis constant,0.53,,0,mM,ATP,vPGK,nan,R01512,C00002,False
+Brenda,Michaelis constant,1.96,,0,mM,ATP,vPGK,Nitrosovibrio sp. RY3C,R01512,C00002,False
+Brenda,Michaelis constant,0.81,,0,mM,P3G,vPGK,Nitrosovibrio sp. RY6A,R01512,C00197,False
+Brenda,Michaelis constant,1.58,,0,mM,ATP,vPGK,Nitrosovibrio sp. RY6A,R01512,C00002,False
+Brenda,Michaelis constant,0.3,,0,mM,ATP,vPGK,Homo sapiens,R01512,C00002,False
+Brenda,Michaelis constant,0.5,,0,mM,ATP,vPGK,Homo sapiens,R01512,C00002,False
+Brenda,Michaelis constant,1.1,,0,mM,P3G,vPGK,Homo sapiens,R01512,C00197,False
+Brenda,Michaelis constant,0.59,,0,mM,P3G,vPGK,Homo sapiens,R01512,C00197,False
+Brenda,Michaelis constant,1.41,,0,mM,P3G,vPGK,Nitrosovibrio sp. FJI82,R01512,C00197,False
+Brenda,Michaelis constant,0.66,,0,mM,ATP,vPGK,Nitrosovibrio sp. FJI82,R01512,C00002,False
+Brenda,Michaelis constant,0.51,,0,mM,ATP,vPGK,Nitrosospira sp. GS833,R01512,C00002,False
+Brenda,Michaelis constant,1.39,,0,mM,P3G,vPGK,Nitrosospira sp. GS833,R01512,C00197,False
+Brenda,Michaelis constant,0.9,,0,mM,P3G,vPGK,Nitrosospira sp. NRS527,R01512,C00197,False
+Brenda,Michaelis constant,0.77,,0,mM,ATP,vPGK,Nitrosospira sp. NRS527,R01512,C00002,False
+Brenda,Michaelis constant,1.65,,0,mM,P3G,vPGK,Rattus norvegicus,R01512,C00197,False
+Brenda,Michaelis constant,1.66,,0,mM,P3G,vPGK,Rattus norvegicus,R01512,C00197,False
+Brenda,Michaelis constant,1.4,,0,mM,P3G,vPGK,Rattus norvegicus,R01512,C00197,False
+Brenda,Michaelis constant,0.24,,0,mM,ATP,vPGK,Rattus norvegicus,R01512,C00002,False
+nan,concentration,69.6,62.6,0,mM,CO2,nan,nan,nan,C00011,False
+Alberty,standard chemical potential,-394.36,,0,kJ/mol,CO2,nan,nan,nan,C00011,False
+Alberty,standard chemical potential,-547.13,,0,kJ/mol,CO2,nan,nan,nan,C00011,False
+nan,concentration,341.0,307.0,0,mM,NADH,nan,nan,nan,C00004,False
+Alberty,standard chemical potential,1117.5,,0,kJ/mol,NADH,nan,nan,nan,C00004,False
+nan,concentration,0.33,,0,mM,TRIO,nan,Saccharomyces cerevisiae,nan,C00111,False
+nan,concentration,0.203,,0,mM,TRIO,nan,Escherichia coli,nan,C00111,False
+nan,concentration,0.1,,0,mM,TRIO,nan,Dictyostelium discoideum,nan,C00111,False
+nan,concentration,0.012,,0,mM,TRIO,nan,Homo sapiens,nan,C00111,False
+nan,concentration,0.0007,,0,mM,TRIO,nan,Vigna radiata var. radiata,nan,C00111,False
+nan,concentration,0.012,,0,mM,TRIO,nan,Rattus sp.,nan,C00111,False
+nan,concentration,0.01,,0,mM,TRIO,nan,Oryctolagus cuniculus,nan,C00111,False
+nan,concentration,32.8,29.5,0,mM,TRIO,nan,nan,nan,C00111,False
+nan,concentration,0.045,0.005,0,mM,TRIO,nan,Rattus sp.,nan,C00111,False
+nan,concentration,0.043,0.003,0,mM,TRIO,nan,Rattus sp.,nan,C00111,False
+Alberty,standard chemical potential,-1095.82,,0,kJ/mol,TRIO,nan,nan,nan,C00111,False
+nan,concentration,341.0,307.0,0,mM,GLCi,nan,nan,nan,C00293,False
+Alberty,standard chemical potential,-428.06,,0,kJ/mol,GLCi,nan,nan,nan,C00293,False
+nan,concentration,0.823,,0,mM,ADP,nan,Escherichia coli,nan,C00008,False
+nan,concentration,0.2,,0,mM,ADP,nan,Dictyostelium discoideum,nan,C00008,False
+nan,concentration,1.7,,0,mM,ADP,nan,Rattus sp.,nan,C00008,False
+nan,concentration,1.059,,0,mM,ADP,nan,Rattus sp.,nan,C00008,False
+nan,concentration,0.126,,0,mM,ADP,nan,Homo sapiens,nan,C00008,False
+nan,concentration,0.5,,0,mM,ADP,nan,Oryctolagus cuniculus,nan,C00008,False
+nan,concentration,184.0,166.0,0,mM,ADP,nan,nan,nan,C00008,False
+nan,concentration,0.81,0.49,0,mM,ADP,nan,Saccharomyces cerevisiae,nan,C00008,False
+nan,concentration,1.084,0.208,0,mM,ADP,nan,Rattus sp.,nan,C00008,False
+Alberty,standard chemical potential,-1425.17,,0,kJ/mol,ADP,nan,nan,nan,C00008,False
+nan,concentration,1.9,,0,mM,F16P,nan,Escherichia coli,nan,C00354,False
+nan,concentration,0.05,,0,mM,F16P,nan,Dictyostelium discoideum,nan,C00354,False
+nan,concentration,0.046,,0,mM,F16P,nan,Rattus sp.,nan,C00354,False
+nan,concentration,0.005,,0,mM,F16P,nan,Homo sapiens,nan,C00354,False
+nan,concentration,0.001,,0,mM,F16P,nan,Vigna radiata var. radiata,nan,C00354,False
+nan,concentration,0.0085,,0,mM,F16P,nan,Rattus sp.,nan,C00354,False
+nan,concentration,0.007,,0,mM,F16P,nan,Oryctolagus cuniculus,nan,C00354,False
+nan,concentration,19.7,17.8,0,mM,F16P,nan,nan,nan,C00354,False
+nan,concentration,3.1,1.4,0,mM,F16P,nan,Saccharomyces cerevisiae,nan,C00354,False
+nan,concentration,0.031,0.008,0,mM,F16P,nan,Rattus sp.,nan,C00354,False
+Alberty,standard chemical potential,-2206.14,,0,kJ/mol,F16P,nan,nan,nan,C00354,False
+nan,concentration,0.025,,0,mM,NAD,nan,Dictyostelium discoideum,nan,C00003,False
+nan,concentration,1.097,,0,mM,NAD,nan,Rattus sp.,nan,C00003,False
+nan,concentration,0.31,,0,mM,NAD,nan,Rattus sp.,nan,C00003,False
+nan,concentration,0.426,,0,mM,NAD,nan,Rattus sp.,nan,C00003,False
+nan,concentration,1.3,0.3,0,mM,NAD,nan,Saccharomyces cerevisiae,nan,C00003,False
+nan,concentration,1.667,0.411,0,mM,NAD,nan,Escherichia coli,nan,C00003,False
+Alberty,standard chemical potential,1056.29,,0,kJ/mol,NAD,nan,nan,nan,C00003,False
+nan,concentration,2.641,,0,mM,ATP,nan,Escherichia coli,nan,C00002,False
+nan,concentration,0.7,,0,mM,ATP,nan,Dictyostelium discoideum,nan,C00002,False
+nan,concentration,3.535,,0,mM,ATP,nan,Rattus sp.,nan,C00002,False
+nan,concentration,3.075,,0,mM,ATP,nan,Rattus sp.,nan,C00002,False
+nan,concentration,1.13,,0,mM,ATP,nan,Homo sapiens,nan,C00002,False
+nan,concentration,0.0109,,0,mM,ATP,nan,Vigna radiata var. radiata,nan,C00002,False
+nan,concentration,1.7,,0,mM,ATP,nan,Oryctolagus cuniculus,nan,C00002,False
+nan,concentration,176.0,158.0,0,mM,ATP,nan,nan,nan,C00002,False
+nan,concentration,1.5,0.4,0,mM,ATP,nan,Saccharomyces cerevisiae,nan,C00002,False
+nan,concentration,3.3,2.3,0,mM,ATP,nan,Rattus sp.,nan,C00002,False
+Alberty,standard chemical potential,-2292.28,,0,kJ/mol,ATP,nan,nan,nan,C00002,False
+nan,concentration,0.143,,0,mM,PEP,nan,Rattus sp.,nan,C00074,False
+nan,concentration,0.008,,0,mM,PEP,nan,Rattus sp.,nan,C00074,False
+nan,concentration,0.012,,0,mM,PEP,nan,Homo sapiens,nan,C00074,False
+nan,concentration,0.004,,0,mM,PEP,nan,Rattus sp.,nan,C00074,False
+nan,concentration,0.01,,0,mM,PEP,nan,Oryctolagus cuniculus,nan,C00074,False
+nan,concentration,32.8,29.5,0,mM,PEP,nan,nan,nan,C00074,False
+nan,concentration,0.1955,0.1045,0,mM,PEP,nan,Escherichia coli,nan,C00074,False
+Alberty,standard chemical potential,-1189.04,,0,kJ/mol,PEP,nan,nan,nan,C00074,False
+nan,concentration,89.6,80.7,0,mM,ACE,nan,nan,nan,C00084,False
+Alberty,standard chemical potential,23.61,,0,kJ/mol,ACE,nan,nan,nan,C00084,False
+nan,concentration,137.0,124.0,0,mM,ETOH,nan,nan,nan,C00469,False
+Alberty,standard chemical potential,62.28,,0,kJ/mol,ETOH,nan,nan,nan,C00469,False
+nan,concentration,9.61,8.65,0,mM,BPG,nan,nan,nan,C00236,False
+Alberty,standard chemical potential,-2206.35,,0,kJ/mol,BPG,nan,nan,nan,C00236,False
+nan,concentration,82.1,73.9,0,mM,G6P,nan,nan,nan,C00668,False
+Alberty,standard chemical potential,-1319.75,,0,kJ/mol,G6P,nan,nan,nan,C00668,False
+nan,concentration,1.6,,0,mM,PYR,nan,Saccharomyces cerevisiae,nan,C00022,False
+nan,concentration,0.39,,0,mM,PYR,nan,Escherichia coli,nan,C00022,False
+nan,concentration,0.06,,0,mM,PYR,nan,Dictyostelium discoideum,nan,C00022,False
+nan,concentration,0.187,,0,mM,PYR,nan,Rattus sp.,nan,C00022,False
+nan,concentration,0.056,,0,mM,PYR,nan,Rattus sp.,nan,C00022,False
+nan,concentration,0.09,,0,mM,PYR,nan,Oryctolagus cuniculus,nan,C00022,False
+nan,concentration,88.9,80.0,0,mM,PYR,nan,nan,nan,C00022,False
+nan,concentration,0.1495,0.1105,0,mM,PYR,nan,Rattus sp.,nan,C00022,False
+Alberty,standard chemical potential,-351.01,,0,kJ/mol,PYR,nan,nan,nan,C00022,False
+nan,concentration,19.7,17.8,0,mM,F26BP,nan,nan,nan,C00665,False
+nan,concentration,0.049,,0,mM,P2G,nan,Rattus sp.,nan,C00631,False
+nan,concentration,0.005,,0,mM,P2G,nan,Rattus sp.,nan,C00631,False
+nan,concentration,0.007,,0,mM,P2G,nan,Homo sapiens,nan,C00631,False
+nan,concentration,0.005,,0,mM,P2G,nan,Oryctolagus cuniculus,nan,C00631,False
+nan,concentration,40.0,36.0,0,mM,P2G,nan,nan,nan,C00631,False
+nan,concentration,0.76,0.34,0,mM,P2G,nan,Saccharomyces cerevisiae,nan,C00631,False
+nan,concentration,0.026,-0.023,0,mM,P2G,nan,Rattus sp.,nan,C00631,False
+Alberty,standard chemical potential,-1341.51,,0,kJ/mol,P2G,nan,nan,nan,C00631,False
+nan,concentration,0.41,,0,mM,P3G,nan,Rattus sp.,nan,C00197,False
+nan,concentration,0.048,,0,mM,P3G,nan,Homo sapiens,nan,C00197,False
+nan,concentration,0.026,,0,mM,P3G,nan,Rattus sp.,nan,C00197,False
+nan,concentration,0.046,,0,mM,P3G,nan,Oryctolagus cuniculus,nan,C00197,False
+nan,concentration,40.0,36.0,0,mM,P3G,nan,nan,nan,C00197,False
+nan,concentration,0.18,0.08,0,mM,P3G,nan,Saccharomyces cerevisiae,nan,C00197,False
+nan,concentration,0.044,0.004,0,mM,P3G,nan,Rattus sp.,nan,C00197,False
+Alberty,standard chemical potential,-1347.41,,0,kJ/mol,P3G,nan,nan,nan,C00197,False
+Alberty,standard chemical potential,-1316.55,,0,kJ/mol,F6P,nan,nan,nan,C05345,False
+nan,concentration,0.151,,0,mM,AMP,nan,Escherichia coli,nan,C00020,False
+nan,concentration,0.05,,0,mM,AMP,nan,Homo sapiens,nan,C00020,False
+nan,concentration,0.0109,,0,mM,AMP,nan,Vigna radiata var. radiata,nan,C00020,False
+nan,concentration,0.123,,0,mM,AMP,nan,Rattus sp.,nan,C00020,False
+nan,concentration,0.06,,0,mM,AMP,nan,Oryctolagus cuniculus,nan,C00020,False
+nan,concentration,193.0,174.0,0,mM,AMP,nan,nan,nan,C00020,False
+nan,concentration,0.235,0.065,0,mM,AMP,nan,Saccharomyces cerevisiae,nan,C00020,False
+Alberty,standard chemical potential,-555.8,,0,kJ/mol,AMP,nan,nan,nan,C00020,False

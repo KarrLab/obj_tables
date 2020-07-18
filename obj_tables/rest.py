@@ -68,9 +68,9 @@ convert_parser.add_argument('schema', location='files',
 convert_parser.add_argument('workbook', location='files',
                             type=FileStorage,
                             required=True,
-                            help='Workbook (.csv, .tsv, .zip of .csv or .tsv, .xlsx)')
+                            help='Workbook (.csv, .json, .tsv, .yml, .xlsx, .zip of .csv or .tsv)')
 convert_parser.add_argument('format',
-                            type=flask_restplus.inputs.regex(r'^(csv|tsv|xlsx)$'),
+                            type=flask_restplus.inputs.regex(r'^(csv|multi\.csv|json|tsv|multi\.tsv|xlsx|yml)$'),
                             default='xlsx',
                             required=False,
                             help='Format to convert workbook')
@@ -92,13 +92,13 @@ convert_parser.add_argument('protected',
 
 
 @api.route("/convert/",
-           doc={'description': 'Convert a schema-encoded workbook to another format (CSV, Excel, JSON, TSV, YAML)'})
+           doc={'description': 'Convert a schema-encoded workbook to another format (CSV, multi-CSV, JSON, TSV, multi-TSV, XLSX, YAML)'})
 @api.expect(convert_parser)
 class Convert(flask_restplus.Resource):
-    """ Convert a schema-encoded workbook to another format (CSV, Excel, JSON, TSV, YAML) """
+    """ Convert a schema-encoded workbook to another format (CSV, multi-CSV, JSON, TSV, multi-TSV, XLSX, YAML) """
 
     def post(self):
-        """ Convert a schema-encoded workbook to another format (CSV, Excel, JSON, TSV, YAML)
+        """ Convert a schema-encoded workbook to another format (CSV, multi-CSV, JSON, TSV, multi-TSV, XLSX, YAML)
         """
         """
         Returns:
@@ -148,11 +148,11 @@ diff_parser.add_argument('model',
 diff_parser.add_argument('workbook', location='files',
                          type=FileStorage,
                          required=True,
-                         help='First workbook (.csv, .tsv, .zip of .csv or .tsv, .xlsx)')
+                         help='First workbook (.csv, .json, .tsv, .yml, .xlsx, .zip of .csv or .tsv)')
 diff_parser.add_argument('workbook-2', location='files',
                          type=FileStorage,
                          required=True,
-                         help='Second workbook (.csv, .tsv, .zip of .csv or .tsv, .xlsx)')
+                         help='Second workbook (.csv, .json, .tsv, .yml, .xlsx, .zip of .csv or .tsv)')
 
 
 @api.route("/diff/",
@@ -204,7 +204,7 @@ gen_template_parser.add_argument('schema', location='files',
                                  required=True,
                                  help='Schema file (.csv, .tsv, .xlsx)')
 gen_template_parser.add_argument('format',
-                                 type=flask_restplus.inputs.regex(r'^(csv|tsv|xlsx)$'),
+                                 type=flask_restplus.inputs.regex(r'^(csv|multi\.csv|json|tsv|multi\.tsv|xlsx|yml)$'),
                                  default='xlsx',
                                  required=False,
                                  help='Format for template')
@@ -226,13 +226,13 @@ gen_template_parser.add_argument('protected',
 
 
 @api.route("/gen-template/",
-           doc={'description': 'Generate a template workbook (Excel, CSV, TSV) for a schema or declarative description of a schema'})
+           doc={'description': 'Generate a template workbook (CSV, multi-CSV, TSV, multi-TSV, XLSX) for a schema or declarative description of a schema'})
 @api.expect(gen_template_parser)
 class GenTemplate(flask_restplus.Resource):
-    """ Generate a template workbook (Excel, CSV, TSV) for a schema or declarative description of a schema """
+    """ Generate a template workbook (CSV, multi-CSV, TSV, multi-TSV, XLSX) for a schema or declarative description of a schema """
 
     def post(self):
-        """ Generate a template workbook (Excel, CSV, TSV) for a schema or declarative description of a schema
+        """ Generate a template workbook (CSV, multi-CSV, TSV, multi-TSV, XLSX) for a schema or declarative description of a schema
         """
         """
         Returns:
@@ -279,13 +279,13 @@ init_schema_parser.add_argument('schema', location='files',
 
 
 @api.route("/init-schema/",
-           doc={'description': 'Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)'})
+           doc={'description': 'Initialize a Python schema from a declarative description of the schema in a table (CSV, TSV, XLSX)'})
 @api.expect(init_schema_parser)
 class InitSchema(flask_restplus.Resource):
-    """ Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV) """
+    """ Initialize a Python schema from a declarative description of the schema in a table (CSV, TSV, XLSX) """
 
     def post(self):
-        """ Initialize a Python schema from a declarative description of the schema in a table (Excel, CSV, TSV)
+        """ Initialize a Python schema from a declarative description of the schema in a table (CSV, TSV, XLSX)
         """
         """
         Returns:
@@ -330,9 +330,9 @@ norm_parser.add_argument('model',
 norm_parser.add_argument('workbook', location='files',
                          type=FileStorage,
                          required=True,
-                         help='Workbook (.csv, .tsv, .zip of .csv or .tsv, .xlsx)')
+                         help='Workbook (.csv, .json, .tsv, .yml, .xlsx, .zip of .csv or .tsv)')
 norm_parser.add_argument('format',
-                         type=flask_restplus.inputs.regex(r'^(csv|tsv|xlsx)$'),
+                         type=flask_restplus.inputs.regex(r'^(csv|multi\.csv|json|tsv|multi\.tsv|xlsx|yml)$'),
                          default='xlsx',
                          required=False,
                          help='Format for normalized workbook')
@@ -419,7 +419,7 @@ validate_parser.add_argument('schema', location='files',
 validate_parser.add_argument('workbook', location='files',
                              type=FileStorage,
                              required=True,
-                             help='Workbook (.csv, .tsv, .zip of .csv or .tsv, .xlsx)')
+                             help='Workbook (.csv, .json, .tsv, .yml, .xlsx, .zip of .csv or .tsv)')
 
 
 @api.route("/validate/")
@@ -622,7 +622,7 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
                       protected=True):
     """
     Args:
-        format (:obj:`str`): format (.csv, .tsv, .xlsx)
+        format (:obj:`str`): format (csv, multi.csv, json, tsv, multi.tsv, xlsx, yml)
         objs (:obj:`dict`): dictionary that maps types to instances
         schema_name (:obj:`str`): schema name
         doc_metadata (:obj:`dict`): dictionary of document metadata
@@ -646,6 +646,8 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
     dir = tempfile.mkdtemp()
     if format in ['csv', 'tsv']:
         temp_filename = os.path.join(dir, '*.' + format)
+    elif format in ['multi.csv', 'multi.tsv']:
+        temp_filename = os.path.join(dir, 'workbook.' + format.replace('multi.', ''))
     else:
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
@@ -658,6 +660,15 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
         with zipfile.ZipFile(filename, 'w') as zip_file:
             for temp_model_filename in glob.glob(temp_filename):
                 zip_file.write(temp_model_filename, os.path.basename(temp_model_filename))
+    elif format in ['multi.csv', 'multi.tsv']:
+        filename = temp_filename
+        mimetype = 'text/plain'
+    elif format == 'json':
+        filename = temp_filename
+        mimetype = 'application/json'
+    elif format == 'yml':
+        filename = temp_filename
+        mimetype = 'text/vnd.yaml'
     else:
         filename = temp_filename
         mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

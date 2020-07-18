@@ -118,10 +118,10 @@ class UncertainFloatAttributeTestCase(unittest.TestCase):
         self.assertEqual(val.n, 3)
         self.assertEqual(val.s, 1)
 
-    def test_get_excel_validation(self):
+    def test_get_xlsx_validation(self):
         attr = uncertainty.UncertainFloatAttribute(none=True, unique=True)
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()
 
         attr = uncertainty.UncertainFloatAttribute(none=False, unique=False,
                                                    default_cleaned_value=uncertainties.ufloat(3, 2))
-        attr.get_excel_validation()
+        attr.get_xlsx_validation()

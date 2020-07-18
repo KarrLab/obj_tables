@@ -1,0 +1,4 @@
+!!ObjTables schema='SBtab' type='Data' tableFormat='row' class='Compound' name='Compound' date='2020-07-18 12:17:45' objTablesVersion='1.0.5'			
+!MiriamAnnotations	!ID	!IsConstant	!HasOnlySubstanceUnits
+"[["""",""urn:miriam:obo.chebi:CHEBI%3A15377""],["""",""urn:miriam:kegg.compound:C00001""]]"	water	False	False
+"[[""bqbiol:hasPart"",""urn:miriam:obo.chebi:CHEBI%3A18367""]]"	ATP	False	False
