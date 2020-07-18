@@ -1,5 +1,6 @@
 from obj_tables import Model, SlugAttribute, StringAttribute, IntegerAttribute
 
+
 class ChangedTest(Model):  # Model Test renamed to ChangedTest
     id = SlugAttribute()
     name = StringAttribute(default='test')
@@ -14,6 +15,8 @@ class ChangedTest(Model):  # Model Test renamed to ChangedTest
 # Model Property removed
 
 # Model Reference added
+
+
 class Reference(Model):
     id = SlugAttribute()
     value = StringAttribute()

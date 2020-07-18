@@ -6,7 +6,6 @@
 :License: MIT
 """
 
-import obj_tables
 import openpyxl
 import re
 import stringcase
@@ -22,7 +21,7 @@ def transform(filename):
 
         if isinstance(ws.cell(1, 1).value, str) and ws.cell(1, 1).value.startswith('!!'):
             matches = re.findall(r" +(.*?)=('((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\")",
-                ws.cell(1, 1).value)
+                                 ws.cell(1, 1).value)
             heading, _, _ = ws.cell(1, 1).value.partition(' ')
             for key, val, _, _ in matches:
                 heading += ' {}={}'.format(stringcase.camelcase(key), val)
@@ -30,7 +29,7 @@ def transform(filename):
 
         if isinstance(ws.cell(2, 1).value, str) and ws.cell(2, 1).value.startswith('!!'):
             matches = re.findall(r" +(.*?)=('((?:[^'\\]|\\.)*)'|\"((?:[^\"\\]|\\.)*)\")",
-                ws.cell(2, 1).value)
+                                 ws.cell(2, 1).value)
             heading, _, _ = ws.cell(2, 1).value.partition(' ')
             for key, val, _, _ in matches:
                 heading += ' {}={}'.format(stringcase.camelcase(key), val)

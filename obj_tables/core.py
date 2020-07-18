@@ -8725,11 +8725,11 @@ class SchemaWarning(ObjTablesWarning):
 def join_separated_list(values, separator=','):
     """ Parse a separator list of values into a list of values
 
-    Args:        
+    Args:
         values (:obj:`list` of :obj:`str`): values
         separator (:obj:`str`, optional): separator
 
-    Returns:        
+    Returns:
         :obj:`str`: seperator-separated list of values
     """
     delimited_values = []
@@ -8780,4 +8780,4 @@ def split_separated_list(joined_values, separator=','):
     return values
 
 
-from .utils import get_related_models, get_attr_order
+from .utils import get_related_models, get_attr_order  # noqa: E402

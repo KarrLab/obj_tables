@@ -85,7 +85,7 @@ author = 'ObjTables developers'
 # built documents.
 #
 # The short X.Y version.
-import re
+import re  # noqa: F401
 filename = os.path.join(os.path.dirname(__file__), "..", "obj_tables", "_version.py")
 if os.path.isfile(filename):
     verstrline = open(filename, "rt").read()
@@ -165,7 +165,7 @@ numfig_format = {
 image_converter_args = [
     '-density', '150',
     '-quality', '00',
-    ]
+]
 
 
 # -- linkcode options -----------------------------------------------------
@@ -196,7 +196,7 @@ napoleon_use_rtype = True
 
 # -- Options for HTML output ----------------------------------------------
 
-import sphinx_rtd_theme
+import sphinx_rtd_theme  # noqa: F401
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -320,21 +320,21 @@ htmlhelp_basename = 'obj_tables_doc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-     # The paper size ('letterpaper' or 'a4paper').
-     #
-     # 'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #
+    # 'papersize': 'letterpaper',
 
-     # The font size ('10pt', '11pt' or '12pt').
-     #
-     # 'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #
+    # 'pointsize': '10pt',
 
-     # Additional stuff for the LaTeX preamble.
-     #
-     # 'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #
+    # 'preamble': '',
 
-     # Latex figure (float) alignment
-     #
-     # 'figure_align': 'htbp',
+    # Latex figure (float) alignment
+    #
+    # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -430,12 +430,12 @@ googleanalytics_id = 'UA-86340737-1'
 addmetahtml_content = '<meta http-equiv="refresh" content="0; url=https://docs.karrlab.org/obj_tables" />'
 addmetahtml_enabled = os.getenv('READTHEDOCS', '') == 'True'
 
-# Table width fix for Read the Docs Sphinx theme (https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html) ------------------------
+# Table width fix for Read the Docs Sphinx theme (https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html) ----------------------
 
 html_static_path = ['_static']
 
 html_context = {
     'css_files': [
         '_static/theme_overrides.css',  # override wide tables in RTD theme
-        ],
-     }
+    ],
+}

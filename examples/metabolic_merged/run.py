@@ -12,12 +12,12 @@ import math
 import numpy
 import obj_tables.io
 import os
-import sys
 import wc_utils.workbook.io
 
 DIRNAME = os.path.dirname(__file__)
 DATA_FILENAME = os.path.join(DIRNAME, 'data.merged-comparison.xlsx')
 PLOT_FILENAME = os.path.join(DIRNAME, 'delta-g-vs-k-cat.pdf')
+
 
 def read_data():
     kinetics_dir = os.path.join(DIRNAME, '..', 'metabolic_kinetics')
@@ -49,7 +49,6 @@ def read_data():
 
 def plot_data(data_filename=DATA_FILENAME, plot_filename=PLOT_FILENAME):
     data = wc_utils.workbook.io.read(data_filename)['!!Data']
-    headers = data[0]
     data = data[1:]
 
     rxn_ids = []
@@ -89,8 +88,8 @@ def plot_data(data_filename=DATA_FILENAME, plot_filename=PLOT_FILENAME):
         i_col = i_condition % 4
         axis = axes[i_row][i_col]
 
-        plot = axis.scatter(k_cats, delta_gs[:, i_condition],
-                            linewidths=1, marker='o', edgecolors='#1565f9', facecolors='none')
+        axis.scatter(k_cats, delta_gs[:, i_condition],
+                     linewidths=1, marker='o', edgecolors='#1565f9', facecolors='none')
         axis.set_title(condition, fontdict={'fontsize': 8, 'fontweight': 'bold'})
         axis.set_xscale('log')
         axis.set_xlim(xmin=5e-3, xmax=2e4)

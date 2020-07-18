@@ -1,6 +1,7 @@
 # an example transformations program
 from obj_tables.migrate import MigrationWrapper, MigratorError
 
+
 class TransformationExample(MigrationWrapper):
 
     def prepare_existing_models(self, migrator, existing_models):
@@ -29,6 +30,7 @@ class TransformationExample(MigrationWrapper):
                 that have been migrated
         """
         pass
+
 
 # a MigrationWrapper subclass instance must be assigned to `transformations`
 transformations = TransformationExample()

@@ -1,5 +1,6 @@
 from obj_tables import (Model, SlugAttribute, StringAttribute,
-    FloatAttribute, PositiveIntegerAttribute)
+                        FloatAttribute, PositiveIntegerAttribute)
+
 
 class Test(Model):
     id = SlugAttribute()
@@ -7,6 +8,7 @@ class Test(Model):
     existing_attr = StringAttribute()
     size = FloatAttribute()
     color = StringAttribute()
+
 
 class Property(Model):
     id = SlugAttribute()

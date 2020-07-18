@@ -1,5 +1,5 @@
 """ Schema for Luca Gerosa, Bart R B Haverkorn van Rijsewijk, Dimitris Christodoulou, Karl Kochanowski,
-Thomas S B Schmidt, Elad Noor, Uwe Sauer. Pseudo-transition Analysis Identifies the Key Regulators of 
+Thomas S B Schmidt, Elad Noor, Uwe Sauer. Pseudo-transition Analysis Identifies the Key Regulators of
 Dynamic Metabolic Adaptations From Steady-State Data. *Cell Systems* 1 (4), 270-282
 (2015). DOI: `10.1016/j.cels.2015.09.008 <https://doi.org/10.1016/j.cels.2015.09.008>`_.
 
