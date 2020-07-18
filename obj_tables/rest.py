@@ -226,7 +226,8 @@ gen_template_parser.add_argument('protected',
 
 
 @api.route("/gen-template/",
-           doc={'description': 'Generate a template workbook (CSV, multi-CSV, TSV, multi-TSV, XLSX) for a schema or declarative description of a schema'})
+           doc={'description':
+                'Generate a template workbook (CSV, multi-CSV, TSV, multi-TSV, XLSX) for a schema or declarative description of a schema'})
 @api.expect(gen_template_parser)
 class GenTemplate(flask_restplus.Resource):
     """ Generate a template workbook (CSV, multi-CSV, TSV, multi-TSV, XLSX) for a schema or declarative description of a schema """
@@ -652,7 +653,10 @@ def save_out_workbook(format, objs, schema_name, doc_metadata, model_metadata, m
         temp_filename = os.path.join(dir, 'workbook.' + format)
 
     io.Writer().run(temp_filename, objs, schema_name=schema_name, doc_metadata=doc_metadata, model_metadata=model_metadata,
-                    models=models, write_toc=write_toc, write_schema=write_schema, protected=protected)
+                    models=models, write_toc=write_toc, write_schema=write_schema,
+                    write_empty_models=write_empty_models,
+                    write_empty_cols=write_empty_cols,
+                    write_protected=protected)
 
     if format in ['csv', 'tsv']:
         filename = os.path.join(dir, 'workbook.{}.zip'.format(format))
