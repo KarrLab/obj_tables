@@ -561,8 +561,8 @@ def save_in_workbook(file_storage):
             * :obj:`str`: temporary directory with workbook
             * :obj:`str`: local path to workbook file
     """
-    if os.path.splitext(file_storage.filename)[1] not in ['.csv', '.tsv', '.xlsx', '.zip']:
-        flask_restplus.abort(400, 'Workbook must be a .csv, .tsv .xlsx, or .zip file.')
+    if os.path.splitext(file_storage.filename)[1] not in ['.csv', '.json', '.tsv', '.xlsx', '.yml', '.zip']:
+        flask_restplus.abort(400, 'Workbook must be a .csv, .json, .tsv .xlsx, .yml, or .zip file.')
 
     dir = tempfile.mkdtemp()
 

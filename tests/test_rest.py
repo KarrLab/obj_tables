@@ -43,6 +43,7 @@ class RestTestCase(unittest.TestCase):
         p_0.children.create(id='c_1')
         io.WorkbookWriter().run(workbook_filename_1, [p_0], models=models)
 
+        # XLSX -> XLSX
         client = rest.app.test_client()
         with open(schema_filename, 'rb') as schema_file:
             with open(workbook_filename_1, 'rb') as workbook_file:
@@ -61,6 +62,7 @@ class RestTestCase(unittest.TestCase):
                                         ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
+        # XLSX -> multi.csv
         client = rest.app.test_client()
         with open(schema_filename, 'rb') as schema_file:
             with open(workbook_filename_1, 'rb') as workbook_file:
@@ -75,10 +77,11 @@ class RestTestCase(unittest.TestCase):
             file.write(rv.data)
 
         p_0_c = io.MultiSeparatedValuesReader().run(workbook_filename_3,
-                                models=models,
-                                ignore_missing_attributes=True)[schema.Parent][0]
+                                                    models=models,
+                                                    ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_c.is_equal(p_0))
 
+        # XLSX -> JSON
         client = rest.app.test_client()
         with open(schema_filename, 'rb') as schema_file:
             with open(workbook_filename_1, 'rb') as workbook_file:
@@ -88,14 +91,33 @@ class RestTestCase(unittest.TestCase):
                     'format': 'json',
                 })
         self.assertEqual(rv.status_code, 200)
-        workbook_filename_4 = os.path.join(self.tempdir, 'file3.json')
+        workbook_filename_4 = os.path.join(self.tempdir, 'file4.json')
         with open(workbook_filename_4, 'wb') as file:
             file.write(rv.data)
 
         p_0_d = io.JsonReader().run(workbook_filename_4,
-                                models=models,
-                                ignore_missing_attributes=True)[schema.Parent][0]
+                                    models=models,
+                                    ignore_missing_attributes=True)[schema.Parent][0]
         self.assertTrue(p_0_d.is_equal(p_0))
+
+        # JSON -> YAML
+        client = rest.app.test_client()
+        with open(schema_filename, 'rb') as schema_file:
+            with open(workbook_filename_4, 'rb') as workbook_file:
+                rv = client.post('/api/convert/', data={
+                    'schema': (schema_file, os.path.basename(schema_filename)),
+                    'workbook': (workbook_file, os.path.basename(workbook_filename_4)),
+                    'format': 'yml',
+                })
+        self.assertEqual(rv.status_code, 200)
+        workbook_filename_5 = os.path.join(self.tempdir, 'file5.yml')
+        with open(workbook_filename_5, 'wb') as file:
+            file.write(rv.data)
+
+        p_0_e = io.JsonReader().run(workbook_filename_5,
+                                    models=models,
+                                    ignore_missing_attributes=True)[schema.Parent][0]
+        self.assertTrue(p_0_e.is_equal(p_0))
 
         # invalid schema
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'invalid-schema.csv')
