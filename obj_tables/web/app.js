@@ -16,56 +16,56 @@ function changeMethod(evt){
     switch(method) {
         case 'convert':
             $('#label_model').hide()
-            $('#label_workbook').show()
-            $('#label_workbook-2').hide()
+            $('#label_dataset').show()
+            $('#label_dataset-2').hide()
             $('#label_format').show()
             $('#label_viz_format').hide()
             break;
 
         case 'diff':
             $('#label_model').show()
-            $('#label_workbook').show()
-            $('#label_workbook-2').show()
+            $('#label_dataset').show()
+            $('#label_dataset-2').show()
             $('#label_format').hide()
             $('#label_viz_format').hide()
             break;
 
         case 'gen-template':
             $('#label_model').hide()
-            $('#label_workbook').hide()
-            $('#label_workbook-2').hide()
+            $('#label_dataset').hide()
+            $('#label_dataset-2').hide()
             $('#label_format').show()
             $('#label_viz_format').hide()
             break;
 
         case 'init-schema':
             $('#label_model').hide()
-            $('#label_workbook').hide()
-            $('#label_workbook-2').hide()
+            $('#label_dataset').hide()
+            $('#label_dataset-2').hide()
             $('#label_format').hide()
             $('#label_viz_format').hide()
             break;
 
         case 'normalize':
             $('#label_model').show()
-            $('#label_workbook').show()
-            $('#label_workbook-2').hide()
+            $('#label_dataset').show()
+            $('#label_dataset-2').hide()
             $('#label_format').show()
             $('#label_viz_format').hide()
             break;
 
         case 'validate':
-            $('#label_model').hide()
-            $('#label_workbook').show()
-            $('#label_workbook-2').hide()
-            $('#label_format').hide()
-            $('#label_viz_format').hide()
+            $('#label_model').hide();
+            $('#label_dataset').show();
+            $('#label_dataset-2').hide();
+            $('#label_format').hide();
+            $('#label_viz_format').hide();
             break;
 
         case 'viz-schema':
             $('#label_model').hide()
-            $('#label_workbook').hide()
-            $('#label_workbook-2').hide()
+            $('#label_dataset').hide()
+            $('#label_dataset-2').hide()
             $('#label_format').hide()
             $('#label_viz_format').show()
             break;
@@ -91,7 +91,7 @@ $('#submit').click(function (evt) {
     var data = new FormData();
     if (schema_files == 0) {
         setError('Select a schema');
-        //return;
+        return;
     }
     var schema = schema_files[0];
     data.append('schema', schema);
@@ -185,7 +185,7 @@ $('#submit').click(function (evt) {
         case 'validate':
             if (workbook_files.length == 0) {
                 setError('Select a dataset');
-                //return;
+                return;
             }
             data.append('workbook', workbook_files[0]);
             successFunc = function(request) {

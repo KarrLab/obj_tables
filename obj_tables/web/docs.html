@@ -406,7 +406,7 @@
                             <th>!Table</th>
                             <th>!Description</th>
                             <th>!Number of objects</th>
-                          </tr>                          
+                          </tr>
                         </thead>
                         <tbody>
                           <tr>
@@ -694,7 +694,7 @@
                           <tr class="indent">
                             <td>Hynne model of yeast glycolysis <a href="https://doi.org/10.1016/s0301-4622(01)00229-0"><i class="fi-link"></i></a></td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/hynne.tsv/">tsv</a>,
@@ -709,7 +709,7 @@
                           <tr class="indent">
                             <td>Jiang et al. model of pancreatic beta-cell insulin secretion <a href="https://doi.org/10.1007/s00335-007-9011-y"><i class="fi-link"></i></a></td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_model.tsv/">tsv</a>,
@@ -724,7 +724,7 @@
                           <tr class="indent-x2">
                             <td>Related data</td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/jiang_data.tsv/">tsv</a>,
@@ -739,7 +739,7 @@
                           <tr class="indent">
                             <td>Noor et al. model of <i>Escherichia coli</i> metabolism <a href="https://dx.doi.org/10.1371%2Fjournal.pcbi.1005167"><i class="fi-link"></i></a></td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_model.tsv/">tsv</a>,
@@ -754,7 +754,7 @@
                           <tr class="indent-x2">
                             <td>Related data</td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_noor_2016_data.tsv/">tsv</a>,
@@ -778,13 +778,13 @@
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/sigurdsson_model.json">json</a>,
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/sigurdsson_model.yml">yml</a>
                             </td>
-                            <td></td>                            
+                            <td></td>
                           </tr>
 
                           <tr class="indent">
                             <td>Teusink model of yeast glycolysis <a href="https://doi.org/10.1046/j.1432-1327.2000.01527.x"><i class="fi-link"></i></a></td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_model.tsv/">tsv</a>,
@@ -799,7 +799,7 @@
                           <tr class="indent-x2">
                             <td>Related data</td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/teusink_data.tsv/">tsv</a>,
@@ -814,7 +814,7 @@
                           <tr class="indent">
                             <td>Wortel et al. model of <i>Escherichia coli</i> metabolism <a href="https://doi.org/10.1371/journal.pcbi.1006010"><i class="fi-link"></i></a></td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_model.tsv/">tsv</a>,
@@ -829,7 +829,7 @@
                           <tr class="indent-x2">
                             <td>Related data</td>
                             <td></td>
-                            <td></td>                            
+                            <td></td>
                             <td>
                               <span class="hide-for-medium">Dataset: </span>
                               <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/sbtab/ecoli_wortel_2018_data.tsv/">tsv</a>,
@@ -2187,14 +2187,14 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                 <h2>Design choices</h2>
                 <div class="section-content">
                   <p>We designed <i>ObjTables</i> as a complement to the Open Office Spreadsheet XML format (XLSX; ECMA-376 <a href="https://www.ecma-international.org/publications/standards/Ecma-376.htm"><i class="fi-link"></i></a>; ISO/IEC 29500 <a href="https://www.iso.org/standard/71691.html"><i class="fi-link"></i></a>) for several reasons.</p>
-                  
+
                   <h4>Expand the capabilities of an easily readable and popular open file format</h4>
                   <p>To make <i>ObjTables</i> an appealing option for supplementary datasets to journal articles, we wanted to base <i>ObjTables</i> on a file format that is easy for many researchers to read, and which is already a popular format for supplementary data. Furthermore, we wanted to base <i>ObjTables</i> on an open-source format. This narrowed our choices to the XLSX format or text-based formats such as CSV or TSV. While data serialization formats such as JSON, XML, and YAML provide some of the benefits of <i>ObjTables</i>, we did not want to base <i>ObjTables</i> on these formats because the GUI tools for these files do not make datasets as easy to read as spreadsheets programs such as Excel.</p>
 
                   <p>Although databases and ORMs also provide some of the benefits of <i>ObjTables</i>, we did not want to base <i>ObjTables</i> on a traditional relational database or a low-code database such as Airtable <a href="https://airtable.com/"><i class="fi-link"></i></a> because we wanted journals to be able to archive datasets as a file, and we wanted readers to be able to use simple tools to read these files. Relational databases are too complex for many researchers, and commercial low-code tools are not designed to export and import datasets to and from files, which is critical for journal archiving. Another reason why we chose to base <i>ObjTables</i> on a file format rather than a database is that we wanted <i>ObjTables</i> to be compatible with asynchronous collaboration workflows with version control systems such as Git.</p>
 
                   <p>As a result, we chose to base <i>ObjTables</i> on top of the XLSX format, a popular and open format for spreadsheets.</p>
-                        
+
                   <h4>Develop software tools that complement existing spreadsheet programs</h4>
                   <p>Due to the popularity and significant capabilities of existing spreadsheet programs such as Excel, we wanted to enable users to continue to use their favorite programs on their favorite operating systems as much as possible. In particular, we wanted peer reviewers, editors, and readers of journal articles to be able to read <i>ObjTables</i>-encoded spreadsheets with their existing spreadsheet programs rather than have to install an additional program. We also wanted authors to be able to continue to do the majority of their work (e.g., combine data from multiple sources, munge each source, perform calculations, make charts) with their favorite spreadsheet program and only briefly have to use a new program for advanced features such as validation that are not available in programs such as Excel.</p>
 
