@@ -706,6 +706,8 @@ class WorkbookWriter(WriterBase):
             # find empty columns
             are_cols_empty = [True] * len(headings[0])
             for row in data:
+                if len(row) == 1 and isinstance(row[0], str) and row[0].startswith('%/') and row[0].endswith('/%'):
+                    continue
                 for i_col, cell in enumerate(row):
                     if cell not in ['', None]:
                         are_cols_empty[i_col] = False
@@ -715,6 +717,9 @@ class WorkbookWriter(WriterBase):
 
             for rows in [headings, data]:
                 for row in rows:
+                    if len(row) == 1 and isinstance(row[0], str) and row[0].startswith('%/') and row[0].endswith('/%'):
+                        continue
+
                     for i_col, is_col_empty in reversed_enum_are_cols_empty:
                         if is_col_empty:
                             row.pop(i_col)
@@ -2233,16 +2238,19 @@ class MultiSeparatedValuesReader(ReaderBase):
                 if match:
                     if i_sheet > 0:
                         self._write_model(data[i_sheet_start:i_row],
-                                          last_sheet_metadata, tmp_dirname, ext)
-                    last_sheet_metadata = WorkbookReader.parse_worksheet_heading_metadata(
-                        row[0])
+                                          last_sheet_metadata, tmp_dirname, sheet_id, ext)
                     i_sheet += 1
                     i_sheet_start = i_row
+                    sheet_id = str(i_sheet + 1)
+                    last_sheet_metadata = WorkbookReader.parse_worksheet_heading_metadata(
+                        row[0], sheet_name=sheet_id)
+                    if last_sheet_metadata.get('id', None):
+                        sheet_id = last_sheet_metadata['id']
 
         if last_sheet_metadata is None:
             raise ValueError(path + ' must contain at least one table')
         self._write_model(data[i_sheet_start:],
-                          last_sheet_metadata, tmp_dirname, ext)
+                          last_sheet_metadata, tmp_dirname, sheet_id, ext)
 
         wb_reader = WorkbookReader()
         objs = wb_reader.run(os.path.join(tmp_dirname, '*' + ext),
@@ -2266,17 +2274,21 @@ class MultiSeparatedValuesReader(ReaderBase):
         return objs
 
     @staticmethod
-    def _write_model(data, metadata, dirname, ext):
+    def _write_model(data, metadata, dirname, sheet_id, ext):
         """ Write a model to a file
 
         Args:
             data (:obj:`Worksheet`): instances of model represented as a table
             metadata (:obj:`dict`): metadata for model
             dirname (:obj:`str`): directory to save model
+            sheet_id (:obj:`str`): sheet id
             ext (:obj:`str`): extension
         """
         if metadata['type'] == DOC_TABLE_TYPE:
-            tmp_path = os.path.join(dirname, metadata['class'] + ext)
+            filename = metadata['class']
+            if sheet_id:
+                filename += '-' + sheet_id
+            tmp_path = os.path.join(dirname, filename + ext)
             wc_utils.workbook.io.write(tmp_path, {'': data})
 
 
@@ -2564,7 +2576,7 @@ def get_fields(cls, schema_name, date, doc_metadata, doc_metadata_model, model_m
             merge_ranges.append((i_row, i_col, i_row, i_col + len(this_sub_attrs) - 1))
             i_col += len(this_sub_attrs)
             field_validations.extend([sub_attr.get_xlsx_validation(sheet_models=sheet_models,
-                                                                    doc_metadata_model=doc_metadata_model) for sub_attr in this_sub_attrs])
+                                                                   doc_metadata_model=doc_metadata_model) for sub_attr in this_sub_attrs])
         else:
             sub_attrs.append((None, attr))
             group_headings.append(None)
