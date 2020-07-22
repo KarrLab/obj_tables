@@ -456,11 +456,11 @@ class Validate(flask_restplus.Resource):
 
         errors = core.Validator().validate(objs)
         if errors:
-            err_msg = indent_forest(['The dataset is invalid:', [errors]])
+            msg = indent_forest(['The dataset is invalid:', [errors]])
         else:
-            err_msg = ''
+            msg = 'The dataset is valid'
 
-        return err_msg
+        return msg
 
 
 """ Visualize schema """

@@ -350,7 +350,7 @@ class RestTestCase(unittest.TestCase):
                 })
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json, '')
+        self.assertEqual(rv.json, 'The dataset is valid')
 
         # invalid extension
         with open(schema_filename, 'rb') as schema_file:
@@ -380,7 +380,7 @@ class RestTestCase(unittest.TestCase):
                 })
 
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(rv.json, '')
+        self.assertEqual(rv.json, 'The dataset is valid')
 
         # invalid tsv files
         wb_filename_4 = os.path.join(self.tempdir, '*.tsv')
@@ -402,7 +402,7 @@ class RestTestCase(unittest.TestCase):
                 })
 
         self.assertEqual(rv.status_code, 200)
-        self.assertNotEqual(rv.json, '')
+        self.assertNotEqual(rv.json, 'The dataset is valid')
 
         # invalid csv and tsv files
         wb_filename_6 = os.path.join(self.tempdir, 'wb3.zip')

@@ -192,11 +192,7 @@ $('#submit').click(function (evt) {
                 var reader = new FileReader();
                 reader.addEventListener('loadend', (e) => {
                     const json = JSON.parse(e.srcElement.result);
-                    if (json == '') {
-                        setResults('The dataset is valid.');
-                    } else {
-                        setResults(json);
-                    }
+                    setResults(json);
                 });
                 reader.readAsText(request.response);
             };
