@@ -207,13 +207,7 @@
                   <p>Example: <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/schema.xlsx">Address book schema</a></p>
                   <p>If the .multi.csv, .multi.tsv, or .xslx file contains both a schema and dataset, select the file twice: once for its schema here and again for its dataset below. See the documentation <a href="docs#schema-formats"><i class="fi-link"></i></a> for information about the format for schemas.</p>
                   <input type="file" id="schema" name="schema" accept=".csv,.tsv,.xlsx" />
-                </div>
-
-                <div class="input-label" id="label_model">
-                  <p><b>Enter the name of a class/worksheet to difference or normalize</b></p>
-                  <p>Example for sample address book dataset: 'Company', 'Person'</p>
-                  <input type="text" id="model" name="model" />
-                </div>
+                </div>                
 
                 <div class="input-label" id="label_dataset">
                   <p><b>Upload an <i>ObjTables</i>-formatted dataset (.multi.csv, .multi.tsv, .xlsx, .zip of .csv, .zip of .tsv)</b></p>
@@ -224,8 +218,15 @@
 
                 <div class="input-label" id="label_dataset-2">
                   <p><b>Upload a second <i>ObjTables</i>-formatted dataset (.multi.csv, .multi.tsv, .xlsx, .zip of .csv, .zip of .tsv)</b></p>
+                  <p>Example: <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/data-9-digit-zip-codes.xlsx">Address book of technology companies and their CEOs with 9-digit rather than 5-digit zip codes</a></p>
                   <p>See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.</p>
                   <input type="file" id="workbook-2" name="workbook-2" accept=".csv,.tsv,.xlsx,.zip" />
+                </div>
+
+                <div class="input-label" id="label_model">
+                  <p><b>Enter the name of a class/worksheet to difference or normalize</b></p>
+                  <p>Example for sample address book dataset: 'Company'</p>
+                  <input type="text" id="model" name="model" />
                 </div>
 
                 <div class="input-label" id="label_format">
