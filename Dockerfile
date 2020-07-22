@@ -152,7 +152,7 @@ ENV JAVA_HOME=/usr/lib/jvm/default-java \
     CLASSPATH=${CLASSPATH}:/opt/chemaxon/marvinsuite/lib/MarvinBeans.jar
 
 # Install ObjTables
-RUN pip3 install obj_tables[grammar,math,sci,chem,bio,revisioning,viz,rest]
+RUN pip3 install obj_tables[grammar,math,sci,chem,bio,revisioning,viz,web]
 
 # Test ObjTables
 ARG test=1

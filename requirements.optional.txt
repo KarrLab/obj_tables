@@ -26,7 +26,7 @@ wc_utils[git]
 [viz]
 graphviz >= 0.13
 
-[rest]
+[web]
 flask
 flask_cors
 flask_restplus

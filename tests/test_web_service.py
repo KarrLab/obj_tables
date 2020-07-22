@@ -8,7 +8,7 @@
 
 from io import BytesIO
 from obj_tables import io
-from obj_tables import rest
+from obj_tables import web_service
 from obj_tables import utils
 import glob
 import mock
@@ -30,7 +30,7 @@ class RestTestCase(unittest.TestCase):
         shutil.rmtree(self.tempdir)
 
     def test_PrefixMiddleware(self):
-        rest.PrefixMiddleware(rest.app).__call__({'PATH_INFO': 'x'}, lambda x, y: None)
+        web_service.PrefixMiddleware(web_service.app).__call__({'PATH_INFO': 'x'}, lambda x, y: None)
 
     def test_convert(self):
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
@@ -44,7 +44,7 @@ class RestTestCase(unittest.TestCase):
         io.WorkbookWriter().run(workbook_filename_1, [p_0], models=models)
 
         # XLSX -> XLSX
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
         with open(schema_filename, 'rb') as schema_file:
             with open(workbook_filename_1, 'rb') as workbook_file:
                 rv = client.post('/api/convert/', data={
@@ -63,7 +63,7 @@ class RestTestCase(unittest.TestCase):
         self.assertTrue(p_0_b.is_equal(p_0))
 
         # XLSX -> multi.csv
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
         with open(schema_filename, 'rb') as schema_file:
             with open(workbook_filename_1, 'rb') as workbook_file:
                 rv = client.post('/api/convert/', data={
@@ -82,7 +82,7 @@ class RestTestCase(unittest.TestCase):
         self.assertTrue(p_0_c.is_equal(p_0))
 
         # XLSX -> JSON
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
         with open(schema_filename, 'rb') as schema_file:
             with open(workbook_filename_1, 'rb') as workbook_file:
                 rv = client.post('/api/convert/', data={
@@ -101,7 +101,7 @@ class RestTestCase(unittest.TestCase):
         self.assertTrue(p_0_d.is_equal(p_0))
 
         # JSON -> YAML
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
         with open(schema_filename, 'rb') as schema_file:
             with open(workbook_filename_4, 'rb') as workbook_file:
                 rv = client.post('/api/convert/', data={
@@ -147,7 +147,7 @@ class RestTestCase(unittest.TestCase):
         p_0.children.create(id='c_1', name='c_0')
         io.WorkbookWriter().run(xl_file_2, [p_0], models=models)
 
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
 
         with open(schema_filename, 'rb') as schema_file:
             with open(xl_file_1, 'rb') as wb_file_1:
@@ -208,7 +208,7 @@ class RestTestCase(unittest.TestCase):
         schema, _ = utils.init_schema(schema_filename)
         models = list(utils.get_models(schema).values())
 
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
         with open(schema_filename, 'rb') as schema_file:
             rv = client.post('/api/gen-template/', data={
                 'schema': (schema_file, os.path.basename(schema_filename)),
@@ -234,7 +234,7 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 400)
 
     def test_init_schema(self):
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
 
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
 
@@ -261,7 +261,7 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 400)
 
     def test_init_schema_error(self):
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
 
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
 
@@ -282,7 +282,7 @@ class RestTestCase(unittest.TestCase):
         p_0.children.create(id='c_1')
         io.WorkbookWriter().run(in_workbook_filename, [p_0], models=models)
 
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
 
         # to xlsx
         with open(schema_filename, 'rb') as schema_file:
@@ -351,7 +351,7 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 400)
 
     def test_validate(self):
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
 
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
         schema, _ = utils.init_schema(schema_filename)
@@ -455,7 +455,7 @@ class RestTestCase(unittest.TestCase):
         self.assertEqual(rv.status_code, 400)
 
     def test_viz_schema(self):
-        client = rest.app.test_client()
+        client = web_service.app.test_client()
 
         schema_filename = os.path.join('tests', 'fixtures', 'declarative_schema', 'schema.csv')
 
@@ -505,4 +505,4 @@ class RestTestCase(unittest.TestCase):
         models = list(utils.get_models(schema).values())
 
         with self.assertRaises(werkzeug.exceptions.BadRequest):
-            rest.get_model(models, 'Parent2')
+            web_service.get_model(models, 'Parent2')

@@ -51,7 +51,7 @@ Installing the optional features
 * `chem`: Chemistry attributes for chemical formulas and structures (:py:mod:`obj_tables.chem`)
 * `grammar`: Encoding/decoding objects and their relationships into and out of individual cells in tables  (:py:mod:`obj_tables.grammary`)
 * `math`: Mathematics attributes for arrays, tables, and symbolic expressions (:py:mod:`obj_tables.math`)
-* `rest`: Web service (:py:mod:`obj_tables.rest`)
+* `web`: Web service (:py:mod:`obj_tables.web_service`)
 * `revisioning`: Revisioning schemas and data sets with Git  (:py:mod:`obj_tables.migrate`)
 * `sci`: Science attributes for units, quantities, uncertainty, ontology terms, and references (:py:mod:`obj_tables.sci`)
 * `viz`: Methods to generate UML diagrams of schemas (:py:meth:`obj_tables.utils.viz_schema`)
