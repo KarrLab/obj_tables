@@ -1,4 +1,4 @@
-""" REST API
+""" Web service
 
 :Author: Jonathan Karr <karr@mssm.edu>
 :Date: 2019-09-15
@@ -51,8 +51,8 @@ class PrefixMiddleware(object):
 app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/api')
 
 api = flask_restplus.Api(app,
-                         title='ObjTables REST API',
-                         description='REST API for generating and working with schemas for tabular-formatted datasets',
+                         title='ObjTables web service',
+                         description='Web service for generating and working with schemas for tabular-formatted datasets',
                          contact='info@objtables.org',
                          version=obj_tables.__version__,
                          license='MIT',

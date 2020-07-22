@@ -5,7 +5,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ObjTables: Toolkit for structured spreadsheets that are human- and machine-readable</title>
-    <meta name="description" content="ObjTables is a free, open-source toolkit for systematically building, annotating, validating, and parsing complex datasets with the ease of spreadsheets (e.g., XLSX), the rigor of schemas, and the power of object-oriented programming. ObjTables makes it easy to design schemas for datasets, generate template spreadsheets with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in languages such as Python. The ObjTables software is available through four interfaces: a web application, a REST API, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
+    <meta name="description" content="ObjTables is a free, open-source toolkit for systematically building, annotating, validating, and parsing complex datasets with the ease of spreadsheets (e.g., XLSX), the rigor of schemas, and the power of object-oriented programming. ObjTables makes it easy to design schemas for datasets, generate template spreadsheets with inline help and validation for building datasets, capture metadata such as the author of a dataset, use schemas to validate the syntax and semantics of datasets, and use schemas to parse datasets into data structures for further analysis in languages such as Python. The ObjTables software is available through four interfaces: a web application, a web service, a command-line program, and a Python library. Together, ObjTables can help researchers define formats for domain-specific data, integrate diverse data, analyze complex datasets, and share data."/>
     <meta name="keywords" content="data, table, schema, data model, meta model, data type, validate, Python"/>
     <meta name="language" content="EN">
     <meta name="copyright" content="ObjTables developers"/>
@@ -62,7 +62,7 @@
             <ul class="accordion-content" data-tab-content>
               <li><a href="app">Web application</a></li>
               <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
-              <li><a href="api">REST API</a></li>
+              <li><a href="api">Web service</a></li>
               <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
               <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
               <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
@@ -79,7 +79,7 @@
               <li><a href="#validation">Data validation</a></li>
               <li class="separator"><a href="app">Web application</a></li>
               <li><a href="#cli">Command-line program</a></li>
-              <li><a href="api">REST API</a></li>
+              <li><a href="api">Web service</a></li>
               <li><a href="#python">Python package: introduction</a></li>
               <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
               <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
@@ -136,7 +136,7 @@
                     <ul class="menu">
                       <li><a href="app">Web application</a></li>
                       <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
-                      <li><a href="api">REST API</a></li>
+                      <li><a href="api">Web service</a></li>
                       <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
                       <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
                       <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
@@ -153,7 +153,7 @@
                       <li><a href="#validation">Data validation</a></li>
                       <li class="separator"><a href="app">Web application</a></li>
                       <li><a href="#cli">Command-line program</a></li>
-                      <li><a href="api">REST API</a></li>
+                      <li><a href="api">Web service</a></li>
                       <li><a href="#python">Python package: introduction</a></li>
                       <li><a href="https://sandbox.karrlab.org/tree/obj_tables">Python package: tutorials</a></li>
                       <li><a href="https://docs.karrlab.org/obj_tables">Python package: docs</a></li>
@@ -211,7 +211,7 @@
                           <li><a href="#interfaces">Interfaces</a></li>
                           <li><a href="#web-app">Web application</a></li>
                           <li><a href="#cli">Command-line program</a></li>
-                          <li><a href="#rest-api">REST API</a></li>
+                          <li><a href="#rest-api">Web service</a></li>
                           <li><a href="#python">Python package</a></li>
                           <li><a href="#other-languages">Working with <i>ObjTables</i> in other languages</a></li>
                         </ul>
@@ -1894,7 +1894,7 @@
                 <h2>Software tools</h2>
                 <div class="section-content">
                   <div class="subsection">
-                    <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through all of the user interfaces (the web application, REST API, command-line program, and Python package). The tools marked with &#9675; are only available through the Python package. Please see below and the Python documentation for more information about the tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>.</p>
+                    <p class="before-list"><i>ObjTables</i> provides several tools for working with schemas and datasets. The tools marked with &#9679; are available through all of the user interfaces (the web application, web service, command-line program, and Python package). The tools marked with &#9675; are only available through the Python package. Please see below and the Python documentation for more information about the tools <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a>.</p>
 
                     <ul class="vertically-spaced-list optional">
                       <li>Generate a Python module that implements a tabular-formatted schema.</li>
@@ -1919,9 +1919,9 @@
 
                   <div class="subsection" id="interfaces" data-magellan-target="interfaces">
                     <h3>Interfaces</h3>
-                    <p><i>ObjTables</i> include four interfaces: a web application, a REST API, a command-line program, and a Python package. The web application, REST API, and command-line program provide the same features. In addition to the features of the web application, REST API, and command-line program, the Python package can programmatically query, edit, merge, split, revision, and migrate datasets. The Python package is also more flexible. For example, the Python package can support additional datatypes and custom validation.</p>
+                    <p><i>ObjTables</i> include four interfaces: a web application, a web service, a command-line program, and a Python package. The web application, web service, and command-line program provide the same features. In addition to the features of the web application, web service, and command-line program, the Python package can programmatically query, edit, merge, split, revision, and migrate datasets. The Python package is also more flexible. For example, the Python package can support additional datatypes and custom validation.</p>
 
-                    <p>We recommend beginning with the web application, REST API, or command-line program. We recommend using the Python package when more flexibility is required, such as a custom data type, or to analyze datasets with Python tools such as NumPy, Pandas, scikit-learn, or SciPy.</p>
+                    <p>We recommend beginning with the web application, web service, or command-line program. We recommend using the Python package when more flexibility is required, such as a custom data type, or to analyze datasets with Python tools such as NumPy, Pandas, scikit-learn, or SciPy.</p>
                   </div>
 
                   <div class="subsection" id="web-app" data-magellan-target="web-app">
@@ -1943,16 +1943,16 @@ obj-tables diff /path/to/schema.xlsx /path/to/dataset-1.xlsx /path/to/dataset-2.
                   </div>
 
                   <div class="subsection" id="rest-api" data-magellan-target="rest-api">
-                    <h3>REST API</h3>
+                    <h3>Web service</h3>
                     <div>
-                      <p>Documentation for the REST API is available at <a href="api">objtables.org/api</a>.</p>
+                      <p>Documentation for the web service is available at <a href="api">objtables.org/api</a>.</p>
                     </div>
                   </div>
 
                   <div class="subsection" id="python" data-magellan-target="python">
                     <h3>Python package</h3>
                     <div>
-                      <p>As described above, the Python package has significantly more capabilities than the web application, REST API, and command-line program.</p>
+                      <p>As described above, the Python package has significantly more capabilities than the web application, web service, and command-line program.</p>
 
                       <p>The following example briefly introduces the API by illustrating how to use the API to programmatically create, manipulate, analyze, and export the same address book of tech CEOs described above <a href="#address-book"><i class="fi-arrow-up"></i></a>.</p>
 
@@ -2097,7 +2097,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                     <div class="subsection" id="other-languages" data-magellan-target="other-languages">
                       <h3>Working with <i>ObjTables</i> datasets with other programming languages</h3>
                       <div>
-                        <p class="before-list">We recommend that developers use the REST API to work with <i>ObjTables</i> in other programming languages:</p>
+                        <p class="before-list">We recommend that developers use the web service to work with <i>ObjTables</i> in other programming languages:</p>
                         <ul class="vertically-spaced-list">
                           <li>
                             <b>Visualizing a schema:</b>
@@ -2140,7 +2140,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                           </li>
                         </ul>
 
-                        <p>The documentation for the REST API <a href="https://www.obj_tables.org/api"><i class="fi-link"></i></a> contains detailed information about the inputs and outputs of each endpoint.</p>
+                        <p>The documentation for the web service <a href="https://www.obj_tables.org/api"><i class="fi-link"></i></a> contains detailed information about the inputs and outputs of each endpoint.</p>
                       </div>
                     </div>
                   </div>
@@ -2200,7 +2200,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
 
                   <p>We did not want to develop an extension for a spreadsheet program such as Excel or Google Sheets because this would only benefit users of that one program as there is no universal format for extensions. In addition, an extension would only benefit users of specific versions of that program on specific operating systems because the interfaces for extensions change over time. We also did not want to build the <i>ObjTables</i> software as an extension of Excel or Google Sheets because we wanted researchers to be able to use <i>ObjTables</i> with free, open-source tools. We did not want to build the <i>ObjTables</i> software as an extension of an open-source spreadsheet tool such as LibreOffice Calc because these tools are much less popular than Excel.</p>
 
-                  <p>As a result, we chose to develop the <i>ObjTables</i> software as a separate, OS-independent program from spreadsheet programs such as Excel. Furthermore, we tried to make the software as accessible as possible by providing it as a web application, command-line program, REST API, and Python package.</p>
+                  <p>As a result, we chose to develop the <i>ObjTables</i> software as a separate, OS-independent program from spreadsheet programs such as Excel. Furthermore, we tried to make the software as accessible as possible by providing it as a web application, command-line program, web service, and Python package.</p>
                 </div>
               </div>
 

@@ -1,4 +1,4 @@
-""" Test of REST API
+""" Test of web service
 
 :Author: Jonathan Karr <karr@mssm.edu>
 :Date: 2019-09-15
