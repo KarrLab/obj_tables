@@ -7,11 +7,11 @@ class TransformationExample(MigrationWrapper):
     def prepare_existing_models(self, migrator, existing_models):
         """ Prepare existing models before migration
 
-        Convert `Test.size` values to integers before they are migrated
+        Convert ``Test.size`` values to integers before they are migrated
 
         Args:
-            migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            existing_models (:obj:`list` of `obj_tables.Model`:) the models
+            migrator (:obj:`Migrator`:) the :obj:`Migrator` calling this method
+            existing_models (:obj:`list` of :obj:`obj_tables.Model`:) the models
                 that will be migrated
         """
         try:
@@ -25,12 +25,12 @@ class TransformationExample(MigrationWrapper):
         """ Modify migrated models after migration
 
         Args:
-            migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            migrated_models (:obj:`list` of `obj_tables.Model`:) all models
+            migrator (:obj:`Migrator`:) the :obj:`Migrator` calling this method
+            migrated_models (:obj:`list` of :obj:`obj_tables.Model`:) all models
                 that have been migrated
         """
         pass
 
 
-# a MigrationWrapper subclass instance must be assigned to `transformations`
+# a MigrationWrapper subclass instance must be assigned to :obj:`transformations`
 transformations = TransformationExample()

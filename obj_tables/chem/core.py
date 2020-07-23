@@ -63,8 +63,10 @@ class ChemicalFormulaAttribute(core.LiteralAttribute):
             value (:obj:`str`): semantically equivalent representation
 
         Returns:
-            :obj:`chem.EmpiricalFormula`: cleaned value
-            :obj:`core.InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`chem.EmpiricalFormula`: cleaned value
+                * :obj:`core.InvalidAttribute`: cleaning error
         """
         if value:
             try:
@@ -74,7 +76,7 @@ class ChemicalFormulaAttribute(core.LiteralAttribute):
         return (None, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -82,7 +84,7 @@ class ChemicalFormulaAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -101,12 +103,12 @@ class ChemicalFormulaAttribute(core.LiteralAttribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list` of :obj:`chem.EmpiricalFormula`): list of values
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -421,8 +423,10 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
             value (:obj:`str`): string representation of structure
 
         Returns:
-            :obj:`str`: cleaned value
-            :obj:`core.InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`str`: cleaned value
+                * :obj:`core.InvalidAttribute`: cleaning error
         """
         if value:
             if isinstance(value, str):
@@ -436,7 +440,7 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
         return (None, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -444,7 +448,7 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of
-                errors as an instance of `core.InvalidAttribute`
+                errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -463,12 +467,12 @@ class ChemicalStructureAttribute(core.LiteralAttribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list` of :obj:`ChemicalStructure`): list of values
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -887,8 +891,10 @@ class ReactionEquationAttribute(core.BaseRelatedAttribute, core.LiteralAttribute
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`ReactionEquation`: cleaned value
-            :obj:`core.InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`ReactionEquation`: cleaned value
+                * :obj:`core.InvalidAttribute`: cleaning error
         """
         if not value:
             return (None, None)
@@ -944,7 +950,7 @@ class ReactionEquationAttribute(core.BaseRelatedAttribute, core.LiteralAttribute
             return (None, core.InvalidAttribute(self, [str(error)]))
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -952,7 +958,7 @@ class ReactionEquationAttribute(core.BaseRelatedAttribute, core.LiteralAttribute
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -971,12 +977,12 @@ class ReactionEquationAttribute(core.BaseRelatedAttribute, core.LiteralAttribute
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list` of :obj:`ReactionEquation`): list of values
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         str_values = []
         for v in values:

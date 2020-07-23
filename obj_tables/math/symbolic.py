@@ -59,7 +59,7 @@ class SymbolicBasicAttribute(core.LiteralAttribute):
             value (:obj:`str`): semantically equivalent representation
 
         Returns:
-            :obj:`tuple` of `sympy.Basic`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`sympy.Basic`, :obj:`core.InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value:
             value = self.sympy_type(value)
@@ -68,7 +68,7 @@ class SymbolicBasicAttribute(core.LiteralAttribute):
         return (value, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -76,12 +76,12 @@ class SymbolicBasicAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of errors
-                as an instance of `core.InvalidAttribute`
+                as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
         if value and not isinstance(value, self.sympy_type):
-            errors.append('Value must be an instance of `{}`'.format(str(self.sympy_type)[8:-2]))
+            errors.append('Value must be an instance of :obj:`{}`'.format(str(self.sympy_type)[8:-2]))
         elif self.primary and not value:
             errors.append('{} value for primary attribute cannot be empty'.format(
                 self.__class__.__name__))
@@ -94,12 +94,12 @@ class SymbolicBasicAttribute(core.LiteralAttribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list` of :obj:`sympy.Basic`): list of values
 
         Returns:
-           :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list
-            of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a list
+                of errors as an instance of :obj:`core.InvalidAttribute`
         """
         str_values = []
         for v in values:

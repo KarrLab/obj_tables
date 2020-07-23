@@ -56,7 +56,7 @@ Installing the optional features
 * `sci`: Science attributes for units, quantities, uncertainty, ontology terms, and references (:py:mod:`obj_tables.sci`)
 * `viz`: Methods to generate UML diagrams of schemas (:py:meth:`obj_tables.utils.viz_schema`)
 
-These features can be installed by installing `ObjTables` with the desired options. For example, the `bio` and `chem` features can installed by running one of the following commands::
+These features can be installed by installing `ObjTables` with the desired options. For example, the ``bio`` and ``chem`` features can installed by running one of the following commands::
 
     pip install obj_tables[bio,chem]
     pip install git+https://github.com/KarrLab/obj_tables.git#egg=obj_tables[bio,chem]
@@ -66,10 +66,10 @@ Configuring access to GitHub
 ----------------------------
 To use the revisioning and migration features, developers must configure `ObjTables` to access GitHub.
 
-* Install the revisioning features by running `pip install obj_tables[revisioning]`.
+* Install the revisioning features by running ``pip install obj_tables[revisioning]``.
 * `Generate an API token for GitHub <https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token>`_.
-* Create the directory `~/.wc/` (Ubuntu: `/home/<username>/.wc`, Windows: `c:\Users\<username>\.wc\`).
-* Create the file `~./wc/wc_utils.cfg` with the following content::
+* Create the directory ``~/.wc/`` (Ubuntu: ``/home/<username>/.wc``, Windows: ``c:\Users\<username>\.wc\``).
+* Create the file ``~./wc/wc_utils.cfg`` with the following content::
 
     [wc_utils]
         [[github]]
@@ -78,7 +78,7 @@ To use the revisioning and migration features, developers must configure `ObjTab
 * Follow these steps to configure SSH access GitHub:
 
     * Follow these `instructions <https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent>`_ to generate an SSH key and add it to your GitHub account
-    * Create the file `~/.gitconfig` (Ubuntu: `/home/<username>/.gitconfig`, Windows: `c:\Users\<username>\.gitconfig\`) with the following content::
+    * Create the file ``~/.gitconfig`` (Ubuntu: ``/home/<username>/.gitconfig``, Windows: ``c:\Users\<username>\.gitconfig\``) with the following content::
 
         [url "ssh://git@github.com/"]
             insteadOf = https://github.com/

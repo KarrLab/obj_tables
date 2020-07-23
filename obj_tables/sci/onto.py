@@ -126,8 +126,10 @@ class OntoTermAttribute(core.LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`pronto.Term` or :obj:`None`: cleaned value
-            :obj:`core.InvalidAttribute` or :obj:`None`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`pronto.Term` or :obj:`None`: cleaned value
+                * :obj:`core.InvalidAttribute` or :obj:`None`: cleaning error
         """
         error = None
 
@@ -158,7 +160,7 @@ class OntoTermAttribute(core.LiteralAttribute):
             return (value, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated

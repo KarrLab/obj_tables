@@ -64,7 +64,7 @@ class ArrayAttribute(core.LiteralAttribute):
             value (:obj:`str`): semantically equivalent representation
 
         Returns:
-            :obj:`tuple` of `numpy.array`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`numpy.array`, :obj:`core.InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if self.default is not None:
             dtype = self.default.dtype.type
@@ -97,7 +97,7 @@ class ArrayAttribute(core.LiteralAttribute):
         return (value, error)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -105,7 +105,7 @@ class ArrayAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -136,12 +136,12 @@ class ArrayAttribute(core.LiteralAttribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list` of :obj:`numpy.array`): list of values
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -232,7 +232,7 @@ class TableAttribute(core.LiteralAttribute):
             value (:obj:`str`): semantically equivalent representation
 
         Returns:
-            :obj:`tuple` of `pandas.DataFrame`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`pandas.DataFrame`, :obj:`core.InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if self.default is not None:
             dtype = self.default.values.dtype.type
@@ -277,7 +277,7 @@ class TableAttribute(core.LiteralAttribute):
         return (value, error)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -285,7 +285,7 @@ class TableAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list of
-                errors as an instance of `core.InvalidAttribute`
+                errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -310,12 +310,12 @@ class TableAttribute(core.LiteralAttribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list` of :obj:`pandas.DataFrame`): list of values
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return a
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         str_values = []
         for v in values:

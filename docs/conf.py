@@ -47,18 +47,6 @@ extensions = [
     'sphinxprettysearchresults',
 ]
 
-# napoleon options
-napoleon_google_docstring = True
-napoleon_numpy_docstring = False
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = True
-napoleon_use_admonition_for_examples = False
-napoleon_use_admonition_for_notes = False
-napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
-napoleon_use_param = True
-napoleon_use_rtype = True
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -150,6 +138,8 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+
+autoclass_content = 'both'
 
 # -- section/figure/table numbering options -------------------------------
 numfig = True

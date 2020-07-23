@@ -129,7 +129,7 @@ class UncertainFloatAttribute(core.LiteralAttribute):
         return uncertainties.ufloat(value.n, value.s)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value for this UncertainFloatAttribute
+        """ Determine if :obj:`value` is a valid value for this UncertainFloatAttribute
 
         Args:
             obj (:obj:`Model`): class being validated

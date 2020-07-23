@@ -22,6 +22,19 @@ from wc_utils.util.misc import DFSMAcceptor
 __all__ = [
     'OneToOneExpressionAttribute',
     'ManyToOneExpressionAttribute',
+    'ObjTablesTokenCodes',
+    'IdMatch',
+    'ObjTablesToken',
+    'LexMatch',
+    'ExpressionTermMeta',
+    'ExpressionStaticTermMeta',
+    'ExpressionDynamicTermMeta',
+    'ExpressionExpressionTermMeta',
+    'Expression',
+    'ParsedExpressionError',
+    'ParsedExpression',
+    'ParsedExpressionValidator',
+    'LinearParsedExpressionValidator',
 ]
 
 
@@ -68,7 +81,7 @@ class OneToOneExpressionAttribute(OneToOneAttribute):
         """ Serialize related object
 
         Args:
-            expression (:obj:`obj_tables.Model`): the referenced `Expression`
+            expression (:obj:`obj_tables.Model`): the referenced :obj:`Expression`
             encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
@@ -88,7 +101,7 @@ class OneToOneExpressionAttribute(OneToOneAttribute):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value:
             return self.related_class.deserialize(value, objects)
@@ -105,7 +118,7 @@ class OneToOneExpressionAttribute(OneToOneAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         validation = super(OneToOneAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
-                                                                         doc_metadata_model=doc_metadata_model)
+                                                                        doc_metadata_model=doc_metadata_model)
 
         if self.related_class.Meta.expression_is_linear:
             type = 'linear '
@@ -147,7 +160,7 @@ class ManyToOneExpressionAttribute(ManyToOneAttribute):
         """ Serialize related object
 
         Args:
-            expression (:obj:`Expression`): the related `Expression`
+            expression (:obj:`Expression`): the related :obj:`Expression`
             encoded (:obj:`dict`, optional): dictionary of objects that have already been encoded
 
         Returns:
@@ -167,7 +180,7 @@ class ManyToOneExpressionAttribute(ManyToOneAttribute):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value:
             return self.related_class.deserialize(value, objects)
@@ -184,7 +197,7 @@ class ManyToOneExpressionAttribute(ManyToOneAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         validation = super(ManyToOneAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
-                                                                          doc_metadata_model=doc_metadata_model)
+                                                                         doc_metadata_model=doc_metadata_model)
 
         if self.related_class.Meta.expression_is_linear:
             type = 'linear '
@@ -324,17 +337,17 @@ class Expression(object):
 
     @classmethod
     def deserialize(cls, model_cls, value, objects):
-        """ Deserialize `value` into an `Expression`
+        """ Deserialize :obj:`value` into an :obj:`Expression`
 
         Args:
-            model_cls (:obj:`type`): `Expression` class or subclass
+            model_cls (:obj:`type`): :obj:`Expression` class or subclass
             value (:obj:`str`): string representation of the mathematical expression, in a
                 Python expression
-            objects (:obj:`dict`): dictionary of objects which can be used in `expression`, grouped by model
+            objects (:obj:`dict`): dictionary of objects which can be used in :obj:`Expression`, grouped by model
 
         Returns:
             :obj:`tuple`: on error return (:obj:`None`, :obj:`InvalidAttribute`),
-                otherwise return (object in this class with instantiated `_parsed_expression`, `None`)
+                otherwise return (object in this class with instantiated :obj:`_parsed_expression`, :obj:`None`)
         """
         value = value or ''
 
@@ -374,7 +387,7 @@ class Expression(object):
         """ Set the linear coefficients for the related objects
 
         Args:
-            obj (:obj:`Model`): `Expression` object
+            obj (:obj:`Model`): :obj:`Expression` object
         """
         model_cls = obj.__class__
         parsed_expr = obj._parsed_expression
@@ -424,7 +437,7 @@ class Expression(object):
             parent_obj (:obj:`Model`): parent of expression object
 
         Returns:
-            :obj:`InvalidObject` or None: `None` if the object is valid,
+            :obj:`InvalidObject` or None: :obj:`None` if the object is valid,
                 otherwise return a list of errors in an :obj:`InvalidObject` instance
         """
         model_cls = model_obj.__class__
@@ -498,7 +511,7 @@ class Expression(object):
             attr_err = InvalidAttribute(attr, ['Expression must be linear in species counts'])
             return InvalidObject(model_obj, [attr_err])
 
-        # return `None` to indicate valid object
+        # return :obj:`None` to indicate valid object
         return None
 
     @staticmethod
@@ -507,13 +520,13 @@ class Expression(object):
 
         Args:
             model_type (:obj:`type`): an :obj:`Model` that uses a mathemetical expression, like
-                `Function` and `Observable`
-            expression (:obj:`str`): the expression used by the `model_type` being created
-            objs (:obj:`dict` of `dict`): all objects that are referenced in `expression`
+                :obj:`Function` and :obj:`Observable`
+            expression (:obj:`str`): the expression used by the :obj:`model_type` being created
+            objs (:obj:`dict` of :obj:`dict`): all objects that are referenced in :obj:`expression`
 
         Returns:
             :obj:`tuple`: if successful, (:obj:`Model`, :obj:`None`) containing a new instance of
-                `model_type`'s expression helper class; otherwise, (:obj:`None`, :obj:`InvalidAttribute`)
+                :obj:`model_type`'s expression helper class; otherwise, (:obj:`None`, :obj:`InvalidAttribute`)
                 reporting the error
         """
         expr_model_type = model_type.Meta.expression_term_model
@@ -523,20 +536,20 @@ class Expression(object):
     def make_obj(cls, model, model_type, primary_attr, expression, objs, allow_invalid_objects=False):
         """ Make a model that contains an expression by using its expression helper class
 
-        For example, this uses `FunctionExpression` to make a `Function`.
+        For example, this uses :obj:`FunctionExpression` to make a :obj:`Function`.
 
         Args:
             model (:obj:`Model`): an instance of :obj:`Model` which is the root model
             model_type (:obj:`type`): a subclass of :obj:`Model` that uses a mathemetical expression, like
-                `Function` and `Observable`
-            primary_attr (:obj:`object`): the primary attribute of the `model_type` being created
-            expression (:obj:`str`): the expression used by the `model_type` being created
-            objs (:obj:`dict` of `dict`): all objects that are referenced in `expression`
+                :obj:`Function` and :obj:`Observable`
+            primary_attr (:obj:`object`): the primary attribute of the :obj:`model_type` being created
+            expression (:obj:`str`): the expression used by the :obj:`model_type` being created
+            objs (:obj:`dict` of :obj:`dict`): all objects that are referenced in :obj:`expression`
             allow_invalid_objects (:obj:`bool`, optional): if set, return object - not error - if
                 the expression object does not validate
 
         Returns:
-            :obj:`Model` or :obj:`InvalidAttribute`: a new instance of `model_type`, or,
+            :obj:`Model` or :obj:`InvalidAttribute`: a new instance of :obj:`model_type`, or,
                 if an error occurs, an :obj:`InvalidAttribute` reporting the error
         """
         expr_model_obj, error = cls.make_expression_obj(model_type, expression, objs)
@@ -567,7 +580,7 @@ class Expression(object):
 
 
 class ParsedExpressionError(Exception):
-    """ Exception raised for errors in `ParsedExpression`
+    """ Exception raised for errors in :obj:`ParsedExpression`
 
     Attributes:
         message (:obj:`str`): the exception's message
@@ -582,13 +595,13 @@ class ParsedExpressionError(Exception):
 
 
 class ParsedExpression(object):
-    """ An expression in an :obj:`obj_tables` :obj:`Model`
+    """ An expression in an :obj:`ObjTables` :obj:`Model`
 
     These expressions are limited Python expressions with specific semantics:
 
     * They must be syntactically correct Python, except that an identifier can begin with numerical digits.
     * No Python keywords, strings, or tokens that do not belong in expressions are allowed.
-    * All Python identifiers must be the primary attribute of an :obj:`obj_tables` object or the name of a
+    * All Python identifiers must be the primary attribute of an :obj:`ObjTables` object or the name of a
       function in the :obj:`math` package. Objects in the model
       are provided in :obj:`_objs`, and the allowed subset of functions in :obj:`math` must be provided in an
       iterator in the :obj:`expression_valid_functions` attribute of the :obj:`Meta` class of a model whose whose expression
@@ -603,7 +616,7 @@ class ParsedExpression(object):
     * Every expression must be computable at any time during a simulation. The evaluation of an expression
       always occurs at a precise simulation time, which is implied by the expression but not explicitly
       represented. E.g., a reference to a :obj:`Species` means its concentration at the time the expression is
-      `eval`\ ed. These are the meanings of references:
+      :obj:`eval`\ ed. These are the meanings of references:
 
       * :obj:`Species`: its current concentration
       * :obj:`Parameter`: its value, which is static
@@ -618,7 +631,7 @@ class ParsedExpression(object):
         model_cls (:obj:`type`): the :obj:`Model` which has an expression
         attr (:obj:`str`): the attribute name of the expression in :obj:`model_cls`
         expression (:obj:`str`): the expression defined in the obj_tables :obj:`Model`
-        _py_tokens (:obj:`list` of :obj:`collections.namedtuple`): a list of Python tokens generated by `tokenize.tokenize()`
+        _py_tokens (:obj:`list` of :obj:`collections.namedtuple`): a list of Python tokens generated by :obj:`tokenize.tokenize()`
         _objs (:obj:`dict`): dict of obj_tables Models that might be referenced in :obj:`expression`;
             maps model type to a dict mapping ids to Model instances
         valid_functions (:obj:`set`): the union of all :obj:`valid_functions` attributes for :obj:`_objs`
@@ -629,7 +642,7 @@ class ParsedExpression(object):
             maps model type to dict that maps models to coefficients
         errors (:obj:`list` of :obj:`str`): errors found when parsing an :obj:`expression` fails
         _obj_tables_tokens (:obj:`list` of :obj:`ObjTablesToken`): tokens obtained when an :obj:`expression`
-            is successfully `tokenize`\ d; if empty, then this :obj:`ParsedExpression` cannot use :obj:`eval`
+            is successfully :obj:`tokenize`\ d; if empty, then this :obj:`ParsedExpression` cannot use :obj:`eval`
         _compiled_expression (:obj:`str`): compiled expression that can be evaluated by :obj:`eval`
         _compiled_expression_with_units (:obj:`str`): compiled expression with units that can be evaluated by :obj:`eval`
         _compiled_namespace (:obj:`dict`): compiled namespace for evaluation by :obj:`eval`
@@ -661,15 +674,15 @@ class ParsedExpression(object):
 
         Args:
             model_cls (:obj:`type`): the :obj:`Model` which has an expression
-            attr (:obj:`str`): the attribute name of the expression in `model_cls`
+            attr (:obj:`str`): the attribute name of the expression in :obj:`model_cls`
             expression (:obj:`obj`): the expression defined in the obj_tables :obj:`Model`
             objs (:obj:`dict`): dictionary of model objects (instances of :obj:`Model`) organized
                 by their type
 
         Raises:
-            :obj:`ParsedExpressionError`: if `model_cls` is not a subclass of :obj:`Model`,
-                or lexical analysis of `expression` raises an exception,
-                or `objs` includes model types that `model_cls` should not reference
+            :obj:`ParsedExpressionError`: if :obj:`model_cls` is not a subclass of :obj:`Model`,
+                or lexical analysis of :obj:`expression` raises an exception,
+                or :obj:`objs` includes model types that :obj:`model_cls` should not reference
         """
         if not issubclass(model_cls, Model):
             raise ParsedExpressionError("model_cls '{}' is not a subclass of Model".format(
@@ -761,7 +774,7 @@ class ParsedExpression(object):
         """ Get the number of trailing spaces following a Python token
 
         Args:
-            idx (:obj:`int`): index of the token in `self._py_tokens`
+            idx (:obj:`int`): index of the token in :obj:`self._py_tokens`
         """
         if len(self._py_tokens) - 1 <= idx:
             return 0
@@ -770,7 +783,7 @@ class ParsedExpression(object):
         return self._py_tokens[idx + 1].start[1] - self._py_tokens[idx].end[1]
 
     def recreate_whitespace(self, expr):
-        """ Insert the whitespace in this object's `expression` into an expression with the same token count
+        """ Insert the whitespace in this object's :obj:`expression` into an expression with the same token count
 
         Used to migrate an expression to a different set of model type names.
 
@@ -778,12 +791,12 @@ class ParsedExpression(object):
             expr (:obj:`str`): a syntactically correct Python expression
 
         Returns:
-            :obj:`str`: `expr` with the whitespace in this instance's `expression` inserted between
+            :obj:`str`: :obj:`expr` with the whitespace in this instance's :obj:`expression` inserted between
                 its Python tokens
 
         Raises:
-            :obj:`ParsedExpressionError`: if tokenizing `expr` raises an exception,
-                or if `expr` doesn't have the same number of Python tokens as `self.expression`
+            :obj:`ParsedExpressionError`: if tokenizing :obj:`expr` raises an exception,
+                or if :obj:`expr` doesn't have the same number of Python tokens as :obj:`self.expression`
         """
         prepped_expr = self.__prep_expr_for_tokenization(expr)
         try:
@@ -810,13 +823,13 @@ class ParsedExpression(object):
         return ''.join(expanded_expr)
 
     def _get_model_type(self, name):
-        """ Find the `obj_tables` model type corresponding to `name`
+        """ Find the `ObjTables` model type corresponding to :obj:`name`
 
         Args:
-            name (:obj:`str`): the name of a purported `obj_tables` model type in an expression
+            name (:obj:`str`): the name of a purported `ObjTables` model type in an expression
 
         Returns:
-            :obj:`object`: `None` if no model named `name` exists in `self.term_models`,
+            :obj:`object`: :obj:`None` if no model named :obj:`name` exists in :obj:`self.term_models`,
                 else the type of the model with that name
         """
         for model_type in self.term_models:
@@ -825,16 +838,16 @@ class ParsedExpression(object):
         return None
 
     def _match_tokens(self, token_pattern, idx):
-        """ Indicate whether `tokens` begins with a pattern of tokens that match `token_pattern`
+        """ Indicate whether :obj:`tokens` begins with a pattern of tokens that match :obj:`token_pattern`
 
         Args:
             token_pattern (:obj:`tuple` of :obj:`int`): a tuple of Python token numbers, taken from the
-            `token` module
-            idx (:obj:`int`): current index into `tokens`
+            :obj:`token` module
+            idx (:obj:`int`): current index into :obj:`tokens`
 
         Returns:
-            :obj:`object`: :obj:`bool`, False if the initial elements of `tokens` do not match the
-            syntax in `token_pattern`, or :obj:`str`, the matching string
+            :obj:`object`: :obj:`bool`, False if the initial elements of :obj:`tokens` do not match the
+            syntax in :obj:`token_pattern`, or :obj:`str`, the matching string
         """
         if not token_pattern:
             return False
@@ -857,23 +870,23 @@ class ParsedExpression(object):
         return match_val
 
     def _get_disambiguated_id(self, idx, case_fold_match=False):
-        """ Try to parse a disambiguated `obj_tables` id from `self._py_tokens` at `idx`
+        """ Try to parse a disambiguated `ObjTables` id from :obj:`self._py_tokens` at :obj:`idx`
 
-        Look for a disambugated id (a Model written as `ModelType.model_id`). If tokens do not match,
-        return `None`. If tokens match, but their values are wrong, return an error `str`.
-        If a disambugated id is found, return a `LexMatch` describing it.
+        Look for a disambugated id (a Model written as :obj:`ModelType.model_id`). If tokens do not match,
+        return :obj:`None`. If tokens match, but their values are wrong, return an error :obj:`str`.
+        If a disambugated id is found, return a :obj:`LexMatch` describing it.
 
         Args:
-            idx (:obj:`int`): current index into `tokens`
-            case_fold_match (:obj:`bool`, optional): if set, `casefold()` identifiers before matching;
-                in a `ObjTablesToken`, `token_string` retains the original expression text, while `model_id`
-                contains the casefold'ed value; identifier keys in `self._objs` must already be casefold'ed;
+            idx (:obj:`int`): current index into :obj:`tokens`
+            case_fold_match (:obj:`bool`, optional): if set, :obj:`casefold()` identifiers before matching;
+                in a :obj:`ObjTablesToken`, :obj:`token_string` retains the original expression text, while :obj:`model_id`
+                contains the casefold'ed value; identifier keys in :obj:`self._objs` must already be casefold'ed;
                 default=False
 
         Returns:
-            :obj:`object`: If tokens do not match, return `None`. If tokens match,
-                but their values are wrong, return an error `str`.
-                If a disambugated id is found, return a `LexMatch` describing it.
+            :obj:`object`: If tokens do not match, return :obj:`None`. If tokens match,
+                but their values are wrong, return an error :obj:`str`.
+                If a disambugated id is found, return a :obj:`LexMatch` describing it.
         """
         disambig_model_match = self._match_tokens(self.MODEL_TYPE_DISAMBIG_PATTERN, idx)
         if disambig_model_match:
@@ -904,22 +917,22 @@ class ParsedExpression(object):
         return None
 
     def _get_related_obj_id(self, idx, case_fold_match=False):
-        """ Try to parse a related object `obj_tables` id from `self._py_tokens` at `idx`
+        """ Try to parse a related object `ObjTables` id from :obj:`self._py_tokens` at :obj:`idx`
 
-        Different `obj_tables` objects match different Python token patterns. The default pattern
-        is (token.NAME, ), but an object of type `model_type` can define a custom pattern in
-        `model_type.Meta.expression_term_token_pattern`, as `Species` does. Some patterns may consume
+        Different `ObjTables` objects match different Python token patterns. The default pattern
+        is (token.NAME, ), but an object of type :obj:`model_type` can define a custom pattern in
+        :obj:`model_type.Meta.expression_term_token_pattern`, as :obj:`Species` does. Some patterns may consume
             multiple Python tokens.
 
         Args:
-            idx (:obj:`int`): current index into `_py_tokens`
+            idx (:obj:`int`): current index into :obj:`_py_tokens`
             case_fold_match (:obj:`bool`, optional): if set, casefold identifiers before matching;
-                identifier keys in `self._objs` must already be casefold'ed; default=False
+                identifier keys in :obj:`self._objs` must already be casefold'ed; default=False
 
         Returns:
-            :obj:`object`: If tokens do not match, return `None`. If tokens match,
-                but their values are wrong, return an error `str`.
-                If a related object id is found, return a `LexMatch` describing it.
+            :obj:`object`: If tokens do not match, return :obj:`None`. If tokens match,
+                but their values are wrong, return an error :obj:`str`.
+                If a related object id is found, return a :obj:`LexMatch` describing it.
         """
         token_matches = set()
         id_matches = set()
@@ -973,20 +986,20 @@ class ParsedExpression(object):
                 len(match.token_pattern))
 
     def _get_func_call_id(self, idx, case_fold_match='unused'):
-        """ Try to parse a Python math function call from `self._py_tokens` at `idx`
+        """ Try to parse a Python math function call from :obj:`self._py_tokens` at :obj:`idx`
 
-        Each `obj_tables` object `model_cls` that contains an expression which can use Python math
-        functions must define the set of allowed functions in `Meta.expression_valid_functions` of the
+        Each `ObjTables` object :obj:`model_cls` that contains an expression which can use Python math
+        functions must define the set of allowed functions in :obj:`Meta.expression_valid_functions` of the
         model_cls Expression Model.
 
         Args:
-            idx (:obj:`int`): current index into `self._py_tokens`
-            case_fold_match (:obj:`str`, optional): ignored keyword; makes `ParsedExpression.tokenize()` simpler
+            idx (:obj:`int`): current index into :obj:`self._py_tokens`
+            case_fold_match (:obj:`str`, optional): ignored keyword; makes :obj:`ParsedExpression.tokenize()` simpler
 
         Returns:
-            :obj:`object`: If tokens do not match, return `None`. If tokens match,
-                but their values are wrong, return an error `str`.
-                If a function call is found, return a `LexMatch` describing it.
+            :obj:`object`: If tokens do not match, return :obj:`None`. If tokens match,
+                but their values are wrong, return an error :obj:`str`.
+                If a function call is found, return a :obj:`LexMatch` describing it.
         """
         func_match = self._match_tokens(self.FUNC_PATTERN, idx)
         if func_match:
@@ -1022,20 +1035,21 @@ class ParsedExpression(object):
         return None
 
     def tokenize(self, case_fold_match=False):
-        """ Tokenize a Python expression in `self.expression`
+        """ Tokenize a Python expression in :obj:`self.expression`
 
         Args:
             case_fold_match (:obj:`bool`, optional): if set, casefold identifiers before matching;
-                identifier keys in `self._objs` must already be casefold'ed; default = False
+                identifier keys in :obj:`self._objs` must already be casefold'ed; default = False
 
         Returns:
+            :obj:`tuple`:
 
-            * :obj:`list`: of :obj:`ObjTablesToken`\ s
-            * :obj:`dict`: dict of Model instances used by this list, grouped by Model type
-            * :obj:`list` of :obj:`str`: list of errors
+                * :obj:`list`: of :obj:`ObjTablesToken`\ s
+                * :obj:`dict`: dict of Model instances used by this list, grouped by Model type
+                * :obj:`list` of :obj:`str`: list of errors
 
         Raises:
-            :obj:`ParsedExpressionError`: if `model_cls` does not have a `Meta` attribute
+            :obj:`ParsedExpressionError`: if :obj:`model_cls` does not have a :obj:`Meta` attribute
         """
         self.__reset_tokenization()
 
@@ -1143,13 +1157,13 @@ class ParsedExpression(object):
         return (self._obj_tables_tokens, self.related_objects, None)
 
     def test_eval(self, values=1., with_units=False):
-        """ Test evaluate this :obj:`ParsedExpression` with the value of all models given by `values`
+        """ Test evaluate this :obj:`ParsedExpression` with the value of all models given by :obj:`values`
 
         This is used to validate this :obj:`ParsedExpression`, as well as for testing.
 
         Args:
             values (:obj:`float` or :obj:`dict`, optional): value(s) of models used by the test
-                evaluation; if a scalar, then that value is used for all models; if a `dict` then
+                evaluation; if a scalar, then that value is used for all models; if a :obj:`dict` then
                 it maps model types to their values, or it maps model types to dictionaries that map
                 model ids to the values of individual models used in the test
             with_units (:obj:`bool`, optional): if :obj:`True`, evaluate units
@@ -1184,7 +1198,7 @@ class ParsedExpression(object):
 
             1. Ensure that the expression is compiled
             2. Prepare namespace with model values
-            3. `eval` the Python expression
+            3. :obj:`eval` the Python expression
 
         Args:
             values (:obj:`dict`): dictionary that maps model types to dictionaries that
@@ -1249,14 +1263,16 @@ class ParsedExpression(object):
             raise ParsedExpressionError("Exception:" + error_suffix + str(error))
 
     def _compile(self, with_units=False):
-        """ Compile expression for evaluation by `eval` method
+        """ Compile expression for evaluation by :obj:`eval` method
 
         Args:
             with_units (:obj:`bool`, optional): if :obj:`True`, include units
 
         Returns:
-            :obj:`str`: compiled expression for `eval`
-            :obj:`dict`: compiled namespace
+            :obj:`tuple`:
+
+                * :obj:`str`: compiled expression for :obj:`eval`
+                * :obj:`dict`: compiled namespace
         """
 
         str_expression = self.get_str(self._obj_tables_token_to_str, with_units=with_units)
@@ -1280,7 +1296,7 @@ class ParsedExpression(object):
         return '{}["{}"]'.format(token.model_type.__name__, token.model.get_primary_attribute())
 
     def get_str(self, obj_tables_token_to_str, with_units=False, number_units=' * __dimensionless__'):
-        """ Generate string representation of expression, e.g. for evaluation by `eval`
+        """ Generate string representation of expression, e.g. for evaluation by :obj:`eval`
 
         Args:
             obj_tables_token_to_str (:obj:`callable`): method to get string representation of a token
@@ -1329,16 +1345,16 @@ class ParsedExpression(object):
 
 
 class ParsedExpressionValidator(object):
-    """ Verify whether a sequence of `ObjTablesToken` tokens
+    """ Verify whether a sequence of :obj:`ObjTablesToken` tokens
 
-    A `ParsedExpressionValidator` consists of two parts:
+    A :obj:`ParsedExpressionValidator` consists of two parts:
 
-    * An optional method `_validate_tokens` that examines the content of individual tokens
-      and returns `(True, True)` if they are all valid, or (`False`, error) otherwise. It can be
+    * An optional method :obj:`_validate_tokens` that examines the content of individual tokens
+      and returns :obj:`(True, True)` if they are all valid, or :obj:`(False, error)` otherwise. It can be
       overridden by subclasses.
-    * A `DFSMAcceptor` that determines whether the tokens describe a particular pattern.
+    * A :obj:`DFSMAcceptor` that determines whether the tokens describe a particular pattern.
 
-    `validate()` combines these parts.
+    :obj:`validate()` combines these parts.
 
     Attributes:
         dfsm_acceptor (:obj:`DFSMAcceptor`): the DFSM acceptor
@@ -1350,7 +1366,7 @@ class ParsedExpressionValidator(object):
         Args:
             start_state (:obj:`object`): a DFSM's start state
             accepting_state (:obj:`object`): a DFSM must be in this state to accept a message sequence
-            transitions (:obj:`iterator` of `tuple`): transitions, an iterator of
+            transitions (:obj:`iterator` of :obj:`tuple`): transitions, an iterator of
                 (state, message, next state) tuples
             empty_is_valid (:obj:`bool`, optional): if set, then an empty sequence of tokens is valid
         """
@@ -1361,10 +1377,10 @@ class ParsedExpressionValidator(object):
         """ Check whether the content of a sequence of :obj:`ObjTablesToken`\ s is valid
 
         Args:
-            tokens (:obj:`iterator` of `ObjTablesToken`): sequence of `ObjTablesToken`s
+            tokens (:obj:`iterator` of :obj:`ObjTablesToken`): sequence of :obj:`ObjTablesToken`s
 
         Returns:
-            :obj:`tuple`: (`False`, error) if `tokens` is invalid, or (`True`, `True`) if it is valid
+            :obj:`tuple`: :obj:`(False, error)` if :obj:`tokens` is invalid, or :obj:`(True, True)` if it is valid
         """
         return (True, True)
 
@@ -1372,10 +1388,10 @@ class ParsedExpressionValidator(object):
         """ Convert a sequence of :obj:`ObjTablesToken`\ s into a list of messages for transitions
 
         Args:
-            obj_table_tokens (:obj:`iterator` of `ObjTablesToken`): sequence of `ObjTablesToken`s
+            obj_table_tokens (:obj:`iterator` of :obj:`ObjTablesToken`): sequence of :obj:`ObjTablesToken`s
 
         Returns:
-            :obj:`object`: `list` of `tuple` of pairs (token code, `None`)
+            :obj:`object`: :obj:`list` of :obj:`tuple` of pairs (token code, :obj:`None`)
         """
         messages = []
         for obj_table_token in obj_table_tokens:
@@ -1383,14 +1399,14 @@ class ParsedExpressionValidator(object):
         return messages
 
     def validate(self, expression):
-        """ Indicate whether the tokens in `expression` are valid
+        """ Indicate whether the tokens in :obj:`expression` are valid
 
         Args:
             expression (:obj:`ParsedExpression`): parsed expression
 
         Returns:
-            :obj:`tuple`: (`False`, error) if tokens in `expression` ares valid,
-            or (`True`, `None`) if they are
+            :obj:`tuple`: :obj:`(False, error)` if tokens in :obj:`expression` ares valid,
+                or :obj:`(True, None)` if they are
         """
         tokens = expression._obj_tables_tokens
         if self.empty_is_valid and not tokens:
@@ -1406,10 +1422,11 @@ class ParsedExpressionValidator(object):
 
 
 class LinearParsedExpressionValidator(ParsedExpressionValidator):
-    """ Verify whether a sequence of tokens (`ObjTablesToken`\ s) describes a linear function of identifiers
+    """ Verify whether a sequence of tokens (:obj:`ObjTablesToken`\ s) describes a linear function of identifiers
 
     In particular, a valid linear expression must have the structure:
-        * `(identifier | number '*' identifier) (('+' | '-') (identifier | number '*' identifier))*`
+
+    * :obj:`(identifier | number '*' identifier) (('+' | '-') (identifier | number '*' identifier))*`
     """
 
     # Transitions in valid linear expression
@@ -1430,15 +1447,15 @@ class LinearParsedExpressionValidator(ParsedExpressionValidator):
     def _validate_tokens(self, obj_table_tokens):
         """ Check whether the content of a sequence of :obj:`ObjTablesToken`\ s is valid
 
-        In particular, all numbers in `tokens` must be floats, and all token codes must not
-        be `math_func_id` or `other`.
+        In particular, all numbers in :obj:`tokens` must be floats, and all token codes must not
+        be :obj:`math_func_id` or :obj:`other`.
 
         Args:
-            obj_table_tokens (:obj:`iterator` of `ObjTablesToken`): sequence of `ObjTablesToken`s
+            obj_table_tokens (:obj:`iterator` of :obj:`ObjTablesToken`): sequence of :obj:`ObjTablesToken`s
 
         Returns:
-            :obj:`tuple`: (`False`, error) if `tokens` cannot be a linear expression, or
-                (`True`, `True`) if it can
+            :obj:`tuple`: :obj:`(False, error)` if :obj:`tokens` cannot be a linear expression, or
+                :obj:`(True, True)` if it can
         """
         for obj_table_token in obj_table_tokens:
             if obj_table_token.code in set([ObjTablesTokenCodes.math_func_id, ObjTablesTokenCodes.other]):
@@ -1456,10 +1473,10 @@ class LinearParsedExpressionValidator(ParsedExpressionValidator):
         :obj:`LinearParsedExpressionValidator.TRANSITIONS`
 
         Args:
-            obj_table_tokens (:obj:`iterator` of `ObjTablesToken`): sequence of `ObjTablesToken`s
+            obj_table_tokens (:obj:`iterator` of :obj:`ObjTablesToken`): sequence of :obj:`ObjTablesToken`s
 
         Returns:
-            :obj:`object`: :obj:`None` if `tokens` cannot be converted into a sequence of messages
+            :obj:`object`: :obj:`None` if :obj:`tokens` cannot be converted into a sequence of messages
                 to validate a linear expression, or a :obj:`list` of :obj:`tuple` of pairs (token code, message modifier)
         """
         messages = []

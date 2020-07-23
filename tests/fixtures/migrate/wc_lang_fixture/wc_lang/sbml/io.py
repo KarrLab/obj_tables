@@ -37,17 +37,17 @@ DfbaObjReaction                Reaction
 DfbaObjSpecies                 SpeciesReference
 StopCondition                  --
 StopConditionExpression        --
-Observation                       --
-Conclusion                 --
+Observation                    --
+Conclusion                     --
 Reference                      --
 Author                         Model.annotation
 Change                         --
-Identifier              SBase.annotation
+Identifier                     SBase.annotation
 pint.Unit                      UnitDefinition
-obj_tables.Model.comments       SBase.notes
+obj_tables.Model.comments      SBase.notes
 =============================  =====================
 
-In addition, WC-Lang attributes which have no equivalent SBML attribute are mapped to
+In addition, `WC-Lang` attributes which have no equivalent SBML attribute are mapped to
 ``SBase.annotation``.
 
 Note, that because WC-Lang and SBML have different semantics, some of aspects of

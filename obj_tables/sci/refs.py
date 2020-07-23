@@ -69,7 +69,7 @@ class Identifier(object):
                                     self.namespace.replace("'", "\'"))
 
     def to_str(self):
-        """ Generate a string representation (`'id' @ 'namespace'`)
+        """ Generate a string representation (``'id' @ 'namespace'``)
 
         Returns:
             :obj:`str`: string representation
@@ -77,7 +77,7 @@ class Identifier(object):
         return str(self)
 
     def from_str(self, value):
-        """ Set value from a string representation (`'id' @ 'namespace'`)
+        """ Set value from a string representation (``'id' @ 'namespace'``)
 
         Args:
             value (:obj:`value`): string representation
@@ -87,7 +87,7 @@ class Identifier(object):
 
         Raises:
             :obj:`ValueError`: if string representation doesn't match the pattern
-                `'id' @ 'namespace'`
+                ``'id' @ 'namespace'``
         """
         match = re.match(r"^'((?:[^'\\]|\\.)*)' *@ *'((?:[^'\\]|\\.)*)'$", value, re.IGNORECASE)
         if not match:
@@ -109,13 +109,18 @@ class IdentifierAttribute(core.LiteralAttribute):
     """ Identifier attribute """
 
     def __init__(self):
-        super(IdentifierAttribute, self).__init__(default=None, none_value=None,
-                                                  verbose_name='Identifier',
-                                                  description=("An identifier."
-                                                               "\n"
-                                                               "\nExample:"
-                                                               "\n  '16333295' @ 'pubmed'"),
-                                                  primary=False, unique=False)
+        super(IdentifierAttribute, self).__init__(
+            default=None,
+            none_value=None,
+            verbose_name='Identifier',
+            description=(
+                "An identifier."
+                "\n"
+                "\nExample:"
+                "\n  '16333295' @ 'pubmed'"
+            ),
+            primary=False,
+            unique=False)
         self.type = (Identifier, None.__class__)
 
     def deserialize(self, value):
@@ -125,8 +130,10 @@ class IdentifierAttribute(core.LiteralAttribute):
             value (:obj:`str`): string representation of structure
 
         Returns:
-            :obj:`Identifier`: cleaned value
-            :obj:`core.InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`Identifier`: cleaned value
+                * :obj:`core.InvalidAttribute`: cleaning error
         """
         if value:
             if not isinstance(value, str):
@@ -139,7 +146,7 @@ class IdentifierAttribute(core.LiteralAttribute):
         return (None, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -147,7 +154,7 @@ class IdentifierAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
-                return list of errors as an instance of `core.InvalidAttribute`
+                return list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -210,7 +217,7 @@ class IdentifierAttribute(core.LiteralAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         validation = super(IdentifierAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
-                                                                           doc_metadata_model=doc_metadata_model)
+                                                                          doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 
@@ -232,13 +239,18 @@ class IdentifiersAttribute(core.LiteralAttribute):
     """ Identifiers attribute """
 
     def __init__(self):
-        super(IdentifiersAttribute, self).__init__(default=None, none_value=None,
-                                                   verbose_name='Identifiers',
-                                                   description=("A list of identifiers."
-                                                                "\n"
-                                                                "\nExample:"
-                                                                "\n  '16333295' @ 'pubmed', 'CHEBI:36927' @ 'chebi'"),
-                                                   primary=False, unique=False)
+        super(IdentifiersAttribute, self).__init__(
+            default=None,
+            none_value=None,
+            verbose_name='Identifiers',
+            description=(
+                "A list of identifiers."
+                "\n"
+                "\nExample:"
+                "\n  '16333295' @ 'pubmed', 'CHEBI:36927' @ 'chebi'"
+            ),
+            primary=False,
+            unique=False)
         self.type = list
 
     def deserialize(self, value):
@@ -248,8 +260,10 @@ class IdentifiersAttribute(core.LiteralAttribute):
             value (:obj:`str`): string representation of structure
 
         Returns:
-            :obj:`Identifier`: cleaned value
-            :obj:`core.InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`Identifier`: cleaned value
+                * :obj:`core.InvalidAttribute`: cleaning error
         """
         if value:
             if not isinstance(value, str):
@@ -264,7 +278,7 @@ class IdentifiersAttribute(core.LiteralAttribute):
         return ([], None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -272,7 +286,7 @@ class IdentifiersAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
-                return list of errors as an instance of `core.InvalidAttribute`
+                return list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -334,7 +348,7 @@ class IdentifiersAttribute(core.LiteralAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         validation = super(IdentifiersAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
-                                                                            doc_metadata_model=doc_metadata_model)
+                                                                           doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 
@@ -384,14 +398,19 @@ class DoisAttribute(core.LiteralAttribute):
     PATTERN = r'^10.\d{4,9}\/[-._;()/:A-Z0-9]+$'
 
     def __init__(self):
-        super(DoisAttribute, self).__init__(default=[], none_value=[],
-                                            verbose_name='DOIs',
-                                            description=("A list of DOIs."
-                                                         "\n"
-                                                         "\nExample:"
-                                                         "\n  10.1016/j.mib.2015.06.004,"
-                                                         " 10.1016/j.coisb.2017.10.005"),
-                                            primary=False, unique=False)
+        super(DoisAttribute, self).__init__(
+            default=[],
+            none_value=[],
+            verbose_name='DOIs',
+            description=(
+                "A list of DOIs."
+                "\n"
+                "\nExample:"
+                "\n  10.1016/j.mib.2015.06.004,"
+                " 10.1016/j.coisb.2017.10.005"
+            ),
+            primary=False,
+            unique=False)
         self.type = list
 
     def deserialize(self, value):
@@ -401,8 +420,10 @@ class DoisAttribute(core.LiteralAttribute):
             value (:obj:`str`): string representation of structure
 
         Returns:
-            :obj:`list` of :obj:`int`: cleaned value
-            :obj:`core.InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`list` of :obj:`int`: cleaned value
+                * :obj:`core.InvalidAttribute`: cleaning error
         """
         if value:
             if not isinstance(value, str):
@@ -412,7 +433,7 @@ class DoisAttribute(core.LiteralAttribute):
         return ([], None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -420,7 +441,7 @@ class DoisAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
-                return list of errors as an instance of `core.InvalidAttribute`
+                return list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -482,7 +503,7 @@ class DoisAttribute(core.LiteralAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         validation = super(DoisAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
-                                                                     doc_metadata_model=doc_metadata_model)
+                                                                    doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 
@@ -528,13 +549,18 @@ class PubMedIdsAttribute(core.LiteralAttribute):
     """ PubMed ids attribute """
 
     def __init__(self):
-        super(PubMedIdsAttribute, self).__init__(default=[], none_value=[],
-                                                 verbose_name='PubMed ids',
-                                                 description=("A list of PubMed ids."
-                                                              "\n"
-                                                              "\nExample:"
-                                                              "\n  16333295, 16333299"),
-                                                 primary=False, unique=False)
+        super(PubMedIdsAttribute, self).__init__(
+            default=[],
+            none_value=[],
+            verbose_name='PubMed ids',
+            description=(
+                "A list of PubMed ids."
+                "\n"
+                "\nExample:"
+                "\n  16333295, 16333299"
+            ),
+            primary=False,
+            unique=False)
         self.type = list
 
     def deserialize(self, value):
@@ -544,8 +570,10 @@ class PubMedIdsAttribute(core.LiteralAttribute):
             value (:obj:`str`): string representation of structure
 
         Returns:
-            :obj:`list` of :obj:`int`: cleaned value
-            :obj:`core.InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`list` of :obj:`int`: cleaned value
+                * :obj:`core.InvalidAttribute`: cleaning error
         """
         if value:
             if not isinstance(value, str):
@@ -567,7 +595,7 @@ class PubMedIdsAttribute(core.LiteralAttribute):
         return ([], None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -575,7 +603,7 @@ class PubMedIdsAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other
-                return list of errors as an instance of `core.InvalidAttribute`
+                return list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -637,7 +665,7 @@ class PubMedIdsAttribute(core.LiteralAttribute):
             :obj:`wc_utils.workbook.io.FieldValidation`: validation
         """
         validation = super(PubMedIdsAttribute, self).get_xlsx_validation(sheet_models=sheet_models,
-                                                                          doc_metadata_model=doc_metadata_model)
+                                                                         doc_metadata_model=doc_metadata_model)
 
         validation.type = wc_utils.workbook.io.FieldValidationType.any
 

@@ -21,7 +21,7 @@ __all__ = [
     'DnaSeqAttribute',
     'RnaSeqAttribute',
     'ProteinSeqAttribute',
-    'FreqPosMatrixAttribute'
+    'FreqPosMatrixAttribute',
 ]
 
 
@@ -62,7 +62,7 @@ class FeatureLocAttribute(core.LiteralAttribute):
             value (:obj:`str`): semantically equivalent representation
 
         Returns:
-            :obj:`tuple` of `numpy.array`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`numpy.array`, :obj:`core.InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value is None or value == '':
             value = None
@@ -87,7 +87,7 @@ class FeatureLocAttribute(core.LiteralAttribute):
         return (value, error)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -95,7 +95,7 @@ class FeatureLocAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -114,12 +114,12 @@ class FeatureLocAttribute(core.LiteralAttribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list` of :obj:`Bio.SeqFeature.FeatureLocation`): list of values
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return
-                a list of errors as an instance of `core.InvalidAttribute`
+                a list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -221,7 +221,7 @@ class SeqAttribute(core.LiteralAttribute):
             value (:obj:`str`): semantically equivalent representation
 
         Returns:
-            :obj:`tuple` of `Bio.Seq.Seq`, `core.InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`Bio.Seq.Seq`, :obj:`core.InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value:
             if self.alphabet:
@@ -237,7 +237,7 @@ class SeqAttribute(core.LiteralAttribute):
         return (value, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -245,7 +245,7 @@ class SeqAttribute(core.LiteralAttribute):
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return
-                list of errors as an instance of `core.InvalidAttribute`
+                list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         errors = []
 
@@ -276,12 +276,12 @@ class SeqAttribute(core.LiteralAttribute):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list` of :obj:`Bio.Seq.Seq`): list of values
 
         Returns:
             :obj:`core.InvalidAttribute` or None: None if values are unique, otherwise return
-                a list of errors as an instance of `core.InvalidAttribute`
+                a list of errors as an instance of :obj:`core.InvalidAttribute`
         """
         str_values = []
         for v in values:
@@ -353,7 +353,8 @@ class SeqAttribute(core.LiteralAttribute):
 
 
 class DnaSeqAttribute(SeqAttribute):
-    """ Bio.Seq.Seq attribute with Bio.Alphabet.DNAAlphabet """
+    """ Bio.Seq.Seq attribute with Bio.Alphabet.DNAAlphabet
+    """
 
     def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
                  primary=False, unique=False):
@@ -376,7 +377,8 @@ class DnaSeqAttribute(SeqAttribute):
 
 
 class ProteinSeqAttribute(SeqAttribute):
-    """ Bio.Seq.Seq attribute with Bio.Alphabet.ProteinAlphabet """
+    """ Bio.Seq.Seq attribute with Bio.Alphabet.ProteinAlphabet
+    """
 
     def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
                  primary=False, unique=False):
@@ -399,7 +401,8 @@ class ProteinSeqAttribute(SeqAttribute):
 
 
 class RnaSeqAttribute(SeqAttribute):
-    """ Bio.Seq.Seq attribute with Bio.Alphabet.RNAAlphabet """
+    """ Bio.Seq.Seq attribute with Bio.Alphabet.RNAAlphabet
+    """
 
     def __init__(self, min_length=0, max_length=float('inf'), default=None, none_value=None, verbose_name='', description='',
                  primary=False, unique=False):
@@ -422,24 +425,25 @@ class RnaSeqAttribute(SeqAttribute):
 
 
 class FreqPosMatrixAttribute(core.LiteralAttribute):
-    """ Bio.motifs.matrix.FrequencyPositionMatrix attribute """
+    """ :obj:`Bio.motifs.matrix.FrequencyPositionMatrix` attribute """
 
     def __init__(self, verbose_name='', description=''):
         super(FreqPosMatrixAttribute, self).__init__(
-            default=None, verbose_name=verbose_name,
+            default=None,
+            verbose_name=verbose_name,
             description=description)
         self.type = (Bio.motifs.matrix.FrequencyPositionMatrix, None.__class__)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
             value (:obj:`Bio.motifs.matrix.FrequencyPositionMatrix`): value of attribute to validate
 
         Returns:
-            :obj:`core.InvalidAttribute` or None: None if attribute is valid, other return list
-                of errors as an instance of `core.InvalidAttribute`
+            :obj:`core.InvalidAttribute` or :obj:`None`: None if attribute is valid, otherwise return list
+                of errors as an instance of :obj:`core.InvalidAttribute`
         """
         if value is not None and not isinstance(value, Bio.motifs.matrix.FrequencyPositionMatrix):
             return core.InvalidAttribute(self, ['Value must be an instance of `Bio.motifs.matrix.FrequencyPositionMatrix`'])
@@ -472,7 +476,7 @@ class FreqPosMatrixAttribute(core.LiteralAttribute):
             value (:obj:`str`): string representation
 
         Returns:
-            :obj:`tuple` of `Bio.motifs.matrix.FrequencyPositionMatrix`, `core.InvalidAttribute` or `None`:
+            :obj:`tuple` of :obj:`Bio.motifs.matrix.FrequencyPositionMatrix`, :obj:`core.InvalidAttribute` or :obj:`None`:
                 tuple of cleaned value and cleaning error
         """
         if value:

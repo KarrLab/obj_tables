@@ -108,7 +108,7 @@ def get_related_models(root_model, include_root_model=False):
 
 
 def get_attribute_by_name(cls, group_name, attr_name, verbose_name=False, case_insensitive=False):
-    """ Return the attribute of `Model` class `cls` with name `name`
+    """ Return the attribute of :obj:`Model` class :obj:`cls` with name :obj:`name`
 
     Args:
         cls (:obj:`class`): Model class
@@ -118,8 +118,10 @@ def get_attribute_by_name(cls, group_name, attr_name, verbose_name=False, case_i
         case_insensitive (:obj:`bool`, optional): if True, ignore case
 
     Returns:
-        :obj:`Attribute`: attribute with name equal to the value of `group_name` or `None` if there is no matching attribute
-        :obj:`Attribute`: attribute with name equal to the value of `attr_name` or `None` if there is no matching attribute
+        :obj:`tuple`:
+
+            * :obj:`Attribute`: attribute with name equal to the value of :obj:`group_name` or :obj:`None` if there is no matching attribute
+            * :obj:`Attribute`: attribute with name equal to the value of :obj:`attr_name` or :obj:`None` if there is no matching attribute
     """
 
     if not attr_name:
@@ -183,7 +185,7 @@ def get_component_by_id(models, id, identifier='id'):
     ''' Retrieve a model instance by its identifier
 
     Args:
-        model (:obj:list of `Model`): an iterable of `Model` objects
+        model (:obj:`list` of :obj:`Model`): an iterable of :obj:`Model` objects
         id (:obj:`str`): the identifier being sought
         identifier (:obj:`str`, optional): the name of the identifier attribute
 
@@ -191,7 +193,7 @@ def get_component_by_id(models, id, identifier='id'):
         :obj:`Model`: the retrieved Model instance if found, or None
 
     Raises:
-        :obj:`AttributeError`: if `model` does not have the attribute specified by `identifier`
+        :obj:`AttributeError`: if none of the items in :obj:`models` has the attribute specified by :obj:`identifier`
     '''
     # TODO: this is O(n); achieve O(1) by using Manager() dictionaries id -> component for each model
     for model in models:
@@ -230,8 +232,8 @@ def randomize_object_graph(obj):
 
 
 def source_report(obj, attr_name):
-    """ Get the source file, worksheet, column, and row location of attribute `attr_name` of
-    model object `obj` as a colon-separated string.
+    """ Get the source file, worksheet, column, and row location of attribute :obj:`attr_name` of
+    model object :obj:`obj` as a colon-separated string.
 
     Args:
         obj (:obj:`Model`): model object
@@ -239,7 +241,7 @@ def source_report(obj, attr_name):
 
     Returns:
         :obj:`str`: a string representation of the source file, worksheet, column, and row
-            location of `attr_name` of `obj`
+            location of :obj:`attr_name` of :obj:`obj`
     """
     ext, filename, worksheet, row, column = obj.get_source(attr_name)
     if 'xlsx' in ext:
@@ -256,9 +258,9 @@ def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', 
         model (:obj:`Model`): model whose Git attributes will be set
         repo_type (:obj:`git.RepoMetadataCollectionType`): repo type being set
         path (:obj:`str`, optional): path to file or directory in a clone of a Git repository; default='.'
-        url_attr (:obj:`str`, optional): attribute in `model` for the Git URL; default='url'
-        branch_attr (:obj:`str`, optional): attribute in `model` for the Git branch; default='branch'
-        commit_hash_attr (:obj:`str`, optional): attribute in `model` for the Git commit hash;
+        url_attr (:obj:`str`, optional): attribute in :obj:`model` for the Git URL; default='url'
+        branch_attr (:obj:`str`, optional): attribute in :obj:`model` for the Git branch; default='branch'
+        commit_hash_attr (:obj:`str`, optional): attribute in :obj:`model` for the Git commit hash;
             default='revision'
 
     Returns:
@@ -274,7 +276,7 @@ def set_git_repo_metadata_from_path(model, repo_type, path='.', url_attr='url', 
     return unsuitable_changes
 
 
-# Git repository metadata from an `obj_tables` data file
+# Git repository metadata from an `ObjTables` data file
 DataFileMetadata = collections.namedtuple('DataFileMetadata', 'data_repo_metadata, schema_repo_metadata')
 DataFileMetadata.__doc__ += ': Git repository metadata from an obj_tables data file'
 DataFileMetadata.data_repo_metadata.__doc__ = "Git metadata about the repository containing the file"
@@ -283,17 +285,17 @@ DataFileMetadata.schema_repo_metadata.__doc__ = \
 
 
 def read_metadata_from_file(pathname):
-    """ Read Git repository metadata from an `obj_tables` data file
+    """ Read Git repository metadata from an `ObjTables` data file
 
     Args:
         pathname (:obj:`str`): path to the data file
 
     Returns:
-        :obj:`DataFileMetadata`: data and schema repo metadata from the file at `pathname`; missing
+        :obj:`DataFileMetadata`: data and schema repo metadata from the file at :obj:`pathname`; missing
         metadata is returned as :obj:`None`
 
     Raises:
-        :obj:`ValueError`: if `pathname`'s extension is not supported,
+        :obj:`ValueError`: if :obj:`pathname`'s extension is not supported,
             or unexpected metadata instances are found
     """
     reader = obj_tables.io.Reader.get_reader(pathname)
@@ -324,22 +326,19 @@ def read_metadata_from_file(pathname):
 # the existing file and using WriterBase.make_metadata_objects() to obtain the metadata
 # todo: make a CLI command for add_metadata_to_file -- it will need to use IO classes like migrate.py
 def add_metadata_to_file(pathname, models, schema_package=None):
-    """ Add Git repository metadata to an existing `obj_tables` data file
+    """ Add Git repository metadata to an existing `ObjTables` data file
 
     Overwrites the existing file
 
     Args:
-        pathname (:obj:`str`): path to an `obj_tables` data file in a Git repo
+        pathname (:obj:`str`): path to an `ObjTables` data file in a Git repo
         models (:obj:`list` of :obj:`types.TypeType`, optional): list of types of objects to read
-        schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
+        schema_package (:obj:`str`, optional): the package which defines the `ObjTables` schema
             used by the file; if not :obj:`None`, try to write metadata information about the
             the schema's Git repository: the repo must be current with origin
 
     Returns:
         :obj:`str`: pathname of new data file
-
-    Raises:
-        :obj:`ValueError`: if `overwrite` is not set the new file would overwrite an existing file
     """
     # read file
     path = Path(pathname).resolve()
@@ -402,7 +401,7 @@ def get_attrs():
 
 
 def init_schema(filename, out_filename=None):
-    """ Initialize an `obj_tables` schema from a tabular declarative specification in
+    """ Initialize an `ObjTables` schema from a tabular declarative specification in
     :obj:`filename`. :obj:`filename` can be a XLSX, CSV, or TSV file.
 
     Schemas (classes and attributes) should be defined using the following tabular format.
@@ -411,44 +410,46 @@ def init_schema(filename, out_filename=None):
     .. table:: Format for specifying classes.
         :name: class_tabular_schema
 
-        =====================================  =========================  =========================================  ========
-        Python                                 Tabular column             Tabular column values                      Optional
-        =====================================  =========================  =========================================  ========
-        Class name                             !Name                      Valid Python name
-        Class                                  !Type                      `Class`
-        Superclass                             !Parent                    Empty or the name of another class
-        `obj_tables.Meta.table_format`         !Format                    `row`, `column`, `multiple_cells`, `cell`
-        `obj_tables.Meta.verbose_name`         !Verbose name              String                                     Y
-        `obj_tables.Meta.verbose_name_plural`  !Verbose name plural       String                                     Y
-        `obj_tables.Meta.description`          !Description                                                          Y
-        =====================================  =========================  =========================================  ========
+        ==========================================  =========================  =================================================  ========
+        Python                                      Tabular column             Tabular column values                              Optional
+        ==========================================  =========================  =================================================  ========
+        Class name                                  !Name                      Valid Python name
+        Class                                       !Type                      ``Class``
+        Superclass                                  !Parent                    Empty or the name of another class
+        :obj:`obj_tables.Meta.table_format`         !Format                    ``row``, ``column``, ``multiple_cells``, ``cell``
+        :obj:`obj_tables.Meta.verbose_name`         !Verbose name              String                                             Y
+        :obj:`obj_tables.Meta.verbose_name_plural`  !Verbose name plural       String                                             Y
+        :obj:`obj_tables.Meta.description`          !Description                                                                  Y
+        ==========================================  =========================  =================================================  ========
 
     .. table:: Format for specifying attributes of classes.
         :name: attribute_tabular_schema
 
-        ======================================================  ====================  ==========================================  ========
-        Python                                                  Tabular column        Tabular column values                       Optional
-        ======================================================  ====================  ==========================================  ========
-        Name of instance of subclass of `obj_tables.Attribute`  !Name                 a-z, A-Z, 0-9, _, :, >, ., -, [, ], or ' '
-        `obj_tables.Attribute`                                  !Type                 `Attribute`
-        Parent class                                            !Parent               Name of the parent class
-        Subclass of `obj_tables.Attribute`                      !Format               `Boolean`, `Float`, `String`, etc.
-        `obj_tables.Attribute.verbose_name`                     !Verbose name         String                                      Y
-        `obj_tables.Attribute.verbose_name_plural`              !Verbose name plural  String                                      Y
-        `obj_tables.Attribute.description`                      !Description          String                                      Y
-        ======================================================  ====================  ==========================================  ========
+        ===========================================================  ====================  ==========================================  ========
+        Python                                                       Tabular column        Tabular column values                       Optional
+        ===========================================================  ====================  ==========================================  ========
+        Name of instance of subclass of :obj:`obj_tables.Attribute`  !Name                 a-z, A-Z, 0-9, _, :, >, ., -, [, ], or ' '
+        :obj:`obj_tables.Attribute`                                  !Type                 ``Attribute``
+        Parent class                                                 !Parent               Name of the parent class
+        Subclass of :obj:`obj_tables.Attribute`                      !Format               ``Boolean`, ``Float`, ``String``, etc.
+        :obj:`obj_tables.Attribute.verbose_name`                     !Verbose name         String                                      Y
+        :obj:`obj_tables.Attribute.verbose_name_plural`              !Verbose name plural  String                                      Y
+        :obj:`obj_tables.Attribute.description`                      !Description          String                                      Y
+        ===========================================================  ====================  ==========================================  ========
 
     Args:
         filename (:obj:`str`): path to
         out_filename (:obj:`str`, optional): path to save schema
 
     Returns:
-        :obj:`types.ModuleType`: module with classes
-        :obj:`str`: schema name
+        :obj:`tuple`:
+
+            * :obj:`types.ModuleType`: module with classes
+            * :obj:`str`: schema name
 
     Raises:
         :obj:`ValueError`: if schema specification is not in a supported format,
-            an XLSX schema file does not contain a worksheet with the name `!!_Schema` which specifies the schema,
+            an XLSX schema file does not contain a worksheet with the name ``!!_Schema`` which specifies the schema,
             the class inheritance structure is cyclic,
             or the schema specification is invalid (e.g., a class is defined multiple defined)
     """
@@ -745,11 +746,11 @@ def to_pandas(objs, models=None, get_related=True,
     Args:
         objs (:obj:`list` of :obj:`Model`): objects
         models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
-            appear as worksheets; all models which are not in `models` will
+            appear as worksheets; all models which are not in :obj:`models` will
             follow in alphabetical order
-        get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
+        get_related (:obj:`bool`, optional): if :obj:`True`, write :obj:`obj` and all their related objects
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-            not explictly included in `Model.Meta.attribute_order`
+            not explictly included in :obj:`Model.Meta.attribute_order`
         validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
     Returns:
@@ -845,7 +846,7 @@ def viz_schema(module, filename, attributes=True, tail_labels=True, hidden_class
         models (:obj:`types.ModuleType`): module with models
         filename (:obj:`str`): path to save visualization of schema
         attributes (:obj:`bool`, optional): If :obj:`True`, display attributes. If :obj:`False`, only display classes.
-        tail_labels (:obj:`bool`, optional): If :obj:`True`, display tail labels (`1` or `N`).
+        tail_labels (:obj:`bool`, optional): If :obj:`True`, display tail labels (``1`` or ``N``).
         hidden_classes (:obj:`list`, optional): list of classes to not display
         extra_edges (:obj:`list`, optional): list of additional edges to not display
         model_names (:obj:`dict`, optional): dictionary that maps models to their display names

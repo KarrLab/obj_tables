@@ -106,7 +106,7 @@ class SchemaModule(object):
 
         Returns:
             :obj:`tuple`: a triple containing directory, package name and module name, as described
-            above. If the module is not in a package, then package name is `None`.
+                above. If the module is not in a package, then package name is `None`.
 
         Raises:
             :obj:`MigratorError`: if `module_path` is not the name of a Python file, or is not a file
@@ -1000,12 +1000,15 @@ class Migrator(object):
             migrated_models (:obj:`list` of `obj_tables.Model`:) the migrated models
             model_order (:obj:`list` of `obj_tables.core.ModelMeta`:) migrated models in the order they should appear in a workbook
             existing_file (:obj:`str`): pathname of file that is being migrated
+
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided, save
                 migrated file with migrated suffix in same directory as source file
-            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
-                default is `Migrator.MIGRATE_SUFFIX`
+
+            migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename; default
+                is :obj:`Migrator.MIGRATE_SUFFIX`
+
             migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
-                migrated file and ignore `migrated_file` and `migrate_suffix`
+                migrated file and ignore `migrated_file` and :obj:`migrate_suffix`
 
         Returns:
             :obj:`str`: name of migrated file
@@ -1031,10 +1034,10 @@ class Migrator(object):
         """ Migrate existing models, and transform them with methods in `transformations`, if they're defined
 
         Args:
-            existing_models (:obj:`list` of `obj_tables.Model`:) the existing models
+            existing_models (:obj:`list` of :obj:`obj_tables.Model`:) the existing models
 
         Returns:
-            :obj:`list` of `obj_tables.Model`: the migrated models, including any transformations
+            :obj:`list` of :obj:`obj_tables.Model`: the migrated models, including any transformations
                 by `transformations`
         """
         # if it exists, execute prepare_existing_models in `transformations`
@@ -1052,21 +1055,21 @@ class Migrator(object):
                migrate_suffix=None, migrate_in_place=False):
         """ Write migrated models to a migrated file
 
-        `Migrator` doesn't use the `schema_package` argument to `Writer.run()` because the directory
-        containing the migrated schema repo is not on `sys.path`.
+        :obj:`Migrator` doesn't use the `schema_package` argument to :obj:`Writer.run` because the directory
+        containing the migrated schema repo is not on :obj:`sys.path`.
 
         Args:
             existing_file (:obj:`str`): pathname of file being migrated
-            migrated_models (:obj:`list` of `obj_tables.Model`:) the migrated models
+            migrated_models (:obj:`list` of :obj:`obj_tables.Model`:) the migrated models
             schema_metadata_model (:obj:`SchemaRepoMetadata`): a git metadata model for the
                 migrated models schema
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
-                overwrite `existing_file` or save migrated file with migrated suffix in same directory
+                overwrite :obj:`existing_file` or save migrated file with migrated suffix in same directory
                 as existing file
             migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
-                default is `Migrator.MIGRATE_SUFFIX`
-            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
-                migrated file and ignore `migrated_file` and `migrate_suffix`
+                default is :obj:`Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite :obj:`existing_file` with the
+                migrated file and ignore :obj:`migrated_file` and :obj:`migrate_suffix`
 
         Returns:
             :obj:`str`: name of the migrated file
@@ -1094,9 +1097,9 @@ class Migrator(object):
             migrated_file (:obj:`str`, optional): pathname of migrated file; if not provided,
                 save migrated file with migrated suffix in same directory as existing file
             migrate_suffix (:obj:`str`, optional): suffix of automatically created migrated filename;
-                default is `Migrator.MIGRATE_SUFFIX`
-            migrate_in_place (:obj:`bool`, optional): if set, overwrite `existing_file` with the
-                migrated file and ignore `migrated_file` and `migrate_suffix`
+                default is :obj:`Migrator.MIGRATE_SUFFIX`
+            migrate_in_place (:obj:`bool`, optional): if set, overwrite :obj:`existing_file` with the
+                migrated file and ignore :obj:`migrated_file` and :obj:`migrate_suffix`
 
         Returns:
             :obj:`str`: name of migrated file
@@ -1118,7 +1121,7 @@ class Migrator(object):
             existing_model_def (:obj:`obj_tables.core.ModelMeta`): type of the existing model
 
         Returns:
-            :obj:`list`: uninitialized attributes in `existing_model`
+            :obj:`list`: uninitialized attributes in :obj:`existing_model`
         """
         uninitialized_attrs = []
 
@@ -1135,10 +1138,10 @@ class Migrator(object):
         """ Check existing model instances against their definitions
 
         Args:
-            existing_models (:obj:`list` of `obj_tables.Model`:) the models being migrated
+            existing_models (:obj:`list` of :obj:`obj_tables.Model`) the models being migrated
 
         Returns:
-            :obj:`list`: counts of uninitialized attributes in `existing_models`
+            :obj:`list`: counts of uninitialized attributes in :obj:`existing_models`
         """
         existing_models_dict = dict_by_class(existing_models)
         uninitialized_attrs = []
@@ -1159,7 +1162,7 @@ class Migrator(object):
             migrated_model_def (:obj:`obj_tables.core.ModelMeta`): type of the migrated model
 
         Returns:
-            :obj:`obj_tables.Model`: a `migrated_model_def` instance migrated from `existing_model`
+            :obj:`obj_tables.Model`: a :obj:`migrated_model_def` instance migrated from :obj:`existing_model`
         """
         migrated_model = migrated_model_def()
 
@@ -1200,7 +1203,7 @@ class Migrator(object):
             existing_analyzed_expr (:obj:`ParsedExpression`): an existing model's :obj:`ParsedExpression`
 
         Returns:
-            :obj:`str`: a migrated `existing_analyzed_expr.expression`
+            :obj:`str`: a migrated :obj:`existing_analyzed_expr.expression`
         """
         from obj_tables.math.expression import ObjTablesTokenCodes
 
@@ -1237,7 +1240,7 @@ class Migrator(object):
         """ Run the migration of a model instance's :obj:`ParsedExpression` attribute, if it has one
 
         This must be done after all migrated models have been created. The migrated :obj:`ParsedExpression`
-        is assigned to the appropriate attribute in `migrated_model`.
+        is assigned to the appropriate attribute in :obj:`migrated_model`.
 
         Args:
             existing_model (:obj:`obj_tables.Model`): the existing model
@@ -1246,7 +1249,7 @@ class Migrator(object):
                 migrated model ids to migrated model instances
 
         Raises:
-            :obj:`MigratorError`: if the :obj:`ParsedExpression` in `existing_model` cannot be migrated
+            :obj:`MigratorError`: if the :obj:`ParsedExpression` in :obj:`existing_model` cannot be migrated
         """
         if hasattr(existing_model, self.PARSED_EXPR):
             from obj_tables.math.expression import ParsedExpression
@@ -1269,7 +1272,7 @@ class Migrator(object):
         This must be done after all migrated models have been created.
 
         Args:
-            all_models (:obj:`list` of `tuple`): pairs of corresponding existing and migrated model instances
+            all_models (:obj:`list` of :obj:`tuple`): pairs of corresponding existing and migrated model instances
 
         Raises:
             :obj:`MigratorError`: if multiple instances of a model type have the same id
@@ -1305,7 +1308,7 @@ class Migrator(object):
         Assumes that otherwise the schemas are identical
 
         Args:
-            existing_models (:obj:`list` of `obj_tables.Model`): the existing models
+            existing_models (:obj:`list` of :obj:`obj_tables.Model`): the existing models
 
         Returns:
             :obj:`list`: list of (existing model, corresponding migrated model) pairs
@@ -1331,10 +1334,10 @@ class Migrator(object):
     def _connect_models(self, existing_migrated_pairs):
         """ Connect migrated model instances
 
-        Migrate `obj_tables.RelatedAttribute` connections among existing models to migrated models
+        Migrate :obj:`obj_tables.RelatedAttribute` connections among existing models to migrated models
 
         Args:
-            existing_migrated_pairs (:obj:`list` of `tuple`): pairs of corresponding existing and
+            existing_migrated_pairs (:obj:`list` of :obj:`tuple`): pairs of corresponding existing and
                 migrated model instances
         """
         for existing_model, migrated_model in existing_migrated_pairs:
@@ -1382,7 +1385,7 @@ class Migrator(object):
 
         Returns:
             :obj:`str`: string representation of a :obj:`Migrator`; collections attributes are rendered
-                by `pformat`
+                by :obj:`pformat`
         """
         rv = []
         for attr in self.SCALAR_ATTRS:
@@ -1395,11 +1398,11 @@ class Migrator(object):
 
 
 class MigrationWrapper(ABC):
-    """ Interface for classes that define a pair of methods that can modify `obj_tables.Model`\ s being migrated
+    """ Interface for classes that define a pair of methods that can modify :obj:`obj_tables.Model`\ s being migrated
 
     :obj:`MigrationWrapper` defines the interface used by `transformations`. If it's defined, `transformations`
-    uses `prepare_existing_models()` to modify existing models just before they are migrated and uses
-    `modify_migrated_models()` to modify migrated models just after they are migrated.
+    uses :obj:`prepare_existing_models` to modify existing models just before they are migrated and uses
+    :obj:`modify_migrated_models` to modify migrated models just after they are migrated.
 
     A `transformations` is associated with each :obj:`SchemaChanges`, and obtained from the
     transformations file configured in a schema changes file.
@@ -1410,8 +1413,8 @@ class MigrationWrapper(ABC):
         """ Prepare existing models before migration
 
         Args:
-            migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            existing_models (:obj:`list` of `obj_tables.Model`:) the models that will be migrated
+            migrator (:obj:`Migrator`:) the :obj:`Migrator` calling this method
+            existing_models (:obj:`list` of :obj:`obj_tables.Model`:) the models that will be migrated
         """
         pass
 
@@ -1420,8 +1423,8 @@ class MigrationWrapper(ABC):
         """ Modify migrated models after migration
 
         Args:
-            migrator (:obj:`Migrator`:) the `Migrator` calling this method
-            migrated_models (:obj:`list` of `obj_tables.Model`:) all models that have been migrated
+            migrator (:obj:`Migrator`:) the :obj:`Migrator` calling this method
+            migrated_models (:obj:`list` of :obj:`obj_tables.Model`:) all models that have been migrated
         """
         pass
 
@@ -1433,11 +1436,11 @@ class MigrationWrapper(ABC):
             migration_wrapper_file (:obj:`str`:) name of a file that defines a migration wrappers
 
         Returns:
-            :obj:`dict`: the `MigrationWrapper` instances in `migration_wrapper_file`, keyed by their
+            :obj:`dict`: the :obj:`MigrationWrapper` instances in :obj:`migration_wrapper_file`, keyed by their
                 attribute names
 
         Raises:
-            :obj:`MigratorError`: if `migration_wrapper_file` cannot be imported
+            :obj:`MigratorError`: if :obj:`migration_wrapper_file` cannot be imported
         """
         # import MigrationWrappers from migration_wrapper_file
         dirname = os.path.dirname(migration_wrapper_file)
@@ -1469,17 +1472,17 @@ class MigrationSpec(object):
         schema_files (:obj:`list` of :obj:`str`, optional): list of Python files containing model
             definitions for each state in a sequence of migrations
         seq_of_renamed_models (:obj:`list` of :obj:`list`, optional): list of renamed models for use
-            by a `Migrator` for each migration in a sequence of migrations
+            by a :obj:`Migrator` for each migration in a sequence of migrations
         seq_of_renamed_attributes (:obj:`list` of :obj:`list`, optional): list of renamed attributes
-            for use by a `Migrator` for each migration in a sequence
+            for use by a :obj:`Migrator` for each migration in a sequence
         seq_of_transformations (:obj:`list` of :obj:`MigrationWrapper`, optional): list of transformations
-            for use by a `Migrator` for each migration in a sequence
+            for use by a :obj:`Migrator` for each migration in a sequence
         migrated_files (:obj:`list`: of :obj:`str`, optional): migration destination files in 1-to-1
-            correspondence with `existing_files`; if not provided, migrated files use a suffix or
+            correspondence with :obj:`existing_files`; if not provided, migrated files use a suffix or
             are migrated in place
         io_classes (:obj:`dict` of :obj:`type`, optional): reader and/or writer for I/O of existing and
             migrated files, respectively; IMPORTANT NOTE: `io_classes` are imported and loaded from
-            current schema repositories by `DataSchemaMigration`
+            current schema repositories by :obj:`DataSchemaMigration`
         migrate_suffix (:obj:`str`, optional): suffix added to destination file name, before the file type suffix
         migrate_in_place (:obj:`bool`, optional): whether to migrate in place
         migrations_config_file (:obj:`str`, optional): if created from a configuration file, the file's
@@ -1489,8 +1492,8 @@ class MigrationSpec(object):
         final_schema_hash (:obj:`str`, optional): hash of the head commit of the final schema repo
         final_schema_git_metadata (:obj:`SchemaRepoMetadata`, optional): a git metadata model for the repo
             containing the last schema in the migration; may initialized directly, or constructed
-            from the other `final_schema_*` attributes
-        _prepared (:obj:`bool`, optional): whether this `MigrationSpec` has been prepared
+            from the other ``final_schema_*`` attributes
+        _prepared (:obj:`bool`, optional): whether this :obj:`MigrationSpec` has been prepared
     """
 
     _REQUIRED_ATTRS = ['name', 'existing_files', 'schema_files']
@@ -1519,7 +1522,7 @@ class MigrationSpec(object):
         self._prepared = False
 
     def prepare(self):
-        """ Validate and standardize this `MigrationSpec`
+        """ Validate and standardize this :obj:`MigrationSpec`
 
         Raises:
             :obj:`MigratorError`: if `migrations_config_file` cannot be read, or the migration specifications in
@@ -1532,17 +1535,17 @@ class MigrationSpec(object):
         self._prepared = True
 
     def is_prepared(self):
-        """ Check that this `MigrationSpec` has been prepared
+        """ Check that this :obj:`MigrationSpec` has been prepared
 
         Raises:
-            :obj:`MigratorError`: if this `MigrationSpec` has not been prepared
+            :obj:`MigratorError`: if this :obj:`MigrationSpec` has not been prepared
         """
         if not self._prepared:
             raise MigratorError("MigrationSpec '{}' is not prepared".format(self.name))
 
     @classmethod
     def load(cls, migrations_config_file):
-        """ Create a list of validated and standardized `MigrationSpec`\ s from a migrations configuration file
+        """ Create a list of validated and standardized :obj:`MigrationSpec`\ s from a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
@@ -1569,7 +1572,7 @@ class MigrationSpec(object):
 
     @staticmethod
     def get_migrations_config(migrations_config_file):
-        """ Create a list of `MigrationSpec`\ s from a migrations configuration file
+        """ Create a list of :obj:`MigrationSpec`\ s from a migrations configuration file
 
         Args:
             migrations_config_file (:obj:`str`): pathname of migrations configuration in YAML file
@@ -1676,10 +1679,10 @@ class MigrationSpec(object):
 
         Args:
             filenames (:obj:`list` of :obj:`str`): list of filenames
-            absolute_file (:obj:`str`, optional): file whose directory contains files in `filenames`
+            absolute_file (:obj:`str`, optional): file whose directory contains files in :obj:`filenames`
 
         Returns:
-            :obj:`list` of :obj:`str`: absolute paths for files in `filenames`
+            :obj:`list` of :obj:`str`: absolute paths for files in :obj:`filenames`
         """
         dir = None
         if absolute_file:
@@ -1687,9 +1690,9 @@ class MigrationSpec(object):
         return [normalize_filename(filename, dir=dir) for filename in filenames]
 
     def standardize(self):
-        """ Standardize the attributes of a `MigrationSpec`
+        """ Standardize the attributes of a :obj:`MigrationSpec`
 
-        In particular, standardize a `MigrationSpec` that has been read from a YAML config file
+        In particular, standardize a :obj:`MigrationSpec` that has been read from a YAML config file
         """
         # convert [model, attr] pairs in seq_of_renamed_attributes into tuples; needed for hashing
         if self.seq_of_renamed_attributes:
@@ -1730,11 +1733,11 @@ class MigrationSpec(object):
                 )
 
     def expected_migrated_files(self):
-        """ Provide names of migrated files that migration of this `MigrationSpec` would produce
+        """ Provide names of migrated files that migration of this :obj:`MigrationSpec` would produce
 
         Returns:
             :obj:`list` of :obj:`str`: the names of the migrated files that a successful migration of this
-                `MigrationSpec` will produce
+                :obj:`MigrationSpec` will produce
         """
         if self.migrated_files:
             return self.migrated_files
@@ -1749,7 +1752,7 @@ class MigrationSpec(object):
         """ Get str representation
 
         Returns:
-            :obj:`str`: string representation of all allowed attributes in a `MigrationSpec`
+            :obj:`str`: string representation of all allowed attributes in a :obj:`MigrationSpec`
         """
         rv = []
         for attr in self._ALLOWED_ATTRS:
@@ -1820,7 +1823,7 @@ class MigrationController(object):
 
     @staticmethod
     def migrate_from_spec(migration_spec):
-        """ Perform the migration specified in a `MigrationSpec`
+        """ Perform the migration specified in a :obj:`MigrationSpec`
 
         Args:
             migration_spec (:obj:`MigrationSpec`): a migration specification
@@ -1841,7 +1844,7 @@ class MigrationController(object):
                 in YAML
 
         Returns:
-            :obj:`list` of :obj:`tuple`: list of (`MigrationSpec`, migrated filenames) pairs
+            :obj:`list` of :obj:`tuple`: list of (:obj:`MigrationSpec`, migrated filenames) pairs
         """
         migration_specs = MigrationSpec.load(migrations_spec_config_file)
         results = []
@@ -1853,12 +1856,12 @@ class MigrationController(object):
 class SchemaChanges(object):
     """ Specification of the changes to a schema in a git commit
 
-    More generally, a `SchemaChanges` should encode the set of changes to a schema over the sequence
-    of git commits since the previous `SchemaChanges`.
+    More generally, a :obj:`SchemaChanges` should encode the set of changes to a schema over the sequence
+    of git commits since the previous :obj:`SchemaChanges`.
 
     Attributes:
         _CHANGES_FILE_ATTRS (:obj:`list` of :obj:`str`): required attributes in a schema changes file
-        _ATTRIBUTES (:obj:`list` of :obj:`str`): attributes in a `SchemaChanges` instance
+        _ATTRIBUTES (:obj:`list` of :obj:`str`): attributes in a :obj:`SchemaChanges` instance
         schema_repo (:obj:`GitRepo`): a Git repo that defines the data model (schema) of the data being
             migrated
         schema_changes_file (:obj:`str`): the schema changes file
@@ -2037,7 +2040,7 @@ class SchemaChanges(object):
     def make_template(self, schema_url=None, commit_hash=None):
         """ Make a template schema changes file
 
-        The template includes the repo hash which it describes and empty values for `SchemaChanges`
+        The template includes the repo hash which it describes and empty values for :obj:`SchemaChanges`
         attributes.
 
         Args:
@@ -2050,8 +2053,8 @@ class SchemaChanges(object):
             :obj:`str`: pathname of the schema changes file that was written
 
         Raises:
-            :obj:`MigratorError`: if a repo cannot be cloned from `schema_url`, or
-                checked out from `commit_hash`, or
+            :obj:`MigratorError`: if a repo cannot be cloned from :obj:`schema_url`, or
+                checked out from :obj:`commit_hash`, or
                 the schema changes file already exists
         """
         if schema_url:
@@ -2105,7 +2108,7 @@ class SchemaChanges(object):
 
         Raises:
             :obj:`MigratorError`: if a repo cannot be cloned from `schema_url`, or
-                checked out from `commit_hash`, or
+                checked out from :obj:`commit_hash`, or
                 the schema changes file already exists
         """
 
@@ -2183,14 +2186,14 @@ class SchemaChanges(object):
 
     @staticmethod
     def validate(schema_changes_kwargs):
-        """ Check that the attributes of the arguments to `SchemaChanges` have the right structure
+        """ Check that the attributes of the arguments to :obj:`SchemaChanges` have the right structure
 
         Args:
-            schema_changes_kwargs (:obj:`dict`): kwargs arguments to `SchemaChanges` generated by loading a schema
+            schema_changes_kwargs (:obj:`dict`): kwargs arguments to :obj:`SchemaChanges` generated by loading a schema
                 changes file
 
         Returns:
-            :obj:`list`: errors in `schema_changes_kwargs`
+            :obj:`list`: errors in :obj:`schema_changes_kwargs`
         """
         # check types
         errors = []
@@ -2238,13 +2241,13 @@ class SchemaChanges(object):
 
     @staticmethod
     def generate_instance(schema_changes_file):
-        """ Generate a `SchemaChanges` instance from a schema changes file
+        """ Generate a :obj:`SchemaChanges` instance from a schema changes file
 
         Args:
             schema_changes_file (:obj:`str`): path to the schema changes file
 
         Returns:
-            :obj:`SchemaChanges`: the `SchemaChanges` instance
+            :obj:`SchemaChanges`: the :obj:`SchemaChanges` instance
         """
         schema_changes_kwargs = SchemaChanges.load(schema_changes_file)
         errors = SchemaChanges.validate(schema_changes_kwargs)
@@ -2257,7 +2260,7 @@ class SchemaChanges(object):
         """ Provide a string representation
 
         Returns:
-            :obj:`str`: a string representation of this `SchemaChanges`
+            :obj:`str`: a string representation of this :obj:`SchemaChanges`
         """
         rv = []
         for attr in self._ATTRIBUTES:
@@ -2280,26 +2283,26 @@ class GitRepo(object):
     # default repo name if name not known
     _NAME_UNKNOWN = 'name_unknown'
 
-    # name of an empty subdirectory in a temp dir that can be used as a destination for `shutil.copytree()`
+    # name of an empty subdirectory in a temp dir that can be used as a destination for :obj:`shutil.copytree`
     EMPTY_SUBDIR = 'empty_subdir'
 
     _HASH_PREFIX_LEN = 7
 
     def __init__(self, repo_location=None, repo_url=None, branch='master', search_parent_directories=False):
-        """ Initialize a `GitRepo` from an existing Git repo
+        """ Initialize a :obj:`GitRepo` from an existing Git repo
 
-        If `repo_location` is a directory then use the Git repo in the directory. Otherwise it must
+        If :obj:`repo_location` is a directory then use the Git repo in the directory. Otherwise it must
         be an URL and the repo is cloned into a temporary directory.
 
         Args:
             repo_location (:obj:`str`, optional): the location of the repo, either its directory or
                 its URL
             repo_url (:obj:`str`, optional): the repo's original URL, which will be set in all
-                copies of a repo that was initially cloned by `clone_repo_from_url`
-            branch (:obj:`str`, optional): branch to clone if `repo_location` is an URL; default is
-                `master`
-            search_parent_directories (:obj:`bool`, optional): `search_parent_directories` option to
-                `git.Repo()`; if set and `repo_location` is a directory, then all of its parent
+                copies of a repo that was initially cloned by :obj:`clone_repo_from_url`
+            branch (:obj:`str`, optional): branch to clone if :obj:`repo_location` is an URL; default is
+                ``master``
+            search_parent_directories (:obj:`bool`, optional): :obj:`search_parent_directories` option to
+                :obj:`git.Repo`; if set and :obj:`repo_location` is a directory, then all of its parent
                 directories will be searched for a valid repo; default=False
 
         Returns:
@@ -2326,7 +2329,7 @@ class GitRepo(object):
             self.commit_DAG = self.commits_as_graph()
 
     def get_temp_dir(self):
-        """ Get a temporary directory, which must eventually be deleted by calling `del_temp_dirs`
+        """ Get a temporary directory, which must eventually be deleted by calling :obj:`del_temp_dirs`
 
         Returns:
             :obj:`str`: the pathname to a temporary directory
@@ -2336,7 +2339,7 @@ class GitRepo(object):
         return temp_dir
 
     def del_temp_dirs(self):
-        """ Delete the temp dirs created by `get_temp_dir`
+        """ Delete the temp dirs created by :obj:`get_temp_dir`
 
         Returns:
             :obj:`str`: the pathname to a temporary directory
@@ -2350,7 +2353,7 @@ class GitRepo(object):
 
         Args:
             url (:obj:`str`): URL for the repo
-            branch (:obj:`str`, optional): branch to clone; default is `master`
+            branch (:obj:`str`, optional): branch to clone; default is ``master``
             directory (:obj:`str`, optional): directory to hold the repo; if not provided, the repo
                 is stored in a new temporary dir
 
@@ -2358,7 +2361,7 @@ class GitRepo(object):
             :obj:`tuple`: (:obj:`git.Repo`, :obj:`str`): the repo cloned, and its root directory
 
         Raises:
-            :obj:`MigratorError`: if repo cannot be cloned from `url`
+            :obj:`MigratorError`: if repo cannot be cloned from :obj:`url`
         """
         if directory is None:
             directory = self.get_temp_dir()
@@ -2377,19 +2380,19 @@ class GitRepo(object):
         return repo, directory
 
     def copy(self, tmp_dir=None):
-        """ Copy this `GitRepo` into a new directory
+        """ Copy this :obj:`GitRepo` into a new directory
 
-        For better performance use `copy()` instead of `GitRepo()` or `clone_repo_from_url()` if you
+        For better performance use ``copy()`` instead of ``GitRepo()`` or ``clone_repo_from_url()`` if you
         need multiple copies of a repo, such as multiple instances checked out to different commits.
         This is an optimization because copying is faster than cloning over the network.
-        To avoid `bytecode is stale` errors, doesn't copy `__pycache__` directories.
+        To avoid ``bytecode is stale`` errors, doesn't copy ``__pycache__`` directories.
 
         Args:
             tmp_dir (:obj:`str`, optional): directory to hold the repo; if not provided, a new temporary
                 directory is created to store the repo
 
         Returns:
-            :obj:`GitRepo`: a new `GitRepo` that's a copy of `self` in a new temporary directory
+            :obj:`GitRepo`: a new :obj:`GitRepo` that's a copy of :obj:`self` in a new temporary directory
         """
         if tmp_dir is None:
             tmp_dir = self.get_temp_dir()
@@ -2450,7 +2453,7 @@ class GitRepo(object):
     def get_commit(self, commit_or_hash):
         """ Obtain a commit from its hash
 
-        Also, if `commit_or_hash` is a commit, simply return it.
+        Also, if :obj:`commit_or_hash` is a commit, simply return it.
 
         Args:
             commit_or_hash (:obj:`str` or :obj:`git.objects.commit.Commit`): the hash of a commit or a commit
@@ -2460,7 +2463,7 @@ class GitRepo(object):
             :obj:`git.objects.commit.Commit`: a commit
 
         Raises:
-            :obj:`MigratorError`: if `commit_or_hash` is not a commit and cannot be converted into one
+            :obj:`MigratorError`: if :obj:`commit_or_hash` is not a commit and cannot be converted into one
         """
         if isinstance(commit_or_hash, str):
             if commit_or_hash in self.git_hash_map:
@@ -2477,7 +2480,7 @@ class GitRepo(object):
 
         Returns:
             :obj:`list` of :obj:`git.objects.commit.Commit`: list of the repo's commits with the
-                commits or hashes in `commits_or_hashes`
+                commits or hashes in :obj:`commits_or_hashes`
 
         Raises:
             :obj:`MigratorError`: if any commit or hash in `commits_or_hashes` doesn't identify a
@@ -3397,7 +3400,7 @@ class CementControllers(object):
     """ Cement Controllers for cement CLIs in data and schema repos involved with migrating files
 
     Because these controllers are used by multiple schema and data repos, they're defined here and
-    imported into `__main__.py` modules in schema repos that use `obj_tables` to define data schemas
+    imported into `__main__.py` modules in schema repos that use `ObjTables` to define data schemas
     and into `__main__.py`
     modules in data repos that contain data files to migrate. `wc_lang` is an example schema repo.
     `wc_sim` is an example data repo that contains data files whose schema is defined in `wc_lang`.

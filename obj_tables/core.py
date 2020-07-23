@@ -1,13 +1,13 @@
 """ Toolkit for modeling complex datasets with collections of user-friendly tables
 
-Many classes contain the methods `serialize()` and `deserialize()`, which invert each other.
-`serialize()` converts a python object instance into a string representation, whereas
-`deserialize()` parses an object's string representation -- as would be stored in a file or spreadsheet
+Many classes contain the methods ``serialize()`` and `deserialize()``, which invert each other.
+``serialize()`` converts a python object instance into a string representation, whereas
+``deserialize()`` parses an object's string representation -- as would be stored in a file or spreadsheet
 representation of a biochemical model -- into a python object instance.
-`deserialize()` returns an error when the string representation cannot be parsed into the
-python object. Deserialization methods for related attributes (subclasses of `RelatedAttribute`)
+``deserialize()`` returns an error when the string representation cannot be parsed into the
+python object. Deserialization methods for related attributes (subclasses of :obj:`RelatedAttribute`)
 do not get called until all other attributes have been deserialized. In particular, they're called
-by `obj_tables.io.WorkbookReader.link_model`. Therefore, they get passed all objects that are not inline,
+by :obj:`obj_tables.io.WorkbookReader.link_model`. Therefore, they get passed all objects that are not inline,
 which can then be referenced to deserialize the related attribute.
 
 
@@ -75,17 +75,17 @@ class ModelMeta(type):
     def __new__(metacls, name, bases, namespace):
         """
         Args:
-            metacls (:obj:`Model`): `Model`, or a subclass of `Model`
-            name (:obj:`str`): `Model` class name
+            metacls (:obj:`Model`): :obj:`Model`, or a subclass of :obj:`Model`
+            name (:obj:`str`): :obj:`Model` class name
             bases (:obj:`tuple`): tuple of superclasses
-            namespace (:obj:`dict`): namespace of `Model` class definition
+            namespace (:obj:`dict`): namespace of :obj:`Model` class definition
 
         Returns:
-            :obj:`Model`: a new instance of `Model`, or a subclass of `Model`
+            :obj:`Model`: a new instance of :obj:`Model`, or a subclass of :obj:`Model`
         """
 
         # terminate early so this method is only run on the subclasses of
-        # `Model`
+        # :obj:`Model`
         if name == 'Model' and len(bases) == 1 and bases[0] is object:
             return super(ModelMeta, metacls).__new__(metacls, name, bases, namespace)
 
@@ -294,7 +294,7 @@ class ModelMeta(type):
         """ Check the related attributes
 
         Raises:
-            :obj:`ValueError`: if an :obj:`OneToManyAttribute` or :obj:`ManyToOneAttribute` has a `related_name` equal to its `name`
+            :obj:`ValueError`: if an :obj:`OneToManyAttribute` or :obj:`ManyToOneAttribute` has a :obj:`related_name` equal to its :obj:`name`
         """
         for attr_name, attr in namespace.items():
             if isinstance(attr, (OneToManyAttribute, ManyToOneAttribute)) and attr.related_name == attr_name:
@@ -379,7 +379,7 @@ class ModelMeta(type):
                                          format(__name__, super_cls.__name__, attr_name, super_attr.__class__.__name__))
 
     def init_inheritance(cls):
-        """ Create tuple of this model and superclasses which are subclasses of `Model` """
+        """ Create tuple of this model and superclasses which are subclasses of :obj:`Model` """
         cls.Meta.inheritance = tuple([cls] + [supercls for supercls in get_superclasses(cls)
                                               if issubclass(supercls, Model) and supercls is not Model])
 
@@ -505,7 +505,7 @@ class ModelMeta(type):
     def create_model_manager(cls):
         """ Create a :obj:`Manager` for this :obj:`Model`
 
-        The `Manager` is accessed via a `Model`'s `objects` attribute
+        The :obj:`Manager` is accessed via a :obj:`Model`'s :obj:`objects` attribute
 
         Args:
             cls (:obj:`type`): the :obj:`Model` class which is being managed
@@ -516,25 +516,25 @@ class ModelMeta(type):
 class Manager(object):
     """ Enable O(1) dictionary-based searching of a Model's instances
 
-    This class is inspired by Django's `Manager` class. An instance of :obj:`Manger` is associated with
-    each :obj:`Model` and accessed as the class attribute `objects` (as in Django).
-    The tuples of attributes to index are specified by the `indexed_attrs_tuples` attribute of
-    `Model.Meta`, which contains a tuple of tuples of attributes to index.
-    :obj:`Model`\ s with empty `indexed_attrs_tuples` attributes incur no overhead from `Manager`.
+    This class is inspired by Django's :obj:`Manager` class. An instance of :obj:`Manger` is associated with
+    each :obj:`Model` and accessed as the class attribute :obj:`objects` (as in Django).
+    The tuples of attributes to index are specified by the :obj:`indexed_attrs_tuples` attribute of
+    :obj:`Model.Meta`, which contains a tuple of tuples of attributes to index.
+    :obj:`Model`\ s with empty :obj:`indexed_attrs_tuples` attributes incur no overhead from :obj:`Manager`.
 
     :obj:`Manager` maintains a dictionary for each indexed attribute tuple, and a reverse index from each
     :obj:`Model` instance to its indexed attribute tuple keys.
 
     These data structures support
-    * O(1) get operations for `Model` instances indexed by a indexed attribute tuple
-    * O(1) `Model` instance insert and update operations
+    * O(1) get operations for :obj:`Model` instances indexed by a indexed attribute tuple
+    * O(1) :obj:`Model` instance insert and update operations
 
     Attributes:
         cls (:obj:`class`): the :obj:`Model` class which is being managed
-        _new_instances (:obj:`WeakSet`): set of all new instances of `cls` that have not been indexed,
-            stored as weakrefs, so `Model`'s that are otherwise unused can be garbage collected
-        _index_dicts (:obj:`dict` mapping `tuple` to :obj:`WeakSet`): indices that enable
-            lookup of :obj:`Model` instances from their `Meta.indexed_attrs_tuples`
+        _new_instances (:obj:`WeakSet`): set of all new instances of :obj:`cls` that have not been indexed,
+            stored as weakrefs, so :obj:`Model`'s that are otherwise unused can be garbage collected
+        _index_dicts (:obj:`dict` mapping :obj:`tuple` to :obj:`WeakSet`): indices that enable
+            lookup of :obj:`Model` instances from their :obj:`Meta.indexed_attrs_tuples`
             mapping: <attr names tuple> -> <attr values tuple> -> WeakSet(<model_obj instances>)
         _reverse_index (:obj:`WeakKeyDictionary` mapping :obj:`Model` instance to :obj:`dict`): a reverse
             index that provides all of each :obj:`Model`'s indexed attribute tuple keys
@@ -564,15 +564,15 @@ class Manager(object):
             self.num_ops_since_gc = 0
 
     def _check_model(self, model_obj, method):
-        """ Verify `model_obj`'s `Model`
+        """ Verify :obj:`model_obj`'s :obj:`Model`
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
+            model_obj (:obj:`Model`): a :obj:`Model` instance
             method (:obj:`str`): the name of the method requesting the check
 
         Raises:
-            :obj:`ValueError`: if `model_obj`'s type is not handled by this `Manager`
-            :obj:`ValueError`: if `model_obj`'s type does not have any indexed attribute tuples
+            :obj:`ValueError`: if :obj:`model_obj`'s type is not handled by this :obj:`Manager`
+            :obj:`ValueError`: if :obj:`model_obj`'s type does not have any indexed attribute tuples
         """
         if not type(model_obj) is self.cls:
             raise ValueError("{}(): The '{}' Manager does not process '{}' objects".format(
@@ -600,7 +600,7 @@ class Manager(object):
         """ Dump the index dictionaries for debugging
 
         Args:
-            file (:obj:`object`, optitonal): an object with a `write(string)` method
+            file (:obj:`object`, optitonal): an object with a :obj:`write(string)` method
         """
         # gc before printing to produce consistent data
         self._gc_weaksets()
@@ -619,29 +619,29 @@ class Manager(object):
 
     @staticmethod
     def _get_attr_tuple_vals(model_obj, attr_tuple):
-        """ Provide the values of the attributes in `attr_tuple`
+        """ Provide the values of the attributes in :obj:`attr_tuple`
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
-            attr_tuple (:obj:`tuple`): a tuple of attribute names in `model_obj`
+            model_obj (:obj:`Model`): a :obj:`Model` instance
+            attr_tuple (:obj:`tuple`): a tuple of attribute names in :obj:`model_obj`
 
         Returns:
-            :obj:`tuple`: `model_obj`'s values for the attributes in `attr_tuple`
+            :obj:`tuple`: :obj:`model_obj`'s values for the attributes in :obj:`attr_tuple`
         """
         return tuple(map(lambda name: getattr(model_obj, name), attr_tuple))
 
     @staticmethod
     def _get_hashable_values(values):
-        """ Provide hashable values for a tuple of values of a `Model`'s attributes
+        """ Provide hashable values for a tuple of values of a :obj:`Model`'s attributes
 
         Args:
-            values (:obj:`tuple`): values of `Model` attributes
+            values (:obj:`tuple`): values of :obj:`Model` attributes
 
         Returns:
-            :obj:`tuple`: hashable values for a `tuple` of values of `Model` attributes
+            :obj:`tuple`: hashable values for a :obj:`tuple` of values of :obj:`Model` attributes
 
         Raises:
-            :obj:`ValueError`: the `values` is not an iterable or is a string
+            :obj:`ValueError`: the :obj:`values` is not an iterable or is a string
         """
         if isinstance(values, str):
             raise ValueError(
@@ -662,14 +662,14 @@ class Manager(object):
 
     @staticmethod
     def _hashable_attr_tup_vals(model_obj, attr_tuple):
-        """ Provide hashable values for the attributes in `attr_tuple`
+        """ Provide hashable values for the attributes in :obj:`attr_tuple`
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
-            attr_tuple (:obj:`tuple`): a tuple of attribute names in `model_obj`
+            model_obj (:obj:`Model`): a :obj:`Model` instance
+            attr_tuple (:obj:`tuple`): a tuple of attribute names in :obj:`model_obj`
 
         Returns:
-            :obj:`tuple`: hashable values for `model_obj`'s attributes in `attr_tuple`
+            :obj:`tuple`: hashable values for :obj:`model_obj`'s attributes in :obj:`attr_tuple`
         """
         return Manager._get_hashable_values(Manager._get_attr_tuple_vals(model_obj, attr_tuple))
 
@@ -677,14 +677,14 @@ class Manager(object):
         """ Provide the attribute types for a tuple of attribute names
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
-            attr_names (:obj:`tuple`): a tuple of attribute names in `model_obj`
+            model_obj (:obj:`Model`): a :obj:`Model` instance
+            attr_names (:obj:`tuple`): a tuple of attribute names in :obj:`model_obj`
 
         Returns:
-            :obj:`tuple`: `model_obj`'s attribute types for the attribute name(s) in `attr_names`
+            :obj:`tuple`: :obj:`model_obj`'s attribute types for the attribute name(s) in :obj:`attr_names`
 
         Raises:
-            :obj:`ValueError`: `attr_names` is not an iterable or is a string or contains a string that
+            :obj:`ValueError`: :obj:`attr_names` is not an iterable or is a string or contains a string that
                 is not a valid attribute name
         """
         self._check_model(model_obj, '_get_attribute_types')
@@ -708,12 +708,12 @@ class Manager(object):
         return tuple(types)
 
     def _register_obj(self, model_obj):
-        """ Register the `Model` instance `model_obj`
+        """ Register the :obj:`Model` instance :obj:`model_obj`
 
-        Called by `Model.__init__()`. Do nothing if `model_obj`'s `Model` has no indexed attribute tuples.
+        Called by :obj:`Model.__init__()`. Do nothing if :obj:`model_obj`'s :obj:`Model` has no indexed attribute tuples.
 
         Args:
-            model_obj (:obj:`Model`): a new `Model` instance
+            model_obj (:obj:`Model`): a new :obj:`Model` instance
         """
         if self.cls.Meta.indexed_attrs_tuples:
             self._check_model(model_obj, '_register_obj')
@@ -721,15 +721,15 @@ class Manager(object):
             self._new_instances.add(model_obj)
 
     def _update(self, model_obj):
-        """ Update the indices for `model_obj`, whose indexed attribute have been updated
+        """ Update the indices for :obj:`model_obj`, whose indexed attribute have been updated
 
-        Costs O(I) where I is the number of indexed attribute tuples for `model_obj`.
+        Costs O(I) where I is the number of indexed attribute tuples for :obj:`model_obj`.
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
+            model_obj (:obj:`Model`): a :obj:`Model` instance
 
         Raises:
-            :obj:`ValueError`: `model_obj` is not in `_reverse_index`
+            :obj:`ValueError`: :obj:`model_obj` is not in :obj:`_reverse_index`
         """
         self._check_model(model_obj, '_update')
         self._run_gc_weaksets()
@@ -741,10 +741,10 @@ class Manager(object):
         self._insert(model_obj)
 
     def _delete(self, model_obj):
-        """ Delete an `model_obj` from the indices
+        """ Delete an :obj:`model_obj` from the indices
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
+            model_obj (:obj:`Model`): a :obj:`Model` instance
         """
         self._check_model(model_obj, '_delete')
         for indexed_attr_tuple, vals in self._reverse_index[model_obj].items():
@@ -758,13 +758,13 @@ class Manager(object):
         del self._reverse_index[model_obj]
 
     def _insert_new(self, model_obj):
-        """ Insert a new `model_obj` into the indices that are used to search on indexed attribute tuples
+        """ Insert a new :obj:`model_obj` into the indices that are used to search on indexed attribute tuples
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
+            model_obj (:obj:`Model`): a :obj:`Model` instance
 
         Raises:
-            :obj:`ValueError`: `model_obj` is not in `_new_instances`
+            :obj:`ValueError`: :obj:`model_obj` is not in :obj:`_new_instances`
         """
         self._check_model(model_obj, '_insert_new')
         if model_obj not in self._new_instances:
@@ -774,12 +774,12 @@ class Manager(object):
         self._new_instances.remove(model_obj)
 
     def _insert(self, model_obj):
-        """ Insert `model_obj` into the indices that are used to search on indexed attribute tuples
+        """ Insert :obj:`model_obj` into the indices that are used to search on indexed attribute tuples
 
-        Costs O(I) where I is the number of indexed attribute tuples for the `Model`.
+        Costs O(I) where I is the number of indexed attribute tuples for the :obj:`Model`.
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
+            model_obj (:obj:`Model`): a :obj:`Model` instance
         """
         self._check_model(model_obj, '_insert')
         self._run_gc_weaksets()
@@ -811,7 +811,7 @@ class Manager(object):
         return 0
 
     def _gc_weaksets(self):
-        """ Garbage collect empty WeakSets formed by deletion of weak refs to `Model` instances with no strong refs
+        """ Garbage collect empty WeakSets formed by deletion of weak refs to :obj:`Model` instances with no strong refs
 
         Returns:
             :obj:`int`: number of empty WeakSets deleted
@@ -830,19 +830,19 @@ class Manager(object):
     # If the Model is not indexed these methods do nothing (and return None if
     # a value is returned)
     def reset(self):
-        """ Reset this `Manager`
+        """ Reset this :obj:`Manager`
 
-        Empty `Manager`'s indices. Since `Manager` globally indexes all instances of a `Model`,
+        Empty :obj:`Manager`'s indices. Since :obj:`Manager` globally indexes all instances of a :obj:`Model`,
         this method is useful when multiple models are loaded sequentially.
         """
         self.__init__(self.cls)
 
     def all(self):
-        """ Provide all instances of the `Model` managed by this `Manager`
+        """ Provide all instances of the :obj:`Model` managed by this :obj:`Manager`
 
         Returns:
-            :obj:`list` of :obj:`Model`: a list of all instances of the managed `Model`
-            or `None` if the `Model` is not indexed
+            :obj:`list` of :obj:`Model`: a list of all instances of the managed :obj:`Model`
+                or :obj:`None` if the :obj:`Model` is not indexed
         """
         if self.cls.Meta.indexed_attrs_tuples:
             self._run_gc_weaksets()
@@ -853,16 +853,16 @@ class Manager(object):
             return None
 
     def upsert(self, model_obj):
-        """ Update the indices for `model_obj` that are used to search on indexed attribute tuples
+        """ Update the indices for :obj:`model_obj` that are used to search on indexed attribute tuples
 
-        `Upsert` means update or insert. Update the indices if `model_obj` is already stored, otherwise
-        insert `model_obj`. Users of `Manager` are responsible for calling this method if `model_obj`
+        :obj:`Upsert` means update or insert. Update the indices if :obj:`model_obj` is already stored, otherwise
+        insert :obj:`model_obj`. Users of :obj:`Manager` are responsible for calling this method if :obj:`model_obj`
         changes.
 
-        Costs O(I) where I is the number of indexed attribute tuples for the `Model`.
+        Costs O(I) where I is the number of indexed attribute tuples for the :obj:`Model`.
 
         Args:
-            model_obj (:obj:`Model`): a `Model` instance
+            model_obj (:obj:`Model`): a :obj:`Model` instance
         """
         if self.cls.Meta.indexed_attrs_tuples:
             if model_obj in self._new_instances:
@@ -871,14 +871,14 @@ class Manager(object):
                 self._update(model_obj)
 
     def upsert_all(self):
-        """ Upsert the indices for all of this `Manager`'s `Model`'s
+        """ Upsert the indices for all of this :obj:`Manager`'s :obj:`Model`'s
         """
         if self.cls.Meta.indexed_attrs_tuples:
             for model_obj in self.all():
                 self.upsert(model_obj)
 
     def insert_all_new(self):
-        """ Insert all new instances of this `Manager`'s `Model`'s into the search indices
+        """ Insert all new instances of this :obj:`Manager`'s :obj:`Model`'s into the search indices
         """
         if self.cls.Meta.indexed_attrs_tuples:
             for model_obj in self._new_instances:
@@ -892,11 +892,11 @@ class Manager(object):
             self._new_instances.clear()
 
     def get(self, **kwargs):
-        """ Get the `Model` instance(s) that match the attribute name,value pair(s) in `kwargs`
+        """ Get the :obj:`Model` instance(s) that match the attribute name,value pair(s) in :obj:`kwargs`
 
-        The keys in `kwargs` must correspond to an entry in the `Model`'s `indexed_attrs_tuples`.
-        Warning: this method is non-deterministic. To obtain `Manager`'s O(1) performance, `Model`
-        instances in the index are stored in `WeakSet`'s. Therefore, the order of elements in the list
+        The keys in :obj:`kwargs` must correspond to an entry in the :obj:`Model`'s :obj:`indexed_attrs_tuples`.
+        Warning: this method is non-deterministic. To obtain :obj:`Manager`'s O(1) performance, :obj:`Model`
+        instances in the index are stored in :obj:`WeakSet`'s. Therefore, the order of elements in the list
         returned is not reproducible. Applications that need reproducibility must deterministically
         order elements in lists returned by this method.
 
@@ -904,12 +904,12 @@ class Manager(object):
             **kwargs: keyword args mapping from attribute name(s) to value(s)
 
         Returns:
-            :obj:`list` of :obj:`Model`: a list of `Model` instances whose indexed attribute tuples have the
-            values in `kwargs`; otherwise `None`, indicating no match
+            :obj:`list` of :obj:`Model`: a list of :obj:`Model` instances whose indexed attribute tuples have the
+                values in :obj:`kwargs`; otherwise :obj:`None`, indicating no match
 
         Raises:
-            :obj:`ValueError`: if no arguments are provided, or the attribute name(s) in `kwargs.keys()`
-            do not correspond to an indexed attribute tuple of the `Model`
+            :obj:`ValueError`: if no arguments are provided, or the attribute name(s) in :obj:`kwargs.keys()`
+                do not correspond to an indexed attribute tuple of the :obj:`Model`
         """
         cls = self.cls
 
@@ -936,19 +936,19 @@ class Manager(object):
         return list(self._index_dicts[possible_indexed_attributes][vals])
 
     def get_one(self, **kwargs):
-        """ Get one `Model` instance that matches the attribute name,value pair(s) in `kwargs`
+        """ Get one :obj:`Model` instance that matches the attribute name,value pair(s) in :obj:`kwargs`
 
-        Uses `get`.
+        Uses :obj:`get`.
 
         Args:
             **kwargs: keyword args mapping from attribute name(s) to value(s)
 
         Returns:
-            `Model`: a `Model` instance whose indexed attribute tuples have the values in `kwargs`,
-            or `None` if no `Model` satisfies the query
+            :obj:`Model`: a :obj:`Model` instance whose indexed attribute tuples have the values in :obj:`kwargs`,
+                or :obj:`None` if no :obj:`Model` satisfies the query
 
         Raises:
-            :obj:`ValueError`: if `get` raises an exception, or if multiple instances match.
+            :obj:`ValueError`: if :obj:`get` raises an exception, or if multiple instances match.
         """
         rv = self.get(**kwargs)
         cls = self.cls
@@ -963,10 +963,10 @@ class Manager(object):
 class TableFormat(Enum):
     """ Describes a table's orientation
 
-    * `row`: the first row contains attribute names; subsequents rows store objects
-    * `column`: the first column contains attribute names; subsequents columns store objects
-    * `cell`: a cell contains a table, as a comma-separated list for example
-    * `multiple_cells`: multiple cells within a row or column
+    * :obj:`row`: the first row contains attribute names; subsequents rows store objects
+    * :obj:`column`: the first column contains attribute names; subsequents columns store objects
+    * :obj:`cell`: a cell contains a table, as a comma-separated list for example
+    * :obj:`multiple_cells`: multiple cells within a row or column
     """
     row = 1
     column = 2
@@ -982,31 +982,31 @@ class Model(object, metaclass=ModelMeta):
         _comments (:obj:`list` of :obj:`str`): comments
 
     Class attributes:
-        objects (:obj:`Manager`): a `Manager` that supports searching for `Model` instances
+        objects (:obj:`Manager`): a :obj:`Manager` that supports searching for :obj:`Model` instances
     """
 
     class Meta(object):
         """ Meta data for :class:`Model`
 
         Attributes:
-            attributes (:obj:`collections.OrderedDict` of :obj:`str`, `Attribute`): attributes
-            related_attributes (:obj:`collections.OrderedDict` of :obj:`str, `Attribute`): attributes
+            attributes (:obj:`collections.OrderedDict` of :obj:`str`, :obj:`Attribute`): attributes
+            related_attributes (:obj:`collections.OrderedDict` of :obj:`str, :obj:`Attribute`): attributes
                 declared in related objects
             local_attributes (:obj:`collections.OrderedDict` of :obj:`str`, :obj:`Attribute`): dictionary
                 that maps the names of all local attributes to their instances, including attributes defined
                 in this class and attributes defined in related classes
-            primary_attribute (:obj:`Attribute`): attribute with `primary` = `True`
+            primary_attribute (:obj:`Attribute`): attribute with :obj:`primary` = :obj:`True`
             unique_together (:obj:`tuple` of :obj:`tuple`'s of attribute names): controls what tuples of
                 attribute values must be unique
-            indexed_attrs_tuples (:obj:`tuple` of `tuple`'s of attribute names): tuples of attributes on
-                which instances of this `Model` will be indexed by the `Model`'s `Manager`
+            indexed_attrs_tuples (:obj:`tuple` of :obj:`tuple`'s of attribute names): tuples of attributes on
+                which instances of this :obj:`Model` will be indexed by the :obj:`Model`'s :obj:`Manager`
             attribute_order (:obj:`tuple` of :obj:`str`): tuple of attribute names, in the order in which they should be displayed
             verbose_name (:obj:`str`): verbose name to refer to an instance of the model
             verbose_name_plural (:obj:`str`): plural verbose name for multiple instances of the model
             description (:obj:`str`): description of the model (e.g., to print in the table of contents in XLSX)
             table_format (:obj:`TableFormat`): orientation of model objects in table (e.g. XLSX)
             frozen_columns (:obj:`int`): number of XLSX columns to freeze
-            inheritance (:obj:`tuple` of `class`): tuple of all superclasses
+            inheritance (:obj:`tuple` of :obj:`class`): tuple of all superclasses
             ordering (:obj:`tuple` of attribute names): controls the order in which objects should be printed when serialized
             children (:obj:`dict` that maps :obj:`str` to :obj:`tuple` of :obj:`str`): dictionary that maps types of children to
                 names of attributes which compose each type of children
@@ -1136,8 +1136,8 @@ class Model(object, metaclass=ModelMeta):
 
     def get_attrs_by_val(self, type=None, reverse=True,
                          include=None, exclude=None):
-        """ Get attributes whose type is `type` and values are
-        in `include` and not `exclude`, optionally including attributes
+        """ Get attributes whose type is :obj:`type` and values are
+        in :obj:`include` and not :obj:`exclude`, optionally including attributes
         from related classes. By default, get all attributes.
 
         Args:
@@ -1222,13 +1222,13 @@ class Model(object, metaclass=ModelMeta):
 
     @classmethod
     def get_attr_index(cls, attr):
-        """ Get the index of an attribute within `Meta.attribute_order`
+        """ Get the index of an attribute within :obj:`Meta.attribute_order`
 
         Args:
             attr (:obj:`Attribute`): attribute
 
         Returns:
-            :obj:`int`: index of attribute within `Meta.attribute_order`
+            :obj:`int`: index of attribute within :obj:`Meta.attribute_order`
         """
         flat_attr_order = cls.Meta.attribute_order
         if attr.name not in flat_attr_order:
@@ -1261,7 +1261,7 @@ class Model(object, metaclass=ModelMeta):
         Args:
             attr_name (:obj:`str`): attribute name
             value (:obj:`object`): value
-            propagate (:obj:`bool`, optional): propagate change through attribute `set_value` and `set_related_value`
+            propagate (:obj:`bool`, optional): propagate change through attribute :obj:`set_value` and :obj:`set_related_value`
         """
         if propagate:
             if attr_name in self.__class__.Meta.attributes:
@@ -1433,8 +1433,10 @@ class Model(object, metaclass=ModelMeta):
             attr (:obj:`list` of :obj:`dict`): an element of a path to a nested attribute
 
         Returns:
-            :obj:`str`: attribute name
-            :obj:`dict`: filter for values of attribute
+            :obj:`tuple`:
+
+                * :obj:`str`: attribute name
+                * :obj:`dict`: filter for values of attribute
 
         Raises:
             :obj:`ValueError`: if the attribute specification is not valid
@@ -1619,7 +1621,7 @@ class Model(object, metaclass=ModelMeta):
             tol (:obj:`float`, optional): equality tolerance
 
         Returns:
-            :obj:`bool`: `True` if objects are semantically equal, else `False`
+            :obj:`bool`: :obj:`True` if objects are semantically equal, else :obj:`False`
         """
 
         """
@@ -1674,7 +1676,7 @@ class Model(object, metaclass=ModelMeta):
             tol (:obj:`float`, optional): equality tolerance
 
         Returns:
-            :obj:`bool`: `True` if the objects' attributes are semantically equal, else `False`
+            :obj:`bool`: :obj:`True` if the objects' attributes are semantically equal, else :obj:`False`
         """
         # objects are the same
         if self is other:
@@ -1731,19 +1733,19 @@ class Model(object, metaclass=ModelMeta):
         self._source = ModelSource(path_name, sheet_name, attribute_seq, row, table_id=table_id)
 
     def get_source(self, attr_name):
-        """ Get file location of attribute with name `attr_name`
+        """ Get file location of attribute with name :obj:`attr_name`
 
-        Provide the type, filename, worksheet, row, and column of `attr_name`. Row and column use
+        Provide the type, filename, worksheet, row, and column of :obj:`attr_name`. Row and column use
         1-based counting. Column is provided in XLSX format if the file was a spreadsheet.
 
         Args:
             attr_name (:obj:`str`): attribute name
 
         Returns:
-            tuple of (type, basename, worksheet, row, column)
+            :obj:`tuple`: type, basename, worksheet, row, columnf
 
         Raises:
-            ValueError if the location of `attr_name` is unknown
+            ValueError if the location of :obj:`attr_name` is unknown
         """
         if self._source is None:
             raise ValueError("{} was not loaded from a file".format(self.__class__.__name__))
@@ -1769,7 +1771,7 @@ class Model(object, metaclass=ModelMeta):
 
     @classmethod
     def sort(cls, objects):
-        """ Sort list of `Model` objects
+        """ Sort list of :obj:`Model` objects
 
         Args:
             objects (:obj:`list` of :obj:`Model`): list of objects
@@ -1788,14 +1790,14 @@ class Model(object, metaclass=ModelMeta):
 
     @classmethod
     def get_sort_key(cls, object, attr_name):
-        """ Get sort key for `Model` instance `object` based on `cls.Meta.ordering`
+        """ Get sort key for :obj:`Model` instance :obj:`object` based on :obj:`cls.Meta.ordering`
 
         Args:
-            object (:obj:`Model`): `Model` instance
+            object (:obj:`Model`): :obj:`Model` instance
             attr_name (:obj:`str`): attribute name
 
         Returns:
-            :obj:`object`: sort key for `object`
+            :obj:`object`: sort key for :obj:`object`
         """
         attr = cls.Meta.attributes[attr_name]
         return attr.serialize(getattr(object, attr_name))
@@ -1804,7 +1806,7 @@ class Model(object, metaclass=ModelMeta):
         """ Get the semantic difference between two models
 
         Args:
-            other (:obj:`Model`): other `Model`
+            other (:obj:`Model`): other :obj:`Model`
             tol (:obj:`float`, optional): equality tolerance
 
         Returns:
@@ -2039,7 +2041,7 @@ class Model(object, metaclass=ModelMeta):
             objects (:obj:`dict`): dictionary of objects, grouped by model
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value
                 and cleaning error
         """
         if value in objects.get(cls, {}):
@@ -2050,17 +2052,17 @@ class Model(object, metaclass=ModelMeta):
 
     @staticmethod
     def get_all_related(objs, forward=True, reverse=True):
-        """ Optimally obtain all objects related to objects in `objs`
+        """ Optimally obtain all objects related to objects in :obj:`objs`
 
         The set of all :obj:`Model`\ s can be viewed as a graph whose nodes are :obj:`Model` instances
         and whose edges are related connections. Because related edges are bi-directional, this graph
         is a set of strongly connected components and no edges connect the components.
 
         The algorithm here finds all :obj:`Model`\ s that are reachable from a set of instances
-        in `O(n)`, where `n` is the size of the reachable set. This algorithm is optimal.
-        It achieves this performance because `obj.get_related()` takes `O(n(c))` where `n(c)` is the
-        number of nodes in the component containing `obj`, and each component is only explored
-        once because all of a component's nodes are stored in `found_objs` when the component is first
+        in :math:`O(n)`, where :math:`n` is the size of the reachable set. This algorithm is optimal.
+        It achieves this performance because :obj:`obj.get_related()` takes :math:`O(n(c))` where :math:`n(c)` is the
+        number of nodes in the component containing :obj:`obj`, and each component is only explored
+        once because all of a component's nodes are stored in :obj:`found_objs` when the component is first
         explored.
 
         In addition, this method is deterministic because ordered dictionaries preserve insertion order.
@@ -2071,7 +2073,7 @@ class Model(object, metaclass=ModelMeta):
             reverse (:obj:`bool`, optional): if :obj:`True`, get all reverse related objects
 
         Returns:
-            :obj:`list` of :obj:`Model`: all objects in `objs` and all objects related to them,
+            :obj:`list` of :obj:`Model`: all objects in :obj:`objs` and all objects related to them,
             without any duplicates
         """
         found_objs = collections.OrderedDict()
@@ -2084,7 +2086,7 @@ class Model(object, metaclass=ModelMeta):
         return list(found_objs)
 
     def get_related(self, forward=True, reverse=True):
-        """ Get all related objects reachable from `self`
+        """ Get all related objects reachable from :obj:`self`
 
         Args:
             forward (:obj:`bool`, optional): if :obj:`True`, get all forward related objects
@@ -2121,11 +2123,11 @@ class Model(object, metaclass=ModelMeta):
         return list(related_objs)
 
     def clean(self):
-        """ Clean all of this `Model`'s attributes
+        """ Clean all of this :obj:`Model`'s attributes
 
         Returns:
-            :obj:`InvalidObject` or None: `None` if the object is valid,
-                otherwise return a list of errors as an instance of `InvalidObject`
+            :obj:`InvalidObject` or None: :obj:`None` if the object is valid,
+                otherwise return a list of errors as an instance of :obj:`InvalidObject`
         """
         errors = []
 
@@ -2146,8 +2148,8 @@ class Model(object, metaclass=ModelMeta):
         """ Determine if the object is valid
 
         Returns:
-            :obj:`InvalidObject` or None: `None` if the object is valid,
-                otherwise return a list of errors as an instance of `InvalidObject`
+            :obj:`InvalidObject` or None: :obj:`None` if the object is valid,
+                otherwise return a list of errors as an instance of :obj:`InvalidObject`
         """
         errors = []
 
@@ -2176,7 +2178,7 @@ class Model(object, metaclass=ModelMeta):
             objects (:obj:`list` of :obj:`Model`): list of objects
 
         Returns:
-            :obj:`InvalidModel` or `None`: list of invalid attributes and their errors
+            :obj:`InvalidModel` or :obj:`None`: list of invalid attributes and their errors
         """
         errors = []
 
@@ -2237,10 +2239,10 @@ class Model(object, metaclass=ModelMeta):
         print(self.pformat(max_depth=max_depth, indent=indent), file=stream)
 
     def pformat(self, max_depth=DEFAULT_MAX_DEPTH, indent=DEFAULT_INDENT):
-        """ Return a human-readable string representation of this `Model`.
+        """ Return a human-readable string representation of this :obj:`Model`.
 
-            Follows the graph of related `Model`'s up to a depth of `max_depth`. `Model`'s at depth
-            `max_depth+1` are represented by '<class name>: ...', while deeper `Model`'s are not
+            Follows the graph of related :obj:`Model`'s up to a depth of :obj:`max_depth`. :obj:`Model`'s at depth
+            :obj:`max_depth+1` are represented by '<class name>: ...', while deeper :obj:`Model`'s are not
             traversed or printed. Re-encountered Model's do not get printed, and are indicated by
             '<attribute name>: --'.
             Attributes that are related or iterable are indented.
@@ -2265,11 +2267,11 @@ class Model(object, metaclass=ModelMeta):
                                                         # models encountered at depth = max_depth+1 are shown with '...'
 
         Args:
-            max_depth (:obj:`int`, optional): the maximum depth to which related `Model`'s should be printed
+            max_depth (:obj:`int`, optional): the maximum depth to which related :obj:`Model`'s should be printed
             indent (:obj:`int`, optional): number of spaces to indent
 
         Returns:
-            :obj:str: readable string representation of this `Model`
+            :obj:str: readable string representation of this :obj:`Model`
         """
         printed_objs = set()
         return indent_forest(self._tree_str(printed_objs, depth=0, max_depth=max_depth), indentation=indent)
@@ -2277,19 +2279,19 @@ class Model(object, metaclass=ModelMeta):
     def _tree_str(self, printed_objs, depth, max_depth):
         """ Obtain a nested list of string representations of this Model.
 
-            Follows the graph of related `Model`'s up to a depth of `max_depth`. Called recursively.
+            Follows the graph of related :obj:`Model`'s up to a depth of :obj:`max_depth`. Called recursively.
 
         Args:
-            printed_objs (:obj:`set`): objects that have already been `_tree_str`'ed
-            depth (:obj:`int`): the depth at which this `Model` is being `_tree_str`'ed
-            max_depth (:obj:`int`): the maximum depth to which related `Model`'s should be printed
+            printed_objs (:obj:`set`): objects that have already been :obj:`_tree_str`'ed
+            depth (:obj:`int`): the depth at which this :obj:`Model` is being :obj:`_tree_str`'ed
+            max_depth (:obj:`int`): the maximum depth to which related :obj:`Model`'s should be printed
 
         Returns:
             :obj:`list` of :obj:`list`: a nested list of string representations of this Model
 
         Raises:
             :obj:`ValueError`: if an attribute cannot be represented as a string, or a
-            related attribute value is not `None`, a `Model`, or an Iterable
+            related attribute value is not :obj:`None`, a :obj:`Model`, or an Iterable
         """
         '''
         TODO: many possible improvements
@@ -2418,14 +2420,14 @@ class Model(object, metaclass=ModelMeta):
         return objects_and_copies[self]
 
     def _copy_attributes(self, other, objects_and_copies):
-        """ Copy the attributes from `self` to its new copy, `other`
+        """ Copy the attributes from :obj:`self` to its new copy, :obj:`other`
 
         Args:
             other (:obj:`Model`): object to copy attribute values to
-            objects_and_copies (:obj:`dict` of `Model`: `Model`): dictionary of pairs of objects and their new copies
+            objects_and_copies (:obj:`dict` of :obj:`Model`: :obj:`Model`): dictionary of pairs of objects and their new copies
 
         Raises:
-            :obj:`ValueError`: if related attribute value is not `None`, a `Model`, or an Iterable,
+            :obj:`ValueError`: if related attribute value is not :obj:`None`, a :obj:`Model`, or an Iterable,
                 or if a non-related attribute is not an immutable
         """
         # get class
@@ -2442,7 +2444,7 @@ class Model(object, metaclass=ModelMeta):
         """ Determine if the class (and its related classes) can be serialized
 
         Raises:
-            :obj:`bool`: `True` if the class can be serialized
+            :obj:`bool`: :obj:`True` if the class can be serialized
         """
         classes_to_check = [cls]
         checked_classes = []
@@ -2476,7 +2478,7 @@ class Model(object, metaclass=ModelMeta):
         """ Determine if the immediate related attributes of the class can be serialized
 
         Returns:
-            :obj:`bool`: `True` if the related attributes can be serialized
+            :obj:`bool`: :obj:`True` if the related attributes can be serialized
         """
         for attr in cls.Meta.attributes.values():
             if isinstance(attr, RelatedAttribute):
@@ -2523,7 +2525,7 @@ class Model(object, metaclass=ModelMeta):
     def get_manager(cls):
         """ Get the manager for the model
 
-        Return:
+        Returns:
             :obj:`Manager`: manager
         """
         return cls.objects
@@ -2539,7 +2541,7 @@ class Model(object, metaclass=ModelMeta):
     @staticmethod
     def to_dict(object, models=None, encode_primary_objects=True, encoded=None):
         """ Encode a instance of :obj:`Model` or a collection of instances of :obj:`Model` using a simple Python representation
-        (dict, list, str, float, bool, None) that is compatible with JSON and YAML. Use `__id` keys to avoid infinite recursion
+        (dict, list, str, float, bool, None) that is compatible with JSON and YAML. Use :obj:`__id` keys to avoid infinite recursion
         by encoding each object once and referring to objects by their __id for each repeated reference.
 
         Args:
@@ -2638,7 +2640,7 @@ class Model(object, metaclass=ModelMeta):
     def from_dict(json, models, decode_primary_objects=True, primary_objects=None, decoded=None, ignore_extra_models=False,
                   validate=False, output_format=None):
         """ Decode a simple Python representation (dict, list, str, float, bool, None) of an object that
-        is compatible with JSON and YAML, including references to objects through `__id` keys.
+        is compatible with JSON and YAML, including references to objects through :obj:`__id` keys.
 
         Args:
             json (:obj:`dict`): simple Python representation of the object
@@ -2646,14 +2648,14 @@ class Model(object, metaclass=ModelMeta):
                 just look up objects by their IDs
             primary_objects (:obj:`list`, optional): list of instances of primary classes (i.e. non-line classes)
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
-            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all :obj:`models` are found, ignore
                 other worksheets or files
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             output_format (:obj:`str`, optional): desired structure of the return value
 
-                * `None`: Return the data with the same structure as :obj:`json`. Do not reshape the data.
-                * `list`: List of instances of :obj:`Model`.
-                * `dict`: Dictionary that maps subclasses of :obj:`Model` to the instances of each subclass.
+                * :obj:`None`: Return the data with the same structure as :obj:`json`. Do not reshape the data.
+                * :obj:`list`: List of instances of :obj:`Model`.
+                * :obj:`dict`: Dictionary that maps subclasses of :obj:`Model` to the instances of each subclass.
 
         Returns:
             :obj:`Model`: decoded object
@@ -2925,7 +2927,7 @@ class Model(object, metaclass=ModelMeta):
                 # get value
                 val = getattr(self, attr.name)
 
-                # cut relationships to objects not in `objs_to_keep`
+                # cut relationships to objects not in :obj:`objs_to_keep`
                 if isinstance(val, list):
                     # *ToManyAttribute
                     for v in list(val):
@@ -2988,10 +2990,12 @@ class Model(object, metaclass=ModelMeta):
             other (:obj:`Model`): other model
 
         Returns:
-            :obj:`dict`: dictionary that maps instances of objects in another model to objects
-                in a model
-            :obj:`list`: list of instances of objects in another model which have no parallel
-                in the model
+            :obj:`tuple`:
+
+                * :obj:`dict`: dictionary that maps instances of objects in another model to objects
+                  in a model
+                * :obj:`list`: list of instances of objects in another model which have no parallel
+                  in the model
         """
         self_objs_by_class = self.gen_serialized_val_obj_map()
         other_objs_by_class = other.gen_serialized_val_obj_map()
@@ -3205,13 +3209,13 @@ class Attribute(object, metaclass=abc.ABCMeta):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         return (value, None)
 
     @abc.abstractmethod
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
@@ -3219,7 +3223,7 @@ class Attribute(object, metaclass=abc.ABCMeta):
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return a list
-                of errors as an instance of `InvalidAttribute`
+                of errors as an instance of :obj:`InvalidAttribute`
         """
         pass  # pragma: no cover
 
@@ -3227,12 +3231,12 @@ class Attribute(object, metaclass=abc.ABCMeta):
         """ Determine if the attribute values are unique
 
         Args:
-            objects (:obj:`list` of :obj:`Model`): list of `Model` objects
+            objects (:obj:`list` of :obj:`Model`): list of :obj:`Model` objects
             values (:obj:`list`): list of values
 
         Returns:
            :obj:`InvalidAttribute` or None: None if values are unique, otherwise return a list of
-            errors as an instance of `InvalidAttribute`
+            errors as an instance of :obj:`InvalidAttribute`
         """
         unq_vals = set()
         rep_vals = set()
@@ -3271,7 +3275,7 @@ class Attribute(object, metaclass=abc.ABCMeta):
             value (:obj:`object`): Python representation
 
         Returns:
-            :obj:`bool`, `float`, `str`, or `None`: simple Python representation
+            :obj:`bool`, :obj:`float`, :obj:`str`, or :obj:`None`: simple Python representation
         """
         pass  # pragma: no cover
 
@@ -3283,7 +3287,7 @@ class Attribute(object, metaclass=abc.ABCMeta):
             value (:obj:`object`): semantically equivalent representation
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         pass  # pragma: no cover
 
@@ -3612,7 +3616,7 @@ class EnumAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `Enum`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`Enum`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         error = None
 
@@ -3646,14 +3650,14 @@ class EnumAttribute(LiteralAttribute):
             return (value, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         if value is None:
             if not self.none:
@@ -3791,7 +3795,7 @@ class BooleanAttribute(LiteralAttribute):
             description (:obj:`str`, optional): description
 
         Raises:
-            :obj:`ValueError`: if `default` is not a `bool` or if `default_cleaned_value` is not a `bool`
+            :obj:`ValueError`: if :obj:`default` is not a :obj:`bool` or if :obj:`default_cleaned_value` is not a :obj:`bool`
         """
         if default is not None and not isinstance(default, bool):
             raise ValueError('`default` must be `None` or an instance of `bool`')
@@ -3812,7 +3816,7 @@ class BooleanAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `bool`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`bool`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value is None:
             value = self.get_default_cleaned_value()
@@ -3841,14 +3845,14 @@ class BooleanAttribute(LiteralAttribute):
         return (value, InvalidAttribute(self, ['Value must be a `bool` or `None`']))
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         if value is not None and not isinstance(value, bool):
             return InvalidAttribute(self, ['Value must be an instance of `bool` or `None`'])
@@ -3918,7 +3922,7 @@ class FloatAttribute(NumericAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
 
         Raises:
-            :obj:`ValueError`: if `max` is less than `min`
+            :obj:`ValueError`: if :obj:`max` is less than :obj:`min`
         """
         if min is not None:
             min = float(min)
@@ -3966,7 +3970,7 @@ class FloatAttribute(NumericAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `float`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`float`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value is None or (isinstance(value, str) and value == ''):
             value = self.get_default_cleaned_value()
@@ -3978,14 +3982,14 @@ class FloatAttribute(NumericAttribute):
             return (value, InvalidAttribute(self, ['Value must be a `float`']))
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -4121,14 +4125,14 @@ class PositiveFloatAttribute(FloatAttribute):
                                                      primary=primary, unique=unique)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
 
         error = super(PositiveFloatAttribute, self).validate(obj, value)
@@ -4223,7 +4227,7 @@ class IntegerAttribute(NumericAttribute):
             unique (:obj:`bool`, optional): indicate if attribute value must be unique
 
         Raises:
-            :obj:`ValueError`: if `max` is less than `min`
+            :obj:`ValueError`: if :obj:`max` is less than :obj:`min`
         """
         if min is not None:
             min = int(min)
@@ -4257,7 +4261,7 @@ class IntegerAttribute(NumericAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `int`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`int`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
 
         if value is None or (isinstance(value, str) and value == ''):
@@ -4271,7 +4275,7 @@ class IntegerAttribute(NumericAttribute):
         return (value, InvalidAttribute(self, ['Value must be an integer']), )
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
@@ -4279,7 +4283,7 @@ class IntegerAttribute(NumericAttribute):
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, otherwise return list of
-                errors as an instance of `InvalidAttribute`
+                errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -4427,14 +4431,14 @@ class PositiveIntegerAttribute(IntegerAttribute):
                                                        primary=primary, unique=unique)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
 
         error = super(PositiveIntegerAttribute, self).validate(obj, value)
@@ -4525,8 +4529,8 @@ class StringAttribute(LiteralAttribute):
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
 
         Raises:
-            :obj:`ValueError`: if `min_length` is negative, `max_length` is less than `min_length`,
-                `default` is not a string, or `default_cleaned_value` is not a string
+            :obj:`ValueError`: if :obj:`min_length` is negative, :obj:`max_length` is less than :obj:`min_length`,
+                :obj:`default` is not a string, or :obj:`default_cleaned_value` is not a string
         """
 
         if not isinstance(min_length, int) or min_length < 0:
@@ -4559,7 +4563,7 @@ class StringAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `str`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`str`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value is None:
             value = self.get_default_cleaned_value()
@@ -4568,14 +4572,14 @@ class StringAttribute(LiteralAttribute):
         return (value, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value for this StringAttribute
+        """ Determine if :obj:`value` is a valid value for this StringAttribute
 
         Args:
             obj (:obj:`Model`): class being validated
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -4753,14 +4757,14 @@ class RegexAttribute(StringAttribute):
         self.flags = flags
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = super(RegexAttribute, self).validate(obj, value)
         if errors:
@@ -4876,14 +4880,14 @@ class LocalPathAttribute(LongStringAttribute):
         return (value, None)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`pathlib.Path`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         value_str = None if value is None else str(value)
         error = super(LocalPathAttribute, self).validate(obj, value_str)
@@ -5047,14 +5051,14 @@ class EmailAttribute(StringAttribute):
                                              primary=primary, unique=unique)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`date`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         error = super(EmailAttribute, self).validate(obj, value)
         if error:
@@ -5113,7 +5117,7 @@ class DateAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple`: (`date`, `None`), or (`None`, `InvalidAttribute`) reporting error
+            :obj:`tuple`: (:obj:`date`, :obj:`None`), or (:obj:`None`, :obj:`InvalidAttribute`) reporting error
         """
         if value in (None, ''):
             return (self.get_default_cleaned_value(), None)
@@ -5151,14 +5155,14 @@ class DateAttribute(LiteralAttribute):
         return (value, InvalidAttribute(self, ['Value must be an instance of `date`']))
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`date`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -5300,7 +5304,7 @@ class TimeAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `time`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`time`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if value in (None, ''):
             return (self.get_default_cleaned_value(), None)
@@ -5333,14 +5337,14 @@ class TimeAttribute(LiteralAttribute):
         return (value, InvalidAttribute(self, ['Value must be an instance of `time`']))
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`time`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -5482,8 +5486,10 @@ class DateTimeAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to clean
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` if `value` is invalid, or
-            :obj:`tuple` of `datetime`, `None` with cleaned value otherwise
+            :obj:`tuple`:
+
+                * :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` if :obj:`value` is invalid, or
+                * :obj:`tuple` of :obj:`datetime`, :obj:`None` with cleaned value otherwise
         """
         if value in (None, ''):
             return (self.get_default_cleaned_value(), None)
@@ -5523,15 +5529,15 @@ class DateTimeAttribute(LiteralAttribute):
         return (value, InvalidAttribute(self, ['Value must be an instance of `datetime`']))
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`datetime`): value of attribute to validate
 
         Returns:
-            :obj:`None` or `InvalidAttribute`: `None` if attribute is valid, otherwise return list of
-            errors as an instance of `InvalidAttribute`
+            :obj:`None` or :obj:`InvalidAttribute`: :obj:`None` if attribute is valid, otherwise return list of
+                errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -5641,15 +5647,15 @@ class Range(object):
     """ A numerical range
 
     Attributes
-        min (:obj:`int`, `float`): minimum
-        max (:obj:`int`, `float`): maximum
+        min (:obj:`int`, :obj:`float`): minimum
+        max (:obj:`int`, :obj:`float`): maximum
     """
 
     def __init__(self, min, max):
         """
         Args:
-            min (:obj:`int`, `float`): minimum
-            max (:obj:`int`, `float`): maximum
+            min (:obj:`int`, :obj:`float`): minimum
+            max (:obj:`int`, :obj:`float`): maximum
         """
         self.min = min
         self.max = max
@@ -5727,8 +5733,10 @@ class RangeAttribute(LiteralAttribute):
             value (:obj:`str`): semantically equivalent representation
 
         Returns:
-            :obj:`Range`: cleaned value
-            :obj:`InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`Range`: cleaned value
+                * :obj:`InvalidAttribute`: cleaning error
         """
         if value is None or value == '':
             return (None, None)
@@ -5745,7 +5753,7 @@ class RangeAttribute(LiteralAttribute):
             return (None, InvalidAttribute(self, ['Unable to deserialize an instance of {}'.format(value.__class__.__name__)]))
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -5753,7 +5761,7 @@ class RangeAttribute(LiteralAttribute):
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return
-                list of errors as an instance of `InvalidAttribute`
+                list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -5893,8 +5901,10 @@ class ListAttribute(LiteralAttribute):
             value (:obj:`str`): semantically equivalent representation
 
         Returns:
-            :obj:`list`: cleaned value
-            :obj:`InvalidAttribute`: cleaning error
+            :obj:`tuple`:
+
+                * :obj:`list`: cleaned value
+                * :obj:`InvalidAttribute`: cleaning error
         """
         if value is None or value == '':
             return ([], None)
@@ -5909,7 +5919,7 @@ class ListAttribute(LiteralAttribute):
             return (None, InvalidAttribute(self, ['Unable to deserialize an instance of {}'.format(value.__class__.__name__)]))
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value
+        """ Determine if :obj:`value` is a valid value
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -5917,7 +5927,7 @@ class ListAttribute(LiteralAttribute):
 
         Returns:
             :obj:`InvalidAttribute` or None: None if attribute is valid, other return
-                list of errors as an instance of `InvalidAttribute`
+                list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -6149,7 +6159,7 @@ class RelatedManager(list):
         return self
 
     def intersection_update(self, values):
-        """ Retain only intersection of list and `values`
+        """ Retain only intersection of list and :obj:`values`
 
         Args:
             values (:obj:`list`): values to intersect with list
@@ -6164,7 +6174,7 @@ class RelatedManager(list):
         return self
 
     def difference_update(self, values):
-        """ Retain only values of list not in `values`
+        """ Retain only values of list not in :obj:`values`
 
         Args:
             values (:obj:`list`): values to difference with list
@@ -6179,7 +6189,7 @@ class RelatedManager(list):
         return self
 
     def symmetric_difference_update(self, values):
-        """ Retain values in only one of list and `values`
+        """ Retain values in only one of list and :obj:`values`
 
         Args:
             values (:obj:`list`): values to difference with list
@@ -6229,7 +6239,7 @@ class RelatedManager(list):
                 objects
 
         Returns:
-            :obj:`Model` or `None`: matching instance of `Model`, or `None` if no matching instance
+            :obj:`Model` or :obj:`None`: matching instance of :obj:`Model`, or :obj:`None` if no matching instance
 
         Raises:
             :obj:`ValueError`: if multiple matching objects
@@ -6259,7 +6269,7 @@ class RelatedManager(list):
                 objects
 
         Returns:
-            :obj:`list` of :obj:`Model`: matching instances of `Model`
+            :obj:`list` of :obj:`Model`: matching instances of :obj:`Model`
         """
         if '__type' in kwargs:
             __type = kwargs.pop('__type')
@@ -6528,19 +6538,19 @@ class ManyToManyRelatedManager(RelatedManager):
 
 
 class BaseRelatedAttribute(object):
-    """ Attribute which represents a relationship with 1 or more other `Model`\s """
+    """ Attribute which represents a relationship with 1 or more other :obj:`Model`\s """
     pass
 
 
 class RelatedAttribute(BaseRelatedAttribute, Attribute):
-    """ Attribute which represents a relationship with another `Model`
+    """ Attribute which represents a relationship with another :obj:`Model`
 
     Attributes:
         related_type (:obj:`types.TypeType` or :obj:`tuple` of :obj:`types.TypeType`): allowed
             type(s) of the related values of the attribute
         primary_class (:obj:`class`): the type of the class that this related attribute references
         related_class (:obj:`class`): the type of the class that contains a related attribute
-        related_name (:obj:`str`): name of related attribute on `related_class`
+        related_name (:obj:`str`): name of related attribute on :obj:`related_class`
         verbose_related_name (:obj:`str`): verbose related name
         related_init_value (:obj:`object`): initial value of related attribute
         related_default (:obj:`object`): default value of related attribute
@@ -6558,7 +6568,7 @@ class RelatedAttribute(BaseRelatedAttribute, Attribute):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            related_name (:obj:`str`, optional): name of related attribute on :obj:`related_class`
             init_value (:obj:`object`, optional): initial value
             default (:obj:`object`, optional): default value
             default_cleaned_value (:obj:`object`, optional): value to replace
@@ -6669,14 +6679,14 @@ class RelatedAttribute(BaseRelatedAttribute, Attribute):
 
     @abc.abstractmethod
     def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
+        """ Determine if :obj:`value` is a valid value of the related attribute
 
         Args:
             obj (:obj:`Model`): object to validate
             value (:obj:`list`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         pass  # pragma: no cover
 
@@ -6701,7 +6711,7 @@ class RelatedAttribute(BaseRelatedAttribute, Attribute):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         pass  # pragma: no cover
 
@@ -6753,7 +6763,7 @@ class CellDialect(str, enum.Enum):
 
 
 class ToManyAttribute(RelatedAttribute):
-    """ *-to-many attribute
+    """ \*-to-many attribute
 
     Attributes:
         cell_dialect (:obj:`CellDialect`): dialect for serializing values to a cell
@@ -6885,7 +6895,7 @@ class OneToOneAttribute(RelatedAttribute):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            related_name (:obj:`str`, optional): name of related attribute on :obj:`related_class`
             default (:obj:`callable`, optional): callable which returns default value
             default_cleaned_value (:obj:`callable`, optional): value to replace
                 :obj:`None` values with during cleaning, or function
@@ -6928,7 +6938,7 @@ class OneToOneAttribute(RelatedAttribute):
             :obj:`Model`: new attribute value
 
         Raises:
-            :obj:`ValueError`: if related attribute of `new_value` is not `None`
+            :obj:`ValueError`: if related attribute of :obj:`new_value` is not :obj:`None`
         """
         cur_value = getattr(obj, self.name)
         if cur_value is new_value:
@@ -6967,7 +6977,7 @@ class OneToOneAttribute(RelatedAttribute):
             :obj:`Model`: value of the attribute
 
         Raises:
-            :obj:`ValueError`: if related property is not defined or the attribute of `new_value` is not `None`
+            :obj:`ValueError`: if related property is not defined or the attribute of :obj:`new_value` is not :obj:`None`
         """
         if not self.related_name:
             raise ValueError('Related property is not defined')
@@ -7004,14 +7014,14 @@ class OneToOneAttribute(RelatedAttribute):
         return new_value
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`Model`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7030,14 +7040,14 @@ class OneToOneAttribute(RelatedAttribute):
         return None
 
     def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
+        """ Determine if :obj:`value` is a valid value of the related attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7111,7 +7121,7 @@ class OneToOneAttribute(RelatedAttribute):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if not value:
             return (None, None)
@@ -7289,7 +7299,7 @@ class ManyToOneAttribute(RelatedAttribute):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            related_name (:obj:`str`, optional): name of related attribute on :obj:`related_class`
             default (:obj:`callable`, optional): callable which returns the default value
             default_cleaned_value (:obj:`callable`, optional): value to replace
                 :obj:`None` values with during cleaning, or function
@@ -7384,14 +7394,14 @@ class ManyToOneAttribute(RelatedAttribute):
         return cur_values
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`Model`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7414,14 +7424,14 @@ class ManyToOneAttribute(RelatedAttribute):
         return None
 
     def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
+        """ Determine if :obj:`value` is a valid value of the related attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7502,7 +7512,7 @@ class ManyToOneAttribute(RelatedAttribute):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if not value:
             return (None, None)
@@ -7676,7 +7686,7 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            related_name (:obj:`str`, optional): name of related attribute on :obj:`related_class`
             default (:obj:`callable`, optional): function which returns the default value
             default_cleaned_value (:obj:`callable`, optional): value to replace
                 :obj:`None` values with during cleaning, or function
@@ -7770,14 +7780,14 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
         return new_value
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7802,14 +7812,14 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
         return None
 
     def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
+        """ Determine if :obj:`value` is a valid value of the related attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`Model`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7879,7 +7889,7 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if not values:
             return (list(), None)
@@ -8021,7 +8031,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
         """
         Args:
             related_class (:obj:`class`): related class
-            related_name (:obj:`str`, optional): name of related attribute on `related_class`
+            related_name (:obj:`str`, optional): name of related attribute on :obj:`related_class`
             default (:obj:`callable`, optional): function which returns the default values
             default_cleaned_value (:obj:`callable`, optional): value to replace
                 :obj:`None` values with during cleaning, or function
@@ -8123,14 +8133,14 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
         return cur_values
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if :obj:`value` is a valid value of the attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`list` of :obj:`Model`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -8162,14 +8172,14 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
         return None
 
     def related_validate(self, obj, value):
-        """ Determine if `value` is a valid value of the related attribute
+        """ Determine if :obj:`value` is a valid value of the related attribute
 
         Args:
             obj (:obj:`Model`): object being validated
             value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of `InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -8241,7 +8251,7 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
         Returns:
-            :obj:`tuple` of `object`, `InvalidAttribute` or `None`: tuple of cleaned value and cleaning error
+            :obj:`tuple` of :obj:`object`, :obj:`InvalidAttribute` or :obj:`None`: tuple of cleaned value and cleaning error
         """
         if not values:
             return (list(), None)
@@ -8373,7 +8383,7 @@ class InvalidObjectSet(object):
             invalid_models (:obj:`list` of :obj:`InvalidModel`): list of invalid models
 
         Raises:
-            :obj:`ValueError`: `invalid_models` is not unique
+            :obj:`ValueError`: :obj:`invalid_models` is not unique
         """
         all_invalid_models = set()
         models = [invalid_model.model for invalid_model in invalid_models]
@@ -8389,7 +8399,7 @@ class InvalidObjectSet(object):
         """ Get object errors grouped by model
 
         Returns:
-            :obj:`dict` of `Model`: `list` of `InvalidObject`: dictionary of object errors, grouped by model
+            :obj:`dict` of :obj:`Model`: :obj:`list` of :obj:`InvalidObject`: dictionary of object errors, grouped by model
         """
         object_errors_by_model = collections.defaultdict(list)
         for obj in self.invalid_objects:
@@ -8401,7 +8411,7 @@ class InvalidObjectSet(object):
         """ Get model errors grouped by models
 
         Returns:
-            :obj:`dict` of `Model`: `InvalidModel`: dictionary of model errors, grouped by model
+            :obj:`dict` of :obj:`Model`: :obj:`InvalidModel`: dictionary of model errors, grouped by model
         """
         return {invalid_model.model: invalid_model for invalid_model in self.invalid_models}
 
@@ -8438,14 +8448,14 @@ class InvalidModel(object):
     """ Represents an invalid model, such as a model with an attribute that fails to meet specified constraints
 
     Attributes:
-        model (:obj:`class`): `Model` class
+        model (:obj:`class`): :obj:`Model` class
         attributes (:obj:`list` of :obj:`InvalidAttribute`): list of invalid attributes and their errors
     """
 
     def __init__(self, model, attributes):
         """
         Args:
-            model (:obj:`class`): `Model` class
+            model (:obj:`class`): :obj:`Model` class
             attributes (:obj:`list` of :obj:`InvalidAttribute`): list of invalid attributes and their errors
         """
         self.model = model
@@ -8585,7 +8595,7 @@ def get_models(module=None, inline=True):
 
 
 def get_model(name, module=None):
-    """ Get first `Model` with name `name`
+    """ Get first :obj:`Model` with name :obj:`name`
 
     Args:
         name (:obj:`str`): name
@@ -8609,11 +8619,11 @@ class Validator(object):
         """ Validate a list of objects and return their errors
 
         Args:
-            objects (:obj:`Model` or `list` of `Model`): object or list of objects
+            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             get_related (:obj:`bool`, optional): if true, get all related objects
 
         Returns:
-            :obj:`InvalidObjectSet` or `None`: list of invalid objects/models and their errors
+            :obj:`InvalidObjectSet` or :obj:`None`: list of invalid objects/models and their errors
         """
         if isinstance(objects, Model):
             objects = [objects]
@@ -8633,7 +8643,7 @@ class Validator(object):
             object (:obj:`list` of :obj:`Model`): list of objects
 
         Returns:
-            :obj:`InvalidObjectSet` or `None`: list of invalid objects/models and their errors
+            :obj:`InvalidObjectSet` or :obj:`None`: list of invalid objects/models and their errors
         """
 
         object_errors = []
@@ -8654,7 +8664,7 @@ class Validator(object):
             object (:obj:`list` of :obj:`Model`): list of Model instances
 
         Returns:
-            :obj:`InvalidObjectSet` or `None`: list of invalid objects/models and their errors
+            :obj:`InvalidObjectSet` or :obj:`None`: list of invalid objects/models and their errors
         """
 
         # validate individual objects
@@ -8698,7 +8708,7 @@ def xlsx_col_name(col):
         :obj:`str`: alphabetic column name
 
     Raises:
-        :obj:`ValueError`: if `col` is not positive
+        :obj:`ValueError`: if :obj:`col` is not positive
     """
     LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     if not isinstance(col, int) or col < 1:
@@ -8713,7 +8723,7 @@ def xlsx_col_name(col):
 
 
 class ObjTablesWarning(UserWarning):
-    """ :obj:`obj_tables` warning """
+    """ :obj:`ObjTables` warning """
     pass
 
 

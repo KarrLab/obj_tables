@@ -72,13 +72,13 @@ class WriterBase(object, metaclass=abc.ABCMeta):
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             schema_name (:obj:`str`, optional): schema name
             doc_metadata (:obj:`dict`, optional): dictionary of document metadata to be saved to header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
             model_metadata (:obj:`dict`, optional): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjTables ...`)
+                be saved to header row (e.g., ``!!ObjTables ...``)
             models (:obj:`list` of :obj:`Model`, optional): models
             get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
@@ -95,7 +95,7 @@ class WriterBase(object, metaclass=abc.ABCMeta):
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; a warning will be generated if the repo repo is not
                 current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
+            schema_package (:obj:`str`, optional): the package which defines the `ObjTables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
@@ -111,12 +111,12 @@ class WriterBase(object, metaclass=abc.ABCMeta):
 
         Args:
             data_repo_metadata (:obj:`bool`): if :obj:`True`, try to obtain metadata information
-                about the Git repo containing `path`; the repo must be current with origin, except
-                for the file at `path`
+                about the Git repo containing :obj:`path`; the repo must be current with origin, except
+                for the file at :obj:`path`
             path (:obj:`str`): path of the file(s) that will be written
-            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
+            schema_package (:obj:`str`, optional): the package which defines the `ObjTables` schema
                 used by the file; if not :obj:`None`, try to obtain metadata information about the
-                the schema's Git repository from a package on `sys.path`: the repo must be current
+                the schema's Git repository from a package on :obj:`sys.path`: the repo must be current
                 with its origin
 
         Returns:
@@ -181,13 +181,13 @@ class JsonWriter(WriterBase):
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             schema_name (:obj:`str`, optional): schema name
             doc_metadata (:obj:`dict`, optional): dictionary of document metadata to be saved to header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
             model_metadata (:obj:`dict`, optional): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjTables ...`)
+                be saved to header row (e.g., ``!!ObjTables ...``)
             models (:obj:`list` of :obj:`Model`, optional): models
             get_related (:obj:`bool`, optional): if :obj:`True`, write object and all related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
@@ -203,7 +203,7 @@ class JsonWriter(WriterBase):
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
+            schema_package (:obj:`str`, optional): the package which defines the `ObjTables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
@@ -318,18 +318,18 @@ class WorkbookWriter(WriterBase):
 
         Args:
             path (:obj:`str`): path to write file(s)
-            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): `model` instance or list of `model` instances
+            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): :obj:`Model` instance or list of :obj:`Model` instances
             schema_name (:obj:`str`, optional): schema name
             doc_metadata (:obj:`dict`, optional): dictionary of document metadata to be saved to header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
             model_metadata (:obj:`dict`, optional): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjTables ...`)
+                be saved to header row (e.g., ``!!ObjTables ...``)
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
-                appear as worksheets; all models which are not in `models` will
+                appear as worksheets; all models which are not in :obj:`models` will
                 follow in alphabetical order
-            get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
+            get_related (:obj:`bool`, optional): if :obj:`True`, write :obj:`objects` and all their related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
@@ -345,7 +345,7 @@ class WorkbookWriter(WriterBase):
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
+            schema_package (:obj:`str`, optional): the package which defines the `ObjTables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
@@ -474,7 +474,7 @@ class WorkbookWriter(WriterBase):
             name (:obj:`str`): name
             date (:obj:`str`): date
             doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
         """
         if isinstance(writer, wc_utils.workbook.io.ExcelWriter):
@@ -567,7 +567,7 @@ class WorkbookWriter(WriterBase):
             schema_name (:obj:`str`): schema name
             date (:obj:`str`): date
             doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
             grouped_objects (:obj:`dict`): dictionary which maps models
                 to lists of instances of each model
             write_schema (:obj:`bool`, optional): if :obj:`True`, include additional row for worksheet with schema
@@ -646,16 +646,16 @@ class WorkbookWriter(WriterBase):
         Args:
             writer (:obj:`wc_utils.workbook.io.Writer`): io writer
             model (:obj:`type`): model
-            objects (:obj:`list` of :obj:`Model`): list of instances of `model`
+            objects (:obj:`list` of :obj:`Model`): list of instances of :obj:`Model`
             schema_name (:obj:`str`): schema name
             date (:obj:`str`): date
             doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
             doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
             model_metadata (:obj:`dict`): dictionary of model metadata
             sheet_models (:obj:`list` of :obj:`Model`): models encoded as separate sheets
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes
-                including those not explictly included in `Model.Meta.attribute_order`
+                including those not explictly included in :obj:`Model.Meta.attribute_order`
             encoded (:obj:`dict`, optional): objects that have already been encoded and their assigned JSON identifiers
             write_empty_models (:obj:`bool`, optional): if :obj:`True`, write models even when there are no instances
             write_empty_cols (:obj:`bool`, optional): if :obj:`True`, write columns even when all values are :obj:`None`
@@ -872,11 +872,11 @@ class PandasWriter(WorkbookWriter):
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             schema_name (:obj:`str`, optional): schema name
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
-                appear as worksheets; all models which are not in `models` will
+                appear as worksheets; all models which are not in :obj:`models` will
                 follow in alphabetical order
-            get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
+            get_related (:obj:`bool`, optional): if :obj:`True`, write :obj:`objects` and all their related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
 
@@ -941,18 +941,18 @@ class MultiSeparatedValuesWriter(WriterBase):
 
         Args:
             path (:obj:`str`): path to write file(s)
-            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): `model` instance or list of `model` instances
+            objects (:obj:`Model` or :obj:`list` of :obj:`Model`): :obj:`Model` instance or list of :obj:`Model` instances
             schema_name (:obj:`str`, optional): schema name
             doc_metadata (:obj:`dict`, optional): dictionary of document metadata to be saved to header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
             model_metadata (:obj:`dict`, optional): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjTables ...`)
+                be saved to header row (e.g., ``!!ObjTables ...``)
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
-                appear as worksheets; all models which are not in `models` will
+                appear as worksheets; all models which are not in :obj:`models` will
                 follow in alphabetical order
-            get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all their related objects
+            get_related (:obj:`bool`, optional): if :obj:`True`, write :obj:`objects` and all their related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
@@ -968,7 +968,7 @@ class MultiSeparatedValuesWriter(WriterBase):
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
+            schema_package (:obj:`str`, optional): the package which defines the `ObjTables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
@@ -1082,15 +1082,15 @@ class Writer(WriterBase):
             objects (:obj:`Model` or :obj:`list` of :obj:`Model`): object or list of objects
             schema_name (:obj:`str`, optional): schema name
             doc_metadata (:obj:`dict`, optional): dictionary of document metadata to be saved to header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
             model_metadata (:obj:`dict`, optional): dictionary that maps models to dictionary with their metadata to
-                be saved to header row (e.g., `!!ObjTables ...`)
+                be saved to header row (e.g., ``!!ObjTables ...``)
             models (:obj:`list` of :obj:`Model`, optional): models in the order that they should
-                appear as worksheets; all models which are not in `models` will
+                appear as worksheets; all models which are not in :obj:`models` will
                 follow in alphabetical order
-            get_related (:obj:`bool`, optional): if :obj:`True`, write `objects` and all related objects
+            get_related (:obj:`bool`, optional): if :obj:`True`, write :obj:`objects` and all related objects
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
             title (:obj:`str`, optional): title
             description (:obj:`str`, optional): description
@@ -1106,7 +1106,7 @@ class Writer(WriterBase):
             group_objects_by_model (:obj:`bool`, optional): if :obj:`True`, group objects by model
             data_repo_metadata (:obj:`bool`, optional): if :obj:`True`, try to write metadata information
                 about the file's Git repo; the repo must be current with origin, except for the file
-            schema_package (:obj:`str`, optional): the package which defines the `obj_tables` schema
+            schema_package (:obj:`str`, optional): the package which defines the `ObjTables` schema
                 used by the file; if not :obj:`None`, try to write metadata information about the
                 the schema's Git repository: the repo must be current with origin
             protected (:obj:`bool`, optional): if :obj:`True`, protect the worksheet
@@ -1131,7 +1131,7 @@ class ReaderBase(object, metaclass=abc.ABCMeta):
 
     Attributes:
         _doc_metadata (:obj:`dict`): dictionary of document metadata read from header row
-                (e.g., `!!!ObjTables ...`)
+                (e.g., ``!!!ObjTables ...``)
         _model_metadata (:obj:`dict`): dictionary which maps models (:obj:`Model`) to dictionaries of
             metadata read from a document (e.g., `!!ObjTables date='...' ...`)
 
@@ -1163,14 +1163,14 @@ class ReaderBase(object, metaclass=abc.ABCMeta):
             allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all :obj:`models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
-                worksheet/file doesn't contain all of attributes in a model in `models`
+                worksheet/file doesn't contain all of attributes in a model in :obj:`models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
@@ -1181,7 +1181,7 @@ class ReaderBase(object, metaclass=abc.ABCMeta):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`dict`: model objects grouped by `Model` class
+            :obj:`dict`: model objects grouped by :obj:`Model` class
         """
         pass  # pragma: no cover
 
@@ -1206,14 +1206,14 @@ class JsonReader(ReaderBase):
             allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all :obj:`models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
-                worksheet/file doesn't contain all of attributes in a model in `models`
+                worksheet/file doesn't contain all of attributes in a model in :obj:`models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
@@ -1224,7 +1224,7 @@ class JsonReader(ReaderBase):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`dict`: model objects grouped by `Model` class
+            :obj:`dict`: model objects grouped by :obj:`Model` class
 
         Raises:
             :obj:`ValueError`: if the input format is not supported, model names are not unique, or the
@@ -1304,14 +1304,14 @@ class WorkbookReader(ReaderBase):
             allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all :obj:`models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
-                worksheet/file doesn't contain all of attributes in a model in `models`
+                worksheet/file doesn't contain all of attributes in a model in :obj:`models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
@@ -1322,7 +1322,7 @@ class WorkbookReader(ReaderBase):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`obj`: if `group_objects_by_model` set returns :obj:`dict`: of model objects grouped by `Model` class;
+            :obj:`obj`: if :obj:`group_objects_by_model` set returns :obj:`dict`: of model objects grouped by :obj:`Model` class;
                 else returns :obj:`list`: of all model objects
 
         Raises:
@@ -1332,11 +1332,11 @@ class WorkbookReader(ReaderBase):
                 * The file(s) indicated by :obj:`path` is missing a sheet for a model and
                   :obj:`ignore_missing_models` is :obj:`False`
                 * The file(s) indicated by :obj:`path` contains extra sheets that don't correspond to one
-                  of `models` and :obj:`ignore_extra_models` is :obj:`False`
+                  of :obj:`models` and :obj:`ignore_extra_models` is :obj:`False`
                 * The worksheets are file(s) indicated by :obj:`path` are not in the canonical order and
                   :obj:`ignore_sheet_order` is :obj:`False`
                 * Some models are not serializable
-                * The data contains parsing errors found by `read_model`
+                * The data contains parsing errors found by :obj:`read_model`
         """
         # detect extension
         _, ext = splitext(path)
@@ -1613,7 +1613,7 @@ class WorkbookReader(ReaderBase):
             schema_name (:obj:`str`): schema name
             model (:obj:`type`): the model describing the objects' schema
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if the worksheet/files
                 don't have all of attributes in the model
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if attributes
@@ -1624,15 +1624,12 @@ class WorkbookReader(ReaderBase):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`tuple` of
-                `list` of `Attribute`,
-                `list` of `list` of `object`,
-                `list` of `str`,
-                `list` of `Model`: tuple of
-                * attribute order of `data`
-                * a two-dimensional nested list of object data
-                * a list of parsing errors
-                * constructed model objects
+            :obj:`tuple`:
+
+                * :obj:`list` of :obj:`Attribute`: attribute order of :obj:`data`
+                * :obj:`list` of :obj:`list` of :obj:`object`: a two-dimensional nested list of object data
+                * :obj:`list` of :obj:`str`: a list of parsing errors
+                * :obj:`list` of :obj:`Model`: constructed model objects
         """
         _, ext = splitext(reader.path)
         ext = ext.lower()
@@ -2041,10 +2038,10 @@ class WorkbookReader(ReaderBase):
         """ Construct object graph
 
         Args:
-            model (:obj:`Model`): an `obj_tables.core.Model`
-            attributes (:obj:`list` of :obj:`Attribute`): attribute order of `data`
+            model (:obj:`Model`): an :obj:`obj_tables.core.Model`
+            attributes (:obj:`list` of :obj:`Attribute`): attribute order of :obj:`data`
             data (:obj:`list` of :obj:`list` of :obj:`object`): nested list of object data
-            objects (:obj:`list`): list of model objects in order of `data`
+            objects (:obj:`list`): list of model objects in order of :obj:`data`
             objects_by_primary_attribute (:obj:`dict`): dictionary of model objects grouped by model
             decoded (:obj:`dict`, optional): dictionary of objects that have already been decoded
 
@@ -2130,7 +2127,7 @@ class WorkbookReader(ReaderBase):
             model (:obj:`Model`): model
 
         Returns:
-            :obj:`str`: name of sheet corresponding to the model or `None` if there is no sheet for the model
+            :obj:`str`: name of sheet corresponding to the model or :obj:`None` if there is no sheet for the model
 
         Raises:
             :obj:`ValueError`: if the model matches more than one sheet
@@ -2188,14 +2185,14 @@ class MultiSeparatedValuesReader(ReaderBase):
             allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all :obj:`models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
-                worksheet/file doesn't contain all of attributes in a model in `models`
+                worksheet/file doesn't contain all of attributes in a model in :obj:`models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
@@ -2206,7 +2203,7 @@ class MultiSeparatedValuesReader(ReaderBase):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`obj`: if `group_objects_by_model` set returns :obj:`dict`: of model objects grouped by `Model` class;
+            :obj:`obj`: if :obj:`group_objects_by_model` set returns :obj:`dict`: of model objects grouped by :obj:`Model` class;
                 else returns :obj:`list`: of all model objects
 
         Raises:
@@ -2295,7 +2292,7 @@ class MultiSeparatedValuesReader(ReaderBase):
 class Reader(ReaderBase):
     @staticmethod
     def get_reader(path):
-        """ Get the IO class whose `run()` method can read the file(s) at `path`
+        """ Get the IO class whose :obj:`run` method can read the file(s) at :obj:`path`
 
         Args:
             path (:obj:`str`): path to write file(s)
@@ -2335,14 +2332,14 @@ class Reader(ReaderBase):
             allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
             ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
                 file is missing for one or more models
-            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+            ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all :obj:`models` are found, ignore
                 other worksheets or files
             ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
                 in the canonical order
             include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-                not explictly included in `Model.Meta.attribute_order`
+                not explictly included in :obj:`Model.Meta.attribute_order`
             ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
-                worksheet/file doesn't contain all of attributes in a model in `models`
+                worksheet/file doesn't contain all of attributes in a model in :obj:`models`
             ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
                 attributes in the data are not in the model
             ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
@@ -2353,8 +2350,8 @@ class Reader(ReaderBase):
             validate (:obj:`bool`, optional): if :obj:`True`, validate the data
 
         Returns:
-            :obj:`obj`: if `group_objects_by_model` is set returns :obj:`dict`: model objects grouped
-                by `Model` class, otherwise returns :obj:`list`: of model objects
+            :obj:`obj`: if :obj:`group_objects_by_model` is set returns :obj:`dict`: model objects grouped
+                by :obj:`Model` class, otherwise returns :obj:`list`: of model objects
         """
         Reader = self.get_reader(path)
         reader = Reader()
@@ -2394,14 +2391,14 @@ def convert(source, destination, schema_name=None, models=None,
         allow_multiple_sheets_per_model (:obj:`bool`, optional): if :obj:`True`, allow multiple sheets per model
         ignore_missing_models (:obj:`bool`, optional): if :obj:`False`, report an error if a worksheet/
             file is missing for one or more models
-        ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all `models` are found, ignore
+        ignore_extra_models (:obj:`bool`, optional): if :obj:`True` and all :obj:`models` are found, ignore
             other worksheets or files
         ignore_sheet_order (:obj:`bool`, optional): if :obj:`True`, do not require the sheets to be provided
             in the canonical order
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-            not explictly included in `Model.Meta.attribute_order`
+            not explictly included in :obj:`Model.Meta.attribute_order`
         ignore_missing_attributes (:obj:`bool`, optional): if :obj:`False`, report an error if a
-            worksheet/file doesn't contain all of attributes in a model in `models`
+            worksheet/file doesn't contain all of attributes in a model in :obj:`models`
         ignore_extra_attributes (:obj:`bool`, optional): if :obj:`True`, do not report errors if
             attributes in the data are not in the model
         ignore_attribute_order (:obj:`bool`, optional): if :obj:`True`, do not require the attributes to be provided
@@ -2442,7 +2439,7 @@ def create_template(path, schema_name, models, title=None, description=None, key
         path (:obj:`str`): path to write file(s)
         schema_name (:obj:`str`): schema name
         models (:obj:`list`): list of model, in the order that they should
-            appear as worksheets; all models which are not in `models` will
+            appear as worksheets; all models which are not in :obj:`models` will
             follow in alphabetical order
         title (:obj:`str`, optional): title
         description (:obj:`str`, optional): description
@@ -2475,11 +2472,11 @@ def get_fields(cls, schema_name, date, doc_metadata, doc_metadata_model, model_m
         schema_name (:obj:`str`): schema name
         date (:obj:`str`): date
         doc_metadata (:obj:`dict`): dictionary of document metadata to be saved to header row
-            (e.g., `!!!ObjTables ...`)
+            (e.g., ``!!!ObjTables ...``)
         doc_metadata_model (:obj:`type`): model whose worksheet contains the document metadata
         model_metadata (:obj:`dict`): dictionary of model metadata
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-            not explictly included in `Model.Meta.attribute_order`
+            not explictly included in :obj:`Model.Meta.attribute_order`
         sheet_models (:obj:`list` of :obj:`Model`, optional): list of models encoded as separate worksheets; used
             to setup XLSX validation for related attributes
 
@@ -2607,7 +2604,7 @@ def get_ordered_attributes(cls, include_all_attributes=True):
     Args:
         cls (:obj:`type`): Model type (subclass of :obj:`Model`)
         include_all_attributes (:obj:`bool`, optional): if :obj:`True`, export all attributes including those
-            not explictly included in `Model.Meta.attribute_order`
+            not explictly included in :obj:`Model.Meta.attribute_order`
 
     Returns:
         :obj:`list` of :obj:`Attribute`: attributes in the order they should be printed

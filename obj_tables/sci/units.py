@@ -17,6 +17,7 @@ import wc_utils.workbook.io
 __all__ = [
     'UnitAttribute',
     'QuantityAttribute',
+    'get_obj_units',
 ]
 
 
@@ -47,10 +48,10 @@ class UnitAttribute(core.LiteralAttribute):
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
 
         Raises:
-            :obj:`ValueError`: if registry is not an instance of `pint.UnitRegistry`
-            :obj:`ValueError`: if default is not an instance of `registry.Unit`
-            :obj:`ValueError`: if default_cleaned_value is not an instance of `registry.Unit`
-            :obj:`ValueError`: if a choice is not an instance of `registry.Unit`
+            :obj:`ValueError`: if registry is not an instance of :obj:`pint.UnitRegistry`
+            :obj:`ValueError`: if default is not an instance of :obj:`registry.Unit`
+            :obj:`ValueError`: if default_cleaned_value is not an instance of :obj:`registry.Unit`
+            :obj:`ValueError`: if a choice is not an instance of :obj:`registry.Unit`
         """
         if not isinstance(registry, pint.UnitRegistry):
             raise ValueError('`registry` must be an instance of `pint.UnitRegistry`')
@@ -142,7 +143,7 @@ class UnitAttribute(core.LiteralAttribute):
         return value
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value for this UnitAttribute
+        """ Determine if :obj:`value` is a valid value for this UnitAttribute
 
         Args:
             obj (:obj:`Model`): class being validated
@@ -305,10 +306,10 @@ class QuantityAttribute(core.LiteralAttribute):
             unique_case_insensitive (:obj:`bool`, optional): if true, conduct case-insensitive test of uniqueness
 
         Raises:
-            :obj:`ValueError`: if registry is not an instance of `pint.UnitRegistry`
-            :obj:`ValueError`: if default is not an instance of `registry.Unit`
-            :obj:`ValueError`: if default_cleaned_value is not an instance of `registry.Unit`
-            :obj:`ValueError`: if a choice is not an instance of `registry.Unit`
+            :obj:`ValueError`: if registry is not an instance of :obj:`pint.UnitRegistry`
+            :obj:`ValueError`: if default is not an instance of :obj:`registry.Unit`
+            :obj:`ValueError`: if default_cleaned_value is not an instance of :obj:`registry.Unit`
+            :obj:`ValueError`: if a choice is not an instance of :obj:`registry.Unit`
         """
         if not isinstance(registry, pint.UnitRegistry):
             raise ValueError('`registry` must be an instance of `pint.UnitRegistry`')
@@ -410,7 +411,7 @@ class QuantityAttribute(core.LiteralAttribute):
         return self.registry.Quantity(value.m, value.units)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value for this QuantityAttribute
+        """ Determine if :obj:`value` is a valid value for this QuantityAttribute
 
         Args:
             obj (:obj:`Model`): class being validated

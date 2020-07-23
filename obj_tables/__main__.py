@@ -314,9 +314,11 @@ def get_schema_models(filename):
         filename (:obj:`str`): path to schema or declarative representation of the schema
 
     Returns:
-        * :obj:`str`: schema name
-        * :obj:`types.ModuleType`: schema module
-        * :obj:`list` of :obj:`core.Model`: models
+        :obj:`tuple`:
+
+            * :obj:`str`: schema name
+            * :obj:`types.ModuleType`: schema module
+            * :obj:`list` of :obj:`core.Model`: models
     """
     _, ext = os.path.splitext(filename)
     if ext == '.py':

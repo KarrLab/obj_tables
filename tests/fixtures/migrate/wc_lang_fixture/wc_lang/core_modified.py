@@ -326,7 +326,7 @@ class ReactionParticipantAttribute(ManyToManyAttribute):
         return (parts, errors)
 
     def validate(self, obj, value):
-        """ Determine if `value` is a valid value of the attribute
+        """ Determine if ``value`` is a valid value of the attribute
 
         Args:
             obj (:obj:`Reaction`): object being validated
@@ -755,7 +755,7 @@ class Model(obj_tables.Model, SbmlModelMixin):
         url (:obj:`str`): url of the model Git repository
         branch (:obj:`str`): branch of the model Git repository
         revision (:obj:`str`): hash for git commit of the wc_lang version used by a model
-        wc_lang_version (:obj:`str`): version of ``wc_lang``
+        wc_lang_version (:obj:`str`): version of `WC-Lang`
         time_units (:obj:`unit_registry.Unit`): time units
         identifiers (:obj:`list` of :obj:`Identifier`): identifiers
         comments (:obj:`str`): comments
