@@ -506,6 +506,10 @@ def init_schema(filename, out_filename=None):
         if all(cell in [None, ''] for cell in row_list):
             continue
 
+        # ignore comment rows
+        if len(row_list) == 1 and isinstance(row_list[0], str) and row_list[0].startswith('%/') and row_list[0].endswith('/%'):
+            continue
+
         row = {}
         for header, cell in zip(header_row, row_list):
             row[header] = cell
