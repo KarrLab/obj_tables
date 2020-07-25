@@ -515,7 +515,7 @@ class WorkbookWriter(WriterBase):
 
         model_attr_defs = []
         hyperlinks = []
-        for model in all_models:
+        for i_model, model in enumerate(all_models):
             model_attr_defs.append([
                 model.__name__,
                 'Class',
@@ -544,6 +544,10 @@ class WorkbookWriter(WriterBase):
                     None,
                     attr.description or None,
                 ])
+
+            # add empty row
+            if i_model < len(all_models) - 1:
+                model_attr_defs.append([])
 
         content += model_attr_defs
 
