@@ -73,8 +73,7 @@ D_Fructose_6_phosphate	D-Fructose 6-phosphate	C00085	TRUE	D-Fructose 6-phosphate
 _2_Phospho_D_glycerate	2-Phospho-D-glycerate	C00631	FALSE	2-Phospho-D-glycerate				
 Succinate	Succinate	C00042	FALSE	Succinate				
 Sedoheptulose_7_phosphate	Sedoheptulose 7-phosphate	C05382	FALSE	Sedoheptulose 7-phosphate				
-%								
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='E. coli central carbon metabolism - unbalanced kinetic data' type='Data' class='Quantity' description='Parameter'								
+					
 %								
 !!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='E. coli central carbon metabolism - unbalanced kinetic data' type='Data' class='Position' description='Layout'								
 !Element	!PositionX	!PositionY						
