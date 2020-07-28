@@ -404,6 +404,7 @@ table:last-child {
 
 .splash .plyr__poster {
     background-color: transparent;
+    background-image: url("logo.svg");
 }
 
 .splash .plyr.not-playing video {
