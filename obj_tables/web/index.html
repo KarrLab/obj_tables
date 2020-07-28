@@ -28,6 +28,7 @@
       crossorigin="anonymous">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.6.2/plyr.css" />
     <link rel="stylesheet" href="app.css">
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-165117961-1"></script>
@@ -185,7 +186,16 @@
 
         <div class="splash">
           <div class="splash-container">
-            <img src="logo.svg" alt="ObjTables logo" />
+            <video playsinline data-poster="logo.svg" controls data-plyr-config='{
+              "title": "Introduction to ObjTables",
+              "autoplay": true,
+              "muted": false,
+              "ratio": "16:9",
+              "controls": ["play-large", "play", "progress", "mute", "volume", "fullscreen"],
+              "resetOnEnd": true
+            }'>
+              <source src="video.mp4" type="video/mp4" />
+            </video>
 
             <h1>Open-source toolkit for structured spreadsheets that are both human- and machine-readable.</h1>
 
@@ -712,6 +722,21 @@
     <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.5.3/dist/js/foundation.min.js"
       integrity="sha256-/PFxCnsMh+nTuM0k3VJCRch1gwnCfKjaP8rJNq5SoBg= sha384-9ksAFjQjZnpqt6VtpjMjlp2S0qrGbcwF/rvrLUg2vciMhwc1UJJeAAOLuJ96w+Nj sha512-UMSn6RHqqJeJcIfV1eS2tPKCjzaHkU/KqgAnQ7Nzn0mLicFxaVhm9vq7zG5+0LALt15j1ljlg8Fp9PT1VGNmDw=="
       crossorigin="anonymous"></script>
+    <script src="https://cdn.plyr.io/3.6.2/plyr.js"></script>
     <script src="app.js"></script>
+    <script>
+      const player = new Plyr(".splash-container video");
+      $(".splash .plyr").addClass("not-playing");
+
+      player.on('playing', event => {
+        const instance = event.detail.plyr;
+        $(".splash .plyr").removeClass("not-playing");
+      });
+
+      player.on('ended', event => {
+        const instance = event.detail.plyr;
+        $(".splash .plyr").addClass("not-playing");
+      });
+    </script>
   </body>
 </html>
