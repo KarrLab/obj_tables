@@ -274,7 +274,7 @@ class ExamplesTestCase(unittest.TestCase):
         dirnames = [
             'examples/address_book',
             'examples/biochemical_model',
-            'examples/children_fav_games',
+            'examples/children_favorite_video_games',
             'examples/financial_transactions',
             'examples/genomics',
         ]
@@ -424,8 +424,8 @@ class ExamplesTestCase(unittest.TestCase):
             font_size=8.)
         self.assertTrue(os.path.isfile(diagram_filename))
 
-    def test_decode_data(self):
-        import decode_data
+    def test_decode_json_data(self):
+        import decode_json_data
 
         class Parent(core.Model):
             id = core.SlugAttribute()
@@ -447,7 +447,7 @@ class ExamplesTestCase(unittest.TestCase):
 
         with open(filename, 'r') as file:
             json_dict = json.load(file)
-            decoded = decode_data.decode_data(json_dict)
+            decoded = decode_json_data.decode_data(json_dict)
 
         p1_b = {'__type': 'Parent', 'id': 'p1', 'name': 'P1'}
         p2_b = {'__type': 'Parent', 'id': 'p2', 'name': 'P2'}

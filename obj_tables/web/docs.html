@@ -1833,7 +1833,7 @@
       <span style="color: #999"># instances of additional classes</span>
 }</pre>
 
-                    <p>This Python code <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/decode_data.py"><i class="fi-link"></i></a> illustrates how to decode datasets encoded into this JSON/YAML format. We recommend following this example to create methods for other languages.</p>
+                    <p>This Python code <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/decode_json_data.py"><i class="fi-link"></i></a> illustrates how to decode datasets encoded into this JSON/YAML format. We recommend following this example to create methods for other languages.</p>
                   </div>
                 </div>
               </div>
@@ -2119,7 +2119,7 @@ obj_tables<span style="color: #666666">.</span>io<span style="color: #666666">.<
                             <ol>
                               <li>Use the <span class="monospace">convert</span> endpoint to encode a dataset into a JSON document. See above <a href="#json-format"><i class="fi-arrow-up"></i></a> for more information about how <i>ObjTables</i> encodes datasets into JSON.</li>
                               <li>Parse the JSON-encoded document into a native data structure. For example, use Python's <span class="monospace">json.loads</span> method to parse a JSON-encoded document into a combination of lists, dictionaries, and scalars.</li>
-                              <li>Implement a method for decoding a dataset from this native data structure. This Python module <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/decode_data.py"><i class="fi-link"></i></a> illustrates how to decode datasets from native Python data structures. We recommend following this example to create methods for other languages.</li>
+                              <li>Implement a method for decoding a dataset from this native data structure. This Python module <a href="https://github.com/KarrLab/obj_tables/blob/master/examples/decode_json_data.py"><i class="fi-link"></i></a> illustrates how to decode datasets from native Python data structures. We recommend following this example to create methods for other languages.</li>
                               <li>Use this method to decode the dataset from the native data structure that represent the JSON-encoded document.</li>
                             </ol>
                           </li>
