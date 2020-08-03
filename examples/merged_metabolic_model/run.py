@@ -20,8 +20,8 @@ PLOT_FILENAME = os.path.join(DIRNAME, 'delta-g-vs-k-cat.pdf')
 
 
 def read_data():
-    kinetics_dir = os.path.join(DIRNAME, '..', 'metabolic_kinetics')
-    thermodynamics_dir = os.path.join(DIRNAME, '..', 'metabolic_thermodynamics')
+    kinetics_dir = os.path.join(DIRNAME, '..', 'kinetic_metabolic_model')
+    thermodynamics_dir = os.path.join(DIRNAME, '..', 'thermodynamic_metabolic_model')
 
     kinetics_schema_path = os.path.join(kinetics_dir, 'schema.py')
     thermodynamics_schema_path = os.path.join(thermodynamics_dir, 'schema.py')

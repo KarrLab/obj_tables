@@ -195,8 +195,8 @@ class ExamplesTestCase(unittest.TestCase):
 
     def test_metabolomics_examples(self):
         dirnames = [
-            'examples/metabolic_kinetics',
-            'examples/metabolic_thermodynamics',
+            'examples/kinetic_metabolic_model',
+            'examples/thermodynamic_metabolic_model',
         ]
         for dirname in dirnames:
             schema_filename_csv = os.path.join(dirname, 'schema.csv')
@@ -263,7 +263,7 @@ class ExamplesTestCase(unittest.TestCase):
                 app.run()
 
     def test_metabolomics_example_merging(self):
-        loader = importlib.machinery.SourceFileLoader('run', 'examples/metabolic_merged/run.py')
+        loader = importlib.machinery.SourceFileLoader('run', 'examples/merged_metabolic_model/run.py')
         module = loader.load_module()
         if os.path.isfile(module.PLOT_FILENAME):
             os.remove(module.PLOT_FILENAME)
