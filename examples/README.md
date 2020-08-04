@@ -1,4 +1,4 @@
-# *ObjTables* examples
+# *ObjTables* examples and tutorials
 
 ## Example datasets and schemas in CSV, JSON, TSV, XLSX, and YAML formats
 * Basic examples of simple datasets
