@@ -1,4 +1,4 @@
-!!ObjTables type='Data' tableFormat='row' class='Reference' name='References' date='2020-06-03 15:21:24' objTablesVersion='1.0.0'								
+!!ObjTables type='Data' tableFormat='row' class='Reference' name='References' date='2020-06-03 15:21:24' objTablesVersion='1.0.9'								
 !Id	!Title	!Authors	!Journal	!Volume	!Issue	!Start page	!End page	!PubMed id
 Ref1	A genome-scale metabolic reconstruction for Escherichia coli K-12 MG1655 that accounts for 1260 ORFs and thermodynamic information.	Feist AM, Henry CS, Reed JL, Krummenacker M, Joyce AR, Karp PD, Broadbelt LJ, Hatzimanikatis V, Palsson BØ.	Mol Syst Biol.	3.0	1.0			17593909.0
 Ref2	BRENDA in 2013: integrated reactions, kinetic data, enzyme function data, improved disease classification: new options and contents in BRENDA.	Schomburg I, Chang A, Placzek S, Söhngen C, Rother M, Lang M, Munaretto C, Ulas S, Stelzer M, Grote A, Scheer M, Schomburg D.	Nucleic Acids Res.	41.0		764.0	772.0	23203881.0

@@ -6,7 +6,7 @@
   * [`children_favorite_video_games`](examples/children_favorite_video_games): Table of children and their favorite video games.
   * [`financial_transactions`](examples/financial_transactions): Table of financial transactions including the category and amount of each transaction.
   * [`genomics`](examples/genomics): Dataset of several human genes and their splice variants obtaned from [Ensembl](https://useast.ensembl.org/).
-* Larger examples involving published datasets
+* Larger examples involving published datasets. These examples are discussed in the supplementary materials to the [*ObjTables* manuscript](https://arxiv.org/abs/2005.05227).
   * [`kinetic_metabolic_model`](examples/kinetic_metabolic_model): Kinetically-constrained model of *Escherichia coli* metabolism developed by Khodayari & Maranas.
     DOI: [10.1038/ncomms13806](https://doi.org/10.1038/ncomms13806).
   * [`thermodynamic_metabolic_model`](examples/thermodynamic_metabolic_model): Thermodynamically-constrained model of *Escherichia coli* metabolism developed by Gerosa et al.
@@ -16,8 +16,8 @@
   * [`sbtab/hynne.*`](examples/sbtab): Hynne model of yeast glycolysis. DOI: [10.1016/s0301-4622(01)00229-0](https://doi.org/10.1016/s0301-4622%2801%2900229-0).
   * [`sbtab/jiang_model.*`](examples/sbtab): Jiang et al. model of pancreatic beta-cell insulin secretion.  DOI: [10.1007/s00335-007-9011-y](https://doi.org/10.1007/s00335-007-9011-y).
   * [`sbtab/jiang_data.*`](examples/sbtab): Data related to the Jiang et al. model.
-  * [`sbtab/ecolI_noor_2016_model.*`](examples/sbtab): Noor et al. model of *Escherichia coli* metabolism.  DOI: [10.1371/journal.pcbi.1005167](https://dx.doi.org/10.1371%2Fjournal.pcbi.1005167).
-  * [`sbtab/ecolI_noor_2016_data.*`](examples/sbtab): Data related to the Noor et al. model.
+  * [`sbtab/ecoli_noor_2016_model.*`](examples/sbtab): Noor et al. model of *Escherichia coli* metabolism.  DOI: [10.1371/journal.pcbi.1005167](https://dx.doi.org/10.1371%2Fjournal.pcbi.1005167).
+  * [`sbtab/ecoli_noor_2016_data.*`](examples/sbtab): Data related to the Noor et al. model.
   * [`sbtab/sigurdsson_model.*`](examples/sbtab): Sigurdsson et al. model of mouse metabolism. DOI: [10.1186/1752-0509-4-140](https://doi.org/10.1186/1752-0509-4-140).
   * [`sbtab/teusink_model.*`](examples/sbtab): Teusink model of yeast glycolysis. DOI: [10.1046/j.1432-1327.2000.01527.x](https://doi.org/10.1046/j.1432-1327.2000.01527.x).
   * [`sbtab/teusink_data.*`](examples/sbtab): Data related to the Teusink model
@@ -40,7 +40,7 @@
 4. [Merging and cutting datasets](http://sandbox.karrlab.org/notebooks/obj_tables/4.%20Merging%20and%20cutting%20datasets.ipynb)
 5. [Revisioning and migrating datasets](http://sandbox.karrlab.org/notebooks/obj_tables/5.%20Revisioning%20and%20migrating%20datasets.ipynb)
 
-## Example code for decoding a JSON-formatted ObjTables dataset to a collection of linked computational objects, or object graph
+## Example code for decoding a JSON-formatted *ObjTables* dataset to a collection of linked computational objects, or object graph
 See [`decode_json_data.py`](examples/decode_json_data.py).
 
 ## Example instructions for deploying the REST API

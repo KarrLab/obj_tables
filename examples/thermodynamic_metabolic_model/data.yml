@@ -5579,5 +5579,6 @@ _classMetadata:
     format: row
     name: References
 _documentMetadata:
+  comment: 'Data obtained from Gerosa et al., Cell Systems, 2015, DOI: 10.1016/j.cels.2015.09.008'
   date: '2020-06-02 16:01:35'
-  objTablesVersion: 1.0.0
+  objTablesVersion: 1.0.9

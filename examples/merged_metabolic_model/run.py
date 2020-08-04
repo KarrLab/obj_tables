@@ -49,7 +49,7 @@ def read_data():
 
 def plot_data(data_filename=DATA_FILENAME, plot_filename=PLOT_FILENAME):
     data = wc_utils.workbook.io.read(data_filename)['!!Data']
-    data = data[1:]
+    data = data[3:]
 
     rxn_ids = []
     k_cats = []

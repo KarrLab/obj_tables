@@ -1,3 +1,3 @@
-!!ObjTables type='Data' tableFormat='row' class='Reference' name='References' date='2020-05-28 23:58:52' objTablesVersion='1.0.0' format='row',,,,,,
+!!ObjTables type='Data' tableFormat='row' class='Reference' name='References' date='2020-05-28 23:58:52' objTablesVersion='1.0.9' format='row',,,,,,
 !Id,!Title,!Authors,!Journal,!Volume,!Issue,!PubMed id
 Ref1,A genome-scale metabolic reconstruction for Escherichia coli K-12 MG1655 that accounts for 1260 ORFs and thermodynamic information.,"Feist AM, Henry CS, Reed JL, Krummenacker M, Joyce AR, Karp PD, Broadbelt LJ, Hatzimanikatis V, Palsson BØ.",Mol Syst Biol.,3.0,1.0,17593909.0

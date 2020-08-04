@@ -1,5 +1,5 @@
-!!!ObjTables objTablesVersion='1.0.0' date='2020-06-03 15:21:24'	
-!!ObjTables type='Data' tableFormat='row' class='Compartment' name='Compartments' date='2020-06-03 15:21:24' objTablesVersion='1.0.0'	
+!!!ObjTables objTablesVersion='1.0.9' date='2020-06-03 15:21:24' comment='Data obtained from Khodayari & Maranas, Nature Communications, 2016, DOI: 10.1038/ncomms13806'	
+!!ObjTables type='Data' tableFormat='row' class='Compartment' name='Compartments' date='2020-06-03 15:21:24' objTablesVersion='1.0.9'	
 !Id	!Name
 c	cytosol
 e	extracellular space

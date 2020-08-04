@@ -1,4 +1,4 @@
-!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reactions' date='2020-06-03 15:21:24' objTablesVersion='1.0.0'																						
+!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reactions' date='2020-06-03 15:21:24' objTablesVersion='1.0.9'																						
 !Id	!Id (iAF1260 [Ref1])	!Name	!Equation	!Reversible	!Subsystem	!EC number	!Gene rule	!Measured Km (mM) [Ref2, Ref3]	!Measured Km range (mM) [Ref2, Ref3]	!Estimated Km range (mM)	!Measured kcat (s^-1) [Ref2, Ref3]	!Minimum measured forward kcat (s^-1) [Ref2, Ref3]	!Maximum measured forward kcat (s^-1) [Ref2, Ref3]	!Minimum measured backward kcat (s^-1) [Ref2, Ref3]	!Maximum measured backward kcat (s^-1) [Ref2, Ref3]	!Minimum estimated forward kcat (s^-1)	!Maximum estimated forward kcat (s^-1)	!Minimum estimated backward kcat (s^-1)	!Maximum estimated backward kcat (s^-1)	!Measured kcat/Km (mM^-1 s^-1) [Ref2, Ref3]	!Measured Ki (mM) [Ref2, Ref3]	!Coupled to biomass
 2DDA7Ptpp_ex	2DDA7Ptpp_ex		2dda7p[e] <=> 2dda7p[c]	False				"
 "			"
@@ -3930,7 +3930,7 @@ OCBT	OCBT	ornithine carbamoyltransferase	[c]: cbp + orn <=> citr-L + h + pi	True
 7.0	2,4-diaminobutyrate	Escherichia coli		485898	2D-image
 15.0	glycine	Escherichia coli		485898	2D-image
 13.0	L-alanine	Escherichia coli		485898	2D-image
-110.0	L-asparagine	Escherichia coli		485898 	2D-image
+110.0	L-asparagine	Escherichia coli		485898	2D-image
 14.0	L-isoleucine	Escherichia coli		485898	2D-image
 5.5	L-leucine	Escherichia coli		485898	2D-image
 40.0	L-methionine	Escherichia coli		485898	2D-image

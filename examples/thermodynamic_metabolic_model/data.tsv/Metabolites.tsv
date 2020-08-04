@@ -1,4 +1,4 @@
-!!ObjTables type='Data' tableFormat='row' class='Metabolite' name='Metabolites' date='2020-06-02 16:01:35' objTablesVersion='1.0.0'		
+!!ObjTables type='Data' tableFormat='row' class='Metabolite' name='Metabolites' date='2020-06-02 16:01:35' objTablesVersion='1.0.9'		
 !Id	!Name	!Formula
 2ddg6p	2-dehydro-3-deoxy-D-gluconate 6-phosphate	C6H8O9P
 2pg	D-Glycerate 2-phosphate	C3H4O7P

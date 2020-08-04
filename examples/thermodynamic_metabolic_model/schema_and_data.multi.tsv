@@ -1,5 +1,5 @@
-!!!ObjTables objTablesVersion='1.0.0' date='2020-06-02 16:01:35'
-!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-06-02 16:01:35' objTablesVersion='1.0.0'		
+!!!ObjTables objTablesVersion='1.0.9' date='2020-06-02 16:01:35' comment='Data obtained from Gerosa et al., Cell Systems, 2015, DOI: 10.1016/j.cels.2015.09.008'
+!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-06-02 16:01:35' objTablesVersion='1.0.9'		
 !Table	!Description	!Number of objects
 Schema	Table/model and column/attribute definitions	
 Compartments		2
@@ -7,15 +7,17 @@ Metabolites		62
 Reactions		94
 References		1
 
-!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-06-02 16:01:35' objTablesVersion='1.0.0'						
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-06-02 16:01:35' objTablesVersion='1.0.9'						
 !Name	!Type	!Parent	!Format	!Verbose name	!Verbose name plural	!Description
 Compartment	Class		row	Compartment	Compartments	
 id	Attribute	Compartment	String(primary=True, unique=True)	Id		
 name	Attribute	Compartment	String	Name		
+						
 Metabolite	Class		row	Metabolite	Metabolites	
 formula	Attribute	Metabolite	chem.ChemicalFormula	Formula		
 id	Attribute	Metabolite	String(primary=True, unique=True)	Id		
 name	Attribute	Metabolite	String	Name		
+						
 Reaction	Class		row	Reaction	Reactions	
 delta_g_acetate	Attribute	Reaction	Float	ΔG (Acetate, kJ * mol^-1)		
 delta_g_acetate_uncertainty	Attribute	Reaction	Float	ΔG uncertainty (Acetate, kJ * mol^-1)		
@@ -58,6 +60,7 @@ name	Attribute	Reaction	String	Name
 reversible	Attribute	Reaction	Boolean	Reversible		
 subsystem	Attribute	Reaction	String	Subsystem		
 upper_bound	Attribute	Reaction	Float	Upper bound		
+						
 Reference	Class		row	Reference	References	
 authors	Attribute	Reference	LongString	Authors		
 end_page	Attribute	Reference	PositiveInteger	End page		
@@ -69,12 +72,12 @@ start_page	Attribute	Reference	PositiveInteger	Start page
 title	Attribute	Reference	LongString	Title		
 volume	Attribute	Reference	PositiveInteger	Volume		
 
-!!ObjTables type='Data' tableFormat='row' class='Compartment' name='Compartments' date='2020-06-02 16:01:35' objTablesVersion='1.0.0'	
+!!ObjTables type='Data' tableFormat='row' class='Compartment' name='Compartments' date='2020-06-02 16:01:35' objTablesVersion='1.0.9'	
 !Id	!Name
 c	cytosol
 e	extracellular space
 
-!!ObjTables type='Data' tableFormat='row' class='Metabolite' name='Metabolites' date='2020-06-02 16:01:35' objTablesVersion='1.0.0'		
+!!ObjTables type='Data' tableFormat='row' class='Metabolite' name='Metabolites' date='2020-06-02 16:01:35' objTablesVersion='1.0.9'		
 !Id	!Name	!Formula
 2ddg6p	2-dehydro-3-deoxy-D-gluconate 6-phosphate	C6H8O9P
 2pg	D-Glycerate 2-phosphate	C3H4O7P
@@ -139,7 +142,7 @@ succ	Succinate	C4H4O4
 succoa	Succinyl-CoA	C25H35N7O19P3S
 xu5p-D	D-Xylulose 5-phosphate	C5H9O8P
 
-!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reactions' date='2020-06-02 16:01:35' objTablesVersion='1.0.0'																																								
+!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reactions' date='2020-06-02 16:01:35' objTablesVersion='1.0.9'																																								
 !Id	!Id (iAF1260 [Ref1])	!Name	!Equation	!Reversible	!Subsystem	!EC number	!Lower bound	!Upper bound	!Flux (Acetate media, mmol * gCDW^-1 * h^-1)	!Flux uncertainty (Acetate media, mmol * gCDW^-1 * h^-1)	!Flux (Fructose media, mmol * gCDW^-1 * h^-1)	!Flux uncertainty (Fructose media, mmol * gCDW^-1 * h^-1)	!Flux (Galactose media, mmol * gCDW^-1 * h^-1)	!Flux uncertainty (Galactose media, mmol * gCDW^-1 * h^-1)	!Flux (Glucose media, mmol * gCDW^-1 * h^-1)	!Flux uncertainty (Glucose media, mmol * gCDW^-1 * h^-1)	!Flux (Glycerol media, mmol * gCDW^-1 * h^-1)	!Flux uncertainty (Glycerol media, mmol * gCDW^-1 * h^-1)	!Flux (Gluconate media, mmol * gCDW^-1 * h^-1)	!Flux uncertainty (Gluconate media, mmol * gCDW^-1 * h^-1)	!Flux (Pyruvate media, mmol * gCDW^-1 * h^-1)	!Flux uncertainty (Pyruvate media, mmol * gCDW^-1 * h^-1)	!Flux (Succinate media, mmol * gCDW^-1 * h^-1)	!Flux uncertainty (Succinate media, mmol * gCDW^-1 * h^-1)	!ΔG (Acetate, kJ * mol^-1)	!ΔG uncertainty (Acetate, kJ * mol^-1)	!ΔG (Fructose, kJ * mol^-1)	!ΔG uncertainty (Fructose, kJ * mol^-1)	!ΔG (Galactose, kJ * mol^-1)	!ΔG uncertainty (Galactose, kJ * mol^-1)	!ΔG (Glucose, kJ * mol^-1)	!ΔG uncertainty (Glucose, kJ * mol^-1)	!ΔG (Glycerol, kJ * mol^-1)	!ΔG uncertainty (Glycerol, kJ * mol^-1)	!ΔG (Gluconate, kJ * mol^-1)	!ΔG uncertainty (Gluconate, kJ * mol^-1)	!ΔG (Pyruvate, kJ * mol^-1)	!ΔG uncertainty (Pyruvate, kJ * mol^-1)	!ΔG (Succinate, kJ * mol^-1)	!ΔG uncertainty (Succinate, kJ * mol^-1)
 ACKr	ACKr	acetate kinase	[c]: actp + adp <=> ac + atp	False	Pyruvate Metabolism	2.7.2.1	0.0	1000.0																	-15.2590407588472	0.117068558170239	9.53451876934678	0.311060205085736	8.60571345873037	0.0731164403823461	-17.9896304132158	0.0571933812647855	-11.8766590894163	0.122850894266402	-11.943647706081	0.118141373385484	-16.526070814056	0.131053648537917	7.67022659453013	0.0912470517824459
 ACONT1	ACONTa	aconitase (half-reaction A, Citrate hydro-lyase)	[c]: cit <=> acon-C + h2o	True	Citric Acid Cycle	4.2.1.3	-1000.0	1000.0																	-4.16155467036351	0.118294327618054	-6.65878500330393	0.527628635806517	-4.35963158877948	0.101439001105049	-7.0756266415177	0.604901914760211	-5.80721511061705	0.527078764796306	-5.53068853611162	0.264379618845326	-4.00444068022967	0.241262459981149	-5.5794560928321	0.207054921541641
@@ -236,6 +239,6 @@ TPI	TPI	triose-phosphate isomerase	[c]: dhap <=> g3p	True	Glycolysis/Gluconeogen
 UGLT	UGLT	UDPglucose hexose 1 phosphate uridylyltransferase	[c]: gal1p <=> g1p	True	Galactose Metabolism	2.7.7.12	-1000.0	1000.0																	-11.769387574527	0.065662989449408	-7.58637878580811	0.700350895368495	-15.7294336239485	0.287503099464903	-9.98328937284028	0.485032171998667	-4.84074137098555	0.928157466464008	-11.334067492423	0.247049148510759	-10.4690099194444	0.476811243031349	-12.1113259653859	0.385001909637458
 ZWF	G6PDH2r	glucose 6-phosphate dehydrogenase	[c]: g6p + nadp <=> 6pgl + h + nadph	True	Pentose Phosphate Pathway	1.1.1.49	-1000.0	1000.0																	-28.5044198490619	0.858689373713735	-18.0076889687016	0.384507071653445	-18.8865782202716	0.593080552199621	-17.1632385665866	0.218334101399194	-15.412486178758	0.387536806175048	-16.5669361549544	0.64068359780903	-16.4360797487333	0.223551913642657	-21.445556758767	0.275482538582139
 
-!!ObjTables type='Data' tableFormat='row' class='Reference' name='References' date='2020-05-28 23:58:52' objTablesVersion='1.0.0' format='row'						
+!!ObjTables type='Data' tableFormat='row' class='Reference' name='References' date='2020-05-28 23:58:52' objTablesVersion='1.0.9' format='row'						
 !Id	!Title	!Authors	!Journal	!Volume	!Issue	!PubMed id
 Ref1	A genome-scale metabolic reconstruction for Escherichia coli K-12 MG1655 that accounts for 1260 ORFs and thermodynamic information.	Feist AM, Henry CS, Reed JL, Krummenacker M, Joyce AR, Karp PD, Broadbelt LJ, Hatzimanikatis V, Palsson BØ.	Mol Syst Biol.	3.0	1.0	17593909.0
