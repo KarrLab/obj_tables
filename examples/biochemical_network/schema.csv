@@ -8,7 +8,6 @@ Model,Attribute,Compound,"ManyToOne('Model', related_name='compounds')",
 Id,Attribute,Compound,Slug,Identifier
 Name,Attribute,Compound,String,Name
 Identifiers,Attribute,Compound,String,
-IsConstant,Attribute,Compound,Boolean,
 Reaction,Class,,row,Reaction
 Model,Attribute,Reaction,"ManyToOne('Model', related_name='reactions')",
 Id,Attribute,Reaction,Slug,Identifier

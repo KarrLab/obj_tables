@@ -48,8 +48,8 @@ class ExamplesTestCase(unittest.TestCase):
         import tutorial
         tutorial.run()
 
-    def test_biochemical_model_example(self):
-        dirname = 'examples/biochemical_model'
+    def test_biochemical_network_example(self):
+        dirname = 'examples/biochemical_network'
         schema_filename_xlsx = os.path.join(dirname, 'schema.xlsx')
         data_filename_xlsx = os.path.join(dirname, 'data.xlsx')
 
@@ -273,7 +273,7 @@ class ExamplesTestCase(unittest.TestCase):
     def test_other_examples(self):
         dirnames = [
             'examples/address_book',
-            'examples/biochemical_model',
+            'examples/biochemical_network',
             'examples/children_favorite_video_games',
             'examples/financial_transactions',
             'examples/genomics',

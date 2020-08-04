@@ -3,6 +3,7 @@
 ## Example datasets and schemas in CSV, JSON, TSV, XLSX, and YAML formats
 * Basic examples of simple datasets
   * [`address_book`](examples/address_book): Address book of several major technology companies, their CEOs, and their addresses.
+  * [`biochemical_network`](examples/biochemical_network): Small network of metabolites and chemical reactions.
   * [`children_favorite_video_games`](examples/children_favorite_video_games): Table of children and their favorite video games.
   * [`financial_transactions`](examples/financial_transactions): Table of financial transactions including the category and amount of each transaction.
   * [`genomics`](examples/genomics): Dataset of several human genes and their splice variants obtaned from [Ensembl](https://useast.ensembl.org/).

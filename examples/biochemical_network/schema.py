@@ -1,4 +1,4 @@
-# Schema automatically generated at 2020-05-29 00:18:53
+# Schema automatically generated at 2020-08-03 21:46:39
 
 import obj_tables
 
@@ -34,7 +34,6 @@ class Compound(obj_tables.Model):
     id = obj_tables.SlugAttribute(verbose_name='Id')
     name = obj_tables.StringAttribute(verbose_name='Name')
     identifiers = obj_tables.StringAttribute(verbose_name='Identifiers')
-    is_constant = obj_tables.BooleanAttribute(verbose_name='IsConstant')
 
     class Meta(obj_tables.Model.Meta):
         table_format = obj_tables.TableFormat.row
@@ -43,7 +42,6 @@ class Compound(obj_tables.Model):
             'id',
             'name',
             'identifiers',
-            'is_constant',
         )
         verbose_name = 'Compound'
         verbose_name_plural = 'Compound'

@@ -3,7 +3,6 @@ Compound:
   __type: Compound
   id: D_Fructose_6_phosphate
   identifiers: kegg.compound:C00085
-  is_constant: true
   model:
     __id: 5
     __type: Model
@@ -13,7 +12,6 @@ Compound:
   __type: Compound
   id: D_Glucose
   identifiers: kegg.compound:C00031
-  is_constant: true
   model:
     __id: 5
     __type: Model
@@ -23,7 +21,6 @@ Compound:
   __type: Compound
   id: D_Glucose_6_phosphate
   identifiers: kegg.compound:C00092
-  is_constant: true
   model:
     __id: 5
     __type: Model
@@ -33,7 +30,6 @@ Compound:
   __type: Compound
   id: Phosphoenolpyruvate
   identifiers: kegg.compound:C00074
-  is_constant: true
   model:
     __id: 5
     __type: Model
@@ -43,7 +39,6 @@ Compound:
   __type: Compound
   id: Pyruvate
   identifiers: kegg.compound:C00022
-  is_constant: true
   model:
     __id: 5
     __type: Model
@@ -116,5 +111,5 @@ _classMetadata:
     description: Reaction
     name: Reaction
 _documentMetadata:
-  date: '2020-05-29 00:18:54'
-  objTablesVersion: 1.0.0
+  date: '2020-07-07 21:29:38'
+  objTablesVersion: 1.0.9

@@ -1,22 +1,23 @@
-!!!ObjTables objTablesVersion='1.0.0' date='2020-05-29 00:18:54'
-!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-05-29 00:18:54' objTablesVersion='1.0.0',,
+!!!ObjTables objTablesVersion='1.0.9' date='2020-07-07 21:29:38'
+!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-07-07 21:29:38' objTablesVersion='1.0.9',,
 !Table,!Description,!Number of objects
 Schema,Table/model and column/attribute definitions,
 Compound,Compound,5
 Model,Model,1
 Reaction,Reaction,2
 
-!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-05-29 00:18:54' objTablesVersion='1.0.0',,,,,,
+!!ObjTables type='Schema' tableFormat='row' description='Table/model and column/attribute definitions' date='2020-07-07 21:29:38' objTablesVersion='1.0.9',,,,,,
 !Name,!Type,!Parent,!Format,!Verbose name,!Verbose name plural,!Description
 Compound,Class,,row,Compound,Compound,Compound
 id,Attribute,Compound,"Slug(r'^(?!(^|\b)(\d+(\.\d*)?(\b|$))|(\.\d+$)|(0[x][0-9a-f]+(\b|$))|([0-9]+e[0-9]+(\b|$)))[a-z0-9_]+$', flags=2, primary=True, unique=True)",Id,,Identifier
 identifiers,Attribute,Compound,String,Identifiers,,
-is_constant,Attribute,Compound,Boolean,IsConstant,,
 model,Attribute,Compound,"ManyToOne('Model', related_name='compounds')",Model,,
 name,Attribute,Compound,String,Name,,Name
+,,,,,,
 Model,Class,,column,Model,Model,Model
 id,Attribute,Model,"Slug(r'^(?!(^|\b)(\d+(\.\d*)?(\b|$))|(\.\d+$)|(0[x][0-9a-f]+(\b|$))|([0-9]+e[0-9]+(\b|$)))[a-z0-9_]+$', flags=2, primary=True, unique=True)",Id,,Identifier
 name,Attribute,Model,String,Name,,Name
+,,,,,,
 Reaction,Class,,row,Reaction,Reaction,Reaction
 equation,Attribute,Reaction,String,Equation,,
 gene,Attribute,Reaction,String,Gene,,
@@ -26,18 +27,18 @@ is_reversible,Attribute,Reaction,Boolean,IsReversible,,
 model,Attribute,Reaction,"ManyToOne('Model', related_name='reactions')",Model,,
 name,Attribute,Reaction,String,Name,,Name
 
-!!ObjTables type='Data' tableFormat='row' class='Compound' name='Compound' description='Compound' date='2020-03-10 22:56:34' objTablesVersion='1.0.0',,,,
-!Model,!Id,!Name,!Identifiers,!IsConstant
-e_coli,D_Fructose_6_phosphate,D-Fructose 6-phosphate,kegg.compound:C00085,True
-e_coli,D_Glucose,D-Glucose,kegg.compound:C00031,True
-e_coli,D_Glucose_6_phosphate,D-Glucose 6-phosphate,kegg.compound:C00092,True
-e_coli,Phosphoenolpyruvate,Phosphoenolpyruvate,kegg.compound:C00074,True
-e_coli,Pyruvate,Pyruvate,kegg.compound:C00022,True
+!!ObjTables type='Data' tableFormat='row' class='Compound' name='Compound' description='Compound' date='2020-03-10 22:56:34' objTablesVersion='1.0.9',,,
+!Model,!Id,!Name,!Identifiers
+e_coli,D_Fructose_6_phosphate,D-Fructose 6-phosphate,kegg.compound:C00085
+e_coli,D_Glucose,D-Glucose,kegg.compound:C00031
+e_coli,D_Glucose_6_phosphate,D-Glucose 6-phosphate,kegg.compound:C00092
+e_coli,Phosphoenolpyruvate,Phosphoenolpyruvate,kegg.compound:C00074
+e_coli,Pyruvate,Pyruvate,kegg.compound:C00022
 
-!!ObjTables type='Data' tableFormat='column' class='Model' name='Model' description='Model' date='2020-03-10 22:56:35' objTablesVersion='1.0.0',
+!!ObjTables type='Data' tableFormat='column' class='Model' name='Model' description='Model' date='2020-03-10 22:56:35' objTablesVersion='1.0.9',
 !Id,e_coli
 
-!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reaction' description='Reaction' date='2020-03-10 22:56:35' objTablesVersion='1.0.0',,,,,
+!!ObjTables type='Data' tableFormat='row' class='Reaction' name='Reaction' description='Reaction' date='2020-03-10 22:56:35' objTablesVersion='1.0.9',,,,,
 !Model,!Id,!Identifiers,!Equation,!IsReversible,!Gene
 e_coli,PGI_R02740,kegg.reaction:R02740,-1.0 D_Glucose_6_phosphate; 1.0 D_Fructose_6_phosphate,True,PGI
 e_coli,PTS_RPTSsy,kegg.reaction:RPTSsy,-1.0 D_Glucose; -1.0 Phosphoenolpyruvate; 1.0 Pyruvate; 1.0 D_Glucose_6_phosphate,True,PTS
