@@ -52,7 +52,7 @@
               <li><a href="guide#readers">Readers</a></li>
             </ul>
           </li>
-          <li class="accordion-item is-active" data-accordion-item>
+          <li class="accordion-item" data-accordion-item>
             <a class="accordion-title">Software</a>
             <ul class="accordion-content" data-tab-content>
               <li><a href="app">Web application</a></li>
@@ -88,21 +88,22 @@
               <li class="separator"><a href="docs#help">More help</a></li>
             </ul>
           </li>
-          <li class="accordion-item" data-accordion-item>
+          <li class="accordion-item is-active" data-accordion-item>
             <a class="accordion-title">About</a>
             <ul class="accordion-content" data-tab-content>
-              <li><a href="about#license">License</a></li>
-              <li><a href="about#citation">Citation</a></li>
-              <li class="separator"><a href="about#contribute">Contributing</a></li>
-              <li class="separator"><a href="about#team">Team</a></li>
-              <li><a href="about#funding">Funding</a></li>
-              <li class="separator"><a href="about#contact">Contact info</a></li>
+              <li><a href="#license">License</a></li>
+              <li><a href="#citation">Citation</a></li>
+              <li class="separator"><a href="#contribute">Contributing</a></li>
+              <li class="separator"><a href="#team">Team</a></li>
+              <li><a href="#funding">Funding</a></li>
+              <li class="separator"><a href="#contact">Contact info</a></li>
             </ul>
           </li>
         </ul>
       </div>
 
       <div class="off-canvas-content" data-off-canvas-content>
+
         <div class="page-title">
           <div class="grid-container">
             <div class="grid-x grid-padding-x">
@@ -125,7 +126,7 @@
                       <li><a href="guide#readers">Readers</a></li>
                     </ul>
                   </li>
-                  <li class="active-page">
+                  <li>
                     <a>Software</a>
                     <ul class="menu">
                       <li><a href="app">Web application</a></li>
@@ -161,15 +162,15 @@
                       <li class="separator"><a href="docs#help">More help</a></li>
                     </ul>
                   </li>
-                  <li>
+                  <li class="active-page">
                     <a>About</a>
                     <ul class="menu">
-                      <li><a href="about#license">License</a></li>
-                      <li><a href="about#citation">Citation</a></li>
-                      <li class="separator"><a href="about#contribute">Contributing</a></li>
-                      <li class="separator"><a href="about#team">Team</a></li>
-                      <li><a href="about#funding">Funding</a></li>
-                      <li class="separator"><a href="about#contact">Contact info</a></li>
+                      <li><a href="#license">License</a></li>
+                      <li><a href="#citation">Citation</a></li>
+                      <li class="separator"><a href="#contribute">Contributing</a></li>
+                      <li class="separator"><a href="#team">Team</a></li>
+                      <li><a href="#funding">Funding</a></li>
+                      <li class="separator"><a href="#contact">Contact info</a></li>
                     </ul>
                   </li>
                 </ul>
@@ -179,87 +180,89 @@
         </div>
 
         <div class="grid-container content">
-          <div class="grid-x grid-padding-x">
-            <div class="large-6 cell content-container">
-              <h2>Upload schema and dataset</h2>
-              <a id="form"></a>
-              <form>
-                <div class="input-label">
-                  <p><b>Select an operation</b></p>
-                  <select id="method" name="method">
-                    <option value="convert">Convert: convert a dataset to another format according to a schema</option>
-                    <option value="diff">Difference: compare the semantic meaning two datasets according to a schema</option>
-                    <option value="gen-template">Generate template: generate a template set of tables for a schema</option>
-                    <option value="init-schema">Initialize Python schema: generate a Python module that implements a tabular-formatted schema</option>
-                    <option value="normalize">Normalize: pretty format a dataset according to a schema</option>
-                    <option value="validate" selected>Validate: check that a dataset adheres to a schema and report any errors</option>
-                    <option value="viz-schema">Visualize: generate a UML diagram for a schema</option>
-                  </select>
+          <div class="grid-x grid-padding-x" data-sticky-container>
+            <div class="large-2 cell">
+              <div class="toc-container sticky" data-sticky data-margin-top="0">
+                <div class="toc">
+                  <h2>Contents</h2>
+                  <div class="section-content">
+                    <ul data-magellan>
+                      <li><a href="#data">Personal data that we collect</a></li>
+                      <li><a href="#collection">How we collect personal data</a></li>
+                      <li><a href="#usage">How we use personal data</a></li>
+                      <li><a href="#storage">How we store data</a></li>
+                      <li><a href="#time">How long we keep data</a></li>
+                      <li><a href="#access">Who has access to this data</a></li>
+                      <li><a href="#rights">Your rights regarding this data</a></li>
+                      <li><a href="#contact">Contact information</a></li>
+                    </ul>
+                  </div>
                 </div>
-
-                <div class="input-label">
-                  <p><b>Upload an <i>ObjTables</i> schema (.csv, .tsv, .xlsx)</b></p>
-                  <p>Example: <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/schema.xlsx">Address book schema</a></p>
-                  <p>If the .multi.csv, .multi.tsv, or .xslx file contains both a schema and dataset, select the file twice: once for its schema here and again for its dataset below. See the documentation <a href="docs#schema-formats"><i class="fi-link"></i></a> for information about the format for schemas.</p>
-                  <input type="file" id="schema" name="schema" accept=".csv,.tsv,.xlsx" />
-                </div>                
-
-                <div class="input-label" id="label_dataset">
-                  <p><b>Upload an <i>ObjTables</i>-formatted dataset (.multi.csv, .multi.tsv, .xlsx, .zip of .csv, .zip of .tsv)</b></p>
-                  <p>Example: <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/data.xlsx">Address book of technology companies and their CEOs</a></p>
-                  <p>If the .multi.csv, .multi.tsv, or .xslx file contains both a schema and dataset, select the file twice: once for its schema above and again for its dataset here. See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.</p>
-                  <input type="file" id="workbook" name="workbook" accept=".csv,.json,.tsv,.xlsx,.yml,.zip" />
-                </div>
-
-                <div class="input-label" id="label_dataset-2">
-                  <p><b>Upload a second <i>ObjTables</i>-formatted dataset (.multi.csv, .multi.tsv, .xlsx, .zip of .csv, .zip of .tsv)</b></p>
-                  <p>Example: <a href="https://github.com/KarrLab/obj_tables/raw/master/examples/address_book/data-9-digit-zip-codes.xlsx">Address book of technology companies and their CEOs with 9-digit rather than 5-digit zip codes</a></p>
-                  <p>See the documentation <a href="docs"><i class="fi-link"></i></a> for information about the format for datasets and examples.</p>
-                  <input type="file" id="workbook-2" name="workbook-2" accept=".csv,.json,.tsv,.xlsx,.yml,.zip" />
-                </div>
-
-                <div class="input-label" id="label_model">
-                  <p><b>Enter the name of a class/worksheet to difference or normalize</b></p>
-                  <p>Example for sample address book dataset: 'Company'</p>
-                  <input type="text" id="model" name="model" />
-                </div>
-
-                <div class="input-label" id="label_format">
-                  <p><b>Select an output format</b></p>
-                  <select id="format" name="format">
-                    <option value="json">JSON file</option>
-                    <option value="multi.csv">Single text file with multiple comma-separated tables</option>
-                    <option value="multi.tsv">Single text file with multiple tab-separated tables</option>
-                    <option value="xlsx" selected>XLSX workbook</option>
-                    <option value="yml">YAML file</option>
-                    <option value="csv">Zip archive of comma-separated files</option>
-                    <option value="tsv">Zip archive of tab-separated files</option>
-                  </select>
-                </div>
-
-                <div class="input-label" id="label_viz_format">
-                  <p><b>Select an output format</b></p>
-                  <select id="viz_format" name="viz_format">
-                    <!--
-                    <option value="gif">GIF</option>
-                    <option value="jpg">JPEG</option>
-                    -->
-                    <option value="pdf">PDF</option>
-                    <option value="png">PNG</option>
-                    <option value="svg" selected>SVG</option>
-                  </select>
-                </div>
-
-                <input id="submit" type="button" class="button" value="Submit"/>
-              </form>
+              </div>
             </div>
 
-            <div class="large-6 cell content-container">
-              <h2>Results</h2>
-              <div>
-                <textarea id="errors" name="errors" style="height: 225px; margin-top: 1.25rem;" disabled>
-                </textarea>
-                <div class="loader" style="position: relative; top: -225px; display: none;"></div>
+            <div class="large-10 cell content-container">
+              <div id="introduction">
+                <h2>Privacy Policy</h2>
+                <div class="section-content">
+                  This privacy policy explains the personal data that we collect from you and how we store and use this data. This policy was last updated on August 5, 2020.
+                </div>
+              </div>
+
+              <div id="data" data-magellan-target="data">
+                <h2>Personal data that we collect</h2>
+                <div class="section-content">
+                  We collect standard information about user behavior such as the IP addresses, operating systems, and browsers used to access our website and the dates and times that users visit our website.
+                </div>
+              </div>
+
+              <div id="collection" data-magellan-target="collection">
+                <h2>How we collect personal data</h2>
+                <div class="section-content">
+                  We use Google Analytics to collect standard information about user behavior. Google Analytics uses cookies.
+                </div>
+              </div>
+
+              <div id="usage" data-magellan-target="usage">
+                <h2>How we use personal data</h2>
+                <div class="section-content">
+                  We use personal data to help improve the functionality of <i>ObjTables</i> for the scientific community. This includes helping us better understand the needs of users.
+                </div>
+              </div>
+
+              <div id="storage" data-magellan-target="storage">
+                <h2>How we store personal data</h2>
+                <div class="section-content">
+                  We use Google Analytics to store personal data. Personal data will not be transferred to international organisations.
+                </div>
+              </div>
+
+              <div id="time" data-magellan-target="time">
+                <h2>How long we keep personal data</h2>
+                <div class="section-content">
+                  This personal data will be stored as long as <i>ObjTables</i> is live.
+                </div>
+              </div>
+
+              <div id="access" data-magellan-target="access">
+                <h2>Who has access to this personal data</h2>
+                <div class="section-content">
+                  This personal data is only accessible to the leader developers.
+                </div>
+              </div>
+
+              <div id="rights" data-magellan-target="rights">
+                <h2>Your rights regarding your personal data</h2>
+                <div class="section-content">
+                  You have the right to request at reasonable intervals and without excessive delay or expense, information about the personal data processed about you.
+                </div>
+              </div>
+
+              <div id="contact" data-magellan-target="contact">
+                <h2>How to contact us</h2>
+                <div class="section-content">
+                  If you have any questions about this policy, please contact us <a href="mailto:info@objtables.org"><i class="fi-mail"></i></a>.
+                </div>
               </div>
             </div>
           </div>
