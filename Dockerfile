@@ -21,7 +21,7 @@
 #            key = <key>
 #
 # 8. Pull the Ubuntu image via `docker pull ubuntu:latest`
-# 9. Build with `docker build -f Dockerfile Dockerfile_assets --tag karrlab/obj_tables:latest`
+# 9. Build with `docker build -f Dockerfile Dockerfile_assets --tag karrlab/obj_tables:latest`7
 
 # Start from Ubuntu (e.g., focal - 20.04)
 FROM ubuntu:latest
@@ -153,6 +153,10 @@ ENV JAVA_HOME=/usr/lib/jvm/default-java \
 
 # Install ObjTables
 RUN pip3 install obj_tables[grammar,math,sci,chem,bio,revisioning,viz,web]
+
+# Set entry point
+ENTRYPOINT ["obj-tables"]
+CMD []
 
 # Test ObjTables
 ARG test=1

@@ -59,7 +59,7 @@
               <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
               <li><a href="api">Web service</a></li>
               <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
-              <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
+              <li class="separator"><a href="https://hub.docker.com/r/karrlab/obj_tables">Docker image</a></li>
               <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
             </ul>
           </li>
@@ -133,7 +133,7 @@
                       <li><a href="https://pypi.org/pypi/obj_tables/">Command-line program</a></li>
                       <li><a href="api">Web service</a></li>
                       <li><a href="https://pypi.org/pypi/obj_tables/">Python package</a></li>
-                      <li class="separator"><a href="https://github.com/KarrLab/obj_tables/blob/master/Dockerfile">Docker image</a></li>
+                      <li class="separator"><a href="https://hub.docker.com/r/karrlab/obj_tables">Docker image</a></li>
                       <li><a href="https://github.com/KarrLab/obj_tables/">Source code</a></li>
                     </ul>
                   </li>
@@ -226,12 +226,12 @@
                         <li>Set the first six columns of the third row equal to <span class="monospace">!Name</span>, <span class="monospace">!Type</span>, <span class="monospace">!Parent</span>, <span class="monospace">!Format</span>, <span class="monospace">!Verbose name</span>, and <span class="monospace">!Verbose name plural</span>.</li>
                         <li>Add a row for each distinct type of object:
                           <ul>
-                            <li>The first cell should declare the name of the type.</li>
+                            <li>The first cell should declare the name of the type. This should be equal to the value of the <span class="monospace">class</span> attribute of the corresponding worksheet.</li>
                             <li>The second cell should be equal to <span class="monospace">Class</span>.</li>
                             <li>The third cell should be empty.</li>
-                            <li>The fourth cell should be equal to <span class="monospace">row</span>.</li>
-                            <li>The sixth cell should be the name of title of the corresponding worksheet, which should be plural.</li>
+                            <li>The fourth cell should be equal to <span class="monospace">row</span>.</li>                            
                             <li>The fifth cell should be the singular form of the title.</li>
+                            <li>The sixth cell should be the name of title of the corresponding worksheet, which should be plural.</li>
                           </ul>
                         </li>
                         <li>Add a row for each attribute of each object:

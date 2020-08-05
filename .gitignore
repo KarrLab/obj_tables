@@ -41,4 +41,5 @@ tests/fixtures/migrate/tmp/
 .sshpassword
 
 # Dockerfile assets
-Dockerfile_assets
+Private_Dockerfile_assets
+Public_Dockerfile
