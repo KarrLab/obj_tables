@@ -417,7 +417,13 @@ class WorkbookWriter(WriterBase):
         # check that models are serializble
         for cls in grouped_objects.keys():
             if not cls.is_serializable():
-                raise ValueError('Class {}.{} cannot be serialized'.format(cls.__module__, cls.__name__))
+                module = cls.__module__ + '.'
+                if module.startswith('schema_'):
+                    module = ''
+                raise ValueError(('Class {}{} cannot be serialized. '
+                                  'Check that each of the related classes has a primary attribute and '
+                                  'that the values of this attribute must be unique.'
+                                  ).format(module, cls.__name__))
 
         # get neglected models
         unordered_models = natsorted(set(grouped_objects.keys()).difference(set(models)),
@@ -1467,7 +1473,13 @@ class WorkbookReader(ReaderBase):
         # check that models are serializable
         for model in models:
             if not model.is_serializable():
-                raise ValueError('Class {}.{} cannot be serialized'.format(model.__module__, model.__name__))
+                module = model.__module__ + '.'
+                if module.startswith('schema_'):
+                    module = ''
+                raise ValueError(('Class {}{} cannot be serialized. '
+                                  'Check that each of the related classes has a primary attribute and '
+                                  'that the values of this attribute must be unique.'
+                                  ).format(module, model.__name__))
 
         # read objects
         attributes = {}
