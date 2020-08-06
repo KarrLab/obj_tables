@@ -5027,6 +5027,22 @@ class UrlAttribute(RegexAttribute):
                                            verbose_name=verbose_name, description=description,
                                            primary=primary, unique=unique)
 
+    def validate(self, obj, value):
+        """ Determine if :obj:`value` is a valid value of the attribute
+
+        Args:
+            obj (:obj:`Model`): object being validated
+            value (:obj:`object`): value of attribute to validate
+
+        Returns:
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
+        """
+        errors = super(UrlAttribute, self).validate(obj, value)
+        if errors and errors.messages and 'does not match pattern' in errors.messages[-1]:
+            errors.messages[-1] = "Value '{}' is not a valid URL".format(value)
+        return errors
+
     def _get_tabular_schema_format(self):
         """ Generate a string which represents the format of the attribute for use
         in tabular-formatted schemas
