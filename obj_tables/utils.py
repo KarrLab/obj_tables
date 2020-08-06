@@ -10,12 +10,13 @@
 from datetime import datetime
 from itertools import chain
 from natsort import natsorted, ns
-from pathlib import Path
-from random import shuffle
 from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute,  # noqa: F401
                              OneToOneAttribute, OneToManyAttribute, ManyToOneAttribute, ManyToManyAttribute,
                              InvalidObjectSet, Validator, TableFormat,
                              SCHEMA_TABLE_TYPE, SCHEMA_SHEET_NAME)
+from pathlib import Path
+from random import shuffle
+from wc_utils.util.list import det_dedupe
 import collections
 import importlib
 import inflect
@@ -524,7 +525,8 @@ def init_schema(filename, out_filename=None):
         raise ValueError('Schema has unrecognized columns:\n  {}'.format('\n  '.join(natsorted(extra_headers, alg=ns.IGNORECASE))))
 
     cls_specs = {}
-    model_names = []
+    explicit_model_names = []
+    implicit_model_names = []
     for i_row, row_list in enumerate(rows):
         # ignore empty rows
         if all(cell in [None, ''] for cell in row_list):
@@ -586,7 +588,7 @@ def init_schema(filename, out_filename=None):
 
             cls['desc'] = row.get(desc_col_name, None) or None
 
-            model_names.append(cls_name)
+            explicit_model_names.append(cls_name)
 
         elif row[type_col_name] == attr_type:
             cls_name = row[parent_col_name]
@@ -612,6 +614,7 @@ def init_schema(filename, out_filename=None):
                     'verbose_name_plural': cls_name,
                     'desc': None,
                 }
+                implicit_model_names.append(cls_name)
 
             attr_name = row[name_col_name]
             if not attr_name:
@@ -674,8 +677,8 @@ def init_schema(filename, out_filename=None):
     while classes_to_construct:
         cls_name = classes_to_construct.pop()
         cls_spec = cls_specs[cls_name]
-        if not cls_spec['explictly_defined']:
-            raise ValueError('Class "{}" is not defined in the schema'.format(cls_name))
+        # if not cls_spec['explictly_defined']:
+        #     raise ValueError('Class "{}" is not defined in the schema'.format(cls_name))
 
         classes_to_construct.extend(sub_classes.get(cls_name, []))
 
@@ -791,6 +794,7 @@ def init_schema(filename, out_filename=None):
                     file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\\'")))
 
     # get models in order of their definition
+    model_names = det_dedupe(explicit_model_names + implicit_model_names)
     models = [getattr(module, model_name) for model_name in model_names]
 
     # return the created module and its name
