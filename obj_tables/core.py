@@ -6880,7 +6880,6 @@ class ToManyAttribute(RelatedAttribute):
                     else:
                         attr_val, error = attr.deserialize(row.get(attr.verbose_name, None))
                     if error:
-                        print(attr.name, attr.__class__.__name__, row.get(attr.verbose_name, None), row)
                         return (None, InvalidAttribute(self, ['Unable to deserialize value: {}'.format(str(error))]))
                     setattr(deserialized_value, attr.name, attr_val)
 
