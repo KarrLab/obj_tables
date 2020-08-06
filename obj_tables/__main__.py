@@ -14,6 +14,7 @@ import copy
 import obj_tables
 import os
 import os.path
+import sys
 import types  # noqa: F401
 
 DEFAULT_WRITER_ARGS = {
@@ -313,7 +314,13 @@ def main():
             if os.getenv('DEBUG', '0').lower() in ['1', 'true']:
                 raise exception
             else:
-                raise SystemExit(str(exception))
+                if isinstance(exception, ValueError):
+                    raise SystemExit(str(exception))
+                else:
+                    _, _, traceback = sys.exc_info()
+                    raise SystemExit('ObjTables encountered an unexpected error: {}: {} at {}:{}'.format(
+                        exception.__class__.__name__, str(exception),
+                        traceback.tb_frame.f_code.co_filename, traceback.tb_frame.f_code.co_firstlineno))
 
 
 def get_schema_models(filename):

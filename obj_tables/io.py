@@ -2236,6 +2236,7 @@ class MultiSeparatedValuesReader(ReaderBase):
 
         i_sheet = 0
         i_sheet_start = 0
+        i_sheet_class = {}
         last_sheet_metadata = None
 
         data = reader.read_worksheet('')
@@ -2247,6 +2248,7 @@ class MultiSeparatedValuesReader(ReaderBase):
                     data[0][0])
                 data.remove(data[0])
 
+        sheet_class = None
         sheet_id = None
         for i_row, row in enumerate(data):
             if row and isinstance(row[0], str):
@@ -2255,11 +2257,15 @@ class MultiSeparatedValuesReader(ReaderBase):
                     if i_sheet > 0:
                         self._write_model(data[i_sheet_start:i_row],
                                           last_sheet_metadata, tmp_dirname, sheet_id, ext)
+                    last_sheet_metadata = WorkbookReader.parse_worksheet_heading_metadata(
+                        row[0], sheet_name=str(i_sheet + 1))
+                    sheet_class = last_sheet_metadata.get('type', '') + '-' + last_sheet_metadata.get('class', '')
+                    if sheet_class not in i_sheet_class:
+                        i_sheet_class[sheet_class] = 0
+                    sheet_id = str(i_sheet_class[sheet_class] + 1)
+                    i_sheet_class[sheet_class] += 1
                     i_sheet += 1
                     i_sheet_start = i_row
-                    sheet_id = str(i_sheet + 1)
-                    last_sheet_metadata = WorkbookReader.parse_worksheet_heading_metadata(
-                        row[0], sheet_name=sheet_id)
                     if last_sheet_metadata.get('id', None):
                         sheet_id = last_sheet_metadata['id']
 

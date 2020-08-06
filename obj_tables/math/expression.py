@@ -579,7 +579,7 @@ class Expression(object):
                 self._parsed_expression.related_objects[cls][obj_id] = other_objs_in_self.get(other_obj, other_obj)
 
 
-class ParsedExpressionError(Exception):
+class ParsedExpressionError(ValueError):
     """ Exception raised for errors in :obj:`ParsedExpression`
 
     Attributes:
