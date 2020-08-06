@@ -12,6 +12,7 @@ from . import utils
 import cement
 import copy
 import obj_tables
+import os
 import os.path
 import types  # noqa: F401
 
@@ -304,8 +305,15 @@ class App(cement.App):
 
 def main():
     with App() as app:
-        app.run()
-
+        try:
+            app.run()
+        except SystemExit as exception:
+            raise exception
+        except Exception as exception:
+            if os.getenv('DEBUG', '0').lower() in ['1', 'true']:
+                raise exception
+            else:
+                raise SystemExit(str(exception))
 
 def get_schema_models(filename):
     """ Get a Python schema and its models
