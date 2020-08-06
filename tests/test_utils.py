@@ -485,7 +485,7 @@ class InitSchemaTestCase(unittest.TestCase):
         wb['!!' + core.SCHEMA_SHEET_NAME][0][0] = wb['!!' + core.SCHEMA_SHEET_NAME][0][0].replace(
             "type='{}'".format(core.SCHEMA_TABLE_TYPE), "id='{}'".format('my' + core.SCHEMA_TABLE_TYPE))
         wc_utils.workbook.io.write(schema_xl_2, wb)
-        with self.assertRaisesRegex(ValueError, 'Type must be'):
+        with self.assertRaisesRegex(ValueError, 'type of the schema must be'):
             utils.init_schema(schema_xl_2,
                               out_filename=out_filename)
 

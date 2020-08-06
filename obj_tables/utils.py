@@ -9,6 +9,7 @@
 
 from datetime import datetime
 from itertools import chain
+from natsort import natsorted, ns
 from pathlib import Path
 from random import shuffle
 from obj_tables.core import (Model, Attribute, StringAttribute, RelatedAttribute,  # noqa: F401
@@ -468,7 +469,7 @@ def init_schema(filename, out_filename=None):
 
     wb = wc_utils.workbook.io.read(filename)
     if sheet_name not in wb:
-        raise ValueError('File must contain a sheet with name "{}".'.format(
+        raise ValueError('Schema file must contain a sheet with name "{}".'.format(
             sheet_name))
     ws = wb[sheet_name]
 
@@ -479,6 +480,16 @@ def init_schema(filename, out_filename=None):
     verbose_name_col_name = '!Verbose name'
     verbose_name_plural_col_name = '!Verbose name plural'
     desc_col_name = '!Description'
+
+    col_names = [
+        name_col_name,
+        type_col_name,
+        parent_col_name,
+        format_col_name,
+        verbose_name_col_name,
+        verbose_name_plural_col_name,
+        desc_col_name,
+    ]
 
     class_type = 'Class'
     attr_type = 'Attribute'
@@ -494,15 +505,27 @@ def init_schema(filename, out_filename=None):
     module_name = schema_name or rand_schema_name()
 
     if model_metadata.get('type', None) != SCHEMA_TABLE_TYPE:
-        raise ValueError("Type must be '{}'.".format(SCHEMA_TABLE_TYPE))
+        raise ValueError("The type of the schema must be '{}'.".format(SCHEMA_TABLE_TYPE))
 
     # parse model specifications
     header_row = rows[0]
     rows = rows[1:]
 
+    if name_col_name not in header_row:
+        raise ValueError('Schema must have column "{}"'.format(name_col_name))
+    if type_col_name not in header_row:
+        raise ValueError('Schema must have column "{}"'.format(type_col_name))
+    if parent_col_name not in header_row:
+        raise ValueError('Schema must have column "{}"'.format(parent_col_name))
+    if format_col_name not in header_row:
+        raise ValueError('Schema must have column "{}"'.format(format_col_name))
+    extra_headers = set(header_row) - set(col_names)
+    if extra_headers:
+        raise ValueError('Schema has unrecognized columns:\n  {}'.format('\n  '.join(natsorted(extra_headers, alg=ns.IGNORECASE))))
+
     cls_specs = {}
     model_names = []
-    for row_list in rows:
+    for i_row, row_list in enumerate(rows):
         # ignore empty rows
         if all(cell in [None, ''] for cell in row_list):
             continue
@@ -511,16 +534,29 @@ def init_schema(filename, out_filename=None):
         if len(row_list) == 1 and isinstance(row_list[0], str) and row_list[0].startswith('%/') and row_list[0].endswith('/%'):
             continue
 
+        # convert cells to strings
+        for i_cell, cell in enumerate(row_list):
+            if cell is not None and not isinstance(cell, str):
+                row_list[i_cell] = str(cell)
+
         row = {}
         for header, cell in zip(header_row, row_list):
             row[header] = cell
 
         if row[type_col_name] == class_type:
             cls_name = row[name_col_name]
+            if not cls_name:
+                raise ValueError('Class at row {} of the schema must have a name'.format(i_row + 1))
+            if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', cls_name):
+                raise ValueError(("Invalid class name '{}' at row {} of the schema. "
+                                  "Class names must start with a letter or underscore, "
+                                  "and consist of letters, numbers, and underscores.").format(
+                    cls_name, i_row + 1))
+
             if cls_name in cls_specs:
                 cls = cls_specs[cls_name]
                 if cls['explictly_defined']:
-                    raise ValueError('Class "{}" can only be defined once.'.format(
+                    raise ValueError('Class "{}" can only be defined once in the schema.'.format(
                         cls_name))
                 cls['explictly_defined'] = True
             else:
@@ -531,15 +567,12 @@ def init_schema(filename, out_filename=None):
                     'attr_order': [],
                     'explictly_defined': True,
                 }
-                if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', cls_name):
-                    raise ValueError(("Invalid class name '{}'. "
-                                      "Class names must start with a letter or underscore, "
-                                      "and consist of letters, numbers, and underscores.").format(
-                        cls_name))
 
             if row[parent_col_name]:
                 cls['super_class'] = row[parent_col_name]
 
+            if (row[format_col_name] or 'row') not in TableFormat.__members__:
+                raise ValueError("Invalid class format '{}' at row {} of the schema".format(row[format_col_name], i_row + 1))
             cls['tab_format'] = TableFormat[row[format_col_name] or 'row']
 
             def_verbose_name = cls_name
@@ -557,6 +590,14 @@ def init_schema(filename, out_filename=None):
 
         elif row[type_col_name] == attr_type:
             cls_name = row[parent_col_name]
+            if not cls_name:
+                raise ValueError('Parent class of attribute at row {} must be defined'.format(i_row + 1))
+            if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', cls_name):
+                raise ValueError(("Parent class of attribute at row {} of the schema has an invalid name '{}'. "
+                                  "Class names must start with a letter or underscore, "
+                                  "and consist of letters, numbers, and underscores.").format(
+                    i_row + 1, cls_name))
+
             if cls_name in cls_specs:
                 cls = cls_specs[cls_name]
             else:
@@ -571,26 +612,24 @@ def init_schema(filename, out_filename=None):
                     'verbose_name_plural': cls_name,
                     'desc': None,
                 }
-                if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', cls_name):
-                    raise ValueError(("Invalid class name '{}'. "
-                                      "Class names must start with a letter or underscore, "
-                                      "and consist of letters, numbers, and underscores.").format(
-                        cls_name))
 
             attr_name = row[name_col_name]
-            if not re.match(r'^[a-zA-Z0-9_:>\.\- \[\]]+$', attr_name):
-                raise ValueError(("Invalid attribute name '{}'. "
+            if not attr_name:
+                raise ValueError('Attribute at row {} of the schema must have a name'.format(i_row + 1))
+            if not re.match(r'^[a-zA-Z_:>\.\- \[\]][a-zA-Z0-9_:>\.\- \[\]]*$', attr_name):
+                raise ValueError(("Invalid attribute name '{}' at row {} of the schema. "
                                   "Attribute names must consist of alphanumeric "
                                   "characters, underscores, colons, forward carets, "
-                                  "dots, dashes, square brackets, and spaces.").format(
-                    attr_name))
+                                  "dots, dashes, square brackets, and spaces and "
+                                  "begin with a non-numeric character.").format(
+                    attr_name, i_row + 1))
             attr_name = re.sub(r'[^a-zA-Z0-9_]', '_', attr_name)
             attr_name = stringcase.snakecase(attr_name)
             attr_name = re.sub(r'_+', '_', attr_name)
 
             if attr_name == 'Meta':
-                raise ValueError('"{}" cannot have attribute with name "Meta".'.format(
-                    cls_name))  # pragma: no cover # unreachable because snake case is all lowercase
+                raise ValueError('"{}" cannot have attribute with name "Meta" at row {} of the schema.'.format(
+                    cls_name, i_row + 1))  # pragma: no cover # unreachable because snake case is all lowercase
             if attr_name in cls['attrs']:
                 raise ValueError('Attribute "{}" of "{}" can only be defined once.'.format(
                     row[name_col_name], cls_name))
@@ -604,13 +643,19 @@ def init_schema(filename, out_filename=None):
             cls['attr_order'].append(attr_name)
 
         else:
-            raise ValueError('Type "{}" is not supported.'.format(row[type_col_name]))
+            if row[type_col_name]:
+                raise ValueError('Type "{}" is not supported at row {} of the schema.'.format(row[type_col_name], i_row + 1))
+            else:
+                raise ValueError('Type must be defined at row {} of the schema.'.format(row[type_col_name], i_row + 1))
 
     # check that the inheritance graph is valid (i.e. acyclic)
     inheritance_graph = networkx.DiGraph()
     sub_classes = {'obj_tables.Model': []}
     for cls_name, cls_spec in cls_specs.items():
         if cls_spec['super_class']:
+            if cls_spec['super_class'] not in cls_specs:
+                raise ValueError('Superclass "{}" for class "{}" must be defined'.format(cls_spec['super_class'], cls_name))
+
             inheritance_graph.add_edge(cls_spec['super_class'], cls_name)
             if cls_spec['super_class'] not in sub_classes:
                 sub_classes[cls_spec['super_class']] = []
@@ -619,7 +664,7 @@ def init_schema(filename, out_filename=None):
             inheritance_graph.add_edge('obj_tables.Model', cls_name)
             sub_classes['obj_tables.Model'].append(cls_name)
     if list(networkx.simple_cycles(inheritance_graph)):
-        raise ValueError('The model inheritance graph must be acyclic.')
+        raise ValueError('The schema inheritance graph must be acyclic.')
 
     # create classes
     module = type(module_name, (types.ModuleType, ), {})
@@ -630,7 +675,7 @@ def init_schema(filename, out_filename=None):
         cls_name = classes_to_construct.pop()
         cls_spec = cls_specs[cls_name]
         if not cls_spec['explictly_defined']:
-            raise ValueError('Class "{}" is not defined'.format(cls_name))
+            raise ValueError('Class "{}" is not defined in the schema'.format(cls_name))
 
         classes_to_construct.extend(sub_classes.get(cls_name, []))
 
@@ -652,7 +697,7 @@ def init_schema(filename, out_filename=None):
         for attr_spec in cls_spec['attrs'].values():
             attr_type_spec, _, args = attr_spec['type'].partition('(')
             if attr_type_spec not in all_attrs:
-                raise ValueError('Attribute "{}" is not defined'.format(attr_type_spec))
+                raise ValueError('Attribute "{}" is not defined in the schema'.format(attr_type_spec))
             attr_type = all_attrs[attr_type_spec]
             attr_spec['python_type'] = attr_type_spec + 'Attribute'
             if args:

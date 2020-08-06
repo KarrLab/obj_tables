@@ -1975,6 +1975,8 @@ class WorkbookReader(ReaderBase):
 
         assert len(doc_metadata_headings) <= 1, \
             'document metadata in sheet "{}" must consist of a list of key-value pairs.'.format(sheet_name)
+        assert len(model_metadata_headings) == 1 and model_metadata_headings[0].startswith('!!'), \
+            'Sheet "{}" must contain metadata consisting of a list of key-value pairs.'.format(sheet_name)
         assert len(model_metadata_headings) == 1, \
             'Model metadata in sheet "{}" must consist of a list of key-value pairs.'.format(sheet_name)
 
