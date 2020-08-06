@@ -949,6 +949,8 @@
                     <h3>Tabular format for schemas</h3>
                     <p>Tabular-formatted schemas should begin with a single header row, which indicates that the schema is encoded in <i>ObjTables</i> format (<span class="monospace">!!ObjTables type="Schema" ...</span>).</p>
 
+                    <p>Optionally, the header can use the <span class="monospace">name</span> attribute to define the name of the schema (e.g., <span class="monospace">!!ObjTables type="Schema" name="&lt;schema-name&gt;" ...</span>). If worksheets also define the schema that they belong to, <i>ObjTables</i> will check that these values are equal.</p>
+
                     <p class="before-list">After the header row, the schema should contain a table with the columns below that defines the classes/models/tables and their attributes/columns. Each row in the table should define a single class or attribute.</p>
 
                     <ul class="vertically-spaced-list">
@@ -988,6 +990,7 @@
                     <h3>Implementing schemas in Python using the Python package</h3>
                     <p>Schemas can also be implemented using the <i>ObjTables</i> Python package. The API enables developers to define schemas with a similar syntax to object-relational mapping tools such as Django <a href="https://docs.djangoproject.com/en/3.0/topics/db/models/"><i class="fi-link"></i></a>, Ruby on Rails <a href="https://guides.rubyonrails.org/active_record_basics.html"><i class="fi-link"></i></a>, and SQLAlchemy <a href="https://docs.sqlalchemy.org/en/14/orm/tutorial.html"><i class="fi-link"></i></a>.</p>
                     <ul class="vertically-spaced-list">
+                      <li>The name of the schema is given by the name of the Python module which encapsulates the schema. Typically, this the filename of the module.</li>
                       <li>Each class should be implemented as a subclass of <span class="monospace">obj_tables.Model</span>.</li>
                       <li>Each attribute of each class should be implemented as a class attribute whose value is an instance of a subclass of <span class="monospace">obj_tables.Attribute</span>. Numerous subclasses of <span class="monospace">obj_tables.Attribute</span>, which support a wide range of data types, are available. Please see below <a href="#data-types"><i class="fi-arrow-down"></i></a> and the Python documentation <a href="https://docs.karrlab.org/obj_tables/source/obj_tables.html"><i class="fi-link"></i></a> for more information, including the arguments of these classes.
                         <ul>
@@ -1675,7 +1678,7 @@
                     </p>
                     <ul class="vertically-spaced-list">
                       <li><span class="monospace">id</span>: Use this key to provide a unique identifier for the dataset.</li>
-                      <li><span class="monospace">schema</span>: Use this key to annotate the name of the schema of the dataset. If this key is set, <i>ObjTables</i> will check that its value matches the name of the schema used to interpret the dataset.</li>
+                      <li><span class="monospace">schema</span>: Use this key to annotate the name of the schema of the dataset. If this key is set, <i>ObjTables</i> will check that its value matches the name of the schema used to interpret the dataset. The name of tabular-formatted schemas can be declared using the <span class="monospace">name</span> meta attribute (e.g., <span class="monospace">!!ObjTables type="Schema" name="&lt;schema-name&gt;" ...</span>). The name of Python-defined schemas is the name of the module which implements the schema, which is typically the filename of the module.</li>
                       <li><span class="monospace">date</span>: Use this key to annotate the date that the dataset was created or updated.</li>
                       <li><span class="monospace">objTablesVersion</span>: Use this key to indicate the version of the <i>ObjTables</i> tabular format used to encode the dataset.</li>
                     </ul>
@@ -1687,7 +1690,7 @@
                     <p class="before-list">Optionally, table declarations can capture key-value pairs of class/table-level metadata. Each key and value should be a string. At a minimum, we recommend using the keys below. The <i>ObjTables</i> software automatically generates these keys when datasets are exported to files.</p>
                     <ul class="vertically-spaced-list">
                       <li><span class="monospace">document</span>: Use this key to annotate the id of the parent document.</li>
-                      <li><span class="monospace">schema</span>: Use this key to annotate the name of the schema of the table. If this key is set, <i>ObjTables</i> will check that its value matches the name of the schema used to interpret the table.</li>
+                      <li><span class="monospace">schema</span>: Use this key to annotate the name of the schema of the table. If this key is set, <i>ObjTables</i> will check that its value matches the name of the schema used to interpret the table. The name of tabular-formatted schemas can be declared using the <span class="monospace">name</span> meta attribute (e.g., <span class="monospace">!!ObjTables type="Schema" name="&lt;schema-name&gt;" ...</span>). The name of Python-defined schemas is the name of the module which implements the schema, which is typically the filename of the module.</li>
                       <li><span class="monospace">tableFormat</span>: Use this key to indicate the format (<span class="monospace">row</span>, <span class="monospace">column</span>, <span class="monospace">multiple_cells</span>, or <span class="monospace">cell</span>) used to encode the class into the table. See above <a href="#table-formats"><i class="fi-arrow-up"></i></a> for more information about these formats. If this key is set, <i>ObjTables</i> will check that its value matches the format for the class defined in the schema.</li>
                       <li><span class="monospace">name</span>: Use this key to briefly describe the class.</li>
                       <li><span class="monospace">description</span>: Use this key to capture an extended description of the class.</li>
