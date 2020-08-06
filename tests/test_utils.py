@@ -370,8 +370,9 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_get_models(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                      out_filename=out_filename)
+        schema, _, models = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
+                                              out_filename=out_filename)
+        self.assertEqual(set(models), set(utils.get_models(schema).values()))
         self.assertEqual(sorted(utils.get_models(schema).keys()),
                          ['Child', 'Parent', 'Quantity'])
 
@@ -386,8 +387,8 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_init_schema(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                      out_filename=out_filename)
+        schema, _, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
+                                         out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         c_0 = p_0.children.create(id='c_0')
@@ -436,8 +437,8 @@ class InitSchemaTestCase(unittest.TestCase):
         wc_utils.workbook.io.write(schema_xl, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema, _ = utils.init_schema(schema_xl,
-                                      out_filename=out_filename)
+        schema, _, _ = utils.init_schema(schema_xl,
+                                         out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
@@ -505,8 +506,8 @@ class InitSchemaTestCase(unittest.TestCase):
         wc_utils.workbook.io.write(schema_csv_wb, wb)
 
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema, _ = utils.init_schema(schema_csv_wb,
-                                      out_filename=out_filename)
+        schema, _, _ = utils.init_schema(schema_csv_wb,
+                                         out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
@@ -587,7 +588,7 @@ class InitSchemaTestCase(unittest.TestCase):
             file.write('{}\n'.format(','.join(col_headings)))
             file.write(''.join(rows))
 
-        schema, _ = utils.init_schema(csv_filename, out_filename=py_filename)
+        schema, _, _ = utils.init_schema(csv_filename, out_filename=py_filename)
         b31 = schema.ClsB31(id_b1='l1', id_b2='l2', id_b31='l3')
         self.assertEqual(b31.id_b1, 'l1')
         self.assertEqual(b31.id_b2, 'l2')
@@ -617,7 +618,7 @@ class InitSchemaTestCase(unittest.TestCase):
             for i_row in numpy.random.permutation(len(rows)):
                 file.write(rows[i_row])
 
-        schema, _ = utils.init_schema(csv_filename)
+        schema, _, _ = utils.init_schema(csv_filename)
         b31 = schema.ClsB31(id_b1='l1', id_b2='l2', id_b31='l3')
         self.assertEqual(b31.id_b1, 'l1')
         self.assertEqual(b31.id_b2, 'l2')
@@ -690,8 +691,8 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_extra_sheets(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                      out_filename=out_filename)
+        schema, _, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
+                                         out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         c_0 = p_0.children.create(id='c_0')
@@ -729,8 +730,8 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_extra_attributes(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                      out_filename=out_filename)
+        schema, _, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
+                                         out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         c_0 = p_0.children.create(id='c_0')
@@ -773,8 +774,8 @@ class InitSchemaTestCase(unittest.TestCase):
 
     def test_comments(self):
         out_filename = os.path.join(self.tmp_dirname, 'schema.py')
-        schema, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
-                                      out_filename=out_filename)
+        schema, _, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv',
+                                         out_filename=out_filename)
 
         p_0 = schema.Parent(id='p_0')
         p_0._comments = ['X', 'Y']
@@ -953,12 +954,12 @@ class VizSchemaTestCase(unittest.TestCase):
         shutil.rmtree(self.dirname)
 
     def test(self):
-        schema, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv')
+        schema, _, _ = utils.init_schema('tests/fixtures/declarative_schema/schema.csv')
         filename = os.path.join(self.dirname, 'test.svg')
         utils.viz_schema(schema, filename)
         self.assertTrue(os.path.isfile(filename))
 
-        schema, _ = utils.init_schema('tests/fixtures/declarative_schema/viz_schema.csv')
+        schema, _, _ = utils.init_schema('tests/fixtures/declarative_schema/viz_schema.csv')
         filename = os.path.join(self.dirname, 'test.svg')
         utils.viz_schema(schema, filename)
         self.assertTrue(os.path.isfile(filename))

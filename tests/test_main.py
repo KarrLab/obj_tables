@@ -135,24 +135,27 @@ class TestCli(unittest.TestCase):
         xl_file = os.path.join(self.tempdir, 'file.xlsx')
         with __main__.App(argv=['gen-template', csv_file, xl_file]) as app:
             app.run()
+        csv_schema, _, csv_models = utils.init_schema(csv_file)
 
         py_file = os.path.join(self.tempdir, 'schema.py')
         with __main__.App(argv=['init-schema', csv_file, py_file]) as app:
             app.run()
-        schema = utils.get_schema(py_file)
+        py_schema = utils.get_schema(py_file)
+        py_models = list(utils.get_models(py_schema).values())
+        self.assertEqual(set(model.__name__ for model in csv_models), set(model.__name__ for model in py_models))
 
         objs = io.WorkbookReader().run(xl_file,
-                                       models=list(utils.get_models(schema).values()))
+                                       models=csv_models)
         self.assertEqual(objs, {
-            schema.Parent: [],
-            schema.Child: [],
-            schema.Quantity: [],
+            csv_schema.Parent: [],
+            csv_schema.Child: [],
+            csv_schema.Quantity: [],
         })
 
         csv_file = os.path.join(self.tempdir, 'file-*.xlsx')
         with __main__.App(argv=['gen-template', py_file, csv_file]) as app:
             app.run()
-        objs = io.WorkbookReader().run(csv_file, models=list(utils.get_models(schema).values()),
+        objs = io.WorkbookReader().run(csv_file, models=py_models,
                                        group_objects_by_model=False)
         self.assertEqual(objs, None)
 
@@ -161,22 +164,24 @@ class TestCli(unittest.TestCase):
         py_file = os.path.join(self.tempdir, 'schema.py')
         with __main__.App(argv=['init-schema', csv_file, py_file]) as app:
             app.run()
-        schema = utils.get_schema(py_file)
-        models = list(utils.get_models(schema).values())
+        csv_schema, _, csv_models = utils.init_schema(csv_file)
+        py_schema = utils.get_schema(py_file)
+        py_models = list(utils.get_models(py_schema).values())
+        self.assertEqual(set(model.__name__ for model in csv_models), set(model.__name__ for model in py_models))
 
         xl_file_1 = os.path.join(self.tempdir, 'file1.xlsx')
-        p_0 = schema.Parent(id='p_0')
+        p_0 = csv_schema.Parent(id='p_0')
         p_0.children.create(id='c_0')
         p_0.children.create(id='c_1')
-        io.WorkbookWriter().run(xl_file_1, [p_0], models=models)
+        io.WorkbookWriter().run(xl_file_1, [p_0], models=csv_models)
 
         xl_file_2 = os.path.join(self.tempdir, 'file2.xlsx')
         with __main__.App(argv=['normalize', csv_file, 'Parent', xl_file_1, xl_file_2]) as app:
             app.run()
 
         p_0_b = io.WorkbookReader().run(xl_file_2,
-                                        models=models,
-                                        ignore_missing_attributes=True)[schema.Parent][0]
+                                        models=csv_models,
+                                        ignore_missing_attributes=True)[csv_schema.Parent][0]
         self.assertTrue(p_0_b.is_equal(p_0))
 
         with self.assertRaises(SystemExit):

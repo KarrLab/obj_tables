@@ -280,7 +280,7 @@ class VizSchemaController(cement.Controller):
     @cement.ex(hide=True)
     def _default(self):
         args = self.app.pargs
-        schema, _ = utils.init_schema(args.schema_file)
+        _, schema, _ = get_schema_models(args.schema_file)
         utils.viz_schema(schema, args.img_file)
         print('UML diagram saved to {}'.format(args.img_file))
 
@@ -324,7 +324,7 @@ def get_schema_models(filename):
     if ext == '.py':
         schema = utils.get_schema(filename)
         schema_name = schema.__name__
+        models = list(utils.get_models(schema).values())
     else:
-        schema, schema_name = utils.init_schema(filename)
-    models = list(utils.get_models(schema).values())
+        schema, schema_name, models = utils.init_schema(filename)
     return (schema_name, schema, models)

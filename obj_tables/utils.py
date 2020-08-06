@@ -501,6 +501,7 @@ def init_schema(filename, out_filename=None):
     rows = rows[1:]
 
     cls_specs = {}
+    model_names = []
     for row_list in rows:
         # ignore empty rows
         if all(cell in [None, ''] for cell in row_list):
@@ -551,6 +552,8 @@ def init_schema(filename, out_filename=None):
             cls['verbose_name_plural'] = row.get(verbose_name_plural_col_name, def_plural_verbose_name) or def_plural_verbose_name
 
             cls['desc'] = row.get(desc_col_name, None) or None
+
+            model_names.append(cls_name)
 
         elif row[type_col_name] == attr_type:
             cls_name = row[parent_col_name]
@@ -626,6 +629,9 @@ def init_schema(filename, out_filename=None):
     while classes_to_construct:
         cls_name = classes_to_construct.pop()
         cls_spec = cls_specs[cls_name]
+        if not cls_spec['explictly_defined']:
+            raise ValueError('Class "{}" is not defined'.format(cls_name))
+
         classes_to_construct.extend(sub_classes.get(cls_name, []))
 
         meta_attrs = {
@@ -739,8 +745,11 @@ def init_schema(filename, out_filename=None):
                 if cls_spec['desc']:
                     file.write("        description = '{}'\n".format(cls_spec['desc'].replace("'", "\\'")))
 
+    # get models in order of their definition
+    models = [getattr(module, model_name) for model_name in model_names]
+
     # return the created module and its name
-    return (module, schema_name)
+    return (module, schema_name, models)
 
 
 def to_pandas(objs, models=None, get_related=True,

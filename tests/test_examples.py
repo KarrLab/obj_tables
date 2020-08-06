@@ -119,8 +119,8 @@ class ExamplesTestCase(unittest.TestCase):
             'layout_model.multi.tsv',
         ]
 
-        schema, _ = utils.init_schema(schema_filename)
-        models = list(utils.get_models(schema).values())
+        schema, _, models = utils.init_schema(schema_filename)
+        self.assertEqual(set(models), set(utils.get_models(schema).values()))
 
         for data_filename in data_filenames:
             full_data_filename = os.path.join(dirname, data_filename)
@@ -155,7 +155,7 @@ class ExamplesTestCase(unittest.TestCase):
                     app.run()
 
                 convert_filename = data_filename \
-                    .replace('.multi.tsv', '.tsv/*.tsv')                
+                    .replace('.multi.tsv', '.tsv/*.tsv')
                 full_convert_filename = os.path.join('examples', 'sbtab', convert_filename)
                 if not os.path.isdir(os.path.dirname(full_convert_filename)):
                     os.mkdir(os.path.dirname(full_convert_filename))
