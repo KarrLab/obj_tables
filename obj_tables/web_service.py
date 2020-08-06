@@ -493,7 +493,7 @@ class VizSchema(flask_restplus.Resource):
         schema_dir, schema_filename = save_schema(args['schema'])
 
         try:
-            schema, _ = utils.init_schema(schema_filename)
+            _, schema, _ = get_schema_models(schema_filename)
         except Exception as err:
             flask_restplus.abort(400, str(err))
         finally:
