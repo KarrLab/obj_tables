@@ -16,8 +16,6 @@ import copy
 import flask
 import flask_cors
 import flask_restplus
-import flask_restplus.errors
-import flask_restplus.fields
 import flask_restplus.inputs
 import glob
 import obj_tables
