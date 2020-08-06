@@ -315,6 +315,7 @@ def main():
             else:
                 raise SystemExit(str(exception))
 
+
 def get_schema_models(filename):
     """ Get a Python schema and its models
 
