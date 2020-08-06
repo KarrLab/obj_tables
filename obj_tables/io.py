@@ -2233,6 +2233,7 @@ class MultiSeparatedValuesReader(ReaderBase):
                     data[0][0])
                 data.remove(data[0])
 
+        sheet_id = None
         for i_row, row in enumerate(data):
             if row and isinstance(row[0], str):
                 match = re.match(WorkbookReader.MODEL_METADATA_PATTERN, row[0])

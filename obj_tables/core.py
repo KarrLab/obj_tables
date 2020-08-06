@@ -294,7 +294,8 @@ class ModelMeta(type):
         """ Check the related attributes
 
         Raises:
-            :obj:`ValueError`: if an :obj:`OneToManyAttribute` or :obj:`ManyToOneAttribute` has a :obj:`related_name` equal to its :obj:`name`
+            :obj:`ValueError`: if an :obj:`OneToManyAttribute` or :obj:`ManyToOneAttribute` has a :obj:`related_name`
+                equal to its :obj:`name`
         """
         for attr_name, attr in namespace.items():
             if isinstance(attr, (OneToManyAttribute, ManyToOneAttribute)) and attr.related_name == attr_name:
@@ -3236,7 +3237,7 @@ class Attribute(object, metaclass=abc.ABCMeta):
 
         Returns:
            :obj:`InvalidAttribute` or None: None if values are unique, otherwise return a list of
-            errors as an instance of :obj:`InvalidAttribute`
+                errors as an instance of :obj:`InvalidAttribute`
         """
         unq_vals = set()
         rep_vals = set()
@@ -3657,7 +3658,8 @@ class EnumAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         if value is None:
             if not self.none:
@@ -3852,7 +3854,8 @@ class BooleanAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         if value is not None and not isinstance(value, bool):
             return InvalidAttribute(self, ['Value must be an instance of `bool` or `None`'])
@@ -3989,7 +3992,8 @@ class FloatAttribute(NumericAttribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -4132,7 +4136,8 @@ class PositiveFloatAttribute(FloatAttribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
 
         error = super(PositiveFloatAttribute, self).validate(obj, value)
@@ -4438,7 +4443,8 @@ class PositiveIntegerAttribute(IntegerAttribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
 
         error = super(PositiveIntegerAttribute, self).validate(obj, value)
@@ -4579,7 +4585,8 @@ class StringAttribute(LiteralAttribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -4764,7 +4771,8 @@ class RegexAttribute(StringAttribute):
             value (:obj:`object`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = super(RegexAttribute, self).validate(obj, value)
         if errors:
@@ -4887,7 +4895,8 @@ class LocalPathAttribute(LongStringAttribute):
             value (:obj:`pathlib.Path`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         value_str = None if value is None else str(value)
         error = super(LocalPathAttribute, self).validate(obj, value_str)
@@ -5058,7 +5067,8 @@ class EmailAttribute(StringAttribute):
             value (:obj:`date`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         error = super(EmailAttribute, self).validate(obj, value)
         if error:
@@ -5162,7 +5172,8 @@ class DateAttribute(LiteralAttribute):
             value (:obj:`date`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -5344,7 +5355,8 @@ class TimeAttribute(LiteralAttribute):
             value (:obj:`time`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -6686,7 +6698,8 @@ class RelatedAttribute(BaseRelatedAttribute, Attribute):
             value (:obj:`list`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         pass  # pragma: no cover
 
@@ -7021,7 +7034,8 @@ class OneToOneAttribute(RelatedAttribute):
             value (:obj:`Model`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7047,7 +7061,8 @@ class OneToOneAttribute(RelatedAttribute):
             value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7401,7 +7416,8 @@ class ManyToOneAttribute(RelatedAttribute):
             value (:obj:`Model`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7431,7 +7447,8 @@ class ManyToOneAttribute(RelatedAttribute):
             value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7787,7 +7804,8 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
             value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -7819,7 +7837,8 @@ class OneToManyAttribute(ToManyAttribute, RelatedAttribute):
             value (:obj:`Model`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -8140,7 +8159,8 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
             value (:obj:`list` of :obj:`Model`): value of attribute to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
@@ -8179,7 +8199,8 @@ class ManyToManyAttribute(ToManyAttribute, RelatedAttribute):
             value (:obj:`list` of :obj:`Model`): value to validate
 
         Returns:
-            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an instance of :obj:`InvalidAttribute`
+            :obj:`InvalidAttribute` or None: None if attribute is valid, other return list of errors as an
+                instance of :obj:`InvalidAttribute`
         """
         errors = []
 
