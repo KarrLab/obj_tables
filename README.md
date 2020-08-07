@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/github/license/KarrLab/obj_tables.svg)](LICENSE)
 ![Analytics](https://ga-beacon.appspot.com/UA-86759801-1/obj_tables/README.md?pixel)
 
-# *ObjTables*: Toolkit for working with complex data as collections of user-friendly tables with the ease of spreadsheets, the rigor of schemas, and the power object-oriented programming
+# *ObjTables*: Tools for creating and reusing high-quality spreadsheets
 
 *ObjTables* is a toolkit which makes it easy to use spreadsheets (e.g., XLSX workbooks) to work with complex datasets by combining spreadsheets with rigorous schemas and an object-relational mapping system (ORM; similar to Active Record (Ruby), Django (Python), Doctrine (PHP), Hibernate (Java), Propel (PHP), SQLAlchemy (Python), etc.). This combination enables users to use programs such as Microsoft Excel, LibreOffice Calc, and OpenOffice Calc to view and edit spreadsheets and use schemas and the *ObjTables* software to validate the syntax and semantics of datasets, compare and merge datasets, and parse datasets into object-oriented data structures for further querying and analysis with languages such as Python.
 

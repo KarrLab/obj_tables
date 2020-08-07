@@ -34,7 +34,7 @@ setuptools.setup(
     name=name,
     version=md.version,
 
-    description='Toolkit for modeling complex datasets with collections of user-friendly tables',
+    description='Tools for creating and reusing high-quality spreadsheets',
     long_description=md.long_description,
 
     # The project's main homepage.
