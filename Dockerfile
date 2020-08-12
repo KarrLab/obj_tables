@@ -26,6 +26,20 @@
 # Start from Ubuntu (e.g., focal - 20.04)
 FROM ubuntu:latest
 
+# metadata
+LABEL base_image="ubuntu:20.04"
+LABEL version="1.0.13"
+LABEL software="ObjTables"
+LABEL software.version="1.0.13"
+LABEL about.summary="Tools for creating and reusing high-quality spreadsheets"
+LABEL about.home="https://objtables.org/"
+LABEL about.documentation="https://objtables.org/docs"
+LABEL about.license_file="https://github.com/KarrLab/objtables/blob/master/LICENSE"
+LABEL about.license="SPDX:MIT"
+LABEL about.tags="complex data,spreadsheet,XLSX,reusable,schema,object-relational mapping,CSV,TSV,XLSX,Excel,Python"
+LABEL extra.identifiers.biotools="objtables"
+LABEL maintainer="Jonathan Karr <karr@mssm.edu>"
+
 # Set default language to UTF-8 US English
 ENV TZ=America/New_York \
     DEBIAN_FRONTEND=noninteractive
