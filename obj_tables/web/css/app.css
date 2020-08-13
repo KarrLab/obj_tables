@@ -493,8 +493,14 @@ table:last-child {
     padding-right: 0;
 }
 
+.content-container>div:first-child {
+    padding-top: calc(48px + 2rem);
+    margin-top: calc(-48px + -2rem);
+}
+
 .content-container>div:not(:first-child) {
-    margin-top: 2rem;
+    padding-top: 80px;
+    margin-top: calc(2rem - (48px + 2rem));
 }
 
 .section-content {
