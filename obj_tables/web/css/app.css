@@ -510,7 +510,8 @@ table:last-child {
 }
 
 .subsection:not(:first-child) {
-    margin-top: 1.5rem;
+    padding-top: calc(48px + 2rem + 7px);
+    margin-top: calc(1.5rem - (48px + 2rem + 7px));
 }
 
 
