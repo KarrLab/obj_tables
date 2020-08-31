@@ -1,7 +1,0 @@
-!!ObjTables objTablesVersion='0.0.8' schema='SBtab' document='Hynne_2001' type='Data' class='Compound'							
-!ID	!Name	!Location	!Charge	!IsConstant	!SBOTerm	!Unit	!Identifiers:sbo.kegg
-GlcX	GlcX	extracellular	0	FALSE	SBO:0000299	mM	C00031
-Glc	Glc	cytosol	0	FALSE	SBO:0000299	mM	C00031
-ATP	ATP	cytosol	0	FALSE	SBO:0000299	mM	C00002
-G6P	G6P	cytosol	0	FALSE	SBO:0000299	mM	C00668
-ADP	ADP	cytosol	0	FALSE	SBO:0000299	mM	C0008
