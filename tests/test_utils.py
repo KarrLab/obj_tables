@@ -285,7 +285,7 @@ class TestMetadata(unittest.TestCase):
                                                                    path=path)
         self.assertEqual(unsuitable_changes, [])
         self.assertEqual(data_repo_metadata.url, 'https://github.com/KarrLab/test_data_repo.git')
-        self.assertEqual(data_repo_metadata.branch, 'master')
+        self.assertEqual(data_repo_metadata.branch, 'main')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
         self.assertEqual(len(data_repo_metadata.revision), 40)
 
@@ -324,7 +324,7 @@ class TestMetadata(unittest.TestCase):
         self.assertTrue(isinstance(data_file_metadata.schema_repo_metadata, SchemaRepoMetadata))
         for metadata in data_file_metadata:
             self.assertTrue(metadata.url.startswith('https://github.com/'))
-            self.assertEqual(metadata.branch, 'master')
+            self.assertEqual(metadata.branch, 'main')
             self.assertTrue(isinstance(metadata.revision, str))
             self.assertEqual(len(metadata.revision), 40)
 
@@ -348,7 +348,7 @@ class TestMetadata(unittest.TestCase):
         self.assertTrue(isinstance(data_file_metadata.schema_repo_metadata, SchemaRepoMetadata))
         for metadata in data_file_metadata:
             self.assertTrue(metadata.url.startswith('https://github.com/'))
-            self.assertEqual(metadata.branch, 'master')
+            self.assertEqual(metadata.branch, 'main')
             self.assertTrue(isinstance(metadata.revision, str))
             self.assertEqual(len(metadata.revision), 40)
 

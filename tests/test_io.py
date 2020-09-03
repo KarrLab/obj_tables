@@ -1417,7 +1417,7 @@ class TestMetadataModels(unittest.TestCase):
         objs_read = reader.run(file_in_repo, models=[utils.DataRepoMetadata, self.Model1], group_objects_by_model=False)
         data_repo_metadata = objs_read[0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
-        self.assertEqual(data_repo_metadata.branch, 'master')
+        self.assertEqual(data_repo_metadata.branch, 'main')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
         self.assertEqual(len(data_repo_metadata.revision), 40)
         for obj, obj_read in zip(self.objs, objs_read[1:]):
@@ -1438,7 +1438,7 @@ class TestMetadataModels(unittest.TestCase):
         for obj, model in zip(objs_read, models_expected[0:2]):
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
-            self.assertEqual(obj.branch, 'master')
+            self.assertEqual(obj.branch, 'main')
             self.assertTrue(isinstance(obj.revision, str))
             self.assertEqual(len(obj.revision), 40)
 
@@ -1520,7 +1520,7 @@ class TestMetadataModels(unittest.TestCase):
         objs_read = obj_tables.io.JsonReader().run(path_1, models=[utils.DataRepoMetadata, self.Model1])
         data_repo_metadata = objs_read[utils.DataRepoMetadata][0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
-        self.assertEqual(data_repo_metadata.branch, 'master')
+        self.assertEqual(data_repo_metadata.branch, 'main')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
         self.assertEqual(len(data_repo_metadata.revision), 40)
         for obj, obj_read in zip(self.objs, objs_read[self.Model1]):
@@ -1535,7 +1535,7 @@ class TestMetadataModels(unittest.TestCase):
             obj = objs_read[model][0]
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
-            self.assertEqual(obj.branch, 'master')
+            self.assertEqual(obj.branch, 'main')
             self.assertTrue(isinstance(obj.revision, str))
             self.assertEqual(len(obj.revision), 40)
 
@@ -1545,7 +1545,7 @@ class TestMetadataModels(unittest.TestCase):
         objs_read = obj_tables.io.JsonReader().run(path_1, models=[utils.DataRepoMetadata, self.Model1])
         data_repo_metadata = objs_read[utils.DataRepoMetadata][0]
         self.assertTrue(data_repo_metadata.url.startswith('https://github.com/'))
-        self.assertEqual(data_repo_metadata.branch, 'master')
+        self.assertEqual(data_repo_metadata.branch, 'main')
         self.assertTrue(isinstance(data_repo_metadata.revision, str))
         self.assertEqual(len(data_repo_metadata.revision), 40)
         for obj, obj_read in zip(self.objs, objs_read[self.Model1]):

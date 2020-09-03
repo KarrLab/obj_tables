@@ -2364,7 +2364,7 @@ class TestGitRepo(AutoMigrationFixtures):
         origin = empty_repo.remotes.origin
         # instructions from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
         # create local branch "master" from remote "master"
-        empty_repo.create_head('master', origin.refs.master)
+        empty_repo.create_head('main', origin.refs.master)
         # set local "master" to track remote "master"
         empty_repo.heads.master.set_tracking_branch(origin.refs.master)
         # checkout local "master" to working tree
@@ -2492,7 +2492,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         kwargs = dict(files_to_migrate=['../tests/fixtures//file1.xlsx',
                                         '../tests/fixtures//file2.xlsx'],
                       schema_repo_url='https://github.com//KarrLab/obj_tables_test_migration_repo',
-                      branch='master',
+                      branch='main',
                       schema_file='../obj_tables_test_migration_repo/core.py',
                       )
         path = DataSchemaMigration.make_migration_config_file(self.test_repo, 'example_test_repo_2',
@@ -2571,7 +2571,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             files_to_migrate=['../tests/fixtures/data_file_1.xlsx'],
             schema_file='../obj_tables_test_migration_repo/core.py',
             schema_repo_url='https://github.com/KarrLab/obj_tables_test_migration_repo',
-            branch='master'
+            branch='main'
         )
         self.assertEqual(data_schema_migration_conf, expected_data_schema_migration_conf)
 
@@ -2623,7 +2623,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         self.assertIsInstance(data_schema_migration.migration_config_data, dict)
         self.assertEqual(data_schema_migration.schema_git_repo.repo_name(), 'obj_tables_test_migration_repo')
 
-        # test branch that isn't 'master'
+        # test branch that isn't 'main'
         data_schema_migration_2 = DataSchemaMigration(
             **dict(data_repo_location=self.test_repo_url,
                    data_config_file_basename='data_schema_migration_conf-test_repo-test_branch.yaml'))
@@ -2701,7 +2701,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         self.assertEqual(migration_spec.existing_files[0], self.migration_test_repo_data_file_1)
         self.assertEqual(len(migration_spec.schema_files), 2)
         self.assertEqual(migration_spec.final_schema_git_metadata.url, self.migration_test_repo_old_url)
-        self.assertEqual(migration_spec.final_schema_git_metadata.branch, 'master')
+        self.assertEqual(migration_spec.final_schema_git_metadata.branch, 'main')
         self.assertEqual(len(migration_spec.final_schema_git_metadata.revision), 40)
         self.assertEqual(migration_spec.migrate_in_place, True)
         self.assertEqual(migration_spec._prepared, True)
@@ -2816,7 +2816,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             self.assertTrue(os.path.isfile(migrated_file))
             metadata = utils.read_metadata_from_file(migrated_file)
             self.assertEqual(metadata.schema_repo_metadata.url, self.migration_test_repo_url)
-            self.assertEqual(metadata.schema_repo_metadata.branch, 'master')
+            self.assertEqual(metadata.schema_repo_metadata.branch, 'main')
             self.assertEqual(metadata.schema_repo_metadata.revision,
                              self.hash_of_commit_of_last_schema_changes)
 
@@ -2889,7 +2889,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             metadata = utils.read_metadata_from_file(migrated_file)
             self.assertEqual(metadata.schema_repo_metadata.url,
                              'https://github.com/KarrLab/obj_tables_test_migration_repo')
-            self.assertEqual(metadata.schema_repo_metadata.branch, 'master')
+            self.assertEqual(metadata.schema_repo_metadata.branch, 'main')
             self.assertEqual(metadata.schema_repo_metadata.revision,
                              self.hash_of_commit_of_last_schema_changes)
         # restore cwd

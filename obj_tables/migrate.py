@@ -2288,7 +2288,7 @@ class GitRepo(object):
 
     _HASH_PREFIX_LEN = 7
 
-    def __init__(self, repo_location=None, repo_url=None, branch='master', search_parent_directories=False):
+    def __init__(self, repo_location=None, repo_url=None, branch='main', search_parent_directories=False):
         """ Initialize a :obj:`GitRepo` from an existing Git repo
 
         If :obj:`repo_location` is a directory then use the Git repo in the directory. Otherwise it must
@@ -2348,7 +2348,7 @@ class GitRepo(object):
             if os.path.isdir(temp_dir):
                 shutil.rmtree(temp_dir)
 
-    def clone_repo_from_url(self, url, branch='master', directory=None):
+    def clone_repo_from_url(self, url, branch='main', directory=None):
         """ Clone a repo from an URL
 
         Args:
@@ -2764,7 +2764,7 @@ class DataSchemaMigration(object):
         # 'name': (type, description, default)
         'files_to_migrate': ('list', 'paths to files in the data repo to migrate', None),
         'schema_repo_url': ('str', 'the URL of the schema repo', None),
-        'branch': ('str', "the schema's branch", 'master'),
+        'branch': ('str', "the schema's branch", 'main'),
         'schema_file': ('str', 'the relative path to the schema file in the schema repo', None)
     }
 
