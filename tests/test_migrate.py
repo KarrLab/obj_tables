@@ -2358,17 +2358,17 @@ class TestGitRepo(AutoMigrationFixtures):
     def test_add_file_and_commit_changes(self):
         git_repo_for_testing = GitHubRepoForTests('test_repo_1')
         test_github_repo_url = git_repo_for_testing.make_test_repo()
-        test_github_repo = GitRepo(test_github_repo_url)
+        test_github_repo = GitRepo(test_github_repo_url, branch='main')
 
         empty_repo = test_github_repo.repo
         origin = empty_repo.remotes.origin
         # instructions from https://gitpython.readthedocs.io/en/stable/tutorial.html?highlight=push#handling-remotes
-        # create local branch "master" from remote "master"
-        empty_repo.create_head('main', origin.refs.master)
-        # set local "master" to track remote "master"
-        empty_repo.heads.master.set_tracking_branch(origin.refs.master)
-        # checkout local "master" to working tree
-        empty_repo.heads.master.checkout()
+        # create local branch "main" from remote "main"
+        empty_repo.create_head('main', origin.refs.main)
+        # set local "main" to track remote "main"
+        empty_repo.heads.main.set_tracking_branch(origin.refs.main)
+        # checkout local "main" to working tree
+        empty_repo.heads.main.checkout()
         test_filename = 'new_file.txt'
         new_file = os.path.join(test_github_repo.repo_dir, test_filename)
         f = open(new_file, 'w')
@@ -2378,7 +2378,7 @@ class TestGitRepo(AutoMigrationFixtures):
         test_github_repo.add_file(new_file)
         test_github_repo.commit_changes('commit msg')
         self.assertFalse(test_github_repo.repo.untracked_files)
-        self.assertTrue(list(test_github_repo.repo.iter_commits('origin/master..master')))
+        self.assertTrue(list(test_github_repo.repo.iter_commits('origin/main..main')))
 
         no_such_file = os.path.join(test_github_repo.repo_dir, 'no such file')
         with self.assertRaisesRegex(MigratorError, r"adding file '.+' to repo '\S+' failed:"):
@@ -2571,7 +2571,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
             files_to_migrate=['../tests/fixtures/data_file_1.xlsx'],
             schema_file='../obj_tables_test_migration_repo/core.py',
             schema_repo_url='https://github.com/KarrLab/obj_tables_test_migration_repo',
-            branch='main'
+            branch='master'
         )
         self.assertEqual(data_schema_migration_conf, expected_data_schema_migration_conf)
 
@@ -2701,7 +2701,7 @@ class TestDataSchemaMigration(AutoMigrationFixtures):
         self.assertEqual(migration_spec.existing_files[0], self.migration_test_repo_data_file_1)
         self.assertEqual(len(migration_spec.schema_files), 2)
         self.assertEqual(migration_spec.final_schema_git_metadata.url, self.migration_test_repo_old_url)
-        self.assertEqual(migration_spec.final_schema_git_metadata.branch, 'main')
+        self.assertEqual(migration_spec.final_schema_git_metadata.branch, 'master')
         self.assertEqual(len(migration_spec.final_schema_git_metadata.revision), 40)
         self.assertEqual(migration_spec.migrate_in_place, True)
         self.assertEqual(migration_spec._prepared, True)
