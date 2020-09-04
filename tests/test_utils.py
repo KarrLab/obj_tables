@@ -349,8 +349,8 @@ class TestMetadata(unittest.TestCase):
             self.assertTrue(metadata.url.startswith('https://github.com/'))
             # currently, the data and schema repos have different branch names
             # make robust test that will work until master -> main transition ends
-            # self.assertEqual(obj.branch, 'master')
-            self.assertIn(obj.branch, ('master', 'main'))
+            # self.assertEqual(metadata.branch, 'master')
+            self.assertIn(metadata.branch, ('master', 'main'))
             self.assertTrue(isinstance(metadata.revision, str))
             self.assertEqual(len(metadata.revision), 40)
 
