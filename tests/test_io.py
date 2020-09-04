@@ -1438,7 +1438,10 @@ class TestMetadataModels(unittest.TestCase):
         for obj, model in zip(objs_read, models_expected[0:2]):
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
-            self.assertEqual(obj.branch, 'master')
+            # currently, the data repo's branch is 'main', and the schema repo's branch is 'master'
+            # alter test until master -> main transition ends
+            # self.assertEqual(obj.branch, 'master')
+            self.assertIn(obj.branch, ('master', 'main'))
             self.assertTrue(isinstance(obj.revision, str))
             self.assertEqual(len(obj.revision), 40)
 
@@ -1535,7 +1538,10 @@ class TestMetadataModels(unittest.TestCase):
             obj = objs_read[model][0]
             self.assertTrue(isinstance(obj, model))
             self.assertTrue(obj.url.startswith('https://github.com/'))
-            self.assertEqual(obj.branch, 'master')
+            # currently, the data repo's branch is 'main', and the schema repo's branch is 'master'
+            # alter test until master -> main transition ends
+            # self.assertEqual(obj.branch, 'master')
+            self.assertIn(obj.branch, ('master', 'main'))
             self.assertTrue(isinstance(obj.revision, str))
             self.assertEqual(len(obj.revision), 40)
 
