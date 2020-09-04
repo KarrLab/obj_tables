@@ -333,7 +333,6 @@ class TestMetadata(unittest.TestCase):
             pathname = os.path.join(metadata_dir, 'extra-schema-metadata.xlsx')
             utils.read_metadata_from_file(pathname)
 
-    @unittest.skip("metadata.branch alternates between 'master' and 'main'")
     def test_add_metadata_to_file(self):
         class Model1(core.Model):
             id = core.SlugAttribute()
@@ -348,7 +347,10 @@ class TestMetadata(unittest.TestCase):
         self.assertTrue(isinstance(data_file_metadata.schema_repo_metadata, SchemaRepoMetadata))
         for metadata in data_file_metadata:
             self.assertTrue(metadata.url.startswith('https://github.com/'))
-            self.assertEqual(metadata.branch, 'main')
+            # currently, the data and schema repos have different branch names
+            # make robust test that will work until master -> main transition ends
+            # self.assertEqual(obj.branch, 'master')
+            self.assertIn(obj.branch, ('master', 'main'))
             self.assertTrue(isinstance(metadata.revision, str))
             self.assertEqual(len(metadata.revision), 40)
 
