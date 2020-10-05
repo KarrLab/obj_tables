@@ -7394,6 +7394,9 @@ class ManyToOneAttribute(RelatedAttribute):
                 cur_related.remove(obj, propagate=False)
 
             if new_value:
+                if not hasattr(new_value, self.related_name):
+                    raise AttributeError("'{}' should have an attribute for related name {} but it does not; "
+                        "did you remember to define all of your schema classes *before* instantiating them?".format(type(new_value).__name__, self.related_name))
                 new_related = getattr(new_value, self.related_name)
                 new_related.append(obj, propagate=False)
 
