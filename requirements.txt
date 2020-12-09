@@ -1,3 +1,4 @@
+astor
 cement
 inflect
 natsort

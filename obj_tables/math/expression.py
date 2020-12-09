@@ -6,15 +6,20 @@
 :Copyright: 2016-2019, Karr Lab
 :License: MIT
 """
+
+from enum import Enum
+from io import BytesIO
+import ast
+import astor
 import collections
+import copy
+import keyword
 import math
 import pint  # noqa: F401
 import re
 import token
 import tokenize
 import types  # noqa: F401
-from enum import Enum
-from io import BytesIO
 from obj_tables.core import (Model, RelatedAttribute, OneToOneAttribute, ManyToOneAttribute,
                              InvalidObject, InvalidAttribute)
 from wc_utils.util.misc import DFSMAcceptor
@@ -33,7 +38,6 @@ __all__ = [
     'Expression',
     'ParsedExpressionError',
     'ParsedExpression',
-    'ParsedExpressionValidator',
     'LinearParsedExpressionValidator',
 ]
 
@@ -606,7 +610,7 @@ class ParsedExpression(object):
       are provided in :obj:`_objs`, and the allowed subset of functions in :obj:`math` must be provided in an
       iterator in the :obj:`expression_valid_functions` attribute of the :obj:`Meta` class of a model whose whose expression
       is being processed.
-    * Currently (July, 2018), an identifier may refer to a :obj:`Species`, :obj:`Parameter`, :obj:`Observable`,
+    * Currently (July, 2018), an identifier may refer to a :obj:`Species`, :obj:`Parameter`,
       :obj:`Reaction`, :obj:`Observable` or :obj:`DfbaObjReaction`.
     * Cycles of references are illegal.
     * An identifier must unambiguously refer to exactly one related :obj:`Model` in a model.
@@ -1344,152 +1348,448 @@ class ParsedExpression(object):
         return '\n'.join(rv)
 
 
-class ParsedExpressionValidator(object):
-    """ Verify whether a sequence of :obj:`ObjTablesToken` tokens
+class LinearParsedExpressionValidator(object):
+    """ Verify whether a :obj:`ParsedExpression` is equivalent to a linear function of variables
 
-    A :obj:`ParsedExpressionValidator` consists of two parts:
-
-    * An optional method :obj:`_validate_tokens` that examines the content of individual tokens
-      and returns :obj:`(True, True)` if they are all valid, or :obj:`(False, error)` otherwise. It can be
-      overridden by subclasses.
-    * A :obj:`DFSMAcceptor` that determines whether the tokens describe a particular pattern.
-
-    :obj:`validate()` combines these parts.
+    A linear function of identifiers has the form `a1 * v + a2 * v + ... an * v`, where
+    `a1 ... an` are floats or integers and `v` is a variable.
 
     Attributes:
-        dfsm_acceptor (:obj:`DFSMAcceptor`): the DFSM acceptor
-        empty_is_valid (:obj:`bool`): if set, then an empty sequence of tokens is valid
+        opaque_ids (:obj:`dict`): map from Model ids that are not valid Python identifiers to opaque ids
+        next_id (:obj:`int`): suffix of next opaque Python identifier
     """
+    # TODO (APG): use random expressions made by RandomExpression to test more extensively
+    # TODO (APG): finish transform of expression to std. polynomial form so set_lin_coeffs() works on all linear exprs
 
-    def __init__(self, start_state, accepting_state, transitions, empty_is_valid=False):
-        """
-        Args:
-            start_state (:obj:`object`): a DFSM's start state
-            accepting_state (:obj:`object`): a DFSM must be in this state to accept a message sequence
-            transitions (:obj:`iterator` of :obj:`tuple`): transitions, an iterator of
-                (state, message, next state) tuples
-            empty_is_valid (:obj:`bool`, optional): if set, then an empty sequence of tokens is valid
-        """
-        self.dfsm_acceptor = DFSMAcceptor(start_state, accepting_state, transitions)
-        self.empty_is_valid = empty_is_valid
+    # use of Constant starts with Python 3.8
+    # TODO (APG): make portable to 3.8 <= Python
+    VALID_NOTE_TYPES = set([ast.Constant,
+                            ast.Num,
+                            ast.UnaryOp,    # only UAdd and USub
+                            ast.UAdd,
+                            ast.USub,
+                            ast.BinOp,      # only Add, Sub and Mult
+                            ast.Add,
+                            ast.Sub,
+                            ast.Mult,
+                            ast.Load,
+                            ast.Name,
+    ])
 
-    def _validate_tokens(self, tokens):
-        """ Check whether the content of a sequence of :obj:`ObjTablesToken`\ s is valid
-
-        Args:
-            tokens (:obj:`iterator` of :obj:`ObjTablesToken`): sequence of :obj:`ObjTablesToken`s
-
-        Returns:
-            :obj:`tuple`: :obj:`(False, error)` if :obj:`tokens` is invalid, or :obj:`(True, True)` if it is valid
-        """
-        return (True, True)
-
-    def _make_dfsa_messages(self, obj_table_tokens):
-        """ Convert a sequence of :obj:`ObjTablesToken`\ s into a list of messages for transitions
-
-        Args:
-            obj_table_tokens (:obj:`iterator` of :obj:`ObjTablesToken`): sequence of :obj:`ObjTablesToken`s
-
-        Returns:
-            :obj:`object`: :obj:`list` of :obj:`tuple` of pairs (token code, :obj:`None`)
-        """
-        messages = []
-        for obj_table_token in obj_table_tokens:
-            messages.append((obj_table_token.code, None))
-        return messages
-
-    def validate(self, expression):
-        """ Indicate whether the tokens in :obj:`expression` are valid
-
-        Args:
-            expression (:obj:`ParsedExpression`): parsed expression
-
-        Returns:
-            :obj:`tuple`: :obj:`(False, error)` if tokens in :obj:`expression` ares valid,
-                or :obj:`(True, None)` if they are
-        """
-        tokens = expression._obj_tables_tokens
-        if self.empty_is_valid and not tokens:
-            return (True, None)
-        valid, error = self._validate_tokens(tokens)
-        if not valid:
-            return (False, error)
-        dfsa_messages = self._make_dfsa_messages(tokens)
-        if DFSMAcceptor.ACCEPT == self.dfsm_acceptor.run(dfsa_messages):
-            return (True, None)
-        else:
-            return (False, "Not a valid expression")
-
-
-class LinearParsedExpressionValidator(ParsedExpressionValidator):
-    """ Verify whether a sequence of tokens (:obj:`ObjTablesToken`\ s) describes a linear function of identifiers
-
-    In particular, a valid linear expression must have the structure:
-
-    * :obj:`(identifier | number '*' identifier) (('+' | '-') (identifier | number '*' identifier))*`
-    """
-
-    # Transitions in valid linear expression
-    TRANSITIONS = [   # (current state, message, next state)
-        ('need number or id', (ObjTablesTokenCodes.number, None), 'need * id'),
-        ('need * id', (ObjTablesTokenCodes.op, '*'), 'need id'),
-        ('need id', (ObjTablesTokenCodes.obj_id, None), 'need + | - | end'),
-        ('need number or id', (ObjTablesTokenCodes.obj_id, None), 'need + | - | end'),
-        ('need + | - | end', (ObjTablesTokenCodes.op, '+'), 'need number or id'),
-        ('need + | - | end', (ObjTablesTokenCodes.op, '-'), 'need number or id'),
-        ('need + | - | end', (None, None), 'end'),
-    ]
+    VALID_PYTHON_ID_PREFIX = 'opaque_model_id_'
 
     def __init__(self):
-        super().__init__(start_state='need number or id', accepting_state='end',
-                         transitions=self.TRANSITIONS, empty_is_valid=True)
+        self.opaque_ids = {}
+        self.next_id = 1
 
-    def _validate_tokens(self, obj_table_tokens):
-        """ Check whether the content of a sequence of :obj:`ObjTablesToken`\ s is valid
-
-        In particular, all numbers in :obj:`tokens` must be floats, and all token codes must not
-        be :obj:`math_func_id` or :obj:`other`.
+    def _init(self, expression):
+        """ Save :obj:`expression` in an attribute
 
         Args:
-            obj_table_tokens (:obj:`iterator` of :obj:`ObjTablesToken`): sequence of :obj:`ObjTablesToken`s
+            expression (:obj:`str`): expression
 
         Returns:
-            :obj:`tuple`: :obj:`(False, error)` if :obj:`tokens` cannot be a linear expression, or
-                :obj:`(True, True)` if it can
+            :obj:`LinearParsedExpressionValidator`: :obj:`self`, so this operation can be chained
         """
-        for obj_table_token in obj_table_tokens:
-            if obj_table_token.code in set([ObjTablesTokenCodes.math_func_id, ObjTablesTokenCodes.other]):
-                return (False, "messages do not use token codes `math_func_id` or `other`")
-            if obj_table_token.code == ObjTablesTokenCodes.number:
-                try:
-                    float(obj_table_token.token_string)
-                except ValueError as e:
-                    return (False, str(e))
+        self.expression = expression.strip()
+        if not self.expression:
+            raise ValueError("Cannot validate empty expression")
+        return self
 
-        return (True, True)
-
-    def _make_dfsa_messages(self, obj_table_tokens):
-        """ Convert a sequence of :obj:`ObjTablesToken`\ s into a list of messages for transitions in
-        :obj:`LinearParsedExpressionValidator.TRANSITIONS`
+    def validate(self, parsed_expression):
+        """ Determine whether the expression is a valid linear expression
 
         Args:
-            obj_table_tokens (:obj:`iterator` of :obj:`ObjTablesToken`): sequence of :obj:`ObjTablesToken`s
+            parsed_expression (:obj:`ParsedExpression`): a parsed expression
 
         Returns:
-            :obj:`object`: :obj:`None` if :obj:`tokens` cannot be converted into a sequence of messages
-                to validate a linear expression, or a :obj:`list` of :obj:`tuple` of pairs (token code, message modifier)
+            :obj:`tuple`: :obj:`(False, error)` if :obj:`self.expression` does not represent a linear expression,
+                or :obj:`(True, None)` if it does
         """
-        messages = []
-        for obj_table_token in obj_table_tokens:
-            message_tok_code = obj_table_token.code
-            if obj_table_token.code == ObjTablesTokenCodes.obj_id:
-                message_modifier = None
-            elif obj_table_token.code == ObjTablesTokenCodes.number:
-                message_modifier = None
-            elif obj_table_token.code == ObjTablesTokenCodes.op:
-                message_modifier = obj_table_token.token_string
+        self._init(self._expr_with_python_ids(parsed_expression))
+        return self._validate()
+
+    def _convert_model_id_to_python_id(self, model_id):
+        """ If a model id isn't a valid Python identifier, convert it
+
+        Args:
+            model_id (:obj:`str`): a model id, which might not be a Python identifier
+
+        Returns:
+            :obj:`str`: `model_id` if it was a Python identifier, otherwise an opaque Python identifier
+        """
+        if model_id.isidentifier() and not keyword.iskeyword(model_id):
+            return model_id
+        if model_id in self.opaque_ids:
+            return self.opaque_ids[model_id]
+        next_opaque_id = f"{self.VALID_PYTHON_ID_PREFIX}{self.next_id}"
+        self.opaque_ids[model_id] = next_opaque_id
+        self.next_id += 1
+        return next_opaque_id
+
+    def _expr_with_python_ids(self, parsed_expression):
+        """ Obtain an expression with valid Python identifiers
+
+        Args:
+            parsed_expression (:obj:`ParsedExpression`): a parsed expression
+
+        Returns:
+            :obj:`str`: an expression with valid Python identifiers
+        """
+        expr = []
+        for obj_tables_token in parsed_expression._obj_tables_tokens:
+            if obj_tables_token.code == ObjTablesTokenCodes.obj_id:
+                expr.append(self._convert_model_id_to_python_id(obj_tables_token.model_id))
             else:
-                return None
-            messages.append((message_tok_code, message_modifier))
-        messages.append((None, None))
-        return messages
+                expr.append(obj_tables_token.token_string)
+        return ' '.join(expr)
+
+    def _validate(self):
+        """ Determine whether `self.expression` is a valid linear expression
+
+        Returns:
+            :obj:`tuple`: :obj:`(False, error)` if :obj:`self.expression` does not represent a linear expression,
+                or :obj:`(True, None)` if it does
+        """
+        # Approach:
+        # Use ast to parse the expression
+        # If the expression contains terms that are not allowed in a linear expression, return False
+        # If the expression contains numbers that cannot be coerced into floats, return False
+        # Simplify the expression by:
+        #   Removing unary operators
+        #   Multiplying constants in all products
+        #   Distributing multiplication over all addition and subtraction terms
+        #   Multiplying constants in all products, again
+        # If the expression contains contains constant terms, return False
+        # If the expression contains contains products of variables, return False
+        # If the expression contains contains constants to the right of variables, return False
+        # TODO (APG): Elaborate and computing linear coefficients
+
+        valid, error = self._validate_syntax()
+        if not valid:
+            return (valid, error)
+
+        valid, error = self._validate_node_types()
+        if not valid:
+            return (valid, error)
+
+        valid, error = self._validate_nums()
+        if not valid:
+            return (valid, error)
+
+        self._remove_unary_operators()
+        self._multiply_numbers()
+        self._dist_mult()
+        self._multiply_numbers()
+
+        if self._expr_has_a_constant():
+            return (False, f"expression '{self.expression}' contains constant term(s)")
+
+        if self._expr_has_products_of_variables():
+            return (False, f"expression '{self.expression}' contains product(s) of variables")
+
+        if self._expr_has_constant_right_of_vars():
+            return (False, f"expression '{self.expression}' contains a constant right of a var in a product")
+
+        return (True, None)
+
+    def _validate_syntax(self):
+        """ Parse the expression and determine whether it is valid Python
+
+        Returns:
+            :obj:`tuple`: :obj:`(False, error)` if :obj:`self.expression` is not valid Python,
+                or :obj:`(True, None)` if it is
+        """
+        try:
+            self.tree = ast.parse(self.expression, mode='eval')
+        except SyntaxError:
+            return (False, f"Python syntax error in '{self.expression}'")
+        return (True, None)
+
+    def _validate_node_types(self):
+        """ Determine whether the expression contains terms allowed in a linear expression
+
+        Returns:
+            :obj:`tuple`: :obj:`(False, error)` if :obj:`self.expression` contains terms not allowed
+                in a linear expression, or :obj:`(True, None)` if it does not
+        """
+        errors = set()
+        for node in ast.walk(self.tree.body):
+            if type(node) not in self.VALID_NOTE_TYPES:
+                errors.add(type(node).__name__)
+        if errors:
+            return (False, f"contains invalid terms {str(errors)}")
+        return (True, None)
+
+    def _validate_nums(self):
+        """ Determine whether all numbers in the expression can be coerced into floats
+
+        Returns:
+            :obj:`tuple`: :obj:`(False, error)` if :obj:`self.expression` has numbers that cannot be
+                coerced into floats, or :obj:`(True, None)` if it does not
+        """
+        errors = []
+        for node in ast.walk(self.tree):
+            if isinstance(node, ast.Num):
+                try:
+                    val = float(node.n)
+                except TypeError as e:
+                    errors.append(str(e))
+        if errors:
+            return (False, str(errors))
+        return (True, None)
+
+
+    class DistributeMultAddSubOnLeft(ast.NodeTransformer):
+        # transform (x + y)*z to x*z + y*z, and (x - y)*(3 + 5) to x*(3 + 5) - y*(3 + 5)
+        def visit_BinOp(self, node):
+            self.generic_visit(node)
+            if (isinstance(node.op, ast.Mult) and
+                (isinstance(node.right, (ast.Num, ast.Name, ast.UnaryOp, ast.BinOp)) and
+                 (isinstance(node.left, ast.BinOp) and
+                  isinstance(node.left.op, (ast.Add, ast.Sub))))):
+                left = ast.BinOp(left=node.left.left,
+                                 op=ast.Mult(),
+                                 right=node.right)
+                right = ast.BinOp(left=node.left.right,
+                                  op=ast.Mult(),
+                                  right=node.right)
+                return ast.BinOp(left=left,
+                                 right=right,
+                                 op=node.left.op)
+            return node
+
+
+    class DistributeMultAddSubOnRight(ast.NodeTransformer):
+        # transform x*(3 + 5) to x * 3 + x * 5, and (x * y)*(3 + 5) to (x * y)*3 + (x * y)*5
+        def visit_BinOp(self, node):
+            self.generic_visit(node)
+            if (isinstance(node.op, ast.Mult) and
+                (isinstance(node.left, (ast.Num, ast.Name, ast.UnaryOp, ast.BinOp)) and
+                 (isinstance(node.right, ast.BinOp) and
+                  isinstance(node.right.op, (ast.Add, ast.Sub))))):
+                left = ast.BinOp(left=node.left,
+                                 op=ast.Mult(),
+                                 right=node.right.left)
+                right = ast.BinOp(left=node.left,
+                                  op=ast.Mult(),
+                                  right=node.right.right)
+                return ast.BinOp(left=left,
+                                 right=right,
+                                 op=node.right.op)
+            return node
+
+
+    def _dist_mult(self):
+        """ Distribute multiplication over addition and subtraction terms
+
+        Returns:
+            :obj:`LinearParsedExpressionValidator`: :obj:`self`, so this operation can be chained
+        """
+        while True:
+            # iterate until all multiplication in the ast has been distributed
+            tree_copy = copy.deepcopy(self.tree)
+            self.DistributeMultAddSubOnLeft().visit(self.tree)
+            self.DistributeMultAddSubOnRight().visit(self.tree)
+            if self.ast_eq(tree_copy, self.tree):
+                break
+        return self
+
+
+    class MoveCoeffsToLeft(ast.NodeTransformer):
+        # transform r_for*5 - 2*r_back*4 to 5*r_for - 2 * 4 * r_back
+        def visit_BinOp(self, node):
+            self.generic_visit(node)
+            if (isinstance(node.op, ast.Mult) and
+                (isinstance(node.left, ast.Name) or
+                 (isinstance(node.left, ast.BinOp) and isinstance(node.left.op, ast.Mult))) and
+                isinstance(node.right, ast.Num)):
+                # swap Name on left with Num on right
+                return ast.BinOp(left=node.right,
+                                 op=ast.Mult(),
+                                 right=node.left)
+            return node
+
+
+    def _move_coeffs_to_left(self):
+        """ Move numerical coefficients to the left of names (variables)
+
+        Returns:
+            :obj:`LinearParsedExpressionValidator`: :obj:`self`, so this operation can be chained
+        """
+        while True:
+            # iterate until all coefficients have been moved
+            tree_copy = copy.deepcopy(self.tree)
+            self.MoveCoeffsToLeft().visit(self.tree)
+            if self.ast_eq(tree_copy, self.tree):
+                break
+        return self
+
+
+    class MultiplyNums(ast.NodeTransformer):
+        # transform 2 * 4 * x - 3.0 * -2. * y to 8 * x - -6.0 * y
+        def visit_BinOp(self, node):
+            self.generic_visit(node)
+            # multiply adjacent constants
+            if (isinstance(node.op, ast.Mult) and
+                isinstance(node.left, ast.Num) and
+                isinstance(node.right, ast.Num)):
+                return ast.Num(node.left.n * node.right.n)
+            # multiply constants in node.left and node.right.left
+            if (isinstance(node.op, ast.Mult) and
+                isinstance(node.left, ast.Num) and
+                isinstance(node.right, ast.BinOp) and
+                isinstance(node.right.op, ast.Mult) and
+                isinstance(node.right.left, ast.Num)):
+                return ast.BinOp(left=ast.Num(node.left.n * node.right.left.n),
+                                 op=ast.Mult(),
+                                 right=node.right.right)
+            return node
+
+
+    def _multiply_numbers(self):
+        """ Multiply numbers in a product
+
+        Returns:
+            :obj:`LinearParsedExpressionValidator`: :obj:`self`, so this operation can be chained
+        """
+        while True:
+            # iterate until all coefficients have been moved
+            tree_copy = copy.deepcopy(self.tree)
+            self.MultiplyNums().visit(self.tree)
+            if self.ast_eq(tree_copy, self.tree):
+                break
+        return self
+
+
+    class RemoveUnaryOps(ast.NodeTransformer):
+        # transform +anything to anything, and -anything to -1 * anything
+        def visit_UnaryOp(self, node):
+            self.generic_visit(node)
+            # transform +anything to anything
+            if isinstance(node.op, ast.UAdd):
+                return node.operand
+            # transform -anything to -1 * anything
+            if isinstance(node.op, ast.USub):
+                return ast.BinOp(left=ast.Num(-1),
+                                 op=ast.Mult(),
+                                 right=node.operand)
+
+
+    def _remove_unary_operators(self):
+        """ Remove unary operators
+
+        Returns:
+            :obj:`LinearParsedExpressionValidator`: :obj:`self`, so this operation can be chained
+        """
+        self.RemoveUnaryOps().visit(self.tree)
+        return self
+
+    def _expr_has_a_constant(self):
+        """ Determine whether the expression contains a constant term
+
+        The expression must be transformed by removing unary operators, distribing multiplication,
+        moving coeffecients left, and multiplying numbers before calling this.
+
+        Returns:
+            :obj:`boolean`: whether the expression contains a constant term
+        """
+        nodes = list(ast.walk(self.tree.body))
+        if len(nodes) == 1 and isinstance(nodes[0], ast.Num):
+            return True
+        for node in ast.walk(self.tree.body):
+            if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Sub)):
+                if isinstance(node.left, ast.Num) or isinstance(node.right, ast.Num):
+                    return True
+        return False
+
+    @staticmethod
+    def _num_of_variables_in_a_product(node):
+        """ Count all variables in a product of terms rooted at `node`
+        """
+        num_variables = 0
+        if isinstance(node.op, ast.Mult):
+            if isinstance(node.left, ast.Name):
+                num_variables += 1
+            elif isinstance(node.left, ast.BinOp):
+                num_variables += LinearParsedExpressionValidator._num_of_variables_in_a_product(node.left)
+            if isinstance(node.right, ast.Name):
+                num_variables += 1
+            elif isinstance(node.right, ast.BinOp):
+                num_variables += LinearParsedExpressionValidator._num_of_variables_in_a_product(node.right)
+        return num_variables
+
+    def _max_num_variables_in_a_product(self):
+        """ Determine the maximum number of variables in a product in this `LinearParsedExpressionValidator`
+
+        Returns:
+            :obj:`float`: the maximum number of variables in a product in this `LinearParsedExpressionValidator`
+        """
+        max_num_variables_in_a_product = 0
+        for node in ast.walk(self.tree.body):
+            if isinstance(node, ast.BinOp):
+                max_num_variables_in_a_product = max(max_num_variables_in_a_product,
+                                                     self._num_of_variables_in_a_product(node))
+        return max_num_variables_in_a_product
+
+    def _expr_has_products_of_variables(self):
+        """ Determine whether the expression contains products of variables
+
+        The expression must be transformed by distribing multiplication before calling this.
+
+        Returns:
+            :obj:`boolean`: whether the expression contains products of variables
+        """
+        return 1 < self._max_num_variables_in_a_product()
+
+    @staticmethod
+    def _product_has_name(node):
+        """ Whether a product of terms rooted at `node` contains a name
+
+        Returns:
+            :obj:`boolean`: whether a product of terms rooted at `node` contains a name
+        """
+        if isinstance(node, ast.Name):
+            return True
+        rv = False
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mult):
+            rv = rv | LinearParsedExpressionValidator._product_has_name(node.left)
+            rv = rv | LinearParsedExpressionValidator._product_has_name(node.right)
+        return rv
+
+    @staticmethod
+    def _product_has_num(node):
+        """ Whether a product of terms rooted at `node` contains a number
+
+        Returns:
+            :obj:`boolean`: whether a product of terms rooted at `node` contains a number
+        """
+        if isinstance(node, ast.Num):
+            return True
+        rv = False
+        if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mult):
+            rv = rv | LinearParsedExpressionValidator._product_has_num(node.left)
+            rv = rv | LinearParsedExpressionValidator._product_has_num(node.right)
+        return rv
+
+    def _expr_has_constant_right_of_vars(self):
+        """ Determine whether the expression contains constants to the right of a variable in a product
+
+        The expression must be transformed by removing unary operators, and distribing multiplication
+        before calling this.
+
+        Returns:
+            :obj:`boolean`: whether the expression contains constants to the right of a variable in a product
+        """
+        for node in ast.walk(self.tree.body):
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mult):
+                if (LinearParsedExpressionValidator._product_has_name(node.left) and
+                    LinearParsedExpressionValidator._product_has_num(node.right)):
+                    return True
+        return False
+
+    @staticmethod
+    def ast_eq(ast1, ast2):
+        """ Are two abstract syntax trees equal
+        """
+        return astor.dump_tree(ast1) == astor.dump_tree(ast2)

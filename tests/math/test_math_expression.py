@@ -6,6 +6,13 @@
 :License: MIT
 """
 
+import astor
+import mock
+import random
+import re
+import token
+import unittest
+
 from obj_tables.core import (Model, SlugAttribute, FloatAttribute, StringAttribute,
                              ManyToOneAttribute, ManyToManyAttribute,
                              InvalidObject, InvalidAttribute)
@@ -14,14 +21,10 @@ from obj_tables.math.expression import (OneToOneExpressionAttribute, ManyToOneEx
                                         ExpressionExpressionTermMeta,
                                         ObjTablesTokenCodes, ObjTablesToken, LexMatch,
                                         Expression, ParsedExpression,
-                                        ParsedExpressionValidator, LinearParsedExpressionValidator,
+                                        LinearParsedExpressionValidator,
                                         ParsedExpressionError)
 from obj_tables.sci.units import UnitAttribute
 from wc_utils.util.units import unit_registry
-import mock
-import re
-import token
-import unittest
 
 
 class BaseModel(Model):
@@ -1100,8 +1103,10 @@ class ParsedExpressionTestCase(unittest.TestCase):
         self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0xAA ** 0xFF'), '0xAA ** 0xFF')
 
         # combinations
-        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0abc/0xAA'), '__digit__0abc/0xAA')
-        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2e1*0abc/0xAA'), '2e1*__digit__0abc/0xAA')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('0abc/0xAA'),
+                         '__digit__0abc/0xAA')
+        self.assertEqual(parsed_expr._ParsedExpression__prep_expr_for_tokenization('2e1*0abc/0xAA'),
+                         '2e1*__digit__0abc/0xAA')
 
 
 class ParsedExpressionErrorTestCase(unittest.TestCase):
@@ -1112,70 +1117,324 @@ class ParsedExpressionErrorTestCase(unittest.TestCase):
 
 class ParsedExpressionValidatorTestCase(unittest.TestCase):
 
-    def test_expression_verifier(self):
+    @staticmethod
+    def clean_astor_expr(tree):
+        # remove trailing \n and enclosing parens from astor.to_source(tree)
+        source = astor.to_source(tree).strip()
+        if source[0] == '(' and source[-1] == ')':
+            return source[1:-1]
+        return source
 
-        number_is_good_transitions = [   # (current state, message, next state)
-            ('start', (ObjTablesTokenCodes.number, None), 'accept'),
-        ]
-        expression_verifier = ParsedExpressionValidator('start', 'accept', number_is_good_transitions)
-        number_is_good = [
-            ObjTablesToken(ObjTablesTokenCodes.number, '3'),
-        ]
-        valid, error = expression_verifier.validate(mock.Mock(_obj_tables_tokens=number_is_good))
-        self.assertTrue(valid)
-        self.assertTrue(error is None)
-        # an empty expression is invalid
-        valid, error = expression_verifier.validate(mock.Mock(_obj_tables_tokens=[]))
+    def test_convert_model_id_to_python_id(self):
+        lpev = LinearParsedExpressionValidator()
+        self.assertEqual(lpev._convert_model_id_to_python_id('good_id_1'), 'good_id_1')
+        first_py_id = f"{lpev.VALID_PYTHON_ID_PREFIX}1"
+        self.assertEqual(lpev._convert_model_id_to_python_id('class'), first_py_id)
+        # get id from id dict
+        self.assertEqual(lpev._convert_model_id_to_python_id('class'), first_py_id)
+        second_py_id = f"{lpev.VALID_PYTHON_ID_PREFIX}2"
+        self.assertEqual(lpev._convert_model_id_to_python_id('ATP[c]'), second_py_id)
+
+    def test_expr_with_python_ids(self):
+        lpev = LinearParsedExpressionValidator()
+        test_objects = {
+            Parameter: {
+                'r': Parameter(),
+            }
+        }
+        expr = '2 * r'
+        parsed_expr = ParsedExpression(FunctionExpression, 'attr', expr, test_objects)
+        parsed_expr.tokenize()
+        self.assertEqual(lpev._expr_with_python_ids(parsed_expr), expr)
+
+    def test__init(self):
+        with self.assertRaisesRegex(ValueError, 'Cannot validate empty expression'):
+            LinearParsedExpressionValidator()._init(' \n')
+
+    def test_validate_methods(self):
+        valid, error = LinearParsedExpressionValidator()._init('1 +')._validate_syntax()
         self.assertFalse(valid)
+        self.assertIn('Python syntax error', error)
 
-    def test_linear_expression_verifier(self):
-
-        obj_tables_tokens = [   # id0 - 3*id1 - 3.5*id1 + 3.14e+2*id3
-            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'id0'),
-            ObjTablesToken(ObjTablesTokenCodes.op, '-'),
-            ObjTablesToken(ObjTablesTokenCodes.number, '3'),
-            ObjTablesToken(ObjTablesTokenCodes.op, '*'),
-            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'id1'),
-            ObjTablesToken(ObjTablesTokenCodes.op, '-'),
-            ObjTablesToken(ObjTablesTokenCodes.number, '3.5'),
-            ObjTablesToken(ObjTablesTokenCodes.op, '*'),
-            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'id1'),
-            ObjTablesToken(ObjTablesTokenCodes.op, '+'),
-            ObjTablesToken(ObjTablesTokenCodes.number, '3.14e+2'),
-            ObjTablesToken(ObjTablesTokenCodes.op, '*'),
-            ObjTablesToken(ObjTablesTokenCodes.obj_id, 'id3'),
-        ]
-        valid_linear_expr = mock.Mock(_obj_tables_tokens=obj_tables_tokens)
-
-        linear_expression_verifier = LinearParsedExpressionValidator()
-        valid, error = linear_expression_verifier.validate(valid_linear_expr)
-        self.assertTrue(valid)
-        self.assertTrue(error is None)
-        # dropping any single token from obj_tables_tokens produces an invalid expression
-        for i in range(len(obj_tables_tokens)):
-            wc_tokens_without_i = obj_tables_tokens[:i] + obj_tables_tokens[i+1:]
-            valid, error = linear_expression_verifier.validate(mock.Mock(_obj_tables_tokens=wc_tokens_without_i))
-            self.assertFalse(valid)
-
-        # an empty expression is valid
-        valid, error = linear_expression_verifier.validate(mock.Mock(_obj_tables_tokens=[]))
+        valid, error = LinearParsedExpressionValidator()._init('1 + x * 3')._validate_syntax()
         self.assertTrue(valid)
         self.assertTrue(error is None)
 
-        invalid_wc_tokens = [
-            [ObjTablesToken(ObjTablesTokenCodes.math_func_id, 'log')],    # math functions not allowed
-            [ObjTablesToken(ObjTablesTokenCodes.number, '3j')],           # numbers must be floats
-        ]
-        for invalid_wc_token in invalid_wc_tokens:
-            valid, error = linear_expression_verifier.validate(mock.Mock(_obj_tables_tokens=invalid_wc_token))
-            self.assertFalse(valid)
+        lpev = LinearParsedExpressionValidator()._init('3**2 + (2, 4)[0]')
+        lpev._validate_syntax()
+        valid, error = lpev._validate_node_types()
+        self.assertFalse(valid)
+        self.assertIn('Pow', error)
+        self.assertIn('Subscript', error)
 
-        invalid_wc_tokens = [
-            [ObjTablesToken(ObjTablesTokenCodes.other, ',')],             # other not allowed
+        lpev = LinearParsedExpressionValidator()._init('-1 + +3 - 1.1E3 + id - 4*(id2 + 3)')
+        lpev._validate_syntax()
+        valid, error = lpev._validate_node_types()
+        self.assertTrue(valid)
+        self.assertTrue(error is None)
+        valid, error = lpev._validate_nums()
+        self.assertTrue(valid)
+        self.assertTrue(error is None)
+
+        lpev = LinearParsedExpressionValidator()._init('-1 + 3j')
+        lpev._validate_syntax()
+        valid, error = lpev._validate_nums()
+        self.assertFalse(valid)
+        self.assertIn("can't convert complex to float", error)
+
+    def test_ast_transformations(self):
+        # test _dist_mult
+        init_and_expected_exprs = [('x*(3 + 5) + (x - y + z)*3', 'x * 3 + x * 5 + (x * 3 - y * 3 + z * 3)'),
+                                   ('5*c * (-1 + d)', '5 * c * -1 + 5 * c * d'),
+                                   ('(a + b)*(5 - 1)', 'a * 5 - a * 1 + (b * 5 - b * 1)'),
         ]
-        for invalid_wc_token in invalid_wc_tokens:
-            error = linear_expression_verifier._make_dfsa_messages(invalid_wc_token)
-            self.assertTrue(error is None)
+        for expr, distrib_math_expr in init_and_expected_exprs:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._dist_mult()
+            self.assertEqual(self.clean_astor_expr(lpev.tree), distrib_math_expr)
+
+        # test _remove_unary_operators
+        expr_and_expt_expr_wo_unary_ops = [('2', '2'),
+                                           ('+2', '2'),
+                                           ('+++3', '3'),
+                                           ('-+-4', '-1 * (-1 * 4)'),
+                                           ('-x', '-1 * x'),
+                                           ('-(x + -3)*+y', '-1 * (x + -1 * 3) * y'),
+        ]
+        for expr, expt_expr_wo_unary_ops in expr_and_expt_expr_wo_unary_ops:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._remove_unary_operators()
+            self.assertEqual(self.clean_astor_expr(lpev.tree), expt_expr_wo_unary_ops)
+
+        # test _move_coeffs_to_left and _multiply_numbers
+        expr_and_expected_results = [('r_for*5 - 2*r_back*3 * 8',
+                                      '5 * r_for - 8 * (3 * (2 * r_back))',
+                                      '5 * r_for - 48 * r_back'),
+                                     ('2 * 3 * 5 * x',
+                                     '5 * (2 * 3) * x',
+                                     '30 * x'),
+        ]
+        for expr, expected_coeffs_on_left, expected_mult_constants in expr_and_expected_results:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._move_coeffs_to_left()
+            self.assertEqual(self.clean_astor_expr(lpev.tree), expected_coeffs_on_left)
+            lpev._multiply_numbers()
+            self.assertEqual(self.clean_astor_expr(lpev.tree), expected_mult_constants)
+
+    def test_num_of_variables_in_products(self):
+        expr_and_expected_vars_in_product = [('x * y * (3 * z)', 3),
+                                             ('3*(6 * 7) * (3 + 5)', 0),
+        ]
+        for expr, expected_vars_in_product in expr_and_expected_vars_in_product:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            self.assertEqual(lpev._num_of_variables_in_a_product(lpev.tree.body), expected_vars_in_product)
+
+        expr_and_expt_max_num_vars_in_a_product = [('3*(6 * 7) * (3 + 5)', 0),
+                                                   ('3 * z + x * y * (3 * z) - 2 *x', 3),
+                                                   ('3 + x * (2 + -x + z) - (a + 3*b * (5*c * (-1 + d)))', 3),
+        ]
+        for expr, expt_max_num_vars_in_a_product in expr_and_expt_max_num_vars_in_a_product:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._dist_mult()
+            self.assertEqual(lpev._max_num_variables_in_a_product(), expt_max_num_vars_in_a_product)
+
+            expr_has_products_of_variables = lpev._expr_has_products_of_variables()
+            if expt_max_num_vars_in_a_product <= 1:
+                self.assertFalse(expr_has_products_of_variables)
+            else:
+                self.assertTrue(expr_has_products_of_variables)
+
+    def test__expr_has_a_constant(self):
+        expr_and_expt_constant_terms = [('2', True),
+                                        ('z', False),
+                                        ('3*x + y', False),
+                                        ('(x + 3)*y', False),
+                                        ('(x + 3)*4', True),
+                                        ('(a + -3)*(5 - x)', True),
+        ]
+        for expr, expt_constant_terms in expr_and_expt_constant_terms:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._remove_unary_operators()
+            lpev._multiply_numbers()
+            lpev._dist_mult()
+            lpev._multiply_numbers()
+            self.assertEqual(lpev._expr_has_a_constant(), expt_constant_terms)
+
+    def test__validate(self):
+        not_linear_exprs = [('not Python syntax -', "Python syntax error"),
+                            # contains terms not allowed in a linear expression
+                            ('3**2 + (2, 4)[0]', "contains invalid terms"),
+                            # contains a number that can't be coerced to float
+                            ('-1 + 3j', "can't convert complex to float"),
+                            ('(a + -3) * 2', "contains constant term(s)"),
+                            ('3 * z + x * y * (3 * z)', "contains product(s) of variables"),
+                            ('(r_for - r_bak) * 5', "contains a constant right of a var in a product"),
+        ]
+        for not_linear_expr, exp_error in not_linear_exprs:
+            lpev = LinearParsedExpressionValidator()
+            lpev.expression = not_linear_expr
+            valid, error = lpev._validate()
+            self.assertFalse(valid)
+            self.assertIn(exp_error, error)
+
+    def test_validate(self):
+        test_objects = {
+            Parameter: {
+                'r': Parameter(),
+                'r_for': Parameter(),
+                'r_back': Parameter(),
+            },
+        }
+        linear_expression = '3 * r - 4*(r_for - r_back)'
+        parsed_expr = ParsedExpression(FunctionExpression, 'attr', linear_expression, test_objects)
+        parsed_expr.tokenize()
+
+        valid, error = LinearParsedExpressionValidator().validate(parsed_expr)
+        self.assertTrue(valid)
+        self.assertTrue(error is None)
+
+    def test__expr_has_constants_right_of_variables(self):
+    
+        # test _product_has_name
+        expr_and_expt_product_has_name = [('2', False),
+                                          ('z', True),
+                                          ('3 * x * -3', True),
+                                          ('3 * (5 * 2 * (x))', True),
+                                          ('3 * (5 * 2 * (7))', False),
+        ]
+        for expr, expt_product_has_name in expr_and_expt_product_has_name:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._remove_unary_operators()
+            lpev._dist_mult()
+            self.assertEqual(LinearParsedExpressionValidator._product_has_name(lpev.tree.body), expt_product_has_name)
+
+        # test _product_has_num
+        expr_and_expt_product_has_num = [('2', True),
+                                         ('z', False),
+                                         ('3 * x * -3', True),
+                                         ('3 * (5 * 2 * (x))', True),
+                                         ('3 * (5 * 2) + 3', False),
+        ]
+        for expr, expt_product_has_num in expr_and_expt_product_has_num:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._remove_unary_operators()
+            lpev._dist_mult()
+            self.assertEqual(LinearParsedExpressionValidator._product_has_num(lpev.tree.body), expt_product_has_num)
+
+        # test _expr_has_constant_right_of_vars
+        expr_and_expt_constant_right_of_vars = [('2', False),
+                                                ('z', False),
+                                                ('3 * x * -3', True),
+                                                ('3 * (5 * 2 * (x))', False),
+                                                ('3 * (5 * 2) + 3', False),
+                                                ('(a + -3) * (5 - x)', True),
+                                                ('(r_for - r_bak) * 5', True),
+        ]
+        for expr, expt_constant_right_of_vars in expr_and_expt_constant_right_of_vars:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._remove_unary_operators()
+            lpev._dist_mult()
+            self.assertEqual(lpev._expr_has_constant_right_of_vars(), expt_constant_right_of_vars)
+                    
+
+class RandomExpression(object):
+    """ Generate random expressions for testing LinearParsedExpressionValidator
+    """
+    # TODO (APG): finish and use
+
+    rel_prob_token = {'name': 3,
+                      'int': 3,
+                      '+': 2,
+                      '-': 2,
+                      '*': 2,
+                      'UnaryPlus': 1,
+                      'UnaryMinus': 1,
+    }
+    delta_terms_token = {'name': +1,
+                         'int': +1,
+                         '+': -1,
+                         '-': -1,
+                         '*': -1,
+                         'UnaryPlus': 0,
+                         'UnaryMinus': 0,
+    }
+
+    def random_rpn_expr(self, **kwargs):
+        defaults = dict(n_names=4,
+                        min_int=-2,
+                        max_int=5,
+                        n_init_symbols=2,
+                        max_num_symbols=5
+        )
+        for arg, default_val in defaults.items():
+            if arg not in kwargs:
+                kwargs[arg] = defaults[arg]
+
+        def rand_int():
+            return random.randint(kwargs['min_int'], kwargs['max_int'])
+
+        names = [f"var_{i}" for i in range(kwargs['n_names'])]
+        def rand_name():
+            return random.choice(names)
+
+        rpn_tokens = []
+        # number free terms in rpn_tokens
+        n_free_terms = 0
+
+        # initialize with initial symbols
+        for i in range(kwargs['n_init_symbols']):
+            n_free_terms += 1
+            total_p = self.rel_prob_token['name'] + self.rel_prob_token['int']
+            if random.random() < self.rel_prob_token['name']/total_p:
+                rpn_tokens.append(rand_name())
+            else:
+                rpn_tokens.append(rand_int())
+
+        # randomly add tokens, up to max_num_symbols
+        num_symbols = kwargs['n_init_symbols']
+        while num_symbols < kwargs['max_num_symbols']:
+            tokens = random.choices(list(self.rel_prob_token), weights=self.rel_prob_token.values())
+            token = tokens[0]
+            # keep 1 <= n_free_terms
+            if 1 == n_free_terms and token in set(['+', '-', '*', ]):
+                continue
+            if token in set(['name', 'int']):
+                num_symbols += 1
+            if token == 'name':
+                rpn_tokens.append(rand_name())
+            elif token == 'int':
+                rpn_tokens.append(rand_int())
+            else:
+                rpn_tokens.append(token)
+            n_free_terms += self.delta_terms_token[token]
+        # add enough operators to complete expression
+        while 0 < n_free_terms:
+            tokens = random.choices(list(self.rel_prob_token), weights=self.rel_prob_token.values())
+            token = tokens[0]
+            if token in set(['+', '-', '*', ]):
+                rpn_tokens.append(token)
+                n_free_terms += self.delta_terms_token[token]
+        return rpn_tokens
+
+    @staticmethod
+    def convert_rpn_to_infix(**kwargs):
+        """ Use RPN conversion algorithm to generate infix expression
+        """
+
+
+class TestRandomExpression(unittest.TestCase):
+    def test(self):
+        for i in range(20):
+            self.assertTrue(isinstance(RandomExpression().random_rpn_expr(), list))
 
 
 class CopyTestCase(unittest.TestCase):
