@@ -275,6 +275,30 @@ class ExpressionTestCase(unittest.TestCase):
         self.assertEqual(rv[0], None)
         self.assertRegex(str(rv[1]), "doesn't have a 'Meta.expression_term_models' attribute")
 
+    def test_set_lin_coeffs(self):
+        # test linear coeffs of expressions like reactions split in dFBA objective expressions in wc_lang
+        objects = {
+            Parameter: {
+                'r_for': Parameter(id='r_for'),
+                'r_back': Parameter(id='r_back'),
+            },
+        }
+
+        str_expr_and_expt_lin_coeffs = [('(r_for - r_back)', dict(r_for=1., r_back=-1.)),
+                                        ('2 * (r_for - r_back)', dict(r_for=2., r_back=-2.)),
+                                        ('-2 * (r_for - r_back)', dict(r_for=-2., r_back=2.)),
+                                        ('2 * (r_for - r_back) + -(r_for - r_back)', dict(r_for=1., r_back=-1.)),
+        ]
+        for str_expr, expt_lin_coeffs in str_expr_and_expt_lin_coeffs:
+            expr, error = FunctionExpression.deserialize(str_expr, objects)
+            self.assertEqual(expr.validate(), None)
+            parsed_expr = expr._parsed_expression
+            self.assertTrue(parsed_expr.is_linear)
+            self.assertEqual(set([p.id for p in parsed_expr.lin_coeffs[Parameter]]),
+                             set(expt_lin_coeffs))
+            for param, coeff in parsed_expr.lin_coeffs[Parameter].items():
+                self.assertEqual(expt_lin_coeffs[param.id], coeff)
+
     def test_validate(self):
         objects = {
             Parameter: {
@@ -1115,7 +1139,16 @@ class ParsedExpressionErrorTestCase(unittest.TestCase):
         self.assertEqual(exception.args, ('test message',))
 
 
-class ParsedExpressionValidatorTestCase(unittest.TestCase):
+class LinearParsedExpressionValidatorTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.test_objects = {
+            Parameter: {
+                'r': Parameter(id='r'),
+                'r_for': Parameter(id='r_for'),
+                'r_back': Parameter(id='r_back'),
+            }
+        }
 
     @staticmethod
     def clean_astor_expr(tree):
@@ -1224,6 +1257,29 @@ class ParsedExpressionValidatorTestCase(unittest.TestCase):
             lpev._multiply_numbers()
             self.assertEqual(self.clean_astor_expr(lpev.tree), expected_mult_constants)
 
+        # test _remove_subtraction and _multiply_numbers
+        expr_and_expected_results = [('0 - x', '0 + -1 * x', '0 + -1 * x'),
+                                     ('0 - 4', '0 + -1 * 4', '0 + -4'),
+                                     ('x - (3 + y)', 'x + (-1 * 3 + -1 * y)', 'x + (-3 + -1 * y)'),
+                                     ('x - (3 - y)', 'x + (-1 * 3 + -1 * (-1 * y))', 'x + (-3 + 1 * y)'),
+                                     ('x - (3 * y)', 'x + -1 * 3 * y', 'x + -3 * y'),
+        ]
+        for expr, expected_expr_wo_sub, expected_expr_mult_nums in expr_and_expected_results:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            lpev._remove_subtraction()
+            self.assertEqual(self.clean_astor_expr(lpev.tree), expected_expr_wo_sub)
+            lpev._multiply_numbers()
+            self.assertEqual(self.clean_astor_expr(lpev.tree), expected_expr_mult_nums)
+
+        # test _multiply_numbers in one call to MultiplyNums().visit(self.tree)
+        expr = '(5 * 7) * (2 * (3 * x))'
+        expected_expr_mult_nums = '210 * x'
+        lpev = LinearParsedExpressionValidator()._init(expr)
+        lpev._validate_syntax()
+        lpev._multiply_numbers()
+        self.assertEqual(self.clean_astor_expr(lpev.tree), expected_expr_mult_nums)
+
     def test_num_of_variables_in_products(self):
         expr_and_expected_vars_in_product = [('x * y * (3 * z)', 3),
                                              ('3*(6 * 7) * (3 + 5)', 0),
@@ -1266,11 +1322,11 @@ class ParsedExpressionValidatorTestCase(unittest.TestCase):
             lpev._multiply_numbers()
             self.assertEqual(lpev._expr_has_a_constant(), expt_constant_terms)
 
-    def test__validate(self):
+    def test__validate_failures(self):
         not_linear_exprs = [('not Python syntax -', "Python syntax error"),
-                            # contains terms not allowed in a linear expression
+                            # contains terms not allowed in a linear expression, such as **
                             ('3**2 + (2, 4)[0]', "contains invalid terms"),
-                            # contains a number that can't be coerced to float
+                            # contains 3j, a number that can't be coerced to float
                             ('-1 + 3j', "can't convert complex to float"),
                             ('(a + -3) * 2', "contains constant term(s)"),
                             ('3 * z + x * y * (3 * z)', "contains product(s) of variables"),
@@ -1283,16 +1339,23 @@ class ParsedExpressionValidatorTestCase(unittest.TestCase):
             self.assertFalse(valid)
             self.assertIn(exp_error, error)
 
+    def test__validate_split_reactions(self):
+        # reactions can be split in dFBA objective expressions
+        expr_and_expt_validity = [('(r_for - r_back)', True),
+                                  ('r + 2 * (r_for - r_back)', True),
+                                  ('r - 2 * (r_for - r_back)', True),
+                                  ('r + -2 * (r_for - r_back)', True),
+                                  ('r + (r_for - r_back) * 2', False),
+        ]
+        for expr, expt_validity in expr_and_expt_validity:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate()
+            valid, error = LinearParsedExpressionValidator()._init(expr)._validate()
+            self.assertEqual(valid, expt_validity)
+
     def test_validate(self):
-        test_objects = {
-            Parameter: {
-                'r': Parameter(),
-                'r_for': Parameter(),
-                'r_back': Parameter(),
-            },
-        }
         linear_expression = '3 * r - 4*(r_for - r_back)'
-        parsed_expr = ParsedExpression(FunctionExpression, 'attr', linear_expression, test_objects)
+        parsed_expr = ParsedExpression(FunctionExpression, 'attr', linear_expression, self.test_objects)
         parsed_expr.tokenize()
 
         valid, error = LinearParsedExpressionValidator().validate(parsed_expr)
@@ -1344,12 +1407,88 @@ class ParsedExpressionValidatorTestCase(unittest.TestCase):
             lpev._remove_unary_operators()
             lpev._dist_mult()
             self.assertEqual(lpev._expr_has_constant_right_of_vars(), expt_constant_right_of_vars)
-                    
+
+    def test_get_cls_and_model(self):
+        linear_expression = '3 * r - 4*(r_for - r_back)'
+        parsed_expr = ParsedExpression(FunctionExpression, 'attr', linear_expression, self.test_objects)
+        parsed_expr.tokenize()
+        lpev = LinearParsedExpressionValidator()
+        valid, _ = lpev.validate(parsed_expr)
+        self.assertTrue(valid)
+        self.assertEqual(lpev.get_cls_and_model('r_back'), (Parameter, self.test_objects[Parameter]['r_back']))
+        self.assertEqual(lpev.get_cls_and_model('r'), (Parameter, self.test_objects[Parameter]['r']))
+
+        self.test_objects[SubFunction] = {'r': SubFunction(id='r'),
+                                          'bm_1': SubFunction(id='bm_1'),
+                                         }
+        linear_expression = '3 * Parameter.r + SubFunction.r'
+        parsed_expr = ParsedExpression(FunctionExpression, 'attr', linear_expression, self.test_objects)
+        parsed_expr.tokenize()
+        lpev = LinearParsedExpressionValidator()
+        valid, _ = lpev.validate(parsed_expr, set_linear_coeffs=False)
+        self.assertTrue(valid)
+        with self.assertRaisesRegex(ParsedExpressionError, 'multiple models with id'):
+            lpev.get_cls_and_model('r')
+
+    def test__get_coeffs_for_vars(self):
+        expr_and_expt_coeffs_4_vars = [('x',
+                                        [(1.0, 'x')]),
+                                       ('x + y',
+                                        [(1.0, 'x'), (1.0, 'y')]),
+                                       ('x + 2 * y',
+                                        [(1.0, 'x'), (2.0, 'y')]),
+                                       ('2 * x + y',
+                                        [(2.0, 'x'), (1.0, 'y')]),
+                                       ('a + b + -2 * c + d + e + 4 * f',
+                                        [(1.0, 'a'), (1.0, 'b'), (-2.0, 'c'), (1.0, 'd'), (1.0, 'e'), (4.0, 'f')]),
+                                       ('3 * r - 4*(r_for - r_back)',
+                                        [(3.0, 'r'), (4.0, 'r_back'), (-4.0, 'r_for')]),
+        ]
+        for expr, expt_coeffs_4_vars in expr_and_expt_coeffs_4_vars:
+            lpev = LinearParsedExpressionValidator()._init(expr)
+            lpev._validate_syntax()
+            valid, _ = lpev._validate()
+            self.assertTrue(valid)
+            self.assertEqual(set(lpev._get_coeffs_for_vars()), set(expt_coeffs_4_vars))
+
+    def test_set_lin_coeffs(self):
+        linear_expr_and_expt_lin_coeffs = [('r',
+                                       [('r', 1.0)]),
+                                      ('3 * r',
+                                       [('r', 3.0)]),
+                                      ('(r_for - r_back)',
+                                       [('r_for', 1.0), ('r_back', -1.0)]),
+                                      ('r + 2 * r_for - r_back',
+                                       [('r', 1.0), ('r_for', 2.0), ('r_back', -1.0)]),
+                                      ('r - 2 * r_for - r_back',
+                                       [('r', 1.0), ('r_for', -2.0), ('r_back', -1.0)]),
+                                      ('r + -2 * r_for - r_back',
+                                       [('r', 1.0), ('r_for', -2.0), ('r_back', -1.0)]),
+                                      ('3 * r - 4*(r_for - r_back)',
+                                       [('r', 3.0), ('r_for', -4.0), ('r_back', 4.0)]),
+                                      ('3 * r - r + -r',
+                                       [('r', 1.0)]),
+                                      ('(1+2) * r - (3 + 5) * -1 * r + r',
+                                       [('r', 12.0)]),
+        ]
+        for linear_expr, expt_lin_coeffs in linear_expr_and_expt_lin_coeffs:
+            parsed_expr = ParsedExpression(FunctionExpression, 'attr', linear_expr, self.test_objects)
+            parsed_expr.tokenize()
+            lpev = LinearParsedExpressionValidator()
+            valid, _ = lpev.validate(parsed_expr)
+            self.assertTrue(valid)
+            lpev._set_lin_coeffs()
+            lin_coeffs = set()
+            for cls in lpev.parsed_expression.lin_coeffs:
+                for model, coeff in lpev.parsed_expression.lin_coeffs[cls].items():
+                    lin_coeffs.add((model.id, coeff))
+            self.assertEqual(lin_coeffs, set(expt_lin_coeffs))
+
 
 class RandomExpression(object):
     """ Generate random expressions for testing LinearParsedExpressionValidator
     """
-    # TODO (APG): finish and use
+    # TODO (APG): finish and use to test LinearParsedExpressionValidator
 
     rel_prob_token = {'name': 3,
                       'int': 3,

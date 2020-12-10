@@ -380,55 +380,10 @@ class Expression(object):
                     setattr(obj, attr_name, attr_value)
         obj._parsed_expression = parsed_expression
 
-        # check expression is linear
+        # check expression is linear and, if so, compute linear coefficients for the related objects
         parsed_expression.is_linear, _ = LinearParsedExpressionValidator().validate(parsed_expression)
-        cls.set_lin_coeffs(obj)
 
         return (obj, None)
-
-    @classmethod
-    def set_lin_coeffs(cls, obj):
-        """ Set the linear coefficients for the related objects
-
-        Args:
-            obj (:obj:`Model`): :obj:`Expression` object
-        """
-        model_cls = obj.__class__
-        parsed_expr = obj._parsed_expression
-        obj_tables_tokens = parsed_expr._obj_tables_tokens
-        is_linear = parsed_expr.is_linear
-
-        if is_linear:
-            default_val = 0.
-        else:
-            default_val = float('nan')
-
-        parsed_expr.lin_coeffs = lin_coeffs = {}
-        for attr_name, attr in model_cls.Meta.attributes.items():
-            if isinstance(attr, RelatedAttribute) and \
-                    attr.related_class.__name__ in model_cls.Meta.expression_term_models:
-                lin_coeffs[attr.related_class] = {}
-
-        for related_class, related_objs in parsed_expr.related_objects.items():
-            for related_obj in related_objs.values():
-                lin_coeffs[related_class][related_obj] = default_val
-
-        if not is_linear:
-            return
-
-        sense = 1.
-        cur_coeff = 1.
-        for obj_table_token in obj_tables_tokens:
-            if obj_table_token.code == ObjTablesTokenCodes.op and obj_table_token.token_string == '+':
-                sense = 1.
-                cur_coeff = 1.
-            elif obj_table_token.code == ObjTablesTokenCodes.op and obj_table_token.token_string == '-':
-                sense = -1.
-                cur_coeff = 1.
-            elif obj_table_token.code == ObjTablesTokenCodes.number:
-                cur_coeff = float(obj_table_token.token_string)
-            elif obj_table_token.code == ObjTablesTokenCodes.obj_id:
-                lin_coeffs[obj_table_token.model_type][obj_table_token.model] += sense * cur_coeff
 
     @classmethod
     def validate(cls, model_obj, parent_obj):
@@ -468,7 +423,6 @@ class Expression(object):
             return InvalidObject(model_obj, [attr_err])
         model_obj._parsed_expression.is_linear, _ = LinearParsedExpressionValidator().validate(
             model_obj._parsed_expression)
-        cls.set_lin_coeffs(model_obj)
 
         # check that related objects match the tokens of the _parsed_expression
         related_objs = {}
@@ -665,7 +619,7 @@ class ParsedExpression(object):
         'DOT',  # for disambiguating variable types
         'COMMA',  # for function arguments
         'DOUBLESTAR', 'MINUS', 'PLUS', 'SLASH', 'STAR',  # mathematical operators
-        'LPAR', 'RPAR',  # for mathematical grouping
+        'LPAR', 'RPAR',  # for mathematical grouping and functions
         'EQEQUAL', 'GREATER', 'GREATEREQUAL', 'LESS', 'LESSEQUAL', 'NOTEQUAL',  # comparison operators
     )
     LEGAL_TOKENS = set()
@@ -1351,18 +1305,21 @@ class ParsedExpression(object):
 class LinearParsedExpressionValidator(object):
     """ Verify whether a :obj:`ParsedExpression` is equivalent to a linear function of variables
 
-    A linear function of identifiers has the form `a1 * v + a2 * v + ... an * v`, where
-    `a1 ... an` are floats or integers and `v` is a variable.
+    A linear function of identifiers has the form `a1 * v1 + a2 * v2 + ... an * vn`, where
+    `a1 ... an` are floats or integers and `v1 ... vn` are variables.
 
     Attributes:
+        expression (:obj:`str`): the expression
+        parsed_expression (:obj:`ParsedExpression`): parsed_expression
+        tree (:obj:`_ast.Expression`): the abstract syntax tree
+        is_linear (:obj:`boolean`): whether the :obj:`ParsedExpression` is linear
         opaque_ids (:obj:`dict`): map from Model ids that are not valid Python identifiers to opaque ids
         next_id (:obj:`int`): suffix of next opaque Python identifier
     """
     # TODO (APG): use random expressions made by RandomExpression to test more extensively
-    # TODO (APG): finish transform of expression to std. polynomial form so set_lin_coeffs() works on all linear exprs
+    # TODO (APG): transform expressions to std. polynomial form so set_lin_coeffs() works on all linear exprs
 
-    # use of Constant starts with Python 3.8
-    # TODO (APG): make portable to 3.8 <= Python
+    # TODO (APG): make portable to 3.8 <= Python, which replaces ast.Num with ast.Constant
     VALID_NOTE_TYPES = set([ast.Constant,
                             ast.Num,
                             ast.UnaryOp,    # only UAdd and USub
@@ -1383,7 +1340,7 @@ class LinearParsedExpressionValidator(object):
         self.next_id = 1
 
     def _init(self, expression):
-        """ Save :obj:`expression` in an attribute
+        """ Initialize expression attributes
 
         Args:
             expression (:obj:`str`): expression
@@ -1396,18 +1353,24 @@ class LinearParsedExpressionValidator(object):
             raise ValueError("Cannot validate empty expression")
         return self
 
-    def validate(self, parsed_expression):
+    def validate(self, parsed_expression, set_linear_coeffs=True):
         """ Determine whether the expression is a valid linear expression
 
         Args:
             parsed_expression (:obj:`ParsedExpression`): a parsed expression
+            set_linear_coeffs (:obj:`boolean`, optional): if :obj:`True`:, set the linear coefficients
+                for the related objects
 
         Returns:
             :obj:`tuple`: :obj:`(False, error)` if :obj:`self.expression` does not represent a linear expression,
                 or :obj:`(True, None)` if it does
         """
+        self.parsed_expression = parsed_expression
         self._init(self._expr_with_python_ids(parsed_expression))
-        return self._validate()
+        rv = self._validate()
+        if set_linear_coeffs:
+            self._set_lin_coeffs()
+        return rv
 
     def _convert_model_id_to_python_id(self, model_id):
         """ If a model id isn't a valid Python identifier, convert it
@@ -1463,7 +1426,8 @@ class LinearParsedExpressionValidator(object):
         # If the expression contains contains constant terms, return False
         # If the expression contains contains products of variables, return False
         # If the expression contains contains constants to the right of variables, return False
-        # TODO (APG): Elaborate and computing linear coefficients
+
+        self.is_linear = False
 
         valid, error = self._validate_syntax()
         if not valid:
@@ -1481,6 +1445,8 @@ class LinearParsedExpressionValidator(object):
         self._multiply_numbers()
         self._dist_mult()
         self._multiply_numbers()
+        self._remove_subtraction()
+        self._multiply_numbers()
 
         if self._expr_has_a_constant():
             return (False, f"expression '{self.expression}' contains constant term(s)")
@@ -1491,6 +1457,7 @@ class LinearParsedExpressionValidator(object):
         if self._expr_has_constant_right_of_vars():
             return (False, f"expression '{self.expression}' contains a constant right of a var in a product")
 
+        self.is_linear = True
         return (True, None)
 
     def _validate_syntax(self):
@@ -1540,14 +1507,16 @@ class LinearParsedExpressionValidator(object):
         return (True, None)
 
 
-    class DistributeMultAddSubOnLeft(ast.NodeTransformer):
-        # transform (x + y)*z to x*z + y*z, and (x - y)*(3 + 5) to x*(3 + 5) - y*(3 + 5)
+    class DistributeMult(ast.NodeTransformer):
+        # transform (x + y)*z to x*z + y*z, and (x - y)*(3 + 5) to x*(3 + 5) - y*(3 + 5), and
+        # transform x*(3 + 5) to x * 3 + x * 5, and (x * y)*(3 + 5) to (x * y)*3 + (x * y)*5
         def visit_BinOp(self, node):
             self.generic_visit(node)
             if (isinstance(node.op, ast.Mult) and
                 (isinstance(node.right, (ast.Num, ast.Name, ast.UnaryOp, ast.BinOp)) and
                  (isinstance(node.left, ast.BinOp) and
                   isinstance(node.left.op, (ast.Add, ast.Sub))))):
+                # form: (a +/- b) * c
                 left = ast.BinOp(left=node.left.left,
                                  op=ast.Mult(),
                                  right=node.right)
@@ -1557,17 +1526,11 @@ class LinearParsedExpressionValidator(object):
                 return ast.BinOp(left=left,
                                  right=right,
                                  op=node.left.op)
-            return node
-
-
-    class DistributeMultAddSubOnRight(ast.NodeTransformer):
-        # transform x*(3 + 5) to x * 3 + x * 5, and (x * y)*(3 + 5) to (x * y)*3 + (x * y)*5
-        def visit_BinOp(self, node):
-            self.generic_visit(node)
             if (isinstance(node.op, ast.Mult) and
                 (isinstance(node.left, (ast.Num, ast.Name, ast.UnaryOp, ast.BinOp)) and
                  (isinstance(node.right, ast.BinOp) and
                   isinstance(node.right.op, (ast.Add, ast.Sub))))):
+                # form: a * (b +/- c)
                 left = ast.BinOp(left=node.left,
                                  op=ast.Mult(),
                                  right=node.right.left)
@@ -1589,8 +1552,7 @@ class LinearParsedExpressionValidator(object):
         while True:
             # iterate until all multiplication in the ast has been distributed
             tree_copy = copy.deepcopy(self.tree)
-            self.DistributeMultAddSubOnLeft().visit(self.tree)
-            self.DistributeMultAddSubOnRight().visit(self.tree)
+            self.DistributeMult().visit(self.tree)
             if self.ast_eq(tree_copy, self.tree):
                 break
         return self
@@ -1617,12 +1579,61 @@ class LinearParsedExpressionValidator(object):
         Returns:
             :obj:`LinearParsedExpressionValidator`: :obj:`self`, so this operation can be chained
         """
+        # Not used -- causes failures in wc_lang tests
+        # TODO (APG): use to transform arbitrary expressions into canonical polynomial form
         while True:
             # iterate until all coefficients have been moved
             tree_copy = copy.deepcopy(self.tree)
             self.MoveCoeffsToLeft().visit(self.tree)
             if self.ast_eq(tree_copy, self.tree):
                 break
+        return self
+
+
+    class DistributeSub(ast.NodeTransformer):
+        # transform subtraction into addition, with -1 * distributed over the subtrahend
+        # e.g., transform "r - (2 * r_for - 2 * r_back)" to "r + (-1 * 2 * r_for - -1 * 2 * r_back)"
+        def visit_BinOp(self, node):
+            self.generic_visit(node)
+            if isinstance(node.op, ast.Sub):
+                if isinstance(node.right, (ast.Name, ast.Num)):
+                    # subtrahend is Num or Name
+                    return ast.BinOp(left=node.left,
+                                     op=ast.Add(),
+                                     right=ast.BinOp(left=ast.Num(-1),
+                                                     op=ast.Mult(),
+                                                     right=node.right))
+                if isinstance(node.right, ast.BinOp) and isinstance(node.right.op, (ast.Add, ast.Sub)):
+                    # subtrahend is addition or subtraction
+                    right = ast.BinOp(left=ast.BinOp(left=ast.Num(-1),
+                                                     op=ast.Mult(),
+                                                     right=node.right.left),
+                                      op=node.right.op,
+                                      right=ast.BinOp(left=ast.Num(-1),
+                                                     op=ast.Mult(),
+                                                     right=node.right.right))
+                    return ast.BinOp(left=node.left,
+                                     op=ast.Add(),
+                                     right=right)
+                if isinstance(node.right, ast.BinOp) and isinstance(node.right.op, ast.Mult):
+                    # subtrahend is multiplication
+                    right = ast.BinOp(left=ast.BinOp(left=ast.Num(-1),
+                                                     op=ast.Mult(),
+                                                     right=node.right.left),
+                                      op=node.right.op,
+                                      right=node.right.right)
+                    return ast.BinOp(left=node.left,
+                                     op=ast.Add(),
+                                     right=right)
+            return node
+
+    def _remove_subtraction(self):
+        """ Remove subtraction by converting it to -1 times the subtrahend
+
+        Returns:
+            :obj:`LinearParsedExpressionValidator`: :obj:`self`, so this operation can be chained
+        """
+        self.DistributeSub().visit(self.tree)
         return self
 
 
@@ -1653,12 +1664,7 @@ class LinearParsedExpressionValidator(object):
         Returns:
             :obj:`LinearParsedExpressionValidator`: :obj:`self`, so this operation can be chained
         """
-        while True:
-            # iterate until all coefficients have been moved
-            tree_copy = copy.deepcopy(self.tree)
-            self.MultiplyNums().visit(self.tree)
-            if self.ast_eq(tree_copy, self.tree):
-                break
+        self.MultiplyNums().visit(self.tree)
         return self
 
 
@@ -1787,6 +1793,92 @@ class LinearParsedExpressionValidator(object):
                     LinearParsedExpressionValidator._product_has_num(node.right)):
                     return True
         return False
+
+    def get_cls_and_model(self, id):
+        """ Get the class and instance of a related model with id `id`
+
+        Args:
+            id (:obj:`str`): id
+
+        Returns:
+            :obj:`tuple`: :obj:`(:obj:`type`, :obj:`Model`)`: the class and instance of a related model with id `id`
+
+        Raises:
+            :obj:`ParsedExpressionError`: if multiple related models have id `id`
+        """
+        # TODO (APG): properly handle related objects with conflicting ids:
+        # Approach to handle class-distinguished model ids (ModCls.id) that disambiguate conflicting ids:
+        # 1. At initialization in _init(), use parsed_expression.related_objects to map all names (ids) to related objects 
+        # 2. To simplify all ast transformations and scans, internally transform class-distinguished model ids
+        #    and invalid Python identifiers into simple, unique names, and record the mapping (replace self.opaque_ids)
+        # 3. Process the ast as usual
+        # 4. Discard this method
+        # 5. In _get_coeffs_for_vars(), after walking the ast, remap all ids back to the original names in the return value
+        # 6. In _set_lin_coeffs(), use the map made in #1 to map all types of model ids to class & model
+        cls, model = None, None
+        for related_class, related_objs in self.parsed_expression.related_objects.items():
+            for related_obj in related_objs.values():
+                if related_obj.id == id:
+                    if cls is not None:
+                        raise ParsedExpressionError(f"multiple models with id='{id}' in expression '{self.expression}'")
+                    cls, model = related_class, related_obj
+        return cls, model
+
+    def _get_coeffs_for_vars(self):
+        """ Get coefficients for variables in a linear expression in standard form
+
+        Returns:
+            :obj:`list`: of :obj:`(:obj:`float`, :obj:`str`)`: coefficient and model id pairs
+        """
+        coeff_model_id_pairs = []
+        default_coeff = 1
+        coeff = default_coeff
+        for node in ast.walk(self.tree.body):
+            if isinstance(node, ast.Num):
+                coeff = node.n
+            if isinstance(node, ast.Name):
+                coeff_model_id_pairs.append((float(coeff), node.id))
+                coeff = default_coeff
+
+        # remap ids of objects whose ids aren't Python identifiers by using self.opaque_ids
+        inverted_opaque_ids = {opaque_id: id for id, opaque_id in self.opaque_ids.items()}
+        coeff_model_id_pairs_original_ids = []
+        for coeff, model_id in coeff_model_id_pairs:
+            if model_id in inverted_opaque_ids:
+                coeff_model_id_pairs_original_ids.append((coeff, inverted_opaque_ids[model_id]))
+            else:
+                coeff_model_id_pairs_original_ids.append((coeff, model_id))
+        return coeff_model_id_pairs_original_ids
+
+    def _set_lin_coeffs(self):
+        """ Set the linear coefficients for the related objects
+
+        Assumes `_validate()` has been called
+        """
+        model_cls = self.parsed_expression.model_cls
+
+        if self.is_linear:
+            default_val = 0.
+        else:
+            default_val = float('nan')
+
+        self.parsed_expression.lin_coeffs = lin_coeffs = {}
+
+        for attr_name, attr in model_cls.Meta.attributes.items():
+            if (isinstance(attr, RelatedAttribute) and
+                attr.related_class.__name__ in model_cls.Meta.expression_term_models):
+                lin_coeffs[attr.related_class] = {}
+
+        for related_class, related_objs in self.parsed_expression.related_objects.items():
+            for related_obj in related_objs.values():
+                lin_coeffs[related_class][related_obj] = default_val
+
+        if not self.is_linear:
+            return
+
+        for coeff, var_id in self._get_coeffs_for_vars():
+            model_cls, model = self.get_cls_and_model(var_id)
+            lin_coeffs[model_cls][model] += coeff
 
     @staticmethod
     def ast_eq(ast1, ast2):
