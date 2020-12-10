@@ -1416,16 +1416,20 @@ class LinearParsedExpressionValidator(object):
         """
         # Approach:
         # Use ast to parse the expression
+        # If the expression is not valid Python, return False
         # If the expression contains terms that are not allowed in a linear expression, return False
         # If the expression contains numbers that cannot be coerced into floats, return False
-        # Simplify the expression by:
+        # Simplify the expression with transformations by mathematical identities:
         #   Removing unary operators
-        #   Multiplying constants in all products
+        #   Multiplying adjacent constants in all products
         #   Distributing multiplication over all addition and subtraction terms
-        #   Multiplying constants in all products, again
+        #   Multiplying adjacent constants in all products, again
+        #   Replacing subtraction with addition, by multiplying subtrahends by -1
+        #   Multiplying adjacent constants in all products, again
         # If the expression contains contains constant terms, return False
         # If the expression contains contains products of variables, return False
         # If the expression contains contains constants to the right of variables, return False
+        # Otherwise the expression is linear
 
         self.is_linear = False
 
