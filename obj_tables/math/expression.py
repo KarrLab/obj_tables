@@ -1453,9 +1453,9 @@ class LinearParsedExpressionValidator(object):
             self._remove_subtraction()
             self._multiply_numbers()
         except RecursionError as e:
-            error = (f"\nast or LinearParsedExpressionValidator._validate() failed while processing "
+            error = (f"\nRecursionError in ast or LinearParsedExpressionValidator._validate() while processing "
                      f"{self.parsed_expression.model_cls.__name__} '{self.expression}'"
-                     "\ndecrease number of expression terms, or increase call stack with sys.setrecursionlimit(); "
+                     "\ndecrease the num. of expression terms, or raise the call stack size with sys.setrecursionlimit(); "
                      "if needed, increase available memory")
             raise ParsedExpressionError(str(e) + error)
 
@@ -1528,28 +1528,24 @@ class LinearParsedExpressionValidator(object):
                  (isinstance(node.left, ast.BinOp) and
                   isinstance(node.left.op, (ast.Add, ast.Sub))))):
                 # distribute mult. with +/- on left: (a +/- b) * c
-                left = ast.BinOp(left=node.left.left,
-                                 op=ast.Mult(),
-                                 right=node.right)
-                right = ast.BinOp(left=node.left.right,
-                                  op=ast.Mult(),
-                                  right=node.right)
-                return ast.BinOp(left=left,
-                                 right=right,
+                return ast.BinOp(left=ast.BinOp(left=node.left.left,
+                                      op=ast.Mult(),
+                                      right=node.right),
+                                 right=ast.BinOp(left=node.left.right,
+                                       op=ast.Mult(),
+                                       right=node.right),
                                  op=node.left.op)
             if (isinstance(node.op, ast.Mult) and
                 (isinstance(node.left, (ast.Num, ast.Name, ast.UnaryOp, ast.BinOp)) and
                  (isinstance(node.right, ast.BinOp) and
                   isinstance(node.right.op, (ast.Add, ast.Sub))))):
                 # distribute mult. with +/- on right: a * (b +/- c)
-                left = ast.BinOp(left=node.left,
-                                 op=ast.Mult(),
-                                 right=node.right.left)
-                right = ast.BinOp(left=node.left,
-                                  op=ast.Mult(),
-                                  right=node.right.right)
-                return ast.BinOp(left=left,
-                                 right=right,
+                return ast.BinOp(left=ast.BinOp(left=node.left,
+                                      op=ast.Mult(),
+                                      right=node.right.left),
+                                 right=ast.BinOp(left=node.left,
+                                       op=ast.Mult(),
+                                       right=node.right.right),
                                  op=node.right.op)
             return node
 

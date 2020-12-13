@@ -7,6 +7,7 @@
 """
 
 import astor
+import gc
 import mock
 import random
 import re
@@ -1362,14 +1363,17 @@ class LinearParsedExpressionValidatorTestCase(unittest.TestCase):
         self.assertTrue(valid)
         self.assertTrue(error is None)
 
-        linear_expression = '3 * r - 4*r_back'
+    def test_validate_exception(self):
+        linear_expression = base_linear_expression = '3 * r - 4 * r_back + 2 * r_for'
         # blow up size of expression to raise RecursionError
-        with self.assertRaisesRegex(ParsedExpressionError, 'ast or LinearParsedExpressionValidator._validate.* failed'):
+        with self.assertRaisesRegex(ParsedExpressionError,
+                                    'RecursionError in ast or LinearParsedExpressionValidator._validate'):
             while True:
                 parsed_expr = ParsedExpression(FunctionExpression, 'attr', linear_expression, self.test_objects)
                 parsed_expr.tokenize()
                 valid, error = LinearParsedExpressionValidator().validate(parsed_expr)
-                linear_expression = f"{linear_expression} + {linear_expression}"
+                linear_expression = f"{linear_expression} + {base_linear_expression}"
+                gc.collect()
 
     def test__expr_has_constants_right_of_variables(self):
     
