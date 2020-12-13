@@ -1445,12 +1445,19 @@ class LinearParsedExpressionValidator(object):
         if not valid:
             return (valid, error)
 
-        self._remove_unary_operators()
-        self._multiply_numbers()
-        self._dist_mult()
-        self._multiply_numbers()
-        self._remove_subtraction()
-        self._multiply_numbers()
+        try:
+            self._remove_unary_operators()
+            self._multiply_numbers()
+            self._dist_mult()
+            self._multiply_numbers()
+            self._remove_subtraction()
+            self._multiply_numbers()
+        except RecursionError as e:
+            error = (f"\nast or LinearParsedExpressionValidator._validate() failed while processing "
+                     f"{self.parsed_expression.model_cls.__name__} '{self.expression}'"
+                     "\ndecrease number of expression terms, or increase call stack with sys.setrecursionlimit(); "
+                     "if needed, increase available memory")
+            raise ParsedExpressionError(str(e) + error)
 
         if self._expr_has_a_constant():
             return (False, f"expression '{self.expression}' contains constant term(s)")
@@ -1520,7 +1527,7 @@ class LinearParsedExpressionValidator(object):
                 (isinstance(node.right, (ast.Num, ast.Name, ast.UnaryOp, ast.BinOp)) and
                  (isinstance(node.left, ast.BinOp) and
                   isinstance(node.left.op, (ast.Add, ast.Sub))))):
-                # form: (a +/- b) * c
+                # distribute mult. with +/- on left: (a +/- b) * c
                 left = ast.BinOp(left=node.left.left,
                                  op=ast.Mult(),
                                  right=node.right)
@@ -1534,7 +1541,7 @@ class LinearParsedExpressionValidator(object):
                 (isinstance(node.left, (ast.Num, ast.Name, ast.UnaryOp, ast.BinOp)) and
                  (isinstance(node.right, ast.BinOp) and
                   isinstance(node.right.op, (ast.Add, ast.Sub))))):
-                # form: a * (b +/- c)
+                # distribute mult. with +/- on right: a * (b +/- c)
                 left = ast.BinOp(left=node.left,
                                  op=ast.Mult(),
                                  right=node.right.left)
@@ -1684,6 +1691,7 @@ class LinearParsedExpressionValidator(object):
                 return ast.BinOp(left=ast.Num(-1),
                                  op=ast.Mult(),
                                  right=node.operand)
+            return node
 
 
     def _remove_unary_operators(self):

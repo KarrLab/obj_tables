@@ -1340,7 +1340,7 @@ class LinearParsedExpressionValidatorTestCase(unittest.TestCase):
             self.assertIn(exp_error, error)
 
     def test__validate_split_reactions(self):
-        # reactions can be split in dFBA objective expressions
+        # test examples of split reactions in dFBA objective expressions in wc_lang
         expr_and_expt_validity = [('(r_for - r_back)', True),
                                   ('r + 2 * (r_for - r_back)', True),
                                   ('r - 2 * (r_for - r_back)', True),
@@ -1361,6 +1361,15 @@ class LinearParsedExpressionValidatorTestCase(unittest.TestCase):
         valid, error = LinearParsedExpressionValidator().validate(parsed_expr)
         self.assertTrue(valid)
         self.assertTrue(error is None)
+
+        linear_expression = '3 * r - 4*r_back'
+        # blow up size of expression to raise RecursionError
+        with self.assertRaisesRegex(ParsedExpressionError, 'ast or LinearParsedExpressionValidator._validate.* failed'):
+            while True:
+                parsed_expr = ParsedExpression(FunctionExpression, 'attr', linear_expression, self.test_objects)
+                parsed_expr.tokenize()
+                valid, error = LinearParsedExpressionValidator().validate(parsed_expr)
+                linear_expression = f"{linear_expression} + {linear_expression}"
 
     def test__expr_has_constants_right_of_variables(self):
     
