@@ -1562,6 +1562,8 @@ class LinearParsedExpressionValidator(object):
         """
         while True:
             # iterate until all multiplication in the ast has been distributed
+            # requires iteration because * can be distributes over a tree of BinOps of arbitrary depth
+            # e.g., 3 * (a + b + c + ... )
             tree_copy = copy.deepcopy(self.tree)
             self.DistributeMult().visit(self.tree)
             if self.ast_eq(tree_copy, self.tree):

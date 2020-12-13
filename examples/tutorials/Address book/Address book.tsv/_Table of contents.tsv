@@ -1,6 +1,0 @@
-!!!ObjTables objTablesVersion='1.0.0' date='2020-05-29 00:17:37'		
-!!ObjTables type='TableOfContents' tableFormat='row' description='Table of contents' date='2020-05-29 00:17:37' objTablesVersion='1.0.0'		
-!Table	!Description	!Number of objects
-Schema	Table/model and column/attribute definitions	
-Company		4
-People		4
