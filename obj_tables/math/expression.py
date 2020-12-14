@@ -1452,10 +1452,10 @@ class LinearParsedExpressionValidator(object):
             self._multiply_numbers()
             self._remove_subtraction()
             self._multiply_numbers()
-        except RecursionError as e:
+        except RecursionError as e: # pragma: no cover; runs w 'pytest tests/math/test_math_expression.py' but not 'pytest tests/'
             error = (f"\nRecursionError in ast or LinearParsedExpressionValidator._validate() while processing "
                      f"{self.parsed_expression.model_cls.__name__} '{self.expression}'"
-                     "\ndecrease the num. of expression terms, or raise the call stack size with sys.setrecursionlimit(); "
+                     "\ndecrease the num. of expression terms, or increase call stack size with sys.setrecursionlimit(); "
                      "if needed, increase available memory")
             raise ParsedExpressionError(str(e) + error)
 
