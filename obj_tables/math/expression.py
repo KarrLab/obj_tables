@@ -1832,6 +1832,14 @@ class LinearParsedExpressionValidator(object):
                     if cls is not None:
                         raise ParsedExpressionError(f"multiple models with id='{id}' in expression '{self.expression}'")
                     cls, model = related_class, related_obj
+                else:
+                    try: # For cases where the related_obj.id() is a bound method
+                        if related_obj.id() == id:
+                            if cls is not None:
+                                raise ParsedExpressionError(f"multiple models with id='{id}' in expression '{self.expression}'")
+                            cls, model = related_class, related_obj
+                    except TypeError:
+                        pass
         return cls, model
 
     def _get_coeffs_for_vars(self):
