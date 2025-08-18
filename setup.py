@@ -10,7 +10,7 @@ try:
     assert match and tuple(match.group(1).split('.')) >= ('0', '0', '5')
 except (subprocess.CalledProcessError, AssertionError):
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-U", "pkg_utils"],
+        [sys.executable, "-m", "pip", "install", "-U", "git+https://github.com/KarrLab/pkg_utils.git#egg=pkg_utils"],
         check=True)
 import os
 import pkg_utils
